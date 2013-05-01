@@ -4556,6 +4556,15 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
             SetFreePrimaryProfessions(freeProfs);
     }
 
+    // Ancestral Swiftness
+    if (spell_id == 16188)
+    {
+        if (HasAura(51470))
+            RemoveAura(51470);
+        if (HasAura(121617))
+            RemoveAura(121617);
+    }
+
     // remove dependent skill
     SpellLearnSkillNode const* spellLearnSkill = sSpellMgr->GetSpellLearnSkill(spell_id);
     if (spellLearnSkill)
@@ -21008,7 +21017,7 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampede
     // only if current pet in slot
     pet->SavePetToDB(mode, stampeded);
 
-    if (pet->getPetType() != HUNTER_PET)
+    if (pet->isHunterPet())
         SetMinion(pet, false, PET_SLOT_UNK_SLOT);
     else
         SetMinion(pet, false, PET_SLOT_ACTUAL_PET_SLOT);
@@ -22408,6 +22417,43 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             SendEquipError(EQUIP_ERR_CANT_EQUIP_RANK, NULL, NULL);
             return false;
         }
+    }
+
+    std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
+
+    for (auto reward: rewards)
+    {
+        if (pProto->ItemId != reward.Entry)
+            continue;
+
+        Guild* guild = sGuildMgr->GetGuildById(this->GetGuildId());
+
+        if (!guild)
+        {
+            SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+            return false;
+        }
+
+        if (reward.Standing)
+            if (this->GetReputationRank(REP_GUILD) < reward.Standing)
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
+
+        if (reward.AchievementId)
+            if (guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
+
+        if (reward.Racemask)
+            if (!(this->getRaceMask() & reward.Racemask))
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
     }
 
     uint32 price = 0;
@@ -25769,6 +25815,13 @@ bool Player::LearnTalent(uint32 talentId)
     learnSpell(spellid, false);
     AddTalent(spellid, GetActiveSpec(), true);
 
+    // Ancestral Swiftness
+    if (spellid == 16188)
+    {
+        CastSpell(this, 51470, true);  // +5% spell haste
+        CastSpell(this, 121617, true); // +5% melee haste
+    }
+
     sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
     return true;
 }
@@ -25813,7 +25866,7 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
         return;
 
     Pet* NewPet = new Pet(this);
-    if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
+    if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true, m_currentPetSlot))
         delete NewPet;
 
     m_temporaryUnsummonedPetNumber = 0;

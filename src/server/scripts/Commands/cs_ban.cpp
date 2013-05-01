@@ -127,20 +127,24 @@ public:
                 break;
         }
 
-        std::string announce;
+         if (sWorld->getBoolConfig(CONFIG_ANNOUNCE_BAN))
+         {
 
-        announce = "The character '";
-        announce += name.c_str();
-        announce += "' was banned for ";
-        announce += durationStr;
-        announce += " by the character '";
-        announce += handler->GetSession() ? handler->GetSession()->GetPlayerName().c_str() : "";
-        announce += "'. The reason is: ";
-        announce += reasonStr;
+            std::string announce;
 
-        char buff[2048];
-        sprintf(buff, handler->GetTrinityString(LANG_SYSTEMMESSAGE), announce.c_str());
-        sWorld->SendServerMessage(SERVER_MSG_STRING, buff);
+            announce = "The character '";
+            announce += name.c_str();
+            announce += "' was banned for ";
+            announce += durationStr;
+            announce += " by the character '";
+            announce += handler->GetSession() ? handler->GetSession()->GetPlayerName().c_str() : "";
+            announce += "'. The reason is: ";
+            announce += reasonStr;
+
+            char buff[2048];
+            sprintf(buff, handler->GetTrinityString(LANG_SYSTEMMESSAGE), announce.c_str());
+            sWorld->SendServerMessage(SERVER_MSG_STRING, buff);
+         }
 
         return true;
     }
@@ -225,25 +229,28 @@ public:
                 return false;
         }
 
-        std::string announce;
+        if (sWorld->getBoolConfig(CONFIG_ANNOUNCE_BAN))
+        {
+            std::string announce;
 
-        if (mode == BAN_CHARACTER)
-            announce = "The character '";
-        else if (mode == BAN_IP)
-            announce = "The IP '";
-        else
-            announce = "Account '";
-        announce += nameOrIP.c_str();
-        announce += "' was banned for ";
-        announce += durationStr;
-        announce += " by the character '";
-        announce += handler->GetSession() ? handler->GetSession()->GetPlayerName().c_str() : "";
-        announce += "'. The reason is: ";
-        announce += reasonStr;
+            if (mode == BAN_CHARACTER)
+                announce = "The character '";
+            else if (mode == BAN_IP)
+                announce = "The IP '";
+            else
+                announce = "Account '";
+            announce += nameOrIP.c_str();
+            announce += "' was banned for ";
+            announce += durationStr;
+            announce += " by the character '";
+            announce += handler->GetSession() ? handler->GetSession()->GetPlayerName().c_str() : "";
+            announce += "'. The reason is: ";
+            announce += reasonStr;
 
-        char buff[2048];
-        sprintf(buff, handler->GetTrinityString(LANG_SYSTEMMESSAGE), announce.c_str());
-        sWorld->SendServerMessage(SERVER_MSG_STRING, buff);
+            char buff[2048];
+            sprintf(buff, handler->GetTrinityString(LANG_SYSTEMMESSAGE), announce.c_str());
+            sWorld->SendServerMessage(SERVER_MSG_STRING, buff);
+        }
 
         return true;
     }

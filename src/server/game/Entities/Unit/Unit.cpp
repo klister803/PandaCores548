@@ -8206,7 +8206,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                     case 30883: // Nature's Guardian Rank 2
                     case 30884: // Nature's Guardian Rank 3
                     {
-                        if (!HealthBelowPctDamaged(30, damage))
+                        if (HealthBelowPctDamaged(30, damage))
                         {
                             basepoints0 = int32(CountPctFromMaxHealth(triggerAmount));
                             target = this;
@@ -9552,7 +9552,7 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
     {
         if (minion->GetOwnerGUID())
         {
-            sLog->outFatal(LOG_FILTER_UNITS, "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), GetEntry());
+            sLog->outFatal(LOG_FILTER_UNITS, "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), ToPlayer()->GetEntry());
             return;
         }
 
@@ -11096,13 +11096,13 @@ uint32 Unit::SpellCriticalDamageBonus(SpellInfo const* spellProto, uint32 damage
 
     switch (spellProto->DmgClass)
     {
-        case SPELL_DAMAGE_CLASS_MELEE:                      // for melee based spells is 100%
+        case SPELL_DAMAGE_CLASS_MELEE:                      // for melee based spells is 50%
         case SPELL_DAMAGE_CLASS_RANGED:
             // TODO: write here full calculation for melee/ranged spells
-            crit_bonus += damage;
+            crit_bonus += damage / 2;
             break;
         default:
-            crit_bonus += damage / 2;                       // for spells is 50%
+            crit_bonus += damage;                       // for spells is 100%
             break;
     }
 
@@ -11359,6 +11359,18 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
             HasAura(8936, caster->GetGUID()) ||    // Regrowth
             HasAura(774, caster->GetGUID()))       // Rejuvenation
             AddPct(TakenTotalMod, 20);
+    }
+
+    // Unleashed Fury - Earthliving
+    if (HasAura(118473) && GetAura(118473)->GetCaster() && GetAura(118473)->GetCaster()->GetGUID() == caster->GetGUID())
+    {
+        bool singleTarget = false;
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY && spellProto->Effects[i].TargetB.GetTarget() == 0)
+                singleTarget = true;
+
+        if (singleTarget)
+            AddPct(TakenTotalMod, 50);
     }
 
     // Check for table values

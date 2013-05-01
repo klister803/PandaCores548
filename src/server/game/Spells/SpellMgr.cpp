@@ -3150,6 +3150,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 116943:// Earthgrab
+                spellInfo->Effects[0].TargetB = 0;
+                break;
+            case 2484:  // Earthbind Totem
+                spellInfo->OverrideSpellList.push_back(51485);
+                break;
             case 6544:  // Heroic Leap
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;

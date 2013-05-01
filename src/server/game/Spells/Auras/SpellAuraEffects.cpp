@@ -1307,6 +1307,10 @@ bool AuraEffect::IsAffectingSpell(SpellInfo const* spell) const
     if (m_spellInfo->Effects[m_effIndex].SpellClassMask & spell->SpellFamilyFlags)
         return true;
 
+    // Fix Spiritwalker's Grace - Allow Elemental Blast to be cast while walking
+    if (m_spellInfo->Id == 79206 && spell->Id == 117014)
+        return true;
+
     return false;
 }
 

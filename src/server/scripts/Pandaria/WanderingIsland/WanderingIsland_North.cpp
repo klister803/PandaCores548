@@ -180,6 +180,7 @@ public:
             EVENT_HIT_CIRCLE    = 2,
             EVENT_FALCON        = 3,
             EVENT_RESET         = 4,
+            EVENT_CHECK_AREA    = 5,
         };
         
         EventMap events;
@@ -190,6 +191,7 @@ public:
             Talk(0);
             events.ScheduleEvent(EVENT_JAOMIN_JUMP, 1000);
             events.ScheduleEvent(EVENT_HIT_CIRCLE, 2000);
+            events.ScheduleEvent(EVENT_CHECK_AREA, 2500);
         }
         
         void Reset()
@@ -198,7 +200,10 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->SetDisplayId(39755);
             me->setFaction(2357); //mechant!
-            me->Respawn();
+            me->CombatStop(true);
+
+            Position homePos = me->GetHomePosition();
+            me->GetMotionMaster()->MovePoint(1, homePos.GetPositionX(), homePos.GetPositionY(), homePos.GetPositionZ());
         }
         
         void DamageTaken(Unit* attacker, uint32& damage)
@@ -259,6 +264,10 @@ public:
                     case EVENT_RESET: //remechant
                         Reset();
                     	break;
+                    case EVENT_CHECK_AREA:
+                        if (me->GetAreaId() != 5843) // Grotte Paisible
+                            Reset();
+                        break;
                 }
             }
             
