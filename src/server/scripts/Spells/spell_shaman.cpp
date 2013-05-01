@@ -75,6 +75,52 @@ enum ShamanSpells
     SPELL_SHA_UNLEASHED_FURY_EARTHLIVING    = 118473,
     SPELL_SHA_UNLEASHED_FURY_FROSTBRAND     = 118474,
     SPELL_SHA_UNLEASHED_FURY_ROCKBITER      = 118475,
+    SPELL_SHA_STONE_BULWARK_ABSORB          = 114893,
+};
+
+// Stone Bulwark - 114893
+class spell_sha_stone_bulwark : public SpellScriptLoader
+{
+    public:
+        spell_sha_stone_bulwark() : SpellScriptLoader("spell_sha_stone_bulwark") { }
+
+        class spell_sha_stone_bulwark_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_stone_bulwark_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* owner = caster->GetOwner())
+                    {
+                        if (owner->ToPlayer() && !owner->HasAura(SPELL_SHA_STONE_BULWARK_ABSORB))
+                        {
+                            int32 AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                            int32 spellPower = owner->ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                            amount += (AP > spellPower) ? int32(1.641f * AP) : int32(2.625f * spellPower);
+                        }
+                        else if (owner->ToPlayer() && owner->HasAura(SPELL_SHA_STONE_BULWARK_ABSORB))
+                        {
+                            int32 AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                            int32 spellPower = owner->ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                            amount += (AP > spellPower) ? int32(0.547f * AP) : int32(0.875f * spellPower);
+                            amount += owner->GetAura(SPELL_SHA_STONE_BULWARK_ABSORB)->GetEffect(0)->GetAmount();
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sha_stone_bulwark_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_stone_bulwark_AuraScript();
+        }
 };
 
 // Mail Specialization - 86529
@@ -1257,6 +1303,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_stone_bulwark();
     new spell_sha_mail_specialization();
     new spell_sha_frozen_power();
     new spell_sha_spirit_link();
