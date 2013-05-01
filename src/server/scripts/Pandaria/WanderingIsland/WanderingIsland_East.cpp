@@ -208,8 +208,9 @@ public:
         {
             EVENT_CHANGE_PLACE          = 1,
             EVENT_SUMMON_WATER_SPOUT    = 2,
-            EVENT_WATER_SPOUT_EJECT     = 3,
-            EVENT_WATER_SPOUT_DESPAWN   = 4,
+            EVENT_WATER_SPOUT_VISUAL    = 3,
+            EVENT_WATER_SPOUT_EJECT     = 4,
+            EVENT_WATER_SPOUT_DESPAWN   = 5,
         };
 
         void Reset()
@@ -266,13 +267,19 @@ public:
                 {
                     float x = 0.0f, y = 0.0f;
                     GetPositionWithDistInOrientation(me, 5.0f, me->GetOrientation() + frand(-M_PI, M_PI), x, y);
+                    waterSpoutGUID = 0;
+
                     if (Creature* waterSpout = me->SummonCreature(60488, x, y, 92.189629f))
-                    {
                         waterSpoutGUID = waterSpout->GetGUID();
-                        waterSpout->CastSpell(waterSpout, SPELL_WATER_SPOUT_WARNING, true);
-                    }
-                    //me->CastSpell(x, y, 92.189629f, SPELL_WATER_SPOUT_SUMMON, false);
+
+                    _events.ScheduleEvent(EVENT_WATER_SPOUT_VISUAL, 500);
                     _events.ScheduleEvent(EVENT_WATER_SPOUT_EJECT, 7500);
+                    break;
+                }
+                case EVENT_WATER_SPOUT_VISUAL:
+                {
+                    if (Creature* waterSpout = getWaterSpout())
+                        waterSpout->CastSpell(waterSpout, SPELL_WATER_SPOUT_WARNING, true);
                     break;
                 }
                 case EVENT_WATER_SPOUT_EJECT:
@@ -303,6 +310,67 @@ public:
             }
         }
     };
+};
+
+class spell_shu_benediction: public SpellScriptLoader
+{
+    public:
+        spell_shu_benediction() : SpellScriptLoader("spell_shu_benediction") { }
+
+        class spell_shu_benediction_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_shu_benediction_AuraScript);
+            
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+
+                if (!target)
+                    return;
+
+                std::list<Creature*> shuList;
+                GetCreatureListWithEntryInGrid(shuList, target, 55213, 20.0f);
+
+                for (auto shu: shuList)
+                    if (shu->ToTempSummon())
+                        if (shu->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
+                            return;
+
+                // A partir d'ici on sait que le joueur n'a pas encore de Huo
+                if (TempSummon* tempShu = target->SummonCreature(55213, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0, target->GetGUID()))
+                {
+                    tempShu->SetOwnerGUID(target->GetGUID());
+                    tempShu->GetMotionMaster()->MoveFollow(target, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+                }
+            }
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+
+                if (!target)
+                    return;
+
+                std::list<Creature*> shuList;
+                GetCreatureListWithEntryInGrid(shuList, target, 55213, 20.0f);
+
+                for (auto shu: shuList)
+                    if (shu->ToTempSummon())
+                        if (shu->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
+                            shu->DespawnOrUnsummon();
+            }
+
+            void Register()
+            {
+                OnEffectApply  += AuraEffectApplyFn (spell_shu_benediction_AuraScript::OnApply,  EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+                OnEffectRemove += AuraEffectRemoveFn(spell_shu_benediction_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_shu_benediction_AuraScript();
+        }
 };
 
 class spell_grab_carriage: public SpellScriptLoader
@@ -338,7 +406,7 @@ class spell_grab_carriage: public SpellScriptLoader
                 if (!carriage || !yak)
                     return;
 
-                carriage->CastSpell(yak, 107221, true);
+                //carriage->CastSpell(yak, 108627, true);
                 carriage->GetMotionMaster()->MoveFollow(yak, 0.0f, M_PI);
                 caster->EnterVehicle(carriage, 0);
             }
@@ -396,13 +464,13 @@ public:
 
             if (waypointId == waypointToEject)
             {
-                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 10.0f))
+                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 50.0f))
                     if (vehicle->GetVehicleKit())
                         vehicle->GetVehicleKit()->RemoveAllPassengers();
             }
             else if (waypointId == waypointsToDespawn)
             {
-                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 10.0f))
+                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 50.0f))
                     vehicle->DespawnOrUnsummon();
                 me->DespawnOrUnsummon();
             }
@@ -457,7 +525,8 @@ public:
         {
             player->CLOSE_GOSSIP_MENU();
             player->KilledMonsterCredit(55548);
-            // Change player phase
+            player->RemoveAurasDueToSpell(59073); // Remove Phase 2, first water spirit disapear
+
             if (Creature* shu = player->SummonCreature(55558, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID()))
             {
                 if (shu->AI())
@@ -554,8 +623,16 @@ public:
                         case 4:
                             eventTimer = 0;
                             if (Player* owner = ObjectAccessor::FindPlayer(playerGuid))
+                            {
                                 owner->KilledMonsterCredit(55547);
-                            me->DespawnOrUnsummon();
+                                owner->RemoveAurasDueToSpell(59074); // Remove phase 4, asleep wugou disappear
+                                
+                                if (Creature* wugou = GetClosestCreatureWithEntry(me, 60916, 20.0f))
+                                    if (Creature* newWugou = owner->SummonCreature(60916, wugou->GetPositionX(), wugou->GetPositionY(), wugou->GetPositionZ(), wugou->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0, owner->GetGUID()))
+                                        newWugou->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+                            
+                                me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, -PET_FOLLOW_ANGLE);
+                            }
                             break;
                         default:
                             break;
@@ -572,6 +649,23 @@ public:
         return new npc_water_spirit_dailoAI(creature);
     }
 };
+class AreaTrigger_at_middle_temple_from_east : public AreaTriggerScript
+{
+    public:
+        AreaTrigger_at_middle_temple_from_east() : AreaTriggerScript("AreaTrigger_at_middle_temple_from_east")
+        {}
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        {
+            if (Creature* shu = GetClosestCreatureWithEntry(player, 55558, 25.0f))
+                shu->DespawnOrUnsummon();
+
+            if (Creature* wugou = GetClosestCreatureWithEntry(player, 60916, 25.0f))
+                wugou->DespawnOrUnsummon();
+
+            return true;
+        }
+};
 
 void AddSC_WanderingIsland_East()
 {
@@ -580,6 +674,7 @@ void AddSC_WanderingIsland_East()
     new mob_tushui_monk();
     new spell_rock_jump();
     new mob_shu_water_spirit();
+    new spell_shu_benediction();
     new spell_grab_carriage();
     new npc_nourished_yak();
     new npc_water_spirit_dailo();

@@ -142,12 +142,6 @@ void EffectMovementGenerator::Finalize(Unit &unit)
     MovementInform(unit);
 }
 
-enum Spells
-{
-    WARRIOR_HEROIC_LEAP         = 6544,
-    WARRIOR_HEROIC_LEAP_DAMAGE  = 52174,
-};
-
 void EffectMovementGenerator::MovementInform(Unit &unit)
 {
     if (unit.GetTypeId() == TYPEID_UNIT)
@@ -159,13 +153,5 @@ void EffectMovementGenerator::MovementInform(Unit &unit)
     }
     else if (unit.GetTypeId() == TYPEID_PLAYER)
     {
-        switch (m_Id)
-        {
-            case WARRIOR_HEROIC_LEAP:
-                unit.CastSpell(&unit, WARRIOR_HEROIC_LEAP_DAMAGE, true);
-                break;
-            default:
-                break;
-        }
     }
 }
