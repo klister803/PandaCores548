@@ -22410,6 +22410,43 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         }
     }
 
+    std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
+
+    for (auto reward: rewards)
+    {
+        if (pProto->ItemId != reward.Entry)
+            continue;
+
+        Guild* guild = sGuildMgr->GetGuildById(this->GetGuildId());
+
+        if (!guild)
+        {
+            SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+            return false;
+        }
+
+        if (reward.Standing)
+            if (this->GetReputationRank(REP_GUILD) < reward.Standing)
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
+
+        if (reward.AchievementId)
+            if (guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
+
+        if (reward.Racemask)
+            if (!(this->getRaceMask() & reward.Racemask))
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
+    }
+
     uint32 price = 0;
     if (crItem->IsGoldRequired(pProto) && pProto->BuyPrice > 0) //Assume price cannot be negative (do not know why it is int32)
     {
