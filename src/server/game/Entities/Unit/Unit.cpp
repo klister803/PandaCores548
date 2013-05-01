@@ -11096,13 +11096,13 @@ uint32 Unit::SpellCriticalDamageBonus(SpellInfo const* spellProto, uint32 damage
 
     switch (spellProto->DmgClass)
     {
-        case SPELL_DAMAGE_CLASS_MELEE:                      // for melee based spells is 100%
+        case SPELL_DAMAGE_CLASS_MELEE:                      // for melee based spells is 50%
         case SPELL_DAMAGE_CLASS_RANGED:
             // TODO: write here full calculation for melee/ranged spells
-            crit_bonus += damage;
+            crit_bonus += damage / 2;
             break;
         default:
-            crit_bonus += damage / 2;                       // for spells is 50%
+            crit_bonus += damage;                       // for spells is 100%
             break;
     }
 
