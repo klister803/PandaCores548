@@ -27,6 +27,7 @@
 #include "UpdateData.h"
 #include "ObjectAccessor.h"
 #include "SpellInfo.h"
+#include "GuildMgr.h"
 #include <vector>
 
 void WorldSession::HandleSplitItemOpcode(WorldPacket& recvData)
@@ -790,6 +791,47 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                 // Only display items in vendor lists for the team the player is on
                 if ((itemTemplate->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeam() == ALLIANCE) ||
                     (itemTemplate->Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeam() == HORDE))
+                    continue;
+
+                std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
+                bool guildRewardCheckPassed = true;
+
+                for (auto reward: rewards)
+                {
+                    if (itemTemplate->ItemId != reward.Entry)
+                        continue;
+
+                    Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId());
+
+                    if (!guild)
+                    {
+                        guildRewardCheckPassed = false;
+                        break;
+                    }
+
+                    if (reward.Standing)
+                        if (_player->GetReputationRank(REP_GUILD) < reward.Standing)
+                        {
+                            guildRewardCheckPassed = false;
+                            break;
+                        }
+
+                    if (reward.AchievementId)
+                        if (guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+                        {
+                            guildRewardCheckPassed = false;
+                            break;
+                        }
+
+                    if (reward.Racemask)
+                        if (!(_player->getRaceMask() & reward.Racemask))
+                        {
+                            guildRewardCheckPassed = false;
+                            break;
+                        }
+                }
+
+                if (!guildRewardCheckPassed)
                     continue;
 
                 // Items sold out are not displayed in list

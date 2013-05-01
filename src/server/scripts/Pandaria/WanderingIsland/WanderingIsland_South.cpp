@@ -552,26 +552,30 @@ public:
                     switch (++discussEvent)
                     {
                         case 1:
-                            me->MonsterSay("Blablabla ?!", LANG_UNIVERSAL, playerGuid);
+                            me->MonsterSay("Ji, what are you doing ?! You can't do that !", LANG_UNIVERSAL, playerGuid);
                             if (Creature* ji = getJi())
                                 ji->SetFacingToObject(me);
                             discussTimer = 3000;
                             break;
                         case 2:
                             if (Creature* ji = getJi())
-                                ji->MonsterSay("Blabla ?", LANG_UNIVERSAL, playerGuid);
+                                ji->MonsterSay("We have no choice Aysa.", LANG_UNIVERSAL, playerGuid);
                             discussTimer = 3000;
                             break;
                         case 3:
-                            me->MonsterSay("Blablabla !", LANG_UNIVERSAL, playerGuid);
+                            me->MonsterSay("You are going to kill him !", LANG_UNIVERSAL, playerGuid);
                             discussTimer = 3000;
                             break;
                         case 4:
                             if (Creature* ji = getJi())
-                                ji->MonsterSay("Blablabla...", LANG_UNIVERSAL, playerGuid);
-                            discussTimer = 5000;
+                                ji->MonsterSay("In our situation, inaction would be the greatest danger.", LANG_UNIVERSAL, playerGuid);
+                            discussTimer = 3000;
                             break;
                         case 5:
+                            me->MonsterSay("I hope you know what you're doing, Ji...", LANG_UNIVERSAL, playerGuid);
+                            discussTimer = 5000;
+                            break;
+                        case 6:
                             SetEscortPaused(false);
                             
                             if (Creature* ji = getJi())
@@ -579,7 +583,7 @@ public:
 
                             discussTimer = 1000;
                             break;
-                        case 6:
+                        case 7:
                             if (Player* player = ObjectAccessor::GetPlayer(*me, playerGuid))
                             {
                                 player->KilledMonsterCredit(60727);
@@ -587,7 +591,7 @@ public:
                             }
                             discussTimer = 500;
                             break;
-                        case 7:
+                        case 8:
                             if (Player* player = ObjectAccessor::GetPlayer(*me, playerGuid))
                                 player->NearTeleportTo(249.38f, 3939.55f, 65.61f, 1.501471f);
                             

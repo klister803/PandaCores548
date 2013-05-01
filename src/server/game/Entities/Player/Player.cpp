@@ -1236,6 +1236,26 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
                 if (iProto->GetMaxStackSize() < count)
                     count = iProto->GetMaxStackSize();
             }
+
+            switch(itemId)
+            {
+                // Pandaren start weapons, they are given with the first quest
+                case 73207:
+                case 73208:
+                case 73209:
+                case 73210:
+                case 73211:
+                case 73212:
+                case 73213:
+                case 76390:
+                case 76391:
+                case 76392:
+                case 76393:
+                    continue;
+                default:
+                    break;
+            }
+
             StoreNewItemInBestSlots(itemId, count);
         }
     }
@@ -22397,6 +22417,43 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             SendEquipError(EQUIP_ERR_CANT_EQUIP_RANK, NULL, NULL);
             return false;
         }
+    }
+
+    std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
+
+    for (auto reward: rewards)
+    {
+        if (pProto->ItemId != reward.Entry)
+            continue;
+
+        Guild* guild = sGuildMgr->GetGuildById(this->GetGuildId());
+
+        if (!guild)
+        {
+            SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+            return false;
+        }
+
+        if (reward.Standing)
+            if (this->GetReputationRank(REP_GUILD) < reward.Standing)
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
+
+        if (reward.AchievementId)
+            if (guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
+
+        if (reward.Racemask)
+            if (!(this->getRaceMask() & reward.Racemask))
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
     }
 
     uint32 price = 0;

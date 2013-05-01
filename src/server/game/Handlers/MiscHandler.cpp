@@ -2190,5 +2190,8 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->learnSpell(108127, false); // Language Pandaren
     }
 
+    if (_player->GetQuestStatus(31450) == QUEST_STATUS_INCOMPLETE)
+        _player->KilledMonsterCredit(64594);
+
     _player->SendMovieStart(116);
 }

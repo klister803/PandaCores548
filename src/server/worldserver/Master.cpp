@@ -372,11 +372,11 @@ public:
     CharactersTransfertRunnable() {}
     void run(void)
     {
-        sLog->outInfo(LOG_FILTER_WORLDSERVER, "Thread de transfert de perso demarre.");
+        printf("Thread de transfert de perso demarre.\n");
 
         std::string hash_transfert = "";
 
-        for(int i = 0; i < 27; i++)
+        for(int i = 0; i < 32; i++)
         {
             char* tableName = dumpTables[i];
             QueryResult tableInfo = CharacterDatabase.PQuery("select data_type from information_schema.columns where table_name = '%s' AND table_schema IN ('505_characters', '505_characters_us')", tableName);
@@ -390,13 +390,13 @@ public:
             }
         }
 
-        sLog->outInfo(LOG_FILTER_WORLDSERVER, "hash_transfert : %s", hash_transfert.c_str());
+        printf("hash_transfert : %s\n", hash_transfert.c_str());
 
         while (!World::IsStopped())
         {
             ACE_Based::Thread::Sleep(1000);
-            QueryResult toDump = LoginDatabase.PQuery("SELECT `id`, `account`, `perso_guid` FROM transferts WHERE `from` = %u AND (dump = '' OR revision <> '%s')", sLog->GetRealmID(), hash_transfert.c_str());
-            QueryResult toLoad = LoginDatabase.PQuery("SELECT `id`, `account`, `perso_guid`, `dump`, `from` FROM transferts WHERE `to` = %u AND dump <> '' AND revision = '%s'", sLog->GetRealmID(), hash_transfert.c_str());
+            QueryResult toDump = LoginDatabase.PQuery("SELECT `id`, `account`, `perso_guid` FROM transferts WHERE `from` = %u AND (state = 0 OR revision <> '%s')", sLog->GetRealmID(), hash_transfert.c_str());
+            QueryResult toLoad = LoginDatabase.PQuery("SELECT `id`, `account`, `perso_guid`, `from` FROM transferts WHERE `to` = %u AND state = 1 AND revision = '%s'", sLog->GetRealmID(), hash_transfert.c_str());
 
 
             //id account perso_guid from to revision dump last_error nb_attempt
@@ -417,13 +417,44 @@ public:
                     CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%u'",  perso_guid);
                     CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'",        perso_guid);
 
-                    std::string result = "";
-                    if(sInterRealmTransfertWriter->GetDump(perso_guid, result))
+                    std::ostringstream fileName;
+
+                    fileName << "/home/transfert" << sLog->GetRealmID() << "/" << perso_guid << ".dump";
+
+                    DumpReturn dump = PlayerDumpWriter().WriteDump(fileName.str().c_str(), perso_guid);
+
+                    if (dump == DUMP_SUCCESS)
                     {
+                        CharacterDatabase.PExecute("UPDATE characters SET at_login = '%u' WHERE guid = '%u'", AT_LOGIN_LOCKED_FOR_TRANSFER, perso_guid);
+                        CharacterDatabase.PExecute("UPDATE characters SET deleteInfos_Name=name, deleteInfos_Account=account, deleteDate='" UI64FMTD "', name='', account=0 WHERE guid=%u", uint64(time(NULL)), perso_guid);
+                        LoginDatabase.PQuery("UPDATE transferts SET state = 1, revision = '%s' WHERE id = %u", hash_transfert.c_str(), transaction);
+                    }
+                    else
+                    {
+                    	LoginDatabase.PQuery("UPDATE transferts SET error = %u WHERE id = %u", dump, transaction);
+                    	continue;
+                    }
+
+                    /*std::string result = "";
+                    if(PlayerDumpWriter().GetDump(perso_guid, result))
+                    {
+                        std::string result2 = "";
+                        PlayerDumpWriter().GetDump(perso_guid, result2);
+                        if(result != result2)
+                            continue;
+
+                        std::string new_string = "";
+                        for(std::string::iterator i = result.begin(); i < result.end(); i++)
+                        {
+                            if((*i) == '\\')
+                                new_string.push_back('\\');
+                            new_string.push_back(*i);
+                        }
+
                         PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_DUMP);
                         if(stmt)
                         {
-                            stmt->setString(0, result);
+                            stmt->setString(0, new_string);
                             stmt->setString(1, hash_transfert.c_str());
                             stmt->setUInt32(2, transaction);
                             LoginDatabase.Execute(stmt);
@@ -431,7 +462,7 @@ public:
                             CharacterDatabase.PExecute("UPDATE characters SET at_login = '%u' WHERE guid = '%u'", AT_LOGIN_LOCKED_FOR_TRANSFER, perso_guid);
                             CharacterDatabase.PExecute("UPDATE characters SET deleteInfos_Name=name, deleteInfos_Account=account, deleteDate='" UI64FMTD "', name='', account=0 WHERE guid=%u", uint64(time(NULL)), perso_guid);
                         }
-                    }
+                    }*/
                 }
                 while(toDump->NextRow());
             }
@@ -444,20 +475,46 @@ public:
                     uint32 transaction = field[0].GetUInt32();
                     uint32 account = field[1].GetUInt32();
                     uint32 perso_guid = field[2].GetUInt32();
-                    std::string dump = field[3].GetString();
-                    uint8 from = field[4].GetUInt8();
+                    uint32 from = field[3].GetUInt32();
 
-                    FILE *fout = fopen("temp.dump", "w");
+                    std::ostringstream fileName;
+                    fileName << "/home/transfert" << from << "/" << perso_guid << ".dump";
+                    printf("file : %s\n", fileName.str().c_str());
+                    DumpReturn dump = PlayerDumpReader().LoadDump(fileName.str(), account, "", 0, AT_LOGIN_RENAME);
+
+                    if (dump == DUMP_SUCCESS)
+                    {
+                    	LoginDatabase.PQuery("DELETE FROM transferts WHERE id = %u", transaction);
+                        PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_ADD_TRANSFERTS_LOGS);
+                        if(stmt)
+                        {
+                            stmt->setUInt32(0, transaction);
+                            stmt->setUInt32(1, account);
+                            stmt->setUInt32(2, perso_guid);
+                            stmt->setUInt32(3, from);
+                            stmt->setUInt32(4, sLog->GetRealmID());
+                            stmt->setString(5, "");
+                            LoginDatabase.Execute(stmt);
+                        }
+                    }
+                    else
+                    {
+                    	LoginDatabase.PQuery("UPDATE transferts SET error = %u, nb_attempt = nb_attempt + 1 WHERE id = %u", dump, transaction);
+                    	continue;
+                    }
+
+
+                    /*FILE *fout = fopen("temp.dump", "w");
                     if(!fout)
                         continue;
-                    fprintf(fout, dump.c_str());
+                    fprintf(fout, "%s\n", dump.c_str());
                     fclose(fout);
 
-                    switch(sInterRealmTransfertReader->LoadDump("temp.dump", account, "", 0))
+                    switch(PlayerDumpReader().LoadDump("temp.dump", account, "", 0, AT_LOGIN_RENAME))
                     {
                         case DUMP_SUCCESS:
                         {
-                            sLog->outInfo(LOG_FILTER_WORLDSERVER, "Personne ok.");
+                            sLog->outString("Personne ok.");
                             LoginDatabase.PQuery("DELETE FROM transferts WHERE id = %u", transaction);
                             LoginDatabase.EscapeString(dump);
 
@@ -485,7 +542,7 @@ public:
                             break;
                         default:
                             break;
-                    }
+                    }*/
                 }
                 while (toLoad->NextRow());
             }

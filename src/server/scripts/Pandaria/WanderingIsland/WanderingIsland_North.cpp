@@ -180,6 +180,7 @@ public:
             EVENT_HIT_CIRCLE    = 2,
             EVENT_FALCON        = 3,
             EVENT_RESET         = 4,
+            EVENT_CHECK_AREA    = 5,
         };
         
         EventMap events;
@@ -190,6 +191,7 @@ public:
             Talk(0);
             events.ScheduleEvent(EVENT_JAOMIN_JUMP, 1000);
             events.ScheduleEvent(EVENT_HIT_CIRCLE, 2000);
+            events.ScheduleEvent(EVENT_CHECK_AREA, 2500);
         }
         
         void Reset()
@@ -198,11 +200,15 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->SetDisplayId(39755);
             me->setFaction(2357); //mechant!
+            me->CombatStop(true);
+
+            Position homePos = me->GetHomePosition();
+            me->GetMotionMaster()->MovePoint(1, homePos.GetPositionX(), homePos.GetPositionY(), homePos.GetPositionZ());
         }
         
         void DamageTaken(Unit* attacker, uint32& damage)
         {
-            if (me->HealthBelowPctDamaged(5, damage) && !isInFalcon)
+            if (me->HealthBelowPctDamaged(30, damage) && !isInFalcon)
             {
                 isInFalcon = true;
                 me->SetDisplayId(39796); //faucon
@@ -240,24 +246,28 @@ public:
                 {
                     case EVENT_JAOMIN_JUMP: //on monte
                         if (me->getVictim())
-                            me->CastSpell(me->getVictim(), 108938, false);
+                            me->CastSpell(me->getVictim(), 108938, true);
                         events.ScheduleEvent(EVENT_JAOMIN_JUMP, 30000);
                         break;
                     case EVENT_HIT_CIRCLE: //baffe
                         if (me->getVictim())
-                            me->CastSpell(me->getVictim(), 119301, false);
+                            me->CastSpell(me->getVictim(), 119301, true);
 
                         events.ScheduleEvent(EVENT_HIT_CIRCLE, 3000);
                         break;
                     case EVENT_FALCON: //attaque du faucon
                         if (me->getVictim())
-                            me->CastSpell(me->getVictim(), 108935, false);
+                            me->CastSpell(me->getVictim(), 108935, true);
 
                         events.ScheduleEvent(EVENT_FALCON, 4000);
                         break;
                     case EVENT_RESET: //remechant
                         Reset();
                     	break;
+                    case EVENT_CHECK_AREA:
+                        if (me->GetAreaId() != 5843) // Grotte Paisible
+                            Reset();
+                        break;
                 }
             }
             

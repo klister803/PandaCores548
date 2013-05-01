@@ -520,6 +520,7 @@ void GuildMgr::LoadGuildXpForLevel()
 
 void GuildMgr::LoadGuildRewards()
 {
+    GuildRewards.clear();
     uint32 oldMSTime = getMSTime();
 
     //                                                  0      1         2        3        4
