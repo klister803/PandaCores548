@@ -108,6 +108,47 @@ enum HunterSpells
     HUNTER_SPELL_GLYPH_OF_MISDIRECTION           = 56829,
     HUNTER_SPELL_MISDIRECTION                    = 34477,
     HUNTER_SPELL_MISDIRECTION_PROC               = 35079,
+    HUNTER_SPELL_BLINK_STRIKE                    = 130393,
+};
+
+ // Blink Strike - 130392
+ class spell_hun_blink_strike : public SpellScriptLoader
+{
+    public:
+        spell_hun_blink_strike() : SpellScriptLoader("spell_hun_blink_strike") { }
+
+        class spell_hun_blink_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_blink_strike_SpellScript);
+
+            SpellCastResult CheckPet()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (!_player->GetPet())
+                        return SPELL_FAILED_NO_PET;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (Pet* pet = _player->GetPet())
+                            pet->CastSpell(target, HUNTER_SPELL_BLINK_STRIKE, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_hun_blink_strike_SpellScript::CheckPet);
+                OnHit += SpellHitFn(spell_hun_blink_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_blink_strike_SpellScript();
+        }
 };
 
 // Called by Arcane Shot - 3044, Chimera Shot - 53209
@@ -2114,6 +2155,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_blink_strike();
     new spell_hun_glyph_of_marked_for_die();
     new spell_hun_stampede();
     new spell_hun_dire_beast();
