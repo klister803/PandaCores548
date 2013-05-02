@@ -3904,6 +3904,37 @@ class npc_earthgrab_totem : public CreatureScript
     }
 };
 
+/*######
+## npc_windwalk_totem
+######*/
+
+#define WINDWALK     114896
+
+class npc_windwalk_totem : public CreatureScript
+{
+    public:
+        npc_windwalk_totem() : CreatureScript("npc_windwalk_totem") { }
+
+    struct npc_windwalk_totemAI : public ScriptedAI
+    {
+        npc_windwalk_totemAI(Creature* creature) : ScriptedAI(creature)
+        {
+            creature->CastSpell(creature, WINDWALK, true);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (!me->HasAura(WINDWALK))
+                me->CastSpell(me, WINDWALK, true);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_windwalk_totemAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3955,4 +3986,5 @@ void AddSC_npcs_special()
     new npc_wild_imp();
     new npc_stone_bulwark_totem();
     new npc_earthgrab_totem();
+    new npc_windwalk_totem();
 }
