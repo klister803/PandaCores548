@@ -3258,7 +3258,6 @@ class npc_feral_spirit : public CreatureScript
         }
 };
 
-
 /*######
 ## npc_spirit_link_totem
 ######*/
@@ -3843,6 +3842,68 @@ class npc_wild_imp : public CreatureScript
         }
 };
 
+/*######
+## npc_stone_bulwark_totem
+######*/
+
+#define STONE_BULWARK_TOTEM_ABSORB      114889
+
+class npc_stone_bulwark_totem : public CreatureScript
+{
+    public:
+        npc_stone_bulwark_totem() : CreatureScript("npc_stone_bulwark_totem") { }
+
+    struct npc_stone_bulwark_totemAI : public ScriptedAI
+    {
+        npc_stone_bulwark_totemAI(Creature* creature) : ScriptedAI(creature)
+        {
+            creature->CastSpell(creature, STONE_BULWARK_TOTEM_ABSORB, true);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (!me->HasAura(STONE_BULWARK_TOTEM_ABSORB))
+                me->CastSpell(me, STONE_BULWARK_TOTEM_ABSORB, true);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_stone_bulwark_totemAI(creature);
+    }
+};
+
+/*######
+## npc_earthgrab_totem
+######*/
+
+#define EARTHGRAB     116943
+
+class npc_earthgrab_totem : public CreatureScript
+{
+    public:
+        npc_earthgrab_totem() : CreatureScript("npc_earthgrab_totem") { }
+
+    struct npc_earthgrab_totemAI : public ScriptedAI
+    {
+        npc_earthgrab_totemAI(Creature* creature) : ScriptedAI(creature)
+        {
+            creature->CastSpell(creature, EARTHGRAB, true);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (!me->HasAura(EARTHGRAB))
+                me->CastSpell(me, EARTHGRAB, true);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_earthgrab_totemAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3892,4 +3953,6 @@ void AddSC_npcs_special()
     new npc_murder_of_crows();
     new npc_dire_beast();
     new npc_wild_imp();
+    new npc_stone_bulwark_totem();
+    new npc_earthgrab_totem();
 }

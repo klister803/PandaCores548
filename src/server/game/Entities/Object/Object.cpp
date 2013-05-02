@@ -2613,7 +2613,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     Pet* pet = new Pet(this, petType);
 
     //summoned pets always non-curent!
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, slotID, stampeded))
+    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, slotID != PET_SLOT_UNK_SLOT, slotID, stampeded))
     {
         if (duration > 0)
             pet->SetDuration(duration);
@@ -2657,7 +2657,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->InitStatsForLevel(getLevel());
 
     // Only slot 100, as it's not hunter pet.
-    SetMinion(pet, true, PET_SLOT_OTHER_PET);
+    if (!pet->isHunterPet())
+        SetMinion(pet, true, PET_SLOT_OTHER_PET);
 
     switch (petType)
     {
@@ -2675,8 +2676,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             break;
     }
 
-    // map->AddToMap(pet->ToCreature());
-
     switch (petType)
     {
         case SUMMON_PET:
@@ -2692,7 +2691,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         pet->SetDuration(duration);
 
     map->AddToMap(pet->ToCreature());
-    //ObjectAccessor::UpdateObjectVisibility(pet);
 
     return pet;
 }

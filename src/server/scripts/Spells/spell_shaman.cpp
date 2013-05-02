@@ -69,6 +69,101 @@ enum ShamanSpells
     SPELL_SHA_FROZEN_POWER                  = 63374,
     SPELL_SHA_MAIL_SPECIALIZATION_AGI       = 86099,
     SPELL_SHA_MAIL_SPECIALISATION_INT       = 86100,
+    SPELL_SHA_UNLEASHED_FURY_TALENT         = 117012,
+    SPELL_SHA_UNLEASHED_FURY_FLAMETONGUE    = 118470,
+    SPELL_SHA_UNLEASHED_FURY_WINDFURY       = 118472,
+    SPELL_SHA_UNLEASHED_FURY_EARTHLIVING    = 118473,
+    SPELL_SHA_UNLEASHED_FURY_FROSTBRAND     = 118474,
+    SPELL_SHA_UNLEASHED_FURY_ROCKBITER      = 118475,
+    SPELL_SHA_STONE_BULWARK_ABSORB          = 114893,
+    SPELL_SHA_EARTHGRAB_IMMUNITY            = 116946,
+    SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM = 116947,
+};
+
+// Earthgrab - 64695
+class spell_sha_earthgrab : public SpellScriptLoader
+{
+    public:
+        spell_sha_earthgrab() : SpellScriptLoader("spell_sha_earthgrab") { }
+
+        class spell_sha_earthgrab_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_earthgrab_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->HasAura(SPELL_SHA_EARTHGRAB_IMMUNITY, caster->GetGUID()))
+                        {
+                            if (target->HasAura(GetSpellInfo()->Id), caster->GetGUID())
+                                target->RemoveAura(GetSpellInfo()->Id, caster->GetGUID());
+
+                            caster->CastSpell(target, SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM, true);
+                        }
+                        else
+                            caster->CastSpell(target, SPELL_SHA_EARTHGRAB_IMMUNITY, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_earthgrab_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_earthgrab_SpellScript();
+        }
+};
+
+// Stone Bulwark - 114893
+class spell_sha_stone_bulwark : public SpellScriptLoader
+{
+    public:
+        spell_sha_stone_bulwark() : SpellScriptLoader("spell_sha_stone_bulwark") { }
+
+        class spell_sha_stone_bulwark_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_stone_bulwark_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* owner = caster->GetOwner())
+                    {
+                        if (owner->ToPlayer() && !owner->HasAura(SPELL_SHA_STONE_BULWARK_ABSORB))
+                        {
+                            int32 AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                            int32 spellPower = owner->ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                            amount += (AP > spellPower) ? int32(1.641f * AP) : int32(2.625f * spellPower);
+                        }
+                        else if (owner->ToPlayer() && owner->HasAura(SPELL_SHA_STONE_BULWARK_ABSORB))
+                        {
+                            int32 AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                            int32 spellPower = owner->ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                            amount += (AP > spellPower) ? int32(0.547f * AP) : int32(0.875f * spellPower);
+                            amount += owner->GetAura(SPELL_SHA_STONE_BULWARK_ABSORB)->GetEffect(0)->GetAmount();
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sha_stone_bulwark_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_stone_bulwark_AuraScript();
+        }
 };
 
 // Mail Specialization - 86529
@@ -362,6 +457,7 @@ class spell_sha_unleash_elements : public SpellScriptLoader
                                 continue;
 
                             uint32 unleashSpell = 0;
+                            uint32 furySpell = 0;
                             bool hostileTarget = _player->IsValidAttackTarget(target);
                             bool hostileSpell = true;
                             switch (weapons[i]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
@@ -369,18 +465,33 @@ class spell_sha_unleash_elements : public SpellScriptLoader
                                 case 3345: // Earthliving Weapon
                                     unleashSpell = 73685; // Unleash Life
                                     hostileSpell = false;
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_EARTHLIVING;
                                     break;
                                 case 5: // Flametongue Weapon
                                     unleashSpell = 73683; // Unleash Flame
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_FLAMETONGUE;
                                     break;
                                 case 2: // Frostbrand Weapon
                                     unleashSpell = 73682; // Unleash Frost
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_FROSTBRAND;
                                     break;
                                 case 3021: // Rockbiter Weapon
                                     unleashSpell = 73684; // Unleash Earth
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_ROCKBITER;
                                     break;
                                 case 283: // Windfury Weapon
                                     unleashSpell = 73681; // Unleash Wind
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_WINDFURY;
                                     break;
                             }
 
@@ -391,7 +502,12 @@ class spell_sha_unleash_elements : public SpellScriptLoader
                                 target = _player;   // heal ourselves instead of the enemy
 
                             if (unleashSpell)
-                                _player->CastSpell(target, unleashSpell, false);
+                                _player->CastSpell(target, unleashSpell, true);
+
+                            if (furySpell)
+                                _player->CastSpell(target, furySpell, true);
+
+                            target = GetHitUnit();
 
                             // If weapons are enchanted by same enchantment, only one should be unleashed
                             if (i == 0 && weapons[0] && weapons[1])
@@ -1230,6 +1346,8 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_earthgrab();
+    new spell_sha_stone_bulwark();
     new spell_sha_mail_specialization();
     new spell_sha_frozen_power();
     new spell_sha_spirit_link();

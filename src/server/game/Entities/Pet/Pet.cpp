@@ -383,10 +383,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 void Pet::SavePetToDB(PetSlot mode, bool stampeded)
 {
     if (!GetEntry())
-    {
         if (!GetOwner()->GetPet()->GetEntry())
             return;
-    }
 
     // save only fully controlled creature
     if (!isControlled())
@@ -437,7 +435,7 @@ void Pet::SavePetToDB(PetSlot mode, bool stampeded)
     if (mode >= PET_SLOT_HUNTER_FIRST)
     {
         uint32 ownerLowGUID = GUID_LOPART(GetOwnerGUID());
-        std::string name = m_name;
+        std::string name = !m_name.empty() ? m_name : owner->GetPet()->GetName();
         CharacterDatabase.EscapeString(name);
         trans = CharacterDatabase.BeginTransaction();
         // remove current data

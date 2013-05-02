@@ -3123,10 +3123,10 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
         m_caster->ToPlayer()->m_currentPetSlot = m_caster->ToPlayer()->getSlotForNewPet();
-        m_caster->SetMinion(pet, true , m_caster->ToPlayer()->m_currentPetSlot);
+        m_caster->SetMinion(pet, true, m_caster->ToPlayer()->m_currentPetSlot);
     }
     else
-        m_caster->SetMinion(pet, true , PET_SLOT_UNK_SLOT);
+        m_caster->SetMinion(pet, true, PET_SLOT_UNK_SLOT);
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
