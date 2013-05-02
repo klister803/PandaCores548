@@ -3935,6 +3935,37 @@ class npc_windwalk_totem : public CreatureScript
     }
 };
 
+/*######
+## npc_healing_tide_totem
+######*/
+
+#define HEALING_TIDE     114941
+
+class npc_healing_tide_totem : public CreatureScript
+{
+    public:
+        npc_healing_tide_totem() : CreatureScript("npc_healing_tide_totem") { }
+
+    struct npc_healing_tide_totemAI : public ScriptedAI
+    {
+        npc_healing_tide_totemAI(Creature* creature) : ScriptedAI(creature)
+        {
+            creature->CastSpell(creature, HEALING_TIDE, true);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (!me->HasAura(HEALING_TIDE))
+                me->CastSpell(me, HEALING_TIDE, true);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_healing_tide_totemAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3987,4 +4018,5 @@ void AddSC_npcs_special()
     new npc_stone_bulwark_totem();
     new npc_earthgrab_totem();
     new npc_windwalk_totem();
+    new npc_healing_tide_totem();
 }
