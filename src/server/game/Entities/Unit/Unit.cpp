@@ -11158,8 +11158,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 34299 || spellProto->Id == 108366)
         return healamount;
 
-    // No bonus for Living Seed
-    if (spellProto->Id == 48503)
+    // No bonus for Living Seed or Ancestral Guidance
+    if (spellProto->Id == 48503 || spellProto->Id == 114911)
         return healamount;
 
     // No bonus for Lifebloom : Final heal

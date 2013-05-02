@@ -79,6 +79,67 @@ enum ShamanSpells
     SPELL_SHA_EARTHGRAB_IMMUNITY            = 116946,
     SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM = 116947,
     SPELL_SHA_ECHO_OF_THE_ELEMENTS          = 108283,
+    SPELL_SHA_ANCESTRAL_GUIDANCE            = 114911,
+};
+
+// Ancestral Guidance - 108281
+class spell_sha_ancestral_guidance : public SpellScriptLoader
+{
+    public:
+        spell_sha_ancestral_guidance() : SpellScriptLoader("spell_sha_ancestral_guidance") { }
+
+        class spell_sha_ancestral_guidance_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_ancestral_guidance_AuraScript);
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                Player* _player = GetCaster()->ToPlayer();
+                if (!_player)
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
+                    return;
+
+                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
+                    return;
+
+                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_SHA_ANCESTRAL_GUIDANCE)
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
+                    return;
+
+                if (Unit* target = eventInfo.GetActionTarget())
+                {
+                    int32 bp = eventInfo.GetDamageInfo()->GetDamage() > eventInfo.GetHealInfo()->GetHeal() ? eventInfo.GetDamageInfo()->GetDamage() : eventInfo.GetHealInfo()->GetHeal();
+                    if (!bp)
+                        return;
+
+                    bp = int32(bp * 0.40f);
+
+                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_sha_ancestral_guidance_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_ancestral_guidance_AuraScript();
+        }
 };
 
 // Echo of the Elements - 108283
@@ -1423,6 +1484,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_ancestral_guidance();
     new spell_sha_echo_of_the_elements();
     new spell_sha_earthgrab();
     new spell_sha_stone_bulwark();
