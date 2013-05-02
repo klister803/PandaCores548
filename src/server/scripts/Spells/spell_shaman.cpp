@@ -80,6 +80,88 @@ enum ShamanSpells
     SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM = 116947,
     SPELL_SHA_ECHO_OF_THE_ELEMENTS          = 108283,
     SPELL_SHA_ANCESTRAL_GUIDANCE            = 114911,
+    SPELL_SHA_CONDUCTIVITY_TALENT           = 108282,
+    SPELL_SHA_CONDUCTIVITY_HEAL             = 118800,
+};
+
+// Called by Healing Wave - 331, Greater Healing Wave - 77472 and Healing Surge - 8004
+// Called by Lightning Bolt - 403, Chain Lightning - 421, Earth Shock - 8042 and Stormstrike - 17364
+// Called by Lightning Bolt - 45284, Chain Lightning - 45297
+// Conductivity - 108282
+class spell_sha_conductivity : public SpellScriptLoader
+{
+    public:
+        spell_sha_conductivity() : SpellScriptLoader("spell_sha_conductivity") { }
+
+        class spell_sha_conductivity_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_conductivity_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Unit* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(SPELL_SHA_CONDUCTIVITY_TALENT))
+                        {
+                            if (DynamicObject* dynObj = _player->GetDynObject(SPELL_SHA_HEALING_RAIN))
+                            {
+                                std::list<Unit*> tempList;
+                                std::list<Unit*> memberList;
+
+                                _player->GetPartyMembers(tempList);
+
+                                for (auto itr : tempList)
+                                    if (itr->GetDistance(dynObj) <= 10.0f)
+                                        memberList.push_back(itr);
+
+                                if (memberList.empty())
+                                    return;
+
+                                memberList.sort(JadeCore::DistanceCompareOrderPred(dynObj));
+                                memberList.resize(1);
+
+                                // When you cast Healing Wave, Greater Healing Wave, or Healing Surge
+                                // allies within your Healing Rain share healing equal to 30% of the initial healing done
+                                if (GetSpellInfo()->IsPositive())
+                                {
+                                    int32 bp = int32(GetHitHeal() * 0.30f) / memberList.size();
+
+                                    for (auto itr : memberList)
+                                    {
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        break;
+                                    }
+                                }
+                                // If your Lightning Bolt, Chain Lightning, Earth Shock, or Stormstrike damages an enemy
+                                // allies within your Healing Rain share healing equal to 50% of the initial damage done
+                                else
+                                {
+                                    int32 bp = int32(GetHitDamage() * 0.50f) / memberList.size();
+
+                                    for (auto itr : memberList)
+                                    {
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_sha_conductivity_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_conductivity_SpellScript();
+        }
 };
 
 // Ancestral Guidance - 108281
@@ -1484,6 +1566,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_conductivity();
     new spell_sha_ancestral_guidance();
     new spell_sha_echo_of_the_elements();
     new spell_sha_earthgrab();
