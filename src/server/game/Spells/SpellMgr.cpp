@@ -3150,6 +3150,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 62099: // Shamanism
+                spellInfo->Effects[0].SpellClassMask[2] |= 0x8000;
+                break;
             case 116943:// Earthgrab
                 spellInfo->Effects[0].TargetB = 0;
                 break;
