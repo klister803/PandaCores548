@@ -84,6 +84,51 @@ enum ShamanSpells
     SPELL_SHA_CONDUCTIVITY_HEAL             = 118800,
 };
 
+// Call of the Elements - 108285
+class spell_sha_call_of_the_elements : public SpellScriptLoader
+{
+    public:
+        spell_sha_call_of_the_elements() : SpellScriptLoader("spell_sha_call_of_the_elements") { }
+
+        class spell_sha_call_of_the_elements_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_call_of_the_elements_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // immediately finishes the cooldown on totems with less than 3min cooldown
+                    const SpellCooldowns& cm = _player->GetSpellCooldownMap();
+                    for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
+                    {
+                        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                        if (!spellInfo)
+                            continue;
+
+                        if (spellInfo->Id == 51485 || spellInfo->Id == 108273 || spellInfo->Id == 108270
+                            || spellInfo->Id == 108269 || spellInfo->Id == 8143 || spellInfo->Id == 8177
+                            || spellInfo->Id == 5394 || spellInfo->Id == 2484 || spellInfo->Id == 108273
+                            && spellInfo->GetRecoveryTime() > 0)
+                            _player->RemoveSpellCooldown((itr++)->first, true);
+                        else
+                            ++itr;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_call_of_the_elements_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_call_of_the_elements_SpellScript();
+        }
+};
+
 // Called by Healing Wave - 331, Greater Healing Wave - 77472 and Healing Surge - 8004
 // Called by Lightning Bolt - 403, Chain Lightning - 421, Earth Shock - 8042 and Stormstrike - 17364
 // Called by Lightning Bolt - 45284, Chain Lightning - 45297
@@ -99,7 +144,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
             void HandleAfterHit()
             {
-                if (Unit* _player = GetCaster()->ToPlayer())
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
@@ -1566,6 +1611,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_call_of_the_elements();
     new spell_sha_conductivity();
     new spell_sha_ancestral_guidance();
     new spell_sha_echo_of_the_elements();
