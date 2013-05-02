@@ -3792,6 +3792,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 104855:
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
                 break;
+            // Peche
             case 7733:
             case 7734:
             case 18249:
