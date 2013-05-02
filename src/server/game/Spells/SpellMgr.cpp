@@ -3475,6 +3475,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 130616: // Glyph of Fear Effect
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
                 break;
+            case 117418: // Fists of Fury (damage)
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+                break;
             case 113656: // Fists of Fury
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                 break;
