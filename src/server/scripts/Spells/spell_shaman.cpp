@@ -78,6 +78,80 @@ enum ShamanSpells
     SPELL_SHA_STONE_BULWARK_ABSORB          = 114893,
     SPELL_SHA_EARTHGRAB_IMMUNITY            = 116946,
     SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM = 116947,
+    SPELL_SHA_ECHO_OF_THE_ELEMENTS          = 108283,
+};
+
+// Echo of the Elements - 108283
+class spell_sha_echo_of_the_elements : public SpellScriptLoader
+{
+    public:
+        spell_sha_echo_of_the_elements() : SpellScriptLoader("spell_sha_echo_of_the_elements") { }
+
+        class spell_sha_echo_of_the_elements_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_echo_of_the_elements_AuraScript);
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                Player* _player = GetCaster()->ToPlayer();
+                if (!_player)
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
+                    return;
+
+                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
+                    return;
+
+                int32 roll = 0;
+
+                // devs told that proc chance is 6% for Elemental and Restoration specs and 30% for Enhancement
+                if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_ELEMENTAL || _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_RESTORATION)
+                    roll = 6;
+                else
+                    roll = 30;
+
+                // Elemental blast is an exception : It only has a 6% proc chance for Enhancement
+                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_SHA_ELEMENTAL_BLAST)
+                    roll = 6;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
+                    return;
+
+                if (!roll)
+                    return;
+
+                if (!roll_chance_i(roll))
+                    return;
+
+                if (Unit* target = eventInfo.GetActionTarget())
+                {
+                    uint32 spellId = eventInfo.GetDamageInfo()->GetSpellInfo()->Id;
+                    if (!spellId)
+                        return;
+
+                    _player->CastSpell(target, spellId, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_sha_echo_of_the_elements_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_echo_of_the_elements_AuraScript();
+        }
 };
 
 // Earthgrab - 64695
@@ -1346,6 +1420,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_echo_of_the_elements();
     new spell_sha_earthgrab();
     new spell_sha_stone_bulwark();
     new spell_sha_mail_specialization();
