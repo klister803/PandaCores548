@@ -3800,13 +3800,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             // Peche
             case 7733:
+                spellInfo->Effects[0].TriggerSpell = 131490;
+                break;
             case 7734:
             case 18249:
             case 54083:
             case 54084:
             case 51293:
             case 88869:
-                spellInfo->Effects[0].TriggerSpell = 131490;
+                spellInfo->Effects[0].Effect = 0;
                 break;
             default:
                 break;
