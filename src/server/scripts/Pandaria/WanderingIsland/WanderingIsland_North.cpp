@@ -567,7 +567,7 @@ public:
             playersInvolved.clear();
             
             std::list<Player*> PlayerList;
-            GetPlayerListInGrid(PlayerList, me, 50.0f);
+            GetPlayerListInGrid(PlayerList, me, 20.0f);
 
             for (auto player: PlayerList)
                 if(player->GetQuestStatus(29414) == QUEST_STATUS_INCOMPLETE)
