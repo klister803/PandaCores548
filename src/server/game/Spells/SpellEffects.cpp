@@ -5446,6 +5446,7 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
         return;
 
     int32 mana = 0;
+    float manaCostPercentage = 0.00f;
     for (uint8 slot = SUMMON_SLOT_TOTEM; slot < MAX_TOTEM_SLOT; ++slot)
     {
         if (!m_caster->m_SummonSlot[slot])
@@ -5458,8 +5459,8 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
             if (spellInfo)
             {
-                mana += spellInfo->ManaCost;
-                mana += int32(CalculatePct(m_caster->GetCreateMana(), spellInfo->ManaCostPercentage));
+                manaCostPercentage = spellInfo->ManaCostPercentage;
+                mana += m_caster->CountPctFromMaxMana(int32(manaCostPercentage));
             }
             totem->ToTotem()->UnSummon();
         }
