@@ -817,7 +817,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                         }
 
                     if (reward.AchievementId)
-                        if (guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+                        if (!guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
                         {
                             guildRewardCheckPassed = false;
                             break;
