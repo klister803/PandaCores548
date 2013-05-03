@@ -202,8 +202,7 @@ public:
             me->setFaction(2357); //mechant!
             me->CombatStop(true);
 
-            Position homePos = me->GetHomePosition();
-            me->GetMotionMaster()->MovePoint(1, homePos.GetPositionX(), homePos.GetPositionY(), homePos.GetPositionZ());
+            me->GetMotionMaster()->MovePoint(1, 1380.35f, 3170.68f, 136.93f);
         }
         
         void DamageTaken(Unit* attacker, uint32& damage)
