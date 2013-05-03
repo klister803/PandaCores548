@@ -3397,38 +3397,38 @@ void SpellMgr::LoadSpellCustomAttr()
             case 23691: // Berzerker Rage Effect
                 spellInfo->Effects[0].BasePoints = 100;
                 break;
-            case 114205: // Demoralizing Banner
+            case 114205:// Demoralizing Banner
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8); // 15s
                 break;
-            case 127630: // Cascade - damage trigger
-            case 120786: // Cascade - heal trigger
+            case 127630:// Cascade - damage trigger
+            case 120786:// Cascade - heal trigger
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ANY;
                 spellInfo->Effects[1].TargetB = 0;
                 break;
-            case 122128: // Divine Star (shadow)
-            case 110745: // Divine Star (other)
+            case 122128:// Divine Star (shadow)
+            case 110745:// Divine Star (other)
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                 spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                 break;
-            case 82691: // Ring of Frost - stun
+            case 82691:// Ring of Frost - stun
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                 break;
-            case 12975: // Last Stand
+            case 12975:// Last Stand
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                 break;
-            case 122507: // Rallying Cry
+            case 122507:// Rallying Cry
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                 break;
-            case 106922: // Might of Ursoc
+            case 106922:// Might of Ursoc
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                 break;
-            case 111771: // Demonic Gateway
+            case 111771:// Demonic Gateway
                 spellInfo->Effects[2].Effect = 0;
                 spellInfo->Effects[2].TriggerSpell = 0;
                 break;
-            case 117828: // Backdraft
+            case 117828:// Backdraft
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
                 spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
                 spellInfo->Effects[0].BasePoints = -30;
@@ -3444,7 +3444,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[2].SpellClassMask[1] |= 0x80;
                 spellInfo->Effects[2].SpellClassMask[0] |= 0x1000;
                 break;
-            case 109259: // Powershot
+            case 109259:// Powershot
                 spellInfo->Effects[1].BasePoints = 60;
                 spellInfo->Effects[2].BasePoints = 800;
                 break;
@@ -3458,16 +3458,16 @@ void SpellMgr::LoadSpellCustomAttr()
             case 7384: // Overpower
                 spellInfo->AttributesEx |= SPELL_ATTR1_ENABLE_AT_DODGE;
                 break;
-            case 114695: // Pursuit of Justice
+            case 114695:// Pursuit of Justice
                 spellInfo->Effects[0].BasePoints = 0;
                 break;
-            case 6262: // Health Stone
-            case 34299:// Leader of the pack - healing
+            case 6262:  // Health Stone
+            case 34299: // Leader of the pack - healing
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                 break;
             case 31230: // Cheat Death
-            case 114556 : // Purgatory
+            case 114556:// Purgatory
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
@@ -3475,17 +3475,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetA = TARGET_DEST_CHANNEL_TARGET;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                 break;
-            case 118699: // Fear Effect
-            case 10326:  // Turn Evil
+            case 118699:// Fear Effect
+            case 10326: // Turn Evil
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 break;
-            case 130616: // Glyph of Fear Effect
+            case 130616:// Glyph of Fear Effect
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
                 break;
-            case 117418: // Fists of Fury (damage)
+            case 117418:// Fists of Fury (damage)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                 break;
-            case 113656: // Fists of Fury
+            case 113656:// Fists of Fury
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                 break;
             case 13165: // Aspect of the Hawk
@@ -3817,17 +3817,14 @@ void SpellMgr::LoadSpellCustomAttr()
             case 104855:
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
                 break;
-            // Peche
             case 7733:
-                spellInfo->Effects[0].TriggerSpell = 131490;
-                break;
             case 7734:
             case 18249:
             case 54083:
             case 54084:
             case 51293:
             case 88869:
-                spellInfo->Effects[0].Effect = 0;
+                spellInfo->Effects[0].TriggerSpell = 131490;
                 break;
             default:
                 break;

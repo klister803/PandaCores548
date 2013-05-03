@@ -82,6 +82,38 @@ enum ShamanSpells
     SPELL_SHA_ANCESTRAL_GUIDANCE            = 114911,
     SPELL_SHA_CONDUCTIVITY_TALENT           = 108282,
     SPELL_SHA_CONDUCTIVITY_HEAL             = 118800,
+    SPELL_SHA_GLYPH_OF_LAKESTRIDER          = 55448,
+    SPELL_SHA_WATER_WALKING                 = 546,
+};
+
+// Called by Ghost Wolf - 2645
+// Glyph of Lakestrider - 55448
+class spell_sha_glyph_of_lakestrider : public SpellScriptLoader
+{
+    public:
+        spell_sha_glyph_of_lakestrider() : SpellScriptLoader("spell_sha_glyph_of_lakestrider") { }
+
+        class spell_sha_glyph_of_lakestrider_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_glyph_of_lakestrider_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(SPELL_SHA_GLYPH_OF_LAKESTRIDER))
+                        _player->CastSpell(_player, SPELL_SHA_WATER_WALKING, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_glyph_of_lakestrider_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_glyph_of_lakestrider_SpellScript();
+        }
 };
 
 // Call of the Elements - 108285
