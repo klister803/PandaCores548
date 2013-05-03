@@ -234,6 +234,9 @@ public:
                 events.ScheduleEvent(EVENT_RESET, 5000);
                 damage = 0;
             }
+
+            if (damage > me->GetHealth())
+                damage = 0;
         }
         
         void UpdateAI(const uint32 diff)
