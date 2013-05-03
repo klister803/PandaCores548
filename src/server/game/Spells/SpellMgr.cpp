@@ -3150,6 +3150,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 118291:// Greater Fire Elemental
+            case 118323:// Greater Earth Elemental
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_SUMMON_PET;
+                break;
             case 114942:// Healing Tide
                 spellInfo->MaxAffectedTargets = 5;
                 break;

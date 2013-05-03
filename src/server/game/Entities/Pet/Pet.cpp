@@ -888,6 +888,10 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         SetCreateStat(STAT_SPIRIT, 27);
     }
 
+    // Greater Fire and Earth Elementals
+    if (GetEntry() == 61029 || GetEntry() == 61056)
+        petType = MAX_PET_TYPE;
+
     SetBonusDamage(0);
     switch (petType)
     {
@@ -962,8 +966,24 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetCreateHealth(uint32(m_owner->GetMaxHealth() * 0.75f));
                     SetCreateMana(28 + 100 * petlevel);
                     SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SPELL) * 0.4f));
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 80));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 80));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 30));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 30));
+                    break;
+                }
+                case 61056: // Earth Elemental Totem - 2062
+                {
+                    SetCreateHealth(m_owner->GetMaxHealth());
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 40 * 1.5f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 40 * 1.5f));
+                    break;
+                }
+                case 61029: // Fire Elemental Totem - 2894
+                {
+                    SetCreateHealth(uint32(m_owner->GetMaxHealth() * 0.75f));
+                    SetCreateMana(28 + 100 * petlevel);
+                    SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SPELL) * 0.4f * 1.5f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 30 * 1.5f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 30 * 1.5f));
                     break;
                 }
                 case 19668: // Shadowfiend
@@ -1087,8 +1107,6 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                 case 29264: // Feral Spirit
                 {
                     SetCreateHealth(uint32(m_owner->GetMaxHealth() / 3.7f));
-
-                    float dmg_multiplier = 0.3f;
 
                     SetBonusDamage(int32(m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.5f));
 
