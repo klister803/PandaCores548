@@ -18014,6 +18014,9 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
 uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
     // TODO FIND for Pandaren horde/alliance
 {
+    if (totemType == 3211)
+        totemType = SUMMON_TYPE_TOTEM_FIRE;
+
     switch (getRace())
     {
         case RACE_ORC:
