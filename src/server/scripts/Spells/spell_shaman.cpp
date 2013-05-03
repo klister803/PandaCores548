@@ -84,6 +84,48 @@ enum ShamanSpells
     SPELL_SHA_CONDUCTIVITY_HEAL             = 118800,
     SPELL_SHA_GLYPH_OF_LAKESTRIDER          = 55448,
     SPELL_SHA_WATER_WALKING                 = 546,
+    SPELL_SHA_GLYPH_OF_SHAMANISTIC_RAGE     = 63280,
+};
+
+// Called by Shamanistic Rage - 30823
+// Glyph of Shamanistic Rage - 63280
+class spell_sha_glyph_of_shamanistic_rage : public SpellScriptLoader
+{
+    public:
+        spell_sha_glyph_of_shamanistic_rage() : SpellScriptLoader("spell_sha_glyph_of_shamanistic_rage") { }
+
+        class spell_sha_glyph_of_shamanistic_rage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_glyph_of_shamanistic_rage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_SHA_GLYPH_OF_SHAMANISTIC_RAGE))
+                    {
+                        DispelChargesList dispelList;
+                        _player->GetDispellableAuraList(_player, DISPEL_ALL_MASK, dispelList);
+                        if (!dispelList.empty())
+                        {
+                            for (auto itr : dispelList)
+                                if (_player->HasAura(itr.first->GetId()))
+                                    _player->RemoveAura(itr.first);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_glyph_of_shamanistic_rage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_glyph_of_shamanistic_rage_SpellScript();
+        }
 };
 
 // Called by Ghost Wolf - 2645
@@ -1643,6 +1685,8 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_glyph_of_shamanistic_rage();
+    new spell_sha_glyph_of_lakestrider();
     new spell_sha_call_of_the_elements();
     new spell_sha_conductivity();
     new spell_sha_ancestral_guidance();
