@@ -402,6 +402,11 @@ class spell_grab_carriage: public SpellScriptLoader
                     carriage = caster->SummonCreature(57208, 588.70f, 3165.63f, 88.86f, 4.4156f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
                     yak      = caster->SummonCreature(59499, 587.61f, 3161.91f, 89.31f, 4.3633f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
                 }
+                else if (caster->GetAreaId() == 5833) // Epave du Chercheciel
+                {
+                    carriage = caster->SummonCreature(57208, 264.37f, 3867.60f, 73.56f, 0.9948f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                    yak      = caster->SummonCreature(57743, 268.38f, 3872.36f, 74.50f, 0.8245f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                }
 
                 if (!carriage || !yak)
                     return;
@@ -434,45 +439,37 @@ public:
         {}
 
         uint32 IntroTimer;
+        uint8 waypointToEject;
 
         void Reset()
         {
+            uint8 waypointToEject = 100;
+
             if (me->isSummon())
+            {
                 IntroTimer = 2500;
+
+                // Bassins chantants -> Dai-Lo
+                if (me->GetAreaId() == 5826)
+                    waypointToEject = 24;
+                // Dai-Lo -> Temple
+                else if (me->GetAreaId() == 5881) // Ferme Dai-Lo
+                    waypointToEject = 22;
+                // Epave -> Temple
+                else if (me->GetAreaId() == 5833) // Epave du Chercheciel
+                    waypointToEject = 18;
+            }
             else
                 IntroTimer = 0;
         }
 
         void WaypointReached(uint32 waypointId)
         {
-            uint8 waypointToEject = 100;
-            uint8 waypointsToDespawn = 100;
-
-            // Bassins chantants -> Dai-Lo
-            if (me->GetEntry() == 57207)
-            {
-                waypointToEject = 24;
-                waypointsToDespawn = 29;
-            }
-            // Dai-Lo -> Temple
-            else if (me->GetEntry() == 59499)
-            {
-                waypointToEject = 22;
-                waypointsToDespawn = 27;
-
-            }
-
             if (waypointId == waypointToEject)
             {
                 if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 50.0f))
                     if (vehicle->GetVehicleKit())
                         vehicle->GetVehicleKit()->RemoveAllPassengers();
-            }
-            else if (waypointId == waypointsToDespawn)
-            {
-                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 50.0f))
-                    vehicle->DespawnOrUnsummon();
-                me->DespawnOrUnsummon();
             }
         }
 

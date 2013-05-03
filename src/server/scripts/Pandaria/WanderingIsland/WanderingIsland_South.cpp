@@ -334,12 +334,12 @@ public:
     {
         npc_hurted_soldierAI(Creature* creature) : ScriptedAI(creature) {}
 
-        uint32 savedTimer;
+        uint32 checkSavedTimer;
         bool HasBeenSaved;
 
         void Reset()
         {
-            savedTimer = 0;
+            checkSavedTimer = 2500;
             HasBeenSaved = false;
             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
         }
@@ -354,19 +354,21 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            if (savedTimer)
+            if (checkSavedTimer)
             {
-                if (savedTimer <= diff)
+                if (checkSavedTimer <= diff)
                 {
                     if (HasBeenSaved && !me->GetVehicle())
                     {
                         me->MonsterSay("Thanks you, i'll never forget that.", LANG_UNIVERSAL, 0);
                         me->DespawnOrUnsummon(5000);
+                        checkSavedTimer = 0;
                     }
-                    savedTimer = 0;
+                    else
+                        checkSavedTimer = 2500;
                 }
                 else
-                    savedTimer -= diff;
+                    checkSavedTimer -= diff;
             }
         }
     };

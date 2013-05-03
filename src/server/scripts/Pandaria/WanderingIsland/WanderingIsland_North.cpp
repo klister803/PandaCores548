@@ -202,8 +202,7 @@ public:
             me->setFaction(2357); //mechant!
             me->CombatStop(true);
 
-            Position homePos = me->GetHomePosition();
-            me->GetMotionMaster()->MovePoint(1, homePos.GetPositionX(), homePos.GetPositionY(), homePos.GetPositionZ());
+            me->GetMotionMaster()->MovePoint(1, 1380.35f, 3170.68f, 136.93f);
         }
         
         void DamageTaken(Unit* attacker, uint32& damage)
@@ -234,6 +233,9 @@ public:
                 events.ScheduleEvent(EVENT_RESET, 5000);
                 damage = 0;
             }
+
+            if (damage > me->GetHealth())
+                damage = 0;
         }
         
         void UpdateAI(const uint32 diff)
@@ -567,7 +569,7 @@ public:
             playersInvolved.clear();
             
             std::list<Player*> PlayerList;
-            GetPlayerListInGrid(PlayerList, me, 50.0f);
+            GetPlayerListInGrid(PlayerList, me, 20.0f);
 
             for (auto player: PlayerList)
                 if(player->GetQuestStatus(29414) == QUEST_STATUS_INCOMPLETE)

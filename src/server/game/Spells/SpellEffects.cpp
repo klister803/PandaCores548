@@ -2523,6 +2523,25 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                         if (!summon)
                             continue;
 
+                        switch (properties->Id)
+                        {
+                            case 3347: // Orphelins
+                            {
+                                if (uint32 slot = properties->Slot)
+                                {
+                                    if (m_caster->m_SummonSlot[slot] && m_caster->m_SummonSlot[slot] != summon->GetGUID())
+                                    {
+                                        Creature* oldSummon = m_caster->GetMap()->GetCreature(m_caster->m_SummonSlot[slot]);
+                                        if (oldSummon && oldSummon->isSummon())
+                                            oldSummon->ToTempSummon()->UnSummon();
+                                    }
+                                    m_caster->m_SummonSlot[slot] = summon->GetGUID();
+                                }
+                            }
+                            default:
+                                break;
+                        }
+
                         if (properties->Category == SUMMON_CATEGORY_ALLY)
                         {
                             summon->SetOwnerGUID(m_originalCaster->GetGUID());
