@@ -7575,6 +7575,57 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
             break;
     }
 
+    // Vengeance tank mastery
+    switch (dummySpell->Id)
+    {
+        case 84839:
+        case 84840:
+        case 93098:
+        case 93099:
+        case 120267:
+        {
+            if (!victim || victim->GetTypeId() == TYPEID_PLAYER)
+                return false;
+
+            if (victim->GetOwner() && victim->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!isInCombat())
+                return false;
+
+            int32 aviableBasepoints = 0;
+            int32 max_amount = 0;
+
+            triggered_spell_id = 76691;
+
+            if (AuraPtr vengeance = GetAura(triggered_spell_id, GetGUID()))
+            {
+                aviableBasepoints += vengeance->GetEffect(EFFECT_0)->GetAmount();
+                max_amount += vengeance->GetEffect(EFFECT_2)->GetAmount();
+            }
+
+            // The first melee attack taken by the tank generates Vengeance equal to 33% of the damage taken by that attack.
+           if (!aviableBasepoints && (procFlag & (PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK)))
+                triggerAmount = 33;
+
+            int32 cap = (GetCreateHealth() + GetStat(STAT_STAMINA) * 14) / 10;
+            basepoints0 = int32(damage * triggerAmount / 100);
+            basepoints0 += aviableBasepoints;
+            basepoints0 = std::min(cap, basepoints0);
+
+            // calculate max amount player's had durind the fight
+            int32 basepoints1 = std::max(basepoints0, max_amount);
+
+            CastCustomSpell(this, triggered_spell_id, &basepoints0, &basepoints0, &basepoints1, true, castItem, triggeredByAura, originalCaster);
+            return true;
+        }
+        default:
+            break;
+    }
+
     // if not handled by custom case, get triggered spell from dummySpell proto
     if (!triggered_spell_id)
         triggered_spell_id = dummySpell->Effects[triggeredByAura->GetEffIndex()].TriggerSpell;
