@@ -6680,6 +6680,31 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->SpellIconID)
             {
+                // Improved Steady Shot
+                case 3409:
+                {
+                    if (procSpell->Id != 56641) // not steady shot
+                    {
+                        if (!(procEx & (PROC_EX_INTERNAL_TRIGGERED | PROC_EX_INTERNAL_CANT_PROC))) // shitty procs
+                            triggeredByAura->GetBase()->SetCharges(0);
+                        return false;
+                    }
+
+                    // wtf bug
+                    if (this == target)
+                        return false;
+
+                    if (triggeredByAura->GetBase()->GetCharges() <= 1)
+                    {
+                        triggeredByAura->GetBase()->SetCharges(2);
+                        return true;
+                    }
+                    triggeredByAura->GetBase()->SetCharges(0);
+                    triggered_spell_id = 53220;
+                    basepoints0 = triggerAmount;
+                    target = this;
+                    break;
+                }
                 case 267: // Improved Mend Pet
                 {
                     if (!roll_chance_i(triggerAmount))
@@ -15157,11 +15182,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 ai->SetGUID(target->GetGUID());
             itr->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
         }
-    }
-    // Fix Staedy focus - 53220
-    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id != 56641 && HasAura(5012) && HasAura(53220))
-    {
-        RemoveAura(5012);
     }
 
     Unit* actor = isVictim ? target : this;
