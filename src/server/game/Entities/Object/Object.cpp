@@ -2615,6 +2615,10 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     //summoned pets always non-curent!
     if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, slotID != PET_SLOT_UNK_SLOT, slotID, stampeded))
     {
+        if (pet->GetOwner() && pet->GetOwner()->getClass() == CLASS_WARLOCK)
+            if (pet->GetOwner()->HasAura(108503))
+                pet->GetOwner()->RemoveAura(108503);
+
         if (duration > 0)
             pet->SetDuration(duration);
 
@@ -2686,6 +2690,10 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         default:
             break;
     }
+
+    if (pet->GetOwner() && pet->GetOwner()->getClass() == CLASS_WARLOCK)
+        if (pet->GetOwner()->HasAura(108503))
+            pet->GetOwner()->RemoveAura(108503);
 
     if (duration > 0)
         pet->SetDuration(duration);
