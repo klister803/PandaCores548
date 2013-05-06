@@ -78,6 +78,268 @@ enum ShamanSpells
     SPELL_SHA_STONE_BULWARK_ABSORB          = 114893,
     SPELL_SHA_EARTHGRAB_IMMUNITY            = 116946,
     SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM = 116947,
+    SPELL_SHA_ECHO_OF_THE_ELEMENTS          = 108283,
+    SPELL_SHA_ANCESTRAL_GUIDANCE            = 114911,
+    SPELL_SHA_CONDUCTIVITY_TALENT           = 108282,
+    SPELL_SHA_CONDUCTIVITY_HEAL             = 118800,
+};
+
+// Call of the Elements - 108285
+class spell_sha_call_of_the_elements : public SpellScriptLoader
+{
+    public:
+        spell_sha_call_of_the_elements() : SpellScriptLoader("spell_sha_call_of_the_elements") { }
+
+        class spell_sha_call_of_the_elements_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_call_of_the_elements_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // immediately finishes the cooldown on totems with less than 3min cooldown
+                    const SpellCooldowns& cm = _player->GetSpellCooldownMap();
+                    for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
+                    {
+                        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                        if (!spellInfo)
+                            continue;
+
+                        if (spellInfo->Id == 51485 || spellInfo->Id == 108273 || spellInfo->Id == 108270
+                            || spellInfo->Id == 108269 || spellInfo->Id == 8143 || spellInfo->Id == 8177
+                            || spellInfo->Id == 5394 || spellInfo->Id == 2484 || spellInfo->Id == 108273
+                            && spellInfo->GetRecoveryTime() > 0)
+                            _player->RemoveSpellCooldown((itr++)->first, true);
+                        else
+                            ++itr;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_call_of_the_elements_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_call_of_the_elements_SpellScript();
+        }
+};
+
+// Called by Healing Wave - 331, Greater Healing Wave - 77472 and Healing Surge - 8004
+// Called by Lightning Bolt - 403, Chain Lightning - 421, Earth Shock - 8042 and Stormstrike - 17364
+// Called by Lightning Bolt - 45284, Chain Lightning - 45297
+// Conductivity - 108282
+class spell_sha_conductivity : public SpellScriptLoader
+{
+    public:
+        spell_sha_conductivity() : SpellScriptLoader("spell_sha_conductivity") { }
+
+        class spell_sha_conductivity_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_conductivity_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(SPELL_SHA_CONDUCTIVITY_TALENT))
+                        {
+                            if (DynamicObject* dynObj = _player->GetDynObject(SPELL_SHA_HEALING_RAIN))
+                            {
+                                std::list<Unit*> tempList;
+                                std::list<Unit*> memberList;
+
+                                _player->GetPartyMembers(tempList);
+
+                                for (auto itr : tempList)
+                                    if (itr->GetDistance(dynObj) <= 10.0f)
+                                        memberList.push_back(itr);
+
+                                if (memberList.empty())
+                                    return;
+
+                                memberList.sort(JadeCore::DistanceCompareOrderPred(dynObj));
+                                memberList.resize(1);
+
+                                // When you cast Healing Wave, Greater Healing Wave, or Healing Surge
+                                // allies within your Healing Rain share healing equal to 30% of the initial healing done
+                                if (GetSpellInfo()->IsPositive())
+                                {
+                                    int32 bp = int32(GetHitHeal() * 0.30f) / memberList.size();
+
+                                    for (auto itr : memberList)
+                                    {
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        break;
+                                    }
+                                }
+                                // If your Lightning Bolt, Chain Lightning, Earth Shock, or Stormstrike damages an enemy
+                                // allies within your Healing Rain share healing equal to 50% of the initial damage done
+                                else
+                                {
+                                    int32 bp = int32(GetHitDamage() * 0.50f) / memberList.size();
+
+                                    for (auto itr : memberList)
+                                    {
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_sha_conductivity_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_conductivity_SpellScript();
+        }
+};
+
+// Ancestral Guidance - 108281
+class spell_sha_ancestral_guidance : public SpellScriptLoader
+{
+    public:
+        spell_sha_ancestral_guidance() : SpellScriptLoader("spell_sha_ancestral_guidance") { }
+
+        class spell_sha_ancestral_guidance_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_ancestral_guidance_AuraScript);
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                Player* _player = GetCaster()->ToPlayer();
+                if (!_player)
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
+                    return;
+
+                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
+                    return;
+
+                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_SHA_ANCESTRAL_GUIDANCE)
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
+                    return;
+
+                if (Unit* target = eventInfo.GetActionTarget())
+                {
+                    int32 bp = eventInfo.GetDamageInfo()->GetDamage() > eventInfo.GetHealInfo()->GetHeal() ? eventInfo.GetDamageInfo()->GetDamage() : eventInfo.GetHealInfo()->GetHeal();
+                    if (!bp)
+                        return;
+
+                    bp = int32(bp * 0.40f);
+
+                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_sha_ancestral_guidance_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_ancestral_guidance_AuraScript();
+        }
+};
+
+// Echo of the Elements - 108283
+class spell_sha_echo_of_the_elements : public SpellScriptLoader
+{
+    public:
+        spell_sha_echo_of_the_elements() : SpellScriptLoader("spell_sha_echo_of_the_elements") { }
+
+        class spell_sha_echo_of_the_elements_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_echo_of_the_elements_AuraScript);
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                Player* _player = GetCaster()->ToPlayer();
+                if (!_player)
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
+                    return;
+
+                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
+                    return;
+
+                int32 roll = 0;
+
+                // devs told that proc chance is 6% for Elemental and Restoration specs and 30% for Enhancement
+                if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_ELEMENTAL || _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_RESTORATION)
+                    roll = 6;
+                else
+                    roll = 30;
+
+                // Elemental blast is an exception : It only has a 6% proc chance for Enhancement
+                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_SHA_ELEMENTAL_BLAST)
+                    roll = 6;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
+                    return;
+
+                if (!roll)
+                    return;
+
+                if (!roll_chance_i(roll))
+                    return;
+
+                if (Unit* target = eventInfo.GetActionTarget())
+                {
+                    uint32 spellId = eventInfo.GetDamageInfo()->GetSpellInfo()->Id;
+                    if (!spellId)
+                        return;
+
+                    _player->CastSpell(target, spellId, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_sha_echo_of_the_elements_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_echo_of_the_elements_AuraScript();
+        }
 };
 
 // Earthgrab - 64695
@@ -1007,6 +1269,9 @@ class spell_sha_ascendance : public SpellScriptLoader
                             break;
                         case SPEC_SHAMAN_ENHANCEMENT:
                             _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_ENHANCED, true);
+
+                            if (_player->HasSpellCooldown(SPELL_SHA_STORMSTRIKE))
+                                _player->RemoveSpellCooldown(SPELL_SHA_STORMSTRIKE);
                             break;
                         case SPEC_SHAMAN_RESTORATION:
                             _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_RESTORATION, true);
@@ -1349,6 +1614,10 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_call_of_the_elements();
+    new spell_sha_conductivity();
+    new spell_sha_ancestral_guidance();
+    new spell_sha_echo_of_the_elements();
     new spell_sha_earthgrab();
     new spell_sha_stone_bulwark();
     new spell_sha_mail_specialization();

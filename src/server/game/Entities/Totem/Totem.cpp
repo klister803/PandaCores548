@@ -104,6 +104,40 @@ void Totem::UnSummon(uint32 msTime)
         return;
     }
 
+    // Totemic Restoration
+    if (m_duration > 0 || !GetHealth())
+    {
+        if (m_owner->HasAura(108284))
+        {
+            float pct = m_duration * 100.0f / GetTimer();
+
+            if (pct > 50.0f)
+                pct = 50.0f;
+
+            Player* _player = m_owner->ToPlayer();
+            uint32 spellId = GetUInt32Value(UNIT_CREATED_BY_SPELL);
+            if (_player && spellId)
+            {
+                if (_player->HasSpellCooldown(spellId))
+                {
+                    uint32 newCooldownDelay = _player->GetSpellCooldownDelay(spellId);
+                    uint32 totalCooldown = sSpellMgr->GetSpellInfo(spellId)->RecoveryTime;
+                    int32 lessCooldown = CalculatePct(totalCooldown, int32(pct));
+
+                    newCooldownDelay -= lessCooldown;
+
+                    _player->AddSpellCooldown(spellId, 0, uint32(time(NULL) + newCooldownDelay));
+
+                    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                    data << uint32(spellId);                  // Spell ID
+                    data << uint64(GetGUID());                // Player GUID
+                    data << int32(-lessCooldown);             // Cooldown mod in milliseconds
+                    _player->GetSession()->SendPacket(&data);
+                }
+            }
+        }
+    }
+
     CombatStop();
     RemoveAurasDueToSpell(GetSpell(), GetGUID());
 

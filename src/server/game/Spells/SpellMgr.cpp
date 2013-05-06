@@ -3150,6 +3150,19 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 118291:// Greater Fire Elemental
+            case 118323:// Greater Earth Elemental
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_SUMMON_PET;
+                break;
+            case 114942:// Healing Tide
+                spellInfo->MaxAffectedTargets = 5;
+                break;
+            case 108283:// Echo of the Elements
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
+            case 62099: // Shamanism
+                spellInfo->Effects[0].SpellClassMask[2] |= 0x8000;
+                break;
             case 116943:// Earthgrab
                 spellInfo->Effects[0].TargetB = 0;
                 break;
@@ -3157,8 +3170,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->OverrideSpellList.push_back(51485);
                 break;
             case 6544:  // Heroic Leap
-                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->Effects[2].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->Effects[2].TargetA = TARGET_UNIT_CASTER;
+                spellInfo->Effects[2].TargetB = 0;
+                spellInfo->Effects[2].BasePoints = 0;
                 break;
             case 116198:// Enfeeblement Aura
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
@@ -3465,6 +3481,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 130616: // Glyph of Fear Effect
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
+                break;
+            case 117418: // Fists of Fury (damage)
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                 break;
             case 113656: // Fists of Fury
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;

@@ -819,6 +819,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 return;
             }
     }
+
     switch (m_spellInfo->Id)
     {
         case 120165: //Conflagrate
@@ -2388,6 +2389,28 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
         {
             entry = sSpellMgr->GetSpellInfo(132604)->Effects[effIndex].MiscValue;
             properties = sSummonPropertiesStore.LookupEntry(sSpellMgr->GetSpellInfo(132604)->Effects[effIndex].MiscValueB);
+
+            if (!properties)
+            {
+                sLog->outError(LOG_FILTER_SPELLS_AURAS, "EffectSummonType: Unhandled summon type %u", m_spellInfo->Effects[effIndex].MiscValueB);
+                return;
+            }
+        }
+    }
+
+    // Primal Elementalist
+    if (m_spellInfo->Id == 33663 || m_spellInfo->Id == 117663)
+    {
+        if (m_originalCaster->GetTypeId() == TYPEID_UNIT)
+        {
+            if (m_originalCaster->isTotem() && m_originalCaster->GetOwner())
+            {
+                if (m_originalCaster->GetOwner()->HasAura(117013))
+                {
+                    m_originalCaster->CastSpell(m_originalCaster, m_spellInfo->Id == 33663 ? 118323 : 118291, true);
+                    return;
+                }
+            }
         }
     }
 
@@ -3208,6 +3231,35 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     }
 
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
+
+    if (m_caster->GetTypeId() == TYPEID_UNIT)
+    {
+        if (m_caster->ToCreature()->isTotem())
+        {
+            if (pet->GetEntry() == 61029 || pet->GetEntry() == 61056)
+            {
+                if (Unit* owner = m_caster->GetOwner())
+                {
+                    if (Player* _plr = owner->ToPlayer())
+                    {
+                        if (pet->GetEntry() == 61029)
+                        {
+                            pet->addSpell(118297);  // Immolate
+                            pet->addSpell(118350);  // Empower
+                        }
+                        else
+                        {
+                            pet->addSpell(118337);  // Harden Skin
+                            pet->addSpell(118345);  // Pulverize
+                            pet->addSpell(118347);  // Reinforce
+                        }
+
+                        _plr->PetSpellInitialize();
+                    }
+                }
+            }
+        }
+    }
 
     // generate new name for summon pet
     if (petentry)
@@ -5413,6 +5465,7 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
         return;
 
     int32 mana = 0;
+    float manaCostPercentage = 0.00f;
     for (uint8 slot = SUMMON_SLOT_TOTEM; slot < MAX_TOTEM_SLOT; ++slot)
     {
         if (!m_caster->m_SummonSlot[slot])
@@ -5425,8 +5478,8 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
             if (spellInfo)
             {
-                mana += spellInfo->ManaCost;
-                mana += int32(CalculatePct(m_caster->GetCreateMana(), spellInfo->ManaCostPercentage));
+                manaCostPercentage = spellInfo->ManaCostPercentage;
+                mana += m_caster->CountPctFromMaxMana(int32(manaCostPercentage));
             }
             totem->ToTotem()->UnSummon();
         }

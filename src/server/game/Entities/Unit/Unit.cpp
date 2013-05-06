@@ -9662,14 +9662,21 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
         else if (minion->isTotem())
         {
             // All summoned by totem minions must disappear when it is removed.
-        if (SpellInfo const* spInfo = sSpellMgr->GetSpellInfo(minion->ToTotem()->GetSpell()))
-            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (SpellInfo const* spInfo = sSpellMgr->GetSpellInfo(minion->ToTotem()->GetSpell()))
             {
-                if (spInfo->Effects[i].Effect != SPELL_EFFECT_SUMMON)
-                    continue;
+                for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                {
+                    if (spInfo->Effects[i].Effect != SPELL_EFFECT_SUMMON)
+                        continue;
 
-                RemoveAllMinionsByEntry(spInfo->Effects[i].MiscValue);
+                    RemoveAllMinionsByEntry(spInfo->Effects[i].MiscValue);
+                }
             }
+
+            if (minion->GetEntry() == 15439 && minion->GetOwner() && minion->GetOwner()->HasAura(117013))
+                RemoveAllMinionsByEntry(61029);
+            else if (minion->GetEntry() == 15430 && minion->GetOwner() && minion->GetOwner()->HasAura(117013))
+                RemoveAllMinionsByEntry(61056);
         }
 
         if (GetTypeId() == TYPEID_PLAYER)
@@ -10154,6 +10161,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // should ignore ALL damage mods, they already calculated in trigger spell
     if (spellProto->Id == 83077) // Improved Serpent Sting
         return pdamage;
+
     // small exception for Hemorrhage, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
     if (spellProto->Id == 89775) // Hemorrhage
@@ -11145,8 +11153,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
         return healamount;
 
-    // No bonus for Temporal Ripples or Desperate Prayer
-    if (spellProto->Id == 115611 || spellProto->Id == 19236)
+    // No bonus for Temporal Ripples or Desperate Prayer or Conductivity
+    if (spellProto->Id == 115611 || spellProto->Id == 19236 || spellProto->Id == 118800)
         return healamount;
 
     // No bonus for Devouring Plague heal or Atonement or Eminence
@@ -11157,8 +11165,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 34299 || spellProto->Id == 108366)
         return healamount;
 
-    // No bonus for Living Seed
-    if (spellProto->Id == 48503)
+    // No bonus for Living Seed or Ancestral Guidance
+    if (spellProto->Id == 48503 || spellProto->Id == 114911)
         return healamount;
 
     // No bonus for Lifebloom : Final heal
@@ -15434,7 +15442,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         // Remove charge (aura can be removed by triggers)
         if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
-            && i->aura->GetId() != 119962 && i->aura->GetId() != 131116)
+            && i->aura->GetId() != 119962 && i->aura->GetId() != 131116 && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004))
         {
             // Hack Fix for Tiger Strikes
             if (i->aura->GetId() == 120273)
@@ -15452,7 +15460,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
 
         if (prepare && useCharges && takeCharges && ((i->aura->GetId() == 119962 && procSpell && procSpell->Id == 7384) // Custom MoP Script - Hack Fix for allow Overpower
-            || (i->aura->GetId() == 131116 && procSpell && procSpell->Id == 96103)))                         // Custom MoP Script - Hack Fix for allow Raging Blow
+            || (i->aura->GetId() == 131116 && procSpell && procSpell->Id == 96103)))                                    // Hack Fix for allow Raging Blow
             i->aura->DropCharge();
 
         i->aura->CallScriptAfterProcHandlers(aurApp, eventInfo);
