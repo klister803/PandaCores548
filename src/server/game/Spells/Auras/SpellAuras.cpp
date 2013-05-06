@@ -2168,6 +2168,12 @@ void Aura::SetScriptData(uint32 type, uint32 data)
         (*scritr)->SetData(type, data);
 }
 
+void Aura::SetScriptGuid(uint32 type, uint64 data)
+{
+    for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+        (*scritr)->SetGuid(type, data);
+}
+
 bool Aura::CallScriptCheckProcHandlers(AuraApplication const* aurApp, ProcEventInfo& eventInfo)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)

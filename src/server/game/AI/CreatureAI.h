@@ -145,6 +145,9 @@ class CreatureAI : public UnitAI
         // Called when owner attacks something
         virtual void OwnerAttacked(Unit* /*target*/) {}
 
+        // Called when a creature regen one of his power
+        virtual void RegeneratePower(Powers power, int32& value) {}
+
         /// == Triggered Actions Requested ==================
 
         // Called when creature attack expected (if creature can and no have current victim)
