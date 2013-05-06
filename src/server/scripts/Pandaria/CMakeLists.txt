@@ -52,6 +52,7 @@ set(scripts_STAT_SRCS
   Pandaria/MogushanVault/instance_mogu_shan_vault.cpp
   Pandaria/MogushanVault/mogu_shan_vault.h
   Pandaria/MogushanVault/boss_stone_guard.cpp
+  Pandaria/MogushanVault/mogu_shan_vault.cpp
 
   Pandaria/WanderingIsland/WanderingIsland_North.cpp
   Pandaria/WanderingIsland/WanderingIsland_East.cpp
