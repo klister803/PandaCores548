@@ -364,6 +364,9 @@ class spell_sha_echo_of_the_elements : public SpellScriptLoader
                 if (!_player)
                     return;
 
+                if (_player->HasSpellCooldown(108283))
+                    return;
+
                 if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
                     return;
 
@@ -401,6 +404,7 @@ class spell_sha_echo_of_the_elements : public SpellScriptLoader
                         return;
 
                     _player->CastSpell(target, spellId, true);
+                    _player->AddSpellCooldown(108283, 0, time(NULL) + 1); // This prevent from multiple procs
                 }
             }
 
