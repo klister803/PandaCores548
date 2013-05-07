@@ -634,6 +634,7 @@ void AddSC_instance_siege_of_the_niuzoa_temple();   // Siege of the Niuzoa Templ
 void AddSC_boss_jinbak();
 void AddSC_instance_mogu_shan_vault();              // Mogu'Shan Vault
 void AddSC_boss_stone_guard();
+void AddSC_boss_feng();
 
 void AddSC_WanderingIsland_North();
 void AddSC_WanderingIsland_East();
@@ -1313,6 +1314,7 @@ void AddPandarieScripts()
     AddSC_boss_jinbak();
     AddSC_instance_mogu_shan_vault();              // Mogu'Shan Vault
     AddSC_boss_stone_guard();
+    AddSC_boss_feng();
 
     AddSC_WanderingIsland_North();
     AddSC_WanderingIsland_East();
