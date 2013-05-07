@@ -628,7 +628,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         }
     }
     // Spirit Hunt - 58879 : Feral Spirit heal their owner for 150% of their damage
-    if (GetTypeId() == TYPEID_UNIT && GetEntry() == 29264 && damage > 0)
+    if (GetOwner() && GetTypeId() == TYPEID_UNIT && GetEntry() == 29264 && damage > 0)
     {
         int32 basepoints = 0;
 
@@ -641,7 +641,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         CastCustomSpell(GetOwner(), 58879, &basepoints, NULL, NULL, true, 0, NULL, GetGUID());
     }
     // Searing Flames - 77657 : Fire Elemental attacks or Searing Totem attacks
-    if ((GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
+    if (GetOwner() && (GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
         GetOwner()->CastSpell(GetOwner(), 77661, true);
     // Stagger Amount
     if (spellProto && spellProto->Id != LIGHT_STAGGER && spellProto->Id != MODERATE_STAGGER && spellProto->Id != HEAVY_STAGGER)
@@ -12747,7 +12747,7 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
 {
     int32 gain = 0;
 
-    if (dVal == 0)
+    if (dVal == 0 && power != POWER_ENERGY) // The client will always regen energy if we don't send him the actual value
         return 0;
 
     if (power == POWER_CHI)
@@ -14258,8 +14258,22 @@ void Unit::SetMaxHealth(uint32 val)
 
 uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
 {
-    if (powerId == 3 && isPet() && GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
-        return 0;
+    if (powerId == POWER_ENERGY)
+    {
+        if (isPet() && GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
+            return 0;
+
+        switch (this->GetEntry())
+        {
+            case 59915:
+            case 60043:
+            case 60047:
+            case 60051:
+                return 0;
+            default:
+                break;
+        }
+    }
 
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(classId);
 

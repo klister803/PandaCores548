@@ -608,20 +608,23 @@ class spell_sha_spirit_link : public SpellScriptLoader
                 {
                     if (caster->GetEntry() == 53006)
                     {
-                        if (Player* _player = caster->GetOwner()->ToPlayer())
+                        if (caster->GetOwner())
                         {
-                            std::list<Unit*> memberList;
-                            _player->GetPartyMembers(memberList);
+                            if (Player* _player = caster->GetOwner()->ToPlayer())
+                            {
+                                std::list<Unit*> memberList;
+                                _player->GetPartyMembers(memberList);
 
-                            float totalRaidHealthPct = 0;
+                                float totalRaidHealthPct = 0;
 
-                            for (auto itr : memberList)
-                                totalRaidHealthPct += itr->GetHealthPct();
+                                for (auto itr : memberList)
+                                    totalRaidHealthPct += itr->GetHealthPct();
 
-                            totalRaidHealthPct /= memberList.size() * 100.0f;
+                                totalRaidHealthPct /= memberList.size() * 100.0f;
 
-                            for (auto itr : memberList)
-                                itr->SetHealth(uint32(totalRaidHealthPct * itr->GetMaxHealth()));
+                                for (auto itr : memberList)
+                                    itr->SetHealth(uint32(totalRaidHealthPct * itr->GetMaxHealth()));
+                            }
                         }
                     }
                 }

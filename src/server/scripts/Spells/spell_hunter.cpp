@@ -1170,6 +1170,9 @@ class spell_hun_camouflage_visual : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
+                if (!GetCaster())
+                    return;
+
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     Pet* pet = _player->GetPet();

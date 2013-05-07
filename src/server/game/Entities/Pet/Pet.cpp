@@ -671,7 +671,12 @@ void Creature::Regenerate(Powers power)
 
     addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * (isHunterPet()? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL) / (5 * IN_MILLISECONDS);
 
-    ModifyPower(power, int32(addvalue));
+    int32 intAddValue = int32(addvalue);
+
+    if (this->IsAIEnabled)
+        this->AI()->RegeneratePower(power, intAddValue);
+
+    ModifyPower(power, intAddValue);
 }
 
 void Pet::Remove(PetSlot mode, bool returnreagent, bool stampeded)
