@@ -125,27 +125,33 @@ class spell_pal_eternal_flame : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_eternal_flame_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    int32 postCharges = 1;
-
-                    if (_player->GetPower(POWER_HOLY_POWER) >= 3)
+                    if (Unit* unitTarget = GetHitUnit())
                     {
-                        postCharges = _player->GetPower(POWER_HOLY_POWER) - 3;
-                        SetHitHeal(int32(GetHitHeal() * 3));
-                    }
-                    else
-                        SetHitHeal(GetHitHeal() * (_player->GetPower(POWER_HOLY_POWER) + 1));
+                        if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(_player))
+                            unitTarget = _player;
 
-                    //TODO regive holy power to player
-                    //_player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + postCharges);
+                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+
+                        if (holyPower > 2)
+                            holyPower = 2;
+
+                        if (AuraPtr eternalFlame = unitTarget->GetAura(GetSpellInfo()->Id, _player->GetGUID()))
+                            if (eternalFlame->GetEffect(1))
+                                eternalFlame->GetEffect(1)->ChangeAmount(eternalFlame->GetEffect(1)->GetAmount() * (holyPower + 1));
+
+                        if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
+                    }
                 }
             }
+
             void Register()
             {
-                OnHit += SpellHitFn(spell_pal_eternal_flame_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_pal_eternal_flame_SpellScript::HandleAfterHit);
             }
         };
 

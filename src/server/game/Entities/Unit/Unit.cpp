@@ -11418,6 +11418,16 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         if (victim && victim->GetGUID() == GetGUID() && HasAura(114637))
             heal *= 1.5f;
     }
+    // Eternal Flame
+    else if (spellProto->Id == 114163 && GetTypeId() == TYPEID_PLAYER)
+    {
+        int32 holyPower = GetPower(POWER_HOLY_POWER);
+
+        if (holyPower > 2)
+            holyPower = 2;
+
+        AddPct(heal, (100 * (holyPower + 1)));
+    }
     // Ascendance - 114052 : Water Ascendant - Healing done is duplicated and distribued evenly among all nearby (15 yards) allies
     if (GetTypeId() == TYPEID_PLAYER && heal != 0 && HasAura(114052) && spellProto->Id != 114083)
     {

@@ -3200,7 +3200,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
                 break;
             case 85673: // Word of Glory
-                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal flames
+                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal Flame
                 break;
             case 974:   // Earth Shield
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
