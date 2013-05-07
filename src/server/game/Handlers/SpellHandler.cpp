@@ -377,14 +377,14 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // Override spell Id, client send base spell and not the overrided id
-    if(!spellInfo->OverrideSpellList.empty())
+    if (!spellInfo->OverrideSpellList.empty())
     {
-        for(auto itr : spellInfo->OverrideSpellList)
+        for (auto itr : spellInfo->OverrideSpellList)
         {
             if (_player->HasSpell(itr))
             {
                 SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo(itr);
-                if(overrideSpellInfo)
+                if (overrideSpellInfo)
                 {
                     spellInfo = overrideSpellInfo;
                     spellId = itr;
@@ -475,52 +475,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
-        }
-    }
-    // Swipe - 106785 and Swipe - 62078 (form cat)
-    else if (spellInfo->Id == 106785 && _player->GetShapeshiftForm() == FORM_CAT)
-    {
-        // Use the right spell
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(62078);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-        }
-    }
-    // Swipe - 106785 and Swipe - 779 (form bear)
-    else if (spellInfo->Id == 106785 && _player->GetShapeshiftForm() == FORM_BEAR)
-    {
-        // Use the right spell
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(779);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->AddSpellCooldown(106785, 0, time(NULL) + 3);
-        }
-    }
-    // Mangle - 33917 and Mangle - 33876 (form cat)
-    else if (spellInfo->Id == 33917 && _player->GetShapeshiftForm() == FORM_CAT)
-    {
-        // Use the right spell
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(33876);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-        }
-    }
-    // Mangle - 33917 and Mangle - 33878 (form bear)
-    else if (spellInfo->Id == 33917 && _player->GetShapeshiftForm() == FORM_BEAR)
-    {
-        // Use the right spell
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(33878);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->AddSpellCooldown(33917, 0, time(NULL) + 6);
         }
     }
     // Drain Life - 689 and Harvest Life (overrided) - 108371

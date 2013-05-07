@@ -1424,15 +1424,18 @@ void AuraEffect::CleanupTriggeredSpells(Unit* target)
 
 void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 {
-    uint32 spellId = 0;
-    uint32 spellId2 = 0;
-    //uint32 spellId3 = 0;
-    uint32 HotWSpellId = 0;
+    uint32 spellId      = 0;
+    uint32 spellId2     = 0;
+    uint32 spellId3     = 0;
+    uint32 spellId4     = 0;
+    uint32 HotWSpellId  = 0;
 
     switch (GetMiscValue())
     {
         case FORM_CAT:
             spellId = 3025;
+            spellId2 = 48629;
+            spellId3 = 106840;
             HotWSpellId = 24900;
             break;
         case FORM_TREE:
@@ -1447,6 +1450,8 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
         case FORM_BEAR:
             spellId = 1178;
             spellId2 = 21178;
+            spellId3 = 106829;
+            spellId4 = 106899;
             HotWSpellId = 24899;
             break;
         case FORM_BATTLESTANCE:
@@ -1512,6 +1517,20 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             target->CastSpell(target, spellId2, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
         }
 
+        if (spellId3)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->RemoveSpellCooldown(spellId3);
+            target->CastSpell(target, spellId3, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
+        }
+
+        if (spellId4)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->RemoveSpellCooldown(spellId4);
+            target->CastSpell(target, spellId4, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
+        }
+
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             Player* plrTarget = target->ToPlayer();
@@ -1522,7 +1541,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                 if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
                     continue;
 
-                if (itr->first == spellId || itr->first == spellId2)
+                if (itr->first == spellId || itr->first == spellId2 || itr->first == spellId3 || itr->first == spellId4)
                     continue;
 
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
@@ -1634,6 +1653,10 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             target->RemoveAurasDueToSpell(spellId);
         if (spellId2)
             target->RemoveAurasDueToSpell(spellId2);
+        if (spellId3)
+            target->RemoveAurasDueToSpell(spellId3);
+        if (spellId4)
+            target->RemoveAurasDueToSpell(spellId4);
 
         // Improved Barkskin - apply/remove armor bonus due to shapeshift
         if (Player* player=target->ToPlayer())
