@@ -1836,9 +1836,9 @@ public:
         std::string announce;
 
         announce = "The character '";
-        announce += nameStr;
+        if (nameStr)  announce += nameStr;
         announce += "' was muted for ";
-        announce += delayStr;
+        if (delayStr) announce += delayStr;
         announce += " minutes by the character '";
         announce += handler->GetSession()? handler->GetSession()->GetPlayerName(): "";
         announce += "'. The reason is: ";
