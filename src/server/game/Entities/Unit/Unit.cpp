@@ -6843,8 +6843,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 if (Unit* beaconTarget = triggeredByAura->GetBase()->GetCaster())
                 {
                     // do not proc when target of beacon of light is healed
-                    if (beaconTarget == this)
+                    if (!victim || beaconTarget->GetGUID() == GetGUID())
                         return false;
+
                     // check if it was heal by paladin which casted this beacon of light
                     if (beaconTarget->GetAura(53563, victim->GetGUID()))
                     {
@@ -6853,15 +6854,17 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                             int32 percent = 0;
                             switch (procSpell->Id)
                             {
-                                case 85673: // Word of Glory
-                                case 20473: // Holy Shock
-                                case 19750: // Flash of Light
-                                case 82326: // Divine Light
+                                case 82327: // Holy Radiance
+                                case 119952:// Light's Hammer
+                                case 114871:// Holy Prism
                                 case 85222: // Light of Dawn
-                                    percent = triggerAmount; // 50% heal from these spells
+                                    percent = 15; // 15% heal from these spells
                                     break;
                                 case 635:   // Holy Light
                                     percent = triggerAmount * 2; // 100% heal from Holy Light
+                                    break;
+                                default:
+                                    percent = triggerAmount; // 50% heal from all other heals
                                     break;
                             }
                             basepoints0 = CalculatePct(damage, percent);
