@@ -4752,6 +4752,10 @@ void Spell::HandleHolyPower(Player* caster)
     if (m_spellInfo->Id == 85256)
         return;
 
+    // Shield of the Righteous - Don't remove power twice
+    if (m_spellInfo->Id == 53600)
+        return;
+
     bool hit = true;
     Player* modOwner = caster->GetSpellModOwner();
     m_powerCost = caster->GetPower(POWER_HOLY_POWER); // Always use all the holy power we have
