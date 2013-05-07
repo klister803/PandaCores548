@@ -11372,6 +11372,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     {
         int32 holyPower = GetPower(POWER_HOLY_POWER) > 2 ? 2 : GetPower(POWER_HOLY_POWER);
         heal *= (holyPower+1);
+
+        // Bastion of Glory : +50% of power if target is player
+        if (victim && victim->GetGUID() == GetGUID() && HasAura(114637))
+            heal *= 1.5f;
     }
     // Ascendance - 114052 : Water Ascendant - Healing done is duplicated and distribued evenly among all nearby (15 yards) allies
     if (GetTypeId() == TYPEID_PLAYER && heal != 0 && HasAura(114052) && spellProto->Id != 114083)
