@@ -207,8 +207,10 @@ class instance_icecrown_citadel : public InstanceMapScript
                 sMapMgr->m_Transports.erase(m_GunshipMain);
                 sMapMgr->m_Transports.erase(m_GunshipSecond);
 
-                delete m_GunshipMain;
-                delete m_GunshipSecond;
+                if (m_GunshipMain)
+                    delete m_GunshipMain;
+                if (m_GunshipSecond)
+                    delete m_GunshipSecond;
 
                 m_GunshipMain = NULL;
                 m_GunshipSecond = NULL;
@@ -268,13 +270,13 @@ class instance_icecrown_citadel : public InstanceMapScript
 
             void OnDestroy(InstanceMap* pMap)
             {
-                printf("void OnDestroy(InstanceMapPtr pMap)\n");
+                /*printf("void OnDestroy(InstanceMapPtr pMap)\n");
                 sMapMgr->m_Transports.erase(m_GunshipMain);
                 sMapMgr->m_Transports.erase(m_GunshipSecond);
                 delete m_GunshipMain;
                 delete m_GunshipSecond;
                 m_GunshipMain = NULL;
-                m_GunshipSecond = NULL;
+                m_GunshipSecond = NULL;*/
             }
 
             Creature * SpawnTransportNpc(Transport * pTransport, uint32 npc_entry = 0, float TransOffsetX = 0, float TransOffsetY = 0, float TransOffsetZ = 0, float TransOffsetO = 0, uint32 emote = 0)
