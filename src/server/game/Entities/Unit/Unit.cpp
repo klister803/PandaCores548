@@ -279,6 +279,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _skipCount = 0;
     _skipDiff = 0;
 
+    m_ClearComboPointsExpiredTime = 0;
+
     m_IsInKillingProcess = false;
     m_VisibilityUpdScheduled = false;
 }
@@ -363,6 +365,14 @@ void Unit::Update(uint32 p_time)
             else
                 m_CombatTimer -= p_time;
         }
+    }
+
+    if (m_ClearComboPointsExpiredTime)
+    {
+        if (m_ClearComboPointsExpiredTime <= p_time)
+            ClearComboPointHolders();
+        else
+            m_ClearComboPointsExpiredTime -= p_time;
     }
 
     // not implemented before 3.0.2
@@ -13429,7 +13439,8 @@ void Unit::setDeathState(DeathState s)
         CombatStop();
         DeleteThreatList();
         getHostileRefManager().deleteReferences();
-        ClearComboPointHolders();                           // any combo points pointed to unit lost at it death
+
+        m_ClearComboPointsExpiredTime = 10000;
 
         if (IsNonMeleeSpellCasted(false))
             InterruptNonMeleeSpells(false);
