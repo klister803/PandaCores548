@@ -245,30 +245,18 @@ class spell_mastery_hand_of_light : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mastery_hand_of_light_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(35395) ||
-                    !sSpellMgr->GetSpellInfo(53595) ||
-                    !sSpellMgr->GetSpellInfo(51505) ||
-                    !sSpellMgr->GetSpellInfo(85256) ||
-                    !sSpellMgr->GetSpellInfo(53385))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(76672))
+                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(76672) && caster->getLevel() >= 80)
                         {
                             uint32 procSpellId = GetSpellInfo()->Id ? GetSpellInfo()->Id : 0;
                             if (procSpellId != MASTERY_SPELL_HAND_OF_LIGHT)
                             {
-                                float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                value *= 1.85f;
+                                float value = caster->GetFloatValue(PLAYER_MASTERY) * 1.85f;
 
                                 int32 bp = int32(GetHitDamage() * value / 100);
 
@@ -281,7 +269,7 @@ class spell_mastery_hand_of_light : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_mastery_hand_of_light_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_mastery_hand_of_light_SpellScript::HandleAfterHit);
             }
         };
 
