@@ -24,7 +24,7 @@ enum eSpells
 {
     // Shared
     SPELL_SPIRIT_BOLT           = 118530,
-    SPELL_STRENGHT_OF_SPIRIT    = 116363
+    SPELL_STRENGHT_OF_SPIRIT    = 116363,
 
     // Spirit of the Fist
     SPELL_LIGHTNING_LASH        = 131788,
@@ -44,7 +44,7 @@ enum eSpells
     // Spirit of the Shield ( Heroic )
     SPELL_SHADOWBURN            = 17877,
     SPELL_SIPHONING_SHIELD      = 118071,
-    SPELL_CHAINS_OF_SHADOW      = 118783
+    SPELL_CHAINS_OF_SHADOW      = 118783,
 
     // Stolen Essences of Stone
     SPELL_NULLIFICATION_BARRIER = 115817,
@@ -57,6 +57,7 @@ enum eEvents
 
 enum ePhases
 {
+    PHASE_NONE      = 0,
     PHASE_FIST      = 1,
     PHASE_SPEAR     = 2,
     PHASE_STAFF     = 3,
@@ -70,16 +71,23 @@ class boss_feng : public CreatureScript
 
         struct boss_fengAI : public BossAI
         {
-            boss_fengAI(Creature* creature) : BossAI(creature, DATA_FENG), summons(creature)
+            boss_fengAI(Creature* creature) : BossAI(creature, DATA_FENG)
             {
                 pInstance = creature->GetInstanceScript();
+
+                std::list<uint8> phaseList;
+                for (uint8 i = 1; i <= 4; ++i) phaseList.push_back(i);
             }
 
             InstanceScript* pInstance;
 
+            uint8 actualPhase;
+
             void Reset()
             {
                 _Reset();
+
+                actualPhase = PHASE_NONE;
             }
 
             void JustSummoned(Creature* summon)
