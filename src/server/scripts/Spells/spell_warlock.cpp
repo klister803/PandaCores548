@@ -485,9 +485,17 @@ class spell_warl_sacrificial_pact : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     if(!GetCaster()->GetGuardianPet())
-                        amount = int32(GetCaster()->GetHealth() / 4);
+                    {
+                        int32 sacrifiedHealth = GetCaster()->CountPctFromCurHealth(50);
+                        GetCaster()->ModifyHealth(-sacrifiedHealth);
+                        amount = sacrifiedHealth * 2;
+                    }
                     else if(GetCaster()->GetGuardianPet())
-                        amount = int32(GetCaster()->GetGuardianPet()->GetHealth() / 4);
+                    {
+                        int32 sacrifiedHealth = GetCaster()->GetGuardianPet()->CountPctFromCurHealth(50);
+                        GetCaster()->GetGuardianPet()->ModifyHealth(-sacrifiedHealth);
+                        amount = sacrifiedHealth * 2;
+                    }
                 }
             }
             void Register()
