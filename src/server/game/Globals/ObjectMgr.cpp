@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
@@ -141,6 +141,11 @@ std::string ScriptInfo::GetDebugInfo() const
 bool normalizePlayerName(std::string& name)
 {
     if (name.empty())
+        return false;
+
+    wchar_t bFuck = L'\u1E9E';
+
+    if (name.find(bFuck))
         return false;
 
     wchar_t wstr_buf[MAX_INTERNAL_PLAYER_NAME+1];

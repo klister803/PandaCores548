@@ -635,6 +635,7 @@ void AddSC_boss_jinbak();
 void AddSC_mogu_shan_vault();                       // Mogu'Shan Vault mob
 void AddSC_instance_mogu_shan_vault();              // Mogu'Shan Vault
 void AddSC_boss_stone_guard();
+void AddSC_boss_feng();
 
 void AddSC_WanderingIsland_North();
 void AddSC_WanderingIsland_East();
@@ -1315,6 +1316,7 @@ void AddPandarieScripts()
     AddSC_instance_mogu_shan_vault();               // Mogu'Shan Vault
     AddSC_mogu_shan_vault();                        // Mogu'Shan Vault mob
     AddSC_boss_stone_guard();
+    AddSC_boss_feng();
 
     AddSC_WanderingIsland_North();
     AddSC_WanderingIsland_East();

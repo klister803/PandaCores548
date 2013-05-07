@@ -62,6 +62,11 @@ enum eGameObjects
     GOB_FENG_DOOR_FENCE             = 214452, // Both inner entrance and exit
     GOB_FENG_DOOR_EXIT              = 214696,
 
+    GOB_SPEAR_STATUE                = 213245,
+    GOB_FIST_STATUE                 = 213246,
+    GOB_SHIELD_STATUE               = 213247,
+    GOB_STAFF_STATUE                = 213248,
+
 };
 
 #endif // MOGUSHAN_VAULT_H_

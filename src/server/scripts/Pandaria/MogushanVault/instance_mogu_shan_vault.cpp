@@ -30,6 +30,7 @@ public:
 
         uint64 stoneGuardControlerGuid;
         std::vector<uint64> stoneGuardGUIDs;
+        std::vector<uint64> fengStatuesGUIDs;
 
         void Initialize()
         {
@@ -38,7 +39,9 @@ public:
             actualPetrifierEntry = 0;
             StoneGuardPetrificationTimer = 10000;
             stoneGuardControlerGuid = 0;
+
             stoneGuardGUIDs.clear();
+            fengStatuesGUIDs.clear();
 
             randomDespawnStoneGuardian = urand(1,4);
         }
@@ -63,6 +66,19 @@ public:
                     }
                     break;
                 default:
+                    break;
+            }
+        }
+
+        void OnGameObjectCreate(GameObject* go)
+        {
+            switch (go->GetEntry())
+            {
+                case GOB_SPEAR_STATUE:
+                case GOB_FIST_STATUE:
+                case GOB_SHIELD_STATUE:
+                case GOB_STAFF_STATUE:
+                    fengStatuesGUIDs.push_back(go->GetGUID());
                     break;
             }
         }
@@ -106,10 +122,6 @@ public:
             return true;
         }
 
-        void OnGameObjectCreate(GameObject* go)
-        {
-        }
-
         void SetData(uint32 type, uint32 data)
         {
         }
@@ -123,6 +135,7 @@ public:
         {
             switch (type)
             {
+                // Creature
                 case NPC_STONE_GUARD_CONTROLER:
                     return stoneGuardControlerGuid;
                 case NPC_JASPER:
@@ -133,6 +146,18 @@ public:
                     for (auto guid: stoneGuardGUIDs)
                         if (Creature* stoneGuard = instance->GetCreature(guid))
                             if (stoneGuard->GetEntry() == type)
+                                return guid;
+                    break;
+                }
+                // Gameobject
+                case GOB_SPEAR_STATUE:
+                case GOB_FIST_STATUE:
+                case GOB_SHIELD_STATUE:
+                case GOB_STAFF_STATUE:
+                {
+                    for (auto guid: fengStatuesGUIDs)
+                        if (GameObject* fengStatue = instance->GetGameObject(guid))
+                            if (fengStatue->GetEntry() == type)
                                 return guid;
                     break;
                 }
