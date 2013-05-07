@@ -77,6 +77,7 @@ enum PaladinSpells
     PALADIN_SPELL_ETERNAL_FLAME                  = 114163,
     PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC   = 132403,
     PALADIN_SPELL_BASTION_OF_GLORY               = 114637,
+    PALADIN_SPELL_DIVINE_PURPOSE                 = 90174,
 };
 
 // Shield of the Righteous - 53600
@@ -886,7 +887,8 @@ class spell_pal_word_of_glory : public SpellScriptLoader
                             }
                         }
 
-                        _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
+                        if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
                     }
                 }
             }

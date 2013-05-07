@@ -4752,6 +4752,10 @@ void Spell::HandleHolyPower(Player* caster)
     if (m_spellInfo->Id == 85256)
         return;
 
+    // Word of Glory - Don't remove power twice
+    if (m_spellInfo->Id == 85673)
+        return;
+
     // Shield of the Righteous - Don't remove power twice
     if (m_spellInfo->Id == 53600)
         return;

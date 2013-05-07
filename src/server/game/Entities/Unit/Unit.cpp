@@ -8181,17 +8181,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             {
                 switch (auraSpellInfo->Id)
                 {
-                    // Divine Purpose
-                    case 86172:
-                    {
-                        if (!procSpell)
-                            return false;
-
-                        if (procSpell->PowerType != POWER_HOLY_POWER)
-                            return false;
-
-                        break;
-                    }
                     // Healing Discount
                     case 37705:
                     {
@@ -8367,6 +8356,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Divine Purpose
+        case 86172:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->PowerType != POWER_HOLY_POWER)
+                return false;
+
+            break;
+        }
         // Adaptation
         case 126046:
         {
