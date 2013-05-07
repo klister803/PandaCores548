@@ -3199,6 +3199,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 73680: // Unleash Elements
                 spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
                 break;
+            case 853:   // Hammer of Justice
+                spellInfo->OverrideSpellList.push_back(105593); // Replace Hammer of Justice by Fist of Justice
+                break;
             case 85673: // Word of Glory
                 spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal Flame
                 break;
