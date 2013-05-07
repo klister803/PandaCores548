@@ -2613,7 +2613,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     Pet* pet = new Pet(this, petType);
 
     //summoned pets always non-curent!
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, slotID != PET_SLOT_UNK_SLOT, slotID, stampeded))
+    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, slotID, stampeded))
     {
         if (pet->GetOwner() && pet->GetOwner()->getClass() == CLASS_WARLOCK)
             if (pet->GetOwner()->HasAura(108503))
@@ -2661,8 +2661,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->InitStatsForLevel(getLevel());
 
     // Only slot 100, as it's not hunter pet.
-    if (!pet->isHunterPet())
-        SetMinion(pet, true, PET_SLOT_OTHER_PET);
+    SetMinion(pet, true, PET_SLOT_OTHER_PET);
 
     switch (petType)
     {

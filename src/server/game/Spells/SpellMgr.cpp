@@ -3150,6 +3150,20 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 105622:// Clemency
+                spellInfo->Effects[4].Effect = 0;
+                spellInfo->Effects[4].BasePoints = 0;
+                spellInfo->Effects[4].ApplyAuraName = 0;
+                spellInfo->Effects[5].Effect = 0;
+                spellInfo->Effects[5].BasePoints = 0;
+                spellInfo->Effects[5].ApplyAuraName = 0;
+                spellInfo->Effects[6].Effect = 0;
+                spellInfo->Effects[6].BasePoints = 0;
+                spellInfo->Effects[6].ApplyAuraName = 0;
+                spellInfo->Effects[7].Effect = 0;
+                spellInfo->Effects[7].BasePoints = 0;
+                spellInfo->Effects[8].ApplyAuraName = 0;
+                break;
             case 118291:// Greater Fire Elemental
             case 118323:// Greater Earth Elemental
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_SUMMON_PET;
@@ -3199,8 +3213,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 73680: // Unleash Elements
                 spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
                 break;
+            case 853:   // Hammer of Justice
+                spellInfo->OverrideSpellList.push_back(105593); // Replace Hammer of Justice by Fist of Justice
+                break;
             case 85673: // Word of Glory
-                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal flames
+                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal Flame
                 break;
             case 974:   // Earth Shield
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
@@ -3659,10 +3676,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 76671:  // Mastery : Divine Bulwark
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;
-                break;
-            case 76672:  // Mastery : Hand of Light
-                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[1].BasePoints = int32(15 / 1.85f);
                 break;
             case 76669:  // Mastery : Illuminated Healing
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;

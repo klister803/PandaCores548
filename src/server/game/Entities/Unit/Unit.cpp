@@ -6843,8 +6843,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 if (Unit* beaconTarget = triggeredByAura->GetBase()->GetCaster())
                 {
                     // do not proc when target of beacon of light is healed
-                    if (beaconTarget == this)
+                    if (!victim || beaconTarget->GetGUID() == GetGUID())
                         return false;
+
                     // check if it was heal by paladin which casted this beacon of light
                     if (beaconTarget->GetAura(53563, victim->GetGUID()))
                     {
@@ -6853,15 +6854,17 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                             int32 percent = 0;
                             switch (procSpell->Id)
                             {
-                                case 85673: // Word of Glory
-                                case 20473: // Holy Shock
-                                case 19750: // Flash of Light
-                                case 82326: // Divine Light
+                                case 82327: // Holy Radiance
+                                case 119952:// Light's Hammer
+                                case 114871:// Holy Prism
                                 case 85222: // Light of Dawn
-                                    percent = triggerAmount; // 50% heal from these spells
+                                    percent = 15; // 15% heal from these spells
                                     break;
                                 case 635:   // Holy Light
                                     percent = triggerAmount * 2; // 100% heal from Holy Light
+                                    break;
+                                default:
+                                    percent = triggerAmount; // 50% heal from all other heals
                                     break;
                             }
                             basepoints0 = CalculatePct(damage, percent);
@@ -8353,6 +8356,39 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Burden of Guilt
+        case 110301:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 20271)
+                return false;
+
+            break;
+        }
+        // Selfless Healer
+        case 85804:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 20271)
+                return false;
+
+            break;
+        }
+        // Divine Purpose
+        case 86172:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->PowerType != POWER_HOLY_POWER)
+                return false;
+
+            break;
+        }
         // Adaptation
         case 126046:
         {
@@ -10230,7 +10266,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // small exception for Crimson Tempest, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 122233) // Crimson Tempest
+    if (spellProto->Id == 122233 || spellProto->Id == 96172) // Crimson Tempest and Hand of Light
         return pdamage;
 
     // small exception for Improved Serpent Sting, can't find any general rule
@@ -11371,7 +11407,26 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 130551 && GetTypeId() == TYPEID_PLAYER)
     {
         int32 holyPower = GetPower(POWER_HOLY_POWER) > 2 ? 2 : GetPower(POWER_HOLY_POWER);
+
+        // Divine Purpose
+        if (HasAura(90174))
+            holyPower = 2;
+
         heal *= (holyPower+1);
+
+        // Bastion of Glory : +50% of power if target is player
+        if (victim && victim->GetGUID() == GetGUID() && HasAura(114637))
+            heal *= 1.5f;
+    }
+    // Eternal Flame
+    else if (spellProto->Id == 114163 && GetTypeId() == TYPEID_PLAYER)
+    {
+        int32 holyPower = GetPower(POWER_HOLY_POWER);
+
+        if (holyPower > 2)
+            holyPower = 2;
+
+        AddPct(heal, (100 * (holyPower + 1)));
     }
     // Ascendance - 114052 : Water Ascendant - Healing done is duplicated and distribued evenly among all nearby (15 yards) allies
     if (GetTypeId() == TYPEID_PLAYER && heal != 0 && HasAura(114052) && spellProto->Id != 114083)
@@ -12758,6 +12813,14 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
                 tigereyeBrew->SetScriptData(0, -dVal);
             else if (AuraPtr manaTea = this->GetAura(123766))
                 manaTea->SetScriptData(0, -dVal);
+        }
+    }
+    else if (power == POWER_HOLY_POWER)
+    {
+        if (dVal < 0)
+        {
+            if (AuraPtr unbreakableSpirit = this->GetAura(114154))
+                unbreakableSpirit->SetScriptData(0, -dVal);
         }
     }
 

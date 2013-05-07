@@ -3368,6 +3368,55 @@ void Spell::cast(bool skipCheck)
         //Clear spell cooldowns after every spell is cast if .cheat cooldown is enabled.
         if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_COOLDOWN))
             m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
+
+        // Clemency
+        if (m_spellInfo->Id == 1022 || m_spellInfo->Id == 1038 || m_spellInfo->Id == 1044 || m_spellInfo->Id == 6940)
+        {
+            if (AuraPtr clemency = m_caster->GetAura(105622))
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 1022:
+                        if (clemency->GetEffect(0)->GetAmount() > 0)
+                        {
+                            clemency->GetEffect(0)->SetAmount(0);
+                            m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
+                        }
+                        else
+                            clemency->GetEffect(0)->SetAmount(1);
+                        break;
+                    case 1038:
+                        if (clemency->GetEffect(1)->GetAmount() > 0)
+                        {
+                            clemency->GetEffect(1)->SetAmount(0);
+                            m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
+                        }
+                        else
+                            clemency->GetEffect(1)->SetAmount(1);
+                        break;
+                    case 1044:
+                        if (clemency->GetEffect(2)->GetAmount() > 0)
+                        {
+                            clemency->GetEffect(2)->SetAmount(0);
+                            m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
+                        }
+                        else
+                            clemency->GetEffect(2)->SetAmount(1);
+                        break;
+                    case 6940:
+                        if (clemency->GetEffect(3)->GetAmount() > 0)
+                        {
+                            clemency->GetEffect(3)->SetAmount(0);
+                            m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
+                        }
+                        else
+                            clemency->GetEffect(3)->SetAmount(1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 
     SetExecutedCurrently(false);
@@ -4750,6 +4799,10 @@ void Spell::HandleHolyPower(Player* caster)
 
     // Templar's Verdict - Don't remove power twice
     if (m_spellInfo->Id == 85256)
+        return;
+
+    // Word of Glory - Don't remove power twice
+    if (m_spellInfo->Id == 85673)
         return;
 
     // Shield of the Righteous - Don't remove power twice
