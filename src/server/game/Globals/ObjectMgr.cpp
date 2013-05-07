@@ -143,9 +143,7 @@ bool normalizePlayerName(std::string& name)
     if (name.empty())
         return false;
 
-    wchar_t bFuck = L'\u1E9E';
-
-    if (name.find(bFuck))
+    if (name[0] == -61 && name[1] == -97) // Interdiction d'utiliser ce caractere au debut, il fait planter l'affichage cote client
         return false;
 
     wchar_t wstr_buf[MAX_INTERNAL_PLAYER_NAME+1];
