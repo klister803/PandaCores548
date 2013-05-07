@@ -8178,6 +8178,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             {
                 switch (auraSpellInfo->Id)
                 {
+                    // Divine Purpose
+                    case 86172:
+                    {
+                        if (!procSpell)
+                            return false;
+
+                        if (procSpell->PowerType != POWER_HOLY_POWER)
+                            return false;
+
+                        break;
+                    }
                     // Healing Discount
                     case 37705:
                     {
@@ -11371,6 +11382,11 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 130551 && GetTypeId() == TYPEID_PLAYER)
     {
         int32 holyPower = GetPower(POWER_HOLY_POWER) > 2 ? 2 : GetPower(POWER_HOLY_POWER);
+
+        // Divine Purpose
+        if (HasAura(90174))
+            holyPower = 2;
+
         heal *= (holyPower+1);
 
         // Bastion of Glory : +50% of power if target is player
