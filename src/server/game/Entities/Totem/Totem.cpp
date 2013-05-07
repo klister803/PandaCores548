@@ -67,6 +67,40 @@ void Totem::InitStats(uint32 duration)
 
         // set display id depending on caster's race
         SetDisplayId(m_owner->GetModelForTotem(PlayerTotemType(m_Properties->Id)));
+
+        // Totemic Encirclement
+        if (m_owner->HasAura(58057)
+            && GetUInt32Value(UNIT_CREATED_BY_SPELL) != 120214
+            && GetUInt32Value(UNIT_CREATED_BY_SPELL) != 120217
+            && GetUInt32Value(UNIT_CREATED_BY_SPELL) != 120218
+            && GetUInt32Value(UNIT_CREATED_BY_SPELL) != 120219)
+        {
+            for (int i = SUMMON_SLOT_TOTEM; i < MAX_TOTEM_SLOT; ++i)
+            {
+                if (m_owner->m_SummonSlot[i] == m_Properties->Slot)
+                    continue;
+                else
+                {
+                    switch (i)
+                    {
+                        case 1:
+                            m_owner->CastSpell(m_owner, 120218, true); // Fake Earth Totem
+                            break;
+                        case 2:
+                            m_owner->CastSpell(m_owner, 120217, true); // Fake Fire Totem
+                            break;
+                        case 3:
+                            m_owner->CastSpell(m_owner, 120214, true); // Fake Water Totem
+                            break;
+                        case 4:
+                            m_owner->CastSpell(m_owner, 120219, true); // Fake Wind Totem
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
     }
 
     Minion::InitStats(duration);

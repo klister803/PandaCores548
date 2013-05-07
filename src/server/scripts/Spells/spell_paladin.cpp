@@ -75,6 +75,43 @@ enum PaladinSpells
     PALADIN_SPELL_BEACON_OF_LIGHT                = 53563,
     PALADIN_SPELL_SELFLESS_HEALER_STACK          = 114250,
     PALADIN_SPELL_ETERNAL_FLAME                  = 114163,
+    PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC   = 132403,
+    PALADIN_SPELL_BASTION_OF_GLORY               = 114637,
+};
+
+// Shield of the Righteous - 53600
+class spell_pal_shield_of_the_righteous : public SpellScriptLoader
+{
+    public:
+        spell_pal_shield_of_the_righteous() : SpellScriptLoader("spell_pal_shield_of_the_righteous") { }
+
+        class spell_pal_shield_of_the_righteous_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_shield_of_the_righteous_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        // -30% damage taken for 3s
+                        _player->CastSpell(_player, PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC, true);
+                        _player->CastSpell(_player, PALADIN_SPELL_BASTION_OF_GLORY, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_shield_of_the_righteous_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_shield_of_the_righteous_SpellScript();
+        }
 };
 
 // Eternal Flame - 114163
@@ -1452,6 +1489,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_shield_of_the_righteous();
     new spell_pal_eternal_flame();
     new spell_pal_selfless_healer();
     new spell_pal_tower_of_radiance();

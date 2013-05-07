@@ -6680,6 +6680,31 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->SpellIconID)
             {
+                // Improved Steady Shot
+                case 3409:
+                {
+                    if (procSpell->Id != 56641) // not steady shot
+                    {
+                        if (!(procEx & (PROC_EX_INTERNAL_TRIGGERED | PROC_EX_INTERNAL_CANT_PROC))) // shitty procs
+                            triggeredByAura->GetBase()->SetCharges(0);
+                        return false;
+                    }
+
+                    // wtf bug
+                    if (this == target)
+                        return false;
+
+                    if (triggeredByAura->GetBase()->GetCharges() <= 1)
+                    {
+                        triggeredByAura->GetBase()->SetCharges(2);
+                        return true;
+                    }
+                    triggeredByAura->GetBase()->SetCharges(0);
+                    triggered_spell_id = 53220;
+                    basepoints0 = triggerAmount;
+                    target = this;
+                    break;
+                }
                 case 267: // Improved Mend Pet
                 {
                     if (!roll_chance_i(triggerAmount))
@@ -7570,6 +7595,57 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 }
             }
             break;
+        }
+        default:
+            break;
+    }
+
+    // Vengeance tank mastery
+    switch (dummySpell->Id)
+    {
+        case 84839:
+        case 84840:
+        case 93098:
+        case 93099:
+        case 120267:
+        {
+            if (!victim || victim->GetTypeId() == TYPEID_PLAYER)
+                return false;
+
+            if (victim->GetOwner() && victim->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!isInCombat())
+                return false;
+
+            int32 aviableBasepoints = 0;
+            int32 max_amount = 0;
+
+            triggered_spell_id = 76691;
+
+            if (AuraPtr vengeance = GetAura(triggered_spell_id, GetGUID()))
+            {
+                aviableBasepoints += vengeance->GetEffect(EFFECT_0)->GetAmount();
+                max_amount += vengeance->GetEffect(EFFECT_2)->GetAmount();
+            }
+
+            // The first melee attack taken by the tank generates Vengeance equal to 33% of the damage taken by that attack.
+           if (!aviableBasepoints && (procFlag & (PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK)))
+                triggerAmount = 33;
+
+            int32 cap = (GetCreateHealth() + GetStat(STAT_STAMINA) * 14) / 10;
+            basepoints0 = int32(damage * triggerAmount / 100);
+            basepoints0 += aviableBasepoints;
+            basepoints0 = std::min(cap, basepoints0);
+
+            // calculate max amount player's had durind the fight
+            int32 basepoints1 = std::max(basepoints0, max_amount);
+
+            CastCustomSpell(this, triggered_spell_id, &basepoints0, &basepoints0, &basepoints1, true, castItem, triggeredByAura, originalCaster);
+            return true;
         }
         default:
             break;
@@ -15121,11 +15197,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             itr->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
         }
     }
-    // Fix Staedy focus - 53220
-    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id != 56641 && HasAura(5012) && HasAura(53220))
-    {
-        RemoveAura(5012);
-    }
 
     Unit* actor = isVictim ? target : this;
     Unit* actionTarget = !isVictim ? target : this;
@@ -18028,6 +18099,9 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
 uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
     // TODO FIND for Pandaren horde/alliance
 {
+    if (totemType == 3211)
+        totemType = SUMMON_TYPE_TOTEM_FIRE;
+
     switch (getRace())
     {
         case RACE_ORC:

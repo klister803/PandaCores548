@@ -71,7 +71,6 @@ enum HunterSpells
     HUNTER_SPELL_BINDING_SHOT_IMMUNE             = 117553,
     HUNTER_SPELL_PIERCIG_SHOTS                   = 53238,
     HUNTER_SPELL_PIERCIG_SHOTS_EFFECT            = 63468,
-    HUNTER_SPELL_STEADY_FOCUS                    = 53224,
     HUNTER_SPELL_MASTERS_CALL                    = 62305,
     HUNTER_SPELL_MASTERS_CALL_TRIGGERED          = 54216,
     HUNTER_SPELL_COBRA_STRIKES_AURA              = 53260,
@@ -1171,6 +1170,9 @@ class spell_hun_camouflage_visual : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
+                if (!GetCaster())
+                    return;
+
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     Pet* pet = _player->GetPet();
@@ -1517,30 +1519,9 @@ class spell_hun_steady_shot : public SpellScriptLoader
                         _player->CastSpell(_player, HUNTER_SPELL_STEADY_SHOT_ENERGIZE, true);
             }
 
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(HUNTER_SPELL_STEADY_FOCUS))
-                        {
-                            if (!_player->HasAura(5012))
-                                _player->AddAura(5012, _player);
-                            else if (_player->HasAura(5012) && !_player->HasAura(53220))
-                            {
-                                _player->CastSpell(_player, 53220, true);
-                                _player->RemoveAura(5012, AURA_REMOVE_BY_DEFAULT);
-                            }
-                        }
-                    }
-                }
-            }
-
             void Register()
             {
                 OnHit += SpellHitFn(spell_hun_steady_shot_SpellScript::HandleOnHit);
-                AfterHit += SpellHitFn(spell_hun_steady_shot_SpellScript::HandleAfterHit);
             }
         };
 

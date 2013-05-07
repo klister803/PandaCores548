@@ -824,11 +824,14 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
                 return;
             // choose which targets we can select at once
             for (uint32 j = effIndex + 1; j < MAX_SPELL_EFFECTS; ++j)
+            {
                 if (GetSpellInfo()->Effects[effIndex].TargetA.GetTarget() == GetSpellInfo()->Effects[j].TargetA.GetTarget() &&
                     GetSpellInfo()->Effects[effIndex].TargetB.GetTarget() == GetSpellInfo()->Effects[j].TargetB.GetTarget() &&
                     GetSpellInfo()->Effects[effIndex].ImplicitTargetConditions == GetSpellInfo()->Effects[j].ImplicitTargetConditions &&
-                    GetSpellInfo()->Effects[effIndex].CalcRadius(m_caster) == GetSpellInfo()->Effects[j].CalcRadius(m_caster))
+                    GetSpellInfo()->Effects[effIndex].CalcRadius(m_caster) == GetSpellInfo()->Effects[j].CalcRadius(m_caster) &&
+                    GetSpellInfo()->Id != 119072)
                     effectMask |= 1 << j;
+            }
             processedEffectMask |= effectMask;
             break;
         default:
@@ -1269,6 +1272,35 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         itr = unitTargets.erase(itr);
                     else
                         ++itr;
+                }
+                break;
+            case SPELLFAMILY_PALADIN:
+                // Holy Wrath
+                if (m_spellInfo->Id == 119072 && effIndex == 1)
+                {
+                    static const uint8 types_noglyph[] = {CREATURE_TYPE_DEMON, CREATURE_TYPE_UNDEAD, 0};
+                    static const uint8 types_glyph[] = {CREATURE_TYPE_DEMON, CREATURE_TYPE_UNDEAD, CREATURE_TYPE_ELEMENTAL, CREATURE_TYPE_DRAGONKIN, 0};
+                    const uint8 *types = m_caster->HasAura(54923) ? types_glyph: types_noglyph;
+
+                    for (std::list<Unit*>::iterator itr = unitTargets.begin() ; itr != unitTargets.end();)
+                    {
+                        bool found = false;
+                        uint8 types_i = 0;
+                        do
+                        {
+                            if ((*itr)->GetCreatureType() == types[types_i])
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        while (types[++types_i]);
+
+                        if (found)
+                            itr++;
+                        else
+                            itr = unitTargets.erase(itr);
+                    }
                 }
                 break;
             case SPELLFAMILY_DRUID:
@@ -4720,6 +4752,10 @@ void Spell::HandleHolyPower(Player* caster)
     if (m_spellInfo->Id == 85256)
         return;
 
+    // Shield of the Righteous - Don't remove power twice
+    if (m_spellInfo->Id == 53600)
+        return;
+
     bool hit = true;
     Player* modOwner = caster->GetSpellModOwner();
     m_powerCost = caster->GetPower(POWER_HOLY_POWER); // Always use all the holy power we have
@@ -4771,6 +4807,9 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
+    if (m_spellInfo->Id == 132365)
+        return SPELL_FAILED_DONT_REPORT;
+
     // check death state
     if (!m_caster->isAlive() && !(m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE) && !((m_spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD) || (IsTriggered() && !m_triggeredByAuraSpell)))
         return SPELL_FAILED_CASTER_DEAD;

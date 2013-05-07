@@ -632,6 +632,7 @@ void AddSC_boss_sha_of_violence();
 void AddSC_boss_taran_zhu();
 void AddSC_instance_siege_of_the_niuzoa_temple();   // Siege of the Niuzoa Temple
 void AddSC_boss_jinbak();
+void AddSC_mogu_shan_vault();                       // Mogu'Shan Vault mob
 void AddSC_instance_mogu_shan_vault();              // Mogu'Shan Vault
 void AddSC_boss_stone_guard();
 void AddSC_boss_feng();
@@ -1312,7 +1313,8 @@ void AddPandarieScripts()
     AddSC_boss_taran_zhu();
     AddSC_instance_siege_of_the_niuzoa_temple();    // Siege of the Niuzoa Temple
     AddSC_boss_jinbak();
-    AddSC_instance_mogu_shan_vault();              // Mogu'Shan Vault
+    AddSC_instance_mogu_shan_vault();               // Mogu'Shan Vault
+    AddSC_mogu_shan_vault();                        // Mogu'Shan Vault mob
     AddSC_boss_stone_guard();
     AddSC_boss_feng();
 

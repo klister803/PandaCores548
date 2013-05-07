@@ -633,37 +633,6 @@ class spell_warl_demonic_leap : public SpellScriptLoader
         }
 };
 
-// Called by Summon Felhunter - 691, Summon Succubus - 712, Summon Voidwalker - 697, Summon Imp - 688
-// Summon Infernal - 1122, Summon Doomguard - 18540 and Summon Felguard - 30146
-// Grimoire of Sacrifice - 108503
-class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
-{
-    public:
-        spell_warl_grimoire_of_sacrifice() : SpellScriptLoader("spell_warl_grimoire_of_sacrifice") { }
-
-        class spell_warl_grimoire_of_sacrifice_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_grimoire_of_sacrifice_SpellScript);
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(WARLOCK_GRIMOIRE_OF_SACRIFICE))
-                        _player->RemoveAura(WARLOCK_GRIMOIRE_OF_SACRIFICE);
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_warl_grimoire_of_sacrifice_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_grimoire_of_sacrifice_SpellScript();
-        }
-};
-
 // Burning Rush - 111400
 class spell_warl_burning_rush : public SpellScriptLoader
 {
@@ -1870,7 +1839,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_twilight_ward_s12();
     new spell_warl_hellfire();
     new spell_warl_demonic_leap();
-    new spell_warl_grimoire_of_sacrifice();
     new spell_warl_burning_rush();
     new spell_warl_soul_swap_soulburn();
     new spell_warl_soul_swap();

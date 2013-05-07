@@ -1424,15 +1424,18 @@ void AuraEffect::CleanupTriggeredSpells(Unit* target)
 
 void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 {
-    uint32 spellId = 0;
-    uint32 spellId2 = 0;
-    //uint32 spellId3 = 0;
-    uint32 HotWSpellId = 0;
+    uint32 spellId      = 0;
+    uint32 spellId2     = 0;
+    uint32 spellId3     = 0;
+    uint32 spellId4     = 0;
+    uint32 HotWSpellId  = 0;
 
     switch (GetMiscValue())
     {
         case FORM_CAT:
             spellId = 3025;
+            spellId2 = 48629;
+            spellId3 = 106840;
             HotWSpellId = 24900;
             break;
         case FORM_TREE:
@@ -1447,6 +1450,8 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
         case FORM_BEAR:
             spellId = 1178;
             spellId2 = 21178;
+            spellId3 = 106829;
+            spellId4 = 106899;
             HotWSpellId = 24899;
             break;
         case FORM_BATTLESTANCE:
@@ -1512,6 +1517,20 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             target->CastSpell(target, spellId2, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
         }
 
+        if (spellId3)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->RemoveSpellCooldown(spellId3);
+            target->CastSpell(target, spellId3, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
+        }
+
+        if (spellId4)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->RemoveSpellCooldown(spellId4);
+            target->CastSpell(target, spellId4, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
+        }
+
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             Player* plrTarget = target->ToPlayer();
@@ -1522,7 +1541,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                 if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
                     continue;
 
-                if (itr->first == spellId || itr->first == spellId2)
+                if (itr->first == spellId || itr->first == spellId2 || itr->first == spellId3 || itr->first == spellId4)
                     continue;
 
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
@@ -1634,6 +1653,10 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             target->RemoveAurasDueToSpell(spellId);
         if (spellId2)
             target->RemoveAurasDueToSpell(spellId2);
+        if (spellId3)
+            target->RemoveAurasDueToSpell(spellId3);
+        if (spellId4)
+            target->RemoveAurasDueToSpell(spellId4);
 
         // Improved Barkskin - apply/remove armor bonus due to shapeshift
         if (Player* player=target->ToPlayer())
@@ -2051,8 +2074,16 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             case FORM_FLIGHT:
             case FORM_MOONKIN:
             {
+                // remove vengeance tank mastery for all form except bear
+                if (form != FORM_BEAR)
+                    target->RemoveAurasDueToSpell(76691);
+
                 // remove movement affects
-                target->RemoveMovementImpairingAuras();
+                uint32 mechanicMask = (1 << MECHANIC_SNARE);
+                if (target->HasAura(96429) || form == FORM_MOONKIN)
+                    mechanicMask |= (1 << MECHANIC_ROOT);
+
+                target->RemoveAurasWithMechanic(mechanicMask);
 
                 // and polymorphic affects
                 if (target->IsPolymorphed())
@@ -5874,6 +5905,50 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 76691: // Vengeance tank mastery
+                {
+                    if (!GetCaster() || GetCaster()->GetTypeId() != TYPEID_PLAYER)
+                        break;
+
+                    int32 basepoints0 = 0;
+
+                    // taken damage
+                    int32 takendamage = GetCaster()->ToPlayer()->GetDamageTakenInPastSecs(3);
+
+                    // player will loase 5% if has taken damage
+                    int32 curr_amount = GetBase()->GetEffect(EFFECT_0)->GetAmount();
+
+                    // player will lose 10% if has no taken damage
+                    int32 max_amount = GetAmount();
+
+                    // if has no max amount we set it to max vengeance cap
+                    if (!max_amount)
+                        max_amount = (GetCaster()->GetCreateHealth() + (GetCaster()->GetStat(STAT_STAMINA) * 14) / 10);
+
+                    int32 lost = 0;
+
+                    if (takendamage > 0)
+                        lost = int32(CalculatePct(curr_amount, 5));
+                    else
+                        lost = CalculatePct(max_amount, 10);
+
+                    if (lost >= curr_amount || !curr_amount)
+                        caster->RemoveAura(GetBase());
+                    else
+                    {
+                        // save at least 33% of taken damage
+                        if (takendamage)
+                            basepoints0 = std::max((curr_amount - lost), int32(CalculatePct(takendamage, 33)));
+                        else
+                            basepoints0 = curr_amount - lost;
+                    }
+
+                    if (AuraEffectPtr eff1 = GetBase()->GetEffect(EFFECT_0))
+                        eff1->ChangeAmount(basepoints0);
+                    if (AuraEffectPtr eff2 = GetBase()->GetEffect(EFFECT_1))
+                        eff2->ChangeAmount(basepoints0);
+                    break;
+                }
                 case 66149: // Bullet Controller Periodic - 10 Man
                 case 68396: // Bullet Controller Periodic - 25 Man
                 {
