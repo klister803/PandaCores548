@@ -79,6 +79,7 @@ enum WarlockSpells
     WARLOCK_WILD_IMP_SUMMON                 = 104317,
     WARLOCK_DEMONIC_CALL                    = 114925,
     WARLOCK_DECIMATE_AURA                   = 108869,
+    WARLOCK_SOUL_LEECH_AURA                 = 108370,
 };
 
 // Called by Firebolt (Wild Imp) - 104318
@@ -444,12 +445,15 @@ class spell_warl_soul_leech : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        int32 bp = int32(GetHitDamage() / 10);
+                        if (_player->HasAura(WARLOCK_SOUL_LEECH_AURA))
+                        {
+                            int32 bp = int32(GetHitDamage() / 10);
 
-                        _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+                            _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
 
-                        if (Guardian* pet = _player->GetGuardianPet())
-                            _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+                            if (Guardian* pet = _player->GetGuardianPet())
+                                _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+                        }
                     }
                 }
             }
