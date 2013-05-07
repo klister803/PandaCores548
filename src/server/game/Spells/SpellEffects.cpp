@@ -1565,6 +1565,17 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
             addhealth += damageAmount;
         }
+        // Selfless Healer - Increases heal of Flash of Light if it heals an other player than you
+        else if (m_spellInfo->Id == 19750 && caster->HasAura(114250))
+        {
+            int32 charges = 0;
+
+            if (AuraPtr selflessHealer = caster->GetAura(114250))
+                charges = selflessHealer->GetStackAmount();
+
+            if (charges && unitTarget->GetGUID() != caster->GetGUID())
+                AddPct(addhealth, (35 * charges));
+        }
         // Runic Healing Injector (heal increased by 25% for engineers - 3.2.0 patch change)
         else if (m_spellInfo->Id == 67489)
         {

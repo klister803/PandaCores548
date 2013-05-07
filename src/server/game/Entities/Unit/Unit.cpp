@@ -8356,6 +8356,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Selfless Healer
+        case 85804:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 20271)
+                return false;
+
+            break;
+        }
         // Divine Purpose
         case 86172:
         {
