@@ -1566,6 +1566,18 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     }
     else // Impossible get negative result but....
         damageInfo->damage = 0;
+
+    // Soul Link
+    if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_WARLOCK && damageInfo->damage > 0 && victim->HasAura(108446))
+    {
+        if (victim->ToPlayer()->GetPet() && victim->ToPlayer()->GetPet()->HasAura(108446))
+        {
+            damageInfo->damage /= 2;
+            int32 bp = damageInfo->damage;
+
+            victim->ToPlayer()->GetPet()->CastCustomSpell(victim->ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, true); // Soul Link damage
+        }
+    }
 }
 
 void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
@@ -10245,7 +10257,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // small exception for Hemorrhage, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 89775) // Hemorrhage
+    if (spellProto->Id == 89775 || spellProto->Id == 108451) // Hemorrhage and Soul Link damage
         return pdamage;
 
     // small exception for Echo of Light, can't find any general rule
@@ -10863,6 +10875,18 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     if (!tmpDamage)
         tmpDamage = (float(pdamage) + TakenTotal) * TakenTotalMod;
 
+    // Soul Link
+    if (GetTypeId() == TYPEID_PLAYER && (!spellProto || (spellProto && spellProto->Id != 108451)) && getClass() == CLASS_WARLOCK && tmpDamage > 0 && HasAura(108446))
+    {
+        if (ToPlayer()->GetPet() && ToPlayer()->GetPet()->HasAura(108446))
+        {
+            tmpDamage /= 2;
+            int32 bp = tmpDamage;
+
+            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, true); // Soul Link damage
+        }
+    }
+
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
@@ -11242,8 +11266,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 127626 || spellProto->Id == 81751 || spellProto->Id == 117895)
         return healamount;
 
-    // No bonus for Leader of the Pack or Soul Leech
-    if (spellProto->Id == 34299 || spellProto->Id == 108366)
+    // No bonus for Leader of the Pack or Soul Leech or Soul Link heal
+    if (spellProto->Id == 34299 || spellProto->Id == 108366 || spellProto->Id == 108447)
         return healamount;
 
     // No bonus for Living Seed or Ancestral Guidance
@@ -11538,6 +11562,19 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     }
 
     float heal = float(int32(healamount) + TakenTotal) * TakenTotalMod;
+
+    // Custom MoP Script
+    // Soul Link
+    if (GetTypeId() == TYPEID_PLAYER && spellProto->Id != 108447 && getClass() == CLASS_WARLOCK && heal > 0 && HasAura(108446))
+    {
+        if (ToPlayer()->GetPet() && ToPlayer()->GetPet()->HasAura(108446))
+        {
+            heal /= 2;
+            int32 bp = heal;
+
+            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108447, &bp, NULL, NULL, true); // Soul Link heal
+        }
+    }
 
     return uint32(std::max(heal, 0.0f));
 }

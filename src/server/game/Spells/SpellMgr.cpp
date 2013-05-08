@@ -3216,6 +3216,16 @@ void SpellMgr::LoadSpellCustomAttr()
             case 853:   // Hammer of Justice
                 spellInfo->OverrideSpellList.push_back(105593); // Replace Hammer of Justice by Fist of Justice
                 break;
+            case 108446:// Soul Link
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[1].TargetA = TARGET_UNIT_PET;
+                break;
+            case 755:   // Health Funnel
+                spellInfo->OverrideSpellList.push_back(108415); // Replace Health Funnel by Soul Link
+                break;
             case 85673: // Word of Glory
                 spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal Flame
                 break;

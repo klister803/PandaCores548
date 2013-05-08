@@ -4568,6 +4568,10 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
         if (HasAura(116403))
             RemoveAura(116403);
     }
+    // Soul Link
+    else if (spell_id == 108415)
+        if (HasAura(108446))
+            RemoveAura(108446);
 
     // remove dependent skill
     SpellLearnSkillNode const* spellLearnSkill = sSpellMgr->GetSpellLearnSkill(spell_id);

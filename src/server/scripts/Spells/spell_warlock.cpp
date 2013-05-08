@@ -83,6 +83,93 @@ enum WarlockSpells
     WARLOCK_ARCHIMONDES_VENGEANCE_COOLDOWN  = 116405,
     WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE    = 124051,
     WARLOCK_ARCHIMONDES_VENGEANCE_PASSIVE   = 116403,
+    WARLOCK_SOUL_LINK_DUMMY_AURA            = 108446,
+};
+
+// Soul Link - 108446
+class spell_warl_soul_link_dummy : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_link_dummy() : SpellScriptLoader("spell_warl_soul_link_dummy") { }
+
+        class spell_warl_soul_link_dummy_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_soul_link_dummy_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (!GetCaster() || !GetTarget())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (GetTarget()->GetGUID() == _player->GetGUID())
+                        if (Pet* pet = _player->GetPet())
+                            if (pet->HasAura(WARLOCK_SOUL_LINK_DUMMY_AURA))
+                                pet->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
+
+                    if(_player->HasAura(WARLOCK_SOUL_LINK_DUMMY_AURA))
+                        _player->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectApplyFn(spell_warl_soul_link_dummy_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_soul_link_dummy_AuraScript();
+        }
+};
+
+// Soul Link - 108415
+class spell_warl_soul_link : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_link() : SpellScriptLoader("spell_warl_soul_link") { }
+
+        class spell_warl_soul_link_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_soul_link_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (!target->HasAura(WARLOCK_SOUL_LINK_DUMMY_AURA))
+                        {
+                            uint32 health = target->CountPctFromMaxHealth(50);
+
+                            if (target->GetHealth() > health)
+                                target->SetHealth(health);
+                            target->SetMaxHealth(health);
+
+                            _player->CastSpell(_player, WARLOCK_SOUL_LINK_DUMMY_AURA, true);
+                        }
+                        else
+                        {
+                            target->SetMaxHealth(target->GetMaxHealth() * 2);
+                            target->SetHealth(target->GetHealth() * 2);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_soul_link_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_soul_link_SpellScript();
+        }
 };
 
 // Archimonde's Vengeance (Cooldown marker) - 108505
@@ -1980,6 +2067,8 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_soul_link_dummy();
+    new spell_warl_soul_link();
     new spell_warl_archimondes_vengeance_cooldown();
     new spell_warl_archimondes_vengance();
     new spell_warl_archimondes_vengance_passive();
