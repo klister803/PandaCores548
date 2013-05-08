@@ -2894,6 +2894,29 @@ void Player::Regenerate(Powers power)
             else if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) < 200 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
                 addvalue += 1.0f;     // give 1 each 100ms while player has less than 200 demonic fury
 
+            // Demonic Fury visuals
+            if (GetPower(POWER_DEMONIC_FURY) == 1000)
+            {
+                CastSpell(this, 131755, true);
+
+                if (HasAura(122738))
+                    RemoveAura(122738);
+            }
+            else if (GetPower(POWER_DEMONIC_FURY) >= 500)
+            {
+                CastSpell(this, 122738, true);
+
+                if (HasAura(131755))
+                    RemoveAura(131755);
+            }
+            else
+            {
+                if (HasAura(122738))
+                    RemoveAura(122738);
+                if (HasAura(131755))
+                    RemoveAura(131755);
+            }
+
             break;
         }
         // Regenerate Burning Embers
