@@ -16303,7 +16303,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, AuraPtr aura, SpellInfo con
     if (!sSpellMgr->IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
     {
         // Hack Fix Backdraft can be triggered if damage are absorbed
-        if (spellProto->Id == 117896 && procSpell->Id == 17962 && (procExtra & PROC_EX_ABSORB))
+        if (spellProto && spellProto->Id == 117896 && procSpell && procSpell->Id == 17962 && procExtra && (procExtra & PROC_EX_ABSORB))
             return true;
         else
             return false;
