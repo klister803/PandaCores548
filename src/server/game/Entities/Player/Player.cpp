@@ -21593,8 +21593,9 @@ void Player::RemoveSpellMods(Spell* spell)
             // remove from list
             spell->m_appliedMods.erase(iterMod);
 
-            if (std::const_pointer_cast<Aura>(mod->ownerAura)->DropCharge(AURA_REMOVE_BY_EXPIRE))
-                itr = m_spellMods[i].begin();
+            if (!(mod->ownerAura->GetId() == 117828 && spell->GetSpellInfo()->Id == 116858))
+                if (std::const_pointer_cast<Aura>(mod->ownerAura)->DropCharge(AURA_REMOVE_BY_EXPIRE))
+                    itr = m_spellMods[i].begin();
         }
     }
 }
