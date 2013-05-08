@@ -8312,6 +8312,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Backlash
+        case 108563:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (ToPlayer()->HasSpellCooldown(108563))
+                return false;
+
+            ToPlayer()->AddSpellCooldown(108563, 0, time(NULL) + 8);
+
+            break;
+        }
         // Burden of Guilt
         case 110301:
         {
