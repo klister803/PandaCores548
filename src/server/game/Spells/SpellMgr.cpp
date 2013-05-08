@@ -3150,6 +3150,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 6203:  // Soulstone
+                spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
+                break;
             case 105622:// Clemency
                 spellInfo->Effects[4].Effect = 0;
                 spellInfo->Effects[4].BasePoints = 0;
