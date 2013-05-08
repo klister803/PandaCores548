@@ -2896,19 +2896,9 @@ void Player::Regenerate(Powers power)
 
             // Demonic Fury visuals
             if (GetPower(POWER_DEMONIC_FURY) == 1000)
-            {
                 CastSpell(this, 131755, true);
-
-                if (HasAura(122738))
-                    RemoveAura(122738);
-            }
             else if (GetPower(POWER_DEMONIC_FURY) >= 500)
-            {
                 CastSpell(this, 122738, true);
-
-                if (HasAura(131755))
-                    RemoveAura(131755);
-            }
             else
             {
                 if (HasAura(122738))

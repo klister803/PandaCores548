@@ -561,7 +561,10 @@ class spell_warl_metamorphosis_cost : public SpellScriptLoader
                     if (!_player)
                         return;
 
-                    if (_player->GetPower(POWER_DEMONIC_FURY) <= 1)
+                    if (!_player->HasAura(54879))
+                        _player->CastSpell(_player, 54879, true);
+
+                    if (_player->GetPower(POWER_DEMONIC_FURY) <= 40)
                         if (_player->HasAura(WARLOCK_METAMORPHOSIS))
                             _player->RemoveAura(WARLOCK_METAMORPHOSIS);
                 }
