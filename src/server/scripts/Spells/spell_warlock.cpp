@@ -132,6 +132,39 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
                 if (!GetCaster())
                     return;
 
+                if (!GetTarget())
+                    return;
+
+                std::list<Unit*> tempList;
+                std::list<Unit*> targetList;
+                Unit* target = NULL;
+
+                GetCaster()->GetAttackableUnitListInRange(tempList, 100.0f);
+
+                if (tempList.empty())
+                    return;
+
+                for (auto itr : tempList)
+                {
+                    if (itr->GetGUID() == GetCaster()->GetGUID())
+                        continue;
+
+                    if (itr->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
+                        targetList.push_back(itr);
+                }
+
+                if (targetList.empty())
+                    return;
+
+                if (targetList.size() > 1)
+                    return;
+
+                for (auto itr : targetList)
+                    target = itr;
+
+                if (!target)
+                    return;
+
                 if (eventInfo.GetActor()->GetGUID() == GetTarget()->GetGUID())
                     return;
 
@@ -140,16 +173,19 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
 
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
+                    if (target->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
                     {
                         int32 bp = int32(eventInfo.GetDamageInfo()->GetDamage() / 4);
 
                         if (!bp)
                             return;
 
-                        _player->CastCustomSpell(GetTarget(), WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, true);
+                        _player->CastCustomSpell(target, WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, true);
                     }
                 }
+
+                tempList.clear();
+                targetList.clear();
             }
 
             void Register()
