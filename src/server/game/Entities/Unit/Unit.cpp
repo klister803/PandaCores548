@@ -16301,7 +16301,14 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, AuraPtr aura, SpellInfo con
 
     // Check spellProcEvent data requirements
     if (!sSpellMgr->IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
-        return false;
+    {
+        // Hack Fix Backdraft can be triggered if damage are absorbed
+        if (spellProto->Id == 117896 && procSpell->Id == 17962 && (procExtra & PROC_EX_ABSORB))
+            return true;
+        else
+            return false;
+    }
+
     // In most cases req get honor or XP from kill
     if (EventProcFlag & PROC_FLAG_KILL && GetTypeId() == TYPEID_PLAYER)
     {
