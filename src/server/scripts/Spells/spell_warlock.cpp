@@ -84,6 +84,7 @@ enum WarlockSpells
     WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE    = 124051,
     WARLOCK_ARCHIMONDES_VENGEANCE_PASSIVE   = 116403,
     WARLOCK_SOUL_LINK_DUMMY_AURA            = 108446,
+    WARLOCK_GLYPH_OF_CONFLAGRATE            = 56235,
 };
 
 // Soul Link - 108446
@@ -1288,7 +1289,7 @@ class spell_warl_conflagrate_aura : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (!target->HasAura(WARLOCK_IMMOLATE))
+                        if (!target->HasAura(WARLOCK_IMMOLATE) && !target->HasAura(WARLOCK_GLYPH_OF_CONFLAGRATE))
                             if (AuraPtr conflagrate = target->GetAura(WARLOCK_CONFLAGRATE))
                                 target->RemoveAura(WARLOCK_CONFLAGRATE);
                         if (!target->HasAura(WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE))
