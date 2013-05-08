@@ -4562,6 +4562,12 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
         if (HasAura(121617))
             RemoveAura(121617);
     }
+    // Archimonde's Vengeance
+    else if (spell_id == 108505)
+    {
+        if (HasAura(116403))
+            RemoveAura(116403);
+    }
 
     // remove dependent skill
     SpellLearnSkillNode const* spellLearnSkill = sSpellMgr->GetSpellLearnSkill(spell_id);
@@ -25819,6 +25825,9 @@ bool Player::LearnTalent(uint32 talentId)
         CastSpell(this, 51470, true);  // +5% spell haste
         CastSpell(this, 121617, true); // +5% melee haste
     }
+    // Archimonde's Vengeance
+    else if (spellid == 108505)
+        CastSpell(this, 116403, true); // Passive
 
     sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
     return true;

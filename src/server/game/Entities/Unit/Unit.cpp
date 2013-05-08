@@ -10227,7 +10227,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // small exception for Improved Serpent Sting, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 83077) // Improved Serpent Sting
+    if (spellProto->Id == 83077 || spellProto->Id == 124051) // Improved Serpent Sting and Archimonde's Vengeance
         return pdamage;
 
     // small exception for Hemorrhage, can't find any general rule
