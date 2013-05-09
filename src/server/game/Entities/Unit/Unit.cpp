@@ -15975,6 +15975,33 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
     return JadeCore::Containers::SelectRandomContainerElement(targets);
 }
 
+Unit* Unit::SelectNearbyAlly(Unit* exclude, float dist) const
+{
+    std::list<Unit*> targets;
+    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(this, this, dist);
+    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
+    VisitNearbyObject(dist, searcher);
+
+    if (exclude)
+        targets.remove(exclude);
+
+    // remove not LoS targets
+    for (std::list<Unit*>::iterator tIter = targets.begin(); tIter != targets.end();)
+    {
+        if (!IsWithinLOSInMap(*tIter) || (*tIter)->isTotem() || (*tIter)->isSpiritService() || (*tIter)->GetCreatureType() == CREATURE_TYPE_CRITTER)
+            targets.erase(tIter++);
+        else
+            ++tIter;
+    }
+
+    // no appropriate targets
+    if (targets.empty())
+        return NULL;
+
+    // select random
+    return JadeCore::Containers::SelectRandomContainerElement(targets);
+}
+
 void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply)
 {
     float remainingTimePct = (float)m_attackTimer[att] / (GetAttackTime(att) * m_modAttackSpeedPct[att]);
