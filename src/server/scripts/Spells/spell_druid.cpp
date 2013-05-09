@@ -41,6 +41,7 @@ enum DruidSpells
     SPELL_DRUID_SOLAR_ECLIPSE               = 48517,
     SPELL_DRUID_LUNAR_ECLIPSE               = 48518,
     SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE      = 107095,
+    SPELL_DRUID_STARFALL                    = 48505,
     SPELL_DRUID_NATURES_GRACE               = 16886,
     SPELL_DRUID_EUPHORIA                    = 81062,
     SPELL_DRUID_PROWL                       = 5215,
@@ -1373,6 +1374,9 @@ class spell_dru_astral_communion : public SpellScriptLoader
                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
                         _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE, true);
+
+                        if (_player->HasSpellCooldown(SPELL_DRUID_STARFALL))
+                            _player->RemoveSpellCooldown(SPELL_DRUID_STARFALL, true);
                     }
                 }
             }
@@ -1412,6 +1416,9 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
                         _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE, true);
+
+                        if (_player->HasSpellCooldown(SPELL_DRUID_STARFALL))
+                            _player->RemoveSpellCooldown(SPELL_DRUID_STARFALL, true);
                     }
                 }
             }
@@ -1818,6 +1825,9 @@ class spell_dru_eclipse : public SpellScriptLoader
                                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
                                         _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE, true);
+
+                                        if (_player->HasSpellCooldown(SPELL_DRUID_STARFALL))
+                                            _player->RemoveSpellCooldown(SPELL_DRUID_STARFALL, true);
                                     }
 
                                     // Your crits with wrath also increase sunfire duration by 2s
@@ -1887,6 +1897,9 @@ class spell_dru_eclipse : public SpellScriptLoader
                                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
                                         _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE, true);
+
+                                        if (_player->HasSpellCooldown(SPELL_DRUID_STARFALL))
+                                            _player->RemoveSpellCooldown(SPELL_DRUID_STARFALL, true);
                                     }
 
                                     // Your crits with wrath also increase sunfire duration by 2s
