@@ -90,6 +90,90 @@ enum DruidSpells
     SPELL_DRUID_URSOLS_VORTEX_SNARE         = 127797,
     SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST     = 118283,
     SPELL_DRUID_CENARION_WARD               = 102352,
+    SPELL_DRUID_NATURES_VIGIL_HEAL          = 124988,
+    SPELL_DRUID_NATURES_VIGIL_DAMAGE        = 124991,
+};
+
+// Nature's Vigil - 124974
+class spell_dru_natures_vigil : public SpellScriptLoader
+{
+    public:
+        spell_dru_natures_vigil() : SpellScriptLoader("spell_dru_natures_vigil") { }
+
+        class spell_dru_natures_vigil_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_natures_vigil_AuraScript);
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                Player* _player = GetCaster()->ToPlayer();
+                if (!_player)
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
+                    return;
+
+                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
+                    return;
+
+                bool singleTarget = false;
+                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    if ((eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
+                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY) &&
+                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetB.GetTarget() == 0)
+                        singleTarget = true;
+
+                if (!singleTarget)
+                    return;
+
+                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_DRUID_NATURES_VIGIL_HEAL ||
+                    eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_DRUID_NATURES_VIGIL_DAMAGE)
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
+                    return;
+
+                int32 bp = 0;
+                Unit* target = NULL;
+                uint32 spellId = 0;
+
+                if (!eventInfo.GetDamageInfo()->GetSpellInfo()->IsPositive())
+                {
+                    bp = eventInfo.GetDamageInfo()->GetDamage() / 4;
+                    spellId = SPELL_DRUID_NATURES_VIGIL_HEAL;
+                    target = _player->SelectNearbyAlly(_player, 25.0f);
+                }
+                else
+                {
+                    bp = eventInfo.GetHealInfo()->GetHeal() / 4;
+                    spellId = SPELL_DRUID_NATURES_VIGIL_DAMAGE;
+                    target = _player->SelectNearbyTarget(_player, 25.0f);
+                }
+
+                if (!target || !spellId || !bp)
+                    return;
+
+                _player->CastCustomSpell(target, spellId, &bp, NULL, NULL, true);
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_dru_natures_vigil_AuraScript::OnProc, EFFECT_2, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_natures_vigil_AuraScript();
+        }
 };
 
 // Cenarion Ward - 102351
@@ -2268,6 +2352,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_natures_vigil();
     new spell_dru_cenarion_ward();
     new spell_dru_ursols_vortex();
     new spell_dru_solar_beam();
