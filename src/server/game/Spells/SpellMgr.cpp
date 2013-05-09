@@ -3054,7 +3054,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 48689:
             case 48690:
             case 48691:
-            case 6785: // Ravage
             case 6787:
             case 9866:
             case 9867:
@@ -3237,6 +3236,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_PET;
                 break;
+            case 6785:  // Ravage
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
+                spellInfo->OverrideSpellList.push_back(102545); // Replace Ravage by Ravage (Incarnation)
+                break;
+            case 5212:  // Prowl
+                spellInfo->OverrideSpellList.push_back(102547); // Replace Prowl by Prowl (Incarnation)
+                break;
             case 16914: // Hurricane
                 spellInfo->OverrideSpellList.push_back(106996); // Replace Hurricane by Astral Storm
                 break;
@@ -3398,6 +3404,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                 break;
             case 9005:  // Pounce
+                spellInfo->OverrideSpellList.push_back(102546); // Replace Pounce by Pounce (Incarnation)
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
                 break;
             case 33763: // Lifebloom
