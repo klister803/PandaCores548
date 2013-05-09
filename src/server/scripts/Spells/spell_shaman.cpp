@@ -373,6 +373,16 @@ class spell_sha_echo_of_the_elements : public SpellScriptLoader
                 if (!eventInfo.GetDamageInfo()->GetSpellInfo())
                     return;
 
+                bool singleTarget = false;
+                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    if ((eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
+                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY) &&
+                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetB.GetTarget() == 0)
+                        singleTarget = true;
+
+                if (!singleTarget)
+                    return;
+
                 int32 roll = 0;
 
                 // devs told that proc chance is 6% for Elemental and Restoration specs and 30% for Enhancement
