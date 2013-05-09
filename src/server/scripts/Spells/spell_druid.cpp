@@ -76,6 +76,7 @@ enum DruidSpells
     SPELL_DRUID_KILLER_INSTINCT_MOD_STAT    = 108300,
     SPELL_DRUID_CAT_FORM                    = 768,
     SPELL_DRUID_BEAR_FORM                   = 5487,
+    SPELL_DRUID_BEAR_FORM_RAGE_GAIN         = 17057,
     SPELL_DRUID_INFECTED_WOUNDS             = 58180,
     SPELL_DRUID_BEAR_HUG                    = 102795,
     SPELL_DRUID_RIP                         = 1079,
@@ -461,7 +462,7 @@ class spell_dru_bear_form : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 100, POWER_RAGE);
+                    _player->CastSpell(_player, SPELL_DRUID_BEAR_FORM_RAGE_GAIN, true);
             }
 
             void Register()
