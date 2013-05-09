@@ -3237,6 +3237,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_PET;
                 break;
+            case 16914: // Hurricane
+                spellInfo->OverrideSpellList.push_back(106996); // Replace Hurricane by Astral Storm
+                break;
             case 755:   // Health Funnel
                 spellInfo->OverrideSpellList.push_back(108415); // Replace Health Funnel by Soul Link
                 break;

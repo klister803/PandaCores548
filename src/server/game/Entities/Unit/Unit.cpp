@@ -19271,8 +19271,12 @@ void Unit::SetEclipsePower(int32 power)
         power = -100;
 
     if (power > 0)
+    {
         if (HasAura(48518))
             RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+        if (HasAura(107095))
+            RemoveAurasDueToSpell(107095);// Eclipse (Lunar) - SPELL_AURA_OVERRIDE_SPELLS
+    }
 
     if (power == 0)
     {
@@ -19280,14 +19284,14 @@ void Unit::SetEclipsePower(int32 power)
             RemoveAurasDueToSpell(48517); // Eclipse (Solar)
         if (HasAura(48518))
             RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+        if (HasAura(107095))
+            RemoveAurasDueToSpell(107095);// Eclipse (Lunar) - SPELL_AURA_OVERRIDE_SPELLS
     }
 
     if (power < 0)
     {
         if (HasAura(48517))
             RemoveAurasDueToSpell(48517); // Eclipse (Solar)
-        if (HasAura(94338))
-            RemoveAurasDueToSpell(94338); // Eclipse (Solar) (Aura 332?)
     }
 
     _eclipsePower = power;
