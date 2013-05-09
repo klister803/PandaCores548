@@ -97,6 +97,36 @@ enum DruidSpells
     SPELL_DRUID_NATURES_VIGIL_DAMAGE        = 124991,
 };
 
+// Moonfire - 8921
+class spell_dru_moonfire : public SpellScriptLoader
+{
+    public:
+        spell_dru_moonfire() : SpellScriptLoader("spell_dru_moonfire") { }
+
+        class spell_dru_moonfire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_moonfire_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(SPELL_DRUID_CELESTIAL_ALIGNMENT))
+                            _player->CastSpell(target, SPELL_DRUID_SUNFIRE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_moonfire_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_moonfire_SpellScript();
+        }
+};
+
 // Nature's Vigil - 124974
 class spell_dru_natures_vigil : public SpellScriptLoader
 {
@@ -2377,6 +2407,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_moonfire();
     new spell_dru_natures_vigil();
     new spell_dru_cenarion_ward();
     new spell_dru_ursols_vortex();
