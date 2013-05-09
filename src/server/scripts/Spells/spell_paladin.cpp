@@ -81,6 +81,38 @@ enum PaladinSpells
     PALADIN_SPELL_DIVINE_SHIELD                  = 642,
     PALADIN_SPELL_LAY_ON_HANDS                   = 633,
     PALADIN_SPELL_DIVINE_PROTECTION              = 498,
+    PALADIN_SPELL_GLYPH_OF_AVENGING_WRATH        = 54927,
+    PALADIN_SPELL_AVENGING_WRATH_REGEN_BY_GLYPH  = 115547,
+};
+
+// Called by Avenging Wrath - 31884
+// Glyph of Avenging Wrath - 54927
+class spell_pal_glyph_of_avenging_wrath : public SpellScriptLoader
+{
+    public:
+        spell_pal_glyph_of_avenging_wrath() : SpellScriptLoader("spell_pal_glyph_of_avenging_wrath") { }
+
+        class spell_pal_glyph_of_avenging_wrath_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_glyph_of_avenging_wrath_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_AVENGING_WRATH))
+                        _player->CastSpell(_player, PALADIN_SPELL_AVENGING_WRATH_REGEN_BY_GLYPH, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_glyph_of_avenging_wrath_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_glyph_of_avenging_wrath_SpellScript();
+        }
 };
 
 // Unbreakable Spirit - 114154
@@ -1601,6 +1633,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_glyph_of_avenging_wrath();
     new spell_pal_unbreakable_spirit();
     new spell_pal_shield_of_the_righteous();
     new spell_pal_eternal_flame();

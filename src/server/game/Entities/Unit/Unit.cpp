@@ -8324,6 +8324,11 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Glyph of Avenging Wrath
+        case 54927:
+        {
+            return false;
+        }
         // Shooting Stars
         case 93399:
         {
