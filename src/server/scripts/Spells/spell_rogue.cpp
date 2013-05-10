@@ -129,27 +129,26 @@ class spell_rog_nerve_strike : public SpellScriptLoader
     public:
         spell_rog_nerve_strike() : SpellScriptLoader("spell_rog_nerve_strike") { }
 
-        class spell_rog_nerve_strike_SpellScript : public SpellScript
+        class spell_rog_combat_readiness_AuraScript : public AuraScript
         {
-            PrepareSpellScript(spell_rog_nerve_strike_SpellScript);
+            PrepareAuraScript(spell_rog_combat_readiness_AuraScript);
 
-            void HandleOnHit()
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(ROGUE_SPELL_NERVE_STRIKE_AURA))
-                            _player->CastSpell(target, ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE, true);
+                if (GetCaster() && GetTarget())
+                    if (GetCaster()->HasAura(ROGUE_SPELL_NERVE_STRIKE_AURA))
+                        GetCaster()->CastSpell(GetTarget(), ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE, true);
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_rog_nerve_strike_SpellScript::HandleOnHit);
+                OnEffectRemove += AuraEffectRemoveFn(spell_rog_combat_readiness_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
-            return new spell_rog_nerve_strike_SpellScript();
+            return new spell_rog_combat_readiness_AuraScript();
         }
 };
 
@@ -430,7 +429,7 @@ class spell_rog_restless_blades : public SpellScriptLoader
         }
 };
 
-// Called by Envenom - 1329 and Eviscerate - 2098
+// Called by Envenom - 32645 and Eviscerate - 2098
 // Cut to the Chase - 51667
 class spell_rog_cut_to_the_chase : public SpellScriptLoader
 {
