@@ -599,7 +599,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 typedef std::vector<std::set<uint32> > SpellClassList;
 typedef std::map<uint32, std::list<uint32> > SpellOverrideInfo;
 typedef std::set<uint32> TalentSpellSet;
-typedef std::vector<std::list<uint32>> SpellPowerVector;
+typedef std::vector<std::list<uint32> > SpellPowerVector;
 
 class SpellMgr
 {

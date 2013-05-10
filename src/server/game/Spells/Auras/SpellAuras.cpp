@@ -358,7 +358,7 @@ AuraPtr Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEff
         // we've here aura, which script triggered removal after modding stack amount
         // check the state here, so we won't create new Aura object
         if (foundAura->IsRemoved())
-            return NULL;
+            return NULLAURA;
 
         if (refresh)
             *refresh = true;
@@ -403,7 +403,7 @@ AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* o
         if (!owner->IsInWorld() || ((Unit*)owner)->IsDuringRemoveFromWorld())
             // owner not in world so don't allow to own not self casted single target auras
             if (casterGUID != owner->GetGUID() && spellproto->IsSingleTarget())
-                return NULL;
+                return NULLAURA;
 
     AuraPtr aura = NULLAURA;
     switch (owner->GetTypeId())
@@ -427,7 +427,7 @@ AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* o
             break;
         default:
             ASSERT(false);
-            return NULL;
+            return NULLAURA;
     }
     // aura can be removed in Unit::_AddAura call
     if (aura->IsRemoved())
@@ -466,7 +466,7 @@ void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount)
             m_effects[i]->CalculateSpellMod();
         }
         else
-            m_effects[i] = NULL;
+            m_effects[i] = NULLAURA_EFFECT;
     }
 }
 
@@ -1211,7 +1211,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     if (*itr < 0)
                         target->RemoveAurasDueToSpell(-(*itr));
                     else if (removeMode != AURA_REMOVE_BY_DEATH)
-                        target->CastSpell(target, *itr, true, NULL, NULL, GetCasterGUID());
+                        target->CastSpell(target, *itr, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
                 }
             }
             if (std::vector<int32> const* spellTriggered = sSpellMgr->GetSpellLinked(GetId() + SPELL_LINK_AURA))
@@ -1493,7 +1493,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             {
                 case 50720: // Vigilance
                     if (apply)
-                        target->CastSpell(caster, 59665, true, 0, 0, caster->GetGUID());
+                        target->CastSpell(caster, 59665, true, 0, NULLAURA_EFFECT, caster->GetGUID());
                     else
                         target->SetReducedThreatPercent(0, 0);
                     break;

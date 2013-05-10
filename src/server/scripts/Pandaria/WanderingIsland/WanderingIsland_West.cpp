@@ -1,6 +1,7 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "ScriptedEscortAI.h"
+#include "SpellScript.h"
 #include "Vehicle.h"
 
 #define GOSSIP_WIND     "I would like to go back on the top of the temple"

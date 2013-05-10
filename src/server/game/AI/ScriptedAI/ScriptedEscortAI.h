@@ -6,6 +6,10 @@
 #define SC_ESCORTAI_H
 
 #include "ScriptSystem.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedEscortAI.h"
+#include "ScriptedGossip.h"
 
 #define DEFAULT_MAX_PLAYER_DISTANCE 50
 

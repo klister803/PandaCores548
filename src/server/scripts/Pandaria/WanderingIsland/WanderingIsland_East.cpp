@@ -1,6 +1,7 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "ScriptedEscortAI.h"
+#include "SpellScript.h"
 #include "Vehicle.h"
 
 class AreaTrigger_at_bassin_curse : public AreaTriggerScript
