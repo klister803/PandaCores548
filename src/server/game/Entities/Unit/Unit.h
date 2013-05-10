@@ -2325,8 +2325,6 @@ class Unit : public WorldObject
         bool m_isSorted;
         uint32 m_transform;
 
-        uint32 m_ClearComboPointsExpiredTime;
-
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 
         AuraMap m_ownedAuras;
