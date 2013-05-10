@@ -3234,7 +3234,7 @@ void AuraEffect::HandleModPossessPet(AuraApplication const* aurApp, uint8 mode, 
         pet->RemoveCharmedBy(caster);
 
         if (!pet->IsWithinDistInMap(caster, pet->GetMap()->GetVisibilityRange()))
-            pet->Remove(PET_SLOT_ACTUAL_PET_SLOT, true);
+            pet->Remove(PET_SLOT_OTHER_PET, true);
         else
         {
             // Reinitialize the pet bar and make the pet come back to the owner
@@ -3242,8 +3242,6 @@ void AuraEffect::HandleModPossessPet(AuraApplication const* aurApp, uint8 mode, 
             if (!pet->getVictim())
             {
                 pet->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, pet->GetFollowAngle());
-                //if (target->GetCharmInfo())
-                //    target->GetCharmInfo()->SetCommandState(COMMAND_FOLLOW);
             }
         }
     }

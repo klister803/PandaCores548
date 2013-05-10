@@ -3209,7 +3209,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     // "kill" original creature
     creatureTarget->DespawnOrUnsummon();
 
-    uint8 level = (creatureTarget->getLevel() < (m_caster->getLevel() - 5)) ? (m_caster->getLevel() - 5) : creatureTarget->getLevel();
+    uint8 level = m_caster->getLevel();
 
     // prepare visual effect for levelup
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level - 1);
@@ -3221,18 +3221,13 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
 
     // caster have pet now
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
-    {
-        m_caster->ToPlayer()->m_currentPetSlot = m_caster->ToPlayer()->getSlotForNewPet();
-        m_caster->SetMinion(pet, true, m_caster->ToPlayer()->m_currentPetSlot);
-    }
-    else
-        m_caster->SetMinion(pet, true, PET_SLOT_UNK_SLOT);
+    m_caster->SetMinion(pet, true, m_caster->ToPlayer()->getSlotForNewPet());
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        pet->SavePetToDB(m_caster->ToPlayer()->m_currentPetSlot);
+        pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
         m_caster->ToPlayer()->PetSpellInitialize();
+        m_caster->ToPlayer()->GetSession()->SendStablePet(0);
     }
 }
 
@@ -3250,6 +3245,10 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     }
 
     uint32 petentry = m_spellInfo->Effects[effIndex].MiscValue;
+
+    PetSlot slot = PetSlot(m_spellInfo->Effects[effIndex].BasePoints);
+    if (petentry)
+        slot = PET_SLOT_UNK_SLOT;
 
     if (!owner)
     {
@@ -3289,14 +3288,14 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         }
 
         if (owner->GetTypeId() == TYPEID_PLAYER)
-            owner->ToPlayer()->RemovePet(OldSummon, PET_SLOT_DELETED, false);
+            owner->ToPlayer()->RemovePet(OldSummon, (OldSummon->getPetType() == HUNTER_PET ? PET_SLOT_DELETED : PET_SLOT_OTHER_PET), false);
         else
             return;
     }
 
     float x, y, z;
     owner->GetClosePoint(x, y, z, owner->GetObjectSize());
-    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, m_caster->CalcSpellDuration(m_spellInfo), PetSlot(m_spellInfo->Effects[effIndex].BasePoints));
+    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0, PetSlot(slot));
     if (!pet)
         return;
 
@@ -5508,7 +5507,10 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
         return;
 
     Pet* pet = player->GetPet();
-    if (pet && pet->isAlive())
+    if (!pet)
+        return;
+
+    if (pet->isAlive())
         return;
 
     if (damage < 0)
@@ -5516,13 +5518,6 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
 
     float x, y, z;
     player->GetPosition(x, y, z);
-    if (!pet)
-    {
-        player->SummonPet(0, x, y, z, player->GetOrientation(), SUMMON_PET, 0);
-        pet = player->GetPet();
-    }
-    if (!pet)
-        return;
 
     player->GetMap()->CreatureRelocation(pet, x, y, z, player->GetOrientation());
 

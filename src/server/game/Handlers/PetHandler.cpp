@@ -706,7 +706,10 @@ void WorldSession::HandlePetAbandon(WorldPacket& recvData)
     if (pet)
     {
         if (pet->isPet())
+        {
             _player->RemovePet((Pet*)pet, PET_SLOT_DELETED);
+            _player->GetSession()->SendStablePet(0);
+        }
         else if (pet->GetGUID() == _player->GetCharmGUID())
             _player->StopCastingCharm();
     }

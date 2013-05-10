@@ -1524,6 +1524,8 @@ class Player : public Unit, public GridObject<Player>
 
         bool AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount = NULL);
 
+        uint32 m_stableSlots;
+
         /*********************************************************/
         /***                    GOSSIP SYSTEM                  ***/
         /*********************************************************/
@@ -2534,18 +2536,17 @@ class Player : public Unit, public GridObject<Player>
         void setPetSlotUsed(PetSlot slot, bool used)
         {
             if (used)
-                m_petSlotUsed |= (1 << uint32(slot));
+                m_petSlotUsed |= (1 << int32(slot));
             else
-                m_petSlotUsed &= ~(1 << uint32(slot));
+                m_petSlotUsed &= ~(1 << int32(slot));
         }
 
         PetSlot getSlotForNewPet()
         {
-            // Some changes here
             uint32 last_known = 0;
-            // Call pet Spells
-            // 883, 83242, 83243, 83244, 83245
-            //  1     2      3      4      5
+            // Call Pet Spells
+            // 883 83242 83243 83244 83245
+            //  1    2     3     4     5
             if (HasSpell(83245))
                 last_known = 5;
             else if (HasSpell(83244))
@@ -2557,18 +2558,11 @@ class Player : public Unit, public GridObject<Player>
             else if (HasSpell(883))
                 last_known = 1;
 
-            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; i++)
-            {
-                sLog->outDebug(LOG_FILTER_PETS, ">>>>>>> %u %u", i, last_known);
+            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; ++i)
                 if ((m_petSlotUsed & (1 << i)) == 0)
-                {
-                    sLog->outDebug(LOG_FILTER_PETS, ">>>>>>> slot %u not used !", i);
                     return PetSlot(i);
-                }
-            }
 
-            // If there is no slots available, then we should point that out
-            return PET_SLOT_FULL_LIST; // (PetSlot)last_known
+            return PET_SLOT_FULL_LIST;
         }
 
         // currently visible objects at player client

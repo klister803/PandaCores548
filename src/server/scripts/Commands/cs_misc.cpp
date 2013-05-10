@@ -2459,7 +2459,7 @@ public:
         }
 
         // prepare visual effect for levelup
-        pet->SetUInt32Value(UNIT_FIELD_LEVEL, player->getLevel()-1);
+        pet->SetUInt32Value(UNIT_FIELD_LEVEL, creatureTarget->getLevel()-1);
 
         pet->GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
         // this enables pet details window (Shift+P)
@@ -2469,7 +2469,7 @@ public:
         pet->GetMap()->AddToMap(pet->ToCreature());
 
         // visual effect for levelup
-        pet->SetUInt32Value(UNIT_FIELD_LEVEL, player->getLevel());
+        pet->SetUInt32Value(UNIT_FIELD_LEVEL, creatureTarget->getLevel());
 
         player->SetMinion(pet, true, PET_SLOT_UNK_SLOT);
         pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
@@ -2598,7 +2598,7 @@ public:
                     pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
                  // not let dismiss dead pet
                  if (pet && pet->isAlive())
-                    player->RemovePet(pet, PET_SLOT_OTHER_PET);
+                    player->RemovePet(pet, PET_SLOT_HUNTER_FIRST);
                 }
             }
 

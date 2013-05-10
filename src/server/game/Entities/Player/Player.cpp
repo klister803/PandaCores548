@@ -850,8 +850,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
         m_forced_speed_changes[i] = 0;
 
-    m_currentPetSlot = PET_SLOT_DEFAULT;
-    m_petSlotUsed = 0;
+    m_stableSlots = 0;
 
     /////////////////// Instance System /////////////////////
 
@@ -17614,13 +17613,13 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //QueryResult* result = CharacterDatabase.PQuery("SELECT guid, account, name, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
      // 12          13          14          15   16           17        18        19         20         21          22           23                 24
     //"position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, "
-    // 25                 26          27       28       29       30       31         32           33         34     35          36              37              38
-    //"resettalents_time, talentTree, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, at_login, zone, online, death_expire_time, taxi_path, instance_mode_mask, "
-    //    39           40          41              42           43            44
+    // 25                 26          27       28       29       30       31         32           33               34     35      36         37              38               39
+    //"resettalents_time, talentTree, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, instance_mode_mask, "
+    //    40           41          42              43           44           45
     //"totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
-    // 45      46      47      48      49      50      51           52         53             54               55                  56              57
+    // 46      47      48      49      50      51      52           53         54             55               56                 57              58
     //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, specialization1, specialization2, exploredZones, equipmentCache, "
-    // 58           59              60               61                 62              63                              64
+    // 59           60              61               62                 63              64                              65
     //"knownTitles, actionBars, currentpetslot, petslotused, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
@@ -17686,8 +17685,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[6].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[7].GetUInt32());
 
-    _LoadIntoDataField(fields[56].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
-    _LoadIntoDataField(fields[58].GetCString(), PLAYER_FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
+    _LoadIntoDataField(fields[57].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
+    _LoadIntoDataField(fields[59].GetCString(), PLAYER_FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
@@ -17707,16 +17706,16 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(PLAYER_BYTES, fields[9].GetUInt32());
     SetUInt32Value(PLAYER_BYTES_2, fields[10].GetUInt32());
     SetByteValue(PLAYER_BYTES_3, 0, fields[5].GetUInt8());
-    SetByteValue(PLAYER_BYTES_3, 1, fields[44].GetUInt8());
+    SetByteValue(PLAYER_BYTES_3, 1, fields[45].GetUInt8());
     SetUInt32Value(PLAYER_FLAGS, fields[11].GetUInt32());
-    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[43].GetUInt32());
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[44].GetUInt32());
 
     // set which actionbars the client has active - DO NOT REMOVE EVER AGAIN (can be changed though, if it does change fieldwise)
 
-    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[59].GetUInt8());
+    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
 
-    m_currentPetSlot = (PetSlot)fields[60].GetUInt8();
-    m_petSlotUsed = fields[61].GetUInt32();
+    m_currentPetSlot = (PetSlot)fields[61].GetUInt8();
+    m_petSlotUsed = fields[62].GetUInt32();
 
     InitDisplayIds();
 
@@ -17749,18 +17748,18 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     Relocate(fields[12].GetFloat(), fields[13].GetFloat(), fields[14].GetFloat(), fields[16].GetFloat());
 
     uint32 mapId = fields[15].GetUInt16();
-    uint32 instanceId = fields[51].GetUInt32();
+    uint32 instanceId = fields[52].GetUInt32();
 
-    uint32 dungeonDiff = fields[38].GetUInt8() & 0x0F;
+    uint32 dungeonDiff = fields[39].GetUInt8() & 0x0F;
     if (dungeonDiff >= MAX_DUNGEON_DIFFICULTY)
         dungeonDiff = REGULAR_DIFFICULTY;
-    uint32 raidDiff = (fields[38].GetUInt8() >> 4) & 0x0F;
+    uint32 raidDiff = (fields[39].GetUInt8() >> 4) & 0x0F;
     if (raidDiff >= MAX_RAID_DIFFICULTY)
         raidDiff = MAN10_DIFFICULTY;
     SetDungeonDifficulty(Difficulty(dungeonDiff));          // may be changed in _LoadGroup
     SetRaidDifficulty(Difficulty(raidDiff));                // may be changed in _LoadGroup
 
-    std::string taxi_nodes = fields[37].GetString();
+    std::string taxi_nodes = fields[38].GetString();
 
 #define RelocateToHomebind(){ mapId = m_homebindMapId; instanceId = 0; Relocate(m_homebindX, m_homebindY, m_homebindZ); }
 
@@ -17785,9 +17784,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCURRENCY));
-    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[39].GetUInt32());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[40].GetUInt16());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[41].GetUInt16());
+    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[40].GetUInt32());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[41].GetUInt16());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[42].GetUInt16());
 
     _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
     _LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
@@ -17796,7 +17795,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     GetSession()->SetPlayer(this);
     MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
 
-    m_atLoginFlags = fields[33].GetUInt16();
+    m_atLoginFlags = fields[34].GetUInt16();
     bool mustResurrectFromUnlock = false;
 
     if(m_atLoginFlags & AT_LOGIN_UNLOCK)
@@ -18063,19 +18062,26 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetTalentResetCost(fields[24].GetUInt32());
     SetTalentResetTime(time_t(fields[25].GetUInt32()));
 
-    SetSpecializationResetCost(fields[63].GetUInt32());
-    SetSpecializationResetTime(time_t(fields[64].GetUInt32()));
+    SetSpecializationResetCost(fields[64].GetUInt32());
+    SetSpecializationResetTime(time_t(fields[65].GetUInt32()));
 
     m_taxi.LoadTaxiMask(fields[17].GetCString());            // must be before InitTaxiNodesForLevel
 
     uint32 extraflags = fields[32].GetUInt16();
+
+    m_stableSlots = fields[33].GetUInt8();
+    if (m_stableSlots > MAX_PET_STABLES)
+    {
+        sLog->outError(LOG_FILTER_PLAYER, "Player can have not more %u stable slots, but have in DB %u", MAX_PET_STABLES, uint32(m_stableSlots));
+        m_stableSlots = MAX_PET_STABLES;
+    }
 
     // Honor system
     // Update Honor kills data
     m_lastHonorUpdateTime = logoutTime;
     UpdateHonorFields();
 
-    m_deathExpireTime = time_t(fields[36].GetUInt32());
+    m_deathExpireTime = time_t(fields[37].GetUInt32());
     if (m_deathExpireTime > now+MAX_DEATH_COUNT*DEATH_EXPIRE_STEP)
         m_deathExpireTime = now+MAX_DEATH_COUNT*DEATH_EXPIRE_STEP-1;
 
@@ -18134,11 +18140,11 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
     //_LoadMail();
 
-    SetSpecsCount(fields[52].GetUInt8());
-    SetActiveSpec(fields[53].GetUInt8());
+    SetSpecsCount(fields[53].GetUInt8());
+    SetActiveSpec(fields[54].GetUInt8());
 
-    SetSpecializationId(0, fields[54].GetUInt32());
-    SetSpecializationId(1, fields[55].GetUInt32());
+    SetSpecializationId(0, fields[55].GetUInt32());
+    SetSpecializationId(1, fields[56].GetUInt32());
 
     SetFreeTalentPoints(CalculateTalentsPoints());
 
@@ -18192,7 +18198,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER_FIELD_KNOWN_TITLES
     // note: PLAYER_FIELD_KNOWN_TITLES updated at quest status loaded
-    uint32 curTitle = fields[42].GetUInt32();
+    uint32 curTitle = fields[43].GetUInt32();
     if (curTitle && !HasTitle(curTitle))
         curTitle = 0;
 
@@ -18215,14 +18221,14 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     UpdateAllStats();
 
     // restore remembered power/health values (but not more max values)
-    uint32 savedHealth = fields[45].GetUInt32();
+    uint32 savedHealth = fields[46].GetUInt32();
     SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
     uint32 loadedPowers = 0;
     for (uint32 i = 0; i < MAX_POWERS; ++i)
     {
         if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
         {
-            uint32 savedPower = fields[46+loadedPowers].GetUInt32();
+            uint32 savedPower = fields[47+loadedPowers].GetUInt32();
             uint32 maxPower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + loadedPowers);
             SetPower(Powers(i), (savedPower > maxPower) ? maxPower : savedPower);
             if (++loadedPowers >= MAX_POWERS_PER_CLASS)
@@ -18301,7 +18307,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // RaF stuff.
-    m_grantableLevels = fields[62].GetUInt8();
+    m_grantableLevels = fields[63].GetUInt8();
 
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
         SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
@@ -19749,6 +19755,7 @@ void Player::SaveToDB(bool create /*=false*/)
             ss << GetPrimaryTalentTree(i) << " ";
         stmt->setString(index++, ss.str());
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
+        stmt->setUInt8(index++,  m_stableSlots);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
         stmt->setUInt16(index++, GetZoneId());
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
@@ -19873,6 +19880,7 @@ void Player::SaveToDB(bool create /*=false*/)
             ss << GetPrimaryTalentTree(i) << " ";
         stmt->setString(index++, ss.str());
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
+        stmt->setUInt8(index++,  m_stableSlots);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
         stmt->setUInt16(index++, GetZoneId());
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
@@ -21001,40 +21009,13 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampede
             return;
     }
 
-    if (mode == PET_SLOT_ACTUAL_PET_SLOT)
-        mode = m_currentPetSlot;
-
-    if (returnreagent && (pet || m_temporaryUnsummonedPetNumber) && !InBattleground())
-    {
-        //returning of reagents only for players, so best done here
-        uint32 spellId = pet ? pet->GetUInt32Value(UNIT_CREATED_BY_SPELL) : m_oldpetspell;
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-
-        if (spellInfo)
-        {
-            for (uint32 i = 0; i < MAX_SPELL_REAGENTS; ++i)
-            {
-                if (spellInfo->Reagent[i] > 0)
-                {
-                    ItemPosCountVec dest;                   //for succubus, voidwalker, felhunter and felguard credit soulshard when despawn reason other than death (out of range, logout)
-                    InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, spellInfo->Reagent[i], spellInfo->ReagentCount[i]);
-                    if (msg == EQUIP_ERR_OK)
-                    {
-                        Item* item = StoreNewItem(dest, spellInfo->Reagent[i], true);
-                        if (IsInWorld())
-                            SendNewItem(item, spellInfo->ReagentCount[i], true, false);
-                    }
-                }
-            }
-        }
-        m_temporaryUnsummonedPetNumber = 0;
-    }
-
     if (!pet || pet->GetOwnerGUID() != GetGUID())
         return;
 
-    pet->CombatStop();
+    if (mode == PET_SLOT_ACTUAL_PET_SLOT)
+        mode = PetSlot(pet->GetSlot());
 
+    pet->CombatStop();
     // only if current pet in slot
     pet->SavePetToDB(mode, stampeded);
 
@@ -25890,7 +25871,13 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
     if (GetPetGUID())
         return;
 
+    PetSlot summonSlot = PET_SLOT_UNK_SLOT;
+
     Pet* NewPet = new Pet(this);
+
+    if (getClass() == CLASS_HUNTER)
+        summonSlot = m_currentPetSlot;
+
     if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
         delete NewPet;
 
@@ -26392,6 +26379,10 @@ void Player::ActivateSpec(uint8 spec)
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     _SaveActions(trans);
     CharacterDatabase.CommitTransaction(trans);
+
+    // TO-DO: We need more research to know what happens with warlock's reagent
+    if (Pet* pet = GetPet())
+        RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT, true);
 
     ClearComboPointHolders();
     ClearAllReactives();

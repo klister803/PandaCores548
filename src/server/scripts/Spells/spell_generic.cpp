@@ -300,9 +300,10 @@ class spell_gen_pet_summoned : public SpellScriptLoader
                         if (newPet->LoadPetFromDB(player, 0, player->GetLastPetNumber(), true))
                         {
                             // revive the pet if it is dead
-                            if (newPet->getDeathState() == DEAD)
+                            if (newPet->getDeathState() == DEAD || newPet->getDeathState() == CORPSE)
                                 newPet->setDeathState(ALIVE);
 
+                            newPet->ClearUnitState(uint32(UNIT_STATE_ALL_STATE));
                             newPet->SetFullHealth();
                             newPet->SetPower(newPet->getPowerType(), newPet->GetMaxPower(newPet->getPowerType()));
 
@@ -2977,7 +2978,7 @@ class spell_gen_summon_elemental : public SpellScriptLoader
                 if (GetCaster())
                     if (Unit* owner = GetCaster()->GetOwner())
                         if (owner->GetTypeId() == TYPEID_PLAYER) // todo: this check is maybe wrong
-                            owner->ToPlayer()->RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+                            owner->ToPlayer()->RemovePet(NULL, PET_SLOT_OTHER_PET, true);
             }
 
             void Register()

@@ -542,7 +542,13 @@ void WorldSession::LogoutPlayer(bool Save)
             guild->HandleMemberLogout(this);
 
         ///- Remove pet
-        _player->RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+        if (_player->getClass() != CLASS_WARLOCK)
+            _player->RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+        else
+        {
+            if (Pet* _pet = _player->GetPet())
+                _pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+        }
 
         ///- empty buyback items and save the player in the database
         // some save parts only correctly work in case player present in map/player_lists (pets, etc)
