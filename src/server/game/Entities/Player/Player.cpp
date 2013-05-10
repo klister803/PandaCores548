@@ -2897,7 +2897,12 @@ void Player::Regenerate(Powers power)
             if (GetPower(POWER_DEMONIC_FURY) == 1000)
                 CastSpell(this, 131755, true);
             else if (GetPower(POWER_DEMONIC_FURY) >= 500)
+            {
                 CastSpell(this, 122738, true);
+
+                if (HasAura(131755))
+                    RemoveAura(131755);
+            }
             else
             {
                 if (HasAura(122738))
