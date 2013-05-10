@@ -28,6 +28,10 @@ enum spells
     PETRIFIED = 125092,
     FULLY_PETRIFIED = 115877,
     MONSTROUS_BITE = 125096,
+    SUNDERING_BITE = 116970,
+    PROTECTIVE_FENZY = 116982,
+    SHATTERING_STONE = 116977,
+    FOCUSED_ASSAULT = 116990,
 };
 
 class mob_cursed_mogu_sculture : public CreatureScript
@@ -151,6 +155,86 @@ class mob_enormous_stone_quilen : public CreatureScript
         }
 };
 
+class mob_stone_quilen : public CreatureScript
+{
+    public:
+        mob_stone_quilen() : CreatureScript("mob_stone_quilen") {}
+
+        struct mob_stone_quilenAI : public ScriptedAI
+        {
+            mob_stone_quilenAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+            EventMap events;
+            uint32 sunderingBiteTimer;
+            uint32 shatteringStoneTimer;
+            uint32 focusedAssaultTimer;
+
+            void Reset()
+            {
+                sunderingBiteTimer = urand (5000, 6000);
+                shatteringStoneTimer = urand (10000, 12000);
+                focusedAssaultTimer = urand (500, 5000);
+            }
+
+            void EnterCombat(Unit* attacker)
+            {
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (me->GetHealth() <= me->GetMaxHealth()/10)
+                    me->CastSpell(me, PROTECTIVE_FENZY, true);
+
+                if (focusedAssaultTimer <= diff)
+                {
+                    if (Unit* target = me->SelectNearestTarget(5.0f))
+                    {
+                        me->AddAura(FOCUSED_ASSAULT, target);
+                    }
+                    focusedAssaultTimer = urand(500, 5000);
+                }
+                else
+                    shatteringStoneTimer -= diff;
+
+                if (shatteringStoneTimer <= diff)
+                {
+                    if (Unit* target = me->SelectNearestTarget(5.0f))
+                    {
+                        me->CastSpell(target, SHATTERING_STONE, true);
+                    }
+                    shatteringStoneTimer = urand(10000, 12000);
+                }
+                else
+                    shatteringStoneTimer -= diff;
+
+                if (sunderingBiteTimer <= diff)
+                {
+                    if (Unit* target = me->SelectNearestTarget(5.0f))
+                    {
+                        me->CastSpell(target, SUNDERING_BITE, true);
+                    }
+                    sunderingBiteTimer = urand(5000, 6000);
+                }
+                else
+                    sunderingBiteTimer -= diff;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_stone_quilenAI(creature);
+        }
+};
+
 class spell_mogu_petrification : public SpellScriptLoader
 {
     public:
@@ -224,6 +308,7 @@ void AddSC_mogu_shan_vault()
 {
     new mob_cursed_mogu_sculture();
     new mob_enormous_stone_quilen();
+    new mob_stone_quilen();
     new spell_mogu_petrification();
     new spell_mogu_monstrous_bite();
 }
