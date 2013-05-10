@@ -3025,7 +3025,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 26863:
             case 48656:
             case 48657:
-            case 703: // Garrote
             case 8631:
             case 8632:
             case 8633:
