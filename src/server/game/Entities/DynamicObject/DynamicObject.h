@@ -20,6 +20,8 @@
 #define DYNAMICOBJECT_H
 
 #include "Object.h"
+#include "../SharedPtrs/SharedPtrs.h"
+
 
 class Unit;
 class Aura;

@@ -193,7 +193,7 @@ void DynamicObject::RemoveAura()
 {
     ASSERT(_aura && !_removedAura);
     _removedAura = _aura;
-    _aura = NULL;
+    _aura = NULLAURA;
     if (!_removedAura->IsRemoved())
         _removedAura->_Remove(AURA_REMOVE_BY_DEFAULT);
 }

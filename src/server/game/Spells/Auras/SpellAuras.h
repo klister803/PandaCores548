@@ -168,7 +168,7 @@ class Aura : public std::enable_shared_from_this<Aura>
         void SetLoadedState(int32 maxduration, int32 duration, int32 charges, uint8 stackamount, uint32 recalculateMask, int32 * amount);
 
         // helpers for aura effects
-        bool HasEffect(uint8 effIndex) const { return GetEffect(effIndex) != NULL; }
+        bool HasEffect(uint8 effIndex) const { return GetEffect(effIndex) != NULLAURA_EFFECT; }
         bool HasEffectType(AuraType type) const;
         AuraEffectPtr GetEffect(uint8 effIndex) const { ASSERT (effIndex < MAX_SPELL_EFFECTS); return m_effects[effIndex]; }
         uint32 GetEffectMask() const { uint32 effMask = 0; for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i) if (m_effects[i]) effMask |= 1<<i; return effMask; }

@@ -21,6 +21,26 @@
 ## npc_stormwind_infantry
 ######*/
 
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "ScriptedEscortAI.h"
+#include "ObjectMgr.h"
+#include "ScriptMgr.h"
+#include "World.h"
+#include "PetAI.h"
+#include "PassiveAI.h"
+#include "CombatAI.h"
+#include "GameEventMgr.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "Cell.h"
+#include "CellImpl.h"
+#include "SpellAuras.h"
+#include "Vehicle.h"
+#include "Player.h"
+#include "SpellScript.h"
+
 #define NPC_WOLF    49871
 
 class npc_stormwind_infantry : public CreatureScript

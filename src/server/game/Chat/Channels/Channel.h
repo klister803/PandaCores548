@@ -28,6 +28,7 @@
 #include "Opcodes.h"
 #include "Player.h"
 #include "WorldPacket.h"
+#include "LockedMap.h"
 
 enum ChatNotify
 {

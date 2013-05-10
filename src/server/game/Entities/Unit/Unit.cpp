@@ -638,7 +638,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         else
             basepoints = CalculatePct(damage, 150);
 
-        CastCustomSpell(GetOwner(), 58879, &basepoints, NULL, NULL, true, 0, NULL, GetGUID());
+        CastCustomSpell(GetOwner(), 58879, &basepoints, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID());
     }
     // Searing Flames - 77657 : Fire Elemental attacks or Searing Totem attacks
     if (GetOwner() && (GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
@@ -703,7 +703,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         // In addition, you also gain Eminence, causing you to heal the lowest health nearby target within 20 yards for an amount equal to 50% of non-autoattack damage you deal
         for (auto itr : targetList)
         {
-            CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+            CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
 
             if (statueList.size() == 1)
             {
@@ -712,7 +712,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
                 if (statue && (statue->isPet() || statue->isGuardian()))
                     if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
-                        statue->CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+                        statue->CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
             }
         }
     }
@@ -751,7 +751,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         }
 
         // you gain Serpent's Zeal causing you to heal nearby injured targets equal to 25% of your auto-attack damage. Stacks up to 2 times.
-        CastCustomSpell(this, 126890, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+        CastCustomSpell(this, 126890, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
 
         if (statueList.size() == 1)
         {
@@ -760,7 +760,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
             if (statue && (statue->isPet() || statue->isGuardian()))
                 if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
-                    statue->CastCustomSpell(statue, 126890, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+                    statue->CastCustomSpell(statue, 126890, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
         }
     }
 
@@ -4256,7 +4256,7 @@ AuraEffectPtr Unit::GetAuraEffect(uint32 spellId, uint8 effIndex, uint64 caster)
     for (AuraApplicationMap::const_iterator itr = m_appliedAuras.lower_bound(spellId); itr != m_appliedAuras.upper_bound(spellId); ++itr)
         if (itr->second->HasEffect(effIndex) && (!caster || itr->second->GetBase()->GetCasterGUID() == caster))
             return itr->second->GetBase()->GetEffect(effIndex);
-    return NULL;
+    return NULLAURA_EFFECT;
 }
 
 AuraEffectPtr Unit::GetAuraEffectOfRankedSpell(uint32 spellId, uint8 effIndex, uint64 caster) const
@@ -4268,7 +4268,7 @@ AuraEffectPtr Unit::GetAuraEffectOfRankedSpell(uint32 spellId, uint8 effIndex, u
             return aurEff;
         rankSpell = sSpellMgr->GetNextSpellInChain(rankSpell);
     }
-    return NULL;
+    return NULLAURA_EFFECT;
 }
 
 AuraEffectPtr Unit::GetAuraEffect(AuraType type, SpellFamilyNames name, uint32 iconId, uint8 effIndex) const
@@ -4282,7 +4282,7 @@ AuraEffectPtr Unit::GetAuraEffect(AuraType type, SpellFamilyNames name, uint32 i
         if (spell->SpellIconID == iconId && spell->SpellFamilyName == uint32(name) && !spell->SpellFamilyFlags)
             return *itr;
     }
-    return NULL;
+    return NULLAURA_EFFECT;
 }
 
 AuraEffectPtr Unit::GetAuraEffect(AuraType type, SpellFamilyNames family, uint32 familyFlag1, uint32 familyFlag2, uint32 familyFlag3, uint64 casterGUID)
@@ -4298,7 +4298,7 @@ AuraEffectPtr Unit::GetAuraEffect(AuraType type, SpellFamilyNames family, uint32
             return (*i);
         }
     }
-    return NULL;
+    return NULLAURA_EFFECT;
 }
 
 AuraApplication * Unit::GetAuraApplication(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint32 reqEffMask, AuraApplication * except) const
@@ -4493,7 +4493,7 @@ AuraEffectPtr Unit::IsScriptOverriden(SpellInfo const* spell, int32 script) cons
             if ((*i)->IsAffectingSpell(spell))
                 return (*i);
     }
-    return NULL;
+    return NULLAURA_EFFECT;
 }
 
 uint32 Unit::GetDiseasesByCaster(uint64 casterGUID, bool remove)
@@ -6056,7 +6056,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 // Glyph of Icy Veins
                 case 56374:
                 {
-                    RemoveAurasByType(SPELL_AURA_HASTE_SPELLS, 0, 0, true, false);
+                    RemoveAurasByType(SPELL_AURA_HASTE_SPELLS, 0, NULLAURA, true, false);
                     RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
                     return true;
                 }
@@ -15816,7 +15816,7 @@ void Unit::SetDisplayId(uint32 modelId)
 
 void Unit::RestoreDisplayId()
 {
-    AuraEffectPtr handledAura = NULL;
+    AuraEffectPtr handledAura = NULLAURA_EFFECT;
     // try to receive model from transform auras
     Unit::AuraEffectList const& transforms = GetAuraEffectsByType(SPELL_AURA_TRANSFORM);
     if (!transforms.empty())
@@ -16398,7 +16398,7 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffectPtr triggeredByAura)
     }
 
     // heal
-    CastCustomSpell(this, 33110, &heal, NULL, NULL, true, NULL, NULL, caster_guid);
+    CastCustomSpell(this, 33110, &heal, NULL, NULL, true, NULL, NULLAURA_EFFECT, caster_guid);
     return true;
 
 }
@@ -18365,7 +18365,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
             }
 
             if (IsInMap(caster))
-                caster->CastCustomSpell(itr->second.spellId, SpellValueMod(SPELLVALUE_BASE_POINT0+i), seatId+1, target, false, NULL, NULL, origCasterGUID);
+                caster->CastCustomSpell(itr->second.spellId, SpellValueMod(SPELLVALUE_BASE_POINT0+i), seatId+1, target, false, NULL, NULLAURA_EFFECT, origCasterGUID);
             else    // This can happen during Player::_LoadAuras
             {
                 int32 bp0 = seatId;
@@ -18375,7 +18375,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
         else
         {
             if (IsInMap(caster))
-                caster->CastSpell(target, spellEntry, false, NULL, NULL, origCasterGUID);
+                caster->CastSpell(target, spellEntry, false, NULL, NULLAURA_EFFECT, origCasterGUID);
             else
                 Aura::TryRefreshStackOrCreate(spellEntry, MAX_EFFECT_MASK, this, clicker, spellEntry->spellPower, NULL, NULL, origCasterGUID);
         }
@@ -18900,8 +18900,8 @@ void Unit::SendClearTarget()
 
 bool Unit::IsVisionObscured(Unit* victim)
 {
-    AuraPtr victimAura = NULL;
-    AuraPtr myAura = NULL;
+    AuraPtr victimAura = NULLAURA;
+    AuraPtr myAura = NULLAURA;
     Unit* victimCaster = NULL;
     Unit* myCaster = NULL;
 
@@ -18920,12 +18920,12 @@ bool Unit::IsVisionObscured(Unit* victim)
         break;
     }
 
-    if ((myAura != NULL && myCaster == NULL) || (victimAura != NULL && victimCaster == NULL))
+    if ((myAura != NULLAURA && myCaster == NULL) || (victimAura != NULLAURA && victimCaster == NULL))
         return false; // Failed auras, will result in crash
 
     // E.G. Victim is in smoke bomb, and I'm not
     // Spells fail unless I'm friendly to the caster of victim's smoke bomb
-    if (victimAura != NULL && myAura == NULL)
+    if (victimAura != NULLAURA && myAura == NULLAURA)
     {
         if (IsFriendlyTo(victimCaster))
             return false;
@@ -18934,7 +18934,7 @@ bool Unit::IsVisionObscured(Unit* victim)
     }
     // Victim is not in smoke bomb, while I am
     // Spells fail if my smoke bomb aura's caster is my enemy
-    else if (myAura != NULL && victimAura == NULL)
+    else if (myAura != NULLAURA && victimAura == NULLAURA)
     {
         if (IsFriendlyTo(myCaster))
             return false;

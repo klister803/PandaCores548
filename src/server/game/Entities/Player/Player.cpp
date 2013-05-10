@@ -2615,7 +2615,7 @@ void Player::ProcessDelayedOperations()
         SetPower(POWER_ECLIPSE, 0);
 
         if (uint32 aura = _resurrectionData->Aura)
-            CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
+            CastSpell(this, aura, true, NULL, NULLAURA_EFFECT, _resurrectionData->GUID);
 
         SpawnCorpseBones();
     }
@@ -15256,7 +15256,7 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             break;
         case GOSSIP_OPTION_SPIRITHEALER:
             if (isDead())
-                source->ToCreature()->CastSpell(source->ToCreature(), 17251, true, NULL, NULL, GetGUID());
+                source->ToCreature()->CastSpell(source->ToCreature(), 17251, true, NULL, NULLAURA_EFFECT, GetGUID());
             break;
         case GOSSIP_OPTION_QUESTGIVER:
             PrepareQuestMenu(guid);
@@ -15277,8 +15277,8 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             {
                 // Cast spells that teach dual spec
                 // Both are also ImplicitTarget self and must be cast by player
-                CastSpell(this, 63680, true, NULL, NULL, GetGUID());
-                CastSpell(this, 63624, true, NULL, NULL, GetGUID());
+                CastSpell(this, 63680, true, NULL, NULLAURA_EFFECT, GetGUID());
+                CastSpell(this, 63624, true, NULL, NULLAURA_EFFECT, GetGUID());
 
                 // Should show another Gossip text with "Congratulations..."
                 PlayerTalkClass->SendCloseGossip();
@@ -24517,7 +24517,7 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_CHI, 0);
 
     if (uint32 aura = _resurrectionData->Aura)
-        CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
+        CastSpell(this, aura, true, NULL, NULLAURA_EFFECT, _resurrectionData->GUID);
 
     SpawnCorpseBones();
 }
@@ -25308,7 +25308,7 @@ void Player::RemoveRunesByAuraEffect(constAuraEffectPtr aura)
         if (m_runes->runes[i].ConvertAura == aura)
         {
             ConvertRune(i, GetBaseRune(i));
-            SetRuneConvertAura(i, NULL);
+            SetRuneConvertAura(i, NULLAURA_EFFECT);
         }
     }
 }
@@ -25320,7 +25320,7 @@ void Player::RestoreBaseRune(uint8 index)
     if (aura && !(aura->GetSpellInfo()->Attributes & SPELL_ATTR0_PASSIVE))
         return;
     ConvertRune(index, GetBaseRune(index));
-    SetRuneConvertAura(index, NULL);
+    SetRuneConvertAura(index, NULLAURA_EFFECT);
     // Don't drop passive talents providing rune convertion
     if (!aura || aura->GetAuraType() != SPELL_AURA_CONVERT_RUNE)
         return;
@@ -25386,7 +25386,7 @@ void Player::InitRunes()
         SetBaseRune(i, runeSlotTypes[i]);                              // init base types
         SetCurrentRune(i, runeSlotTypes[i]);                           // init current types
         SetRuneCooldown(i, 0);                                         // reset cooldowns
-        SetRuneConvertAura(i, NULL);
+        SetRuneConvertAura(i, NULLAURA_EFFECT);
         m_runes->SetRuneState(i);
     }
 
@@ -27235,7 +27235,7 @@ void Player::_LoadStore()
 
             	if ((GetMoney() + po) > MAX_MONEY_AMOUNT)
             	{
-            		std::string message = GetSession()->GetSessionDbcLocale() == LocaleConstant::LOCALE_frFR ? "Vous avez déjà atteint la limite de pièces d'or" : "You have already reach max amount of gold";
+            		std::string message = GetSession()->GetSessionDbcLocale() == LOCALE_frFR ? "Vous avez déjà atteint la limite de pièces d'or" : "You have already reach max amount of gold";
             		GetSession()->SendNotification(message.c_str());
             	}
             	else
@@ -27297,7 +27297,7 @@ void Player::_LoadStore()
         while(itemList->NextRow());
 
         if(ShopError)
-            GetSession()->SendNotification(GetSession()->GetSessionDbcLocale() == LocaleConstant::LOCALE_frFR ? "Verifiez que vous avez assez de place dans votre inventaire." : "Check if you have free slot in your inventory");
+            GetSession()->SendNotification(GetSession()->GetSessionDbcLocale() == LOCALE_frFR ? "Verifiez que vous avez assez de place dans votre inventaire." : "Check if you have free slot in your inventory");
     }
 
     // Load des powerlevels

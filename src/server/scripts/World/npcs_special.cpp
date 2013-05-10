@@ -1333,8 +1333,8 @@ class npc_rogue_trainer : public CreatureScript
 
                             // Cast spells that teach dual spec
                             // Both are also ImplicitTarget self and must be cast by player
-                            player->CastSpell(player, 63680, true, NULL, NULL, player->GetGUID());
-                            player->CastSpell(player, 63624, true, NULL, NULL, player->GetGUID());
+                            player->CastSpell(player, 63680, true, NULL, NULLAURA_EFFECT, player->GetGUID());
+                            player->CastSpell(player, 63624, true, NULL, NULLAURA_EFFECT, player->GetGUID());
 
                             // Should show another Gossip text with "Congratulations..."
                             player->PlayerTalkClass->SendCloseGossip();
@@ -1886,7 +1886,7 @@ class npc_mirror_image : public CreatureScript
                 Unit* owner = me->GetOwner();
                 if (!owner)
                     return;
-                me->SetReactState(ReactStates::REACT_DEFENSIVE);
+                me->SetReactState(REACT_DEFENSIVE);
                 // Inherit Master's Threat List (not yet implemented)
                 owner->CastSpell((Unit*)NULL, 58838, true);
                 // here mirror image casts on summoner spell (not present in client dbc) 49866
@@ -3335,7 +3335,7 @@ class npc_shadowy_apparition : public CreatureScript
                         creature->CastSpell(creature, 87427, true); // Shadow aura
                         creature->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
                         creature->SetUInt32Value(UNIT_CREATED_BY_SPELL, 113724);
-                        creature->SetReactState(ReactStates::REACT_PASSIVE);
+                        creature->SetReactState(REACT_PASSIVE);
                     }
                 }
             }
@@ -3505,9 +3505,9 @@ class npc_guardian_of_ancient_kings : public CreatureScript
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
 
                 if (me->GetEntry() == NPC_RETRI_GUARDIAN)
-                    me->SetReactState(ReactStates::REACT_DEFENSIVE);
+                    me->SetReactState(REACT_DEFENSIVE);
                 else
-                    me->SetReactState(ReactStates::REACT_PASSIVE);
+                    me->SetReactState(REACT_PASSIVE);
 
                 if (me->GetEntry() == NPC_PROTECTION_GUARDIAN)
                 {
@@ -3666,7 +3666,7 @@ class npc_xuen_the_white_tiger : public CreatureScript
             npc_xuen_the_white_tigerAI(Creature *creature) : ScriptedAI(creature)
             {
                 CastTimer = 6000;
-                me->SetReactState(ReactStates::REACT_DEFENSIVE);
+                me->SetReactState(REACT_DEFENSIVE);
             }
 
             void UpdateAI(const uint32 diff)
@@ -3711,13 +3711,13 @@ class npc_murder_of_crows : public CreatureScript
         {
             npc_murder_of_crowsAI(Creature *creature) : ScriptedAI(creature)
             {
-                me->SetReactState(ReactStates::REACT_DEFENSIVE);
+                me->SetReactState(REACT_DEFENSIVE);
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (me->GetReactState() != ReactStates::REACT_DEFENSIVE)
-                    me->SetReactState(ReactStates::REACT_DEFENSIVE);
+                if (me->GetReactState() != REACT_DEFENSIVE)
+                    me->SetReactState(REACT_DEFENSIVE);
 
                 if (!UpdateVictim())
                     return;
@@ -3750,7 +3750,7 @@ class npc_dire_beast : public CreatureScript
 
             void Reset()
             {
-                me->SetReactState(ReactStates::REACT_DEFENSIVE);
+                me->SetReactState(REACT_DEFENSIVE);
 
                 if (me->GetOwner())
                     if (me->GetOwner()->getVictim())
@@ -3759,8 +3759,8 @@ class npc_dire_beast : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (me->GetReactState() != ReactStates::REACT_DEFENSIVE)
-                    me->SetReactState(ReactStates::REACT_DEFENSIVE);
+                if (me->GetReactState() != REACT_DEFENSIVE)
+                    me->SetReactState(REACT_DEFENSIVE);
 
                 if (!UpdateVictim())
                     return;
@@ -3801,12 +3801,12 @@ class npc_wild_imp : public CreatureScript
             npc_wild_impAI(Creature *creature) : ScriptedAI(creature)
             {
                 charges = 10;
-                me->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                me->SetReactState(REACT_AGGRESSIVE);
             }
 
             void Reset()
             {
-                me->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                me->SetReactState(REACT_AGGRESSIVE);
 
                 if (me->GetOwner())
                     if (me->GetOwner()->getVictim())
@@ -3815,8 +3815,8 @@ class npc_wild_imp : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (me->GetReactState() != ReactStates::REACT_AGGRESSIVE)
-                    me->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                if (me->GetReactState() != REACT_AGGRESSIVE)
+                    me->SetReactState(REACT_AGGRESSIVE);
 
                 if (!me->GetOwner())
                     return;

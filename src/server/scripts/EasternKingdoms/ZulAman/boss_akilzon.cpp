@@ -215,7 +215,7 @@ class boss_akilzon : public CreatureScript
                     for (std::list<Unit*>::const_iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)
                     {
                         if (!Cloud->IsWithinDist(*i, 6, false))
-                            Cloud->CastCustomSpell(*i, 43137, &bp0, NULL, NULL, true, 0, 0, me->GetGUID());
+                            Cloud->CastCustomSpell(*i, 43137, &bp0, NULL, NULL, true, 0, NULLAURA_EFFECT, me->GetGUID());
                     }
                     // visual
                     float x, y, z;
@@ -231,7 +231,7 @@ class boss_akilzon : public CreatureScript
                             trigger->SetHealth(100000);
                             trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             if (Cloud)
-                                Cloud->CastCustomSpell(trigger, /*43661*/43137, &bp0, NULL, NULL, true, 0, 0, Cloud->GetGUID());
+                                Cloud->CastCustomSpell(trigger, /*43661*/43137, &bp0, NULL, NULL, true, 0, NULLAURA_EFFECT, Cloud->GetGUID());
                         }
                     }
                 }

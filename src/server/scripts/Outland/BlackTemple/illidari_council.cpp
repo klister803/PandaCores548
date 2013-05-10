@@ -531,7 +531,7 @@ public:
             {
                 Unit* unit = Unit::GetUnit(*me, Council[i]);
                 if (unit)
-                    unit->CastSpell(unit, spellid, true, 0, 0, me->GetGUID());
+                    unit->CastSpell(unit, spellid, true, 0, NULLAURA_EFFECT, me->GetGUID());
             }
         }
 

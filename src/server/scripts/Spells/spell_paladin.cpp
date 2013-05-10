@@ -24,6 +24,7 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
+#include "GridNotifiers.h"
 
 enum PaladinSpells
 {
@@ -651,8 +652,8 @@ class spell_pal_lights_hammer : public SpellScriptLoader
                 {
                     if (GetCaster()->GetOwner())
                     {
-                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_HEAL, true, 0, 0, GetCaster()->GetOwner()->GetGUID());
-                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_DAMAGE, true, 0, 0, GetCaster()->GetOwner()->GetGUID());
+                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_HEAL, true, 0, NULLAURA_EFFECT, GetCaster()->GetOwner()->GetGUID());
+                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_DAMAGE, true, 0, NULLAURA_EFFECT, GetCaster()->GetOwner()->GetGUID());
                     }
                 }
             }
