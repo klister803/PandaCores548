@@ -6612,6 +6612,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Cut to the Chase
+                case 51667:
+                {
+                    return false;
+                }
                 case 57934: // Tricks of the Trade
                 {
                     Unit* redirectTarget = GetMisdirectionTarget();
