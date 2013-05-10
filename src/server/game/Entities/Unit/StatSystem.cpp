@@ -71,7 +71,6 @@ bool Player::UpdateStats(Stats stat)
     switch (stat)
     {
         case STAT_AGILITY:
-            UpdateArmor();
             UpdateAllCritPercentages();
             UpdateDodgePercentage();
             break;
@@ -336,7 +335,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         {
             agilityValue += std::max((GetStat(STAT_AGILITY) - 10.0f) * entry->APPerStrenth, 0.0f);
             // Druid feral has AP per agility = 2
-            if (form->ID == FORM_CAT)
+            if (form->ID == FORM_CAT || form->ID == FORM_BEAR)
                 agilityValue *= 2;
         }
 
