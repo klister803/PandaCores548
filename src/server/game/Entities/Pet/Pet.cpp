@@ -143,7 +143,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     }
     else if (petentry == 17252) // Summon Felguard
     {
-        if (owner->getClass() == CLASS_WARLOCK && owner->ToPlayer()->GetPrimaryTalentTree(owner->ToPlayer()->GetActiveSpec()) != SPEC_WARLOCK_DEMONOLOGY)
+        if (owner->getClass() == CLASS_WARLOCK && owner->ToPlayer()->GetSpecializationId(owner->ToPlayer()->GetActiveSpec()) != SPEC_WARLOCK_DEMONOLOGY)
             return false;
     }
 
