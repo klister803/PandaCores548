@@ -3578,10 +3578,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].SpellClassMask[2] |= 0x40;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
                 spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
-                spellInfo->Effects[1].BasePoints = 30;
-                spellInfo->Effects[1].SpellClassMask[2] |= 0x80;
-                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
-                spellInfo->Effects[1].MiscValue = SPELLMOD_CRITICAL_CHANCE;
                 break;
             case 52042: // Healing Stream - Totem
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;

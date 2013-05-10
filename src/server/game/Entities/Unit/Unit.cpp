@@ -11121,6 +11121,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         }
                     break;
                     case SPELLFAMILY_SHAMAN:
+                        // Healing Surge
+                        if (spellProto->Id == 8004)
+                            if (HasAura(53390))
+                                crit_chance += 30.0f;
                         // Lava Burst
                         if (spellProto->Id == 51505 || spellProto->Id == 77451)
                         {
