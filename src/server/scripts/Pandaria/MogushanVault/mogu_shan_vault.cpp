@@ -180,10 +180,6 @@ class mob_stone_quilen : public CreatureScript
                 focusedAssaultTimer = urand (500, 5000);
             }
 
-            void EnterCombat(Unit* attacker)
-            {
-            }
-
             void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
