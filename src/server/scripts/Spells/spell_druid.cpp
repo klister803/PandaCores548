@@ -40,6 +40,8 @@ enum DruidSpells
     SPELL_DRUID_STARSURGE_ENERGIZE          = 86605,
     SPELL_DRUID_SOLAR_ECLIPSE               = 48517,
     SPELL_DRUID_LUNAR_ECLIPSE               = 48518,
+    SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE      = 107095,
+    SPELL_DRUID_STARFALL                    = 48505,
     SPELL_DRUID_NATURES_GRACE               = 16886,
     SPELL_DRUID_EUPHORIA                    = 81062,
     SPELL_DRUID_PROWL                       = 5215,
@@ -76,6 +78,7 @@ enum DruidSpells
     SPELL_DRUID_KILLER_INSTINCT_MOD_STAT    = 108300,
     SPELL_DRUID_CAT_FORM                    = 768,
     SPELL_DRUID_BEAR_FORM                   = 5487,
+    SPELL_DRUID_BEAR_FORM_RAGE_GAIN         = 17057,
     SPELL_DRUID_INFECTED_WOUNDS             = 58180,
     SPELL_DRUID_BEAR_HUG                    = 102795,
     SPELL_DRUID_RIP                         = 1079,
@@ -90,6 +93,120 @@ enum DruidSpells
     SPELL_DRUID_URSOLS_VORTEX_SNARE         = 127797,
     SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST     = 118283,
     SPELL_DRUID_CENARION_WARD               = 102352,
+    SPELL_DRUID_NATURES_VIGIL_HEAL          = 124988,
+    SPELL_DRUID_NATURES_VIGIL_DAMAGE        = 124991,
+};
+
+// Moonfire - 8921
+class spell_dru_moonfire : public SpellScriptLoader
+{
+    public:
+        spell_dru_moonfire() : SpellScriptLoader("spell_dru_moonfire") { }
+
+        class spell_dru_moonfire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_moonfire_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(SPELL_DRUID_CELESTIAL_ALIGNMENT))
+                            _player->CastSpell(target, SPELL_DRUID_SUNFIRE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_moonfire_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_moonfire_SpellScript();
+        }
+};
+
+// Nature's Vigil - 124974
+class spell_dru_natures_vigil : public SpellScriptLoader
+{
+    public:
+        spell_dru_natures_vigil() : SpellScriptLoader("spell_dru_natures_vigil") { }
+
+        class spell_dru_natures_vigil_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_natures_vigil_AuraScript);
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                Player* _player = GetCaster()->ToPlayer();
+                if (!_player)
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
+                    return;
+
+                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
+                    return;
+
+                bool singleTarget = false;
+                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    if ((eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
+                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY) &&
+                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetB.GetTarget() == 0)
+                        singleTarget = true;
+
+                if (!singleTarget)
+                    return;
+
+                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_DRUID_NATURES_VIGIL_HEAL ||
+                    eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_DRUID_NATURES_VIGIL_DAMAGE)
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
+                    return;
+
+                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
+                    return;
+
+                int32 bp = 0;
+                Unit* target = NULL;
+                uint32 spellId = 0;
+
+                if (!eventInfo.GetDamageInfo()->GetSpellInfo()->IsPositive())
+                {
+                    bp = eventInfo.GetDamageInfo()->GetDamage() / 4;
+                    spellId = SPELL_DRUID_NATURES_VIGIL_HEAL;
+                    target = _player->SelectNearbyAlly(_player, 25.0f);
+                }
+                else
+                {
+                    bp = eventInfo.GetHealInfo()->GetHeal() / 4;
+                    spellId = SPELL_DRUID_NATURES_VIGIL_DAMAGE;
+                    target = _player->SelectNearbyTarget(_player, 25.0f);
+                }
+
+                if (!target || !spellId || !bp)
+                    return;
+
+                _player->CastCustomSpell(target, spellId, &bp, NULL, NULL, true);
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_dru_natures_vigil_AuraScript::OnProc, EFFECT_2, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_natures_vigil_AuraScript();
+        }
 };
 
 // Cenarion Ward - 102351
@@ -377,7 +494,7 @@ class spell_dru_bear_form : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 100, POWER_RAGE);
+                    _player->CastSpell(_player, SPELL_DRUID_BEAR_FORM_RAGE_GAIN, true);
             }
 
             void Register()
@@ -508,21 +625,30 @@ class spell_dru_lifebloom : public SpellScriptLoader
                 if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
                     return;
 
+                if (!GetCaster())
+                    return;
+
+                if (GetCaster()->ToPlayer()->HasSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL))
+                    return;
+
                 // final heal
                 int32 stack = GetStackAmount();
                 int32 healAmount = aurEff->GetAmount();
 
-                if (Unit* caster = GetCaster())
+                if (Player* _plr = GetCaster()->ToPlayer())
                 {
-                    healAmount = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), healAmount, HEAL, stack);
-                    healAmount = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, stack);
+                    healAmount = _plr->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), healAmount, HEAL, stack);
+                    healAmount = GetTarget()->SpellHealingBonusTaken(_plr, GetSpellInfo(), healAmount, HEAL, stack);
 
                     GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+
+                    _plr->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
 
                     return;
                 }
 
                 GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+                GetCaster()->ToPlayer()->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
             }
 
             void HandleDispel(DispelInfo* dispelInfo)
@@ -1268,7 +1394,7 @@ class spell_dru_astral_communion : public SpellScriptLoader
 
                     if (_player->GetEclipsePower() == 100 && !_player->HasAura(SPELL_DRUID_SOLAR_ECLIPSE))
                     {
-                        _player->CastSpell(_player, SPELL_DRUID_SOLAR_ECLIPSE, true, 0); // Cast Lunar Eclipse
+                        _player->CastSpell(_player, SPELL_DRUID_SOLAR_ECLIPSE, true, 0); // Cast Solar Eclipse
                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
                     }
@@ -1277,11 +1403,11 @@ class spell_dru_astral_communion : public SpellScriptLoader
                         _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE, true, 0); // Cast Lunar Eclipse
                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
+                        _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE, true);
+
+                        if (_player->HasSpellCooldown(SPELL_DRUID_STARFALL))
+                            _player->RemoveSpellCooldown(SPELL_DRUID_STARFALL, true);
                     }
-                    else if (_player->HasAura(SPELL_DRUID_LUNAR_ECLIPSE) && _player->GetEclipsePower() >= 0)
-                        _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
-                    else if (_player->HasAura(SPELL_DRUID_SOLAR_ECLIPSE) && _player->GetEclipsePower() <= 0)
-                        _player->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
                 }
             }
 
@@ -1310,8 +1436,21 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (Unit* target = GetHitUnit())
+                    {
                         _player->SetEclipsePower(0);
+
+                        _player->CastSpell(_player, SPELL_DRUID_SOLAR_ECLIPSE, true, 0); // Cast Solar Eclipse
+                        _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE, true, 0); // Cast Lunar Eclipse
+                        _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
+                        _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
+                        _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE, true);
+
+                        if (_player->HasSpellCooldown(SPELL_DRUID_STARFALL))
+                            _player->RemoveSpellCooldown(SPELL_DRUID_STARFALL, true);
+                    }
+                }
             }
 
             void Register()
@@ -1715,9 +1854,11 @@ class spell_dru_eclipse : public SpellScriptLoader
                                         _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE, true, 0); // Cast Lunar Eclipse
                                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
+                                        _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE, true);
+
+                                        if (_player->HasSpellCooldown(SPELL_DRUID_STARFALL))
+                                            _player->RemoveSpellCooldown(SPELL_DRUID_STARFALL, true);
                                     }
-                                    else if (_player->GetEclipsePower() <= 0 && _player->HasAura(SPELL_DRUID_SOLAR_ECLIPSE))
-                                        _player->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
 
                                     // Your crits with wrath also increase sunfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
@@ -1747,8 +1888,6 @@ class spell_dru_eclipse : public SpellScriptLoader
                                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
                                     }
-                                    else if (_player->HasAura(SPELL_DRUID_LUNAR_ECLIPSE) && _player->GetEclipsePower() >= 0)
-                                        _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
 
                                     // Your crits with wrath also increase moonfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
@@ -1787,11 +1926,11 @@ class spell_dru_eclipse : public SpellScriptLoader
                                         _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE, true, 0); // Cast Lunar Eclipse
                                         _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
                                         _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
+                                        _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE, true);
+
+                                        if (_player->HasSpellCooldown(SPELL_DRUID_STARFALL))
+                                            _player->RemoveSpellCooldown(SPELL_DRUID_STARFALL, true);
                                     }
-                                    else if (_player->HasAura(SPELL_DRUID_LUNAR_ECLIPSE) && _player->GetEclipsePower() >= 0)
-                                        _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
-                                    else if (_player->HasAura(SPELL_DRUID_SOLAR_ECLIPSE) && _player->GetEclipsePower() <= 0)
-                                        _player->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
 
                                     // Your crits with wrath also increase sunfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
@@ -2268,6 +2407,8 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_moonfire();
+    new spell_dru_natures_vigil();
     new spell_dru_cenarion_ward();
     new spell_dru_ursols_vortex();
     new spell_dru_solar_beam();

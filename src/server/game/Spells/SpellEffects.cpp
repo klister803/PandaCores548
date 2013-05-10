@@ -708,6 +708,13 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                // Soulstone
+                case 6203:
+                {
+                    if (!unitTarget->isAlive())
+                        unitTarget->CastSpell(unitTarget, 3026, true); // Self resurrect
+                    break;
+                }
                 case 45206: // Copy Off-hand Weapon
                 case 69892:
                 {

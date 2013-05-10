@@ -279,6 +279,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _skipCount = 0;
     _skipDiff = 0;
 
+    m_ClearComboPointsExpiredTime = 0;
+
     m_IsInKillingProcess = false;
     m_VisibilityUpdScheduled = false;
 }
@@ -363,6 +365,14 @@ void Unit::Update(uint32 p_time)
             else
                 m_CombatTimer -= p_time;
         }
+    }
+
+    if (m_ClearComboPointsExpiredTime)
+    {
+        if (m_ClearComboPointsExpiredTime <= p_time)
+            ClearComboPointHolders();
+        else
+            m_ClearComboPointsExpiredTime -= p_time;
     }
 
     // not implemented before 3.0.2
@@ -764,11 +774,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         }
     }
 
-    // Calculate Attack Power amount for Vengeance
-    // Patch 4.3.2 : Vengeance is no longer triggered by receiving damage from other players
-    if (victim && victim->ToPlayer() && GetTypeId() != TYPEID_PLAYER)
-        victim->CalcVengeanceAmount(victim->ToPlayer(), damage, victim->getClass());
-
     if (victim->IsAIEnabled)
         victim->GetAI()->DamageTaken(this, damage);
 
@@ -1108,55 +1113,6 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
     }
     else
         return damage;
-}
-
-void Unit::CalcVengeanceAmount(Player* victim, uint32 damage, uint8 PlayerClass)
-{
-    // You need a minimum of 20 damage to proc a +1 AP bonus
-    if (damage == 0 || damage < 0 || damage < 20)
-        return;
-
-    int32 basepoints = int32(damage * 0.02f);
-
-    int32 stamina = victim->GetStat(STAT_STAMINA);
-    int32 basehealth = victim->GetHealth() - victim->GetHealthBonusFromStamina();
-
-    // Vengeance cap is equal to Stamina plus 10% of base health
-    if (basepoints > (stamina + int32(0.1f * basehealth)))
-        basepoints = (stamina + int32(0.1f * basehealth));
-
-    switch(PlayerClass)
-    {
-        case CLASS_MONK:
-            if (victim->HasAura(120267))
-                if (basepoints)
-                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
-            break;
-        case CLASS_DEATH_KNIGHT:
-            if (victim->HasAura(93099))
-                if (basepoints)
-                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
-            break;
-        case CLASS_WARRIOR:
-            if (victim->HasAura(93098))
-                if (basepoints)
-                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
-            break;
-        case CLASS_DRUID:
-            if (victim->HasAura(84840))
-                if (basepoints)
-                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
-            break;
-        case CLASS_PALADIN:
-            if (victim->HasAura(84839))
-                if (basepoints)
-                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
-            break;
-        default:
-            break;
-    }
-
-    return;
 }
 
 void Unit::CastStop(uint32 except_spellid)
@@ -1610,6 +1566,18 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     }
     else // Impossible get negative result but....
         damageInfo->damage = 0;
+
+    // Soul Link
+    if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_WARLOCK && damageInfo->damage > 0 && victim->HasAura(108446))
+    {
+        if (victim->ToPlayer()->GetPet() && victim->ToPlayer()->GetPet()->HasAura(108446))
+        {
+            damageInfo->damage /= 2;
+            int32 bp = damageInfo->damage;
+
+            victim->ToPlayer()->GetPet()->CastCustomSpell(victim->ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, true); // Soul Link damage
+        }
+    }
 }
 
 void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
@@ -8356,6 +8324,38 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Glyph of Avenging Wrath
+        case 54927:
+        {
+            return false;
+        }
+        // Shooting Stars
+        case 93399:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
+                return false;
+
+            break;
+        }
+        // Backlash
+        case 108563:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (ToPlayer()->HasSpellCooldown(108563))
+                return false;
+
+            ToPlayer()->AddSpellCooldown(108563, 0, time(NULL) + 8);
+
+            break;
+        }
         // Burden of Guilt
         case 110301:
         {
@@ -10271,12 +10271,12 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // small exception for Improved Serpent Sting, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 83077) // Improved Serpent Sting
+    if (spellProto->Id == 83077 || spellProto->Id == 124051) // Improved Serpent Sting and Archimonde's Vengeance
         return pdamage;
 
     // small exception for Hemorrhage, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 89775) // Hemorrhage
+    if (spellProto->Id == 89775 || spellProto->Id == 108451) // Hemorrhage and Soul Link damage
         return pdamage;
 
     // small exception for Echo of Light, can't find any general rule
@@ -10894,6 +10894,18 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     if (!tmpDamage)
         tmpDamage = (float(pdamage) + TakenTotal) * TakenTotalMod;
 
+    // Soul Link
+    if (GetTypeId() == TYPEID_PLAYER && (!spellProto || (spellProto && spellProto->Id != 108451)) && getClass() == CLASS_WARLOCK && tmpDamage > 0 && HasAura(108446))
+    {
+        if (ToPlayer()->GetPet() && ToPlayer()->GetPet()->HasAura(108446))
+        {
+            tmpDamage /= 2;
+            int32 bp = tmpDamage;
+
+            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, true); // Soul Link damage
+        }
+    }
+
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
@@ -11273,8 +11285,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 127626 || spellProto->Id == 81751 || spellProto->Id == 117895)
         return healamount;
 
-    // No bonus for Leader of the Pack or Soul Leech
-    if (spellProto->Id == 34299 || spellProto->Id == 108366)
+    // No bonus for Leader of the Pack or Soul Leech or Soul Link heal
+    if (spellProto->Id == 34299 || spellProto->Id == 108366 || spellProto->Id == 108447)
         return healamount;
 
     // No bonus for Living Seed or Ancestral Guidance
@@ -11569,6 +11581,19 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     }
 
     float heal = float(int32(healamount) + TakenTotal) * TakenTotalMod;
+
+    // Custom MoP Script
+    // Soul Link
+    if (GetTypeId() == TYPEID_PLAYER && spellProto->Id != 108447 && getClass() == CLASS_WARLOCK && heal > 0 && HasAura(108446))
+    {
+        if (ToPlayer()->GetPet() && ToPlayer()->GetPet()->HasAura(108446))
+        {
+            heal /= 2;
+            int32 bp = heal;
+
+            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108447, &bp, NULL, NULL, true); // Soul Link heal
+        }
+    }
 
     return uint32(std::max(heal, 0.0f));
 }
@@ -12815,6 +12840,14 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
                 manaTea->SetScriptData(0, -dVal);
         }
     }
+    else if (power == POWER_HOLY_POWER)
+    {
+        if (dVal < 0)
+        {
+            if (AuraPtr unbreakableSpirit = this->GetAura(114154))
+                unbreakableSpirit->SetScriptData(0, -dVal);
+        }
+    }
 
     int32 curPower = GetPower(power);
 
@@ -13421,7 +13454,8 @@ void Unit::setDeathState(DeathState s)
         CombatStop();
         DeleteThreatList();
         getHostileRefManager().deleteReferences();
-        ClearComboPointHolders();                           // any combo points pointed to unit lost at it death
+
+        m_ClearComboPointsExpiredTime = 10000;
 
         if (IsNonMeleeSpellCasted(false))
             InterruptNonMeleeSpells(false);
@@ -15960,6 +15994,33 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
     return JadeCore::Containers::SelectRandomContainerElement(targets);
 }
 
+Unit* Unit::SelectNearbyAlly(Unit* exclude, float dist) const
+{
+    std::list<Unit*> targets;
+    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(this, this, dist);
+    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
+    VisitNearbyObject(dist, searcher);
+
+    if (exclude)
+        targets.remove(exclude);
+
+    // remove not LoS targets
+    for (std::list<Unit*>::iterator tIter = targets.begin(); tIter != targets.end();)
+    {
+        if (!IsWithinLOSInMap(*tIter) || (*tIter)->isTotem() || (*tIter)->isSpiritService() || (*tIter)->GetCreatureType() == CREATURE_TYPE_CRITTER)
+            targets.erase(tIter++);
+        else
+            ++tIter;
+    }
+
+    // no appropriate targets
+    if (targets.empty())
+        return NULL;
+
+    // select random
+    return JadeCore::Containers::SelectRandomContainerElement(targets);
+}
+
 void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply)
 {
     float remainingTimePct = (float)m_attackTimer[att] / (GetAttackTime(att) * m_modAttackSpeedPct[att]);
@@ -16286,7 +16347,14 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, AuraPtr aura, SpellInfo con
 
     // Check spellProcEvent data requirements
     if (!sSpellMgr->IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
-        return false;
+    {
+        // Hack Fix Backdraft can be triggered if damage are absorbed
+        if (spellProto && spellProto->Id == 117896 && procSpell && procSpell->Id == 17962 && procExtra && (procExtra & PROC_EX_ABSORB))
+            return true;
+        else
+            return false;
+    }
+
     // In most cases req get honor or XP from kill
     if (EventProcFlag & PROC_FLAG_KILL && GetTypeId() == TYPEID_PLAYER)
     {
@@ -18102,8 +18170,20 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 20857;
             return 20872;
         case FORM_FLIGHT_EPIC:
-            if (Player::TeamForRace(getRace()) == ALLIANCE)
-                return 21243;
+            if (Player::TeamForRace(getRace()) == HORDE)
+            {
+                if (getRace() == RACE_TROLL)
+                    return 37730;
+                else if (getRace() == RACE_TAUREN)
+                    return 21244;
+            }
+            else if (Player::TeamForRace(getRace()) == ALLIANCE)
+            {
+                if (getRace() == RACE_NIGHTELF)
+                    return 21243;
+                else if (getRace() == RACE_WORGEN)
+                    return 37730;
+            }
             return 21244;
         case FORM_TRAVEL:
             if (Player::TeamForRace(getRace()) == ALLIANCE)
@@ -19191,8 +19271,12 @@ void Unit::SetEclipsePower(int32 power)
         power = -100;
 
     if (power > 0)
+    {
         if (HasAura(48518))
             RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+        if (HasAura(107095))
+            RemoveAurasDueToSpell(107095);// Eclipse (Lunar) - SPELL_AURA_OVERRIDE_SPELLS
+    }
 
     if (power == 0)
     {
@@ -19200,14 +19284,14 @@ void Unit::SetEclipsePower(int32 power)
             RemoveAurasDueToSpell(48517); // Eclipse (Solar)
         if (HasAura(48518))
             RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+        if (HasAura(107095))
+            RemoveAurasDueToSpell(107095);// Eclipse (Lunar) - SPELL_AURA_OVERRIDE_SPELLS
     }
 
     if (power < 0)
     {
         if (HasAura(48517))
             RemoveAurasDueToSpell(48517); // Eclipse (Solar)
-        if (HasAura(94338))
-            RemoveAurasDueToSpell(94338); // Eclipse (Solar) (Aura 332?)
     }
 
     _eclipsePower = power;

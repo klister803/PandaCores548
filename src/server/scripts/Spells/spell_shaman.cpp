@@ -364,10 +364,23 @@ class spell_sha_echo_of_the_elements : public SpellScriptLoader
                 if (!_player)
                     return;
 
+                if (_player->HasSpellCooldown(108283))
+                    return;
+
                 if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
                     return;
 
                 if (!eventInfo.GetDamageInfo()->GetSpellInfo())
+                    return;
+
+                bool singleTarget = false;
+                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    if ((eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
+                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY) &&
+                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetB.GetTarget() == 0)
+                        singleTarget = true;
+
+                if (!singleTarget)
                     return;
 
                 int32 roll = 0;
@@ -401,6 +414,7 @@ class spell_sha_echo_of_the_elements : public SpellScriptLoader
                         return;
 
                     _player->CastSpell(target, spellId, true);
+                    _player->AddSpellCooldown(108283, 0, time(NULL) + 1); // This prevent from multiple procs
                 }
             }
 

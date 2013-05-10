@@ -79,6 +79,142 @@ enum PaladinSpells
     PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC   = 132403,
     PALADIN_SPELL_BASTION_OF_GLORY               = 114637,
     PALADIN_SPELL_DIVINE_PURPOSE                 = 90174,
+    PALADIN_SPELL_DIVINE_SHIELD                  = 642,
+    PALADIN_SPELL_LAY_ON_HANDS                   = 633,
+    PALADIN_SPELL_DIVINE_PROTECTION              = 498,
+    PALADIN_SPELL_GLYPH_OF_AVENGING_WRATH        = 54927,
+    PALADIN_SPELL_AVENGING_WRATH_REGEN_BY_GLYPH  = 115547,
+};
+
+// Called by Avenging Wrath - 31884
+// Glyph of Avenging Wrath - 54927
+class spell_pal_glyph_of_avenging_wrath : public SpellScriptLoader
+{
+    public:
+        spell_pal_glyph_of_avenging_wrath() : SpellScriptLoader("spell_pal_glyph_of_avenging_wrath") { }
+
+        class spell_pal_glyph_of_avenging_wrath_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_glyph_of_avenging_wrath_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_AVENGING_WRATH))
+                        _player->CastSpell(_player, PALADIN_SPELL_AVENGING_WRATH_REGEN_BY_GLYPH, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_glyph_of_avenging_wrath_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_glyph_of_avenging_wrath_SpellScript();
+        }
+};
+
+// Unbreakable Spirit - 114154
+class spell_pal_unbreakable_spirit : public SpellScriptLoader
+{
+    public:
+        spell_pal_unbreakable_spirit() : SpellScriptLoader("spell_pal_unbreakable_spirit") { }
+
+        class spell_pal_unbreakable_spirit_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_unbreakable_spirit_AuraScript);
+
+            uint32 holyPowerConsumed;
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                holyPowerConsumed = 0;
+            }
+
+            void SetData(uint32 type, uint32 data)
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    holyPowerConsumed = data;
+
+                    if (_player->HasSpellCooldown(PALADIN_SPELL_DIVINE_SHIELD))
+                    {
+                        uint32 newCooldownDelay = _player->GetSpellCooldownDelay(PALADIN_SPELL_DIVINE_SHIELD) * IN_MILLISECONDS;
+                        uint32 totalCooldown = sSpellMgr->GetSpellInfo(PALADIN_SPELL_DIVINE_SHIELD)->RecoveryTime;
+                        int32 lessCooldown = CalculatePct(totalCooldown, holyPowerConsumed);
+                        uint32 maxCooldownReduction = CalculatePct(totalCooldown, 50); // Maximum 50% cooldown reduction
+
+                        newCooldownDelay -= lessCooldown;
+
+                        if (newCooldownDelay > maxCooldownReduction)
+                        {
+                            _player->AddSpellCooldown(PALADIN_SPELL_DIVINE_SHIELD, 0, uint32(time(NULL) + newCooldownDelay / IN_MILLISECONDS));
+
+                            WorldPacket packet(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                            packet << uint32(PALADIN_SPELL_DIVINE_SHIELD);                // Spell ID
+                            packet << uint64(_player->GetGUID());                         // Player GUID
+                            packet << int32(-lessCooldown);                               // Cooldown mod in milliseconds
+                            _player->GetSession()->SendPacket(&packet);
+                        }
+                    }
+                    if (_player->HasSpellCooldown(PALADIN_SPELL_LAY_ON_HANDS))
+                    {
+                        uint32 newCooldownDelay = _player->GetSpellCooldownDelay(PALADIN_SPELL_LAY_ON_HANDS) * IN_MILLISECONDS;
+                        uint32 totalCooldown = sSpellMgr->GetSpellInfo(PALADIN_SPELL_LAY_ON_HANDS)->CategoryRecoveryTime;
+                        int32 lessCooldown = CalculatePct(totalCooldown, holyPowerConsumed);
+                        uint32 maxCooldownReduction = CalculatePct(totalCooldown, 50); // Maximum 50% cooldown reduction
+
+                        newCooldownDelay -= lessCooldown;
+
+                        if (newCooldownDelay > maxCooldownReduction)
+                        {
+                            _player->AddSpellCooldown(PALADIN_SPELL_LAY_ON_HANDS, 0, uint32(time(NULL) + newCooldownDelay / IN_MILLISECONDS));
+
+                            WorldPacket packet(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                            packet << uint32(PALADIN_SPELL_LAY_ON_HANDS);                 // Spell ID
+                            packet << uint64(_player->GetGUID());                         // Player GUID
+                            packet << int32(-lessCooldown);                               // Cooldown mod in milliseconds
+                            _player->GetSession()->SendPacket(&packet);
+                        }
+                    }
+                    if (_player->HasSpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION))
+                    {
+                        uint32 newCooldownDelay = _player->GetSpellCooldownDelay(PALADIN_SPELL_DIVINE_PROTECTION) * IN_MILLISECONDS;
+                        uint32 totalCooldown = sSpellMgr->GetSpellInfo(PALADIN_SPELL_DIVINE_PROTECTION)->RecoveryTime;
+                        int32 lessCooldown = CalculatePct(totalCooldown, holyPowerConsumed);
+                        uint32 maxCooldownReduction = CalculatePct(totalCooldown, 50); // Maximum 50% cooldown reduction
+
+                        newCooldownDelay -= lessCooldown;
+
+                        if (newCooldownDelay > maxCooldownReduction)
+                        {
+                            _player->AddSpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION, 0, uint32(time(NULL) + newCooldownDelay / IN_MILLISECONDS));
+
+                            WorldPacket packet(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                            packet << uint32(PALADIN_SPELL_DIVINE_PROTECTION);                // Spell ID
+                            packet << uint64(_player->GetGUID());                             // Player GUID
+                            packet << int32(-lessCooldown);                                   // Cooldown mod in milliseconds
+                            _player->GetSession()->SendPacket(&packet);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_pal_unbreakable_spirit_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_unbreakable_spirit_AuraScript();
+        }
 };
 
 // Shield of the Righteous - 53600
@@ -145,7 +281,7 @@ class spell_pal_eternal_flame : public SpellScriptLoader
                                 eternalFlame->GetEffect(1)->ChangeAmount(eternalFlame->GetEffect(1)->GetAmount() * (holyPower + 1));
 
                         if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
-                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
+                            _player->ModifyPower(POWER_HOLY_POWER, -holyPower);
                     }
                 }
             }
@@ -895,7 +1031,7 @@ class spell_pal_word_of_glory : public SpellScriptLoader
                         }
 
                         if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
-                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
+                            _player->ModifyPower(POWER_HOLY_POWER, -holyPower);
                     }
                 }
             }
@@ -1498,6 +1634,8 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_glyph_of_avenging_wrath();
+    new spell_pal_unbreakable_spirit();
     new spell_pal_shield_of_the_righteous();
     new spell_pal_eternal_flame();
     new spell_pal_selfless_healer();

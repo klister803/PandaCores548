@@ -2004,8 +2004,6 @@ void Player::setDeathState(DeathState s)
 
         // drunken state is cleared on death
         SetDrunkValue(0);
-        // lost combo points at any target (targeted combo points clear in Unit::setDeathState)
-        ClearComboPoints();
 
         ClearResurrectRequestData();
 
@@ -2895,6 +2893,19 @@ void Player::Regenerate(Powers power)
                 addvalue += -1.0f;    // remove 1 each 100ms
             else if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) < 200 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
                 addvalue += 1.0f;     // give 1 each 100ms while player has less than 200 demonic fury
+
+            // Demonic Fury visuals
+            if (GetPower(POWER_DEMONIC_FURY) == 1000)
+                CastSpell(this, 131755, true);
+            else if (GetPower(POWER_DEMONIC_FURY) >= 500)
+                CastSpell(this, 122738, true);
+            else
+            {
+                if (HasAura(122738))
+                    RemoveAura(122738);
+                if (HasAura(131755))
+                    RemoveAura(131755);
+            }
 
             break;
         }
@@ -4564,6 +4575,16 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
         if (HasAura(121617))
             RemoveAura(121617);
     }
+    // Archimonde's Vengeance
+    else if (spell_id == 108505)
+    {
+        if (HasAura(116403))
+            RemoveAura(116403);
+    }
+    // Soul Link
+    else if (spell_id == 108415)
+        if (HasAura(108446))
+            RemoveAura(108446);
 
     // remove dependent skill
     SpellLearnSkillNode const* spellLearnSkill = sSpellMgr->GetSpellLearnSkill(spell_id);
@@ -21589,8 +21610,9 @@ void Player::RemoveSpellMods(Spell* spell)
             // remove from list
             spell->m_appliedMods.erase(iterMod);
 
-            if (std::const_pointer_cast<Aura>(mod->ownerAura)->DropCharge(AURA_REMOVE_BY_EXPIRE))
-                itr = m_spellMods[i].begin();
+            if (!(mod->ownerAura->GetId() == 117828 && spell->GetSpellInfo()->Id == 116858))
+                if (std::const_pointer_cast<Aura>(mod->ownerAura)->DropCharge(AURA_REMOVE_BY_EXPIRE))
+                    itr = m_spellMods[i].begin();
         }
     }
 }
@@ -25821,6 +25843,9 @@ bool Player::LearnTalent(uint32 talentId)
         CastSpell(this, 51470, true);  // +5% spell haste
         CastSpell(this, 121617, true); // +5% melee haste
     }
+    // Archimonde's Vengeance
+    else if (spellid == 108505)
+        CastSpell(this, 116403, true); // Passive
 
     sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
     return true;

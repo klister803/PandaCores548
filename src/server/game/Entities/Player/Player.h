@@ -3182,6 +3182,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
         return 0;
     float totalmul = 1.0f;
     int32 totalflat = 0;
+    bool chaosBolt = false;
 
     // Drop charges for triggering spells instead of triggered ones
     if (m_spellModTakingSpell)
@@ -3209,6 +3210,15 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             // special case (skip > 10sec spell casts for instant cast setting)
             if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
                 continue;
+
+            // Fix don't apply Backdraft twice for Chaos Bolt
+            if (mod->spellId == 117828 && mod->op == SPELLMOD_CASTING_TIME && spellInfo->Id == 116858)
+            {
+                if (chaosBolt)
+                    continue;
+                else
+                    chaosBolt = true;
+            }
 
             totalmul += CalculatePct(1.0f, mod->value);
         }

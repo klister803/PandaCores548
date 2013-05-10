@@ -468,7 +468,7 @@ enum AuraType
     SPELL_AURA_408                                          = 408,  // 5.0.5 unk aura
     SPELL_AURA_409                                          = 409,  // 5.0.5 unk aura
     SPELL_AURA_410                                          = 410,  // 5.0.5 unk aura
-    SPELL_AURA_411                                          = 411,  // 5.0.5 unk aura
+    SPELL_AURA_MOD_CHARGES                                  = 411,  // SPELL_AURA_MOD_CHARGES
     SPELL_AURA_412                                          = 412,  // 5.0.5 unk aura
     SPELL_AURA_413                                          = 413,  // 5.0.5 unk aura
     SPELL_AURA_414                                          = 414,  // 5.0.5 unk aura
