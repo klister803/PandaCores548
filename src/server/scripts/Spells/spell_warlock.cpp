@@ -87,6 +87,70 @@ enum WarlockSpells
     WARLOCK_GLYPH_OF_CONFLAGRATE            = 56235,
 };
 
+// Flames of Xoroth - 120451
+class spell_warl_flames_of_xoroth : public SpellScriptLoader
+{
+    public:
+        spell_warl_flames_of_xoroth() : SpellScriptLoader("spell_warl_flames_of_xoroth") { }
+
+        class spell_warl_flames_of_xoroth_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_flames_of_xoroth_SpellScript);
+
+            bool Load()
+            {
+                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (!GetCaster())
+                    return;
+
+                Player* player = GetCaster()->ToPlayer();
+                if (player->GetLastPetNumber())
+                {
+                    PetType newPetType = (player->getClass() == CLASS_HUNTER) ? HUNTER_PET : SUMMON_PET;
+                    if (Pet* newPet = new Pet(player, newPetType))
+                    {
+                        if (newPet->LoadPetFromDB(player, 0, player->GetLastPetNumber(), true))
+                        {
+                            // revive the pet if it is dead
+                            if (newPet->getDeathState() == DEAD || newPet->getDeathState() == CORPSE)
+                                newPet->setDeathState(ALIVE);
+
+                            newPet->ClearUnitState(uint32(UNIT_STATE_ALL_STATE));
+                            newPet->SetFullHealth();
+                            newPet->SetPower(newPet->getPowerType(), newPet->GetMaxPower(newPet->getPowerType()));
+
+                            switch (newPet->GetEntry())
+                            {
+                                case 11859: // Doomguard
+                                case 89:    // Inferno
+                                    newPet->SetEntry(416);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        else
+                            delete newPet;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_flames_of_xoroth_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_flames_of_xoroth_SpellScript();
+        }
+};
+
 // Soul Link - 108446
 class spell_warl_soul_link_dummy : public SpellScriptLoader
 {
@@ -2071,6 +2135,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_flames_of_xoroth();
     new spell_warl_soul_link_dummy();
     new spell_warl_soul_link();
     new spell_warl_archimondes_vengeance_cooldown();
