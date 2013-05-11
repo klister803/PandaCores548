@@ -3148,6 +3148,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 130616:// Glyph of Fear
+                spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
+                break;
+            case 118699:// Fear Effect
+                spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
+                break;
             case 124991:// Nature's Vigil (Damage)
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 spellInfo->Effects[0].TargetB = 0;
@@ -3533,12 +3541,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetA = TARGET_DEST_CHANNEL_TARGET;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                 break;
-            case 118699:// Fear Effect
             case 10326: // Turn Evil
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
-                break;
-            case 130616:// Glyph of Fear Effect
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
                 break;
             case 117418:// Fists of Fury (damage)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
