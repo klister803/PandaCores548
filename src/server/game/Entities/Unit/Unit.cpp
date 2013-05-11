@@ -6612,6 +6612,28 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Anticipation
+                case 114015:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (!procSpell)
+                        return false;
+
+                    if (procSpell->Id == 115190)
+                        return false;
+
+                    if (!procSpell->HasEffect(SPELL_EFFECT_ADD_COMBO_POINTS))
+                        return false;
+
+                    if (ToPlayer()->GetComboPoints() < 5)
+                        return false;
+
+                    triggered_spell_id = 115189;
+
+                    break;
+                }
                 // Cut to the Chase
                 case 51667:
                 {

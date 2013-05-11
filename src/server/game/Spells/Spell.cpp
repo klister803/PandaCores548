@@ -3594,7 +3594,22 @@ void Spell::_handle_finish_phase()
     {
         // Take for real after all targets are processed
         if (m_needComboPoints)
+        {
             m_caster->m_movedPlayer->ClearComboPoints();
+
+            // Anticipation
+            if (Player* _player = m_caster->ToPlayer())
+            {
+                if (_player->HasAura(115189))
+                {
+                    int32 basepoints0 = _player->GetAura(115189) ? _player->GetAura(115189)->GetStackAmount() : 0;
+                    _player->CastCustomSpell(m_caster->getVictim(), 115190, &basepoints0, NULL, NULL, true);
+
+                    if (basepoints0)
+                        _player->RemoveAura(115189);
+                }
+            }
+        }
 
         // Real add combo points from effects
         if (m_comboPointGain)
