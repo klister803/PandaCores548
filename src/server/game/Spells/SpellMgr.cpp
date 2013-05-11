@@ -3148,6 +3148,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 91021: // Find Weakness
+                spellInfo->Effects[0].BasePoints = 70;
+                break;
             case 76577: // Smoke Bomb
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
