@@ -73,6 +73,61 @@ enum RogueSpells
     ROGUE_SPELL_COMBAT_INSIGHT                   = 74002,
 };
 
+// Cloak of Shadows - 31224
+class spell_rog_cloak_of_shadows : public SpellScriptLoader
+{
+    public:
+        spell_rog_cloak_of_shadows() : SpellScriptLoader("spell_rog_cloak_of_shadows") { }
+
+        class spell_rog_cloak_of_shadows_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_cloak_of_shadows_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (!GetCaster())
+                    return;
+
+                if (!GetHitUnit())
+                    return;
+
+                Unit* target = GetHitUnit();
+                const SpellInfo* m_spellInfo = GetSpellInfo();
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    uint32 dispelMask = SpellInfo::GetDispelMask(DISPEL_ALL);
+                    Unit::AuraApplicationMap& Auras = target->GetAppliedAuras();
+                    for (Unit::AuraApplicationMap::iterator iter = Auras.begin(); iter != Auras.end();)
+                    {
+                        // remove all harmful spells on you...
+                        SpellInfo const* spell = iter->second->GetBase()->GetSpellInfo();
+                        if ((spell->DmgClass == SPELL_DAMAGE_CLASS_MAGIC // only affect magic spells
+                            || (spell->GetDispelMask() & dispelMask) || (spell->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
+                            // ignore positive and passive auras
+                            && !iter->second->IsPositive() && !iter->second->GetBase()->IsPassive() && m_spellInfo->CanDispelAura(spell))
+                        {
+                            _player->RemoveAura(iter);
+                        }
+                        else
+                            ++iter;
+                    }
+                    return;
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_cloak_of_shadows_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_cloak_of_shadows_SpellScript();
+        }
+};
+
 // Combat Readiness - 74001
 class spell_rog_combat_readiness : public SpellScriptLoader
 {
@@ -142,7 +197,7 @@ class spell_rog_nerve_strike : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_rog_combat_readiness_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_rog_combat_readiness_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1317,6 +1372,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_cloak_of_shadows();
     new spell_rog_combat_readiness();
     new spell_rog_nerve_strike();
     new spell_rog_nightstalker();
