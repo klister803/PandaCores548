@@ -3148,6 +3148,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 76577: // Smoke Bomb
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
             case 130616:// Glyph of Fear
                 spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
