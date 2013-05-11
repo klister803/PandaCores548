@@ -773,15 +773,20 @@ class spell_mage_combustion : public SpellScriptLoader
 
                         int32 combustionBp = 0;
 
-                        if (target->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
+                        Unit::AuraEffectList const& aurasPereodic = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
+                        for (Unit::AuraEffectList::const_iterator i = aurasPereodic.begin(); i !=  aurasPereodic.end(); ++i)
                         {
-                            combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
-                            combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT);
-                        }
-                        if (target->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
-                            combustionBp += target->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+                            if ((*i)->GetCasterGUID() != _player->GetGUID() || (*i)->GetSpellInfo()->SchoolMask != SPELL_SCHOOL_MASK_FIRE)
+                                continue;
 
-                        _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
+                            if (!(*i)->GetAmplitude())
+                                continue;
+
+                            combustionBp += _player->SpellDamageBonusDone(target, (*i)->GetSpellInfo(), (*i)->GetAmount(), DOT) * 1000 / (*i)->GetAmplitude();
+                        }
+
+                        if (combustionBp)
+                            _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
                     }
                 }
             }

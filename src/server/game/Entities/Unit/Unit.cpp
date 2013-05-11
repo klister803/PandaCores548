@@ -10286,7 +10286,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // small exception for Echo of Light, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 77489) // Echo of Light
+    if (spellProto->Id == 77489 || spellProto->Id == 12654) // Echo of Light and Ignite
         return pdamage;
 
     // For totems get damage bonus from owner
