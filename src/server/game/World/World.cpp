@@ -1267,6 +1267,7 @@ void World::LoadConfigSettings(bool reload)
 
     //Announce server for a ban    
     m_bool_configs[CONFIG_ANNOUNCE_BAN] = ConfigMgr::GetBoolDefault("AnnounceBan", false);
+    m_bool_configs[CONFIG_SPELL_FORBIDDEN] = ConfigMgr::GetBoolDefault("SpellForbidden", false);
 
 
     if (reload)
@@ -1424,6 +1425,9 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Spell Group Stack Rules...");
     sSpellMgr->LoadSpellGroupStackRules();
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading forbidden spells...");
+    sSpellMgr->LoadForbiddenSpells();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Spell Phase Dbc Info...");
     sObjectMgr->LoadSpellPhaseInfo();

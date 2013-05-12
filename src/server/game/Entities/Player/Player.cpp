@@ -4076,6 +4076,18 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         return false;
     }
 
+    if (sSpellMgr->IsSpellForbidden(spellId) && !isGameMaster() && sWorld->getBoolConfig(CONFIG_SPELL_FORBIDDEN))
+    {
+        std::string banString;
+        banString = "Auto-ban for spell cheat ";
+        char buff[2048];
+
+        sprintf(buff, "(spellId : %u)", (uint32)spellId);
+        banString += buff;
+        sWorld->BanAccount(BAN_CHARACTER, GetName(), "-1", banString, "Auto-Ban");
+        return false;
+    }
+
     PlayerSpellState state = learning ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
 
     bool dependent_set = false;

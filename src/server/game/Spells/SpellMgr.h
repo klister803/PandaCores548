@@ -613,6 +613,7 @@ class SpellMgr
     public:
         // Spell correctness for client using
         static bool IsSpellValid(SpellInfo const* spellInfo, Player* player = NULL, bool msg = true);
+        bool IsSpellForbidden(uint32 spellid);
 
         // Spell difficulty
         uint32 GetSpellDifficultyId(uint32 spellId) const;
@@ -732,6 +733,7 @@ class SpellMgr
         void LoadDbcDataCorrections();
         void LoadTalentSpellInfo();
         void LoadSpellPowerInfo();
+        void LoadForbiddenSpells();
 
         std::vector<uint32>        mSpellCreateItemList;
 
@@ -768,6 +770,7 @@ class SpellMgr
         SpellOverrideInfo          mSpellOverrideInfo;
         TalentSpellSet             mTalentSpellInfo;
         SpellPowerVector           mSpellPowerInfo;
+        std::list<uint32>          mForbiddenSpells;
 };
 
 #define sSpellMgr ACE_Singleton<SpellMgr, ACE_Null_Mutex>::instance()

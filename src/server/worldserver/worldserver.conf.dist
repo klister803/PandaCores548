@@ -3023,3 +3023,11 @@ Currency.ConquestPointsArenaReward = 180
 #                     1 - (Enabled)
 
 AnnounceBan = 0
+
+#
+#     Spell Forbidden
+#		 Description: Auto ban when a player learn a spell forbidden in DB world.spell_forbiden
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+SpellForbidden = 0
