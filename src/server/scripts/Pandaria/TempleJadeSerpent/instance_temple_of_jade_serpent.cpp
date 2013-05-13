@@ -6,6 +6,7 @@
 
 #include "ScriptMgr.h"
 #include "InstanceScript.h"
+#include "ScriptedCreature.h"
 
 #define EVENT_LOREWALKER_STONESTEP_SUNS 0
 #define EVENT_LOREWALKER_STONESTEP_TRIAL 1
@@ -395,7 +396,7 @@ public:
             {
                 GameObject* go = instance->GetGameObject(doorWiseMari);
                 if (go != nullptr)
-                    go->SetGoState(GOState::GO_STATE_ACTIVE);
+                    go->SetGoState(GO_STATE_ACTIVE);
             }
         }
 
@@ -533,10 +534,10 @@ public:
                 //Open the door!
                 GameObject* go = instance->GetGameObject(doorLiu);
                 if (go != nullptr)
-                    go->SetGoState(GOState::GO_STATE_ACTIVE);
+                    go->SetGoState(GO_STATE_ACTIVE);
                 go = instance->GetGameObject(doorLiu_2);
                 if (go != nullptr)
-                    go->SetGoState(GOState::GO_STATE_ACTIVE);
+                    go->SetGoState(GO_STATE_ACTIVE);
             }
         }
         void SetData_liu_flameheart(uint32 type, uint32 data)
@@ -742,7 +743,7 @@ public:
                     {
                         GameObject* go = instance->GetGameObject(door_lorewalker);
                         if (go != nullptr)
-                            go->SetGoState(GOState::GO_STATE_ACTIVE);
+                            go->SetGoState(GO_STATE_ACTIVE);
                         eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
 
                         Map::PlayerList const& PlayerList = instance->GetPlayers();
@@ -760,6 +761,7 @@ public:
                     }
                 }
             }
+            
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_PERIL)
             {
                 if (Creature* strife = instance->GetCreature(guidStrife))
@@ -768,7 +770,7 @@ public:
                     {
                         GameObject* go = instance->GetGameObject(door_lorewalker);
                         if (go != nullptr)
-                            go->SetGoState(GOState::GO_STATE_ACTIVE);
+                            go->SetGoState(GO_STATE_ACTIVE);
                         eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
 
                         Map::PlayerList const& PlayerList = instance->GetPlayers();
@@ -786,11 +788,12 @@ public:
                     }
                 }
             }
+            
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_ZAO_SUNSEEKER)
             {
                 GameObject* go = instance->GetGameObject(door_lorewalker);
                 if (go != nullptr)
-                    go->SetGoState(GOState::GO_STATE_ACTIVE);
+                    go->SetGoState(GO_STATE_ACTIVE);
                 eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
 
                 Map::PlayerList const& PlayerList = instance->GetPlayers();
@@ -806,12 +809,14 @@ public:
                     }
                 }
             }
+            
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_SUN)
             {
                 //OnDied, summon two haunting sha.
                 unit->CastSpell(unit, SPELL_EXTRACT_SHA_4, false);
                 unit->CastSpell(unit, SPELL_EXTRACT_SHA_4, false);
             }
+            
             // When the scroll dies, we must draw all the corrupted units.
             if (unit->GetGUID() == scroll)
             {
@@ -894,6 +899,7 @@ public:
                 }
             }
         }
+        
         void Wipe_lorewalker_stonestep()
         {
             Creature* creature = instance->GetCreature(lorewalkter_stonestep);

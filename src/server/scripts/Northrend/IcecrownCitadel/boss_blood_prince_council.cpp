@@ -902,7 +902,7 @@ class boss_prince_valanar_icc : public CreatureScript
                 {
                     case NPC_KINETIC_BOMB_TARGET:
                         summon->SetReactState(REACT_PASSIVE);
-                        summon->CastSpell(summon, SPELL_KINETIC_BOMB, true, NULL, NULL, me->GetGUID());
+                        summon->CastSpell(summon, SPELL_KINETIC_BOMB, true, NULL, NULLAURA_EFFECT, me->GetGUID());
                         break;
                     case NPC_KINETIC_BOMB:
                     {

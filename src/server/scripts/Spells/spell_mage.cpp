@@ -399,7 +399,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                             JadeCore::Containers::RandomResizeList(targetList, chargeCount);
 
                             for (auto itr : targetList)
-                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, 0, _player->GetGUID());
+                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                         }
                     }
                 }

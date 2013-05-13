@@ -521,7 +521,7 @@ AuraPtr SpellScript::GetHitAura()
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitAura was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULL;
+        return NULLAURA;
     }
     if (!m_spell->m_spellAura)
         return NULLAURA;

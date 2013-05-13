@@ -4,6 +4,9 @@
 */
 
 #include "stormstout_brewery.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 enum eHabaneroBeer
 {

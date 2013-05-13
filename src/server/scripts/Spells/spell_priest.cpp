@@ -209,7 +209,7 @@ class spell_pri_shadowfiend : public SpellScriptLoader
                         if (Guardian* pet = _player->GetGuardianPet())
                         {
                             pet->InitCharmInfo();
-                            pet->SetReactState(ReactStates::REACT_DEFENSIVE);
+                            pet->SetReactState(REACT_DEFENSIVE);
                             pet->ToCreature()->AI()->AttackStart(target);
                         }
                     }
@@ -383,7 +383,7 @@ class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
                             if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY))
                                 _player->RemoveAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY);
 
-                            target->CastCustomSpell(target, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                            target->CastCustomSpell(target, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                             if (target->HasAura(GetSpellInfo()->Id))
                                 target->RemoveAura(GetSpellInfo()->Id);
 
@@ -391,35 +391,35 @@ class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
 
                             if (Unit* secondTarget = target->GetNextRandomRaidMemberOrPet(radius))
                             {
-                                target->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                target->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                 if (secondTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                     secondTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
-                                secondTarget->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                secondTarget->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
 
                                 if (Unit* thirdTarget = target->GetNextRandomRaidMemberOrPet(radius))
                                 {
-                                    secondTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                    secondTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                     if (thirdTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                         thirdTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
-                                    thirdTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                    thirdTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
 
                                     if (Unit* fourthTarget = target->GetNextRandomRaidMemberOrPet(radius))
                                     {
-                                        thirdTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                        thirdTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                         if (fourthTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                             fourthTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
-                                        fourthTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                        fourthTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
 
                                         if (Unit* fifthTarget = target->GetNextRandomRaidMemberOrPet(radius))
                                         {
-                                            fourthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                            fourthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                             if (fifthTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                                 fifthTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
-                                            fifthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                            fifthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                         }
                                     }
                                 }
@@ -585,7 +585,7 @@ class spell_pri_lightwell_renew : public SpellScriptLoader
                         // proc a spellcast
                         if (AuraPtr chargesAura = m_caster->GetAura(LIGHTWELL_CHARGES))
                         {
-                            m_caster->CastSpell(unitTarget, LIGHTSPRING_RENEW, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
+                            m_caster->CastSpell(unitTarget, LIGHTSPRING_RENEW, true, NULL, NULLAURA_EFFECT, m_caster->ToTempSummon()->GetSummonerGUID());
                             if (chargesAura->ModCharges(-1))
                                 m_caster->ToTempSummon()->UnSummon();
                         }
@@ -1214,12 +1214,12 @@ class spell_pri_cascade_second : public SpellScriptLoader
                                 {
                                     // damage
                                     case 127630:
-                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, 0, _player->GetGUID());
+                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                                         break;
                                     // heal
                                     case 120786:
-                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, 0, _player->GetGUID());
-                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_HEAL, true, 0, 0, _player->GetGUID());
+                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, NULLAURA_EFFECT, _player->GetGUID());
+                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_HEAL, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                                         break;
                                     default:
                                         break;
@@ -1231,12 +1231,12 @@ class spell_pri_cascade_second : public SpellScriptLoader
                                 {
                                     // damage
                                     case 127630:
-                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, 0, _player->GetGUID());
+                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                                         break;
                                     // heal
                                     case 120786:
-                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_MISSILE, true, 0, 0, _player->GetGUID());
-                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_HEAL, true, 0, 0, _player->GetGUID());
+                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_MISSILE, true, 0, NULLAURA_EFFECT, _player->GetGUID());
+                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_HEAL, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                                         break;
                                     default:
                                         break;
@@ -1329,11 +1329,11 @@ class spell_pri_cascade_first : public SpellScriptLoader
                             {
                                 // First missile
                                 if (_player->IsValidAttackTarget(target))
-                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, 0, _player->GetGUID());
+                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                                 else
                                 {
-                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, 0, _player->GetGUID());
-                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_HEAL, true, 0, 0, _player->GetGUID());
+                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, NULLAURA_EFFECT, _player->GetGUID());
+                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_HEAL, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                                 }
 
                                 break;
@@ -1342,11 +1342,11 @@ class spell_pri_cascade_first : public SpellScriptLoader
                             {
                                 // First missile
                                 if (_player->IsValidAttackTarget(target))
-                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, 0, _player->GetGUID());
+                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                                 else
                                 {
-                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_MISSILE, true, 0, 0, _player->GetGUID());
-                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_HEAL, true, 0, 0, _player->GetGUID());
+                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_MISSILE, true, 0, NULLAURA_EFFECT, _player->GetGUID());
+                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_HEAL, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                                 }
 
                                 break;

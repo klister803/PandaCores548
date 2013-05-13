@@ -434,6 +434,18 @@ bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* player, bool msg
     return true;
 }
 
+bool SpellMgr::IsSpellForbidden(uint32 spellid)
+{
+    std::list<uint32>::iterator Itr;
+
+    for (Itr = mForbiddenSpells.begin(); Itr != mForbiddenSpells.end(); Itr++)
+        if ((*Itr) == spellid)
+            return true;
+
+    return false;
+}
+
+
 uint32 SpellMgr::GetSpellDifficultyId(uint32 spellId) const
 {
     SpellDifficultySearcherMap::const_iterator i = mSpellDifficultySearcherMap.find(spellId);
@@ -1747,6 +1759,35 @@ void SpellMgr::LoadSpellGroupStackRules()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u spell group stack rules in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
+
+void SpellMgr::LoadForbiddenSpells()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mForbiddenSpells.clear();
+
+    uint32 count = 0;
+
+    QueryResult result = WorldDatabase.Query("SELECT spell_id FROM spell_forbidden");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u spell group definitions", count);
+        return;
+    }
+
+    do
+    {
+        Field *fields = result->Fetch();
+    
+        mForbiddenSpells.push_back(fields[0].GetUInt32());
+
+        ++count;
+    } while (result->NextRow());
+
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u forbidden spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 
 void SpellMgr::LoadSpellProcEvents()
 {

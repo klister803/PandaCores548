@@ -6,6 +6,7 @@ Antoine Vallee for Pandashan Servers
 */
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 enum eBosses
 {

@@ -17,6 +17,9 @@
 
 #include "PhaseMgr.h"
 #include "Chat.h"
+#include "ObjectMgr.h"
+#include "ConditionMgr.h"
+
 
 //////////////////////////////////////////////////////////////////
 // Updating

@@ -1,5 +1,7 @@
 #include "TimeDiffMgr.h"
 #include "Timer.h"
+#include "World.h"
+#include "DatabaseEnv.h"
 
 void TimeDiffMgr::Initialize()
 {

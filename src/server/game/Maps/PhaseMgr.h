@@ -21,6 +21,7 @@
 #include "SharedDefines.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "ConditionMgr.h"
 
 class ObjectMgr;
 class Player;

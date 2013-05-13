@@ -212,7 +212,7 @@ class spell_hun_stampede : public SpellScriptLoader
                                     if (!pet)
                                         return;
 
-                                    pet->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                                    pet->SetReactState(REACT_AGGRESSIVE);
                                     pet->m_Stampeded = true;
 
                                     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
@@ -233,7 +233,7 @@ class spell_hun_stampede : public SpellScriptLoader
                                     if (!pet)
                                         return;
 
-                                    pet->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                                    pet->SetReactState(REACT_AGGRESSIVE);
                                     pet->m_Stampeded = true;
 
                                     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
@@ -1003,7 +1003,7 @@ class spell_hun_glaive_toss : public SpellScriptLoader
                         if (plr && plr->HasSpellCooldown(HUNTER_SPELL_GLAIVE_TOSS))
                             return;
                         
-                        target->CastSpell(caster, GetSpellInfo()->Id, true, 0, NULL, caster->GetGUID());                      
+                        target->CastSpell(caster, GetSpellInfo()->Id, true, 0, NULLAURA_EFFECT, caster->GetGUID());
                     }
                 }
             }

@@ -1726,7 +1726,7 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
                     break;
                 }
             }
-
+            playersToTeleport.push_back(player);
             m_teleport.push_back(pguid);
             grp->SetLfgRoles(pguid, pProposal->players[pguid]->role);
             SetState(pguid, LFG_STATE_DUNGEON);
@@ -1746,7 +1746,7 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
         for (LfgGuidList::const_iterator it = pProposal->queues.begin(); it != pProposal->queues.end(); ++it)
             RemoveFromQueue(*it);
 
-        // Teleport Player
+        // Teleport players
         for (LfgPlayerList::const_iterator it = playersToTeleport.begin(); it != playersToTeleport.end(); ++it)
             TeleportPlayer(*it, false);
 
