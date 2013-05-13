@@ -48,7 +48,8 @@ set(scripts_STAT_SRCS
   Pandaria/SiegeNiuzaoTemple/instance_siege_of_the_niuzoa_temple.cpp
   Pandaria/SiegeNiuzaoTemple/siege_of_the_niuzoa_temple.h
   Pandaria/SiegeNiuzaoTemple/boss_jinbak.cpp
-  
+  Pandaria/SiegeNiuzaoTemple/siege_of_the_niuzoa_temple.cpp
+
   Pandaria/MogushanVault/instance_mogu_shan_vault.cpp
   Pandaria/MogushanVault/mogu_shan_vault.h
   Pandaria/MogushanVault/mogu_shan_vault.cpp
