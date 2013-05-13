@@ -26,6 +26,7 @@ enum spells
     RESIN_WEAVING = 121114,
     ENCASED_IN_RESIN = 121116,
     RESIN_SHELL = 120946,
+    RESIDUE = 120938,
 };
 
 class mob_sikthik_guardian : public CreatureScript
@@ -65,6 +66,45 @@ class mob_sikthik_guardian : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_sikthik_guardianAI(creature);
+        }
+};
+class mob_resin_flake : public CreatureScript
+{
+    public:
+        mob_resin_flake() : CreatureScript("mob_resin_flake") {}
+
+        struct mob_resin_flakeAI : public ScriptedAI
+        {
+            mob_resin_flakeAI(Creature* creature) : ScriptedAI(creature) { }
+
+            uint32 residueTimer;
+
+            void Reset()
+            {
+                residueTimer = urand(5000, 7000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+                if (residueTimer <= diff)
+                {
+                    if (Unit* target = me->SelectNearestTarget(5.0f))
+                        if (!target->IsFriendlyTo(me))
+                            me->CastSpell(target, RESIDUE, true);
+                    residueTimer = urand(5000, 7000);
+                }
+                else
+                    residueTimer -= diff;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_resin_flakeAI(creature);
         }
 };
 class mob_sikthik_amber_weaver : public CreatureScript
@@ -157,6 +197,7 @@ class spell_resin_weaving : public SpellScriptLoader
 void AddSC_siege_of_the_niuzoa_temple()
 {
     new mob_sikthik_guardian();
+    new mob_resin_flake();
     new mob_sikthik_amber_weaver();
     new spell_resin_weaving();
 }
