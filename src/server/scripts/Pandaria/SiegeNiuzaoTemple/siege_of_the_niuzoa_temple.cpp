@@ -35,13 +35,8 @@ class mob_sikthik_guardian : public CreatureScript
 
         struct mob_sikthik_guardianAI : public ScriptedAI
         {
-            mob_sikthik_guardianAI(Creature* creature) : ScriptedAI(creature)
-            {
-                pInstance = creature->GetInstanceScript();
-            }
+            mob_sikthik_guardianAI(Creature* creature) : ScriptedAI(creature) { }
 
-            InstanceScript* pInstance;
-            EventMap events;
             uint32 malleableResinTimer;
 
             void Reset()
@@ -79,13 +74,8 @@ class mob_sikthik_amber_weaver : public CreatureScript
 
         struct mob_sikthik_amber_weaverAI : public ScriptedAI
         {
-            mob_sikthik_amber_weaverAI(Creature* creature) : ScriptedAI(creature)
-            {
-                pInstance = creature->GetInstanceScript();
-            }
+            mob_sikthik_amber_weaverAI(Creature* creature) : ScriptedAI(creature) { }
 
-            InstanceScript* pInstance;
-            EventMap events;
             uint32 resinWeavingTimer;
             uint32 resinShellTimer;
             bool resinShellOnlyOne;
