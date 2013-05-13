@@ -1484,7 +1484,6 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectApply += AuraEffectApplyFn(spell_dru_celestial_alignment_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
                 OnEffectRemove += AuraEffectRemoveFn(spell_dru_celestial_alignment_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
             }
         };

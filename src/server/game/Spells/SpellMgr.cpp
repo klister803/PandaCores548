@@ -3371,10 +3371,12 @@ void SpellMgr::LoadSpellCustomAttr()
             case 19740: // Blessing of Might
             case 20217: // Blessing of Kings
             case 21562: // Power Word : Fortitude
+            case 24907: // Moonkin Aura
             case 109773:// Dark Intent
             case 116781:// Legacy of the White Tiger
             case 127830:// Spirit Beast Blessing
-                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_CASTER_AREA_RAID;
                 break;
             case 1459:  // Arcane Illumination
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;

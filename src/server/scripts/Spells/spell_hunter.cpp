@@ -111,7 +111,7 @@ enum HunterSpells
 };
 
  // Blink Strike - 130392
- class spell_hun_blink_strike : public SpellScriptLoader
+class spell_hun_blink_strike : public SpellScriptLoader
 {
     public:
         spell_hun_blink_strike() : SpellScriptLoader("spell_hun_blink_strike") { }

@@ -1460,7 +1460,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             break;
         case FORM_MOONKIN:
             spellId = 24905;
-            spellId2 = 69366;
+            spellId2 = 24907;
             break;
         case FORM_FLIGHT:
             spellId = 33948;
