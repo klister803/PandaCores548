@@ -2536,6 +2536,21 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     break;
                 }
+                case 115817: // Cancel Barrier
+                {
+                    std::list<Unit*> targetList;
+                    radius = 6.0f;
+
+                    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+                    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+
+                    if (!targetList.empty())
+                        for (auto itr : targetList)
+                            itr->CastSpell(itr, 115856, true);
+
+                    break;
+                }
                 default:
                     break;
             }
