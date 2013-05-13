@@ -1463,6 +1463,36 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
         {
             return new spell_dru_celestial_alignment_SpellScript();
         }
+
+        class spell_dru_celestial_alignment_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_celestial_alignment_AuraScript);
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
+                    _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
+                    _player->RemoveAura(SPELL_DRUID_NATURES_GRACE);
+                    _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_dru_celestial_alignment_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_dru_celestial_alignment_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_celestial_alignment_AuraScript();
+        }
 };
 
 // Shooting Stars - 93400
