@@ -3322,14 +3322,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 31935: // Avenger's Shield
                 spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                 break;
-            case 77485:  // Mastery : Echo of Light
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 8;
-                break;
-            case 77486:  // Mastery : Shadowy Recall
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 8;
-                break;
             case 121118:// Dire Beast summons
             case 122802:
             case 122804:
@@ -3707,6 +3699,52 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 127626: // Devouring plague - Heal
                 spellInfo->Effects[0].BasePoints = 1;
+                break;
+            case 117907: // Mastery : Gift of the Serpent
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 5;
+                break;
+            case 77492:  // Mastery : Total Eclipse
+            case 76671:  // Mastery : Divine Bulwark
+            case 115636: // Mastery : Combo Breaker
+            case 77484:  // Mastery : Shield Discipline
+            case 76806:  // Mastery : Main Gauche
+            case 77226:  // Mastery : Deep Healing
+            case 77222:  // Mastery : Elemental Overload
+            case 77223:  // Mastery : Enhanced Elements
+            case 12846:  // Mastery : Ignite
+            case 76838:  // Mastery : Strikes of Opportunity
+            case 76856:  // Mastery : Unshackled Fury
+            case 76659:  // Mastery : Wild Quiver
+            case 76657:  // Mastery : Master of Beasts
+            case 76658:  // Mastery : Essence of the Viper
+            case 77494:  // Mastery : Nature's Guardian
+            case 77495:  // Mastery : Harmony
+            case 77515:  // Mastery : Dreadblade
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
+                break;
+            case 76669:  // Mastery : Illuminated Healing
+            case 77485:  // Mastery : Echo of Light
+            case 77486:  // Mastery : Shadowy Recall
+            case 117906: // Mastery : Elusive Brawler
+            case 76547:  // Mastery : Mana Adept
+            case 77219:  // Mastery : Master Demonologist
+            case 77215:  // Mastery : Potent Afflictions
+            case 76857:  // Mastery : Critical Block
+            case 76613:  // Mastery : Frostburn
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
+            case 76808:  // Mastery : Executioner
+            case 76803:  // Mastery : Potent Poisons
+            case 77493:  // Mastery : Razor Claws
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[2].BasePoints = 8;
+                break;
+            case 77220:  // Mastery : Emberstorm
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 1;
                 break;
             case 107223:
                 spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
