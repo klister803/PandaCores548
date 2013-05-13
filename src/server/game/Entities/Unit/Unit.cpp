@@ -18187,7 +18187,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 if (getRace() == RACE_NIGHTELF)
                     return 21243;
                 else if (getRace() == RACE_WORGEN)
-                    return 37730;
+                    return 37729;
             }
             return 21244;
         case FORM_TRAVEL:
