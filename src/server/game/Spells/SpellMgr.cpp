@@ -3429,6 +3429,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Mechanic = 0;
                 break;
             case 115175:// Soothing Mists
+            case 116694:// Surging Mists
+            case 117952:// Crackling Jade Lightning
                 spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                 break;
             case 102793:
@@ -3600,6 +3602,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 113656:// Fists of Fury
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                 break;
             case 13165: // Aspect of the Hawk
                 spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
