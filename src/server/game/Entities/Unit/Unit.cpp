@@ -3427,6 +3427,20 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
 
     aura->HandleAuraSpecificMods(aurApp, caster, true, false);
 
+    // Epicurean
+    if (GetTypeId() == TYPEID_PLAYER &&
+        getRace() == RACE_PANDAREN_ALLI ||
+        getRace() == RACE_PANDAREN_HORDE ||
+        getRace() == RACE_PANDAREN_NEUTRAL)
+    {
+        if (aura->GetSpellInfo()->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF)
+        {
+            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                if (aura->GetEffect(i))
+                    aura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount() * 2);
+        }
+    }
+
     // apply effects of the aura
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
