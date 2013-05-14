@@ -1833,7 +1833,7 @@ public:
 
         handler->PSendSysMessage(target ? LANG_YOU_DISABLE_CHAT : LANG_COMMAND_DISABLE_CHAT_DELAYED, nameLink.c_str(), notSpeakTime, muteReasonStr.c_str());
 
-        if (sWorld->getBoolConfig(CONFIG_ANNOUNCE_BAN))
+        if (sWorld->getBoolConfig(CONFIG_ANNOUNCE_MUTE))
         {
             std::string announce;
 
