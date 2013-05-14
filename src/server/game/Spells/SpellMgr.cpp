@@ -3604,6 +3604,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                 spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                 break;
+            case 115315:// Summon Black Ox Statue
+                spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
+                break;
             case 13165: // Aspect of the Hawk
                 spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
                 break;

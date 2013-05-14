@@ -562,6 +562,14 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 		sLog->OutPandashan("World Boss %u [%s] take more than 1M damage (%u) by player %u [%s] with spell %u", victim->GetEntry(), victim->GetName(), damage, GetGUIDLow(), GetName(), spellProto ? spellProto->Id : 0);
 
     // Custom MoP Script
+    if (ToPlayer() && getClass() == CLASS_MONK && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER && HasAura(115315))
+    {
+        if (damage > 0)
+        {
+            if (AuraPtr blackOxStatue = this->GetAura(115315))
+                blackOxStatue->SetScriptData(0, damage);
+        }
+    }
     // Blade Flurry
     if (GetTypeId() == TYPEID_PLAYER && HasAura(13877) && damage > 0 && (!spellProto || (spellProto && spellProto->Id != 22482)))
     {
