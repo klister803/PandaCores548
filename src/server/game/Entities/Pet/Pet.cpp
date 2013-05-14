@@ -1083,6 +1083,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel / 2));
                     break;
                 }
+                case 58488: // Feral Spirit (Symbiosis)
                 case 29264: // Feral Spirit
                 {
                     SetCreateHealth(uint32(m_owner->GetMaxHealth() / 3.7f));

@@ -7588,6 +7588,14 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
             break;
     }
 
+    if (dummySpell->Id == 110588)
+    {
+        if (!GetMisdirectionTarget())
+            return false;
+        triggered_spell_id = 35079; // 4 sec buff on self
+        target = this;
+    }
+
     // Vengeance tank mastery
     switch (dummySpell->Id)
     {
@@ -8341,6 +8349,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Lightning Shield (Symbiosis)
+        case 110803:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (ToPlayer()->HasSpellCooldown(110804))
+                return false;
+
+            ToPlayer()->AddSpellCooldown(110804, 0, time(NULL) + 4);
+
+            break;
+        }
         // Glyph of Avenging Wrath
         case 54927:
         {

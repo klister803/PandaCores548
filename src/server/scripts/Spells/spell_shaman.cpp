@@ -85,6 +85,65 @@ enum ShamanSpells
     SPELL_SHA_GLYPH_OF_LAKESTRIDER          = 55448,
     SPELL_SHA_WATER_WALKING                 = 546,
     SPELL_SHA_GLYPH_OF_SHAMANISTIC_RAGE     = 63280,
+    SPELL_SHA_SOLAR_BEAM                    = 113286,
+    SPELL_SHA_SOLAR_BEAM_SILENCE            = 113288,
+    SPELL_SHA_GHOST_WOLF                    = 2645,
+};
+
+// Prowl - 113289
+class spell_sha_prowl : public SpellScriptLoader
+{
+    public:
+        spell_sha_prowl() : SpellScriptLoader("spell_sha_prowl") { }
+
+        class spell_sha_prowl_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_prowl_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, SPELL_SHA_GHOST_WOLF, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_prowl_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_prowl_SpellScript();
+        }
+};
+
+// Solar beam - 113286
+class spell_sha_solar_beam : public SpellScriptLoader
+{
+    public:
+        spell_sha_solar_beam() : SpellScriptLoader("spell_sha_solar_beam") { }
+
+        class spell_sha_solar_beam_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_solar_beam_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_SOLAR_BEAM))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_SOLAR_BEAM_SILENCE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_solar_beam_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_solar_beam_AuraScript();
+        }
 };
 
 // Called by Shamanistic Rage - 30823
@@ -1702,6 +1761,8 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_prowl();
+    new spell_sha_solar_beam();
     new spell_sha_glyph_of_shamanistic_rage();
     new spell_sha_glyph_of_lakestrider();
     new spell_sha_call_of_the_elements();

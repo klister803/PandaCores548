@@ -3538,6 +3538,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                 break;
             case 106922:// Might of Ursoc
+            case 113072:// Might of Ursoc (Symbiosis)
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                 break;
             case 111771:// Demonic Gateway
@@ -3604,6 +3605,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
                 break;
             case 6346:  // Fear Ward
+            case 110717:// Fear Ward (Symbiosis)
             case 48108: // Hot Streak
             case 57761: // Brain Freeze
             case 132158:// Nature's Swiftness
@@ -3611,12 +3613,24 @@ void SpellMgr::LoadSpellCustomAttr()
             case 34936: // Backlash
             case 50334: // Berserk (bear)
             case 23920: // Spell Reflection
+            case 113002:// Spell Reflection (Symbiosis)
             case 124430:// Divine Insight (Shadow)
             case 81292: // Glyph of Mind Spike
             case 114250:// Selfless Healer
             case 90174: // Divine Purpose
             case 89485: // Inner Focus
                 spellInfo->ProcCharges = 1;
+                break;
+            case 110600:// Ice Trap (Symbiosis)
+                spellInfo->Effects[0].MiscValue = 164639;
+                break;
+            case 110588:// Misdirection (Symbiosis)
+                spellInfo->Effects[2].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_SCALE;
+                spellInfo->Effects[2].BasePoints = 30;
+                break;
+            case 122292:// Intervene (Symbiosis)
+                spellInfo->Effects[1].BasePoints = 100;
                 break;
             case 131116:// Allow to use Raging Blow
                 spellInfo->ProcCharges = 2;

@@ -829,22 +829,38 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
-        case 120165: //Conflagrate
+        // Death Coil (Symbiosis)
+        case 122282:
+        {
+            if (m_caster->IsFriendlyTo(unitTarget))
             {
-                UnitList friends;
-                JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, 5.0f);
-                JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
-                m_caster->VisitNearbyObject(5.0f, searcher);
-
-                for (auto unit : friends)
-                {
-                    if (m_caster->GetGUID() == unit->GetGUID())
-                        continue;
-                    GetOriginalCaster()->CastSpell(unit, 120160, true);
-                    GetOriginalCaster()->CastSpell(unit, 120201, true);
-                }
+                int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
+                m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
             }
+            else
+            {
+                int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
+                m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
+            }
+            return;
+        }
+        case 120165: //Conflagrate
+        {
+            UnitList friends;
+            JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, 5.0f);
+            JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
+            m_caster->VisitNearbyObject(5.0f, searcher);
+
+            for (auto unit : friends)
+            {
+                if (m_caster->GetGUID() == unit->GetGUID())
+                    continue;
+                GetOriginalCaster()->CastSpell(unit, 120160, true);
+                GetOriginalCaster()->CastSpell(unit, 120201, true);
+            }
+
             break;
+        }
         case 107045: //Jade Fire
             m_caster->CastSpell(unitTarget, 107098, false);
             break;
@@ -2521,6 +2537,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
         case 1562:
         case 833:
         case 1161:
+        case 3245:
             numSummons = (damage > 0) ? damage : 1;
             break;
         default:
@@ -2635,6 +2652,9 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                         }
 
+                        // Wild Mushroom : Plague
+                        if (summon && m_spellInfo->Id == 113516)
+                            m_originalCaster->CastSpell(m_originalCaster, 113517, true); // Wild Mushroom : Plague (periodic dummy)
 
                         ExecuteLogEffectSummonObject(effIndex, summon);
                     }
@@ -5056,6 +5076,13 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
 
     if (m_spellInfo->Id == 61999) // Raise Ally
         mana = target->CountPctFromMaxMana(60);
+
+    // Rebirth (Symbiosis)
+    if (m_spellInfo->Id == 113269)
+    {
+        health = target->CountPctFromMaxHealth(60);
+        mana = target->CountPctFromMaxMana(20);
+    }
 
     ExecuteLogEffectResurrect(effIndex, target);
 

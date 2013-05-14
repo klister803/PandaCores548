@@ -62,6 +62,35 @@ enum WarriorSpells
     WARRIOR_SPELL_SHIELD_BLOCKC_TRIGGERED       = 132404,
 };
 
+// Stampeding Shout - 122294
+class spell_warr_stampeding_shout : public SpellScriptLoader
+{
+    public:
+        spell_warr_stampeding_shout() : SpellScriptLoader("spell_warr_stampeding_shout") { }
+
+        class spell_warr_stampeding_shout_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_stampeding_shout_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        target->RemoveMovementImpairingAuras();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_stampeding_shout_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_stampeding_shout_SpellScript();
+        }
+};
+
 // Shield Barrier - 112048
 class spell_warr_shield_barrier : public SpellScriptLoader
 {
@@ -1209,6 +1238,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_stampeding_shout();
     new spell_warr_shield_barrier();
     new spell_warr_shield_block();
     new spell_warr_storm_bolt();

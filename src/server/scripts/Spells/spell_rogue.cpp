@@ -73,7 +73,43 @@ enum RogueSpells
     ROGUE_SPELL_COMBAT_INSIGHT                   = 74002,
 };
 
-// Cloak of Shadows - 31224
+// Growl - 113613
+class spell_rog_growl : public SpellScriptLoader
+{
+    public:
+        spell_rog_growl() : SpellScriptLoader("spell_rog_growl") { }
+
+        class spell_rog_growl_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_growl_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (!GetCaster())
+                    return;
+
+                if (!GetHitUnit())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = _player->GetSelectedUnit())
+                        if (_player->IsValidAttackTarget(target))
+                            _player->CastSpell(target, 355, true); // Taunt
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_growl_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_growl_SpellScript();
+        }
+};
+
+// Cloak of Shadows - 31224 and Cloak of Shadows - 110788 (Symbiosis)
 class spell_rog_cloak_of_shadows : public SpellScriptLoader
 {
     public:
@@ -87,17 +123,12 @@ class spell_rog_cloak_of_shadows : public SpellScriptLoader
             {
                 if (!GetCaster())
                     return;
-
-                if (!GetHitUnit())
-                    return;
-
-                Unit* target = GetHitUnit();
                 const SpellInfo* m_spellInfo = GetSpellInfo();
 
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     uint32 dispelMask = SpellInfo::GetDispelMask(DISPEL_ALL);
-                    Unit::AuraApplicationMap& Auras = target->GetAppliedAuras();
+                    Unit::AuraApplicationMap& Auras = _player->GetAppliedAuras();
                     for (Unit::AuraApplicationMap::iterator iter = Auras.begin(); iter != Auras.end();)
                     {
                         // remove all harmful spells on you...
@@ -605,7 +636,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
         }
 };
 
-// Redirect - 73981
+// Redirect - 73981 and Redirect - 110730
 class spell_rog_redirect : public SpellScriptLoader
 {
     public:
@@ -1280,6 +1311,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_growl();
     new spell_rog_cloak_of_shadows();
     new spell_rog_combat_readiness();
     new spell_rog_nerve_strike();

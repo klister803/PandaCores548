@@ -61,6 +61,14 @@ enum SpellEffIndex
     MAX_EFFECTS,
 };
 
+enum Roles
+{
+    ROLES_DEFAULT   = 0,
+    ROLES_HEALER    = 1,
+    ROLES_DPS       = 2,
+    ROLES_TANK      = 3,
+};
+
 enum SpecIndex
 {
     SPEC_NONE                   = 0,

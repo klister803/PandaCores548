@@ -110,6 +110,34 @@ enum HunterSpells
     HUNTER_SPELL_BLINK_STRIKE                    = 130393,
 };
 
+// Dash - 113073
+class spell_hun_dash : public SpellScriptLoader
+{
+    public:
+        spell_hun_dash() : SpellScriptLoader("spell_hun_dash") { }
+
+        class spell_hun_dash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_dash_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->RemoveMovementImpairingAuras();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_dash_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_dash_SpellScript();
+        }
+};
+
  // Blink Strike - 130392
 class spell_hun_blink_strike : public SpellScriptLoader
 {
@@ -1916,7 +1944,7 @@ class spell_hun_pet_carrion_feeder : public SpellScriptLoader
         }
 };
 
-// Misdirection - 34477
+// Misdirection - 34477 and Misdirection - 110588 (Symbiosis)
 class spell_hun_misdirection : public SpellScriptLoader
 {
     public:
@@ -2119,6 +2147,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_dash();
     new spell_hun_blink_strike();
     new spell_hun_glyph_of_marked_for_die();
     new spell_hun_stampede();

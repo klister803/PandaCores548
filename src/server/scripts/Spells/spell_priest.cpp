@@ -1556,7 +1556,7 @@ class spell_pri_inner_fire_or_will : public SpellScriptLoader
         }
 };
 
-// Leap of Faith - 73325
+// Leap of Faith - 73325 and Leap of Faith - 110718 (Symbiosis)
 class spell_pri_leap_of_faith : public SpellScriptLoader
 {
     public:
@@ -1565,13 +1565,6 @@ class spell_pri_leap_of_faith : public SpellScriptLoader
         class spell_pri_leap_of_faith_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_pri_leap_of_faith_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(PRIEST_LEAP_OF_FAITH))
-                    return false;
-                return true;
-            }
 
             void HandleOnHit()
             {

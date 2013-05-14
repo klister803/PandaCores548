@@ -603,7 +603,7 @@ class spell_pal_hand_of_protection : public SpellScriptLoader
         }
 };
 
-// Cleanse - 4987
+// Cleanse - 4987 and Cleanse - 122288 (Symbiosis)
 class spell_pal_cleanse : public SpellScriptLoader
 {
     public:
@@ -650,7 +650,7 @@ class spell_pal_cleanse : public SpellScriptLoader
         }
 };
 
-// Divine Shield - 642
+// Divine Shield - 642 and Divine Shield - 110700
 class spell_pal_divine_shield : public SpellScriptLoader
 {
     public:
