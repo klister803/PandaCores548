@@ -94,6 +94,43 @@ enum MonkSpells
     SPELL_MONK_GLYPH_OF_ZEN_FLIGHT              = 125893,
     SPELL_MONK_ZEN_FLIGHT                       = 125883,
     SPELL_MONK_BEAR_HUG                         = 127361,
+    ITEM_MONK_T14_TANK_4P                       = 123159,
+};
+
+// Guard - 115295
+class spell_monk_guard : public SpellScriptLoader
+{
+    public:
+        spell_monk_guard() : SpellScriptLoader("spell_monk_guard") { }
+
+        class spell_monk_guard_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_guard_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _plr = GetCaster()->ToPlayer())
+                {
+                    amount += int32(_plr->GetTotalAttackPowerValue(BASE_ATTACK) * 1.971f);
+
+                    if (_plr->HasAura(ITEM_MONK_T14_TANK_4P))
+                        amount = int32(amount * 1.2f);
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_guard_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_guard_AuraScript();
+        }
 };
 
 // Bear Hug - 127361
@@ -2124,6 +2161,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_guard();
     new spell_monk_bear_hug();
     new spell_monk_zen_flight_check();
     new spell_monk_glyph_of_zen_flight();
