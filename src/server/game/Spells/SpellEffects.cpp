@@ -637,6 +637,26 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
+                    case 108561: // Jab (Staff)
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                        break;
+                    case 115697: // Jab (Polearm)
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                        break;
+                    case 115689: // Jab (Axes)
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                        break;
+                    case 115694: // Jab (Maces)
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                        break;
+                    case 115696: // Jab (Swords)
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                        break;
                     case 115080: // Touch of Death
                         if (Unit* caster = GetCaster())
                             if (Unit* victim = caster->getVictim())

@@ -12922,6 +12922,41 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, pItem->GetEntry(), slot);
 
     // Custom MoP script
+    // Jab Override Driver
+    if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_MONK)
+    {
+        Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+
+        if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
+        {
+            RemoveAura(108561); // 2H Staff Override
+            RemoveAura(115697); // 2H Polearm Override
+            RemoveAura(115689); // D/W Axes
+            RemoveAura(115694); // D/W Maces
+            RemoveAura(115696); // D/W Swords
+
+            switch (mainItem->GetTemplate()->SubClass)
+            {
+                case ITEM_SUBCLASS_WEAPON_STAFF:
+                    CastSpell(this, 108561, true);
+                    break;
+                case ITEM_SUBCLASS_WEAPON_POLEARM:
+                    CastSpell(this, 115697, true);
+                    break;
+                case ITEM_SUBCLASS_WEAPON_AXE:
+                    CastSpell(this, 115689, true);
+                    break;
+                case ITEM_SUBCLASS_WEAPON_MACE:
+                    CastSpell(this, 115694, true);
+                    break;
+                case ITEM_SUBCLASS_WEAPON_SWORD:
+                    CastSpell(this, 115696, true);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
     // Way of the Monk - 120277
     if (GetTypeId() == TYPEID_PLAYER)
     {
@@ -13740,6 +13775,41 @@ void Player::SwapItem(uint16 src, uint16 dst)
         }
 
         // Custom MoP script
+        // Jab Override Driver
+        if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_MONK)
+        {
+            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+
+            if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
+            {
+                RemoveAura(108561); // 2H Staff Override
+                RemoveAura(115697); // 2H Polearm Override
+                RemoveAura(115689); // D/W Axes
+                RemoveAura(115694); // D/W Maces
+                RemoveAura(115696); // D/W Swords
+
+                switch (mainItem->GetTemplate()->SubClass)
+                {
+                    case ITEM_SUBCLASS_WEAPON_STAFF:
+                        CastSpell(this, 108561, true);
+                        break;
+                    case ITEM_SUBCLASS_WEAPON_POLEARM:
+                        CastSpell(this, 115697, true);
+                        break;
+                    case ITEM_SUBCLASS_WEAPON_AXE:
+                        CastSpell(this, 115689, true);
+                        break;
+                    case ITEM_SUBCLASS_WEAPON_MACE:
+                        CastSpell(this, 115694, true);
+                        break;
+                    case ITEM_SUBCLASS_WEAPON_SWORD:
+                        CastSpell(this, 115696, true);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
         // Way of the Monk - 120277
         if (GetTypeId() == TYPEID_PLAYER)
         {
