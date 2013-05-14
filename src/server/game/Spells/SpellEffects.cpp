@@ -6651,6 +6651,30 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
 
                 break;
             }
+            case 116011: // Rune of Power
+            {
+                int32 count = caster->CountDynObject(m_spellInfo->Id);
+
+                if (count > 2)
+                {
+                    std::list<DynamicObject*> runeOfPowerList;
+                    caster->GetDynObjectList(runeOfPowerList, m_spellInfo->Id);
+
+                    if (!runeOfPowerList.empty())
+                    {
+                        runeOfPowerList.sort(JadeCore::DurationPctOrderPred());
+
+                        for (auto itr : runeOfPowerList)
+                        {
+                            DynamicObject* runeOfPower = itr;
+                            runeOfPower->SetDuration(0);
+                            break;
+                        }
+                    }
+                }
+
+                break;
+            }
             default:
                 break;
         }

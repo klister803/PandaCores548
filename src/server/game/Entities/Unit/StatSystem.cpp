@@ -800,6 +800,13 @@ void Player::UpdateManaRegen()
     if (HasAuraType(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT))
         base_regen += 0.5 * spirit_regen; // Allows 50% of your mana regeneration from Spirit to continue while in combat.
 
+    // Rune of Power : Increase Mana regeneration by 100%
+    if (HasAura(116014))
+    {
+        combat_regen *= 2;
+        base_regen *= 2;
+    }
+
     // Chaotic Energy : Increase Mana regen by 625%
     if (HasAura(111546))
     {
