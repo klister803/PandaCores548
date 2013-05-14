@@ -8352,6 +8352,9 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (!procSpell)
                 return false;
 
+            if (procSpell->Id != 8921 && procSpell->Id != 93402)
+                return false;
+
             if (GetTypeId() != TYPEID_PLAYER)
                 return false;
 
