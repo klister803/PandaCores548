@@ -177,8 +177,13 @@ class spell_monk_zen_flight_check : public SpellScriptLoader
             SpellCastResult CheckTarget()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (_player->GetMap()->IsBattlegroundOrArena())
                         return SPELL_FAILED_NOT_IN_BATTLEGROUND;
+
+                    if (!_player->HasAura(90267))
+                        return SPELL_FAILED_NOT_HERE;
+                }
 
                 return SPELL_CAST_OK;
             }
