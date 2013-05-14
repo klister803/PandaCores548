@@ -2558,6 +2558,10 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
                             {
                                 dynObjOwnerCaster->CastSpell(itr, 116014, true); // Rune of Power
                                 affected = true;
+
+                                if (dynObjOwnerCaster->ToPlayer())
+                                    dynObjOwnerCaster->ToPlayer()->UpdateManaRegen();
+
                                 return;
                             }
                         }
@@ -2565,9 +2569,19 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!affected)
                         dynObjOwnerCaster->RemoveAura(116014);
+                }
+                case 115817: // Cancel Barrier
+                {
+                    std::list<Unit*> targetList;
+                    radius = 6.0f;
 
-                    if (dynObjOwnerCaster->ToPlayer())
-                        dynObjOwnerCaster->ToPlayer()->UpdateManaRegen();
+                    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+                    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+
+                    if (!targetList.empty())
+                        for (auto itr : targetList)
+                            itr->CastSpell(itr, 115856, true);
 
                     break;
                 }

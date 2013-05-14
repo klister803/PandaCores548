@@ -28,6 +28,8 @@ enum eActions
     ACTION_GUARDIAN_DIED            = 2,
     ACTION_PETRIFICATION            = 3,
     ACTION_FAIL                     = 4,
+
+    ACTION_SPARK                    = 5
 };
 
 enum eCreatures
