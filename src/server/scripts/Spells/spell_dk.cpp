@@ -761,6 +761,8 @@ class spell_dk_blood_tap : public SpellScriptLoader
                         if (bloodCharges->GetStackAmount() < 5)
                             return SPELL_FAILED_DONT_REPORT;
                     }
+                    else
+                        return SPELL_FAILED_DONT_REPORT;
                 }
 
                 return SPELL_CAST_OK;
