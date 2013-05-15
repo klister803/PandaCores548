@@ -887,7 +887,7 @@ void Player::UpdateManaRegen()
 
 void Player::UpdateRuneRegen(RuneType rune)
 {
-    if (rune >= NUM_RUNE_TYPES)
+    if (rune > NUM_RUNE_TYPES)
         return;
 
     uint32 cooldown = 0;
@@ -909,8 +909,17 @@ void Player::UpdateRuneRegen(RuneType rune)
 void Player::UpdateAllRunesRegen()
 {
     for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
+    {
         if (uint32 cooldown = GetRuneTypeBaseCooldown(RuneType(i)))
-            SetFloatValue(PLAYER_RUNE_REGEN_1 + i, float(1 * IN_MILLISECONDS) / float(cooldown));
+        {
+            float regen = float(1 * IN_MILLISECONDS) / float(cooldown);
+
+            if (regen < 0.0099999998f)
+                regen = 0.01f;
+
+            SetFloatValue(PLAYER_RUNE_REGEN_1 + i, regen);
+        }
+    }
 }
 
 void Player::_ApplyAllStatBonuses()

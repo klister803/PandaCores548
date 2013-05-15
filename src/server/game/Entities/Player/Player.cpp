@@ -898,8 +898,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_isActive = true;
 
-    m_runes = NULL;
-
     m_lastFallTime = 0;
     m_lastFallZ = 0;
 
@@ -967,7 +965,6 @@ Player::~Player()
         delete ItemSetEff[x];
 
     delete m_declinedname;
-    delete m_runes;
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
@@ -23727,6 +23724,8 @@ void Player::SendInitialPacketsAfterAddToMap()
     WorldPacket data;
     GetBattlePetMgr().BuildBattlePetJournal(&data);
     GetSession()->SendPacket(&data);
+
+    SendDeathRuneUpdate();
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()
@@ -25424,56 +25423,39 @@ uint32 Player::GetRuneTypeBaseCooldown(RuneType runeType) const
 
     AuraEffectList const& regenAura = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
     for (AuraEffectList::const_iterator i = regenAura.begin();i != regenAura.end(); ++i)
-        if ((*i)->GetMiscValue() == POWER_RUNES && (*i)->GetMiscValueB() == runeType)
-            cooldown *= 1.0f - (*i)->GetAmount() / 100.0f;
+        if ((*i)->GetMiscValue() == POWER_RUNES)
+            cooldown /= ((*i)->GetAmount() + 100.0f) / 100.0f;
 
     // Runes cooldown are now affected by player's haste from equipment ...
     hastePct = GetRatingBonusValue(CR_HASTE_MELEE);
-
-    // Hack Fix Unholy presence - Increase runes regen speed by 10%
-    if (HasAura(48265))
-        hastePct += 10.0f;
-    // Hack Fix Improved Unholy Presence - Increase runes regen speed by an additional 10%
-    if (HasAura(50392))
-        hastePct += 10.0f;
-    // Hack Fix Improved Blood Presence - Increase runes regen speed by 20%
-    if (HasAura(50371))
-        hastePct += 20.0f;
+    hastePct += GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_HASTE);
+    hastePct += GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_RANGED_HASTE) / 10.0f;
 
     cooldown *=  1.0f - (hastePct / 100.0f);
 
     return cooldown;
 }
 
-void Player::RemoveRunesByAuraEffect(constAuraEffectPtr aura)
+void Player::RemoveRunesBySpell(uint32 spell_id)
 {
     for (uint8 i = 0; i < MAX_RUNES; ++i)
     {
-        if (m_runes->runes[i].ConvertAura == aura)
+        if (m_runes.runes[i].spell_id == spell_id)
         {
             ConvertRune(i, GetBaseRune(i));
-            SetRuneConvertAura(i, NULLAURA_EFFECT);
+            SetRuneConvertSpell(i, 0);
         }
     }
 }
 
 void Player::RestoreBaseRune(uint8 index)
 {
-    constAuraEffectPtr aura = m_runes->runes[index].ConvertAura;
-    // If rune was converted by a non-pasive aura that still active we should keep it converted
-    if (aura && !(aura->GetSpellInfo()->Attributes & SPELL_ATTR0_PASSIVE))
-        return;
+    uint32 spell_id = m_runes.runes[index].spell_id;
     ConvertRune(index, GetBaseRune(index));
-    SetRuneConvertAura(index, NULLAURA_EFFECT);
-    // Don't drop passive talents providing rune convertion
-    if (!aura || aura->GetAuraType() != SPELL_AURA_CONVERT_RUNE)
-        return;
-    for (uint8 i = 0; i < MAX_RUNES; ++i)
-    {
-        if (aura == m_runes->runes[i].ConvertAura)
-            return;
-    }
-    aura->GetBase()->Remove();
+    SetRuneConvertSpell(index, 0);
+    // Only Blood Tap can be removed
+    if (spell_id == 45529)
+        RemoveAura(45529);
 }
 
 void Player::ConvertRune(uint8 index, RuneType newType)
@@ -25498,6 +25480,23 @@ void Player::ResyncRunes(uint8 count)
     GetSession()->SendPacket(&data);
 }
 
+void Player::SendDeathRuneUpdate()
+{
+    if (getClass() != CLASS_DEATH_KNIGHT)
+        return;
+
+    for (uint8 i = 0; i < MAX_RUNES; ++i)
+    {
+        if (m_runes.runes[i].CurrentRune != RUNE_DEATH)
+            continue;
+
+        WorldPacket data(SMSG_CONVERT_RUNE, 2);
+        data << uint8(i);
+        data << uint8(RUNE_DEATH);
+        GetSession()->SendPacket(&data);
+    }
+}
+
 void Player::AddRunePower(uint8 index)
 {
     WorldPacket data(SMSG_ADD_RUNE_POWER, 4);
@@ -25520,22 +25519,19 @@ void Player::InitRunes()
     if (getClass() != CLASS_DEATH_KNIGHT)
         return;
 
-    m_runes = new Runes;
-
-    m_runes->runeState = 0;
-    m_runes->lastUsedRune = RUNE_BLOOD;
+    m_runes.runeState = 0;
 
     for (uint8 i = 0; i < MAX_RUNES; ++i)
     {
         SetBaseRune(i, runeSlotTypes[i]);                              // init base types
         SetCurrentRune(i, runeSlotTypes[i]);                           // init current types
         SetRuneCooldown(i, 0);                                         // reset cooldowns
-        SetRuneConvertAura(i, NULLAURA_EFFECT);
-        m_runes->SetRuneState(i);
+        SetRuneConvertSpell(i, 0);
+        m_runes.SetRuneState(i);
+        SetDeathRuneUsed(i, false);
     }
 
-    for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
-        SetFloatValue(PLAYER_RUNE_REGEN_1 + i, 0.1f);                  // set a base regen timer equal to 10 sec
+    UpdateAllRunesRegen();
 }
 
 bool Player::IsBaseRuneSlotsOnCooldown(RuneType runeType) const

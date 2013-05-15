@@ -784,8 +784,6 @@ class spell_dk_blood_tap : public SpellScriptLoader
                                 bloodCharges->SetStackAmount(newAmount - 5);
                         }
 
-                        bool runeDeath = false;
-
                         for (uint8 i = 0; i < MAX_RUNES; ++i)
                         {
                             if (_player->GetCurrentRune(i) == RUNE_DEATH)
@@ -794,12 +792,16 @@ class spell_dk_blood_tap : public SpellScriptLoader
                             if (!_player->GetRuneCooldown(i))
                                 continue;
 
-                            if (runeDeath)
-                                continue;
+                            // Should always update the rune with the lowest cd
+                            if (_player->GetRuneCooldown(i) >= _player->GetRuneCooldown(i+1))
+                                i++;
 
                             _player->ConvertRune(i, RUNE_DEATH);
-                            runeDeath = true;
+                            _player->SetRuneCooldown(i, 0);
+                            break;
                         }
+
+                        _player->ResyncRunes(MAX_RUNES);
                     }
                 }
             }
@@ -1085,10 +1087,11 @@ class spell_dk_plague_leech : public SpellScriptLoader
                             {
                                 _player->SetRuneCooldown(runeRandom, 0);
                                 _player->ConvertRune(runeRandom, RUNE_DEATH);
-                                _player->ResyncRunes(MAX_RUNES);
                                 runeOff = false;
                             }
                         }
+
+                        _player->ResyncRunes(MAX_RUNES);
                     }
                 }
             }

@@ -4679,7 +4679,12 @@ void Spell::TakeRunePower(bool didHit)
     {
         runeCost[i] = runeCostData->RuneCost[i];
         if (Player* modOwner = m_caster->GetSpellModOwner())
+        {
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, runeCost[i], this);
+
+            if (runeCost[i] < 0)
+                runeCost[i] = 0;
+        }
     }
 
     runeCost[RUNE_DEATH] = 0;                               // calculated later
@@ -4687,12 +4692,13 @@ void Spell::TakeRunePower(bool didHit)
     for (uint32 i = 0; i < MAX_RUNES; ++i)
     {
         RuneType rune = player->GetCurrentRune(i);
-        if (!player->GetRuneCooldown(i) && runeCost[rune] > 0)
-        {
-            player->SetRuneCooldown(i, didHit ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN));
-            player->SetLastUsedRune(rune);
-            runeCost[rune]--;
-        }
+        if (player->GetRuneCooldown(i) || !runeCost[rune])
+            continue;
+
+        uint32 cooldown = ((m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE) > 0 || didHit) ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN);
+        player->SetRuneCooldown(i, cooldown);
+        player->SetDeathRuneUsed(i, false);
+        runeCost[rune]--;
     }
 
     runeCost[RUNE_DEATH] = runeCost[RUNE_BLOOD] + runeCost[RUNE_UNHOLY] + runeCost[RUNE_FROST];
@@ -4704,13 +4710,20 @@ void Spell::TakeRunePower(bool didHit)
             RuneType rune = player->GetCurrentRune(i);
             if (!player->GetRuneCooldown(i) && rune == RUNE_DEATH)
             {
-                player->SetRuneCooldown(i, didHit ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN));
-                player->SetLastUsedRune(rune);
+                uint32 cooldown = ((m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE) > 0 || didHit) ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN);
+                player->SetRuneCooldown(i, cooldown);
                 runeCost[rune]--;
 
-                // keep Death Rune type if missed
-                if (didHit)
+                bool takePower = didHit;
+                if (uint32 spell = player->GetRuneConvertSpell(i))
+                    takePower = spell != 54637 && spell != 89056;
+
+                // keep Death Rune type if missed or player has Blood of the North
+                if (takePower)
+                {
                     player->RestoreBaseRune(i);
+                    player->SetDeathRuneUsed(i, true);
+                }
 
                 if (runeCost[RUNE_DEATH] == 0)
                     break;

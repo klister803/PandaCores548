@@ -7384,9 +7384,17 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 break;
             }
             // Runic Empowerment
-            if (dummySpell->Id == 81229)
+            if (dummySpell->Id == 81229 || dummySpell->Id == 51462)
             {
                 if (!ToPlayer())
+                    return false;
+
+                if (!procSpell)
+                    return false;
+
+                if (procSpell->Id != 56815 && // Runic Strike
+                    procSpell->Id != 49143 && // Frost Strike
+                    procSpell->Id != 47632)   // Death Coil (damage)
                     return false;
 
                 // Runic Corruption - maybe only this need
@@ -7902,10 +7910,9 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, AuraPtr triggeredByAu
         }
         case SPELLFAMILY_DEATHKNIGHT:
         {
-            // Blood of the North
             // Reaping
-            // Death Rune Mastery
-            if (dummySpell->SpellIconID == 3041 || dummySpell->SpellIconID == 22 || dummySpell->SpellIconID == 2622)
+            // Blood Rites
+            if (dummySpell->Id == 56835 || dummySpell->Id == 50034)
             {
                 *handled = true;
                 // Convert recently used Blood Rune to Death Rune
@@ -7914,45 +7921,73 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, AuraPtr triggeredByAu
                     if (player->getClass() != CLASS_DEATH_KNIGHT)
                         return false;
 
-                    RuneType rune = ToPlayer()->GetLastUsedRune();
-                    // can't proc from death rune use
-                    if (rune == RUNE_DEATH)
-                        return false;
-                    AuraEffectPtr aurEff = triggeredByAura->GetEffect(EFFECT_0);
-                    if (!aurEff)
-                        return false;
+                    if (AuraEffectPtr aurEff = triggeredByAura->GetEffect(EFFECT_0))
+                        aurEff->ResetPeriodic(true);
 
-                    // Reset amplitude - set death rune remove timer to 30s
-                    aurEff->ResetPeriodic(true);
                     uint32 runesLeft;
 
-                    if (dummySpell->SpellIconID == 2622)
-                        runesLeft = 2;
-                    else
-                        runesLeft = 1;
-
-                    for (uint8 i = 0; i < MAX_RUNES && runesLeft; ++i)
+                    switch (procSpell->Id)
                     {
-                        if (dummySpell->SpellIconID == 2622)
+                        case 45902: // Blood Strike
+                        case 50842: // Pestilence
                         {
-                            if (player->GetCurrentRune(i) == RUNE_DEATH ||
-                                player->GetBaseRune(i) == RUNE_BLOOD)
-                                continue;
-                        }
-                        else
-                        {
-                            if (player->GetCurrentRune(i) == RUNE_DEATH ||
-                                player->GetBaseRune(i) != RUNE_BLOOD)
-                                continue;
-                        }
-                        if (player->GetRuneCooldown(i) != player->GetRuneBaseCooldown(i))
-                            continue;
+                            runesLeft = 1;
+                            for (uint8 i=0; i < MAX_RUNES && runesLeft; ++i)
+                            {
+                                if (player->GetCurrentRune(i) == RUNE_DEATH
+                                    || player->GetBaseRune(i) != RUNE_BLOOD
+                                    || player->IsDeathRuneUsed(i))
+                                    continue;
 
-                        --runesLeft;
-                        // Mark aura as used
-                        player->AddRuneByAuraEffect(i, RUNE_DEATH, aurEff);
+                                if (player->GetRuneCooldown(i) != player->GetRuneBaseCooldown(i))
+                                    continue;
+
+                                --runesLeft;
+                                player->AddRuneBySpell(i, RUNE_DEATH, dummySpell->Id);
+                            }
+
+                            break;
+                        }  
+                        case 49020: // Obliterate
+                        case 49998: // Death Strike
+                        {
+                            runesLeft = 2;
+                            for (uint8 i=0; i < MAX_RUNES && runesLeft; ++i)
+                            {
+                                if (player->GetCurrentRune(i) == RUNE_DEATH
+                                    || player->GetBaseRune(i) == RUNE_BLOOD
+                                    || player->IsDeathRuneUsed(i))
+                                    continue;
+
+                                if (player->GetRuneCooldown(i) != player->GetRuneBaseCooldown(i))
+                                    continue;
+
+                                --runesLeft;
+                                player->AddRuneBySpell(i, RUNE_DEATH, dummySpell->Id);
+                            }
+
+                            break;
+                        }
+                        case 85948: // Festering Strike
+                        {
+                            runesLeft = 2;
+                            for (uint8 i=0; i < MAX_RUNES && runesLeft; ++i)
+                            {
+                                if (player->GetCurrentRune(i) == RUNE_DEATH
+                                    || player->GetBaseRune(i) == RUNE_UNHOLY
+                                    || player->IsDeathRuneUsed(i))
+                                    continue;
+
+                                if (player->GetRuneCooldown(i) != player->GetRuneBaseCooldown(i))
+                                    continue;
+
+                                --runesLeft;
+                                player->AddRuneBySpell(i, RUNE_DEATH, dummySpell->Id);
+                            }
+
+                            break;
+                        }
                     }
-                    return true;
                 }
                 return false;
             }
