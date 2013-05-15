@@ -715,7 +715,7 @@ CharactersPerAccount = 50
 #        Range:       1-10
 #        Default:     10 - (Client limitation)
 
-CharactersPerRealm = 10
+CharactersPerRealm = 11
 
 #
 #    HeroicCharactersPerRealm
