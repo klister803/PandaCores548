@@ -60,6 +60,8 @@ set(scripts_STAT_SRCS
   Pandaria/WanderingIsland/WanderingIsland_East.cpp
   Pandaria/WanderingIsland/WanderingIsland_West.cpp
   Pandaria/WanderingIsland/WanderingIsland_South.cpp
+
+  Pandaria/vale_of_eternal_blossoms.cpp
 )
 
 message("  -> Prepared: Pandaria")
