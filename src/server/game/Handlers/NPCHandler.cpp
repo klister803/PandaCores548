@@ -805,6 +805,12 @@ void WorldSession::HandleStableSwapPet(WorldPacket & recvData)
         return;
     }
 
+    if (new_slot > MAX_PET_STABLES)
+    {
+        SendStableResult(STABLE_ERR_STABLE);
+        return;
+    }
+
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
@@ -813,6 +819,10 @@ void WorldSession::HandleStableSwapPet(WorldPacket & recvData)
 
     //If we move the pet already summoned...
     if (pet && pet->GetCharmInfo() && pet->GetCharmInfo()->GetPetNumber() == pet_number)
+        _player->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
+
+    //If we move to the pet already summoned...
+    if (pet && GetPlayer()->m_currentPetSlot == new_slot)
         _player->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOT_BY_ID);
