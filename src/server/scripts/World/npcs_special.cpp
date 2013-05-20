@@ -3801,12 +3801,12 @@ class npc_wild_imp : public CreatureScript
             npc_wild_impAI(Creature *creature) : ScriptedAI(creature)
             {
                 charges = 10;
-                me->SetReactState(REACT_AGGRESSIVE);
+                me->SetReactState(REACT_HELPER);
             }
 
             void Reset()
             {
-                me->SetReactState(REACT_AGGRESSIVE);
+                me->SetReactState(REACT_HELPER);
 
                 if (me->GetOwner())
                     if (me->GetOwner()->getVictim())
@@ -3815,8 +3815,8 @@ class npc_wild_imp : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (me->GetReactState() != REACT_AGGRESSIVE)
-                    me->SetReactState(REACT_AGGRESSIVE);
+                if (me->GetReactState() != REACT_HELPER)
+                    me->SetReactState(REACT_HELPER);
 
                 if (!me->GetOwner())
                     return;
