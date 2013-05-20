@@ -3832,6 +3832,10 @@ class npc_wild_imp : public CreatureScript
                     me->CastSpell(me->getVictim() ? me->getVictim() : me->GetOwner()->getVictim(), FIREBOLT, false);
                     me->GetOwner()->EnergizeBySpell(me->GetOwner(), FIREBOLT, 5, POWER_DEMONIC_FURY);
                     charges--;
+
+                    if (me->GetOwner()->HasAura(122351))
+                        if (roll_chance_i(8))
+                            me->GetOwner()->CastSpell(me->GetOwner(), 122355, true);
                 }
             }
         };

@@ -404,38 +404,6 @@ class spell_warl_archimondes_vengance_passive : public SpellScriptLoader
         }
 };
 
-// Called by Firebolt (Wild Imp) - 104318
-// Molten Core - 122351
-class spell_warl_molten_core_hit : public SpellScriptLoader
-{
-    public:
-        spell_warl_molten_core_hit() : SpellScriptLoader("spell_warl_molten_core_hit") { }
-
-        class spell_warl_molten_core_hit_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_molten_core_hit_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(WARLOCK_MOLTEN_CORE_AURA))
-                            if (roll_chance_i(8))
-                                _player->CastSpell(_player, WARLOCK_MOLTEN_CORE, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_molten_core_hit_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_molten_core_hit_SpellScript();
-        }
-};
-
 // Called by Shadowflame - 47960
 // Molten Core - 122351
 class spell_warl_molten_core_dot : public SpellScriptLoader
@@ -2146,7 +2114,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_archimondes_vengeance_cooldown();
     new spell_warl_archimondes_vengance();
     new spell_warl_archimondes_vengance_passive();
-    new spell_warl_molten_core_hit();
     new spell_warl_molten_core_dot();
     new spell_warl_decimate();
     new spell_warl_demonic_call();
