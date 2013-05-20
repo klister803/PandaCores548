@@ -99,6 +99,65 @@ enum MonkSpells
     SPELL_MONK_GUARD                            = 115295,
 };
 
+// Diffuse Magic - 122783
+class spell_monk_diffuse_magic : public SpellScriptLoader
+{
+    public:
+        spell_monk_diffuse_magic() : SpellScriptLoader("spell_monk_diffuse_magic") { }
+
+        class spell_monk_diffuse_magic_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_diffuse_magic_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    Unit::AuraApplicationMap AuraList = _player->GetAppliedAuras();
+                    for (Unit::AuraApplicationMap::iterator iter = AuraList.begin(); iter != AuraList.end(); ++iter)
+                    {
+                        AuraPtr aura = iter->second->GetBase();
+                        if (!aura)
+                            continue;
+
+                        Unit* caster = aura->GetCaster();
+                        if (!caster || caster->GetGUID() == _player->GetGUID())
+                            continue;
+
+                        if (!caster->IsWithinDist(_player, 40.0f))
+                            continue;
+
+                        if (aura->GetSpellInfo()->IsPositive())
+                            continue;
+
+                        if (!(aura->GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
+                            continue;
+
+                        _player->AddAura(aura->GetSpellInfo()->Id, caster);
+
+                        if (AuraPtr targetAura = caster->GetAura(aura->GetSpellInfo()->Id, _player->GetGUID()))
+                            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                                if (targetAura->GetEffect(i) && aura->GetEffect(i))
+                                    targetAura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount());
+
+                        _player->RemoveAura(aura->GetSpellInfo()->Id, caster->GetGUID());
+                        
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_diffuse_magic_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_diffuse_magic_SpellScript();
+        }
+};
+
 // Summon Black Ox Statue - 115315
 class spell_monk_black_ox_statue : public SpellScriptLoader
 {
@@ -2330,6 +2389,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_diffuse_magic();
     new spell_monk_black_ox_statue();
     new spell_monk_guard();
     new spell_monk_bear_hug();
