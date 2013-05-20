@@ -129,7 +129,6 @@ public:
 
          if (sWorld->getBoolConfig(CONFIG_ANNOUNCE_BAN))
          {
-
             std::string announce;
 
             announce = "The character '";
