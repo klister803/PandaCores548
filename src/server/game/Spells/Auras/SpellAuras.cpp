@@ -792,8 +792,8 @@ void Aura::Update(uint32 diff, Unit* caster)
                     Powers powertype = Powers(m_spellPowerData->powerType);
                     if (powertype == POWER_HEALTH)
                     {
-                        if (int32(caster->GetHealth()) > manaPerSecond)
-                            caster->ModifyHealth(-manaPerSecond);
+                        if (int32(caster->CountPctFromMaxHealth(manaPerSecond)) < caster->GetHealth())
+                            caster->ModifyHealth(-1 * caster->CountPctFromMaxHealth(manaPerSecond));
                         else
                         {
                             Remove();
@@ -802,8 +802,8 @@ void Aura::Update(uint32 diff, Unit* caster)
                     }
                     else
                     {
-                        if (int32(caster->GetPower(powertype)) >= manaPerSecond)
-                            caster->ModifyPower(powertype, -manaPerSecond);
+                        if (int32(caster->CountPctFromMaxPower(manaPerSecond, powertype)) <= caster->GetPower(powertype))
+                            caster->ModifyPower(powertype, -1 * int32(caster->CountPctFromMaxPower(manaPerSecond, powertype)));
                         else
                         {
                             Remove();

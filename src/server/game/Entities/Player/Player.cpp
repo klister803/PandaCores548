@@ -709,6 +709,9 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_speakTime = 0;
     m_speakCount = 0;
 
+    m_petSlotUsed = 0;
+    m_currentPetSlot = PET_SLOT_DELETED;
+
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
 
@@ -5015,13 +5018,6 @@ bool Player::ResetTalents(bool no_cost)
         SetTalentResetCost(cost);
         SetTalentResetTime(time(NULL));
     }
-
-    if (Pet* pet = GetPet())
-    {
-        if (pet->getPetType() == HUNTER_PET && !pet->GetCreatureTemplate()->isTameable(CanTameExoticPets()))
-            RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
-    }
-
 
     return true;
 }
@@ -23335,7 +23331,7 @@ template<>
 inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
 {
     if (p->GetPetGUID() == t->GetGUID() && t->ToCreature()->isPet())
-        ((Pet*)t)->Remove(PET_SLOT_ACTUAL_PET_SLOT, true);
+        ((Pet*)t)->Remove(PET_SLOT_OTHER_PET, true);
 }
 
 void Player::UpdateVisibilityOf(WorldObject* target)
