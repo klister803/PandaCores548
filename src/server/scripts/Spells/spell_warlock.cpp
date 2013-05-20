@@ -418,9 +418,13 @@ class spell_warl_molten_core_dot : public SpellScriptLoader
             void OnTick(constAuraEffectPtr aurEff)
             {
                 if (GetCaster())
+                {
                     if (GetCaster()->HasAura(WARLOCK_MOLTEN_CORE_AURA))
                         if (roll_chance_i(8))
                             GetCaster()->CastSpell(GetCaster(), WARLOCK_MOLTEN_CORE, true);
+
+                    GetCaster()->EnergizeBySpell(GetCaster(), aurEff->GetSpellInfo()->Id, 2, POWER_DEMONIC_FURY);
+                }
             }
 
             void Register()
