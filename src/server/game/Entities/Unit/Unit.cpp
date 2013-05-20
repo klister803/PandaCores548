@@ -11223,8 +11223,8 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         // Chaos Bolt
                         if (spellProto->Id == 116858)
                             return true;
-                        // Soul Fire
-                        if (spellProto->Id == 6353)
+                        // Soul Fire and Soul Fire (Metamorphosis)
+                        if (spellProto->Id == 6353 || spellProto->Id == 104027)
                             return true;
                         break;
                 }
