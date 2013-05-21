@@ -3743,7 +3743,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 77484:  // Mastery : Shield Discipline
             case 76806:  // Mastery : Main Gauche
             case 77226:  // Mastery : Deep Healing
-            case 77222:  // Mastery : Elemental Overload
             case 77223:  // Mastery : Enhanced Elements
             case 12846:  // Mastery : Ignite
             case 76838:  // Mastery : Strikes of Opportunity

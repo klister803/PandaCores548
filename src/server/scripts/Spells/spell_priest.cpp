@@ -170,9 +170,15 @@ class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
                 for (auto itr : targetList)
                 {
                     if (Unit* caster = GetCaster())
+                    {
                         if (AuraPtr shadowWordPain = itr->GetAura(PRIEST_SHADOW_WORD_PAIN, caster->GetGUID()))
+                        {
                             if (shadowWordPain->GetDuration() <= (shadowWordPain->GetMaxDuration() / 4))
                                 caster->CastSpell(itr, PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, true);
+                            else
+                                itr->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST);
+                        }
+                    }
                 }
 
                 targetList.clear();
@@ -225,41 +231,6 @@ class spell_pri_shadowfiend : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_shadowfiend_SpellScript();
-        }
-};
-
-// Called by Mind Spike - 73510
-// Surge of Darkness - 87160
-class spell_pri_surge_of_darkness : public SpellScriptLoader
-{
-    public:
-        spell_pri_surge_of_darkness() : SpellScriptLoader("spell_pri_surge_of_darkness") { }
-
-        class spell_pri_surge_of_darkness_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_surge_of_darkness_SpellScript);
-
-            void HandleOnCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (AuraPtr surgeOfDarkness = _player->GetAura(PRIEST_SURGE_OF_DARKNESS))
-                    {
-                        surgeOfDarkness->SetUsingCharges(true);
-                        surgeOfDarkness->DropCharge();
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnCast += SpellCastFn(spell_pri_surge_of_darkness_SpellScript::HandleOnCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_surge_of_darkness_SpellScript();
         }
 };
 
@@ -1041,8 +1012,13 @@ class spell_pri_mind_spike : public SpellScriptLoader
                                 target->RemoveAura(PRIEST_VAMPIRIC_TOUCH, _player->GetGUID());
                         }
                         // ... and deals 50% additional damage.
-                        else
-                            SetHitDamage(int32(GetHitDamage() * 1.5f));
+                        else if (AuraPtr surgeOfDarkness = _player->GetAura(PRIEST_SURGE_OF_DARKNESS))
+                        {
+                            SetHitDamage(int32(GetHitDamage() * (1.5f * surgeOfDarkness->GetStackAmount())));
+
+                            surgeOfDarkness->SetUsingCharges(true);
+                            surgeOfDarkness->DropCharge();
+                        }
                     }
                 }
             }
@@ -2082,7 +2058,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_power_word_solace();
     new spell_pri_shadow_word_insanity_allowing();
     new spell_pri_shadowfiend();
-    new spell_pri_surge_of_darkness();
     new spell_pri_surge_of_light();
     new spell_pri_from_darkness_comes_light();
     new spell_pri_body_and_soul();
