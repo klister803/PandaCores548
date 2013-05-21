@@ -102,6 +102,173 @@ enum PriestSpells
     PRIEST_SURGE_OF_DARKNESS                    = 87160,
     PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST   = 130733,
     PRIEST_SHADOW_WORD_INSANITY_DAMAGE          = 129249,
+    PRIEST_SPELL_MIND_BLAST                     = 8092,
+    PRIEST_SPELL_2P_S12_SHADOW                  = 92711,
+    PRIEST_SPELL_DISPERSION_SPRINT              = 129960,
+    PRIEST_SPELL_4P_S12_SHADOW                  = 131556,
+    PRIEST_SPELL_SIN_AND_PUNISHMENT             = 87204,
+    PRIEST_SPELL_2P_S12_HEAL                    = 33333,
+    PRIEST_SPELL_SOUL_OF_DIAMOND                = 96219,
+    PRIEST_SPELL_4P_S12_HEAL                    = 131566,
+    PRIEST_SPELL_HOLY_SPARK                     = 131567,
+};
+
+// Called by Prayer of Mending - 33076
+// Item : S12 4P bonus - Heal
+class spell_pri_item_s12_4p_heal : public SpellScriptLoader
+{
+    public:
+        spell_pri_item_s12_4p_heal() : SpellScriptLoader("spell_pri_item_s12_4p_heal") { }
+
+        class spell_pri_item_s12_4p_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_item_s12_4p_heal_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(PRIEST_SPELL_4P_S12_HEAL))
+                            _player->CastSpell(target, PRIEST_SPELL_HOLY_SPARK, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_item_s12_4p_heal_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_item_s12_4p_heal_SpellScript();
+        }
+};
+
+// Called by Power Word : Shield - 17
+// Item : S12 2P bonus - Heal
+class spell_pri_item_s12_2p_heal : public SpellScriptLoader
+{
+    public:
+        spell_pri_item_s12_2p_heal() : SpellScriptLoader("spell_pri_item_s12_2p_heal") { }
+
+        class spell_pri_item_s12_2p_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_item_s12_2p_heal_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(PRIEST_SPELL_2P_S12_HEAL))
+                            target->CastSpell(target, PRIEST_SPELL_SOUL_OF_DIAMOND, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_item_s12_2p_heal_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_item_s12_2p_heal_SpellScript();
+        }
+};
+
+// Called by Dispersion - 47585
+// Item : S12 2P bonus - Shadow
+class spell_pri_item_s12_2p_shadow : public SpellScriptLoader
+{
+    public:
+        spell_pri_item_s12_2p_shadow() : SpellScriptLoader("spell_pri_item_s12_2p_shadow") { }
+
+        class spell_pri_item_s12_2p_shadow_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_item_s12_2p_shadow_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_SPELL_2P_S12_SHADOW))
+                        _player->CastSpell(_player, PRIEST_SPELL_DISPERSION_SPRINT, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_item_s12_2p_shadow_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_item_s12_2p_shadow_SpellScript();
+        }
+};
+
+// Divine Insight - 124430
+class spell_pri_divine_insight_shadow : public SpellScriptLoader
+{
+    public:
+        spell_pri_divine_insight_shadow() : SpellScriptLoader("spell_pri_divine_insight_shadow") { }
+
+        class spell_pri_divine_insight_shadow_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_divine_insight_shadow_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasSpellCooldown(PRIEST_SPELL_MIND_BLAST))
+                        _player->RemoveSpellCooldown(PRIEST_SPELL_MIND_BLAST, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_divine_insight_shadow_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_divine_insight_shadow_SpellScript();
+        }
+};
+
+// Power Word - Insanity - 129249
+class spell_pri_power_word_insanity : public SpellScriptLoader
+{
+    public:
+        spell_pri_power_word_insanity() : SpellScriptLoader("spell_pri_power_word_insanity") { }
+
+        class spell_pri_power_word_insanity_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_power_word_insanity_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
+                            target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
+
+                        if (target->HasAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID()))
+                            target->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_power_word_insanity_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_power_word_insanity_SpellScript();
+        }
 };
 
 // Power Word - Solace - 129250
@@ -117,25 +284,8 @@ class spell_pri_power_word_solace : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                {
                     if (Unit* target = GetHitUnit())
-                    {
-                        if (!_player->HasAura(PRIEST_SHADOWFORM_STANCE))
-                            _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
-                        else
-                        {
-                            SetHitDamage(0);
-
-                            _player->CastSpell(target, PRIEST_SHADOW_WORD_INSANITY_DAMAGE, true);
-
-                            if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
-                                target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
-
-                            if (target->HasAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID()))
-                                target->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID());
-                        }
-                    }
-                }
+                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
             }
 
             void Register()
@@ -170,9 +320,15 @@ class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
                 for (auto itr : targetList)
                 {
                     if (Unit* caster = GetCaster())
+                    {
                         if (AuraPtr shadowWordPain = itr->GetAura(PRIEST_SHADOW_WORD_PAIN, caster->GetGUID()))
-                            if (shadowWordPain->GetDuration() <= (shadowWordPain->GetMaxDuration() / 4))
+                        {
+                            if (shadowWordPain->GetDuration() <= (shadowWordPain->GetEffect(0)->GetAmplitude() * 2))
                                 caster->CastSpell(itr, PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, true);
+                            else
+                                itr->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST);
+                        }
+                    }
                 }
 
                 targetList.clear();
@@ -225,41 +381,6 @@ class spell_pri_shadowfiend : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_shadowfiend_SpellScript();
-        }
-};
-
-// Called by Mind Spike - 73510
-// Surge of Darkness - 87160
-class spell_pri_surge_of_darkness : public SpellScriptLoader
-{
-    public:
-        spell_pri_surge_of_darkness() : SpellScriptLoader("spell_pri_surge_of_darkness") { }
-
-        class spell_pri_surge_of_darkness_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_surge_of_darkness_SpellScript);
-
-            void HandleOnCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (AuraPtr surgeOfDarkness = _player->GetAura(PRIEST_SURGE_OF_DARKNESS))
-                    {
-                        surgeOfDarkness->SetUsingCharges(true);
-                        surgeOfDarkness->DropCharge();
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnCast += SpellCastFn(spell_pri_surge_of_darkness_SpellScript::HandleOnCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_surge_of_darkness_SpellScript();
         }
 };
 
@@ -704,13 +825,26 @@ class spell_pri_train_of_thought : public SpellScriptLoader
                                     if (newCooldownDelay > 500.0f)
                                         newCooldownDelay -= 500.0f;
 
-                                    _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + (newCooldownDelay / IN_MILLISECONDS)));
+                                    if (newCooldownDelay > 0)
+                                    {
+                                        _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + (newCooldownDelay / IN_MILLISECONDS)));
 
-                                    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-                                    data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
-                                    data << uint64(_player->GetGUID());                 // Player GUID
-                                    data << int32(-500);                                // Cooldown mod in milliseconds
-                                    _player->GetSession()->SendPacket(&data);
+                                        WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                                        data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
+                                        data << uint64(_player->GetGUID());                 // Player GUID
+                                        data << int32(-500);                                // Cooldown mod in milliseconds
+                                        _player->GetSession()->SendPacket(&data);
+                                    }
+                                    else
+                                    {
+                                        _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + 0));
+
+                                        WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                                        data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
+                                        data << uint64(_player->GetGUID());                 // Player GUID
+                                        data << int32(-newCooldownDelay);                                // Cooldown mod in milliseconds
+                                        _player->GetSession()->SendPacket(&data);
+                                    }
                                 }
                             }
                             else if (GetSpellInfo()->Id == 2060)
@@ -1041,8 +1175,13 @@ class spell_pri_mind_spike : public SpellScriptLoader
                                 target->RemoveAura(PRIEST_VAMPIRIC_TOUCH, _player->GetGUID());
                         }
                         // ... and deals 50% additional damage.
-                        else
-                            SetHitDamage(int32(GetHitDamage() * 1.5f));
+                        else if (AuraPtr surgeOfDarkness = _player->GetAura(PRIEST_SURGE_OF_DARKNESS))
+                        {
+                            SetHitDamage(int32(GetHitDamage() * (1.5f * surgeOfDarkness->GetStackAmount())));
+
+                            surgeOfDarkness->SetUsingCharges(true);
+                            surgeOfDarkness->DropCharge();
+                        }
                     }
                 }
             }
@@ -1984,9 +2123,18 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
                 }
             }
 
+            void HandleDispel(DispelInfo* dispelInfo)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* dispeller = dispelInfo->GetDispeller())
+                        if (caster->HasAura(PRIEST_SPELL_4P_S12_SHADOW))
+                            dispeller->CastSpell(dispeller, PRIEST_SPELL_SIN_AND_PUNISHMENT, true, 0, NULLAURA_EFFECT, caster->GetGUID());
+            }
+
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_vampiric_touch_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+                AfterDispel += AuraDispelFn(spell_pri_vampiric_touch_AuraScript::HandleDispel);
             }
         };
 
@@ -2079,10 +2227,14 @@ class spell_pri_shadowform : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_item_s12_4p_heal();
+    new spell_pri_item_s12_2p_heal();
+    new spell_pri_item_s12_2p_shadow();
+    new spell_pri_divine_insight_shadow();
+    new spell_pri_power_word_insanity();
     new spell_pri_power_word_solace();
     new spell_pri_shadow_word_insanity_allowing();
     new spell_pri_shadowfiend();
-    new spell_pri_surge_of_darkness();
     new spell_pri_surge_of_light();
     new spell_pri_from_darkness_comes_light();
     new spell_pri_body_and_soul();

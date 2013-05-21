@@ -2792,3 +2792,76 @@ void SpellInfo::_UnloadImplicitTargetConditionLists()
         delete cur;
     }
 }
+
+bool SpellInfo::IsBreakingCamouflageAfterHit() const
+{
+    // Traps
+    if (SpellFamilyFlags[1] & 0x8002000 ||
+        SpellFamilyFlags[2] & 0x20000)
+        return true;
+
+    // Damage casts
+    switch (Id)
+    {
+        case 19434: // Aimed Shot
+        case 82928: // Aimed Shot
+        case 77767: // Cobra Shot
+        case 56641: // Steady Shot
+            return true;
+    }
+
+    return false;
+}
+
+bool SpellInfo::IsBreakingCamouflage() const
+{
+    // This is bad but I dont't see another way
+    // I cannot check spells using any mask
+    // Use it only for hunter camouflage
+    switch (GetSpellSpecific())
+    {
+        case SPELL_SPECIFIC_FOOD:
+        case SPELL_SPECIFIC_FOOD_AND_DRINK:
+        case SPELL_SPECIFIC_WELL_FED:
+        case SPELL_SPECIFIC_ASPECT:
+            return false;
+    }
+
+    switch (Id)
+    {
+        case 136: // Mend Pet
+        case 982: // Revive Pet
+        case 1130: // Hunter's Mark
+        case 1462: // Beast Lore
+        case 1499: // Frost Trap
+        case 1543: // Flare
+        case 3045: // Rapid Fire
+        case 5384: // Feign Death
+        case 6197: // Eagle Eye
+        case 6991: // Feed Pet
+        case 13795: // Immolation Trap
+        case 13809: // Ice Trap
+        case 13813: // Explosive Trap
+        case 19263: // Deterence
+        case 19434: // Aimed Shot
+        case 23989: // Readiness
+        case 26297: // Berserking (Troll Racial)
+        case 34477: // Misdirection
+        case 34600: // Snake Trap
+        case 42292: // PvP Trinket
+        case 53271: // Master's Call
+        case 56641: // Steady Shot
+        case 60192: // Frost Trap launcher
+        case 77767: // Cobra Shot
+        case 77769: // Trap Launcher
+        case 82935: // Immplation Trap launcher
+        case 82939: // Explosive Trap launcher
+        case 82941: // Ice Trap launcher
+        case 82945: // Immolation Trap Launcher
+        case 82948: // Snake Trap launcher
+        case 93435: // Roar of Courage (Special Ability)
+            return false;
+    }
+
+    return true;
+}

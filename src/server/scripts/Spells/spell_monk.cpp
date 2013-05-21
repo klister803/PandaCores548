@@ -242,8 +242,10 @@ class spell_monk_black_ox_statue : public SpellScriptLoader
                 if (Player* _plr = GetCaster()->ToPlayer())
                 {
                     uint32 value = _plr->GetTotalAttackPowerValue(BASE_ATTACK) * 16;
+                    
+                    damageDealed += data;
 
-                    while ((damageDealed += data) >= value)
+                    if (damageDealed >= value)
                     {
                         damageDealed = 0;
 

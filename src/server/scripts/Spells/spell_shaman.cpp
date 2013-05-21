@@ -1418,7 +1418,7 @@ class spell_sha_ascendance : public SpellScriptLoader
                             _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_ENHANCED, true);
 
                             if (_player->HasSpellCooldown(SPELL_SHA_STORMSTRIKE))
-                                _player->RemoveSpellCooldown(SPELL_SHA_STORMSTRIKE);
+                                _player->RemoveSpellCooldown(SPELL_SHA_STORMSTRIKE, true);
                             break;
                         case SPEC_SHAMAN_RESTORATION:
                             _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_RESTORATION, true);
