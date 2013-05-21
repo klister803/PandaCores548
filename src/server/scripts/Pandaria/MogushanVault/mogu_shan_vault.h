@@ -45,6 +45,8 @@ enum eCreatures
     NPC_PHASE_CONTROLER             = 61124,
 
     NPC_GARAJAL                     = 60143,
+    NPC_SHADOWY_MINION_REAL         = 60940,
+    NPC_SHADOWY_MINION_SPIRIT       = 60184,
 
     // Spirit kings
     NPC_ZIAN                        = 60701,
