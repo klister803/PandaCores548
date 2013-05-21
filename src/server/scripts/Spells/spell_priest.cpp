@@ -103,6 +103,40 @@ enum PriestSpells
     PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST   = 130733,
     PRIEST_SHADOW_WORD_INSANITY_DAMAGE          = 129249,
     PRIEST_SPELL_MIND_BLAST                     = 8092,
+    PRIEST_SPELL_2P_S12_SHADOW                  = 92711,
+    PRIEST_SPELL_DISPERSION_SPRINT              = 129960,
+    PRIEST_SPELL_4P_S12_SHADOW                  = 131556,
+    PRIEST_SPELL_SIN_AND_PUNISHMENT             = 87204,
+};
+
+// Called by Dispersion - 47585
+// Item : S12 2P bonus - Shadow
+class spell_pri_item_s12_2p_shadow : public SpellScriptLoader
+{
+    public:
+        spell_pri_item_s12_2p_shadow() : SpellScriptLoader("spell_pri_item_s12_2p_shadow") { }
+
+        class spell_pri_item_s12_2p_shadow_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_item_s12_2p_shadow_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_SPELL_2P_S12_SHADOW))
+                        _player->CastSpell(_player, PRIEST_SPELL_DISPERSION_SPRINT, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_item_s12_2p_shadow_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_item_s12_2p_shadow_SpellScript();
+        }
 };
 
 // Divine Insight - 124430
@@ -2003,9 +2037,18 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
                 }
             }
 
+            void HandleDispel(DispelInfo* dispelInfo)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* dispeller = dispelInfo->GetDispeller())
+                        if (caster->HasAura(PRIEST_SPELL_4P_S12_SHADOW))
+                            dispeller->CastSpell(dispeller, PRIEST_SPELL_SIN_AND_PUNISHMENT, true, 0, NULLAURA_EFFECT, caster->GetGUID());
+            }
+
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_vampiric_touch_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+                AfterDispel += AuraDispelFn(spell_pri_vampiric_touch_AuraScript::HandleDispel);
             }
         };
 
@@ -2098,6 +2141,7 @@ class spell_pri_shadowform : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_item_s12_2p_shadow();
     new spell_pri_divine_insight_shadow();
     new spell_pri_power_word_solace();
     new spell_pri_shadow_word_insanity_allowing();
