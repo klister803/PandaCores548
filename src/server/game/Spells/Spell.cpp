@@ -2363,6 +2363,18 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     if (getState() == SPELL_STATE_DELAYED && !m_spellInfo->IsPositive() && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
         return;                                             // No missinfo in that case
 
+    // Some spells should remove Camouflage after hit (traps, some spells that have casting time)
+    if (target->targetGUID != m_caster->GetGUID() && m_spellInfo && m_spellInfo->IsBreakingCamouflageAfterHit())
+    {
+        if (TempSummon* summon = m_caster->ToTempSummon())
+        {
+            if (Unit* owner = summon->GetSummoner())
+                owner->RemoveAurasByType(SPELL_AURA_MOD_CAMOUFLAGE);
+        }
+        else
+            m_caster->RemoveAurasByType(SPELL_AURA_MOD_CAMOUFLAGE);
+    }
+
     // Get original caster (if exist) and calculate damage/healing from him data
     Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
 
@@ -3113,7 +3125,7 @@ void Spell::prepare(SpellCastTargets const* targets, constAuraEffectPtr triggere
     {
         // stealth must be removed at cast starting (at show channel bar)
         // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
-        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && m_spellInfo->IsBreakingStealth())
+        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && m_spellInfo->IsBreakingStealth() && (!m_caster->HasAuraType(SPELL_AURA_MOD_CAMOUFLAGE) || m_spellInfo->IsBreakingCamouflage()))
         {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)

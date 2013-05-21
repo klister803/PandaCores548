@@ -1766,16 +1766,16 @@ void AuraEffect::HandleModCamouflage(AuraApplication const *aurApp, uint8 mode, 
     if (!(mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK))
         return;
 
-    Unit *target = aurApp->GetTarget();
+    Unit* target = aurApp->GetTarget();
 
     if (apply)
     {
-        target->CastSpell(target, 80326, true);  // Camouflage
+        //
     }
     else if (!(target->isCamouflaged()))
     {
-        target->RemoveAura(80326);
-        target->RemoveAura(80325);
+        if (Unit* pet = GetCaster()->GetGuardianPet())
+            pet->RemoveAurasByType(SPELL_AURA_MOD_CAMOUFLAGE);
     }
 }
 
@@ -6105,6 +6105,18 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
         {
             switch (GetSpellInfo()->Id)
             {
+                // Camouflage
+                case 80326:
+                {
+                    if ((caster->isMoving() && !caster->HasAura(119449)) || caster->HasAura(80325))
+                        return;
+
+                    if (caster->HasAura(119449) || (caster->GetOwner() && caster->GetOwner()->HasAura(119449)))
+                        caster->CastSpell(caster, 119450, true);
+                    else
+                        caster->CastSpell(caster, 80325, true);
+                    break;
+                }
                 // Feeding Frenzy Rank 1
                 case 53511:
                     if (target->getVictim() && target->getVictim()->HealthBelowPct(35))

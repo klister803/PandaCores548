@@ -55,11 +55,8 @@ enum HunterSpells
     HUNTER_SPELL_INSANITY                        = 95809,
     SPELL_SHAMAN_SATED                           = 57724,
     SPELL_SHAMAN_EXHAUSTED                       = 57723,
-    HUNTER_SPELL_CAMOUFLAGE                      = 51755,
     HUNTER_SPELL_CAMOUFLAGE_VISUAL               = 80326,
-    HUNTER_SPELL_CAMOULAGE_STEALTH               = 80325,
-    HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE             = 119449,
-    HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_STEALTH     = 119450,
+    HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_VISUAL      = 119450,
     HUNTER_SPELL_POWERSHOT                       = 109259,
     HUNTER_SPELL_IMPROVED_SERPENT_STING_AURA     = 82834,
     HUNTER_SPELL_IMPROVED_SERPENT_STING          = 83077,
@@ -1186,7 +1183,7 @@ class spell_hun_feign_death : public SpellScriptLoader
         }
 };
 
-// Camouflage Visual - 80326
+// Camouflage - 51755
 class spell_hun_camouflage_visual : public SpellScriptLoader
 {
     public:
@@ -1196,118 +1193,24 @@ class spell_hun_camouflage_visual : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_camouflage_visual_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
-            {
-                if (!GetCaster())
-                    return;
-
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    Pet* pet = _player->GetPet();
-
-                    // provides stealth while stationary
-                    if (!_player->isMoving() && !_player->HasAura(HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE))
-                    {
-                        _player->CastSpell(_player, HUNTER_SPELL_CAMOULAGE_STEALTH, true);
-
-                        if (pet)
-                            pet->CastSpell(pet, HUNTER_SPELL_CAMOULAGE_STEALTH, true);
-                    }
-                    else if (_player->isMoving() && !_player->HasAura(HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE))
-                    {
-                        _player->RemoveAura(HUNTER_SPELL_CAMOULAGE_STEALTH);
-
-                        if (pet)
-                            pet->RemoveAura(HUNTER_SPELL_CAMOULAGE_STEALTH);
-                    }
-                    // Glyph of Camouflage
-                    // provides stealth and reduce movement speed by 50%
-                    else if (_player->HasAura(HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE))
-                    {
-                        _player->CastSpell(_player, HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_STEALTH, true);
-
-                        if (pet)
-                            pet->CastSpell(pet, HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_STEALTH, true);
-                    }
-                }
-            }
-
             void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                GetTarget()->RemoveAura(HUNTER_SPELL_CAMOULAGE_STEALTH);
-
-                if (GetTarget()->ToPlayer() && GetTarget()->ToPlayer()->GetPet())
+                if (GetCaster())
                 {
-                    GetTarget()->ToPlayer()->GetPet()->RemoveAura(HUNTER_SPELL_CAMOULAGE_STEALTH);
-                    GetTarget()->ToPlayer()->GetPet()->RemoveAura(HUNTER_SPELL_CAMOUFLAGE_VISUAL);
+                    GetCaster()->RemoveAura(HUNTER_SPELL_CAMOUFLAGE_VISUAL);
+                    GetCaster()->RemoveAura(HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_VISUAL);
                 }
             }
 
             void Register()
             {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_camouflage_visual_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_hun_camouflage_visual_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_hun_camouflage_visual_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_INTERFERE_TARGETTING, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
             return new spell_hun_camouflage_visual_AuraScript();
-        }
-};
-
-// Camouflage - 51753
-class spell_hun_camouflage : public SpellScriptLoader
-{
-    public:
-        spell_hun_camouflage() : SpellScriptLoader("spell_hun_camouflage") { }
-
-        class spell_hun_camouflage_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_camouflage_SpellScript);
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    Pet* pet = _player->GetPet();
-
-                    if (pet)
-                    {
-                        if (_player->isInCombat())
-                        {
-                            AuraPtr aura = pet->AddAura(HUNTER_SPELL_CAMOUFLAGE, pet);
-                            if (aura)
-                                aura->SetDuration(6 * IN_MILLISECONDS);
-                        }
-                        else
-                            pet->CastSpell(pet, HUNTER_SPELL_CAMOUFLAGE, true);
-
-                        pet->CastSpell(pet, HUNTER_SPELL_CAMOUFLAGE_VISUAL, true);
-                    }
-
-                    if (_player->isInCombat())
-                    {
-                        AuraPtr aura = _player->AddAura(HUNTER_SPELL_CAMOUFLAGE, _player);
-                        if (aura)
-                            aura->SetDuration(6 * IN_MILLISECONDS);
-                    }
-                    else
-                        _player->CastSpell(_player, HUNTER_SPELL_CAMOUFLAGE, true);
-
-                    _player->CastSpell(_player, HUNTER_SPELL_CAMOUFLAGE_VISUAL, true);
-                }
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_hun_camouflage_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_camouflage_SpellScript();
         }
 };
 
@@ -2169,7 +2072,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_powershot();
     new spell_hun_feign_death();
     new spell_hun_camouflage_visual();
-    new spell_hun_camouflage();
     new spell_hun_serpent_spread();
     new spell_hun_ancient_hysteria();
     new spell_hun_kill_command();

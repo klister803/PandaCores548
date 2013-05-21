@@ -808,6 +808,25 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     break;
             }
             break;
+        case SPELLFAMILY_HUNTER:
+            switch (m_spellInfo->Id)
+            {
+                // Camouflage
+                case 51753:
+                    m_caster->CastSpell(m_caster, 51755, true);
+                    m_caster->CastSpell(m_caster, 80326, true);
+                    if (Unit* pet = m_caster->GetGuardianPet())
+                        pet->CastSpell(pet, 51753, true);
+
+                    if (m_caster->isInCombat())
+                        if (AuraPtr camouflage = m_caster->GetAura(51755))
+                            camouflage->SetDuration(6);
+
+                    break;
+                default:
+                    break;
+            }
+            break;
         case SPELLFAMILY_DEATHKNIGHT:
             // Death Coil
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_COIL)
