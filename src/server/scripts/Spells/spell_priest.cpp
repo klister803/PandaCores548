@@ -102,6 +102,36 @@ enum PriestSpells
     PRIEST_SURGE_OF_DARKNESS                    = 87160,
     PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST   = 130733,
     PRIEST_SHADOW_WORD_INSANITY_DAMAGE          = 129249,
+    PRIEST_SPELL_MIND_BLAST                     = 8092,
+};
+
+// Divine Insight - 124430
+class spell_pri_divine_insight_shadow : public SpellScriptLoader
+{
+    public:
+        spell_pri_divine_insight_shadow() : SpellScriptLoader("spell_pri_divine_insight_shadow") { }
+
+        class spell_pri_divine_insight_shadow_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_divine_insight_shadow_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasSpellCooldown(PRIEST_SPELL_MIND_BLAST))
+                        _player->RemoveSpellCooldown(PRIEST_SPELL_MIND_BLAST, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_divine_insight_shadow_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_divine_insight_shadow_SpellScript();
+        }
 };
 
 // Power Word - Solace - 129250
@@ -2055,6 +2085,7 @@ class spell_pri_shadowform : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_divine_insight_shadow();
     new spell_pri_power_word_solace();
     new spell_pri_shadow_word_insanity_allowing();
     new spell_pri_shadowfiend();

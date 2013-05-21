@@ -5468,7 +5468,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                 if (apply)
                 {
                     if (caster && caster->ToPlayer()->HasSpellCooldown(51505)) // Lava Burst
-                        caster->ToPlayer()->RemoveSpellCooldown(51505);
+                        caster->ToPlayer()->RemoveSpellCooldown(51505, true);
                 }
             }
             break;

@@ -964,7 +964,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
 
                 // Reset cooldown on stealth if needed
                 if (unitTarget->ToPlayer()->HasSpellCooldown(1784))
-                    unitTarget->ToPlayer()->RemoveSpellCooldown(1784);
+                    unitTarget->ToPlayer()->RemoveSpellCooldown(1784, true);
 
                 unitTarget->CastSpell(unitTarget, 1784, true);
                 return;

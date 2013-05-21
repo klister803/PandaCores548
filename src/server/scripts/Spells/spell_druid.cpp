@@ -2330,7 +2330,7 @@ class spell_dru_lacerate : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (roll_chance_i(25))
-                            _player->RemoveSpellCooldown(33917);
+                            _player->RemoveSpellCooldown(33917, true);
             }
 
             void Register()

@@ -1719,7 +1719,7 @@ class spell_hun_readiness : public SpellScriptLoader
                 }
 
                 if (caster->HasSpellCooldown(HUNTER_SPELL_DIRE_BEAST))
-                    caster->RemoveSpellCooldown(HUNTER_SPELL_DIRE_BEAST);
+                    caster->RemoveSpellCooldown(HUNTER_SPELL_DIRE_BEAST, true);
             }
 
             void Register()
