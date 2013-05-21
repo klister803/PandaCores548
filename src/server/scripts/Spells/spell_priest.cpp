@@ -234,6 +234,43 @@ class spell_pri_divine_insight_shadow : public SpellScriptLoader
         }
 };
 
+// Power Word - Insanity - 129249
+class spell_pri_power_word_insanity : public SpellScriptLoader
+{
+    public:
+        spell_pri_power_word_insanity() : SpellScriptLoader("spell_pri_power_word_insanity") { }
+
+        class spell_pri_power_word_insanity_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_power_word_insanity_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
+                            target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
+
+                        if (target->HasAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID()))
+                            target->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_power_word_insanity_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_power_word_insanity_SpellScript();
+        }
+};
+
 // Power Word - Solace - 129250
 class spell_pri_power_word_solace : public SpellScriptLoader
 {
@@ -247,25 +284,8 @@ class spell_pri_power_word_solace : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                {
                     if (Unit* target = GetHitUnit())
-                    {
-                        if (!_player->HasAura(PRIEST_SHADOWFORM_STANCE))
-                            _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
-                        else
-                        {
-                            SetHitDamage(0);
-
-                            _player->CastSpell(target, PRIEST_SHADOW_WORD_INSANITY_DAMAGE, true);
-
-                            if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
-                                target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
-
-                            if (target->HasAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID()))
-                                target->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID());
-                        }
-                    }
-                }
+                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
             }
 
             void Register()
@@ -303,7 +323,7 @@ class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
                     {
                         if (AuraPtr shadowWordPain = itr->GetAura(PRIEST_SHADOW_WORD_PAIN, caster->GetGUID()))
                         {
-                            if (shadowWordPain->GetDuration() <= (shadowWordPain->GetMaxDuration() / 4))
+                            if (shadowWordPain->GetDuration() <= (shadowWordPain->GetEffect(0)->GetAmplitude() * 2))
                                 caster->CastSpell(itr, PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, true);
                             else
                                 itr->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST);
@@ -2211,6 +2231,7 @@ void AddSC_priest_spell_scripts()
     new spell_pri_item_s12_2p_heal();
     new spell_pri_item_s12_2p_shadow();
     new spell_pri_divine_insight_shadow();
+    new spell_pri_power_word_insanity();
     new spell_pri_power_word_solace();
     new spell_pri_shadow_word_insanity_allowing();
     new spell_pri_shadowfiend();

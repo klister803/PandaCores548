@@ -3627,6 +3627,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 114250:// Selfless Healer
             case 90174: // Divine Purpose
             case 89485: // Inner Focus
+            case 131567:// Holy Spark
                 spellInfo->ProcCharges = 1;
                 break;
             case 110600:// Ice Trap (Symbiosis)
