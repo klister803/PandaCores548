@@ -1709,7 +1709,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                 renew->RefreshDuration();
 
         // Mogu'Shan Vault
-        if (caster->HasAura(116161) && unitTarget->ToPlayer()) // SPELL_CROSSED_OVER
+        if (caster->HasAura(116161) || unitTarget->HasAura(116161)) // SPELL_CROSSED_OVER
         {
             // http://fr.wowhead.com/spell=117549#english-comments
             // uint32 targetSpec = unitTarget->ToPlayer()->GetSpecializationId(unitTarget->ToPlayer()->GetActiveSpec());
@@ -1733,6 +1733,9 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
                 caster->CastCustomSpell(unitTarget, 117549, &bp1, &bp2, &bp3, &bp4, &bp5, &bp6, true);
             }
+
+            if (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth())
+                unitTarget->CastSpell(unitTarget, 120717, true);  // Revitalized Spirit
         }
 
         m_damage -= addhealth;

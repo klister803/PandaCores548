@@ -47,6 +47,7 @@ enum eCreatures
     NPC_GARAJAL                     = 60143,
     NPC_SHADOWY_MINION_REAL         = 60940,
     NPC_SHADOWY_MINION_SPIRIT       = 60184,
+    NPC_SOUL_CUTTER                 = 62003,
 
     // Spirit kings
     NPC_ZIAN                        = 60701,
