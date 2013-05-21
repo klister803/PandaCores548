@@ -48,10 +48,11 @@ enum eSpells
 enum eEvents
 {
     EVENT_SECONDARY_ATTACK      = 1,
+    EVENT_SUMMON_TOTEM          = 2,
 
     // Shadowy Minion
-    EVENT_SHADOW_BOLT           = 2,
-    EVENT_SPIRITUAL_GRASP       = 3,
+    EVENT_SHADOW_BOLT           = 3,
+    EVENT_SPIRITUAL_GRASP       = 4,
 };
 
 class boss_garajal : public CreatureScript
@@ -73,6 +74,7 @@ class boss_garajal : public CreatureScript
                 _Reset();
 
                 events.ScheduleEvent(EVENT_SECONDARY_ATTACK, urand(5000, 10000));
+                events.ScheduleEvent(EVENT_SUMMON_TOTEM,     urand(27500, 32500));
             }
 
             void JustSummoned(Creature* summon)
@@ -122,6 +124,14 @@ class boss_garajal : public CreatureScript
                             events.ScheduleEvent(EVENT_SECONDARY_ATTACK, urand(5000, 10000));
                             break;
                         }
+                        case EVENT_SUMMON_TOTEM:
+                        {
+                            float x = 0.0f, y = 0.0f;
+                            GetRandPosFromCenterInDist(4277.08f, 1341.35f, frand(0.0f, 30.0f), x, y);
+                            me->CastSpell(x, y, 454.55f, SPELL_SUMMON_SPIRIT_TOTEM, true);
+                            events.ScheduleEvent(EVENT_SUMMON_TOTEM,     urand(27500, 32500));
+                            break;
+                        }
                         default:
                             break;
                     }
@@ -169,6 +179,7 @@ class mob_spirit_totem : public CreatureScript
                         player->CastSpell(clone,  SPELL_CLONE, true);
 
                         clone->CastSpell(clone, SPELL_LIFE_FRAGILE_THREAD, true);
+                        clone->GetMotionMaster()->MoveTakeoff(1, clone->GetPositionX(), clone->GetPositionY(), clone->GetPositionZ() + 10.0f);
 
                         player->AddAura(SPELL_LIFE_FRAGILE_THREAD, player);
                     }
@@ -202,7 +213,7 @@ class mob_shadowy_minion : public CreatureScript
 
                 if (me->GetEntry() == NPC_SHADOWY_MINION_REAL)
                 {
-                    if (Creature* spirit = me->SummonCreature(NPC_SHADOWY_MINION_SPIRIT, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ, me->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN))
+                    if (Creature* spirit = me->SummonCreature(NPC_SHADOWY_MINION_SPIRIT, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN))
                     {
                         spiritGuid = spirit->GetGUID();
                         spirit->SetPhaseMask(2, true);
