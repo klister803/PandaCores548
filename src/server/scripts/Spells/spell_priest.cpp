@@ -383,7 +383,7 @@ class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
                             if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY))
                                 _player->RemoveAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY);
 
-                            target->CastCustomSpell(target, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                            target->CastCustomSpell(target, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                             if (target->HasAura(GetSpellInfo()->Id))
                                 target->RemoveAura(GetSpellInfo()->Id);
 
@@ -391,35 +391,35 @@ class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
 
                             if (Unit* secondTarget = target->GetNextRandomRaidMemberOrPet(radius))
                             {
-                                target->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                                target->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                 if (secondTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                     secondTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
-                                secondTarget->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                                secondTarget->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
 
                                 if (Unit* thirdTarget = target->GetNextRandomRaidMemberOrPet(radius))
                                 {
-                                    secondTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                                    secondTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                     if (thirdTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                         thirdTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
-                                    thirdTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                                    thirdTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
 
                                     if (Unit* fourthTarget = target->GetNextRandomRaidMemberOrPet(radius))
                                     {
-                                        thirdTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                                        thirdTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                         if (fourthTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                             fourthTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
-                                        fourthTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                                        fourthTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
 
                                         if (Unit* fifthTarget = target->GetNextRandomRaidMemberOrPet(radius))
                                         {
-                                            fourthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                                            fourthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                             if (fifthTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
                                                 fifthTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
 
-                                            fifthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
+                                            fifthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, _player->GetGUID());
                                         }
                                     }
                                 }
@@ -824,7 +824,7 @@ class spell_pri_atonement : public SpellScriptLoader
                                 if (itr->GetGUID() == _player->GetGUID())
                                     bp /= 2;
 
-                                _player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, true);
+                                _player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             }
                         }
                     }
@@ -866,7 +866,7 @@ class spell_pri_spirit_shell : public SpellScriptLoader
 
                             SetHitHeal(0);
 
-                            _player->CastCustomSpell(target, PRIEST_SPIRIT_SHELL_ABSORPTION, &bp, NULL, NULL, true);
+                            _player->CastCustomSpell(target, PRIEST_SPIRIT_SHELL_ABSORPTION, &bp, NULL, NULL, NULL, NULL, NULL, true);
                         }
                     }
                 }
@@ -1780,7 +1780,7 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
                 int32 healAmount = int32(target->CountPctFromMaxHealth(healPct));
                 // remove the aura now, we don't want 40% healing bonus
                 Remove(AURA_REMOVE_BY_ENEMY_SPELL);
-                target->CastCustomSpell(target, PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL, &healAmount, NULL, NULL, true);
+                target->CastCustomSpell(target, PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true);
                 absorbAmount = dmgInfo.GetDamage();
             }
 
@@ -1904,7 +1904,7 @@ class spell_pri_reflective_shield_trigger : public SpellScriptLoader
                     if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(PRIEST_SPELL_REFLECTIVE_SHIELD_R1, EFFECT_0))
                     {
                         int32 bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
-                        target->CastCustomSpell(dmgInfo.GetAttacker(), PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
+                        target->CastCustomSpell(dmgInfo.GetAttacker(), PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED, &bp, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff);
                     }
             }
 
@@ -2018,7 +2018,7 @@ class spell_priest_renew : public SpellScriptLoader
                         heal = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
 
                         int32 basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * GetEffect(EFFECT_0)->GetTotalTicks() * int32(heal) / 100;
-                        caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, true, NULL, aurEff);
+                        caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff);
                     }
                 }
             }

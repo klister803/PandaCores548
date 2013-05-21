@@ -815,12 +815,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 if (m_caster->IsFriendlyTo(unitTarget))
                 {
                     int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
-                    m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
+                    m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, NULL, NULL, NULL, true);
                 }
                 else
                 {
                     int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                    m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
+                    m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, NULL, NULL, NULL, true);
                 }
                 return;
             }
@@ -842,7 +842,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
                             bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
 
-                m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
+                m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, NULL, NULL, NULL, false);
                 return;
             }
     }
@@ -855,12 +855,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             if (m_caster->IsFriendlyTo(unitTarget))
             {
                 int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
-                m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
+                m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, NULL, NULL, NULL, true);
             }
             else
             {
                 int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
+                m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, NULL, NULL, NULL, true);
             }
             return;
         }
@@ -1161,7 +1161,7 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
                 break;
             case 52463: // Hide In Mine Car
             case 52349: // Overtake
-                unitTarget->CastCustomSpell(unitTarget, spellInfo->Id, &damage, NULL, NULL, true, NULL, NULLAURA_EFFECT, m_originalCasterGUID);
+                unitTarget->CastCustomSpell(unitTarget, spellInfo->Id, &damage, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, m_originalCasterGUID);
                 return;
         }
     }
@@ -1658,7 +1658,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
                         int32 bp = int32(100.0f * Mastery);
 
-                        m_caster->CastCustomSpell(m_caster, 100977, &bp, NULL, NULL, true);
+                        m_caster->CastCustomSpell(m_caster, 100977, &bp, NULL, NULL, NULL, NULL, NULL, true);
                     }
                 }
             }
@@ -1686,7 +1686,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
             int32 bp = (Mastery * addhealth) / 6;
 
-            m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
+            m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, NULL, NULL, NULL, true);
         }
         // 115072 - Expel Harm
         if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth && m_spellInfo->Id == 115072)
@@ -1700,13 +1700,40 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             if (target && m_caster->IsValidAttackTarget(target))
             {
                 int32 bp = addhealth * 0.5;
-                m_caster->CastCustomSpell(target, 115129, &bp, NULL, NULL, true);
+                m_caster->CastCustomSpell(target, 115129, &bp, NULL, NULL, NULL, NULL, NULL, true);
             }
         }
         // Chakra : Serenity - 81208
         if (m_caster && addhealth && m_caster->HasAura(81208) && m_spellInfo->Effects[0].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) // Single heal target
             if (AuraPtr renew = unitTarget->GetAura(139, m_caster->GetGUID()))
                 renew->RefreshDuration();
+
+        // Mogu'Shan Vault
+        if (caster->HasAura(116161) && unitTarget->ToPlayer()) // SPELL_CROSSED_OVER
+        {
+            // http://fr.wowhead.com/spell=117549#english-comments
+            // uint32 targetSpec = unitTarget->ToPlayer()->GetSpecializationId(unitTarget->ToPlayer()->GetActiveSpec());
+            uint32 innervationId = 0;
+
+            if (unitTarget == caster)
+            {
+                int32 bp1 = addhealth/2;
+                int32 bp2 = 15;
+
+                caster->CastCustomSpell(unitTarget, 117543, &bp1, &bp2, NULL, NULL, NULL, NULL, true); // Mana regen bonus
+            }
+            else
+            {
+                int32 bp1 = 10;
+                int32 bp2 = 15;
+                int32 bp3 = 20;
+                int32 bp4 = 25;
+                int32 bp5 = 30;
+                int32 bp6 = 35;
+
+                caster->CastCustomSpell(unitTarget, 117549, &bp1, &bp2, &bp3, &bp4, &bp5, &bp6, true);
+            }
+        }
 
         m_damage -= addhealth;
     }
@@ -2846,11 +2873,11 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->Category == SPELLCATEGORY_DEVOUR_MAGIC)
     {
         int32 heal_amount = m_spellInfo->Effects[EFFECT_1].CalcValue(m_caster);
-        m_caster->CastCustomSpell(m_caster, 19658, &heal_amount, NULL, NULL, true);
+        m_caster->CastCustomSpell(m_caster, 19658, &heal_amount, NULL, NULL, NULL, NULL, NULL, true);
         // Glyph of Felhunter
         if (Unit* owner = m_caster->GetOwner())
             if (owner->GetAura(56249))
-                owner->CastCustomSpell(owner, 19658, &heal_amount, NULL, NULL, true);
+                owner->CastCustomSpell(owner, 19658, &heal_amount, NULL, NULL, NULL, NULL, NULL, true);
     }
 }
 
@@ -4407,14 +4434,14 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         Creature* totem = unitTarget->GetMap()->GetCreature(unitTarget->m_SummonSlot[slot]);
                         if (totem && totem->isTotem())
                         {
-                            m_caster->CastCustomSpell(totem, 55277, &basepoints0, NULL, NULL, true);
+                            m_caster->CastCustomSpell(totem, 55277, &basepoints0, NULL, NULL, NULL, NULL, NULL, true);
                         }
                     }
                     // Glyph of Stoneclaw Totem
                     if (AuraEffectPtr aur=unitTarget->GetAuraEffect(63298, 0))
                     {
                         basepoints0 *= aur->GetAmount();
-                        m_caster->CastCustomSpell(unitTarget, 55277, &basepoints0, NULL, NULL, true);
+                        m_caster->CastCustomSpell(unitTarget, 55277, &basepoints0, NULL, NULL, NULL, NULL, NULL, true);
                     }
                     break;
                 }
@@ -5610,7 +5637,7 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
     }
     ApplyPct(mana, damage);
     if (mana)
-        m_caster->CastCustomSpell(m_caster, 39104, &mana, NULL, NULL, true);
+        m_caster->CastCustomSpell(m_caster, 39104, &mana, NULL, NULL, NULL, NULL, NULL, true);
 }
 
 void Spell::EffectDurabilityDamage(SpellEffIndex effIndex)

@@ -715,7 +715,7 @@ class spell_dru_symbiosis : public SpellScriptLoader
                             if (spellCaster)
                                 symbiosis->GetEffect(0)->SetAmount(spellCaster);
                             if (bpTarget && spellTarget)
-                                _player->CastCustomSpell(target, spellTarget, &bpTarget, NULL, NULL, true);
+                                _player->CastCustomSpell(target, spellTarget, &bpTarget, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                         }
                     }
                 }
@@ -830,7 +830,7 @@ class spell_dru_natures_vigil : public SpellScriptLoader
                 if (!target || !spellId || !bp)
                     return;
 
-                _player->CastCustomSpell(target, spellId, &bp, NULL, NULL, true);
+                _player->CastCustomSpell(target, spellId, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
             }
 
             void Register()
@@ -1276,14 +1276,14 @@ class spell_dru_lifebloom : public SpellScriptLoader
                     healAmount = _plr->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), healAmount, HEAL, stack);
                     healAmount = GetTarget()->SpellHealingBonusTaken(_plr, GetSpellInfo(), healAmount, HEAL, stack);
 
-                    GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+                    GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
 
                     _plr->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
 
                     return;
                 }
 
-                GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+                GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
                 GetCaster()->ToPlayer()->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
             }
 
@@ -1301,11 +1301,11 @@ class spell_dru_lifebloom : public SpellScriptLoader
                             healAmount = caster->SpellHealingBonusDone(target, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
                             healAmount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
 
-                            target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                            target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
 
                             return;
                         }
-                        target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                        target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
                     }
                 }
             }
@@ -1342,7 +1342,7 @@ class spell_dru_killer_instinct : public SpellScriptLoader
                     {
                         int32 bp = _player->GetStat(STAT_INTELLECT);
 
-                        _player->CastCustomSpell(_player, SPELL_DRUID_KILLER_INSTINCT_MOD_STAT, &bp, NULL, NULL, true);
+                        _player->CastCustomSpell(_player, SPELL_DRUID_KILLER_INSTINCT_MOD_STAT, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                     }
                 }
             }
@@ -3049,7 +3049,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
             {
                 Unit* target = GetTarget();
                 int32 bp0 = target->CountPctFromMaxHealth(aurEff->GetAmount());
-                target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, true);
+                target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, NULL, NULL, NULL, true);
             }
 
             void AfterRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
