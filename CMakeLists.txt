@@ -34,7 +34,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   add_definitions(-std=gnu++0x)
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
-if( UNIX )
+if( APPLE )
     set (CMAKE_CXX_FLAGS "-std=c++0x -stdlib=libc++ -g3 -Wall -O0")
 endif()
 

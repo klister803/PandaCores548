@@ -77,10 +77,10 @@ char ** cli_completion(const char * text, int start, int /*end*/)
 
     if (start == 0)
         matches = rl_completion_matches((char*)text, &command_finder);
-#ifdef PLATFORM != PLATFORM_APPLE
+/*#ifdef PLATFORM != PLATFORM_APPLE
     else
         rl_bind_key('\t', rl_abort);
-#endif
+#endif*/
     return (matches);
 }
 
