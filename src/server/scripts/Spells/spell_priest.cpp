@@ -705,13 +705,26 @@ class spell_pri_train_of_thought : public SpellScriptLoader
                                     if (newCooldownDelay > 500.0f)
                                         newCooldownDelay -= 500.0f;
 
-                                    _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + (newCooldownDelay / IN_MILLISECONDS)));
+                                    if (newCooldownDelay > 0)
+                                    {
+                                        _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + (newCooldownDelay / IN_MILLISECONDS)));
 
-                                    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-                                    data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
-                                    data << uint64(_player->GetGUID());                 // Player GUID
-                                    data << int32(-500);                                // Cooldown mod in milliseconds
-                                    _player->GetSession()->SendPacket(&data);
+                                        WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                                        data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
+                                        data << uint64(_player->GetGUID());                 // Player GUID
+                                        data << int32(-500);                                // Cooldown mod in milliseconds
+                                        _player->GetSession()->SendPacket(&data);
+                                    }
+                                    else
+                                    {
+                                        _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + 0));
+
+                                        WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                                        data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
+                                        data << uint64(_player->GetGUID());                 // Player GUID
+                                        data << int32(-newCooldownDelay);                                // Cooldown mod in milliseconds
+                                        _player->GetSession()->SendPacket(&data);
+                                    }
                                 }
                             }
                             else if (GetSpellInfo()->Id == 2060)
