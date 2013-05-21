@@ -22,8 +22,12 @@
 
 enum eSpells
 {
-    SPELL_BANISHMENT            = 116272,
-    SPELL_VOODOO_DOLL           = 122151,
+    SPELL_BANISHMENT            = 116272, // Todo : changer la phase
+    SPELL_SOUL_CUT_SUICIDE      = 116278,
+    SPELL_SOUL_CUT_DAMAGE       = 117337,
+
+    SPELL_VOODOO_DOLL_VISUAL    = 122151,
+    SPELL_VOODOO_DOLL_SHARE     = 116000,
     SPELL_SUMMON_SPIRIT_TOTEM   = 116174,
 
     // attaques ombreuses
@@ -42,17 +46,19 @@ enum eSpells
     SPELL_CLONE                 = 119051,
     SPELL_CLONE_VISUAL          = 119053,
     SPELL_LIFE_FRAGILE_THREAD   = 116227,
-    SPELL_CROSSED_OVER          = 116161, // Todo : changer la phase
+    SPELL_CROSSED_OVER          = 116161, // Todo : changer la phase + virer le summon
 };
 
 enum eEvents
 {
     EVENT_SECONDARY_ATTACK      = 1,
     EVENT_SUMMON_TOTEM          = 2,
+    EVENT_VOODOO_DOLL           = 3,
+    EVENT_BANISHMENT            = 4,
 
     // Shadowy Minion
-    EVENT_SHADOW_BOLT           = 3,
-    EVENT_SPIRITUAL_GRASP       = 4,
+    EVENT_SHADOW_BOLT           = 5,
+    EVENT_SPIRITUAL_GRASP       = 6,
 };
 
 class boss_garajal : public CreatureScript
@@ -68,6 +74,7 @@ class boss_garajal : public CreatureScript
             }
 
             InstanceScript* pInstance;
+            uint64 voodooTargets[3];
 
             void Reset()
             {
@@ -75,6 +82,7 @@ class boss_garajal : public CreatureScript
 
                 events.ScheduleEvent(EVENT_SECONDARY_ATTACK, urand(5000, 10000));
                 events.ScheduleEvent(EVENT_SUMMON_TOTEM,     urand(27500, 32500));
+                events.ScheduleEvent(EVENT_VOODOO_DOLL,      2500);
             }
 
             void JustSummoned(Creature* summon)
@@ -132,6 +140,51 @@ class boss_garajal : public CreatureScript
                             events.ScheduleEvent(EVENT_SUMMON_TOTEM,     urand(27500, 32500));
                             break;
                         }
+                        case EVENT_VOODOO_DOLL:
+                        {
+                            pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
+                            pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
+
+                            // Todo : 4 for 25 players
+                            for (uint8 i = 0; i < 3; ++i)
+                            {
+                                if (Unit* target = SelectTarget(i == 0 ? SELECT_TARGET_TOPAGGRO:SELECT_TARGET_RANDOM, 0, 0, true, -SPELL_VOODOO_DOLL_VISUAL))
+                                {
+                                    voodooTargets[i] = target->GetGUID();
+                                    target->AddAura(SPELL_VOODOO_DOLL_VISUAL, target);
+                                }
+                            }
+
+                            for (uint8 i = 0; i < 3; ++i)
+                                if (Player* caster = sObjectAccessor->GetPlayer(*me, voodooTargets[i]))
+                                    for (uint8 j = 0; j < 3; ++j)
+                                        if (j != i)
+                                            if (Player* target = sObjectAccessor->GetPlayer(*me, voodooTargets[j]))
+                                                caster->CastSpell(target, SPELL_VOODOO_DOLL_SHARE, true);
+                            break;
+                        }
+                        case EVENT_BANISHMENT:
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                            {
+                                me->AddAura(SPELL_BANISHMENT,       target);
+                                me->AddAura(SPELL_SOUL_CUT_SUICIDE, target);
+                                me->AddAura(SPELL_SOUL_CUT_DAMAGE,  target);
+                                // Todo : more mob in heroic & no viewer in lfr25man
+                                if (Creature* soulCutter = me->SummonCreature(NPC_SOUL_CUTTER, target->GetPositionX() + 2.0f, target->GetPositionY() + 2.0f, target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000, target->GetGUID()))
+                                    if (soulCutter->Attack(target, true))
+                                        soulCutter->GetMotionMaster()->MoveChase(target);
+
+                                me->getThreatManager().resetAllAggro();
+                            }
+
+                            pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
+                            pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
+
+                            events.ScheduleEvent(EVENT_VOODOO_DOLL, 5000);
+                            events.ScheduleEvent(EVENT_BANISHMENT, 90000);
+                            break;
+                        }
                         default:
                             break;
                     }
@@ -168,6 +221,9 @@ class mob_spirit_totem : public CreatureScript
                 uint8 count = 0;
                 for (auto player: playerList)
                 {
+                    if (player->HasAura(SPELL_VOODOO_DOLL_VISUAL))
+                        continue;
+
                     if (++count > 3)
                         break;
 
@@ -270,9 +326,71 @@ class mob_shadowy_minion : public CreatureScript
         }
 };
 
+class mob_soul_cutter : public CreatureScript
+{
+    public:
+        mob_soul_cutter() : CreatureScript("mob_soul_cutter") {}
+
+        struct mob_soul_cutterAI : public ScriptedAI
+        {
+            mob_soul_cutterAI(Creature* creature) : ScriptedAI(creature)
+            {}
+
+            void Reset()
+            {}
+
+            void JustDied(Unit* attacker)
+            {
+                if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true, SPELL_SOUL_CUT_SUICIDE))
+                {
+                    target->RemoveAurasDueToSpell(SPELL_SOUL_CUT_SUICIDE);
+                    target->RemoveAurasDueToSpell(SPELL_SOUL_CUT_DAMAGE);
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_soul_cutterAI(creature);
+        }
+};
+
+class spell_soul_back : public SpellScriptLoader
+{
+    public:
+        spell_soul_back() : SpellScriptLoader("spell_soul_back") { }
+
+        class spell_soul_back_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_soul_back_SpellScript);
+
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    // SPELL_LIFE_FRAGILE_THREAD removed by default effect
+                    target->RemoveAurasDueToSpell(SPELL_CLONE_VISUAL);
+                    target->RemoveAurasDueToSpell(SPELL_CROSSED_OVER);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_soul_back_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_REMOVE_AURA);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_soul_back_SpellScript();
+        }
+};
+
 void AddSC_boss_garajal()
 {
     new boss_garajal();
     new mob_spirit_totem();
     new mob_shadowy_minion();
+    new mob_soul_cutter();
+    new spell_soul_back();
 }

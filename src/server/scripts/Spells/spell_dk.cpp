@@ -838,7 +838,7 @@ class spell_dk_death_siphon : public SpellScriptLoader
                         int32 bp = GetHitDamage();
                         bool runeDeath = false;
 
-                        _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
+                        _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, true);
 
                         for (uint8 i = 0; i < MAX_RUNES; ++i)
                         {
@@ -1325,7 +1325,7 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
                 // damage absorbed by Anti-Magic Shell energizes the DK with additional runic power.
                 // This, if I'm not mistaken, shows that we get back ~20% of the absorbed damage as runic power.
                 int32 bp = absorbAmount * 2 / 10;
-                target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, true, NULL, aurEff);
+                target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff);
             }
 
             void Register()
@@ -1420,12 +1420,12 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                     if (unitTarget->isAlive())  // Living ghoul as a target
                     {
                         bp = int32(unitTarget->CountPctFromMaxHealth(25));
-                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, NULL, NULL, false);
+                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, NULL, NULL, NULL, NULL, NULL, false);
                     }
                     else                        // Some corpse
                     {
                         bp = GetEffectValue();
-                        GetCaster()->CastCustomSpell(unitTarget, GetSpellInfo()->Effects[EFFECT_1].CalcValue(), &bp, NULL, NULL, true);
+                        GetCaster()->CastCustomSpell(unitTarget, GetSpellInfo()->Effects[EFFECT_1].CalcValue(), &bp, NULL, NULL, NULL, NULL, NULL, true);
                         // Corpse Explosion (Suicide)
                         unitTarget->CastSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, true);
                     }
@@ -1665,7 +1665,7 @@ class spell_dk_scourge_strike : public SpellScriptLoader
                     if (AuraEffectPtr aurEff = caster->GetAuraEffectOfRankedSpell(DK_SPELL_BLACK_ICE_R1, EFFECT_0))
                         AddPct(bp, aurEff->GetAmount());
 
-                    caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, NULL, NULL, true);
+                    caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, NULL, NULL, NULL, NULL, NULL, true);
                 }
             }
 

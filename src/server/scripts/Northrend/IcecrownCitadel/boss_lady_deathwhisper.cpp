@@ -701,7 +701,7 @@ class npc_cult_fanatic : public CreatureScript
                 if (me->HasAura(SPELL_VAMPIRIC_MIGHT))
                 {
                     int32 heal = damage * 3;
-                    me->CastCustomSpell(me, SPELL_VAMPIRIC_MIGHT_HEAL, &heal, 0, 0, true);
+                    me->CastCustomSpell(me, SPELL_VAMPIRIC_MIGHT_HEAL, &heal, 0, 0, NULL, NULL, NULL, true);
                 }
             }
 

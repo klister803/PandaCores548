@@ -552,7 +552,7 @@ public:
             else
             {
                 int32 bp0 = damage / 2;
-                me->CastCustomSpell(done_by, AURA_OF_DESIRE_DAMAGE, &bp0, NULL, NULL, true);
+                me->CastCustomSpell(done_by, AURA_OF_DESIRE_DAMAGE, &bp0, NULL, NULL, NULL, NULL, NULL, true);
             }
         }
 

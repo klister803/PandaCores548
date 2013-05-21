@@ -739,7 +739,7 @@ class spell_hun_beast_cleave_proc : public SpellScriptLoader
                     {
                         int32 bp = int32(eventInfo.GetDamageInfo()->GetDamage() * 0.3f);
 
-                        GetTarget()->CastCustomSpell(GetTarget(), HUNTER_SPELL_BEAST_CLEAVE_DAMAGE, &bp, NULL, NULL, true);
+                        GetTarget()->CastCustomSpell(GetTarget(), HUNTER_SPELL_BEAST_CLEAVE_DAMAGE, &bp, NULL, NULL, NULL, NULL, NULL, true);
                     }
                 }
             }
@@ -1071,7 +1071,7 @@ class spell_hun_improved_serpent_sting : public SpellScriptLoader
                                     bp *= serpentSting->GetMaxDuration() / serpentSting->GetEffect(0)->GetAmplitude();
                                     bp = CalculatePct(bp, 30);
 
-                                    _player->CastCustomSpell(target, HUNTER_SPELL_IMPROVED_SERPENT_STING, &bp, NULL, NULL, true);
+                                    _player->CastCustomSpell(target, HUNTER_SPELL_IMPROVED_SERPENT_STING, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                                 }
                             }
                         }
@@ -1124,7 +1124,7 @@ class spell_hun_powershot : public SpellScriptLoader
                             int32 bp = 400;
 
                             _player->RemoveSpellCooldown(HUNTER_SPELL_POWERSHOT);
-                            _player->CastCustomSpell(itr, HUNTER_SPELL_POWERSHOT, NULL, NULL, &bp, true);
+                            _player->CastCustomSpell(itr, HUNTER_SPELL_POWERSHOT, NULL, NULL, &bp, NULL, NULL, NULL, true);
                         }
                     }
                 }
@@ -1520,7 +1520,7 @@ class spell_hun_last_stand_pet : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
                 int32 healthModSpellBasePoints0 = int32(caster->CountPctFromMaxHealth(30));
-                caster->CastCustomSpell(caster, HUNTER_PET_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
+                caster->CastCustomSpell(caster, HUNTER_PET_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, NULL, NULL, NULL, NULL, NULL, true, NULL);
             }
 
             void Register()

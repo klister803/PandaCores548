@@ -1136,7 +1136,7 @@ class spell_pal_ardent_defender : public SpellScriptLoader
                     absorbAmount = dmgInfo.GetDamage();
 
                     int32 healAmount = int32(victim->CountPctFromMaxHealth(healPct));
-                    victim->CastCustomSpell(victim, PALADIN_SPELL_ARDENT_DEFENDER_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff);
+                    victim->CastCustomSpell(victim, PALADIN_SPELL_ARDENT_DEFENDER_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff);
                     victim->ToPlayer()->AddSpellCooldown(PALADIN_SPELL_ARDENT_DEFENDER_HEAL, 0, time(NULL) + 120);
                 }
                 else
@@ -1501,7 +1501,7 @@ class spell_pal_divine_storm_dummy : public SpellScriptLoader
                     return;
 
                 int32 heal = GetEffectValue() / _targetCount;
-                GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_DIVINE_STORM_HEAL, &heal, NULL, NULL, true);
+                GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_DIVINE_STORM_HEAL, &heal, NULL, NULL, NULL, NULL, NULL, true);
             }
         private:
             uint32 _targetCount;

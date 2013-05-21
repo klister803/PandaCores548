@@ -3881,6 +3881,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 88869:
                 spellInfo->Effects[0].TriggerSpell = 131490;
                 break;
+            case 116000:
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                break;
             default:
                 break;
             }
