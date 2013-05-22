@@ -161,7 +161,7 @@ class boss_feng : public CreatureScript
                 for (int i = 1; i <= (IsHeroic() ? 4: 3); ++i)
                     phaseList.push_back(i);
 
-                //std::random_shuffle(phaseList.begin(), phaseList.end());
+                //std::random_shuffle(phaseList.begin(), phaseList.end()); Todo : changer chaque semaine
 
                 for (auto visualSpellId: fengVisualId)
                     me->RemoveAurasDueToSpell(visualSpellId);
@@ -172,6 +172,12 @@ class boss_feng : public CreatureScript
                     oldStatue->SetLootState(GO_READY);
                     oldStatue->UseDoorOrButton();
                 }
+
+                if (GameObject* inversionGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_INVERSION)))
+                    inversionGob->SetRespawnTime(RESPAWN_IMMEDIATELY);
+
+                if (GameObject* cancelGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_CANCEL)))
+                    cancelGob->SetRespawnTime(RESPAWN_IMMEDIATELY);
 
                 actualPhase  = PHASE_NONE;
                 nextPhasePct = 95;

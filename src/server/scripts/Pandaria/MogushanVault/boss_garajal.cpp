@@ -22,7 +22,7 @@
 
 enum eSpells
 {
-    SPELL_BANISHMENT            = 116272, // Todo : changer la phase
+    SPELL_BANISHMENT            = 116272,
     SPELL_SOUL_CUT_SUICIDE      = 116278,
     SPELL_SOUL_CUT_DAMAGE       = 117337,
 
@@ -46,7 +46,9 @@ enum eSpells
     SPELL_CLONE                 = 119051,
     SPELL_CLONE_VISUAL          = 119053,
     SPELL_LIFE_FRAGILE_THREAD   = 116227,
-    SPELL_CROSSED_OVER          = 116161, // Todo : changer la phase + virer le summon
+    SPELL_CROSSED_OVER          = 116161, // Todo : virer le summon
+
+    SPELL_FRAIL_SOUL            = 117723,
 };
 
 enum eEvents
@@ -95,9 +97,6 @@ class boss_garajal : public CreatureScript
                 summons.Despawn(summon);
             }
 
-            void SpellHitTarget(Unit* target, SpellInfo const* spell)
-            {}
-
             void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (!pInstance)
@@ -145,8 +144,9 @@ class boss_garajal : public CreatureScript
                             pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
                             pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
 
-                            // Todo : 4 for 25 players
-                            for (uint8 i = 0; i < 3; ++i)
+                            uint8 mobCount = Is25ManRaid() ? 4: 3;
+
+                            for (uint8 i = 0; i < mobCount; ++i)
                             {
                                 if (Unit* target = SelectTarget(i == 0 ? SELECT_TARGET_TOPAGGRO:SELECT_TARGET_RANDOM, 0, 0, true, -SPELL_VOODOO_DOLL_VISUAL))
                                 {
@@ -170,10 +170,17 @@ class boss_garajal : public CreatureScript
                                 me->AddAura(SPELL_BANISHMENT,       target);
                                 me->AddAura(SPELL_SOUL_CUT_SUICIDE, target);
                                 me->AddAura(SPELL_SOUL_CUT_DAMAGE,  target);
-                                // Todo : more mob in heroic & no viewer in lfr25man
-                                if (Creature* soulCutter = me->SummonCreature(NPC_SOUL_CUTTER, target->GetPositionX() + 2.0f, target->GetPositionY() + 2.0f, target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000, target->GetGUID()))
-                                    if (soulCutter->Attack(target, true))
-                                        soulCutter->GetMotionMaster()->MoveChase(target);
+
+                                Difficulty difficulty = me->GetMap()->GetDifficulty();
+                                uint64 viewerGuid = difficulty != RAID_TOOL_DIFFICULTY ? target->GetGUID(): 0;
+                                uint8  mobCount   = IsHeroic() ? 3: 1;
+
+                                for (uint8 i = 0; i < mobCount; ++i)
+                                    if (Creature* soulCutter = me->SummonCreature(NPC_SOUL_CUTTER, target->GetPositionX() + 2.0f, target->GetPositionY() + 2.0f, target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000, i == 0 ? viewerGuid: 0))
+                                    {
+                                        soulCutter->AI()->AttackStart(target);
+                                        soulCutter->getThreatManager().addThreat(target, 1000000000.0f);
+                                    }
 
                                 me->getThreatManager().resetAllAggro();
                             }
@@ -221,7 +228,7 @@ class mob_spirit_totem : public CreatureScript
                 uint8 count = 0;
                 for (auto player: playerList)
                 {
-                    if (player->HasAura(SPELL_VOODOO_DOLL_VISUAL))
+                    if (player->HasAura(SPELL_VOODOO_DOLL_VISUAL) || player->HasAura(SPELL_FRAIL_SOUL))
                         continue;
 
                     if (++count > 3)
@@ -254,9 +261,9 @@ class mob_shadowy_minion : public CreatureScript
     public:
         mob_shadowy_minion() : CreatureScript("mob_shadowy_minion") {}
 
-        struct mob_shadowy_minionAI : public ScriptedAI
+        struct mob_shadowy_minionAI : public Scripted_NoMovementAI
         {
-            mob_shadowy_minionAI(Creature* creature) : ScriptedAI(creature)
+            mob_shadowy_minionAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {}
 
             uint64 spiritGuid;
@@ -371,6 +378,10 @@ class spell_soul_back : public SpellScriptLoader
                     // SPELL_LIFE_FRAGILE_THREAD removed by default effect
                     target->RemoveAurasDueToSpell(SPELL_CLONE_VISUAL);
                     target->RemoveAurasDueToSpell(SPELL_CROSSED_OVER);
+                    target->AddAura(SPELL_FRAIL_SOUL, target);
+                    target->SetHealth(target->GetMaxHealth() * 0.3);
+
+                    // Todo : Jump le joueur là ou était son corps
                 }
             }
 

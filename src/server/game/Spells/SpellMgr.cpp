@@ -3881,8 +3881,16 @@ void SpellMgr::LoadSpellCustomAttr()
             case 88869:
                 spellInfo->Effects[0].TriggerSpell = 131490;
                 break;
+            // Mogu'shan Vault
             case 116000:
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                break;
+            case 116161:
+                spellInfo->Effects[EFFECT_1].MiscValue = 2; // Set Phase to 2
+                spellInfo->Effects[EFFECT_3].Effect = 0;    // No need to summon
+                break;
+            case 116272:
+                spellInfo->Effects[EFFECT_0].MiscValue = 2; // Set Phase to 2
                 break;
             default:
                 break;
