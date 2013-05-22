@@ -6677,6 +6677,77 @@ void ObjectMgr::LoadReputationRewardRate()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u reputation_reward_rate in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void ObjectMgr::LoadCurrencyOnKill()
+{
+    uint32 oldMSTime = getMSTime();
+
+    _curOnKillStore.clear();
+
+    uint32 count = 0;
+
+    QueryResult result = WorldDatabase.Query("SELECT `creature_id`, `CurrencyId1`,  `CurrencyId2`,  `CurrencyId3`, `CurrencyCount1`, `CurrencyCount2`, `CurrencyCount3` FROM `creature_loot_currency`");
+
+    if (!result)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 creature currency definitions. DB table `creature_currency` is empty.");
+        return;
+    }
+
+    do
+    {
+        Field *fields = result->Fetch();
+
+        uint32 creature_id = fields[0].GetUInt32();
+
+        CurrencyOnKillEntry currOnKill;
+        currOnKill.currencyId1          = fields[1].GetUInt16();
+        currOnKill.currencyId2          = fields[2].GetUInt16();
+        currOnKill.currencyId3          = fields[3].GetUInt16();
+        currOnKill.currencyCount1       = fields[4].GetInt32();
+        currOnKill.currencyCount2       = fields[5].GetInt32();
+        currOnKill.currencyCount3       = fields[6].GetInt32();
+
+        if (!GetCreatureTemplate(creature_id))
+        {
+            sLog->outError(LOG_FILTER_SQL, "Table `creature_creature` have data for not existed creature entry (%u), skipped", creature_id);
+            continue;
+        }
+
+        if (currOnKill.currencyId1)
+        {
+            if (!sCurrencyTypesStore.LookupEntry(currOnKill.currencyId1))
+            {
+                sLog->outError(LOG_FILTER_SQL, "CurrencyType (CurrencyTypes.dbc) %u does not exist but is used in `creature_currency`", currOnKill.currencyId1);
+                continue;
+            }
+        }
+
+        if (currOnKill.currencyId2)
+        {
+            if (!sCurrencyTypesStore.LookupEntry(currOnKill.currencyId2))
+            {
+                sLog->outError(LOG_FILTER_SQL, "CurrencyType (CurrencyTypes.dbc) %u does not exist but is used in `creature_currency`", currOnKill.currencyId2);
+                continue;
+            }
+        }
+
+        if (currOnKill.currencyId3)
+        {
+            if (!sCurrencyTypesStore.LookupEntry(currOnKill.currencyId3))
+            {
+                sLog->outError(LOG_FILTER_SQL, "CurrencyType (CurrencyTypes.dbc) %u does not exist but is used in `creature_currency`", currOnKill.currencyId3);
+                continue;
+            }
+        }
+
+        _curOnKillStore[creature_id] = currOnKill;
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature currency definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::LoadReputationOnKill()
 {
     uint32 oldMSTime = getMSTime();
