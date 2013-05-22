@@ -282,7 +282,8 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
     else
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ENUM);
 
-    stmt->setUInt32(0, GetAccountId());
+    stmt->setUInt8(0, PET_SLOT_ACTUAL_PET_SLOT);
+    stmt->setUInt32(1, GetAccountId());
 
     _charEnumCallback = CharacterDatabase.AsyncQuery(stmt);
 }
@@ -891,19 +892,23 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
                 continue;
 
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            {
                 if (AuraEffectPtr aurEff = aura->GetEffect(i))
+                {
                     if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
+                    {
                         auraModsList.push_back(aura);
+                        break;
+                    }
+                }
+            }
         }
 
         for (auto itr : auraModsList)
-        {
-            if (_plr->HasAura(itr->GetSpellInfo()->Id, _plr->GetGUID()))
-            {
-                _plr->RemoveAura(itr->GetSpellInfo()->Id, _plr->GetGUID());
-                _plr->CastSpell(_plr, itr->GetSpellInfo()->Id, true);
-            }
-        }
+            _plr->RemoveAura(itr->GetSpellInfo()->Id, _plr->GetGUID());
+
+        for (auto itr : auraModsList)
+            _plr->CastSpell(_plr, itr->GetSpellInfo()->Id, true);
     }
 }
 

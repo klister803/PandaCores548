@@ -48,17 +48,21 @@ set(scripts_STAT_SRCS
   Pandaria/SiegeNiuzaoTemple/instance_siege_of_the_niuzoa_temple.cpp
   Pandaria/SiegeNiuzaoTemple/siege_of_the_niuzoa_temple.h
   Pandaria/SiegeNiuzaoTemple/boss_jinbak.cpp
-  
+  Pandaria/SiegeNiuzaoTemple/siege_of_the_niuzoa_temple.cpp
+
   Pandaria/MogushanVault/instance_mogu_shan_vault.cpp
   Pandaria/MogushanVault/mogu_shan_vault.h
   Pandaria/MogushanVault/mogu_shan_vault.cpp
   Pandaria/MogushanVault/boss_stone_guard.cpp
   Pandaria/MogushanVault/boss_feng.cpp
+  Pandaria/MogushanVault/boss_garajal.cpp
 
   Pandaria/WanderingIsland/WanderingIsland_North.cpp
   Pandaria/WanderingIsland/WanderingIsland_East.cpp
   Pandaria/WanderingIsland/WanderingIsland_West.cpp
   Pandaria/WanderingIsland/WanderingIsland_South.cpp
+
+  Pandaria/vale_of_eternal_blossoms.cpp
 )
 
 message("  -> Prepared: Pandaria")

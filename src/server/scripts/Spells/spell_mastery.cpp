@@ -152,7 +152,7 @@ class spell_mastery_blood_shield : public SpellScriptLoader
 
                                 int32 bp = int32(GetHitHeal() * Mastery);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             }
                         }
                     }
@@ -182,18 +182,7 @@ class spell_mastery_ignite : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mastery_ignite_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(133) ||
-                    !sSpellMgr->GetSpellInfo(44614) ||
-                    !sSpellMgr->GetSpellInfo(108853) ||
-                    !sSpellMgr->GetSpellInfo(2948) ||
-                    !sSpellMgr->GetSpellInfo(11366))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -207,15 +196,15 @@ class spell_mastery_ignite : public SpellScriptLoader
                                 float value = caster->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
 
                                 int32 bp = GetHitDamage();
-                                if (GetSpell()->IsCritForTarget(target))
-                                    bp *= 1.5f;
-
                                 bp = int32(bp * value / 2);
 
                                 if (target->HasAura(MASTERY_SPELL_IGNITE, caster->GetGUID()))
+                                {
                                     bp += target->GetRemainingPeriodicAmount(caster->GetGUID(), MASTERY_SPELL_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+                                    bp = int32(bp * 0.66f);
+                                }
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             }
                         }
                     }
@@ -224,7 +213,7 @@ class spell_mastery_ignite : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_mastery_ignite_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_mastery_ignite_SpellScript::HandleAfterHit);
             }
         };
 
@@ -260,7 +249,7 @@ class spell_mastery_hand_of_light : public SpellScriptLoader
 
                                 int32 bp = int32(GetHitDamage() * value / 100);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             }
                         }
                     }

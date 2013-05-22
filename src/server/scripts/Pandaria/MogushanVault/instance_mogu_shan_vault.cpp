@@ -29,6 +29,7 @@ public:
         uint32 StoneGuardPetrificationTimer;
 
         uint64 stoneGuardControlerGuid;
+        uint64 fengGuid;
         std::vector<uint64> stoneGuardGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
 
@@ -64,6 +65,9 @@ public:
                         creature->DespawnOrUnsummon();
                         randomDespawnStoneGuardian = -1;
                     }
+                    break;
+                case NPC_FENG:
+                    fengGuid = creature->GetGUID();
                     break;
                 default:
                     break;
@@ -149,6 +153,8 @@ public:
                                 return guid;
                     break;
                 }
+                case NPC_FENG:
+                    return fengGuid;
                 // Gameobject
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:

@@ -134,6 +134,9 @@ enum SpellValueMod
     SPELLVALUE_BASE_POINT0,
     SPELLVALUE_BASE_POINT1,
     SPELLVALUE_BASE_POINT2,
+    SPELLVALUE_BASE_POINT3,
+    SPELLVALUE_BASE_POINT4,
+    SPELLVALUE_BASE_POINT5,
     SPELLVALUE_RADIUS_MOD,
     SPELLVALUE_MAX_TARGETS,
     SPELLVALUE_AURA_STACK,
@@ -1402,6 +1405,8 @@ class Unit : public WorldObject
         uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePct(GetHealth(), pct); }
         uint32 CountPctFromMaxMana(int32 pct) const { return CalculatePct(GetMaxPower(POWER_MANA), pct); }
         uint32 CountPctFromCurMana(int32 pct) const { return CalculatePct(GetPower(POWER_MANA), pct); }
+        uint32 CountPctFromMaxPower(int32 pct, Powers power) const { return CalculatePct(GetMaxPower(power), pct); }
+        uint32 CountPctFromCurPower(int32 pct, Powers power) const { return CalculatePct(GetPower(power), pct); }
 
         void SetHealth(uint32 val);
         void SetMaxHealth(uint32 val);
@@ -1624,7 +1629,7 @@ class Unit : public WorldObject
         void CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem= NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
         void CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem= NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
         void CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item* castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem= NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
+        void CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, int32 const* bp3, int32 const* bp4, int32 const* bp5, bool triggered, Item* castItem= NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
         void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
         void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
         void CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
@@ -2324,8 +2329,6 @@ class Unit : public WorldObject
         GameObjectList m_gameObj;
         bool m_isSorted;
         uint32 m_transform;
-
-        uint32 m_ClearComboPointsExpiredTime;
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 

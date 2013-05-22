@@ -67,6 +67,115 @@ enum DeathKnightSpells
     DK_SPELL_ASPHYXIATE                         = 108194,
     DK_SPELL_DARK_INFUSION_STACKS               = 91342,
     DK_SPELL_DARK_INFUSION_AURA                 = 93426,
+    DK_NPC_WILD_MUSHROOM                        = 59172,
+};
+
+// Might of Ursoc - 113072
+class spell_dk_might_of_ursoc : public SpellScriptLoader
+{
+    public:
+        spell_dk_might_of_ursoc() : SpellScriptLoader("spell_dk_might_of_ursoc") { }
+
+        class spell_dk_might_of_ursoc_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_might_of_ursoc_AuraScript);
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->GetHealthPct() < 15.0f)
+                        caster->SetHealth(caster->CountPctFromMaxHealth(15));
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_dk_might_of_ursoc_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_might_of_ursoc_AuraScript();
+        }
+};
+
+// Wild Mushroom : Plague - 113517
+class spell_dk_wild_mushroom_plague : public SpellScriptLoader
+{
+    public:
+        spell_dk_wild_mushroom_plague() : SpellScriptLoader("spell_dk_wild_mushroom_plague") { }
+
+        class spell_dk_wild_mushroom_plague_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_wild_mushroom_plague_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (!GetCaster())
+                    return;
+
+                std::list<Creature*> tempList;
+                std::list<Creature*> mushroomlist;
+                std::list<Unit*> tempUnitList;
+                std::list<Unit*> targetList;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->GetCreatureListWithEntryInGrid(tempList, DK_NPC_WILD_MUSHROOM, 500.0f);
+
+                    for (auto itr : tempList)
+                        mushroomlist.push_back(itr);
+
+                    // Remove other players mushrooms
+                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                    {
+                        Unit* owner = (*i)->GetOwner();
+                        if (owner && owner == _player && (*i)->isSummon())
+                            continue;
+
+                        mushroomlist.remove((*i));
+                    }
+
+                    if (!mushroomlist.empty())
+                    {
+                        for (auto itr : mushroomlist)
+                        {
+                            itr->GetAttackableUnitListInRange(tempUnitList, 10.0f);
+
+                            for (auto itr2 : tempUnitList)
+                            {
+                                if (itr2->GetGUID() == _player->GetGUID())
+                                    continue;
+
+                                if (itr2->GetGUID() == itr->GetGUID())
+                                    continue;
+
+                                if (!_player->IsValidAttackTarget(itr2))
+                                    continue;
+
+                                targetList.push_back(itr2);
+                            }
+
+                            for (auto itr2 : targetList)
+                            {
+                                _player->CastSpell(itr2, DK_SPELL_BLOOD_PLAGUE, true);
+                                _player->CastSpell(itr2, DK_SPELL_FROST_FEVER, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dk_wild_mushroom_plague_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_wild_mushroom_plague_AuraScript();
+        }
 };
 
 // Dark transformation - transform pet spell - 63560
@@ -86,6 +195,7 @@ class spell_dk_dark_transformation_form : public SpellScriptLoader
                         if (pet->HasAura(DK_SPELL_DARK_INFUSION_STACKS))
                             pet->RemoveAura(DK_SPELL_DARK_INFUSION_STACKS);
             }
+
             void Register()
             {
                 OnHit += SpellHitFn(spell_dk_dark_transformation_form_SpellScript::HandleOnHit);
@@ -651,6 +761,8 @@ class spell_dk_blood_tap : public SpellScriptLoader
                         if (bloodCharges->GetStackAmount() < 5)
                             return SPELL_FAILED_DONT_REPORT;
                     }
+                    else
+                        return SPELL_FAILED_DONT_REPORT;
                 }
 
                 return SPELL_CAST_OK;
@@ -672,8 +784,6 @@ class spell_dk_blood_tap : public SpellScriptLoader
                                 bloodCharges->SetStackAmount(newAmount - 5);
                         }
 
-                        bool runeDeath = false;
-
                         for (uint8 i = 0; i < MAX_RUNES; ++i)
                         {
                             if (_player->GetCurrentRune(i) == RUNE_DEATH)
@@ -682,12 +792,16 @@ class spell_dk_blood_tap : public SpellScriptLoader
                             if (!_player->GetRuneCooldown(i))
                                 continue;
 
-                            if (runeDeath)
-                                continue;
+                            // Should always update the rune with the lowest cd
+                            if (_player->GetRuneCooldown(i) >= _player->GetRuneCooldown(i+1))
+                                i++;
 
                             _player->ConvertRune(i, RUNE_DEATH);
-                            runeDeath = true;
+                            _player->SetRuneCooldown(i, 0);
+                            break;
                         }
+
+                        _player->ResyncRunes(MAX_RUNES);
                     }
                 }
             }
@@ -724,7 +838,7 @@ class spell_dk_death_siphon : public SpellScriptLoader
                         int32 bp = GetHitDamage();
                         bool runeDeath = false;
 
-                        _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
+                        _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, true);
 
                         for (uint8 i = 0; i < MAX_RUNES; ++i)
                         {
@@ -973,10 +1087,11 @@ class spell_dk_plague_leech : public SpellScriptLoader
                             {
                                 _player->SetRuneCooldown(runeRandom, 0);
                                 _player->ConvertRune(runeRandom, RUNE_DEATH);
-                                _player->ResyncRunes(MAX_RUNES);
                                 runeOff = false;
                             }
                         }
+
+                        _player->ResyncRunes(MAX_RUNES);
                     }
                 }
             }
@@ -1210,7 +1325,7 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
                 // damage absorbed by Anti-Magic Shell energizes the DK with additional runic power.
                 // This, if I'm not mistaken, shows that we get back ~20% of the absorbed damage as runic power.
                 int32 bp = absorbAmount * 2 / 10;
-                target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, true, NULL, aurEff);
+                target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff);
             }
 
             void Register()
@@ -1255,9 +1370,9 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
             void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 SpellInfo const* talentSpell = sSpellMgr->GetSpellInfo(DK_SPELL_ANTI_MAGIC_SHELL_TALENT);
-                amount = talentSpell->Effects[EFFECT_0].CalcValue(GetCaster());
+                amount = 136800;
                 if (Player* player = GetCaster()->ToPlayer())
-                     amount += int32(2 * player->GetTotalAttackPowerValue(BASE_ATTACK));
+                     amount += int32(player->GetStat(STAT_STRENGTH) * 4);
             }
 
             void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
@@ -1305,12 +1420,12 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
                     if (unitTarget->isAlive())  // Living ghoul as a target
                     {
                         bp = int32(unitTarget->CountPctFromMaxHealth(25));
-                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, NULL, NULL, false);
+                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, NULL, NULL, NULL, NULL, NULL, false);
                     }
                     else                        // Some corpse
                     {
                         bp = GetEffectValue();
-                        GetCaster()->CastCustomSpell(unitTarget, GetSpellInfo()->Effects[EFFECT_1].CalcValue(), &bp, NULL, NULL, true);
+                        GetCaster()->CastCustomSpell(unitTarget, GetSpellInfo()->Effects[EFFECT_1].CalcValue(), &bp, NULL, NULL, NULL, NULL, NULL, true);
                         // Corpse Explosion (Suicide)
                         unitTarget->CastSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, true);
                     }
@@ -1550,7 +1665,7 @@ class spell_dk_scourge_strike : public SpellScriptLoader
                     if (AuraEffectPtr aurEff = caster->GetAuraEffectOfRankedSpell(DK_SPELL_BLACK_ICE_R1, EFFECT_0))
                         AddPct(bp, aurEff->GetAmount());
 
-                    caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, NULL, NULL, true);
+                    caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, NULL, NULL, NULL, NULL, NULL, true);
                 }
             }
 
@@ -1684,6 +1799,8 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_might_of_ursoc();
+    new spell_dk_wild_mushroom_plague();
     new spell_dk_dark_transformation_form();
     new spell_dk_asphyxiate();
     new spell_dk_desecrated_ground();

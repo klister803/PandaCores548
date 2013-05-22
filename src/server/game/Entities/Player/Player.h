@@ -175,6 +175,7 @@ struct PlayerCurrency
    PlayerCurrencyState state;
    uint32 totalCount;
    uint32 weekCount;
+   uint32 seasonTotal;
 };
 
 typedef UNORDERED_MAP<uint32, PlayerTalent*> PlayerTalentMap;
@@ -357,14 +358,14 @@ struct RuneInfo
     uint8 BaseRune;
     uint8 CurrentRune;
     uint32 Cooldown;
-    constAuraEffectPtr ConvertAura;
+    uint32 spell_id;
+    bool DeathUsed;
 };
 
 struct Runes
 {
     RuneInfo runes[MAX_RUNES];
     uint8 runeState;                                        // mask of available runes
-    RuneType lastUsedRune;
 
     void SetRuneState(uint8 index, bool set = true)
     {
@@ -1422,6 +1423,7 @@ class Player : public Unit, public GridObject<Player>
         /// return count of currency witch has plr
         uint32 GetCurrency(uint32 id, bool usePrecision) const;
         uint32 GetCurrencyOnWeek(uint32 id, bool usePrecision) const;
+        uint32 GetCurrencyOnSeason(uint32 id, bool usePrecision) const;
         /// return presence related currency
         bool HasCurrency(uint32 id, uint32 count) const;
         /// @todo: not understand why it subtract from total count and for what it used. It should be remove and replaced by ModifyCurrency
@@ -1523,6 +1525,8 @@ class Player : public Unit, public GridObject<Player>
         void LoadPet();
 
         bool AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount = NULL);
+
+        uint32 m_stableSlots;
 
         /*********************************************************/
         /***                    GOSSIP SYSTEM                  ***/
@@ -1842,6 +1846,7 @@ class Player : public Unit, public GridObject<Player>
         void SetSpecsCount(uint8 count) { _talentMgr->SpecsCount = count; }
         void SetSpecializationId(uint8 spec, uint32 id);
         uint32 GetSpecializationId(uint8 spec) const { return _talentMgr->SpecInfo[spec].SpecializationId; }
+        uint32 GetRoleForGroup(uint32 specializationId);
 
         bool ResetTalents(bool no_cost = false);
         uint32 GetNextResetTalentsCost() const;
@@ -2535,18 +2540,17 @@ class Player : public Unit, public GridObject<Player>
         void setPetSlotUsed(PetSlot slot, bool used)
         {
             if (used)
-                m_petSlotUsed |= (1 << uint32(slot));
+                m_petSlotUsed |= (1 << int32(slot));
             else
-                m_petSlotUsed &= ~(1 << uint32(slot));
+                m_petSlotUsed &= ~(1 << int32(slot));
         }
 
         PetSlot getSlotForNewPet()
         {
-            // Some changes here
             uint32 last_known = 0;
-            // Call pet Spells
-            // 883, 83242, 83243, 83244, 83245
-            //  1     2      3      4      5
+            // Call Pet Spells
+            // 883 83242 83243 83244 83245
+            //  1    2     3     4     5
             if (HasSpell(83245))
                 last_known = 5;
             else if (HasSpell(83244))
@@ -2558,18 +2562,11 @@ class Player : public Unit, public GridObject<Player>
             else if (HasSpell(883))
                 last_known = 1;
 
-            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; i++)
-            {
-                sLog->outDebug(LOG_FILTER_PETS, ">>>>>>> %u %u", i, last_known);
+            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; ++i)
                 if ((m_petSlotUsed & (1 << i)) == 0)
-                {
-                    sLog->outDebug(LOG_FILTER_PETS, ">>>>>>> slot %u not used !", i);
                     return PetSlot(i);
-                }
-            }
 
-            // If there is no slots available, then we should point that out
-            return PET_SLOT_FULL_LIST; // (PetSlot)last_known
+            return PET_SLOT_FULL_LIST;
         }
 
         // currently visible objects at player client
@@ -2692,24 +2689,26 @@ class Player : public Unit, public GridObject<Player>
         bool isAllowedToLoot(const Creature* creature);
 
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
-        uint8 GetRunesState() const { return m_runes->runeState; }
-        RuneType GetBaseRune(uint8 index) const { return RuneType(m_runes->runes[index].BaseRune); }
-        RuneType GetCurrentRune(uint8 index) const { return RuneType(m_runes->runes[index].CurrentRune); }
-        uint32 GetRuneCooldown(uint8 index) const { return m_runes->runes[index].Cooldown; }
+        uint8 GetRunesState() const { return m_runes.runeState; }
+        RuneType GetBaseRune(uint8 index) const { return RuneType(m_runes.runes[index].BaseRune); }
+        RuneType GetCurrentRune(uint8 index) const { return RuneType(m_runes.runes[index].CurrentRune); }
+        uint32 GetRuneCooldown(uint8 index) const { return m_runes.runes[index].Cooldown; }
         uint32 GetRuneBaseCooldown(uint8 index) const { return GetRuneTypeBaseCooldown(GetBaseRune(index)); }
+        uint32 GetRuneConvertSpell(uint8 index) const { return m_runes.runes[index].spell_id; }
         uint32 GetRuneTypeBaseCooldown(RuneType runeType) const;
         bool IsBaseRuneSlotsOnCooldown(RuneType runeType) const;
-        RuneType GetLastUsedRune() { return m_runes->lastUsedRune; }
-        void SetLastUsedRune(RuneType type) { m_runes->lastUsedRune = type; }
-        void SetBaseRune(uint8 index, RuneType baseRune) { m_runes->runes[index].BaseRune = baseRune; }
-        void SetCurrentRune(uint8 index, RuneType currentRune) { m_runes->runes[index].CurrentRune = currentRune; }
-        void SetRuneCooldown(uint8 index, uint32 cooldown) { m_runes->runes[index].Cooldown = cooldown; m_runes->SetRuneState(index, (cooldown == 0) ? true : false); }
-        void SetRuneConvertAura(uint8 index, constAuraEffectPtr aura) { m_runes->runes[index].ConvertAura = aura; }
-        void AddRuneByAuraEffect(uint8 index, RuneType newType, constAuraEffectPtr aura) { SetRuneConvertAura(index, aura); ConvertRune(index, newType); }
-        void RemoveRunesByAuraEffect(constAuraEffectPtr aura);
+        void SetDeathRuneUsed(uint8 index, bool apply) { m_runes.runes[index].DeathUsed = apply; }
+        bool IsDeathRuneUsed(uint8 index) { return m_runes.runes[index].DeathUsed; }
+        void SetBaseRune(uint8 index, RuneType baseRune) { m_runes.runes[index].BaseRune = baseRune; }
+        void SetCurrentRune(uint8 index, RuneType currentRune) { m_runes.runes[index].CurrentRune = currentRune; }
+        void SetRuneCooldown(uint8 index, uint32 cooldown) { m_runes.runes[index].Cooldown = cooldown; m_runes.SetRuneState(index, (cooldown == 0) ? true : false); }
+        void SetRuneConvertSpell(uint8 index, uint32 spell_id) { m_runes.runes[index].spell_id = spell_id; }
+        void AddRuneBySpell(uint8 index, RuneType newType, uint32 spell_id) { SetRuneConvertSpell(index, spell_id); ConvertRune(index, newType); }
+        void RemoveRunesBySpell(uint32 spell_id);
         void RestoreBaseRune(uint8 index);
         void ConvertRune(uint8 index, RuneType newType);
         void ResyncRunes(uint8 count);
+        void SendDeathRuneUpdate();
         void AddRunePower(uint8 index);
         void InitRunes();
 
@@ -3074,7 +3073,7 @@ class Player : public Unit, public GridObject<Player>
         float  m_summon_z;
 
         DeclinedName *m_declinedname;
-        Runes *m_runes;
+        Runes m_runes;
         EquipmentSets m_EquipmentSets;
 
         bool CanAlwaysSee(WorldObject const* obj) const;

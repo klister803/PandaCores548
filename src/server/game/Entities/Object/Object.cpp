@@ -2612,8 +2612,12 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 {
     Pet* pet = new Pet(this, petType);
 
+    bool currentPet = (slotID != PET_SLOT_UNK_SLOT);
+    if (pet->GetOwner() && pet->GetOwner()->getClass() != CLASS_HUNTER)
+        currentPet = false;
+
     //summoned pets always non-curent!
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, slotID, stampeded))
+    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, currentPet, slotID, stampeded))
     {
         if (pet->GetOwner() && pet->GetOwner()->getClass() == CLASS_WARLOCK)
             if (pet->GetOwner()->HasAura(108503))
@@ -2679,6 +2683,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             break;
     }
 
+    map->AddToMap(pet->ToCreature());
+
     switch (petType)
     {
         case SUMMON_PET:
@@ -2696,8 +2702,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     if (duration > 0)
         pet->SetDuration(duration);
-
-    map->AddToMap(pet->ToCreature());
 
     return pet;
 }

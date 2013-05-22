@@ -25,6 +25,7 @@ enum eSpells
     // Shared
     SPELL_SPIRIT_BOLT                   = 118530,
     SPELL_STRENGHT_OF_SPIRIT            = 116363,
+    SPELL_DRAW_ESSENCE                  = 121631,
 
     // Visuals
     SPELL_SPIRIT_FIST                   = 115743,
@@ -41,6 +42,7 @@ enum eSpells
     SPELL_FLAMING_SPEAR                 = 116942,
     SPELL_WILDFIRE_SPARK                = 116784,
     SPELL_DRAW_FLAME                    = 116711,
+    SPELL_WILDFIRE_INFUSION             = 116817,
 
     // Spirit of the Staff 
     SPELL_ARCANE_SHOCK                  = 131790,
@@ -127,6 +129,8 @@ uint32 inversionMatching[MAX_INVERSION_SPELLS][2] =
     {SPELL_ARCANE_SHOCK,     SPELL_ARCANE_SHOCK_INVERSION}
 };
 
+#define MAX_DIST    60
+
 class boss_feng : public CreatureScript
 {
     public:
@@ -141,11 +145,13 @@ class boss_feng : public CreatureScript
 
             InstanceScript* pInstance;
 
-            std::list<uint32> phaseList;
             uint8 actualPhase;
 
             uint32 nextPhasePct;
             uint32 dotSpellId;
+            std::list<uint32> phaseList;
+
+            std::list<uint64> sparkList;
 
             void Reset()
             {
@@ -159,6 +165,13 @@ class boss_feng : public CreatureScript
 
                 for (auto visualSpellId: fengVisualId)
                     me->RemoveAurasDueToSpell(visualSpellId);
+
+                // Desactivate old statue
+                if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
+                {
+                    oldStatue->SetLootState(GO_READY);
+                    oldStatue->UseDoorOrButton();
+                }
 
                 actualPhase  = PHASE_NONE;
                 nextPhasePct = 95;
@@ -174,26 +187,47 @@ class boss_feng : public CreatureScript
                     PrepareNewPhase(id);
             }
 
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_SPARK)
+                {
+                    if (AuraPtr aura = me->GetAura(SPELL_WILDFIRE_INFUSION))
+                        aura->ModCharges(1);
+                    else
+                        me->AddAura(SPELL_WILDFIRE_INFUSION, me);
+                }
+            }
+
             void PrepareNewPhase(uint8 newPhase)
             {
                 events.Reset();
-                events.ScheduleEvent(EVENT_DOT_ATTACK, 30000);
-                events.ScheduleEvent(EVENT_RE_ATTACK,  1000);
+                events.ScheduleEvent(EVENT_DOT_ATTACK, 17500);
+                events.ScheduleEvent(EVENT_RE_ATTACK,  500);
+
+                me->SetReactState(REACT_PASSIVE);
                 me->GetMotionMaster()->Clear();
 
                 if (Creature* controler = GetClosestCreatureWithEntry(me, NPC_PHASE_CONTROLER, 20.0f))
                     controler->DespawnOrUnsummon();
 
-                if (GameObject* statue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[newPhase - 1])))
+                // Desactivate old statue and enable the new one
+                if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
                 {
-                    statue->SetLootState(GO_READY);
-                    statue->UseDoorOrButton();
+                    oldStatue->SetLootState(GO_READY);
+                    oldStatue->UseDoorOrButton();
+                }
+
+                if (GameObject* newStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[newPhase - 1])))
+                {
+                    newStatue->SetLootState(GO_READY);
+                    newStatue->UseDoorOrButton();
                 }
 
                 for (auto visualSpellId: fengVisualId)
                     me->RemoveAurasDueToSpell(visualSpellId);
 
                 me->AddAura(fengVisualId[newPhase - 1], me);
+                me->CastSpell(me, SPELL_DRAW_ESSENCE, true);
 
                 switch (newPhase)
                 {
@@ -227,16 +261,22 @@ class boss_feng : public CreatureScript
                     default:
                         break;
                 }
+
+                actualPhase = newPhase;
             }
 
             void JustSummoned(Creature* summon)
             {
                 summons.Summon(summon);
+
+                sparkList.push_back(summon->GetGUID());
             }
 
             void SummonedCreatureDespawn(Creature* summon)
             {
                 summons.Despawn(summon);
+
+                sparkList.remove(summon->GetGUID());
             }
 
             void SpellHitTarget(Unit* target, SpellInfo const* spell)
@@ -281,12 +321,6 @@ class boss_feng : public CreatureScript
                         uint8  newPhase = *phaseList.begin();
                         phaseList.pop_front();
 
-                        if (GameObject* statue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[newPhase - 1])))
-                        {
-                            statue->SetLootState(GO_READY);
-                            statue->UseDoorOrButton();
-                        }
-
                         if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newPhase - 1].GetPositionX(), modPhasePositions[newPhase - 1].GetPositionY(), modPhasePositions[newPhase - 1].GetPositionZ()))
                             controler->AddAura(controlerVisualId[newPhase - 1], controler);
 
@@ -316,13 +350,15 @@ class boss_feng : public CreatureScript
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                             me->CastSpell(target, dotSpellId, false);
 
-                        events.ScheduleEvent(EVENT_DOT_ATTACK, 30000);
+                        events.ScheduleEvent(EVENT_DOT_ATTACK, 17500);
                         break;
                     }
                     case EVENT_RE_ATTACK:
                     {
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                             me->GetMotionMaster()->MoveChase(target);
+                        
+                        me->SetReactState(REACT_AGGRESSIVE);
                         break;
                     }
                     // Fist Phase
@@ -339,17 +375,17 @@ class boss_feng : public CreatureScript
                         break;
                     }
                     // Spear Phase
-                    case EVENT_WILDFIRE_SPARK: // Todo
+                    case EVENT_WILDFIRE_SPARK:
                     {
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             me->CastSpell(target, SPELL_WILDFIRE_SPARK, false);
-                        events.ScheduleEvent(EVENT_WILDFIRE_SPARK, 35000);
+                        events.ScheduleEvent(EVENT_WILDFIRE_SPARK, 20000);
                         break;
                     }
-                    case EVENT_DRAW_FLAME: // Todo
+                    case EVENT_DRAW_FLAME: 
                     {
-                        // Todo
-                        events.ScheduleEvent(EVENT_DRAW_FLAME, 10000);
+                        me->CastSpell(me, SPELL_DRAW_FLAME, false);
+                        events.ScheduleEvent(EVENT_DRAW_FLAME, 60000);
                         break;
                     }
                     // Staff Phase
@@ -446,6 +482,54 @@ class mob_lightning_fist : public CreatureScript
         }
 };
 
+class mob_wild_spark : public CreatureScript
+{
+    public:
+        mob_wild_spark() : CreatureScript("mob_wild_spark") {}
+
+        struct mob_wild_sparkAI : public ScriptedAI
+        {
+            mob_wild_sparkAI(Creature* creature) : ScriptedAI(creature)
+            {}
+
+            uint32 checkNearPlayerTimer;
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->CastSpell(me, 60438, true); // Fire aura
+            }
+    
+            void SpellHit(Unit* caster, SpellInfo const* spell)
+            {
+                if (spell->Id == SPELL_DRAW_FLAME)
+                    me->GetMotionMaster()->MovePoint(1, caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ());
+            }
+
+            void MovementInform(uint32 type, uint32 id)
+            {
+                if (type != POINT_MOTION_TYPE)
+                    return;
+
+                if (InstanceScript* pInstance = me->GetInstanceScript())
+                    if (Creature* feng = pInstance->instance->GetCreature(pInstance->GetData64(NPC_FENG)))
+                    {
+                        feng->AI()->DoAction(ACTION_SPARK);
+                        me->DespawnOrUnsummon();
+                    }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_wild_sparkAI(creature);
+        }
+};
+
 class spell_mogu_epicenter : public SpellScriptLoader
 {
     public:
@@ -465,8 +549,8 @@ class spell_mogu_epicenter : public SpellScriptLoader
                 
                 float distance = caster->GetDistance(target);
 
-                if (distance > 1)
-                    SetHitDamage(GetHitDamage() * (100 - (distance / 60 * 100)));
+                if (distance >= 0 && distance <= 60)
+                    SetHitDamage(GetHitDamage() * (1 - (distance / MAX_DIST)));
             }
 
             void Register()
@@ -478,6 +562,144 @@ class spell_mogu_epicenter : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_mogu_epicenter_SpellScript();
+        }
+};
+
+class spell_mogu_wildfire_spark : public SpellScriptLoader
+{
+    public:
+        spell_mogu_wildfire_spark() : SpellScriptLoader("spell_mogu_wildfire_spark") { }
+
+        class spell_mogu_wildfire_spark_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mogu_wildfire_spark_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                const uint8 maxSpark = 3;
+
+                Unit* caster = GetCaster();
+
+                if (!caster)
+                    return;
+
+                for (uint8 i = 0; i < maxSpark; ++i)
+                {
+                    float position_x = caster->GetPositionX() + frand(-3.0f, 3.0f);
+                    float position_y = caster->GetPositionY() + frand(-3.0f, 3.0f);
+                    caster->CastSpell(position_x, position_y, caster->GetPositionZ(), 116586, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_mogu_wildfire_spark_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mogu_wildfire_spark_SpellScript();
+        }
+};
+
+class spell_mogu_wildfire_infusion : public SpellScriptLoader
+{
+    public:
+        spell_mogu_wildfire_infusion() : SpellScriptLoader("spell_mogu_wildfire_infusion") { }
+
+        class spell_mogu_wildfire_infusion_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mogu_wildfire_infusion_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                    if (AuraPtr aura = caster->GetAura(SPELL_WILDFIRE_INFUSION))
+                        aura->ModCharges(-1);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_mogu_wildfire_infusion_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mogu_wildfire_infusion_SpellScript();
+        }
+};
+
+class spell_mogu_arcane_velocity : public SpellScriptLoader
+{
+    public:
+        spell_mogu_arcane_velocity() : SpellScriptLoader("spell_mogu_arcane_velocity") { }
+
+        class spell_mogu_arcane_velocity_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mogu_arcane_velocity_SpellScript);
+
+            void DealDamage()
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+
+                if (!caster || !target)
+                    return;
+                
+                float distance = caster->GetDistance(target);
+
+                if (distance >= 0 && distance <= 60)
+                    SetHitDamage(GetHitDamage() * (distance / MAX_DIST));
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mogu_arcane_velocity_SpellScript::DealDamage);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mogu_arcane_velocity_SpellScript();
+        }
+};
+
+class spell_mogu_arcane_resonance : public SpellScriptLoader
+{
+    public:
+        spell_mogu_arcane_resonance() : SpellScriptLoader("spell_mogu_arcane_resonance") { }
+
+        class spell_mogu_arcane_resonance_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mogu_arcane_resonance_SpellScript);
+
+            uint8 targetCount;
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                targetCount = targets.size();
+            }
+
+            void DealDamage()
+            {
+                if (targetCount > 25)
+                    targetCount = 0;
+
+                SetHitDamage(GetHitDamage() * targetCount);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mogu_arcane_resonance_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+                OnHit                    += SpellHitFn(spell_mogu_arcane_resonance_SpellScript::DealDamage);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mogu_arcane_resonance_SpellScript();
         }
 };
 
@@ -519,6 +741,11 @@ void AddSC_boss_feng()
 {
     new boss_feng();
     new mob_lightning_fist();
+    new mob_wild_spark();
     new spell_mogu_epicenter();
+    new spell_mogu_wildfire_spark();
+    new spell_mogu_wildfire_infusion();
+    new spell_mogu_arcane_velocity();
+    new spell_mogu_arcane_resonance();
     new spell_mogu_inversion();
 }

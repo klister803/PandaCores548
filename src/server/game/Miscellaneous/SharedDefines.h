@@ -61,6 +61,14 @@ enum SpellEffIndex
     MAX_EFFECTS,
 };
 
+enum Roles
+{
+    ROLES_DEFAULT   = 0,
+    ROLES_HEALER    = 1,
+    ROLES_DPS       = 2,
+    ROLES_TANK      = 3,
+};
+
 enum SpecIndex
 {
     SPEC_NONE                   = 0,
@@ -3906,7 +3914,9 @@ enum DiminishingGroup
     DIMINISHING_SLEEP               = 17,
     DIMINISHING_TAUNT               = 18,
     DIMINISHING_LIMITONLY           = 19,
-    DIMINISHING_DRAGONS_BREATH      = 20
+    DIMINISHING_DRAGONS_BREATH      = 20,
+    DIMINISHING_DEEP_FREEZE         = 21,
+    DIMINISHING_RING_OF_FROST       = 22,
 };
 
 enum SummonCategory
@@ -4167,7 +4177,6 @@ enum SpellFamilyNames
 // stored in character_pet.slot
 enum PetSlot
 {
-    PET_SLOT_DEFAULT         =   0,
     //Some not-in-db slots
     PET_SLOT_FULL_LIST       =  -4,        //Used when there is no slot free for tameing
     PET_SLOT_UNK_SLOT        =  -3,        // Used in some scripts.

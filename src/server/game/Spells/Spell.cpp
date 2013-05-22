@@ -2363,6 +2363,18 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     if (getState() == SPELL_STATE_DELAYED && !m_spellInfo->IsPositive() && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
         return;                                             // No missinfo in that case
 
+    // Some spells should remove Camouflage after hit (traps, some spells that have casting time)
+    if (target->targetGUID != m_caster->GetGUID() && m_spellInfo && m_spellInfo->IsBreakingCamouflageAfterHit())
+    {
+        if (TempSummon* summon = m_caster->ToTempSummon())
+        {
+            if (Unit* owner = summon->GetSummoner())
+                owner->RemoveAurasByType(SPELL_AURA_MOD_CAMOUFLAGE);
+        }
+        else
+            m_caster->RemoveAurasByType(SPELL_AURA_MOD_CAMOUFLAGE);
+    }
+
     // Get original caster (if exist) and calculate damage/healing from him data
     Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
 
@@ -2664,6 +2676,22 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
     m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell);
     if (m_diminishGroup)
     {
+        m_diminishLevel = DIMINISHING_LEVEL_1;
+        // Special handling for Deep Freeze & Ring of Frost diminishing
+        // Ring of Frost
+        if (m_spellInfo->Id == 82691)
+        {
+            m_diminishLevel = unit->GetDiminishing(DIMINISHING_DEEP_FREEZE);
+            if (unit->GetCharmerOrOwnerPlayerOrPlayerItself())
+                unit->IncrDiminishing(DIMINISHING_RING_OF_FROST);
+        }
+        // Deep Freze
+        else if (m_spellInfo->Id == 44572)
+        {
+            m_diminishLevel = unit->GetDiminishing(DIMINISHING_RING_OF_FROST);
+            if (unit->GetCharmerOrOwnerPlayerOrPlayerItself())
+                unit->IncrDiminishing(DIMINISHING_DEEP_FREEZE);
+        }
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
@@ -3097,7 +3125,7 @@ void Spell::prepare(SpellCastTargets const* targets, constAuraEffectPtr triggere
     {
         // stealth must be removed at cast starting (at show channel bar)
         // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
-        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && m_spellInfo->IsBreakingStealth())
+        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && m_spellInfo->IsBreakingStealth() && (!m_caster->HasAuraType(SPELL_AURA_MOD_CAMOUFLAGE) || m_spellInfo->IsBreakingCamouflage()))
         {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -3594,7 +3622,22 @@ void Spell::_handle_finish_phase()
     {
         // Take for real after all targets are processed
         if (m_needComboPoints)
+        {
             m_caster->m_movedPlayer->ClearComboPoints();
+
+            // Anticipation
+            if (Player* _player = m_caster->ToPlayer())
+            {
+                if (_player->HasAura(115189))
+                {
+                    int32 basepoints0 = _player->GetAura(115189) ? _player->GetAura(115189)->GetStackAmount() : 0;
+                    _player->CastCustomSpell(m_caster->getVictim(), 115190, &basepoints0, NULL, NULL, NULL, NULL, NULL, true);
+
+                    if (basepoints0)
+                        _player->RemoveAura(115189);
+                }
+            }
+        }
 
         // Real add combo points from effects
         if (m_comboPointGain)
@@ -4648,7 +4691,12 @@ void Spell::TakeRunePower(bool didHit)
     {
         runeCost[i] = runeCostData->RuneCost[i];
         if (Player* modOwner = m_caster->GetSpellModOwner())
+        {
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, runeCost[i], this);
+
+            if (runeCost[i] < 0)
+                runeCost[i] = 0;
+        }
     }
 
     runeCost[RUNE_DEATH] = 0;                               // calculated later
@@ -4656,12 +4704,13 @@ void Spell::TakeRunePower(bool didHit)
     for (uint32 i = 0; i < MAX_RUNES; ++i)
     {
         RuneType rune = player->GetCurrentRune(i);
-        if (!player->GetRuneCooldown(i) && runeCost[rune] > 0)
-        {
-            player->SetRuneCooldown(i, didHit ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN));
-            player->SetLastUsedRune(rune);
-            runeCost[rune]--;
-        }
+        if (player->GetRuneCooldown(i) || !runeCost[rune])
+            continue;
+
+        uint32 cooldown = ((m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE) > 0 || didHit) ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN);
+        player->SetRuneCooldown(i, cooldown);
+        player->SetDeathRuneUsed(i, false);
+        runeCost[rune]--;
     }
 
     runeCost[RUNE_DEATH] = runeCost[RUNE_BLOOD] + runeCost[RUNE_UNHOLY] + runeCost[RUNE_FROST];
@@ -4673,13 +4722,20 @@ void Spell::TakeRunePower(bool didHit)
             RuneType rune = player->GetCurrentRune(i);
             if (!player->GetRuneCooldown(i) && rune == RUNE_DEATH)
             {
-                player->SetRuneCooldown(i, didHit ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN));
-                player->SetLastUsedRune(rune);
+                uint32 cooldown = ((m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE) > 0 || didHit) ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN);
+                player->SetRuneCooldown(i, cooldown);
                 runeCost[rune]--;
 
-                // keep Death Rune type if missed
-                if (didHit)
+                bool takePower = didHit;
+                if (uint32 spell = player->GetRuneConvertSpell(i))
+                    takePower = spell != 54637 && spell != 89056;
+
+                // keep Death Rune type if missed or player has Blood of the North
+                if (takePower)
+                {
                     player->RestoreBaseRune(i);
+                    player->SetDeathRuneUsed(i, true);
+                }
 
                 if (runeCost[RUNE_DEATH] == 0)
                     break;
@@ -4861,6 +4917,9 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
 SpellCastResult Spell::CheckCast(bool strict)
 {
     if (m_spellInfo->Id == 132365)
+        return SPELL_FAILED_DONT_REPORT;
+
+    if (m_spellInfo->Id == 33830 && m_caster->HasAura(33830))
         return SPELL_FAILED_DONT_REPORT;
 
     // check death state
@@ -5224,8 +5283,9 @@ SpellCastResult Spell::CheckCast(bool strict)
         {
             case SPELL_EFFECT_DUMMY:
             {
-                // Death Coil
-                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] == 0x2000)
+                // Death Coil and Death Coil (Symbiosis)
+                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] == 0x2000 ||
+                    m_spellInfo->Id == 122282)
                 {
                     Unit* target = m_targets.GetUnitTarget();
                     if (!target || (target->IsFriendlyTo(m_caster) && target->GetCreatureType() != CREATURE_TYPE_UNDEAD))
@@ -7081,6 +7141,15 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
             break;
         case SPELLVALUE_BASE_POINT2:
             m_spellValue->EffectBasePoints[2] = m_spellInfo->Effects[EFFECT_2].CalcBaseValue(value);
+            break;
+        case SPELLVALUE_BASE_POINT3:
+            m_spellValue->EffectBasePoints[3] = m_spellInfo->Effects[EFFECT_3].CalcBaseValue(value);
+            break;
+        case SPELLVALUE_BASE_POINT4:
+            m_spellValue->EffectBasePoints[4] = m_spellInfo->Effects[EFFECT_4].CalcBaseValue(value);
+            break;
+        case SPELLVALUE_BASE_POINT5:
+            m_spellValue->EffectBasePoints[5] = m_spellInfo->Effects[EFFECT_5].CalcBaseValue(value);
             break;
         case SPELLVALUE_RADIUS_MOD:
             m_spellValue->RadiusMod = (float)value / 10000;

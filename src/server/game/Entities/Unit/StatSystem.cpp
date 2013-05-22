@@ -71,7 +71,6 @@ bool Player::UpdateStats(Stats stat)
     switch (stat)
     {
         case STAT_AGILITY:
-            UpdateArmor();
             UpdateAllCritPercentages();
             UpdateDodgePercentage();
             break;
@@ -153,6 +152,41 @@ bool Player::UpdateAllStats()
         UpdateMaxPower(Powers(i));
 
     // Custom MoP script
+    // Jab Override Driver
+    if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_MONK)
+    {
+        Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+
+        if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
+        {
+            RemoveAura(108561); // 2H Staff Override
+            RemoveAura(115697); // 2H Polearm Override
+            RemoveAura(115689); // D/W Axes
+            RemoveAura(115694); // D/W Maces
+            RemoveAura(115696); // D/W Swords
+
+            switch (mainItem->GetTemplate()->SubClass)
+            {
+                case ITEM_SUBCLASS_WEAPON_STAFF:
+                    CastSpell(this, 108561, true);
+                    break;
+                case ITEM_SUBCLASS_WEAPON_POLEARM:
+                    CastSpell(this, 115697, true);
+                    break;
+                case ITEM_SUBCLASS_WEAPON_AXE:
+                    CastSpell(this, 115689, true);
+                    break;
+                case ITEM_SUBCLASS_WEAPON_MACE:
+                    CastSpell(this, 115694, true);
+                    break;
+                case ITEM_SUBCLASS_WEAPON_SWORD:
+                    CastSpell(this, 115696, true);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
     // Way of the Monk - 120277
     if (GetTypeId() == TYPEID_PLAYER)
     {
@@ -336,7 +370,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         {
             agilityValue += std::max((GetStat(STAT_AGILITY) - 10.0f) * entry->APPerStrenth, 0.0f);
             // Druid feral has AP per agility = 2
-            if (form->ID == FORM_CAT)
+            if (form->ID == FORM_CAT || form->ID == FORM_BEAR)
                 agilityValue *= 2;
         }
 
@@ -801,6 +835,13 @@ void Player::UpdateManaRegen()
     if (HasAuraType(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT))
         base_regen += 0.5 * spirit_regen; // Allows 50% of your mana regeneration from Spirit to continue while in combat.
 
+    // Rune of Power : Increase Mana regeneration by 100%
+    if (HasAura(116014))
+    {
+        combat_regen *= 2;
+        base_regen *= 2;
+    }
+
     // Chaotic Energy : Increase Mana regen by 625%
     if (HasAura(111546))
     {
@@ -846,7 +887,7 @@ void Player::UpdateManaRegen()
 
 void Player::UpdateRuneRegen(RuneType rune)
 {
-    if (rune >= NUM_RUNE_TYPES)
+    if (rune > NUM_RUNE_TYPES)
         return;
 
     uint32 cooldown = 0;
@@ -868,8 +909,17 @@ void Player::UpdateRuneRegen(RuneType rune)
 void Player::UpdateAllRunesRegen()
 {
     for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
+    {
         if (uint32 cooldown = GetRuneTypeBaseCooldown(RuneType(i)))
-            SetFloatValue(PLAYER_RUNE_REGEN_1 + i, float(1 * IN_MILLISECONDS) / float(cooldown));
+        {
+            float regen = float(1 * IN_MILLISECONDS) / float(cooldown);
+
+            if (regen < 0.0099999998f)
+                regen = 0.01f;
+
+            SetFloatValue(PLAYER_RUNE_REGEN_1 + i, regen);
+        }
+    }
 }
 
 void Player::_ApplyAllStatBonuses()

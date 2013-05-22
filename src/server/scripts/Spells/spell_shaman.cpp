@@ -85,6 +85,65 @@ enum ShamanSpells
     SPELL_SHA_GLYPH_OF_LAKESTRIDER          = 55448,
     SPELL_SHA_WATER_WALKING                 = 546,
     SPELL_SHA_GLYPH_OF_SHAMANISTIC_RAGE     = 63280,
+    SPELL_SHA_SOLAR_BEAM                    = 113286,
+    SPELL_SHA_SOLAR_BEAM_SILENCE            = 113288,
+    SPELL_SHA_GHOST_WOLF                    = 2645,
+};
+
+// Prowl - 113289
+class spell_sha_prowl : public SpellScriptLoader
+{
+    public:
+        spell_sha_prowl() : SpellScriptLoader("spell_sha_prowl") { }
+
+        class spell_sha_prowl_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_prowl_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, SPELL_SHA_GHOST_WOLF, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_prowl_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_prowl_SpellScript();
+        }
+};
+
+// Solar beam - 113286
+class spell_sha_solar_beam : public SpellScriptLoader
+{
+    public:
+        spell_sha_solar_beam() : SpellScriptLoader("spell_sha_solar_beam") { }
+
+        class spell_sha_solar_beam_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_solar_beam_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_SOLAR_BEAM))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_SOLAR_BEAM_SILENCE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_solar_beam_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_solar_beam_AuraScript();
+        }
 };
 
 // Called by Shamanistic Rage - 30823
@@ -249,7 +308,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                     for (auto itr : memberList)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -261,7 +320,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                     for (auto itr : memberList)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -327,7 +386,7 @@ class spell_sha_ancestral_guidance : public SpellScriptLoader
 
                     bp = int32(bp * 0.40f);
 
-                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, true);
+                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                 }
             }
 
@@ -1359,7 +1418,7 @@ class spell_sha_ascendance : public SpellScriptLoader
                             _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_ENHANCED, true);
 
                             if (_player->HasSpellCooldown(SPELL_SHA_STORMSTRIKE))
-                                _player->RemoveSpellCooldown(SPELL_SHA_STORMSTRIKE);
+                                _player->RemoveSpellCooldown(SPELL_SHA_STORMSTRIKE, true);
                             break;
                         case SPEC_SHAMAN_RESTORATION:
                             _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_RESTORATION, true);
@@ -1539,7 +1598,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScriptLoader
             {
                 int32 damage = GetEffectValue();
                 if (GetCaster() && GetHitUnit())
-                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, true);
+                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
             }
 
             void Register()
@@ -1702,6 +1761,8 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_prowl();
+    new spell_sha_solar_beam();
     new spell_sha_glyph_of_shamanistic_rage();
     new spell_sha_glyph_of_lakestrider();
     new spell_sha_call_of_the_elements();

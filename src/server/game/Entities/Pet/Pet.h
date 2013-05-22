@@ -135,6 +135,9 @@ class Pet : public Guardian
                 return m_autospells[pos];
         }
 
+        void SetSlot(uint8 slot) { m_slot = slot; }
+        uint8 GetSlot() { return m_slot; }
+
         void GivePetXP(uint32 xp);
         void GivePetLevel(uint8 level);
         void SynchronizeLevelWithOwner();
@@ -207,6 +210,7 @@ class Pet : public Guardian
         bool    m_loading;
         uint32  m_regenTimer;
         uint32  m_specialization;
+        uint8   m_slot;
 
         DeclinedName *m_declinedname;
 

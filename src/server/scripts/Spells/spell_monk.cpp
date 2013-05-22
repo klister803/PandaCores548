@@ -93,6 +93,300 @@ enum MonkSpells
     SPELL_MONK_CREATE_CHI_SPHERE                = 121286,
     SPELL_MONK_GLYPH_OF_ZEN_FLIGHT              = 125893,
     SPELL_MONK_ZEN_FLIGHT                       = 125883,
+    SPELL_MONK_BEAR_HUG                         = 127361,
+    ITEM_MONK_T14_TANK_4P                       = 123159,
+    MONK_NPC_BLACK_OX_STATUE                    = 61146,
+    SPELL_MONK_GUARD                            = 115295,
+};
+
+// Diffuse Magic - 122783
+class spell_monk_diffuse_magic : public SpellScriptLoader
+{
+    public:
+        spell_monk_diffuse_magic() : SpellScriptLoader("spell_monk_diffuse_magic") { }
+
+        class spell_monk_diffuse_magic_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_diffuse_magic_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    Unit::AuraApplicationMap AuraList = _player->GetAppliedAuras();
+                    for (Unit::AuraApplicationMap::iterator iter = AuraList.begin(); iter != AuraList.end(); ++iter)
+                    {
+                        AuraPtr aura = iter->second->GetBase();
+                        if (!aura)
+                            continue;
+
+                        Unit* caster = aura->GetCaster();
+                        if (!caster || caster->GetGUID() == _player->GetGUID())
+                            continue;
+
+                        if (!caster->IsWithinDist(_player, 40.0f))
+                            continue;
+
+                        if (aura->GetSpellInfo()->IsPositive())
+                            continue;
+
+                        if (!(aura->GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
+                            continue;
+
+                        _player->AddAura(aura->GetSpellInfo()->Id, caster);
+
+                        if (AuraPtr targetAura = caster->GetAura(aura->GetSpellInfo()->Id, _player->GetGUID()))
+                            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                                if (targetAura->GetEffect(i) && aura->GetEffect(i))
+                                    targetAura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount());
+
+                        _player->RemoveAura(aura->GetSpellInfo()->Id, caster->GetGUID());
+                        
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_diffuse_magic_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_diffuse_magic_SpellScript();
+        }
+};
+
+// Summon Black Ox Statue - 115315
+class spell_monk_black_ox_statue : public SpellScriptLoader
+{
+    public:
+        spell_monk_black_ox_statue() : SpellScriptLoader("spell_monk_black_ox_statue") { }
+
+        class spell_monk_black_ox_statue_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_black_ox_statue_SpellScript)
+
+            void HandleSummon(SpellEffIndex effIndex)
+            {
+                if (Player* player = GetCaster()->ToPlayer())
+                {
+                    PreventHitDefaultEffect(effIndex);
+
+                    const SpellInfo* spell = GetSpellInfo();
+                    std::list<Creature*> tempList;
+                    std::list<Creature*> blackOxList;
+
+                    player->GetCreatureListWithEntryInGrid(tempList, MONK_NPC_BLACK_OX_STATUE, 500.0f);
+
+                    for (auto itr : tempList)
+                        blackOxList.push_back(itr);
+
+                    // Remove other players jade statue
+                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                    {
+                        Unit* owner = (*i)->GetOwner();
+                        if (owner && owner == player && (*i)->isSummon())
+                            continue;
+
+                        blackOxList.remove((*i));
+                    }
+
+                    // 1 statue max
+                    if ((int32)blackOxList.size() >= spell->Effects[effIndex].BasePoints)
+                        blackOxList.back()->ToTempSummon()->UnSummon();
+
+                    Position pos;
+                    GetExplTargetDest()->GetPosition(&pos);
+                    const SummonPropertiesEntry* properties = sSummonPropertiesStore.LookupEntry(spell->Effects[effIndex].MiscValueB);
+                    TempSummon* summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
+                    if (!summon)
+                        return;
+
+                    summon->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
+                    summon->setFaction(player->getFaction());
+                    summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                    summon->SetMaxHealth(player->CountPctFromMaxHealth(50));
+                    summon->SetHealth(summon->GetMaxHealth());
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_monk_black_ox_statue_SpellScript::HandleSummon, EFFECT_0, SPELL_EFFECT_SUMMON);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_black_ox_statue_SpellScript();
+        }
+
+        class spell_monk_black_ox_statue_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_black_ox_statue_AuraScript);
+
+            uint32 damageDealed;
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                damageDealed = 0;
+            }
+
+            void SetData(uint32 type, uint32 data)
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _plr = GetCaster()->ToPlayer())
+                {
+                    uint32 value = _plr->GetTotalAttackPowerValue(BASE_ATTACK) * 16;
+                    
+                    damageDealed += data;
+
+                    if (damageDealed >= value)
+                    {
+                        damageDealed = 0;
+
+                        std::list<Creature*> tempList;
+                        std::list<Creature*> statueList;
+                        Creature* statue;
+
+                        _plr->GetCreatureListWithEntryInGrid(tempList, MONK_NPC_BLACK_OX_STATUE, 100.0f);
+                        _plr->GetCreatureListWithEntryInGrid(statueList, MONK_NPC_BLACK_OX_STATUE, 100.0f);
+
+                        // Remove other players jade statue
+                        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                        {
+                            Unit* owner = (*i)->GetOwner();
+                            if (owner && owner->GetGUID() == _plr->GetGUID() && (*i)->isSummon())
+                                continue;
+
+                            statueList.remove((*i));
+                        }
+
+                        if (!statueList.empty() && statueList.size() == 1)
+                        {
+                            for (auto itr : statueList)
+                                statue = itr;
+
+                            if (statue && (statue->isPet() || statue->isGuardian()))
+                            {
+                                if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _plr->GetGUID())
+                                {
+                                    std::list<Unit*> targets;
+
+                                    _plr->GetPartyMembers(targets);
+
+                                    for (auto itr : targets)
+                                    {
+                                        if (itr->GetGUID() == statue->GetGUID() ||
+                                            itr->GetGUID() == _plr->GetGUID())
+                                            continue;
+
+                                        targets.push_back(itr);
+                                    }
+
+                                    JadeCore::Containers::RandomResizeList(targets, 1);
+
+                                    for (auto itr : targets)
+                                        statue->CastSpell(itr, SPELL_MONK_GUARD, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_monk_black_ox_statue_AuraScript::OnApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_black_ox_statue_AuraScript();
+        }
+};
+
+// Guard - 115295
+class spell_monk_guard : public SpellScriptLoader
+{
+    public:
+        spell_monk_guard() : SpellScriptLoader("spell_monk_guard") { }
+
+        class spell_monk_guard_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_guard_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _plr = GetCaster()->ToPlayer())
+                {
+                    amount += int32(_plr->GetTotalAttackPowerValue(BASE_ATTACK) * 1.971f);
+
+                    if (_plr->HasAura(ITEM_MONK_T14_TANK_4P))
+                        amount = int32(amount * 1.2f);
+                }
+                // For Black Ox Statue
+                else if (GetCaster()->GetOwner())
+                {
+                    if (Player* _plr = GetCaster()->GetOwner()->ToPlayer())
+                    {
+                        amount += int32(_plr->GetTotalAttackPowerValue(BASE_ATTACK) * 1.971f);
+
+                        if (_plr->HasAura(ITEM_MONK_T14_TANK_4P))
+                            amount = int32(amount * 1.2f);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_guard_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_guard_AuraScript();
+        }
+};
+
+// Bear Hug - 127361
+class spell_monk_bear_hug : public SpellScriptLoader
+{
+    public:
+        spell_monk_bear_hug() : SpellScriptLoader("spell_monk_bear_hug") { }
+
+        class spell_monk_bear_hug_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_bear_hug_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (AuraPtr bearHug = target->GetAura(SPELL_MONK_BEAR_HUG, _player->GetGUID()))
+                            if (bearHug->GetEffect(1))
+                                bearHug->GetEffect(1)->SetAmount(_player->CountPctFromMaxHealth(2));
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_bear_hug_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_bear_hug_SpellScript();
+        }
 };
 
 // Zen Flight - 125883
@@ -108,8 +402,13 @@ class spell_monk_zen_flight_check : public SpellScriptLoader
             SpellCastResult CheckTarget()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (_player->GetMap()->IsBattlegroundOrArena())
                         return SPELL_FAILED_NOT_IN_BATTLEGROUND;
+
+                    if (!_player->HasAura(90267))
+                        return SPELL_FAILED_NOT_HERE;
+                }
 
                 return SPELL_CAST_OK;
             }
@@ -297,7 +596,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                             bp /= 6;
 
                             if (bp)
-                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, NULL, NULL, NULL, true);
                         }
                     }
                 }
@@ -979,7 +1278,7 @@ class spell_monk_healing_elixirs : public SpellScriptLoader
 
                         if (!_player->HasSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH))
                         {
-                            _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, true);
+                            _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             // This effect cannot occur more than once per 18s
                             _player->AddSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, 0, time(NULL) + 18);
                         }
@@ -1413,7 +1712,7 @@ class spell_monk_purifying_brew : public SpellScriptLoader
         }
 };
 
-// Clash - 122057
+// Clash - 122057 and Clash - 126449
 class spell_monk_clash : public SpellScriptLoader
 {
     public:
@@ -1432,7 +1731,7 @@ class spell_monk_clash : public SpellScriptLoader
                         if (Unit* target = GetHitUnit())
                         {
                             int32 basePoint = 2;
-                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, true);
+                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, NULL, NULL, NULL, true);
                             target->CastSpell(_player, SPELL_MONK_CLASH_CHARGE, true);
                         }
                     }
@@ -1754,13 +2053,13 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                             if (target->isInBack(caster))
                             {
                                 int32 bp = int32(GetHitDamage() * 0.2f) / 4;
-                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             }
                             // else : 20% damage on instant heal
                             else
                             {
                                 int32 bp = int32(GetHitDamage() * 0.2f);
-                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             }
                         }
                         // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
@@ -2092,6 +2391,10 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_diffuse_magic();
+    new spell_monk_black_ox_statue();
+    new spell_monk_guard();
+    new spell_monk_bear_hug();
     new spell_monk_zen_flight_check();
     new spell_monk_glyph_of_zen_flight();
     new spell_monk_power_strikes();

@@ -445,22 +445,27 @@ void GuildMgr::LoadGuilds()
             itr->second->GetNewsLog().LoadFromDB(CharacterDatabase.Query(stmt));
          }
     }
+    
     // 11. Validate loaded guild data
     sLog->outInfo(LOG_FILTER_GENERAL, "Validating data of loaded guilds...");
     {
         uint32 oldMSTime = getMSTime();
 
-        for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
+        for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end();)
         {
             Guild* guild = itr->second;
             if (guild)
             {
                 if (!guild->Validate())
                 {
-                    RemoveGuild(guild->GetId());
+                    GuildStore.erase(itr++);
                     delete guild;
                 }
+                else
+                    ++itr;
             }
+            else
+                ++itr;
         }
 
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Validated data of loaded guilds in %u ms", GetMSTimeDiffToNow(oldMSTime));

@@ -318,8 +318,12 @@ void MotionMaster::MoveTakeoff(uint32 id, Position const& pos)
 {
     float x, y, z;
     pos.GetPosition(x, y, z);
+    MoveTakeoff(id, x, y, z);
+}
 
-    sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u) landing point (ID: %u X: %f Y: %f Z: %f)", _owner->GetEntry(), id, x, y, z);
+void MotionMaster::MoveTakeoff(uint32 id, float x, float y, float z)
+{
+    sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u) take off point (ID: %u X: %f Y: %f Z: %f)", _owner->GetEntry(), id, x, y, z);
 
     Movement::MoveSplineInit init(*_owner);
     init.MoveTo(x,y,z);

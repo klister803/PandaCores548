@@ -715,7 +715,7 @@ CharactersPerAccount = 50
 #        Range:       1-10
 #        Default:     10 - (Client limitation)
 
-CharactersPerRealm = 10
+CharactersPerRealm = 11
 
 #
 #    HeroicCharactersPerRealm
@@ -3016,13 +3016,24 @@ Currency.ConquestPointsArenaReward = 180
 #
 ###################################################################################################
 
+###################################################################################################
+#
+# CUSTOM SETTINGS
 #
 #     AnnounceBan
-#		 Description: Announce in chat server all bann by GameMaster
+#		 Description: Announce in chat server all ban by GameMaster
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
 AnnounceBan = 0
+
+#
+#     AnnounceMute
+#		 Description: Announce in chat server all mutes by GameMaster
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+AnnounceMute = 0
 
 #
 #     Spell Forbidden
