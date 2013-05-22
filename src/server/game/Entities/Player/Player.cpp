@@ -22640,7 +22640,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             }
 
         if (reward.AchievementId)
-            if (guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+            if (!guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
             {
                 SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
                 return false;
