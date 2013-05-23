@@ -17,7 +17,7 @@ DoorData const doorData[] =
     {GOB_FENG_DOOR_EXIT,                     DATA_FENG,                 DOOR_TYPE_PASSAGE,    BOUNDARY_N   },
     {GOB_GARAJAL_FENCE,                      DATA_GARAJAL,              DOOR_TYPE_ROOM,       BOUNDARY_NONE},
     //{GOB_GARAJAL_EXIT,                       DATA_GARAJAL,              DOOR_TYPE_PASSAGE,    BOUNDARY_W   },
-    //{GOB_SPIROT_KINGS_EXIT,                  DATA_SPIRIT_KINGS,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    //{GOB_SPIRIT_KINGS_EXIT,                  DATA_SPIRIT_KINGS,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                         DOOR_TYPE_ROOM,       BOUNDARY_NONE},// END
 };
 
@@ -36,7 +36,7 @@ public:
         instance_mogu_shan_vault_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 actualPetrifierEntry;
-        uint8  randomDespawnStoneGuardian;
+        int8   randomDespawnStoneGuardian;
 
         uint32 StoneGuardPetrificationTimer;
 
@@ -99,7 +99,7 @@ public:
                 case GOB_FENG_DOOR_EXIT:
                 case GOB_GARAJAL_FENCE:
                 case GOB_GARAJAL_EXIT:
-                case GOB_SPIROT_KINGS_EXIT:
+                case GOB_SPIRIT_KINGS_EXIT:
                     AddDoor(go, true);
                     break;
                 case GOB_SPEAR_STATUE:

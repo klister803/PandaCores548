@@ -56,12 +56,14 @@ class mob_cursed_mogu_sculture : public CreatureScript
                 spiritBoltTimer = urand(5000, 8000);
                 groundSlamTimer = urand(8000, 10500);
 
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                 me->AddAura(120661, me);
                 me->AddAura(120613, me);
             }
 
             void EnterCombat(Unit* attacker)
             {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(120661);
                 me->RemoveAurasDueToSpell(120613);
             }
@@ -102,6 +104,14 @@ class mob_cursed_mogu_sculture : public CreatureScript
         }
 };
 
+float quilenNewY[2] = {1170.0f, 1240.0f};
+
+enum enormousQuilenEvent
+{
+    EVENT_MONSTROUS_BITE = 1,
+    EVENT_NEXT_MOVEMENT  = 2
+};
+
 class mob_enormous_stone_quilen : public CreatureScript
 {
     public:
@@ -112,38 +122,90 @@ class mob_enormous_stone_quilen : public CreatureScript
             mob_enormous_stone_quilenAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
+                prevPosition = 1;
+
+                if (me->GetPositionX() > 3900)
+                    prevPosition = 2;
+
+                nextMovementTimer = 0;
+                me->SetWalk(true);
+                me->GetMotionMaster()->MovePoint(prevPosition, me->GetPositionX(), quilenNewY[prevPosition - 1], me->GetPositionZ());
             }
 
             InstanceScript* pInstance;
             EventMap events;
-            uint32 monstrousBiteTimer;
+            uint32 nextMovementTimer;
+            uint8 prevPosition;
 
             void Reset()
             {
-                monstrousBiteTimer = urand (3000, 5000);
+                events.ScheduleEvent(EVENT_MONSTROUS_BITE, urand (3000, 5000));
+            }
+
+            void JustReachedHome()
+            {
+                prevPosition = 1;
+
+                if (me->GetPositionX() > 3900)
+                    prevPosition = 2;
+
+                nextMovementTimer = 0;
+                me->SetWalk(true);
+                me->GetMotionMaster()->MovePoint(prevPosition, me->GetPositionX(), quilenNewY[prevPosition - 1], me->GetPositionZ());
+            }
+
+            void MovementInform(uint32 typeId, uint32 pointId)
+            {
+                if (typeId != POINT_MOTION_TYPE)
+                    return;
+
+                if (me->isInCombat())
+                    return;
+
+                prevPosition = pointId;
+                nextMovementTimer = 500;
             }
 
             void EnterCombat(Unit* attacker)
             {
-                me->AddAura(SPELL_PETRIFICATION, me);
+                me->SetWalk(false);
+                //me->AddAura(SPELL_PETRIFICATION, me);
             }
 
             void UpdateAI(const uint32 diff)
             {
+                if (nextMovementTimer)
+                {
+                    if (nextMovementTimer <= diff)
+                    {
+                        me->GetMotionMaster()->MovePoint(prevPosition == 2 ? 1: 2, me->GetPositionX(), quilenNewY[prevPosition == 2 ? 0: 1], me->GetPositionZ());
+                        nextMovementTimer = 0;
+                    }
+                    else
+                        nextMovementTimer -= diff;
+                }
+
                 if (!UpdateVictim())
                     return;
 
-                if (monstrousBiteTimer <= diff)
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
                 {
-                    if (Unit* target = me->SelectNearestTarget(5.0f))
+                    switch (eventId)
                     {
-                        if (!target->IsFriendlyTo(me))
-                            me->CastSpell(target, SPELL_MONSTROUS_BITE, true);
+                        case EVENT_MONSTROUS_BITE:
+                        {
+                            if (Unit* target = me->SelectNearestTarget(5.0f))
+                            {
+                                if (!target->IsFriendlyTo(me))
+                                    me->CastSpell(target, SPELL_MONSTROUS_BITE, true);
+                            }
+                            events.ScheduleEvent(EVENT_MONSTROUS_BITE, urand(6000, 8000));
+                            break;
+                        }
                     }
-                    monstrousBiteTimer = urand(6000, 8000);
                 }
-                else
-                    monstrousBiteTimer -= diff;
 
                 DoMeleeAttackIfReady();
             }
