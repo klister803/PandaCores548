@@ -3145,34 +3145,6 @@ class npc_rate_xp_modifier : public CreatureScript
         }
 };
 
-#define GOSSIP_DEMORPH      "Je souhaiterais retrouver mon apparence normale"
-
-class npc_event_demorph : public CreatureScript
-{
-    public:
-        npc_event_demorph() : CreatureScript("npc_event_demorph") { }
-
-        bool OnGossipHello(Player *pPlayer, Creature *pCreature)
-        {
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_DEMORPH, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-		
-            pPlayer->PlayerTalkClass->SendGossipMenu(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
-        {
-            pPlayer->PlayerTalkClass->ClearMenus();
-
-            if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
-                pPlayer->DeMorph();
-
-            pPlayer->PlayerTalkClass->SendCloseGossip();
-
-            return true;
-        }
-};
-
 /*######
 ## npc_capacitor_totem
 ######*/
@@ -4100,7 +4072,6 @@ void AddSC_npcs_special()
     new npc_generic_harpoon_cannon();
     new npc_choose_faction();
     new npc_rate_xp_modifier();
-    new npc_event_demorph();
     new npc_capacitor_totem();
     new npc_feral_spirit();
     new npc_spirit_link_totem();

@@ -536,6 +536,7 @@ class mob_wild_spark : public CreatureScript
         }
 };
 
+// Mogu Epicenter - 116040
 class spell_mogu_epicenter : public SpellScriptLoader
 {
     public:
@@ -571,6 +572,7 @@ class spell_mogu_epicenter : public SpellScriptLoader
         }
 };
 
+// Wildfire Spark - 116583
 class spell_mogu_wildfire_spark : public SpellScriptLoader
 {
     public:
@@ -609,6 +611,7 @@ class spell_mogu_wildfire_spark : public SpellScriptLoader
         }
 };
 
+// Wildfire Infusion - 116816
 class spell_mogu_wildfire_infusion : public SpellScriptLoader
 {
     public:
@@ -637,6 +640,7 @@ class spell_mogu_wildfire_infusion : public SpellScriptLoader
         }
 };
 
+// Arcane Velocity - 116365
 class spell_mogu_arcane_velocity : public SpellScriptLoader
 {
     public:
@@ -672,6 +676,7 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
         }
 };
 
+// Arcane Resonance - 116434
 class spell_mogu_arcane_resonance : public SpellScriptLoader
 {
     public:
@@ -709,6 +714,7 @@ class spell_mogu_arcane_resonance : public SpellScriptLoader
         }
 };
 
+// Mogu Inversion - 118300 / 118302 / 118304 / 118305 / 118307 / 118308 / 132296 / 132297 / 132298
 class spell_mogu_inversion : public SpellScriptLoader
 {
     public:

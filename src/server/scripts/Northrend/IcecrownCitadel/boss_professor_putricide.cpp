@@ -993,6 +993,7 @@ class spell_putricide_unstable_experiment : public SpellScriptLoader
         }
 };
 
+// Orange Ooze - 71415 and Green Ooze - 71412
 class spell_putricide_ooze_summon : public SpellScriptLoader
 {
     public:

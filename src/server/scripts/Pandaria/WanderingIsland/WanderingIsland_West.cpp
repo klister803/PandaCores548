@@ -692,6 +692,7 @@ class mob_master_shang_xi_thousand_staff_escort : public CreatureScript
     }
 };
 
+// Grab Air Balloon - 95247
 class spell_grab_air_balloon: public SpellScriptLoader
 {
     public:

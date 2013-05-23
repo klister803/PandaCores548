@@ -274,50 +274,6 @@ class MarkOfNatureTargetSelector
         }
 };
 
-class spell_mark_of_nature : public SpellScriptLoader
-{
-    public:
-        spell_mark_of_nature() : SpellScriptLoader("spell_mark_of_nature") { }
-
-        class spell_mark_of_nature_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mark_of_nature_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellInfo*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_MARK_OF_NATURE))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(SPELL_AURA_OF_NATURE))
-                    return false;
-                return true;
-            }
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                targets.remove_if(MarkOfNatureTargetSelector());
-            }
-
-            void HandleEffect(SpellEffIndex effIndex)
-            {
-                PreventHitDefaultEffect(effIndex);
-
-                if (GetHitUnit())
-                    GetHitUnit()->CastSpell(GetHitUnit(), SPELL_AURA_OF_NATURE, true);
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mark_of_nature_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-                OnEffectHitTarget += SpellEffectFn(spell_mark_of_nature_SpellScript::HandleEffect, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mark_of_nature_SpellScript();
-        }
-};
-
 /*
  * ---
  * --- Dragonspecific scripts and handling: YSONDRE
@@ -733,7 +689,6 @@ void AddSC_emerald_dragons()
 
     // dragon spellscripts
     new spell_dream_fog_sleep();
-    new spell_mark_of_nature();
 
     // dragons
     new boss_ysondre();

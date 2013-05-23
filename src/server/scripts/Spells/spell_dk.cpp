@@ -1393,59 +1393,6 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
         }
 };
 
-// 49158 Corpse Explosion (51325, 51326, 51327, 51328)
-class spell_dk_corpse_explosion : public SpellScriptLoader
-{
-    public:
-        spell_dk_corpse_explosion() : SpellScriptLoader("spell_dk_corpse_explosion") { }
-
-        class spell_dk_corpse_explosion_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_corpse_explosion_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(DK_SPELL_CORPSE_EXPLOSION_TRIGGERED) || !sSpellMgr->GetSpellInfo(DK_SPELL_GHOUL_EXPLODE))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(DK_SPELL_CORPSE_EXPLOSION_VISUAL))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* unitTarget = GetHitUnit())
-                {
-                    int32 bp = 0;
-                    if (unitTarget->isAlive())  // Living ghoul as a target
-                    {
-                        bp = int32(unitTarget->CountPctFromMaxHealth(25));
-                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, NULL, NULL, NULL, NULL, NULL, false);
-                    }
-                    else                        // Some corpse
-                    {
-                        bp = GetEffectValue();
-                        GetCaster()->CastCustomSpell(unitTarget, GetSpellInfo()->Effects[EFFECT_1].CalcValue(), &bp, NULL, NULL, NULL, NULL, NULL, true);
-                        // Corpse Explosion (Suicide)
-                        unitTarget->CastSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, true);
-                    }
-                    // Set corpse look
-                    GetCaster()->CastSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_VISUAL, true);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_dk_corpse_explosion_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_corpse_explosion_SpellScript();
-        }
-};
-
 // 47496 - Explode, Ghoul spell for Corpse Explosion
 class spell_dk_ghoul_explode : public SpellScriptLoader
 {
@@ -1829,7 +1776,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_anti_magic_shell_raid();
     new spell_dk_anti_magic_shell_self();
     new spell_dk_anti_magic_zone();
-    new spell_dk_corpse_explosion();
     new spell_dk_ghoul_explode();
     new spell_dk_death_gate_teleport();
     new spell_dk_death_gate();
