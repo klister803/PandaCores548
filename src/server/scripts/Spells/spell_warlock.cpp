@@ -332,7 +332,7 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
                         if (!bp)
                             return;
 
-                        _player->CastCustomSpell(target, WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, true);
+                        _player->CastCustomSpell(target, WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                     }
                 }
 
@@ -387,7 +387,7 @@ class spell_warl_archimondes_vengance_passive : public SpellScriptLoader
                         if (!bp)
                             return;
 
-                        _player->CastCustomSpell(eventInfo.GetActor(), WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, true);
+                        _player->CastCustomSpell(eventInfo.GetActor(), WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                     }
                 }
             }
@@ -401,38 +401,6 @@ class spell_warl_archimondes_vengance_passive : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_warl_archimondes_vengance_passive_AuraScript();
-        }
-};
-
-// Called by Firebolt (Wild Imp) - 104318
-// Molten Core - 122351
-class spell_warl_molten_core_hit : public SpellScriptLoader
-{
-    public:
-        spell_warl_molten_core_hit() : SpellScriptLoader("spell_warl_molten_core_hit") { }
-
-        class spell_warl_molten_core_hit_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_molten_core_hit_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(WARLOCK_MOLTEN_CORE_AURA))
-                            if (roll_chance_i(8))
-                                _player->CastSpell(_player, WARLOCK_MOLTEN_CORE, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_molten_core_hit_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_molten_core_hit_SpellScript();
         }
 };
 
@@ -450,9 +418,13 @@ class spell_warl_molten_core_dot : public SpellScriptLoader
             void OnTick(constAuraEffectPtr aurEff)
             {
                 if (GetCaster())
+                {
                     if (GetCaster()->HasAura(WARLOCK_MOLTEN_CORE_AURA))
                         if (roll_chance_i(8))
                             GetCaster()->CastSpell(GetCaster(), WARLOCK_MOLTEN_CORE, true);
+
+                    GetCaster()->EnergizeBySpell(GetCaster(), aurEff->GetSpellInfo()->Id, 2, POWER_DEMONIC_FURY);
+                }
             }
 
             void Register()
@@ -779,10 +751,10 @@ class spell_warl_soul_leech : public SpellScriptLoader
                         {
                             int32 bp = int32(GetHitDamage() / 10);
 
-                            _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+                            _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
 
                             if (Guardian* pet = _player->GetGuardianPet())
-                                _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+                                _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                         }
                     }
                 }
@@ -1573,7 +1545,7 @@ class spell_warl_drain_life : public SpellScriptLoader
                     if (_player->HasAura(WARLOCK_SOULBURN_AURA))
                         basepoints = int32(basepoints * 1.5f);
 
-                    _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
+                    _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                 }
             }
 
@@ -1707,7 +1679,7 @@ class spell_warl_harvest_life : public SpellScriptLoader
 
                     if (!_player->HasSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL))
                     {
-                        _player->CastCustomSpell(_player, WARLOCK_HARVEST_LIFE_HEAL, &basepoints, NULL, NULL, true);
+                        _player->CastCustomSpell(_player, WARLOCK_HARVEST_LIFE_HEAL, &basepoints, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                         // prevent the heal to proc off for each targets
                         _player->AddSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL, 0, time(NULL) + 1);
                     }
@@ -1854,7 +1826,7 @@ class spell_warl_demonic_empowerment : public SpellScriptLoader
                         {
                             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER);
                             int32 hp = int32(targetCreature->CountPctFromMaxHealth(GetCaster()->CalculateSpellDamage(targetCreature, spellInfo, 0)));
-                            targetCreature->CastCustomSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER, &hp, NULL, NULL, true);
+                            targetCreature->CastCustomSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER, &hp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                             //unitTarget->CastSpell(unitTarget, 54441, true);
                             break;
                         }
@@ -2122,7 +2094,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
                     {
                         int32 damage = aurEff->GetAmount() * 7;
                         // backfire damage and silence
-                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
+                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff);
                     }
             }
 
@@ -2146,7 +2118,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_archimondes_vengeance_cooldown();
     new spell_warl_archimondes_vengance();
     new spell_warl_archimondes_vengance_passive();
-    new spell_warl_molten_core_hit();
     new spell_warl_molten_core_dot();
     new spell_warl_decimate();
     new spell_warl_demonic_call();

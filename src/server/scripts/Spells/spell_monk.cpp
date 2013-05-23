@@ -99,6 +99,65 @@ enum MonkSpells
     SPELL_MONK_GUARD                            = 115295,
 };
 
+// Diffuse Magic - 122783
+class spell_monk_diffuse_magic : public SpellScriptLoader
+{
+    public:
+        spell_monk_diffuse_magic() : SpellScriptLoader("spell_monk_diffuse_magic") { }
+
+        class spell_monk_diffuse_magic_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_diffuse_magic_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    Unit::AuraApplicationMap AuraList = _player->GetAppliedAuras();
+                    for (Unit::AuraApplicationMap::iterator iter = AuraList.begin(); iter != AuraList.end(); ++iter)
+                    {
+                        AuraPtr aura = iter->second->GetBase();
+                        if (!aura)
+                            continue;
+
+                        Unit* caster = aura->GetCaster();
+                        if (!caster || caster->GetGUID() == _player->GetGUID())
+                            continue;
+
+                        if (!caster->IsWithinDist(_player, 40.0f))
+                            continue;
+
+                        if (aura->GetSpellInfo()->IsPositive())
+                            continue;
+
+                        if (!(aura->GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
+                            continue;
+
+                        _player->AddAura(aura->GetSpellInfo()->Id, caster);
+
+                        if (AuraPtr targetAura = caster->GetAura(aura->GetSpellInfo()->Id, _player->GetGUID()))
+                            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                                if (targetAura->GetEffect(i) && aura->GetEffect(i))
+                                    targetAura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount());
+
+                        _player->RemoveAura(aura->GetSpellInfo()->Id, caster->GetGUID());
+                        
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_diffuse_magic_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_diffuse_magic_SpellScript();
+        }
+};
+
 // Summon Black Ox Statue - 115315
 class spell_monk_black_ox_statue : public SpellScriptLoader
 {
@@ -183,8 +242,10 @@ class spell_monk_black_ox_statue : public SpellScriptLoader
                 if (Player* _plr = GetCaster()->ToPlayer())
                 {
                     uint32 value = _plr->GetTotalAttackPowerValue(BASE_ATTACK) * 16;
+                    
+                    damageDealed += data;
 
-                    while ((damageDealed += data) >= value)
+                    if (damageDealed >= value)
                     {
                         damageDealed = 0;
 
@@ -535,7 +596,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                             bp /= 6;
 
                             if (bp)
-                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, NULL, NULL, NULL, true);
                         }
                     }
                 }
@@ -1217,7 +1278,7 @@ class spell_monk_healing_elixirs : public SpellScriptLoader
 
                         if (!_player->HasSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH))
                         {
-                            _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, true);
+                            _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             // This effect cannot occur more than once per 18s
                             _player->AddSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, 0, time(NULL) + 18);
                         }
@@ -1670,7 +1731,7 @@ class spell_monk_clash : public SpellScriptLoader
                         if (Unit* target = GetHitUnit())
                         {
                             int32 basePoint = 2;
-                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, true);
+                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, NULL, NULL, NULL, true);
                             target->CastSpell(_player, SPELL_MONK_CLASH_CHARGE, true);
                         }
                     }
@@ -1992,13 +2053,13 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                             if (target->isInBack(caster))
                             {
                                 int32 bp = int32(GetHitDamage() * 0.2f) / 4;
-                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             }
                             // else : 20% damage on instant heal
                             else
                             {
                                 int32 bp = int32(GetHitDamage() * 0.2f);
-                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, true);
                             }
                         }
                         // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
@@ -2330,6 +2391,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_diffuse_magic();
     new spell_monk_black_ox_statue();
     new spell_monk_guard();
     new spell_monk_bear_hug();

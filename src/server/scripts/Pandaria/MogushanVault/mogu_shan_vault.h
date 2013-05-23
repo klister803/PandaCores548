@@ -45,6 +45,9 @@ enum eCreatures
     NPC_PHASE_CONTROLER             = 61124,
 
     NPC_GARAJAL                     = 60143,
+    NPC_SHADOWY_MINION_REAL         = 60940,
+    NPC_SHADOWY_MINION_SPIRIT       = 60184,
+    NPC_SOUL_CUTTER                 = 62003,
 
     // Spirit kings
     NPC_ZIAN                        = 60701,
@@ -62,8 +65,11 @@ enum eGameObjects
 {
     GOB_STONE_GUARD_DOOR_ENTRANCE   = 214497,
     GOB_STONE_GUARD_DOOR_EXIT       = 214526,
-    GOB_FENG_DOOR_FENCE             = 214452, // Both inner entrance and exit
+    GOB_FENG_DOOR_FENCE             = 214452, // Both entrance and exit
     GOB_FENG_DOOR_EXIT              = 214696,
+    GOB_GARAJAL_FENCE               = 213933, // Both entrance and exit
+    GOB_GARAJAL_EXIT                = 213285,
+    GOB_SPIRIT_KINGS_EXIT           = 213373,
 
     GOB_SPEAR_STATUE                = 213245,
     GOB_FIST_STATUE                 = 213246,

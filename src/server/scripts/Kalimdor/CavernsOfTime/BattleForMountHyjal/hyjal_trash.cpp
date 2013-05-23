@@ -1457,7 +1457,7 @@ public:
                     return;
                 }
                 int dmg = 500+rand()%700;
-                me->CastCustomSpell(me->getVictim(), SPELL_EXPLODING_SHOT, &dmg, 0, 0, false);
+                me->CastCustomSpell(me->getVictim(), SPELL_EXPLODING_SHOT, &dmg, 0, 0, NULL, NULL, NULL, false);
                 ExplodeTimer = 5000+rand()%5000;
             } else ExplodeTimer -= diff;
             DoMeleeAttackIfReady();

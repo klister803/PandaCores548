@@ -467,8 +467,18 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // Custom MoP Script
+    // Power Word : Solace - 129250 and Power Word : Insanity - 129249
+    if (spellInfo->Id == 129250 && _player->GetShapeshiftForm() == FORM_SHADOW)
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(129249);
+        if (newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
     // Aimed Shot - 19434 and Aimed Shot (for Master Marksman) - 82928
-    if (spellInfo->Id == 19434 && _player->HasAura(82926))
+    else if (spellInfo->Id == 19434 && _player->HasAura(82926))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(82928);
         if (newSpellInfo)

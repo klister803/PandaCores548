@@ -3627,6 +3627,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 114250:// Selfless Healer
             case 90174: // Divine Purpose
             case 89485: // Inner Focus
+            case 131567:// Holy Spark
                 spellInfo->ProcCharges = 1;
                 break;
             case 110600:// Ice Trap (Symbiosis)
@@ -3669,113 +3670,116 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
                 spellInfo->Effects[0].BasePoints = 31;
                 break;
-            case 324: // Lightning Shield
+            case 324:   // Lightning Shield
                 spellInfo->ProcCharges = 0;
                 break;
-            case 116740: // Tigereye Brew
+            case 116740:// Tigereye Brew
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                 break;
-            case 117993: // Chi Torpedo : Heal
-            case 124040: // Chi Torpedo : Damage
+            case 117993:// Chi Torpedo : Heal
+            case 124040:// Chi Torpedo : Damage
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
                 break;
-            case 115008: // Chi Torpedo
+            case 80325: // Camouflage
+            case 119450:// Glyph of Camouflage
+                spellInfo->Effects[1].Effect = 0;
+                break;
+            case 115008:// Chi Torpedo
                 spellInfo->OverrideSpellList.push_back(121828); // Override List with Chi Torpedo - Talent
                 break;
-            case 109132: // Roll
+            case 109132:// Roll
                 spellInfo->OverrideSpellList.push_back(115008); // Override List with Chi Torpedo
                 spellInfo->OverrideSpellList.push_back(121827); // Override List with Roll - Talent
                 break;
-            case 115295: // Guard
+            case 115295:// Guard
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
                 spellInfo->Effects[1].BasePoints = 30;
                 break;
-            case 124273: // Heavy Stagger
-            case 124274: // Moderate Stagger
-            case 124275: // Light Stagger
+            case 124273:// Heavy Stagger
+            case 124274:// Moderate Stagger
+            case 124275:// Light Stagger
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
                 spellInfo->Effects[0].Amplitude = 1000;
                 spellInfo->Effects[0].BasePoints = 0;
                 break;
-            case 126451: // Clash - Impact
+            case 126451:// Clash - Impact
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                 break;
-            case 121253: // Keg Smash
+            case 121253:// Keg Smash
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                 spellInfo->MaxAffectedTargets = 3;
                 break;
-            case 115308: // Elusive Brew
+            case 115308:// Elusive Brew
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                 break;
-            case 115129: // Expel Harm - Damage to a nearby ennemy within 10 yards
+            case 115129:// Expel Harm - Damage to a nearby ennemy within 10 yards
                 spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_NEARBY_ENEMY;
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                 break;
-            case 126892: // Zen Pilgrimage
-            case 126895: // Zen Pilgrimage : Return
+            case 126892:// Zen Pilgrimage
+            case 126895:// Zen Pilgrimage : Return
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
                 break;
-            case 130320: // Rising Sun Kick - Monks abilities deal 10% more damage
+            case 130320:// Rising Sun Kick - Monks abilities deal 10% more damage
                 spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                 break;
-            case 101546: // Spinning Crane Kick - Decrease Speed
+            case 101546:// Spinning Crane Kick - Decrease Speed
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
                 spellInfo->Effects[1].BasePoints = -30;
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                 break;
-            case 107270: // Spinning Crane Kick - Radius
+            case 107270:// Spinning Crane Kick - Radius
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                 break;
-            case 127626: // Devouring plague - Heal
+            case 127626:// Devouring plague - Heal
                 spellInfo->Effects[0].BasePoints = 1;
                 break;
-            case 117907: // Mastery : Gift of the Serpent
+            case 117907:// Mastery : Gift of the Serpent
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 5;
                 break;
-            case 77492:  // Mastery : Total Eclipse
-            case 76671:  // Mastery : Divine Bulwark
-            case 115636: // Mastery : Combo Breaker
-            case 77484:  // Mastery : Shield Discipline
-            case 76806:  // Mastery : Main Gauche
-            case 77226:  // Mastery : Deep Healing
-            case 77222:  // Mastery : Elemental Overload
-            case 77223:  // Mastery : Enhanced Elements
-            case 12846:  // Mastery : Ignite
-            case 76838:  // Mastery : Strikes of Opportunity
-            case 76856:  // Mastery : Unshackled Fury
-            case 76659:  // Mastery : Wild Quiver
-            case 76657:  // Mastery : Master of Beasts
-            case 76658:  // Mastery : Essence of the Viper
-            case 77494:  // Mastery : Nature's Guardian
-            case 77495:  // Mastery : Harmony
-            case 77515:  // Mastery : Dreadblade
+            case 77492: // Mastery : Total Eclipse
+            case 76671: // Mastery : Divine Bulwark
+            case 115636:// Mastery : Combo Breaker
+            case 77484: // Mastery : Shield Discipline
+            case 76806: // Mastery : Main Gauche
+            case 77226: // Mastery : Deep Healing
+            case 77223: // Mastery : Enhanced Elements
+            case 12846: // Mastery : Ignite
+            case 76838: // Mastery : Strikes of Opportunity
+            case 76856: // Mastery : Unshackled Fury
+            case 76659: // Mastery : Wild Quiver
+            case 76657: // Mastery : Master of Beasts
+            case 76658: // Mastery : Essence of the Viper
+            case 77494: // Mastery : Nature's Guardian
+            case 77495: // Mastery : Harmony
+            case 77515: // Mastery : Dreadblade
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
-            case 76669:  // Mastery : Illuminated Healing
-            case 77485:  // Mastery : Echo of Light
-            case 77486:  // Mastery : Shadowy Recall
-            case 117906: // Mastery : Elusive Brawler
-            case 76547:  // Mastery : Mana Adept
-            case 77219:  // Mastery : Master Demonologist
-            case 77215:  // Mastery : Potent Afflictions
-            case 76857:  // Mastery : Critical Block
-            case 76613:  // Mastery : Frostburn
+            case 76669: // Mastery : Illuminated Healing
+            case 77485: // Mastery : Echo of Light
+            case 77486: // Mastery : Shadowy Recall
+            case 117906:// Mastery : Elusive Brawler
+            case 76547: // Mastery : Mana Adept
+            case 77219: // Mastery : Master Demonologist
+            case 77215: // Mastery : Potent Afflictions
+            case 76857: // Mastery : Critical Block
+            case 76613: // Mastery : Frostburn
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;
                 break;
-            case 76808:  // Mastery : Executioner
-            case 76803:  // Mastery : Potent Poisons
-            case 77493:  // Mastery : Razor Claws
+            case 76808: // Mastery : Executioner
+            case 76803: // Mastery : Potent Poisons
+            case 77493: // Mastery : Razor Claws
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[2].BasePoints = 8;
                 break;
-            case 77220:  // Mastery : Emberstorm
+            case 77220: // Mastery : Emberstorm
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 1;
                 break;
@@ -3876,6 +3880,17 @@ void SpellMgr::LoadSpellCustomAttr()
             case 51293:
             case 88869:
                 spellInfo->Effects[0].TriggerSpell = 131490;
+                break;
+            // Mogu'shan Vault
+            case 116000:
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                break;
+            case 116161:
+                spellInfo->Effects[EFFECT_1].MiscValue = 2; // Set Phase to 2
+                spellInfo->Effects[EFFECT_3].Effect = 0;    // No need to summon
+                break;
+            case 116272:
+                spellInfo->Effects[EFFECT_0].MiscValue = 2; // Set Phase to 2
                 break;
             default:
                 break;

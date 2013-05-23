@@ -631,12 +631,14 @@ void AddSC_boss_master_snowdrift();
 void AddSC_boss_sha_of_violence();
 void AddSC_boss_taran_zhu();
 void AddSC_instance_siege_of_the_niuzoa_temple();   // Siege of the Niuzoa Temple
-void AddSC_siege_of_the_niuzoa_temple();            // Siege of the Niuzoa Temple
+void AddSC_siege_of_the_niuzoa_temple();
 void AddSC_boss_jinbak();
-void AddSC_mogu_shan_vault();                       // Mogu'Shan Vault mob
 void AddSC_instance_mogu_shan_vault();              // Mogu'Shan Vault
+void AddSC_mogu_shan_vault();
 void AddSC_boss_stone_guard();
 void AddSC_boss_feng();
+void AddSC_boss_garajal();
+void AddSC_boss_spirit_kings();
 
 void AddSC_vale_of_eternal_blossoms();
 
@@ -1306,7 +1308,7 @@ void AddPandarieScripts()
     AddSC_boss_striker_gadok();
     AddSC_boss_commander_rimok();
     AddSC_boss_raigonn();
-    AddSC_boss_sha_of_anger();                      //Pandaria World Bosses
+    AddSC_boss_sha_of_anger();                      // Pandaria World Bosses
     AddSC_boss_galion();
     AddSC_instance_shadopan_monastery();            // Shadopan Monastery
     AddSC_shadopan_monastery();
@@ -1315,12 +1317,14 @@ void AddPandarieScripts()
     AddSC_boss_sha_of_violence();
     AddSC_boss_taran_zhu();
     AddSC_instance_siege_of_the_niuzoa_temple();    // Siege of the Niuzoa Temple
-    AddSC_siege_of_the_niuzoa_temple();             // Siege of the Niuzoa Temple
+    AddSC_siege_of_the_niuzoa_temple();
     AddSC_boss_jinbak();
     AddSC_instance_mogu_shan_vault();               // Mogu'Shan Vault
-    AddSC_mogu_shan_vault();                        // Mogu'Shan Vault mob
+    AddSC_mogu_shan_vault();
     AddSC_boss_stone_guard();
     AddSC_boss_feng();
+    AddSC_boss_garajal();
+    AddSC_boss_spirit_kings();
 
     AddSC_vale_of_eternal_blossoms();
 

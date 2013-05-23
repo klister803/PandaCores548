@@ -308,7 +308,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                     for (auto itr : memberList)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -320,7 +320,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                     for (auto itr : memberList)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -386,7 +386,7 @@ class spell_sha_ancestral_guidance : public SpellScriptLoader
 
                     bp = int32(bp * 0.40f);
 
-                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, true);
+                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
                 }
             }
 
@@ -1418,7 +1418,7 @@ class spell_sha_ascendance : public SpellScriptLoader
                             _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_ENHANCED, true);
 
                             if (_player->HasSpellCooldown(SPELL_SHA_STORMSTRIKE))
-                                _player->RemoveSpellCooldown(SPELL_SHA_STORMSTRIKE);
+                                _player->RemoveSpellCooldown(SPELL_SHA_STORMSTRIKE, true);
                             break;
                         case SPEC_SHAMAN_RESTORATION:
                             _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_RESTORATION, true);
@@ -1598,7 +1598,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScriptLoader
             {
                 int32 damage = GetEffectValue();
                 if (GetCaster() && GetHitUnit())
-                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, true);
+                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
             }
 
             void Register()

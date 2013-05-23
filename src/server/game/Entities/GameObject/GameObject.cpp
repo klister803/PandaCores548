@@ -1563,6 +1563,10 @@ void GameObject::Use(Unit* user)
                     return;
                 if (player->GetVehicle())
                     return;
+
+                player->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+                player->RemoveAurasByType(SPELL_AURA_MOD_INVISIBILITY);
+                player->RemoveAurasByType(SPELL_AURA_MOD_CAMOUFLAGE);
                 // BG flag click
                 // AB:
                 // 15001
