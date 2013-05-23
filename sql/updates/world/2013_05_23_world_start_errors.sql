@@ -87,3 +87,16 @@ INSERT INTO spell_script_names VALUES
 (70175, 'spell_gunship_incinerating_blast'),
 (69400, 'spell_gunship_canon_blast'),
 (68555, 'spell_keg_placed');
+
+UPDATE creature_template SET ScriptName = 'boss_vordraka' WHERE entry = 56009;
+UPDATE `creature_template` SET `ScriptName` = 'mob_enormous_stone_quilen' WHERE entry = 64183;
+INSERT INTO spell_script_names VALUE (125092, 'spell_mogu_petrification');
+INSERT INTO spell_script_names VALUES (121114, 'spell_resin_weaving');
+REPLACE INTO instance_template VALUES (1008, 870, "instance_mogu_shan_vault", 0);
+UPDATE `creature_template` SET `ScriptName` = 'npc_sap_puddle' WHERE `entry` IN (61613);
+UPDATE creature_template SET ScriptName = 'mob_sikthik_amber_weaver' WHERE entry = 61929;
+UPDATE creature_template SET ScriptName = 'mob_sikthik_guardian' WHERE entry = 61928;
+UPDATE creature_template SET ScriptName = 'mob_resin_flake' WHERE entry = 61910;
+UPDATE `creature_template` SET `ScriptName` = 'npc_barrel' WHERE `entry` IN (56731);
+UPDATE creature_template SET ScriptName = 'mob_strife' WHERE entry = 59051;
+UPDATE creature_template SET ScriptName = 'mob_peril' WHERE entry = 59726;

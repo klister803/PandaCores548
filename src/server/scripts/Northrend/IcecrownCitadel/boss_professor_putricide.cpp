@@ -922,6 +922,7 @@ class spell_putricide_slime_puddle : public SpellScriptLoader
 };
 
 // this is here only because on retail you dont actually enter HEROIC mode for ICC
+// Slime Puddle - 70346
 class spell_putricide_slime_puddle_aura : public SpellScriptLoader
 {
     public:
