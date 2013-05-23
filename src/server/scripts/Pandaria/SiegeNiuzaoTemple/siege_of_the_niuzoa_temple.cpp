@@ -68,6 +68,7 @@ class mob_sikthik_guardian : public CreatureScript
             return new mob_sikthik_guardianAI(creature);
         }
 };
+
 class mob_resin_flake : public CreatureScript
 {
     public:
@@ -107,6 +108,7 @@ class mob_resin_flake : public CreatureScript
             return new mob_resin_flakeAI(creature);
         }
 };
+
 class mob_sikthik_amber_weaver : public CreatureScript
 {
     public:
@@ -161,6 +163,7 @@ class mob_sikthik_amber_weaver : public CreatureScript
             return new mob_sikthik_amber_weaverAI(creature);
         }
 };
+
 class spell_resin_weaving : public SpellScriptLoader
 {
     public:

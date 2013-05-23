@@ -98,7 +98,6 @@ class boss_stone_guard_controler : public CreatureScript
             EventMap events;
 
             uint32 lastPetrifierEntry;
-            uint32 killLeRouxTimer;
 
             uint8 totalGuardian;
 
@@ -111,7 +110,6 @@ class boss_stone_guard_controler : public CreatureScript
 
                 fightInProgress = false;
                 lastPetrifierEntry = 0;
-                killLeRouxTimer = 5000;
 
                 totalGuardian = 4;
 
@@ -555,6 +553,7 @@ class mob_cobalt_mine : public CreatureScript
         }
 };
 
+// Petrification - 115852 / 116006 / 116036 / 116057
 class spell_petrification : public SpellScriptLoader
 {
     public:
@@ -615,6 +614,7 @@ class spell_petrification : public SpellScriptLoader
         }
 };
 
+// Jasper Chains - 130395
 class spell_jasper_chains : public SpellScriptLoader
 {
     public:

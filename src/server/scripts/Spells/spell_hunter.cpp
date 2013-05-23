@@ -976,74 +976,6 @@ class spell_hun_binding_shot_zone : public SpellScriptLoader
         }
 };
 
-class spell_hun_glaive_toss_damages : public SpellScriptLoader
-{
-    public:
-        spell_hun_glaive_toss_damages() : SpellScriptLoader("spell_hun_glaive_toss_damages") { }
-
-        class spell_hun_glaive_toss_damages_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_glaive_toss_damages_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                    if (Unit* target = GetHitUnit())
-                        if (target->HasAura(HUNTER_SPELL_GLAIVE_TOSS))
-                            SetHitDamage(GetHitDamage() * 4);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_hun_glaive_toss_damages_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_glaive_toss_damages_SpellScript();
-        }
-};
-
-// Called by Glaive Toss - 120755 and 120756
-// Glaive Toss - 117050
-class spell_hun_glaive_toss : public SpellScriptLoader
-{
-    public:
-        spell_hun_glaive_toss() : SpellScriptLoader("spell_hun_glaive_toss") { }
-
-        class spell_hun_glaive_toss_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_glaive_toss_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        caster->CastSpell(target, HUNTER_SPELL_GLAIVE_TOSS_DAMAGES, true);
-                        Player* plr = target->ToPlayer();
-
-                        if (plr && plr->HasSpellCooldown(HUNTER_SPELL_GLAIVE_TOSS))
-                            return;
-                        
-                        target->CastSpell(caster, GetSpellInfo()->Id, true, 0, NULLAURA_EFFECT, caster->GetGUID());
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_hun_glaive_toss_SpellScript::HandleOnHit);
-            }
-        };
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_glaive_toss_SpellScript();
-        }
-};
-
 // Called by Serpent Sting - 118253
 // Improved Serpent Sting - 82834
 class spell_hun_improved_serpent_sting : public SpellScriptLoader
@@ -2066,8 +1998,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_barrage();
     new spell_hun_binding_shot();
     new spell_hun_binding_shot_zone();
-    new spell_hun_glaive_toss_damages();
-    new spell_hun_glaive_toss();
     new spell_hun_improved_serpent_sting();
     new spell_hun_powershot();
     new spell_hun_feign_death();

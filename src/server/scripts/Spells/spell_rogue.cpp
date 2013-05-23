@@ -28,7 +28,6 @@
 enum RogueSpells
 {
     ROGUE_SPELL_SHIV_TRIGGERED                   = 5940,
-    ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670,
     ROGUE_SPELL_RECUPERATE                       = 73651,
     ROGUE_SPELL_DEADLY_POISON                    = 2823,
     ROGUE_SPELL_WOUND_POISON                     = 8679,
@@ -1139,51 +1138,6 @@ class spell_rog_preparation : public SpellScriptLoader
         }
 };
 
-// 51685-51689 Prey on the Weak
-class spell_rog_prey_on_the_weak : public SpellScriptLoader
-{
-public:
-    spell_rog_prey_on_the_weak() : SpellScriptLoader("spell_rog_prey_on_the_weak") { }
-
-    class spell_rog_prey_on_the_weak_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_rog_prey_on_the_weak_AuraScript);
-
-        bool Validate(SpellInfo const* /*spellEntry*/)
-        {
-            if (!sSpellMgr->GetSpellInfo(ROGUE_SPELL_PREY_ON_THE_WEAK))
-                return false;
-            return true;
-        }
-
-        void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
-        {
-            Unit* target = GetTarget();
-            Unit* victim = target->getVictim();
-            if (victim && (target->GetHealthPct() > victim->GetHealthPct()))
-            {
-                if (!target->HasAura(ROGUE_SPELL_PREY_ON_THE_WEAK))
-                {
-                    int32 bp = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
-                    target->CastCustomSpell(target, ROGUE_SPELL_PREY_ON_THE_WEAK, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
-                }
-            }
-            else
-                target->RemoveAurasDueToSpell(ROGUE_SPELL_PREY_ON_THE_WEAK);
-        }
-
-        void Register()
-        {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_prey_on_the_weak_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_rog_prey_on_the_weak_AuraScript();
-    }
-};
-
 class spell_rog_deadly_poison : public SpellScriptLoader
 {
     public:
@@ -1333,7 +1287,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_poisons();
     new spell_rog_recuperate();
     new spell_rog_preparation();
-    new spell_rog_prey_on_the_weak();
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
 }

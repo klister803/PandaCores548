@@ -1353,6 +1353,32 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
     return false;
 }
 
+void Player::RewardCurrencyAtKill(Unit* victim)
+{
+    if (!victim || victim->GetTypeId() == TYPEID_PLAYER)
+        return;
+
+    if (!victim->ToCreature())
+        return;
+
+    if (!victim->ToCreature()->GetEntry())
+        return;
+
+    CurrencyOnKillEntry const* Curr = sObjectMgr->GetCurrencyOnKillEntry(victim->ToCreature()->GetEntry());
+
+    if (!Curr)
+        return;
+
+    if (Curr->currencyId1 && Curr->currencyCount1)
+        ModifyCurrency(Curr->currencyId1, Curr->currencyCount1);
+
+    if (Curr->currencyId2 && Curr->currencyCount2)
+        ModifyCurrency(Curr->currencyId2, Curr->currencyCount2);
+
+    if (Curr->currencyId3 && Curr->currencyCount3)
+        ModifyCurrency(Curr->currencyId3, Curr->currencyCount3);
+}
+
 void Player::SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen)
 {
     if (int(MaxValue) == DISABLED_MIRROR_TIMER)
@@ -22614,7 +22640,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             }
 
         if (reward.AchievementId)
-            if (guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+            if (!guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
             {
                 SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
                 return false;
@@ -24597,6 +24623,21 @@ bool Player::GetsRecruitAFriendBonus(bool forXP)
 
 void Player::RewardPlayerAndGroupAtKill(Unit* victim, bool isBattleGround)
 {
+     //currency reward
+    if (sMapStore.LookupEntry(GetMapId())->IsDungeon())
+    {
+        if (Group *pGroup = GetGroup())
+        {
+            for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+            {
+                Player* pGroupGuy = itr->getSource();
+                if (IsInMap(pGroupGuy))
+                    pGroupGuy->RewardCurrencyAtKill(victim);
+            }
+        }
+        else
+            RewardCurrencyAtKill(victim);
+    }
     KillRewarder(this, victim, isBattleGround).Reward();
 }
 

@@ -1459,32 +1459,6 @@ class EarthenPowerTargetSelector
         }
 };
 
-class spell_sha_earthen_power : public SpellScriptLoader
-{
-    public:
-        spell_sha_earthen_power() : SpellScriptLoader("spell_sha_earthen_power") { }
-
-        class spell_sha_earthen_power_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_earthen_power_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& unitList)
-            {
-                unitList.remove_if(EarthenPowerTargetSelector());
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_earthen_power_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_earthen_power_SpellScript();
-        }
-};
-
 class spell_sha_bloodlust : public SpellScriptLoader
 {
     public:
@@ -1788,7 +1762,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_earthquake();
     new spell_sha_healing_rain();
     new spell_sha_ascendance();
-    new spell_sha_earthen_power();
     new spell_sha_bloodlust();
     new spell_sha_heroism();
     new spell_sha_ancestral_awakening_proc();

@@ -531,45 +531,6 @@ class npc_flood_ooze_trigger : public CreatureScript
         }
 };
 
-class spell_rotface_slime_spray : public SpellScriptLoader
-{
-    public:
-        spell_rotface_slime_spray() : SpellScriptLoader("spell_rotface_slime_spray") { }
-
-        class spell_rotface_slime_spray_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_rotface_slime_spray_AuraScript);
-
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster())
-                {
-                    GetCaster()->ClearUnitState(UNIT_STATE_CANNOT_TURN);
-
-                    if (Creature* creatureCaster = GetCaster()->ToCreature())
-                    {
-                        if (Unit* target = creatureCaster->AI()->SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0.0f, true))
-                        {
-                            GetCaster()->SetInFront(target);
-                            GetCaster()->SetFacingToObject(target);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectRemove += AuraEffectRemoveFn(spell_rotface_slime_spray_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_rotface_slime_spray_AuraScript();
-        }
-};
-
-
 class spell_rotface_ooze_flood : public SpellScriptLoader
 {
     public:
@@ -616,6 +577,7 @@ class spell_rotface_ooze_flood : public SpellScriptLoader
         }
 };
 
+// Ooze Flood (2) - 69783
 class spell_rotface_ooze_flood_2 : public SpellScriptLoader
 {
     public:
@@ -969,7 +931,6 @@ void AddSC_boss_rotface()
     new npc_big_ooze();
     new npc_precious_icc();
     new npc_flood_ooze_trigger();
-    new spell_rotface_slime_spray();
     new spell_rotface_ooze_flood();
     new spell_rotface_ooze_flood_2();
     new spell_rotface_mutated_infection();
