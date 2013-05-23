@@ -56,6 +56,7 @@ set(scripts_STAT_SRCS
   Pandaria/MogushanVault/boss_stone_guard.cpp
   Pandaria/MogushanVault/boss_feng.cpp
   Pandaria/MogushanVault/boss_garajal.cpp
+  Pandaria/MogushanVault/boss_spirit_kings.cpp
 
   Pandaria/WanderingIsland/WanderingIsland_North.cpp
   Pandaria/WanderingIsland/WanderingIsland_East.cpp

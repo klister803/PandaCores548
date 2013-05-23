@@ -98,7 +98,6 @@ class boss_stone_guard_controler : public CreatureScript
             EventMap events;
 
             uint32 lastPetrifierEntry;
-            uint32 killLeRouxTimer;
 
             uint8 totalGuardian;
 
@@ -111,7 +110,6 @@ class boss_stone_guard_controler : public CreatureScript
 
                 fightInProgress = false;
                 lastPetrifierEntry = 0;
-                killLeRouxTimer = 5000;
 
                 totalGuardian = 4;
 

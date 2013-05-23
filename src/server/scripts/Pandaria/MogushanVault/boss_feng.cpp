@@ -503,7 +503,7 @@ class mob_wild_spark : public CreatureScript
             void Reset()
             {
                 me->SetReactState(REACT_PASSIVE);
-                me->CastSpell(me, 60438, true); // Fire aura
+                me->CastSpell(me, 116717, true); // Fire aura
             }
     
             void SpellHit(Unit* caster, SpellInfo const* spell)
@@ -517,12 +517,13 @@ class mob_wild_spark : public CreatureScript
                 if (type != POINT_MOTION_TYPE)
                     return;
 
-                if (InstanceScript* pInstance = me->GetInstanceScript())
-                    if (Creature* feng = pInstance->instance->GetCreature(pInstance->GetData64(NPC_FENG)))
-                    {
-                        feng->AI()->DoAction(ACTION_SPARK);
-                        me->DespawnOrUnsummon();
-                    }
+                if (id == 1)
+                    if (InstanceScript* pInstance = me->GetInstanceScript())
+                        if (Creature* feng = pInstance->instance->GetCreature(pInstance->GetData64(NPC_FENG)))
+                        {
+                            feng->AI()->DoAction(ACTION_SPARK);
+                            me->DespawnOrUnsummon();
+                        }
             }
 
             void UpdateAI(const uint32 diff)
