@@ -1892,7 +1892,7 @@ void Pet::CastPetAura(PetAura const* aura)
     if (auraId == 35696)                                      // Demonic Knowledge
     {
         int32 basePoints = CalculatePct(aura->GetDamage(), GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT));
-        CastCustomSpell(this, auraId, &basePoints, NULL, NULL, NULL, NULL, NULL, true);
+        CastCustomSpell(this, auraId, &basePoints, NULL, NULL, true);
     }
     else
         CastSpell(this, auraId, true);

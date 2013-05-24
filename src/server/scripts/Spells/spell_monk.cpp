@@ -596,7 +596,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                             bp /= 6;
 
                             if (bp)
-                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
                         }
                     }
                 }
@@ -1278,7 +1278,7 @@ class spell_monk_healing_elixirs : public SpellScriptLoader
 
                         if (!_player->HasSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH))
                         {
-                            _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                            _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, true);
                             // This effect cannot occur more than once per 18s
                             _player->AddSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, 0, time(NULL) + 18);
                         }
@@ -1731,7 +1731,7 @@ class spell_monk_clash : public SpellScriptLoader
                         if (Unit* target = GetHitUnit())
                         {
                             int32 basePoint = 2;
-                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, NULL, NULL, NULL, true);
+                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, true);
                             target->CastSpell(_player, SPELL_MONK_CLASH_CHARGE, true);
                         }
                     }
@@ -2053,13 +2053,13 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                             if (target->isInBack(caster))
                             {
                                 int32 bp = int32(GetHitDamage() * 0.2f) / 4;
-                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, true);
                             }
                             // else : 20% damage on instant heal
                             else
                             {
                                 int32 bp = int32(GetHitDamage() * 0.2f);
-                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, true);
                             }
                         }
                         // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%

@@ -949,7 +949,7 @@ class spell_warr_last_stand : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     int32 healthModSpellBasePoints0 = int32(caster->CountPctFromMaxHealth(30));
-                    caster->CastCustomSpell(caster, WARRIOR_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, NULL, NULL, NULL, NULL, NULL, true, NULL);
+                    caster->CastCustomSpell(caster, WARRIOR_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
                 }
             }
 

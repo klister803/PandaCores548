@@ -376,7 +376,7 @@ class spell_rog_hemorrhage : public SpellScriptLoader
                     {
                         int32 bp = int32(GetHitDamage() / 2 / 8);
 
-                        _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                        _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, true);
                     }
                 }
             }
@@ -581,7 +581,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                                         // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
                                         caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
                                         int32 bp = 10;
-                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
                                     }
                                 }
                                 // Garrote will not trigger this effect if the enemy is also afflicted by your Rupture
@@ -593,7 +593,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                                         // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
                                         caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
                                         int32 bp = 10;
-                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
                                     }
                                 }
                             }
@@ -615,7 +615,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                             {
                                 // If an enemy dies while afflicted by your Rupture, you regain energy proportional to the remaining Rupture duration
                                 int32 duration = int32(rupture->GetDuration() / 1000);
-                                caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &duration, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &duration, NULL, NULL, true);
                             }
                         }
                     }
@@ -739,7 +739,7 @@ class spell_rog_crimson_tempest : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         int32 damage = int32(GetHitDamage() * 0.30f / 6); // 30% / number_of_ticks
-                        _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                        _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
                     }
                 }
             }
