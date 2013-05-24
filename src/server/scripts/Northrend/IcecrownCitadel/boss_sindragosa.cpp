@@ -1364,6 +1364,7 @@ class FrostBombTargetSelector
         std::list<Creature*> const& _collisionList;
 };
 
+// Frost Bomb - 69845, Icy Grip - 70117 and Mystic Buffet - 70127
 class spell_sindragosa_collision_filter : public SpellScriptLoader
 {
     public:

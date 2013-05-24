@@ -715,7 +715,7 @@ class spell_dru_symbiosis : public SpellScriptLoader
                             if (spellCaster)
                                 symbiosis->GetEffect(0)->SetAmount(spellCaster);
                             if (bpTarget && spellTarget)
-                                _player->CastCustomSpell(target, spellTarget, &bpTarget, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                _player->CastCustomSpell(target, spellTarget, &bpTarget, NULL, NULL, true);
                         }
                     }
                 }
@@ -830,7 +830,7 @@ class spell_dru_natures_vigil : public SpellScriptLoader
                 if (!target || !spellId || !bp)
                     return;
 
-                _player->CastCustomSpell(target, spellId, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                _player->CastCustomSpell(target, spellId, &bp, NULL, NULL, true);
             }
 
             void Register()
@@ -1276,14 +1276,14 @@ class spell_dru_lifebloom : public SpellScriptLoader
                     healAmount = _plr->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), healAmount, HEAL, stack);
                     healAmount = GetTarget()->SpellHealingBonusTaken(_plr, GetSpellInfo(), healAmount, HEAL, stack);
 
-                    GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+                    GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
 
                     _plr->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
 
                     return;
                 }
 
-                GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+                GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
                 GetCaster()->ToPlayer()->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
             }
 
@@ -1301,11 +1301,11 @@ class spell_dru_lifebloom : public SpellScriptLoader
                             healAmount = caster->SpellHealingBonusDone(target, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
                             healAmount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
 
-                            target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                            target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
 
                             return;
                         }
-                        target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                        target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
                     }
                 }
             }
@@ -1342,7 +1342,7 @@ class spell_dru_killer_instinct : public SpellScriptLoader
                     {
                         int32 bp = _player->GetStat(STAT_INTELLECT);
 
-                        _player->CastCustomSpell(_player, SPELL_DRUID_KILLER_INSTINCT_MOD_STAT, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                        _player->CastCustomSpell(_player, SPELL_DRUID_KILLER_INSTINCT_MOD_STAT, &bp, NULL, NULL, true);
                     }
                 }
             }
@@ -2638,146 +2638,6 @@ class spell_dru_eclipse : public SpellScriptLoader
         }
 };
 
-// 54846 Glyph of Starfire
-class spell_dru_glyph_of_starfire : public SpellScriptLoader
-{
-    public:
-        spell_dru_glyph_of_starfire() : SpellScriptLoader("spell_dru_glyph_of_starfire") { }
-
-        class spell_dru_glyph_of_starfire_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_glyph_of_starfire_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(DRUID_INCREASED_MOONFIRE_DURATION) || !sSpellMgr->GetSpellInfo(DRUID_NATURES_SPLENDOR))
-                    return false;
-                return true;
-            }
-
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
-            {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
-                    if (constAuraEffectPtr aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DRUID, 0x00000002, 0, 0, caster->GetGUID()))
-                    {
-                        AuraPtr aura = aurEff->GetBase();
-
-                        uint32 countMin = aura->GetMaxDuration();
-                        uint32 countMax = aura->GetSpellInfo()->GetMaxDuration() + 9000;
-                        if (caster->HasAura(DRUID_INCREASED_MOONFIRE_DURATION))
-                            countMax += 3000;
-                        if (caster->HasAura(DRUID_NATURES_SPLENDOR))
-                            countMax += 3000;
-
-                        if (countMin < countMax)
-                        {
-                            aura->SetDuration(uint32(aura->GetDuration() + 3000));
-                            aura->SetMaxDuration(countMin + 3000);
-                        }
-                    }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_dru_glyph_of_starfire_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_glyph_of_starfire_SpellScript();
-        }
-};
-
-// 69366 - Moonkin Form passive
-class spell_dru_moonkin_form_passive : public SpellScriptLoader
-{
-    public:
-        spell_dru_moonkin_form_passive() : SpellScriptLoader("spell_dru_moonkin_form_passive") { }
-
-        class spell_dru_moonkin_form_passive_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_moonkin_form_passive_AuraScript);
-
-            uint32 absorbPct;
-
-            bool Load()
-            {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
-                return true;
-            }
-
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                // Set absorbtion amount to unlimited
-                amount = -1;
-            }
-
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                // reduces all damage taken while Stunned in Moonkin Form
-                if (GetTarget()->GetUInt32Value(UNIT_FIELD_FLAGS) & (UNIT_FLAG_STUNNED) && GetTarget()->HasAuraWithMechanic(1<<MECHANIC_STUN))
-                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), absorbPct);
-            }
-
-            void Register()
-            {
-                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_moonkin_form_passive_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_dru_moonkin_form_passive_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_moonkin_form_passive_AuraScript();
-        }
-};
-
-// 33851 - Primal Tenacity
-class spell_dru_primal_tenacity : public SpellScriptLoader
-{
-    public:
-        spell_dru_primal_tenacity() : SpellScriptLoader("spell_dru_primal_tenacity") { }
-
-        class spell_dru_primal_tenacity_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_primal_tenacity_AuraScript);
-
-            uint32 absorbPct;
-
-            bool Load()
-            {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_1].CalcValue(GetCaster());
-                return true;
-            }
-
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                // Set absorbtion amount to unlimited
-                amount = -1;
-            }
-
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                // reduces all damage taken while Stunned in Cat Form
-                if (GetTarget()->GetShapeshiftForm() == FORM_CAT && GetTarget()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED) && GetTarget()->HasAuraWithMechanic(1<<MECHANIC_STUN))
-                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), absorbPct);
-            }
-
-            void Register()
-            {
-                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_primal_tenacity_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_dru_primal_tenacity_AuraScript::Absorb, EFFECT_1);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_primal_tenacity_AuraScript();
-        }
-};
-
 class spell_dru_t10_restoration_4p_bonus : public SpellScriptLoader
 {
     public:
@@ -2829,32 +2689,6 @@ class spell_dru_t10_restoration_4p_bonus : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dru_t10_restoration_4p_bonus_SpellScript();
-        }
-};
-
-class spell_dru_starfall_aoe : public SpellScriptLoader
-{
-    public:
-        spell_dru_starfall_aoe() : SpellScriptLoader("spell_dru_starfall_aoe") { }
-
-        class spell_dru_starfall_aoe_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_starfall_aoe_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                targets.remove(GetExplTargetUnit());
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dru_starfall_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_starfall_aoe_SpellScript();
         }
 };
 
@@ -2934,34 +2768,6 @@ class spell_dru_starfall_dummy : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dru_starfall_dummy_SpellScript();
-        }
-};
-
-class spell_dru_predatory_strikes : public SpellScriptLoader
-{
-    public:
-        spell_dru_predatory_strikes() : SpellScriptLoader("spell_dru_predatory_strikes") { }
-
-        class spell_dru_predatory_strikes_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_predatory_strikes_AuraScript);
-
-            void UpdateAmount(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Player* target = GetTarget()->ToPlayer())
-                    target->UpdateAttackPowerAndDamage();
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_dru_predatory_strikes_AuraScript::UpdateAmount, EFFECT_ALL, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_predatory_strikes_AuraScript::UpdateAmount, EFFECT_ALL, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_predatory_strikes_AuraScript();
         }
 };
 
@@ -3049,7 +2855,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
             {
                 Unit* target = GetTarget();
                 int32 bp0 = target->CountPctFromMaxHealth(aurEff->GetAmount());
-                target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, NULL, NULL, NULL, true);
+                target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, true);
             }
 
             void AfterRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -3121,14 +2927,9 @@ void AddSC_druid_spell_scripts()
     new spell_dru_growl();
     new spell_dru_prowl();
     new spell_dru_eclipse();
-    new spell_dru_glyph_of_starfire();
-    new spell_dru_moonkin_form_passive();
-    new spell_dru_primal_tenacity();
     new spell_dru_t10_restoration_4p_bonus();
-    new spell_dru_starfall_aoe();
     new spell_dru_swift_flight_passive();
     new spell_dru_starfall_dummy();
-    new spell_dru_predatory_strikes();
     new spell_dru_savage_roar();
     new spell_dru_survival_instincts();
 }

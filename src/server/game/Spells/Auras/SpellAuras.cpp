@@ -1277,7 +1277,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     if (caster->HasAura(64760))
                     {
                         int32 heal = GetEffect(EFFECT_0)->GetAmount();
-                        caster->CastCustomSpell(target, 64801, &heal, NULL, NULL, NULL, NULL, NULL, true, NULL, GetEffect(EFFECT_0));
+                        caster->CastCustomSpell(target, 64801, &heal, NULL, NULL, true, NULL, GetEffect(EFFECT_0));
                     }
                 }
                 break;
@@ -1339,8 +1339,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         int32 basepoints0 = aurEff->GetAmount() * GetEffect(0)->GetTotalTicks() * int32(damage) / 100;
                         int32 heal = int32(CalculatePct(basepoints0, 15));
 
-                        caster->CastCustomSpell(target, 63675, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, NULL, GetEffect(0));
-                        caster->CastCustomSpell(caster, 75999, &heal, NULL, NULL, NULL, NULL, NULL, true, NULL, GetEffect(0));
+                        caster->CastCustomSpell(target, 63675, &basepoints0, NULL, NULL, true, NULL, GetEffect(0));
+                        caster->CastCustomSpell(caster, 75999, &heal, NULL, NULL, true, NULL, GetEffect(0));
                     }
                 }
                 // Power Word: Shield
@@ -1351,7 +1351,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     {
                         // instantly heal m_amount% of the absorb-value
                         int32 heal = glyph->GetAmount() * GetEffect(0)->GetAmount()/100;
-                        caster->CastCustomSpell(GetUnitOwner(), 56160, &heal, NULL, NULL, NULL, NULL, NULL, true, 0, GetEffect(0));
+                        caster->CastCustomSpell(GetUnitOwner(), 56160, &heal, NULL, NULL, true, 0, GetEffect(0));
                     }
                 }
                 break;
@@ -1412,7 +1412,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             {
                                 int32 remainingDamage = aurEff->GetAmount() * (aurEff->GetTotalTicks() - aurEff->GetTickNumber());
                                 if (remainingDamage > 0)
-                                    caster->CastCustomSpell(caster, 72373, NULL, &remainingDamage, NULL, NULL, NULL, NULL, true);
+                                    caster->CastCustomSpell(caster, 72373, NULL, &remainingDamage, NULL, true);
                             }
                         }
                         break;
@@ -1524,7 +1524,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     else
                     {
                         int32 basepoints0 = aurEff->GetAmount();
-                        target->CastCustomSpell(target, 31665, &basepoints0, NULL, NULL, NULL, NULL, NULL, true);
+                        target->CastCustomSpell(target, 31665, &basepoints0, NULL, NULL, true);
                     }
                 }
                 break;

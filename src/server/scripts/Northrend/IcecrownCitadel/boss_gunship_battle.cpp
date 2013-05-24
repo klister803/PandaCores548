@@ -1305,6 +1305,7 @@ public:
 /*######
 ## transport_icc_gunship
 ######*/
+
 class transport_icc_gunship : public TransportScript
 {
 public:
@@ -1350,6 +1351,7 @@ public:
     }
 };
 
+// Canon Blast - 69400
 class spell_gunship_canon_blast : public SpellScriptLoader
 {
     public:
@@ -1389,6 +1391,7 @@ class spell_gunship_canon_blast : public SpellScriptLoader
         }
 };
 
+// Incinerating Blast - 70175
 class spell_gunship_incinerating_blast : public SpellScriptLoader
 {
     public:
@@ -1450,6 +1453,7 @@ class CheckCanonOnly
         }
 };
 
+// Behind Zero - 69705
 class spell_gunship_behind_zero : public SpellScriptLoader
 {
     public:
@@ -1486,6 +1490,7 @@ class spell_gunship_behind_zero : public SpellScriptLoader
         }
 };
 
+// Burning Pitch - 71335
 class spell_poix_ardente : public SpellScriptLoader
 {
     public:
@@ -1528,37 +1533,6 @@ class spell_poix_ardente : public SpellScriptLoader
         }
 };
 
-class spell_fureur_du_combat : public SpellScriptLoader
-{
-    public:
-        spell_fureur_du_combat() :  SpellScriptLoader("spell_fureur_du_combat") { }
-
-        class spell_fureur_du_combat_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_fureur_du_combat_AuraScript);
-
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                {
-                    if (GetTarget()->isInCombat())
-                        if (AuraPtr pAura = GetTarget()->AddAura(aurEff->GetId(), GetTarget()))
-                            pAura->SetStackAmount(GetStackAmount());
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectRemove += AuraEffectRemoveFn(spell_fureur_du_combat_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_fureur_du_combat_AuraScript();
-        }
-};
-
 void AddSC_event_gunship_battle()
 {
     new npc_gunship_commander();
@@ -1574,5 +1548,4 @@ void AddSC_event_gunship_battle()
     new spell_gunship_incinerating_blast();
     new spell_gunship_behind_zero();
     new spell_poix_ardente();
-    new spell_fureur_du_combat();
 }

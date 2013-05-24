@@ -3198,6 +3198,7 @@ class spell_the_lich_king_soul_rip : public SpellScriptLoader
         }
 };
 
+// Harvest Soul - 68980
 class spell_the_lich_king_moisson_ame : public SpellScriptLoader
 {
     public:

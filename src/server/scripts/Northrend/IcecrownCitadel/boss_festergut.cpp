@@ -475,6 +475,7 @@ class spell_festergut_blighted_spores : public SpellScriptLoader
         }
 };
 
+// Gaseous Blight - 69159
 class spell_festergut_gaseous_blight : public SpellScriptLoader
 {
     public:
