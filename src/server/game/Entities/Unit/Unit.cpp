@@ -3315,6 +3315,10 @@ AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uin
                 *oldGUID = castItemGUID;
             }
 
+            // Earthgrab Totem : Don't refresh root
+            if (foundAura->GetId() == 64695)
+                return foundAura;
+
             // try to increase stack amount
             foundAura->ModStackAmount(1);
             return foundAura;

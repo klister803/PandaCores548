@@ -506,12 +506,7 @@ class spell_sha_earthgrab : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         if (target->HasAura(SPELL_SHA_EARTHGRAB_IMMUNITY, caster->GetGUID()))
-                        {
-                            if (target->HasAura(GetSpellInfo()->Id), caster->GetGUID())
-                                target->RemoveAura(GetSpellInfo()->Id, caster->GetGUID());
-
                             caster->CastSpell(target, SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM, true);
-                        }
                         else
                             caster->CastSpell(target, SPELL_SHA_EARTHGRAB_IMMUNITY, true);
                     }
