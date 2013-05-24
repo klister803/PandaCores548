@@ -3039,6 +3039,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+            case 127424:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
+                spellInfo->Effects[0].TargetB = 0;
+                break;
             case 60256:
                 //Crashes client on pressing ESC (Maybe because of ReqSpellFocus and GameObject)
                 spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;

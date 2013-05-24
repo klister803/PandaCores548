@@ -1,8 +1,3 @@
-/*
-    Dungeon : Template of the Jade Serpent 85-87
-    Wise mari
-    Jade servers
-*/
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
@@ -158,8 +153,58 @@ class npc_lao_softfoot : public CreatureScript
         }
 };
 
+class mob_reanimated_jade_warrior : public CreatureScript
+{
+    public:
+        mob_reanimated_jade_warrior() : CreatureScript("mob_reanimated_jade_warrior") {}
+
+        struct mob_reanimated_jade_warriorAI : public ScriptedAI
+        {
+            mob_reanimated_jade_warriorAI(Creature* creature) : ScriptedAI(creature) { }
+
+            uint32 jadeFireTimer;
+            uint32 jadeStrenghtTimer;
+
+            void Reset()
+            {
+                jadeFireTimer = urand(10000, 12000);
+                jadeStrenghtTimer = urand(5000, 7000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+                if (jadeFireTimer <= diff)
+                {
+                if (Unit* target = me->SelectNearestTarget(5.0f))
+                    if (!target->IsFriendlyTo(me))
+                        me->CastSpell(target, SPELL_JADE_FIRE, true);
+                jadeFireTimer = urand(20000, 22000);
+                }
+                else
+                    jadeFireTimer -= diff;
+
+                if (jadeStrenghtTimer <= diff)
+                {
+                    me->CastSpell(me, SPELL_JADE_STRENGHT, true);
+                    jadeStrenghtTimer = urand(20000, 22000);
+                }
+                else
+                   jadeStrenghtTimer -= diff;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_reanimated_jade_warriorAI(creature);
+        }
+};
 void AddSC_vale_of_eternal_blossoms()
 {
     new mob_zhao_jin();
     new npc_lao_softfoot();
+    new mob_reanimated_jade_warrior();
 }
