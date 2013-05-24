@@ -1033,7 +1033,7 @@ class spell_hun_powershot : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_powershot_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
@@ -1053,10 +1053,36 @@ class spell_hun_powershot : public SpellScriptLoader
                             if (!itr->IsInBetween(_player, target, 1.0f))
                                 continue;
 
-                            int32 bp = 400;
+                            SpellNonMeleeDamage damageInfo(_player, itr, GetSpellInfo()->Id, GetSpellInfo()->SchoolMask);
+                            damageInfo.damage = int32(GetHitDamage() / 2);
+                            _player->SendSpellNonMeleeDamageLog(&damageInfo);
+                            _player->DealSpellDamage(&damageInfo, true);
 
-                            _player->RemoveSpellCooldown(HUNTER_SPELL_POWERSHOT);
-                            _player->CastCustomSpell(itr, HUNTER_SPELL_POWERSHOT, NULL, NULL, &bp, true);
+                            if (Creature* creatureTarget = itr->ToCreature())
+                                if (creatureTarget->isWorldBoss() || creatureTarget->IsDungeonBoss())
+                                    continue;
+
+                            if (itr->GetTypeId() == TYPEID_PLAYER)
+                                if (itr->ToPlayer()->GetKnockBackTime())
+                                    continue;
+
+                            // Instantly interrupt non melee spells being casted
+                            if (itr->IsNonMeleeSpellCasted(true))
+                                itr->InterruptNonMeleeSpells(true);
+
+                            float ratio = 0.1f;
+                            float speedxy = float(GetSpellInfo()->Effects[EFFECT_1].MiscValue) * ratio;
+                            float speedz = float(GetSpellInfo()->Effects[EFFECT_1].BasePoints) * ratio;
+                            if (speedxy < 0.1f && speedz < 0.1f)
+                                return;
+
+                            float x, y;
+                            _player->GetPosition(x, y);
+
+                            itr->KnockbackFrom(x, y, speedxy, speedz);
+
+                            if (itr->GetTypeId() == TYPEID_PLAYER)
+                                itr->ToPlayer()->SetKnockBackTime(getMSTime());
                         }
                     }
                 }
@@ -1064,7 +1090,7 @@ class spell_hun_powershot : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_hun_powershot_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_hun_powershot_SpellScript::HandleAfterHit);
             }
         };
 
