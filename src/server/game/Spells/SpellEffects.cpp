@@ -66,6 +66,7 @@
 #include "InstanceScript.h"
 #include "Guild.h"
 #include "GuildMgr.h"
+#include "AreaTrigger.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -248,7 +249,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectSanctuary,                                //176 SPELL_EFFECT_SANCTUARY_2
     &Spell::EffectNULL,                                     //177 SPELL_EFFECT_177
     &Spell::EffectUnused,                                   //178 SPELL_EFFECT_178 unused
-    &Spell::EffectCreateAreatrigger,                        //179 SPELL_EFFECT_CREATE_AREATRIGGER
+    &Spell::EffectCreateAreaTrigger,                        //179 SPELL_EFFECT_CREATE_AREATRIGGER
     &Spell::EffectUnused,                                   //180 SPELL_EFFECT_180 unused
     &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
     &Spell::EffectNULL,                                     //182 SPELL_EFFECT_182
@@ -6880,117 +6881,23 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
     plr->SendTalentsInfoData(false);
 }
 
-void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
+void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    if (!m_spellAura)
-    {
-        Unit* caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
-        float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(caster);
+    Position pos;
+    if (!m_targets.HasDst())
+        GetCaster()->GetPosition(&pos);
+    else
+        destTarget->GetPosition(&pos);
 
-        // Caster not in world, might be spell triggered from aura removal
-        if (!caster->IsInWorld())
-            return;
-        DynamicObject* dynObj = new DynamicObject(false);
-        if (!dynObj->CreateDynamicObject(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, *destTarget, radius, DYNAMIC_OBJECT_AREA_SPELL))
-        {
-            delete dynObj;
-            return;
-        }
+    // trigger entry/miscvalue relation is currently unknown, for now use MiscValue as trigger entry
+    uint32 triggerEntry = GetSpellInfo()->Effects[effIndex].MiscValue;
 
-        Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]);
-        if (aura != NULL)
-        {
-            m_spellAura = aura;
-            m_spellAura->_RegisterForTargets();
-        }
-        else
-            return;
-
-        // Custom MoP Script
-        switch (m_spellInfo->Id)
-        {
-            case 121536: // Angelic Feather
-            {
-                int32 count = caster->CountDynObject(m_spellInfo->Id);
-
-                if (count > 3)
-                {
-                    std::list<DynamicObject*> angelicFeatherList;
-                    caster->GetDynObjectList(angelicFeatherList, m_spellInfo->Id);
-
-                    if (!angelicFeatherList.empty())
-                    {
-                        angelicFeatherList.sort(Trinity::DurationPctOrderPred());
-
-                        for (std::list<DynamicObject*>::const_iterator itr = angelicFeatherList.begin(); itr != angelicFeatherList.end(); ++itr)
-                        {
-                            DynamicObject* angelicFeather = *itr;
-                            angelicFeather->SetDuration(0);
-                            break;
-                        }
-                    }
-                }
-
-                break;
-            }
-            case 115460: // Healing Sphere
-            {
-                int32 count = caster->CountDynObject(m_spellInfo->Id);
-
-                if (count > 3)
-                {
-                    std::list<DynamicObject*> healingSphereList;
-                    caster->GetDynObjectList(healingSphereList, m_spellInfo->Id);
-
-                    if (!healingSphereList.empty())
-                    {
-                        healingSphereList.sort(Trinity::DurationPctOrderPred());
-
-                        for (std::list<DynamicObject*>::const_iterator itr = healingSphereList.begin(); itr != healingSphereList.end(); ++itr)
-                        {
-                            DynamicObject* healingSphere = *itr;
-                            healingSphere->SetDuration(0);
-                            break;
-                        }
-                    }
-                }
-
-                break;
-            }
-            case 116011: // Rune of Power
-            {
-                int32 count = caster->CountDynObject(m_spellInfo->Id);
-
-                if (count > 2)
-                {
-                    std::list<DynamicObject*> runeOfPowerList;
-                    caster->GetDynObjectList(runeOfPowerList, m_spellInfo->Id);
-
-                    if (!runeOfPowerList.empty())
-                    {
-                        runeOfPowerList.sort(Trinity::DurationPctOrderPred());
-
-                        for (std::list<DynamicObject*>::const_iterator itr = runeOfPowerList.begin(); itr != runeOfPowerList.end(); ++itr)
-                        {
-                            DynamicObject* runeOfPower = *itr;
-                            runeOfPower->SetDuration(0);
-                            break;
-                        }
-                    }
-                }
-
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-    ASSERT(m_spellAura->GetDynobjOwner());
-    m_spellAura->_ApplyEffectForTargets(effIndex);
+    AreaTrigger * areaTrigger = new AreaTrigger;
+    if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, GetCaster(), GetSpellInfo(), pos))
+        delete areaTrigger;
 }
 
 int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier)
