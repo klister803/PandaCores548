@@ -1323,6 +1323,7 @@ class ObjectMgr
         uint32 _hiGoGuid;
         uint32 _hiDoGuid;
         uint32 _hiCorpseGuid;
+        uint32 _hiAreaTriggerGuid;
         uint32 _hiMoTransGuid;
 
         QuestMap _questTemplates;
