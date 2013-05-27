@@ -3985,7 +3985,8 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
     if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
         if (spell->getState() == SPELL_STATE_CASTING
             && (spell->m_spellInfo->ChannelInterruptFlags & flag)
-            && spell->m_spellInfo->Id != except)
+            && spell->m_spellInfo->Id != except
+            && !(spell->m_spellInfo->Id == 120360 && flag == AURA_INTERRUPT_FLAG_MOVE))
             InterruptNonMeleeSpells(false);
 
     UpdateInterruptMask();
@@ -10072,7 +10073,7 @@ void Unit::SetCharm(Unit* charm, bool apply)
     }
 }
 
-int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto = NULL)
+int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto)
 {
     int32 gain = 0;
 
