@@ -3962,16 +3962,11 @@ class npc_ring_of_frost : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
 
-            bool isReady;
-            uint32 releaseTimer;
-
             void Reset()
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                releaseTimer = 3000;
-                isReady = false;
             }
 
             void InitializeAI()
@@ -3995,7 +3990,7 @@ class npc_ring_of_frost : public CreatureScript
 
             void CheckIfMoveInRing(Unit *who)
             {
-                if (who->isAlive() && me->IsInRange(who, 2.0f, 4.7f) && me->IsWithinLOSInMap(who) && isReady)
+                if (who->isAlive() && me->IsInRange(who, 2.0f, 4.7f) && me->IsWithinLOSInMap(who))
                 {
                     if (!who->HasAura(82691))
                     {
@@ -4011,18 +4006,6 @@ class npc_ring_of_frost : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (releaseTimer <= diff)
-                {
-                    if (!isReady)
-                    {
-                        isReady = true;
-                        releaseTimer = 9000; // 9sec
-                    }
-                    else
-                        me->DisappearAndDie();
-                }
-                else releaseTimer -= diff;
-
                 // Find all the enemies
                 std::list<Unit*> targets;
                 JadeCore::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 5.0f);
