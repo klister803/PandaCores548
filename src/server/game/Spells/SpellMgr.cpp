@@ -3257,6 +3257,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].SpellClassMask[2] |= 0x8000;
                 break;
             case 116943:// Earthgrab
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
                 spellInfo->Effects[0].TargetB = 0;
                 break;
             case 2484:  // Earthbind Totem
