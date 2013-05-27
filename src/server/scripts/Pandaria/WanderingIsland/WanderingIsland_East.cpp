@@ -67,6 +67,7 @@ class AreaTrigger_at_bassin_curse : public AreaTriggerScript
         }
 };
 
+// Npc's : 54993 - 55083 - 57431
 class vehicle_balance_pole : public VehicleScript
 {
     public:
@@ -128,6 +129,7 @@ public:
     };
 };
 
+// Rock Jump - 103069 / 103070 / 103077
 class spell_rock_jump: public SpellScriptLoader
 {
     public:
@@ -313,6 +315,7 @@ public:
     };
 };
 
+// Shu Benediction - 103245
 class spell_shu_benediction: public SpellScriptLoader
 {
     public:
@@ -374,6 +377,7 @@ class spell_shu_benediction: public SpellScriptLoader
         }
 };
 
+// Grab Carriage - 115904
 class spell_grab_carriage: public SpellScriptLoader
 {
     public:
@@ -647,6 +651,7 @@ public:
         return new npc_water_spirit_dailoAI(creature);
     }
 };
+
 class AreaTrigger_at_middle_temple_from_east : public AreaTriggerScript
 {
     public:

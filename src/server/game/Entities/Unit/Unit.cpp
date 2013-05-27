@@ -577,7 +577,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         int32 bp = damage;
 
         if (target)
-            CastCustomSpell(target, 22482, &bp, NULL, NULL, NULL, NULL, NULL, true);
+            CastCustomSpell(target, 22482, &bp, NULL, NULL, true);
     }
     // Cheat Death : An attack that would otherwise be fatal will instead reduce you to no less than 10% of your maximum health
     if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_ROGUE && damage != 0)
@@ -612,7 +612,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         {
             // absorbing incoming healing equal to the amount of damage prevented
             int32 bp = damage;
-            victim->CastCustomSpell(victim, 116888, &bp, NULL, NULL, NULL, NULL, NULL, true);
+            victim->CastCustomSpell(victim, 116888, &bp, NULL, NULL, true);
             victim->CastSpell(victim, 123981, true);
             damage = (victim->GetHealth() - 1);
         }
@@ -630,7 +630,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 if (leechingPoison->GetCaster()->GetGUID() == GetGUID())
                 {
                     int32 bp = damage / 10;
-                    CastCustomSpell(this, 112974, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                    CastCustomSpell(this, 112974, &bp, NULL, NULL, true);
                 }
             }
         }
@@ -646,7 +646,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         else
             basepoints = CalculatePct(damage, 150);
 
-        CastCustomSpell(GetOwner(), 58879, &basepoints, NULL, NULL, NULL, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID());
+        CastCustomSpell(GetOwner(), 58879, &basepoints, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID());
     }
     // Searing Flames - 77657 : Fire Elemental attacks or Searing Totem attacks
     if (GetOwner() && (GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
@@ -673,7 +673,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         bp /= 3;
 
-        victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, NULL, NULL, NULL, true);
+        victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
     }
     // Stance of the Wise Serpent - 115070
     if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto
@@ -711,7 +711,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         // In addition, you also gain Eminence, causing you to heal the lowest health nearby target within 20 yards for an amount equal to 50% of non-autoattack damage you deal
         for (auto itr : targetList)
         {
-            CastCustomSpell(itr, 117895, &bp, NULL, NULL, NULL, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
+            CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
 
             if (statueList.size() == 1)
             {
@@ -720,7 +720,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
                 if (statue && (statue->isPet() || statue->isGuardian()))
                     if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
-                        statue->CastCustomSpell(itr, 117895, &bp, NULL, NULL, NULL, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
+                        statue->CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
             }
         }
     }
@@ -759,7 +759,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         }
 
         // you gain Serpent's Zeal causing you to heal nearby injured targets equal to 25% of your auto-attack damage. Stacks up to 2 times.
-        CastCustomSpell(this, 126890, &bp, NULL, NULL, NULL, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
+        CastCustomSpell(this, 126890, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
 
         if (statueList.size() == 1)
         {
@@ -768,7 +768,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
             if (statue && (statue->isPet() || statue->isGuardian()))
                 if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
-                    statue->CastCustomSpell(statue, 126890, &bp, NULL, NULL, NULL, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
+                    statue->CastCustomSpell(statue, 126890, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, GetGUID()); // Eminence - statue
         }
     }
 
@@ -1060,7 +1060,7 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
         bp /= ticks;
 
         if (!aurEff)
-            victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, NULL, NULL, NULL, true);
+            victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
 
         switch (spellId)
         {
@@ -1068,7 +1068,7 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
                 if (aurEff && aurEff->GetId() != spellId)
                 {
                     victim->RemoveAura(aurEff->GetId());
-                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
                 }
                 else if (aurEff && aurEff->GetId() == spellId)
                 {
@@ -1081,7 +1081,7 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
                 if (aurEff && aurEff->GetId() != spellId)
                 {
                     victim->RemoveAura(aurEff->GetId());
-                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
                 }
                 else if (aurEff && aurEff->GetId() == spellId)
                 {
@@ -1094,7 +1094,7 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
                 if (aurEff && aurEff->GetId() != spellId)
                 {
                     victim->RemoveAura(aurEff->GetId());
-                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
                 }
                 else if (aurEff && aurEff->GetId() == spellId)
                 {
@@ -1171,7 +1171,7 @@ void Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags 
     CastSpell(targets, spellInfo, NULL, triggerFlags, castItem, triggeredByAura, originalCaster);
 }
 
-void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, int32 const* bp3, int32 const* bp4, int32 const* bp5, bool triggered, Item* castItem, constAuraEffectPtr triggeredByAura, uint64 originalCaster)
+void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem, constAuraEffectPtr triggeredByAura, uint64 originalCaster)
 {
     CustomSpellValues values;
     if (bp0)
@@ -1180,12 +1180,6 @@ void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32
         values.AddSpellMod(SPELLVALUE_BASE_POINT1, *bp1);
     if (bp2)
         values.AddSpellMod(SPELLVALUE_BASE_POINT2, *bp2);
-    if (bp3)
-        values.AddSpellMod(SPELLVALUE_BASE_POINT3, *bp3);
-    if (bp4)
-        values.AddSpellMod(SPELLVALUE_BASE_POINT4, *bp4);
-    if (bp5)
-        values.AddSpellMod(SPELLVALUE_BASE_POINT5, *bp5);
     CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
 }
 
@@ -1579,7 +1573,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
             damageInfo->damage /= 2;
             int32 bp = damageInfo->damage;
 
-            victim->ToPlayer()->GetPet()->CastCustomSpell(victim->ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, NULL, NULL, NULL, true); // Soul Link damage
+            victim->ToPlayer()->GetPet()->CastCustomSpell(victim->ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, true); // Soul Link damage
         }
     }
 }
@@ -3320,6 +3314,10 @@ AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uin
                 uint64* oldGUID = const_cast<uint64 *>(&foundAura->m_castItemGuid);
                 *oldGUID = castItemGUID;
             }
+
+            // Earthgrab Totem : Don't refresh root
+            if (foundAura->GetId() == 64695)
+                return foundAura;
 
             // try to increase stack amount
             foundAura->ModStackAmount(1);
@@ -5238,7 +5236,7 @@ bool Unit::HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         return false;
 
     if (basepoints0)
-        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
@@ -5279,7 +5277,7 @@ bool Unit::HandleSpellCritChanceAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
         return false;
 
     if (basepoints0)
-        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
@@ -5400,7 +5398,7 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, uint32 /*damage*/, AuraEffe
         target = !(procFlag & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS)) && triggerEntry && triggerEntry->IsPositive() ? this : victim;
 
     if (basepoints0)
-        CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+        CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
     else
         CastSpell(target, trigger_spell_id, true, castItem, triggeredByAura);
 
@@ -6106,7 +6104,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                         return false;
 
                     int32 bp = int32(CalculatePct(damage, triggerAmount) / 6); // damage / tick_number
-                    CastCustomSpell(victim, 113344, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                    CastCustomSpell(victim, 113344, &bp, NULL, NULL, true);
 
                     break;
                 }
@@ -6349,7 +6347,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     // heal amount
                     int32 self = CalculatePct(int32(damage), triggerAmount);
                     int32 team = CalculatePct(int32(damage), triggerAmount / 2);
-                    CastCustomSpell(this, 15290, &team, &self, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+                    CastCustomSpell(this, 15290, &team, &self, NULL, true, castItem, triggeredByAura);
                     return true;                                // no hidden cooldown
                 }
                 // Priest Tier 6 Trinket (Ashtongue Talisman of Acumen)
@@ -6446,6 +6444,48 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Sudden Eclipse (S12 - 2P Balance)
+                case 46832:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (!(procEx & PROC_EX_CRITICAL_HIT))
+                        return false;
+
+                    // Solar and Lunar Eclipse
+                    if (HasAura(48517) || HasAura(48518))
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(46832))
+                        return false;
+
+                    ToPlayer()->AddSpellCooldown(46832, 0, time(NULL) + 6);
+
+                    if (GetEclipsePower() <= 0)
+                        SetEclipsePower(GetEclipsePower() - 20);
+                    else
+                        SetEclipsePower(GetEclipsePower() + 20);
+
+                    if (GetEclipsePower() == 100)
+                    {
+                        CastSpell(this, 48517, true, 0); // Cast Lunar Eclipse
+                        CastSpell(this, 16886, true); // Cast Nature's Grace
+                        CastSpell(this, 81070, true); // Cast Eclipse - Give 35% of POWER_MANA
+                    }
+                    else if (GetEclipsePower() == -100)
+                    {
+                        CastSpell(this, 48518, true, 0); // Cast Lunar Eclipse
+                        CastSpell(this, 16886, true); // Cast Nature's Grace
+                        CastSpell(this, 81070, true); // Cast Eclipse - Give 35% of POWER_MANA
+                        CastSpell(this, 107095, true);
+
+                        if (ToPlayer()->HasSpellCooldown(48505))
+                            ToPlayer()->RemoveSpellCooldown(48505, true);
+                    }
+
+                    break;
+                }
                 // Glyph of Innervate
                 case 54832:
                 {
@@ -6504,7 +6544,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     triggered_spell_id = 34299;
                     // Regenerate 4% mana
                     int32 mana = CalculatePct(GetCreateMana(), triggerAmount);
-                    CastCustomSpell(this, 68285, &mana, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+                    CastCustomSpell(this, 68285, &mana, NULL, NULL, true, castItem, triggeredByAura);
                     break;
                 }
                 // Healing Touch (Dreamwalker Raiment set)
@@ -6829,7 +6869,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                             {
                                 int32 bp0 = damage;
                                 int32 bp1 = damage / 10;
-                                pPet->CastCustomSpell(victim, 86678, &bp0, &bp1, NULL, NULL, NULL, NULL, true);
+                                pPet->CastCustomSpell(victim, 86678, &bp0, &bp1, NULL, true);
                             }
                         }
                     }
@@ -6881,7 +6921,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                                     break;
                             }
                             basepoints0 = CalculatePct(damage, percent);
-                            victim->CastCustomSpell(beaconTarget, 53652, &basepoints0, NULL, NULL, NULL, NULL, NULL, true);
+                            victim->CastCustomSpell(beaconTarget, 53652, &basepoints0, NULL, NULL, true);
                             return true;
                         }
                     }
@@ -7155,7 +7195,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
 
                     // Attack Twice
                     for (uint32 i = 0; i < 2; ++i)
-                        CastCustomSpell(victim, triggered_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+                        CastCustomSpell(victim, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
 
                     return true;
                 }
@@ -7365,7 +7405,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 else
                     return false;
 
-                CastCustomSpell(victim, triggered_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+                CastCustomSpell(victim, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
                 return true;
             }
             break;
@@ -7410,7 +7450,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     if (AuraPtr aur = GetAura(51460))
                         aur->SetDuration(aur->GetDuration() + 3000);
                     else
-                        CastCustomSpell(this, 51460, &basepoints0, NULL, NULL, NULL, NULL, NULL, true);
+                        CastCustomSpell(this, 51460, &basepoints0, NULL, NULL, true);
                     return true;
                 }
 
@@ -7514,7 +7554,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                             continue;
 
                         basepoints0 = int32(CalculateSpellDamage(this, procSpell, i) * 0.4f);
-                        CastCustomSpell(this, triggered_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, NULL, triggeredByAura);
+                        CastCustomSpell(this, triggered_spell_id, &basepoints0, NULL, NULL, true, NULL, triggeredByAura);
                     }
                     return true;
                 }
@@ -7676,7 +7716,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
             // calculate max amount player's had durind the fight
             int32 basepoints1 = std::max(basepoints0, max_amount);
 
-            CastCustomSpell(this, triggered_spell_id, &basepoints0, &basepoints0, &basepoints1, NULL, NULL, NULL, true, castItem, triggeredByAura, originalCaster);
+            CastCustomSpell(this, triggered_spell_id, &basepoints0, &basepoints0, &basepoints1, true, castItem, triggeredByAura, originalCaster);
             return true;
         }
         default:
@@ -7705,7 +7745,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         return false;
 
     if (basepoints0)
-        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura, originalCaster);
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura, originalCaster);
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura, originalCaster);
 
@@ -7750,7 +7790,7 @@ bool Unit::HandleObsModEnergyAuraProc(Unit* victim, uint32 /*damage*/, AuraEffec
     if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
     if (basepoints0)
-        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
@@ -7794,7 +7834,7 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 /*damage*/, Aura
         return false;
 
     if (basepoints0)
-        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
@@ -7855,7 +7895,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, AuraPtr triggeredByAu
                 case 59906:
                 {
                     int32 bp0 = CalculatePct(GetMaxHealth(), dummySpell->Effects[EFFECT_0]. CalcValue());
-                    CastCustomSpell(this, 59913, &bp0, NULL, NULL, NULL, NULL, NULL, true);
+                    CastCustomSpell(this, 59913, &bp0, NULL, NULL, true);
                     *handled = true;
                     break;
                 }
@@ -7885,7 +7925,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, AuraPtr triggeredByAu
                     {
                         // value multiplied by 2 because you should get twice amount
                         int32 mana = procSpell->Effects[i].CalcValue() * 2;
-                        CastCustomSpell(this, 54986, NULL, &mana, NULL, NULL, NULL, NULL, true);
+                        CastCustomSpell(this, 54986, 0, &mana, NULL, true);
                     }
                 }
                 return true;
@@ -7908,7 +7948,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, AuraPtr triggeredByAu
                         return false;
 
                     int32 bp0 = int32(CalculatePct(GetCreateMana(), spInfo->Effects[0].CalcValue()));
-                    CastCustomSpell(this, 67545, &bp0, NULL, NULL, NULL, NULL, NULL, true, NULL, triggeredByAura->GetEffect(EFFECT_0), GetGUID());
+                    CastCustomSpell(this, 67545, &bp0, NULL, NULL, true, NULL, triggeredByAura->GetEffect(EFFECT_0), GetGUID());
                     return true;
                 }
             }
@@ -8030,7 +8070,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, AuraPtr triggeredByAu
                 case 70844:
                 {
                     int32 basepoints0 = CalculatePct(GetMaxHealth(), dummySpell->Effects[EFFECT_1]. CalcValue());
-                    CastCustomSpell(this, 70845, &basepoints0, NULL, NULL, NULL, NULL, NULL, true);
+                    CastCustomSpell(this, 70845, &basepoints0, NULL, NULL, true);
                     break;
                 }
                 // Recklessness
@@ -8108,7 +8148,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                     {
                         if (HealthBelowPctDamaged(35, damage))
                         {
-                            CastCustomSpell(this, 64569, &triggerAmount, NULL, NULL, NULL, NULL, NULL, true);
+                            CastCustomSpell(this, 64569, &triggerAmount, NULL, NULL, true);
                             RemoveAura(64568);
                         }
                         return false;
@@ -9073,7 +9113,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
         target = !(procFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS)) && triggerEntry && triggerEntry->IsPositive() ? this : victim;
 
     if (basepoints0)
-        CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, NULL, NULL, NULL, true, castItem, triggeredByAura);
+        CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
     else
         CastSpell(target, trigger_spell_id, true, castItem, triggeredByAura);
 
@@ -10061,7 +10101,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
             bp = (victim->GetMaxHealth() * 0.1f);
 
         // Ancestral Vigor - 105284
-        unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, NULL, NULL, NULL, true);
+        unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
     // 117907 - Mastery : Gift of the Serpent
     if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907))
@@ -10099,7 +10139,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
 
                 int32 bp = CalculatePct(addhealth, Mastery) * 100;
 
-                unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, NULL, NULL, NULL, true);
+                unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
             }
         }
     }
@@ -10994,7 +11034,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
             tmpDamage /= 2;
             int32 bp = tmpDamage;
 
-            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, NULL, NULL, NULL, true); // Soul Link damage
+            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, true); // Soul Link damage
         }
     }
 
@@ -11542,7 +11582,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
         for (auto itr : nearbyAllies)
             if (bp > 0)
-                CastCustomSpell(itr, 114083, &bp, NULL, NULL, NULL, NULL, NULL, true); // Restorative Mists
+                CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
     }
 
     return uint32(std::max(heal, 0.0f));
@@ -11677,7 +11717,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
             heal /= 2;
             int32 bp = heal;
 
-            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108447, &bp, NULL, NULL, NULL, NULL, NULL, true); // Soul Link heal
+            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108447, &bp, NULL, NULL, true); // Soul Link heal
         }
     }
 
@@ -16549,7 +16589,7 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffectPtr triggeredByAura)
 
             if (Unit* target = GetNextRandomRaidMemberOrPet(radius))
             {
-                CastCustomSpell(target, spellProto->Id, &heal, NULL, NULL, NULL, NULL, NULL, true, NULL, triggeredByAura, caster_guid);
+                CastCustomSpell(target, spellProto->Id, &heal, NULL, NULL, true, NULL, triggeredByAura, caster_guid);
                 AuraPtr aura = target->GetAura(spellProto->Id, caster->GetGUID());
                 if (aura != NULLAURA)
                     aura->SetCharges(jumps);
@@ -16558,7 +16598,7 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffectPtr triggeredByAura)
     }
 
     // heal
-    CastCustomSpell(this, 33110, &heal, NULL, NULL, NULL, NULL, NULL, true, NULL, NULLAURA_EFFECT, caster_guid);
+    CastCustomSpell(this, 33110, &heal, NULL, NULL, true, NULL, NULLAURA_EFFECT, caster_guid);
     return true;
 
 }

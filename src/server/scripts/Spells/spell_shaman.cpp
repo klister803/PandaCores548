@@ -308,7 +308,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                     for (auto itr : memberList)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -320,7 +320,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                     for (auto itr : memberList)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -386,7 +386,7 @@ class spell_sha_ancestral_guidance : public SpellScriptLoader
 
                     bp = int32(bp * 0.40f);
 
-                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, true);
                 }
             }
 
@@ -506,12 +506,7 @@ class spell_sha_earthgrab : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         if (target->HasAura(SPELL_SHA_EARTHGRAB_IMMUNITY, caster->GetGUID()))
-                        {
-                            if (target->HasAura(GetSpellInfo()->Id), caster->GetGUID())
-                                target->RemoveAura(GetSpellInfo()->Id, caster->GetGUID());
-
                             caster->CastSpell(target, SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM, true);
-                        }
                         else
                             caster->CastSpell(target, SPELL_SHA_EARTHGRAB_IMMUNITY, true);
                     }
@@ -1459,32 +1454,6 @@ class EarthenPowerTargetSelector
         }
 };
 
-class spell_sha_earthen_power : public SpellScriptLoader
-{
-    public:
-        spell_sha_earthen_power() : SpellScriptLoader("spell_sha_earthen_power") { }
-
-        class spell_sha_earthen_power_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_earthen_power_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& unitList)
-            {
-                unitList.remove_if(EarthenPowerTargetSelector());
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_earthen_power_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_earthen_power_SpellScript();
-        }
-};
-
 class spell_sha_bloodlust : public SpellScriptLoader
 {
     public:
@@ -1598,7 +1567,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScriptLoader
             {
                 int32 damage = GetEffectValue();
                 if (GetCaster() && GetHitUnit())
-                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, true);
             }
 
             void Register()
@@ -1788,7 +1757,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_earthquake();
     new spell_sha_healing_rain();
     new spell_sha_ascendance();
-    new spell_sha_earthen_power();
     new spell_sha_bloodlust();
     new spell_sha_heroism();
     new spell_sha_ancestral_awakening_proc();

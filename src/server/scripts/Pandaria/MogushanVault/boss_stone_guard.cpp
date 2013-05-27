@@ -557,6 +557,7 @@ class mob_cobalt_mine : public CreatureScript
         }
 };
 
+// Petrification - 115852 / 116006 / 116036 / 116057
 class spell_petrification : public SpellScriptLoader
 {
     public:
@@ -617,6 +618,7 @@ class spell_petrification : public SpellScriptLoader
         }
 };
 
+// Jasper Chains - 130395
 class spell_jasper_chains : public SpellScriptLoader
 {
     public:

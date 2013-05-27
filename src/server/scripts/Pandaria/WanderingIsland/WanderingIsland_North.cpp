@@ -85,6 +85,7 @@ class mob_master_shang_xi : public CreatureScript
             }
         };
 };
+
 class go_wandering_weapon_rack : public GameObjectScript
 {
 public:
@@ -947,6 +948,7 @@ public:
     };
 };
 
+// Huo Benediction - 102630
 class spell_huo_benediction: public SpellScriptLoader
 {
     public:

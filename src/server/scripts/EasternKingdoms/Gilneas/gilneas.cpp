@@ -2211,6 +2211,7 @@ public:
 /*######
 ## npc_lord_darius_crowley_c3
 ######*/
+
 class npc_lord_darius_crowley_c3 : public CreatureScript
 {
 public:
@@ -2248,6 +2249,7 @@ public:
 /*######
 ## npc_king_genn_greymane_c2
 ######*/
+
 class npc_king_genn_greymane_c2 : public CreatureScript
 {
 public:
@@ -2265,6 +2267,7 @@ public:
 /*######
 ## npc_greymane_horse
 ######*/
+
 class npc_greymane_horse : public CreatureScript
 {
 public:
@@ -2374,6 +2377,7 @@ public:
 /*######
 ## npc_krennan_aranas_c2
 ######*/
+
 class npc_krennan_aranas_c2 : public CreatureScript
 {
 public:
@@ -2525,6 +2529,7 @@ public:
 /*######
 ## npc_lord_godfrey_p4_8
 ######*/
+
 class npc_lord_godfrey_p4_8 : public CreatureScript
 {
 public:
@@ -2548,6 +2553,7 @@ public:
     }
 };
 
+// Keg Placed - 68555
 class spell_keg_placed : public SpellScriptLoader
 {
     public:
@@ -2599,6 +2605,7 @@ class spell_keg_placed : public SpellScriptLoader
 /*######
 ## npc_crowley_horse
 ######*/
+
 class npc_crowley_horse : public CreatureScript
 {
 public:
@@ -2719,6 +2726,7 @@ public:
 /*######
 ## npc_bloodfang_stalker_c1
 ######*/
+
 class npc_bloodfang_stalker_c1 : public CreatureScript
 {
 public:

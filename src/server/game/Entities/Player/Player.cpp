@@ -14815,7 +14815,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                             }
                             // Cast custom spell vs all equal basepoints got from enchant_amount
                             if (basepoints)
-                                CastCustomSpell(this, enchant_spell_id, &basepoints, &basepoints, &basepoints, NULL, NULL, NULL, true, item);
+                                CastCustomSpell(this, enchant_spell_id, &basepoints, &basepoints, &basepoints, true, item);
                             else
                                 CastSpell(this, enchant_spell_id, true, item);
                         }
@@ -15946,6 +15946,10 @@ bool Player::CanRewardQuest(Quest const* quest, bool msg)
         }
     }
 
+    for (uint8 i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; i++)
+        if (quest->RequiredCurrencyId[i] && !HasCurrency(quest->RequiredCurrencyId[i], quest->RequiredCurrencyCount[i]))
+            return false;
+
     // prevent receive reward with low money and GetRewOrReqMoney() < 0
     if (quest->GetRewOrReqMoney() < 0 && !HasEnoughMoney(-int64(quest->GetRewOrReqMoney())))
         return false;
@@ -16125,6 +16129,19 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
         }
     }
 
+    for (uint8 i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
+    {
+        if (int32 reqCurrencyId = quest->RequiredCurrencyId[i])
+        {
+            CurrencyTypesEntry const* reqCurrency = sCurrencyTypesStore.LookupEntry(reqCurrencyId);
+            if(int32 reqCountCurrency = quest->RequiredCurrencyCount[i])
+            {
+                if(reqCurrency->Flags & CURRENCY_FLAG_HIGH_PRECISION)
+                    reqCountCurrency *= 100;
+                ModifyCurrency(reqCurrencyId, -reqCountCurrency);
+            }
+        }
+    }
     RemoveTimedQuest(quest_id);
 
     if (quest->GetRewChoiceItemsCount() > 0)
@@ -16151,6 +16168,23 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                 {
                     Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
                     SendNewItem(item, quest->RewardItemIdCount[i], true, false);
+                }
+            }
+        }
+    }
+
+    if (quest->GetRewCurrencyCount() > 0)
+    {
+        for (uint32 i = 0; i < quest->GetRewCurrencyCount(); ++i)
+        {
+            if (uint32 currencyId = quest->RewardCurrencyId[i])
+            {
+                CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(currencyId);
+                if(uint32 countCurrency = quest->RewardCurrencyCount[i])
+                {
+                    if(currency->Flags & CURRENCY_FLAG_HIGH_PRECISION)
+                        countCurrency *= 100;
+                    ModifyCurrency(currencyId,countCurrency);
                 }
             }
         }

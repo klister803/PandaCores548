@@ -397,9 +397,9 @@ class spell_gen_leeching_swarm : public SpellScriptLoader
                     if (lifeLeeched < 250)
                         lifeLeeched = 250;
                     // Damage
-                    caster->CastCustomSpell(target, SPELL_LEECHING_SWARM_DMG, &lifeLeeched, 0, 0, NULL, NULL, NULL, false);
+                    caster->CastCustomSpell(target, SPELL_LEECHING_SWARM_DMG, &lifeLeeched, 0, 0, false);
                     // Heal
-                    caster->CastCustomSpell(caster, SPELL_LEECHING_SWARM_HEAL, &lifeLeeched, 0, 0, NULL, NULL, NULL, false);
+                    caster->CastCustomSpell(caster, SPELL_LEECHING_SWARM_HEAL, &lifeLeeched, 0, 0, false);
                 }
             }
 
@@ -1213,33 +1213,6 @@ class spell_gen_turkey_marker : public SpellScriptLoader
         }
 };
 
-class spell_gen_lifeblood : public SpellScriptLoader
-{
-    public:
-        spell_gen_lifeblood() : SpellScriptLoader("spell_gen_lifeblood") { }
-
-        class spell_gen_lifeblood_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_gen_lifeblood_AuraScript);
-
-            void CalculateAmount(constAuraEffectPtr aurEff, int32& amount, bool& /*canBeRecalculated*/)
-            {
-                if (Unit* owner = GetUnitOwner())
-                    amount += int32(CalculatePct(owner->GetMaxHealth(), 1.5f / aurEff->GetTotalTicks()));
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_gen_lifeblood_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_gen_lifeblood_AuraScript();
-        }
-};
-
 enum MagicRoosterSpells
 {
     SPELL_MAGIC_ROOSTER_NORMAL          = 66122,
@@ -1503,61 +1476,6 @@ class spell_gen_oracle_wolvar_reputation : public SpellScriptLoader
         }
 };
 
-enum DamageReductionAura
-{
-    SPELL_BLESSING_OF_SANCTUARY         = 20911,
-    SPELL_GREATER_BLESSING_OF_SANCTUARY = 25899,
-    SPELL_RENEWED_HOPE                  = 63944,
-    SPELL_VIGILANCE                     = 50720,
-    SPELL_DAMAGE_REDUCTION_AURA         = 68066,
-};
-
-class spell_gen_damage_reduction_aura : public SpellScriptLoader
-{
-    public:
-        spell_gen_damage_reduction_aura() : SpellScriptLoader("spell_gen_damage_reduction_aura") { }
-
-        class spell_gen_damage_reduction_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_gen_damage_reduction_AuraScript);
-
-            bool Validate(SpellInfo const* /*SpellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_DAMAGE_REDUCTION_AURA))
-                    return false;
-                return true;
-            }
-
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                Unit* target = GetTarget();
-                target->CastSpell(target, SPELL_DAMAGE_REDUCTION_AURA, true);
-            }
-
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                Unit* target = GetTarget();
-                if (target->HasAura(SPELL_DAMAGE_REDUCTION_AURA) && !(target->HasAura(SPELL_BLESSING_OF_SANCTUARY) ||
-                    target->HasAura(SPELL_GREATER_BLESSING_OF_SANCTUARY) ||
-                    target->HasAura(SPELL_RENEWED_HOPE) ||
-                    target->HasAura(SPELL_VIGILANCE)))
-                        target->RemoveAurasDueToSpell(SPELL_DAMAGE_REDUCTION_AURA);
-            }
-
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_gen_damage_reduction_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-                OnEffectRemove += AuraEffectRemoveFn(spell_gen_damage_reduction_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-            }
-
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_gen_damage_reduction_AuraScript();
-        }
-};
-
 class spell_gen_luck_of_the_draw : public SpellScriptLoader
 {
     public:
@@ -1649,7 +1567,7 @@ class spell_gen_dummy_trigger : public SpellScriptLoader
                 if (Unit* target = GetHitUnit())
                     if (SpellInfo const* triggeredByAuraSpell = GetTriggeringSpell())
                         if (triggeredByAuraSpell->Id == SPELL_PERSISTANT_SHIELD_TRIGGERED)
-                            caster->CastCustomSpell(target, SPELL_PERSISTANT_SHIELD_TRIGGERED, &damage, NULL, NULL, NULL, NULL, NULL, true);
+                            caster->CastCustomSpell(target, SPELL_PERSISTANT_SHIELD_TRIGGERED, &damage, NULL, NULL, true);
             }
 
             void Register()
@@ -2627,7 +2545,7 @@ class spell_gen_chaos_blast : public SpellScriptLoader
                 int32 basepoints0 = 100;
                 Unit* caster = GetCaster();
                 if (Unit* target = GetHitUnit())
-                    caster->CastCustomSpell(target, SPELL_CHAOS_BLAST, &basepoints0, NULL, NULL, NULL, NULL, NULL, true);
+                    caster->CastCustomSpell(target, SPELL_CHAOS_BLAST, &basepoints0, NULL, NULL, true);
             }
 
             void Register()
@@ -2641,43 +2559,6 @@ class spell_gen_chaos_blast : public SpellScriptLoader
             return new spell_gen_chaos_blast_SpellScript();
         }
 
-};
-
-class spell_gen_ds_flush_knockback : public SpellScriptLoader
-{
-    public:
-        spell_gen_ds_flush_knockback() : SpellScriptLoader("spell_gen_ds_flush_knockback") {}
-
-        class spell_gen_ds_flush_knockback_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_gen_ds_flush_knockback_SpellScript);
-
-            void HandleScript(SpellEffIndex /*effIndex*/)
-            {
-                // Here the target is the water spout and determines the position where the player is knocked from
-                if (Unit* target = GetHitUnit())
-                {
-                    if (Player* player = GetCaster()->ToPlayer())
-                    {
-                        float horizontalSpeed = 20.0f + (40.0f - GetCaster()->GetDistance(target));
-                        float verticalSpeed = 8.0f;
-                        // This method relies on the Dalaran Sewer map disposition and Water Spout position
-                        // What we do is knock the player from a position exactly behind him and at the end of the pipe
-                        player->KnockbackFrom(target->GetPositionX(), player->GetPositionY(), horizontalSpeed, verticalSpeed);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_gen_ds_flush_knockback_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_gen_ds_flush_knockback_SpellScript();
-        }
 };
 
 class spell_gen_wg_water : public SpellScriptLoader
@@ -3263,49 +3144,6 @@ public:
     }
 };
 
-/*struct vengeanceHistory
-{
-    vengeanceHistory(uint32 amount) : m_increaseAmount(amount), m_duration(20000)
-    {
-    }
-
-    uint32 m_increaseAmount;
-    uint32 m_duration;
-};
-
-class spell_gen_vengeance : public SpellScriptLoader
-{
-    public:
-        spell_gen_vengeance() : SpellScriptLoader("spell_gen_vengeance") { }
-
-        class spell_gen_vengeance_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_gen_vengeance_AuraScript);
-
-            std::list<vengeanceHistory> historyList;
-
-            void OnReapply(constAuraEffectPtr /*aurEff*//*, AuraEffectHandleModes /*mode*//*)
-            {
-                uint32 baseAmount = 0;
-                for (auto itr : historyList)
-                    baseAmount += itr.m_increaseAmount;
-
-                historyList.push_back(vengeanceHistory(GetAura()->GetEffect(0)->GetAmount() - baseAmount));
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_gen_vengeance_AuraScript::OnReapply, EFFECT_0, SPELL_AURA_MOD_ATTACK_POWER, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_gen_vengeance_AuraScript();
-        }
-};
-*/
-
 // TP to Stormwind (17334) or Orgrimmar (17609)
 class spell_gen_tp_storm_orgri : public SpellScriptLoader
 {
@@ -3641,13 +3479,11 @@ void AddSC_generic_spell_scripts()
     new spell_gen_clone_weapon_aura();
     new spell_gen_seaforium_blast();
     new spell_gen_turkey_marker();
-    new spell_gen_lifeblood();
     new spell_gen_magic_rooster();
     new spell_gen_allow_cast_from_item_only();
     new spell_gen_launch();
     new spell_gen_vehicle_scaling();
     new spell_gen_oracle_wolvar_reputation();
-    new spell_gen_damage_reduction_aura();
     new spell_gen_luck_of_the_draw();
     new spell_gen_dummy_trigger();
     new spell_gen_spirit_healer_res();
@@ -3665,10 +3501,7 @@ void AddSC_generic_spell_scripts()
     new spell_gen_on_tournament_mount();
     new spell_gen_tournament_pennant();
     new spell_gen_chaos_blast();
-    new spell_gen_ds_flush_knockback();
     new spell_gen_wg_water();
-    new spell_gen_count_pct_from_max_hp("spell_gen_default_count_pct_from_max_hp");
-    new spell_gen_count_pct_from_max_hp("spell_gen_50pct_count_pct_from_max_hp", 50);
     new spell_gen_despawn_self();
     new spell_gen_touch_the_nightmare();
     new spell_gen_dream_funnel();
@@ -3690,7 +3523,6 @@ void AddSC_generic_spell_scripts()
     new spell_gen_mount("spell_x53_touring_rocket", 0, 0, 0, SPELL_X53_TOURING_ROCKET_150, SPELL_X53_TOURING_ROCKET_280, SPELL_X53_TOURING_ROCKET_310);
     new spell_gen_upper_deck_create_foam_sword();
     new spell_gen_bonked();
-    //new spell_gen_vengeance();
     new spell_gen_tp_storm_orgri();
     new spell_gen_gift_of_the_naaru();
     new spell_gen_running_wild();
