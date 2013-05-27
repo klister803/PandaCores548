@@ -3449,7 +3449,7 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
         {
             for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 if (aura->GetEffect(i))
-                    aura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount() * 2);
+                    aura->GetEffect(i)->SetAmount(aura->GetSpellInfo()->Effects[i].BasePoints * 2);
         }
     }
 
