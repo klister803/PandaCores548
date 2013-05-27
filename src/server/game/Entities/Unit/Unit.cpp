@@ -10072,7 +10072,7 @@ void Unit::SetCharm(Unit* charm, bool apply)
     }
 }
 
-int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
+int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto = NULL)
 {
     int32 gain = 0;
 
@@ -10104,7 +10104,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
     // 117907 - Mastery : Gift of the Serpent
-    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907))
+    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907) && spellProto && spellProto->Id != 124041)
     {
         float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.22f;
 
@@ -10361,7 +10361,7 @@ int32 Unit::HealBySpell(Unit* victim, SpellInfo const* spellInfo, uint32 addHeal
     // calculate heal absorb and reduce healing
     CalcHealAbsorb(victim, spellInfo, addHealth, absorb);
 
-    int32 gain = DealHeal(victim, addHealth);
+    int32 gain = DealHeal(victim, addHealth, spellInfo);
     SendHealSpellLog(victim, spellInfo->Id, addHealth, uint32(addHealth - gain), absorb, critical);
     return gain;
 }
