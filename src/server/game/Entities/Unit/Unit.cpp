@@ -3315,6 +3315,10 @@ AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uin
                 *oldGUID = castItemGUID;
             }
 
+            // Earthgrab Totem : Don't refresh root
+            if (foundAura->GetId() == 64695)
+                return foundAura;
+
             // try to increase stack amount
             foundAura->ModStackAmount(1);
             return foundAura;
@@ -6440,6 +6444,48 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Sudden Eclipse (S12 - 2P Balance)
+                case 46832:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (!(procEx & PROC_EX_CRITICAL_HIT))
+                        return false;
+
+                    // Solar and Lunar Eclipse
+                    if (HasAura(48517) || HasAura(48518))
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(46832))
+                        return false;
+
+                    ToPlayer()->AddSpellCooldown(46832, 0, time(NULL) + 6);
+
+                    if (GetEclipsePower() <= 0)
+                        SetEclipsePower(GetEclipsePower() - 20);
+                    else
+                        SetEclipsePower(GetEclipsePower() + 20);
+
+                    if (GetEclipsePower() == 100)
+                    {
+                        CastSpell(this, 48517, true, 0); // Cast Lunar Eclipse
+                        CastSpell(this, 16886, true); // Cast Nature's Grace
+                        CastSpell(this, 81070, true); // Cast Eclipse - Give 35% of POWER_MANA
+                    }
+                    else if (GetEclipsePower() == -100)
+                    {
+                        CastSpell(this, 48518, true, 0); // Cast Lunar Eclipse
+                        CastSpell(this, 16886, true); // Cast Nature's Grace
+                        CastSpell(this, 81070, true); // Cast Eclipse - Give 35% of POWER_MANA
+                        CastSpell(this, 107095, true);
+
+                        if (ToPlayer()->HasSpellCooldown(48505))
+                            ToPlayer()->RemoveSpellCooldown(48505, true);
+                    }
+
+                    break;
+                }
                 // Glyph of Innervate
                 case 54832:
                 {

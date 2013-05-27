@@ -3162,6 +3162,10 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
 
     Unit* target = aurApp->GetTarget();
 
+    // Earthgrab totem - Immunity
+    if (target->HasAura(116946))
+        return;
+
     target->SetControlled(apply, UNIT_STATE_ROOT);
 }
 

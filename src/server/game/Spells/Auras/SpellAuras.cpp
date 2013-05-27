@@ -360,6 +360,10 @@ AuraPtr Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEff
         if (foundAura->IsRemoved())
             return NULLAURA;
 
+        // Earthgrab Totem : Don't refresh root
+        if (foundAura->GetId() == 64695)
+            return NULLAURA;
+
         if (refresh)
             *refresh = true;
         return foundAura;

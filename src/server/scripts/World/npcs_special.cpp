@@ -3853,7 +3853,8 @@ class npc_stone_bulwark_totem : public CreatureScript
 ## npc_earthgrab_totem
 ######*/
 
-#define EARTHGRAB     116943
+#define EARTHGRAB       116943
+#define EARTHGRAB_ROOT  64695
 
 class npc_earthgrab_totem : public CreatureScript
 {
@@ -3865,6 +3866,7 @@ class npc_earthgrab_totem : public CreatureScript
         npc_earthgrab_totemAI(Creature* creature) : ScriptedAI(creature)
         {
             creature->CastSpell(creature, EARTHGRAB, true);
+            creature->CastSpell(creature, EARTHGRAB_ROOT, true);
         }
 
         void UpdateAI(uint32 const diff)
