@@ -895,6 +895,17 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_DAMAGE_DONE, damage, 0, victim);
         killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HIT_DEALT, damage);
     }
+    else if (GetTypeId() == TYPEID_UNIT && this != victim && isPet())
+    {
+        if (GetOwner() && GetOwner()->ToPlayer())
+        {
+            Player* killerOwner = GetOwner()->ToPlayer();
+
+            if (victim->GetTypeId() == TYPEID_PLAYER)
+                if (Battleground* bg = killerOwner->GetBattleground())
+                    bg->UpdatePlayerScore(killerOwner, SCORE_DAMAGE_DONE, damage);
+        }
+    }
 
     if (victim->GetTypeId() == TYPEID_PLAYER)
         victim->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HIT_RECEIVED, damage);
