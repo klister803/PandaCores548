@@ -16,6 +16,10 @@ enum eZhaoEvents
     EVENT_LIGHTNING_SPEAR   = 2,
 };
 
+enum eSpells
+{
+    SPELL_JADE_FIRE         = 127422,
+};
 class mob_zhao_jin : public CreatureScript
 {
     public:
@@ -179,7 +183,7 @@ class mob_reanimated_jade_warrior : public CreatureScript
                 {
                 if (Unit* target = me->SelectNearestTarget(5.0f))
                     if (!target->IsFriendlyTo(me))
-                        me->CastSpell(target, 1, true);
+                        me->CastSpell(target, SPELL_JADE_FIRE, true);
                 jadeFireTimer = urand(20000, 22000);
                 }
                 else
