@@ -166,6 +166,9 @@ class boss_feng : public CreatureScript
                 for (auto visualSpellId: fengVisualId)
                     me->RemoveAurasDueToSpell(visualSpellId);
 
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
+
                 // Desactivate old statue
                 if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
                 {
@@ -174,10 +177,10 @@ class boss_feng : public CreatureScript
                 }
 
                 if (GameObject* inversionGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_INVERSION)))
-                    inversionGob->SetRespawnTime(RESPAWN_IMMEDIATELY);
+                    inversionGob->Respawn();
 
                 if (GameObject* cancelGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_CANCEL)))
-                    cancelGob->SetRespawnTime(RESPAWN_IMMEDIATELY);
+                    cancelGob->Respawn();
 
                 actualPhase  = PHASE_NONE;
                 nextPhasePct = 95;

@@ -53,12 +53,21 @@ class mob_cursed_mogu_sculture : public CreatureScript
 
             void Reset()
             {
-                spiritBoltTimer = urand(5000, 8000);
-                groundSlamTimer = urand(8000, 10500);
+                spiritBoltTimer = urand(10000, 40000);
+                groundSlamTimer = urand(20000, 40000);
 
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
-                me->AddAura(120661, me);
-                me->AddAura(120613, me);
+
+                if (me->GetEntry() == 61334)
+                {
+                    me->AddAura(120613, me); // Pose
+                    me->AddAura(120661, me); // Bronze
+                }
+                else if (me->GetEntry() == 61989)
+                {
+                    me->AddAura(120650, me); // Pose
+                    me->AddAura(120663, me); // Pierre
+                }
             }
 
             void EnterCombat(Unit* attacker)
@@ -66,6 +75,8 @@ class mob_cursed_mogu_sculture : public CreatureScript
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(120661);
                 me->RemoveAurasDueToSpell(120613);
+                me->RemoveAurasDueToSpell(120650);
+                me->RemoveAurasDueToSpell(120663);
             }
 
             void UpdateAI(const uint32 diff)
@@ -78,7 +89,7 @@ class mob_cursed_mogu_sculture : public CreatureScript
                     if (Unit* target = me->SelectNearestTarget(5.0f))
                         if (!target->IsFriendlyTo(me))
                             me->CastSpell(target, SPELL_SPIRIT_BOLT, true);
-                    spiritBoltTimer = urand(5000, 8000);
+                    spiritBoltTimer = urand(10000, 30000);
                 }
                 else
                     spiritBoltTimer -= diff;
@@ -88,7 +99,7 @@ class mob_cursed_mogu_sculture : public CreatureScript
                     if (Unit* target = me->SelectNearestTarget(5.0f))
                         if (!target->IsFriendlyTo(me))
                             me->CastSpell(target, SPELL_GROUND_SLAM, true);
-                    groundSlamTimer = urand(8000, 10500);
+                    groundSlamTimer = urand(20000, 30000);
                 }
                 else
                     groundSlamTimer -= diff;

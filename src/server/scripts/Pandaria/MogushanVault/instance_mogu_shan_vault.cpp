@@ -17,6 +17,7 @@ DoorData const doorData[] =
     {GOB_FENG_DOOR_EXIT,                     DATA_FENG,                 DOOR_TYPE_PASSAGE,    BOUNDARY_N   },
     {GOB_GARAJAL_FENCE,                      DATA_GARAJAL,              DOOR_TYPE_ROOM,       BOUNDARY_NONE},
     //{GOB_GARAJAL_EXIT,                       DATA_GARAJAL,              DOOR_TYPE_PASSAGE,    BOUNDARY_W   },
+    //{GOB_SPIRIT_KINGS_WIND_WALL,             DATA_SPIRIT_KINGS          DOOR_TYPE_ROOM,       BOUNDARY_NONE},
     //{GOB_SPIRIT_KINGS_EXIT,                  DATA_SPIRIT_KINGS,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                         DOOR_TYPE_ROOM,       BOUNDARY_NONE},// END
 };
@@ -25,6 +26,7 @@ class instance_mogu_shan_vault : public InstanceMapScript
 {
 public:
     instance_mogu_shan_vault() : InstanceMapScript("instance_mogu_shan_vault", 1008) { }
+
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
@@ -74,6 +76,7 @@ public:
                 case NPC_AMETHYST:
                 case NPC_COBALT:
                     stoneGuardGUIDs.push_back(creature->GetGUID());
+                    creature->Respawn(true);
 
                     if (--randomDespawnStoneGuardian == 0)
                     {
@@ -99,6 +102,7 @@ public:
                 case GOB_FENG_DOOR_EXIT:
                 case GOB_GARAJAL_FENCE:
                 case GOB_GARAJAL_EXIT:
+                case GOB_SPIRIT_KINGS_WIND_WALL:
                 case GOB_SPIRIT_KINGS_EXIT:
                     AddDoor(go, true);
                     break;
