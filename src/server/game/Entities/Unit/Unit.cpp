@@ -15757,6 +15757,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         //break;
                     default:
                         // nothing do, just charges counter
+                        // Don't drop charge for Earth Shield because of second effect
+                        if (triggeredByAura->GetId() == 974)
+                            break;
+
                         takeCharges = true;
                         break;
                 } // switch (triggeredByAura->GetAuraType())
