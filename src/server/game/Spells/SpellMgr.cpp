@@ -3887,10 +3887,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 116161:
                 spellInfo->Effects[EFFECT_1].MiscValue = 2; // Set Phase to 2
-                spellInfo->Effects[EFFECT_3].Effect = 0;    // No need to summon
+                spellInfo->Effects[EFFECT_3].Effect    = 0; // No need to summon
                 break;
             case 116272:
                 spellInfo->Effects[EFFECT_0].MiscValue = 2; // Set Phase to 2
+                break;
+            case 116606:
+                spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
             default:
                 break;
