@@ -19,6 +19,7 @@ enum eZhaoEvents
 enum eSpells
 {
     SPELL_JADE_FIRE         = 127422,
+    SPELL_JADE_STRENGHT     = 127462,
 };
 class mob_zhao_jin : public CreatureScript
 {
@@ -191,7 +192,7 @@ class mob_reanimated_jade_warrior : public CreatureScript
 
                 if (jadeStrenghtTimer <= diff)
                 {
-                    me->CastSpell(me, 1, true);
+                    me->CastSpell(me, SPELL_JADE_STRENGHT, true);
                     jadeStrenghtTimer = urand(20000, 22000);
                 }
                 else
