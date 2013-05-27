@@ -942,9 +942,9 @@ class spell_rog_shiv : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                            _player->CastSpell(target, ROGUE_SPELL_DEBILITATING_POISON, true);
-                        else if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
                             _player->CastSpell(target, ROGUE_SPELL_MIND_PARALYSIS, true);
+                        else if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                            _player->CastSpell(target, ROGUE_SPELL_DEBILITATING_POISON, true);
                         else if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
                             _player->CastSpell(_player, ROGUE_SPELL_LEECH_VITALITY, true);
                         else if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
