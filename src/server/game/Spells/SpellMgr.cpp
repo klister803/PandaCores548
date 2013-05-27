@@ -3039,6 +3039,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+            case 127424:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
+                spellInfo->Effects[0].TargetB = 0;
+                break;
             case 60256:
                 //Crashes client on pressing ESC (Maybe because of ReqSpellFocus and GameObject)
                 spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
@@ -3111,6 +3115,13 @@ void SpellMgr::LoadSpellCustomAttr()
             case 24825: // Test Backstab
             case 58563: // Assassinate Restless Lookout
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
+                break;
+            // Pandashan's Dragon Gun
+            case 120751:
+            case 120876:
+            case 120964:
+            case 124347:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
                 break;
             case 26029: // Dark Glare
             case 37433: // Spout
@@ -3889,10 +3900,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 116161:
                 spellInfo->Effects[EFFECT_1].MiscValue = 2; // Set Phase to 2
-                spellInfo->Effects[EFFECT_3].Effect = 0;    // No need to summon
+                spellInfo->Effects[EFFECT_3].Effect    = 0; // No need to summon
                 break;
             case 116272:
                 spellInfo->Effects[EFFECT_0].MiscValue = 2; // Set Phase to 2
+                break;
+            case 116606:
+                spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
             default:
                 break;

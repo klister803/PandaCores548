@@ -641,6 +641,7 @@ void AddSC_boss_garajal();
 void AddSC_boss_spirit_kings();
 
 void AddSC_vale_of_eternal_blossoms();
+void AddSC_kun_lai_summit();
 
 void AddSC_WanderingIsland_North();
 void AddSC_WanderingIsland_East();
@@ -1326,6 +1327,7 @@ void AddPandarieScripts()
     AddSC_boss_garajal();
     AddSC_boss_spirit_kings();
 
+    AddSC_kun_lai_summit();
     AddSC_vale_of_eternal_blossoms();
 
     AddSC_WanderingIsland_North();

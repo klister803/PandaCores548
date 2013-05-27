@@ -1604,6 +1604,54 @@ class spell_q13291_q13292_q13239_q13261_armored_decoy_summon_skytalon : public S
         }
 };
 
+
+// 27421 Rayne's Seed
+
+class spell_q27421_rayne_seed : public SpellScriptLoader
+{
+    public:
+        spell_q27421_rayne_seed() : SpellScriptLoader("spell_q27421_rayne_seed") { }
+
+        class spell_q27421_rayne_seed_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q27421_rayne_seed_SpellScript);
+
+            void HandleAfterCast()
+            {
+                std::list<Creature*> list;
+                if (GetCaster())
+                {
+                    if (Player* caster = GetCaster()->ToPlayer())
+                    {
+                        caster->GetCreatureListWithEntryInGrid(list, 45485, 20.0f);
+                
+                        for (auto creature: list)
+                            creature->CastSpell(creature, 84961, true);
+
+                        if (caster->GetPositionX() > 2536) //Necropolis Flower Controller NE
+                            caster->KilledMonsterCredit(45487, 0);
+                    
+                        else if (caster->GetPositionX() <= 2536 && GetCaster()->GetPositionX() >= 2487) //Necropolis Flower Controller SE
+                            caster->KilledMonsterCredit(45488, 0);
+
+                        else if (caster->GetPositionX() < 2487) //Necropolis Flower Controller W
+                            caster->KilledMonsterCredit(45486, 0);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_q27421_rayne_seed_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_q27421_rayne_seed_SpellScript();
+        };
+};
+
 void AddSC_quest_spell_scripts()
 {
     new spell_q55_sacred_cleansing();
@@ -1643,4 +1691,5 @@ void AddSC_quest_spell_scripts()
     new spell_q11008_blasting_charge();
     new spell_q13291_q13292_q13239_q13261_frostbrood_skytalon_grab_decoy();
     new spell_q13291_q13292_q13239_q13261_armored_decoy_summon_skytalon();
+    new spell_q27421_rayne_seed();
 }
