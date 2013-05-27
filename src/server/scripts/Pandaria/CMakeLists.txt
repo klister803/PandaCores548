@@ -63,6 +63,8 @@ set(scripts_STAT_SRCS
   Pandaria/WanderingIsland/WanderingIsland_West.cpp
   Pandaria/WanderingIsland/WanderingIsland_South.cpp
 
+  Pandaria/kun_lai_summit.cpp
+  
   Pandaria/vale_of_eternal_blossoms.cpp
 )
 

@@ -179,7 +179,7 @@ class mob_reanimated_jade_warrior : public CreatureScript
                 {
                 if (Unit* target = me->SelectNearestTarget(5.0f))
                     if (!target->IsFriendlyTo(me))
-                        me->CastSpell(target, SPELL_JADE_FIRE, true);
+                        me->CastSpell(target, 1, true);
                 jadeFireTimer = urand(20000, 22000);
                 }
                 else
@@ -187,7 +187,7 @@ class mob_reanimated_jade_warrior : public CreatureScript
 
                 if (jadeStrenghtTimer <= diff)
                 {
-                    me->CastSpell(me, SPELL_JADE_STRENGHT, true);
+                    me->CastSpell(me, 1, true);
                     jadeStrenghtTimer = urand(20000, 22000);
                 }
                 else
