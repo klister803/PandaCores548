@@ -11692,6 +11692,11 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
             AddPct(TakenTotalMod, (*i)->GetAmount());
     }
 
+    AuraEffectList const& mHotPct = GetAuraEffectsByType(SPELL_AURA_MOD_HOT_PCT);
+    for (AuraEffectList::const_iterator i = mHotPct.begin(); i != mHotPct.end(); ++i)
+        if (damagetype == DOT)
+            AddPct(TakenTotalMod, (*i)->GetAmount());
+
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         switch (spellProto->Effects[i].ApplyAuraName)
