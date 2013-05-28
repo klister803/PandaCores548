@@ -660,8 +660,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     case 115080: // Touch of Death
                         if (Unit* caster = GetCaster())
                             if (Unit* victim = caster->getVictim())
-                                damage = victim->GetHealth() * 2;
-                        break;
+                                m_caster->DealDamage(victim, victim->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        return;
                     case 100787: // Tiger Palm
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 3.0f, 14);
