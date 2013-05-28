@@ -3664,6 +3664,15 @@ void SpellMgr::LoadSpellCustomAttr()
             case 6358:  // Seduce (succubus)
                 spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
                 break;
+            case 980:   // Agony
+                spellInfo->StackAmount = 10;
+                break;
+            case 131740:// Corruption (Malefic Grasp)
+            case 131736:// Unstable Affliction (Malefic Grasp)
+            case 132566:// Seed of Corruption (Malefic Grasp)
+            case 131737:// Agony (Malefic Grasp)
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+                break;
             case 131116:// Allow to use Raging Blow
                 spellInfo->ProcCharges = 2;
                 break;

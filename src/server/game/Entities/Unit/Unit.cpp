@@ -3331,7 +3331,16 @@ AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uin
                 return foundAura;
 
             // try to increase stack amount
-            foundAura->ModStackAmount(1);
+            if (foundAura->GetId() != 980)
+                foundAura->ModStackAmount(1);
+
+            // Agony is refreshed at manual reapply
+            if (foundAura->GetId() == 980)
+            {
+                foundAura->RefreshSpellMods();
+                foundAura->RefreshTimers();
+            }
+
             return foundAura;
         }
     }

@@ -4552,7 +4552,12 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
 
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyCastTimePercentMod((float)GetAmount(), apply);
+    float value = float(GetAmount());
+
+    if (target->GetTypeId() == TYPEID_PLAYER && (GetId() == 109466 || GetId() == 109468 || GetId() == 116198))
+        value /= 2.0f;
+
+    target->ApplyCastTimePercentMod(value, apply);
 }
 
 void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -6637,22 +6642,24 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
             }
             // Seed of Corruption ...
-            if (AuraPtr seedOfCorruption = target->GetAura(980, caster->GetGUID()))
+            if (AuraPtr seedOfCorruption = target->GetAura(27243, caster->GetGUID()))
             {
-                afflictionSpell = sSpellMgr->GetSpellInfo(980);
+                afflictionSpell = sSpellMgr->GetSpellInfo(27243);
                 afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                 afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
                 afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
 
                 caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
             }
-            // Curse of Agony ...
-            if (AuraPtr agony = target->GetAura(27243, caster->GetGUID()))
+            // Agony ...
+            if (AuraPtr agony = target->GetAura(980, caster->GetGUID()))
             {
-                afflictionSpell = sSpellMgr->GetSpellInfo(27243);
+                afflictionSpell = sSpellMgr->GetSpellInfo(980);
                 afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
-                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT, agony->GetStackAmount());
                 afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
+
+                agony->ModStackAmount(1);
 
                 caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
             }
@@ -6700,9 +6707,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                     caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
                 }
                 // Seed of Corruption ...
-                if (AuraPtr seedOfCorruption = target->GetAura(980, caster->GetGUID()))
+                if (AuraPtr seedOfCorruption = target->GetAura(27243, caster->GetGUID()))
                 {
-                    afflictionSpell = sSpellMgr->GetSpellInfo(980);
+                    afflictionSpell = sSpellMgr->GetSpellInfo(27243);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                     afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
 
@@ -6711,15 +6718,17 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
                     caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
                 }
-                // Curse of Agony ...
-                if (AuraPtr agony = target->GetAura(27243, caster->GetGUID()))
+                // Agony ...
+                if (AuraPtr agony = target->GetAura(980, caster->GetGUID()))
                 {
-                    afflictionSpell = sSpellMgr->GetSpellInfo(27243);
+                    afflictionSpell = sSpellMgr->GetSpellInfo(980);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
-                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT, agony->GetStackAmount());
 
                     if (grimoireOfSacrifice)
                         AddPct(afflictionDamage, 50);
+
+                    agony->ModStackAmount(1);
 
                     caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
                 }

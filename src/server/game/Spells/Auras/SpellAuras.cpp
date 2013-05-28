@@ -977,6 +977,10 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
 
     bool refresh = stackAmount >= GetStackAmount();
 
+    // Agony doesn't refresh itself every tick
+    if (m_spellInfo->Id == 980)
+        refresh = false;
+
     // Update stack amount
     SetStackAmount(stackAmount);
 
