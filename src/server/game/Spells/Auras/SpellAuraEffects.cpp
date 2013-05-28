@@ -4340,6 +4340,9 @@ void AuraEffect::HandleAuraModIncreaseHealthPercent(AuraApplication const* aurAp
 
     Unit* target = aurApp->GetTarget();
 
+    if (GetId() == 108503 && target->ToPlayer() && !target->ToPlayer()->HasSpell(108415))
+        return;
+
     // Unit will keep hp% after MaxHealth being modified if unit is alive.
     float percent = target->GetHealthPct();
     target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(GetAmount()), apply);
@@ -6619,7 +6622,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 afflictionSpell = sSpellMgr->GetSpellInfo(172);
                 afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                 afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
-                afflictionDamage /= 2;
+                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
 
                 caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
             }
@@ -6629,7 +6632,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 afflictionSpell = sSpellMgr->GetSpellInfo(30108);
                 afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                 afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
-                afflictionDamage /= 2;
+                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
 
                 caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
             }
@@ -6639,7 +6642,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 afflictionSpell = sSpellMgr->GetSpellInfo(980);
                 afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                 afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
-                afflictionDamage /= 2;
+                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
 
                 caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
             }
@@ -6649,7 +6652,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 afflictionSpell = sSpellMgr->GetSpellInfo(27243);
                 afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                 afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
-                afflictionDamage /= 2;
+                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
 
                 caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
             }
@@ -6669,6 +6672,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
                 int32 afflictionDamage;
                 SpellInfo const* afflictionSpell;
+                bool grimoireOfSacrifice = caster->HasAura(108503);
 
                 // ... and deals instantly 100% of tick-damage for each affliction effects on the target
                 // Corruption ...
@@ -6677,6 +6681,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                     afflictionSpell = sSpellMgr->GetSpellInfo(172);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                     afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+
+                    if (grimoireOfSacrifice)
+                        AddPct(afflictionDamage, 50);
 
                     caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
                 }
@@ -6687,6 +6694,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                     afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
 
+                    if (grimoireOfSacrifice)
+                        AddPct(afflictionDamage, 50);
+
                     caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
                 }
                 // Seed of Corruption ...
@@ -6696,6 +6706,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                     afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
 
+                    if (grimoireOfSacrifice)
+                        AddPct(afflictionDamage, 50);
+
                     caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
                 }
                 // Curse of Agony ...
@@ -6704,6 +6717,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                     afflictionSpell = sSpellMgr->GetSpellInfo(27243);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                     afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+
+                    if (grimoireOfSacrifice)
+                        AddPct(afflictionDamage, 50);
 
                     caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
                 }

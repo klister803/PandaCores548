@@ -63,7 +63,8 @@ enum ShamanSpells
     SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661,
     SPELL_SHA_FIRE_NOVA                     = 1535,
     SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786,
-    SPELL_SHA_TIDAL_WAVES                   = 53390,
+    SPELL_SHA_TIDAL_WAVES                   = 51564,
+    SPELL_SHA_TIDAL_WAVES_PROC              = 53390,
     SPELL_SHA_MANA_TIDE                     = 16191,
     SPELL_SHA_FROST_SHOCK_FREEZE            = 63685,
     SPELL_SHA_FROZEN_POWER                  = 63374,
@@ -760,38 +761,46 @@ class spell_sha_mana_tide : public SpellScriptLoader
 // Tidal Waves - 51564
 class spell_sha_tidal_waves : public SpellScriptLoader
 {
-public:
-    spell_sha_tidal_waves() : SpellScriptLoader("spell_sha_tidal_waves") { }
+    public:
+        spell_sha_tidal_waves() : SpellScriptLoader("spell_sha_tidal_waves") { }
 
-    class spell_sha_tidal_waves_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_sha_tidal_waves_SpellScript)
-
-        bool Validate(SpellEntry const * /*spellEntry*/)
+        class spell_sha_tidal_waves_SpellScript : public SpellScript
         {
-            if (!sSpellMgr->GetSpellInfo(1064) || !sSpellMgr->GetSpellInfo(61295))
-                return false;
-            return true;
-        }
+            PrepareSpellScript(spell_sha_tidal_waves_SpellScript)
 
-        void HandleOnHit()
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(1064) || !sSpellMgr->GetSpellInfo(61295))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_SHA_TIDAL_WAVES))
+                    {
+                        if (Unit* target = GetHitUnit())
+                        {
+                            int32 bp0 = -(sSpellMgr->GetSpellInfo(SPELL_SHA_TIDAL_WAVES)->Effects[0].BasePoints);
+                            int32 bp1 = sSpellMgr->GetSpellInfo(SPELL_SHA_TIDAL_WAVES)->Effects[1].BasePoints;
+                            _player->CastCustomSpell(_player, SPELL_SHA_TIDAL_WAVES_PROC, &bp0, &bp1, NULL, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_tidal_waves_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript *GetSpellScript() const
         {
-            if (Player* _player = GetCaster()->ToPlayer())
-                if (_player->HasAura(51564))
-                    if (Unit* target = GetHitUnit())
-                        _player->CastSpell(_player, SPELL_SHA_TIDAL_WAVES, true);
+            return new spell_sha_tidal_waves_SpellScript();
         }
-
-        void Register()
-        {
-            OnHit += SpellHitFn(spell_sha_tidal_waves_SpellScript::HandleOnHit);
-        }
-    };
-
-    SpellScript *GetSpellScript() const
-    {
-        return new spell_sha_tidal_waves_SpellScript();
-    }
 };
 
 // Fire Nova - 1535

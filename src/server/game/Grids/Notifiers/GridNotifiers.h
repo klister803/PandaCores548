@@ -948,6 +948,31 @@ namespace JadeCore
             NearestAttackableUnitInObjectRangeCheck(NearestAttackableUnitInObjectRangeCheck const&);
     };
 
+    // Success at unit in range, range update for next check (this can be use with UnitLastSearcher to find nearest unit)
+    class NearestAttackableNoCCUnitInObjectRangeCheck
+    {
+        public:
+            NearestAttackableNoCCUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
+            bool operator()(Unit* u)
+            {
+                if (u->isTargetableForAttack() && i_obj->IsWithinDistInMap(u, i_range) &&
+                    !i_funit->IsFriendlyTo(u) && !u->HasCrowdControlAura() && !u->HasAuraType(SPELL_AURA_MOD_CONFUSE))
+                {
+                    i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
+                    return true;
+                }
+
+                return false;
+            }
+        private:
+            WorldObject const* i_obj;
+            Unit const* i_funit;
+            float i_range;
+
+            // prevent clone this object
+            NearestAttackableNoCCUnitInObjectRangeCheck(NearestAttackableNoCCUnitInObjectRangeCheck const&);
+    };
+
     class AnyAoETargetUnitInObjectRangeCheck
     {
         public:
@@ -1050,6 +1075,37 @@ namespace JadeCore
             Creature const* me;
             float m_range;
             NearestHostileUnitCheck(NearestHostileUnitCheck const&);
+    };
+
+    class NearestHostileNoCCUnitCheck
+    {
+        public:
+            explicit NearestHostileNoCCUnitCheck(Creature const* creature, float dist = 0) : me(creature)
+            {
+                m_range = (dist == 0 ? 9999 : dist);
+            }
+            bool operator()(Unit* u)
+            {
+                if (!me->IsWithinDistInMap(u, m_range))
+                    return false;
+
+                if (!me->canSeeOrDetect(u))
+                    return false;
+
+                if (u->HasCrowdControlAura())
+                    return false;
+
+                if (u->HasAuraType(SPELL_AURA_MOD_CONFUSE))
+                    return false;
+
+                m_range = me->GetDistance(u);   // use found unit range as new range limit for next check
+                return true;
+            }
+
+        private:
+            Creature const *me;
+            float m_range;
+            NearestHostileNoCCUnitCheck(NearestHostileNoCCUnitCheck const&);
     };
 
     class NearestHostileUnitInAttackDistanceCheck
