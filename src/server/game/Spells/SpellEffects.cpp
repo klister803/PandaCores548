@@ -313,8 +313,14 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive())
+    if (!unitTarget || (!unitTarget->isAlive() && m_spellInfo->Id != 108503))
         return;
+
+    if (m_spellInfo->Id == 108503 && (!unitTarget->GetHealth() || !unitTarget->isAlive()))
+    {
+        unitTarget->ToPet()->Remove(PET_SLOT_ACTUAL_PET_SLOT);
+        return;
+    }
 
     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
         if (unitTarget->ToPlayer()->GetCommandStatus(CHEAT_GOD))
