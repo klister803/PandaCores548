@@ -69,7 +69,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
     // Explicit Diminishing Groups
     switch (spellproto->SpellFamilyName)
     {
-    case SPELLFAMILY_GENERIC:
+        case SPELLFAMILY_GENERIC:
         {
             // Pet charge effects (Infernal Awakening, Demon Charge)
             if (spellproto->SpellVisual[0] == 2816 && spellproto->SpellIconID == 15)
@@ -80,9 +80,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             break;
         }
         // Event spells
-    case SPELLFAMILY_UNK1:
-        return DIMINISHING_NONE;
-    case SPELLFAMILY_MAGE:
+        case SPELLFAMILY_UNK1:
+            return DIMINISHING_NONE;
+        case SPELLFAMILY_MAGE:
         {
             // Frostbite
             if (spellproto->SpellFamilyFlags[1] & 0x80000000)
@@ -107,7 +107,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_LIMITONLY;
             break;
         }
-    case SPELLFAMILY_WARRIOR:
+        case SPELLFAMILY_WARRIOR:
         {
             // Hamstring - limit duration to 10s in PvP
             if (spellproto->SpellFamilyFlags[0] & 0x2)
@@ -117,17 +117,17 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_CHARGE;
             break;
         }
-    case SPELLFAMILY_WARLOCK:
+        case SPELLFAMILY_WARLOCK:
         {
             // Curses/etc
             if ((spellproto->SpellFamilyFlags[0] & 0x80000000) || (spellproto->SpellFamilyFlags[1] & 0x200))
                 return DIMINISHING_LIMITONLY;
             // Seduction
-            else if (spellproto->SpellFamilyFlags[1] & 0x10000000)
+            else if (spellproto->Id == 6358 || spellproto->Id == 132412)
                 return DIMINISHING_FEAR;
             break;
         }
-    case SPELLFAMILY_DRUID:
+        case SPELLFAMILY_DRUID:
         {
             // Pounce
             if (spellproto->SpellFamilyFlags[0] & 0x20000)
@@ -144,7 +144,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_LIMITONLY;
             break;
         }
-    case SPELLFAMILY_ROGUE:
+        case SPELLFAMILY_ROGUE:
         {
             // Gouge
             if (spellproto->SpellFamilyFlags[0] & 0x8)
@@ -160,7 +160,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_LIMITONLY;
             break;
         }
-    case SPELLFAMILY_HUNTER:
+        case SPELLFAMILY_HUNTER:
         {
             // Hunter's Mark
             if ((spellproto->SpellFamilyFlags[0] & 0x400) && spellproto->SpellIconID == 538)
@@ -179,7 +179,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_DISORIENT;
             break;
         }
-    case SPELLFAMILY_PALADIN:
+        case SPELLFAMILY_PALADIN:
         {
             // Judgement of Justice - limit duration to 10s in PvP
             if (spellproto->SpellFamilyFlags[0] & 0x100000)
@@ -189,7 +189,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_FEAR;
             break;
         }
-    case SPELLFAMILY_DEATHKNIGHT:
+        case SPELLFAMILY_DEATHKNIGHT:
         {
             // Hungering Cold (no flags)
             if (spellproto->SpellIconID == 2797)
@@ -199,8 +199,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_LIMITONLY;
             break;
         }
-    default:
-        break;
+        default:
+            break;
     }
 
     // Lastly - Set diminishing depending on mechanic
@@ -270,14 +270,14 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
     // Explicit diminishing duration
     switch (spellproto->SpellFamilyName)
     {
-    case SPELLFAMILY_DRUID:
+        case SPELLFAMILY_DRUID:
         {
             // Faerie Fire - limit to 40 seconds in PvP (3.1)
             if (spellproto->SpellFamilyFlags[0] & 0x400)
                 return 40 * IN_MILLISECONDS;
             break;
         }
-    case SPELLFAMILY_HUNTER:
+        case SPELLFAMILY_HUNTER:
         {
             // Wyvern Sting
             if (spellproto->SpellFamilyFlags[1] & 0x1000)
@@ -287,14 +287,14 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
                 return 120 * IN_MILLISECONDS;
             break;
         }
-    case SPELLFAMILY_PALADIN:
+        case SPELLFAMILY_PALADIN:
         {
             // Repentance - limit to 6 seconds in PvP
             if (spellproto->SpellFamilyFlags[0] & 0x4)
                 return 6 * IN_MILLISECONDS;
             break;
         }
-    case SPELLFAMILY_WARLOCK:
+        case SPELLFAMILY_WARLOCK:
         {
             // Banish - limit to 6 seconds in PvP
             if (spellproto->SpellFamilyFlags[1] & 0x8000000)
@@ -307,8 +307,8 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
                 return 120 * IN_MILLISECONDS;
             break;
         }
-    default:
-        break;
+        default:
+            break;
     }
 
     return 8 * IN_MILLISECONDS;
@@ -318,23 +318,23 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
 {
     switch (group)
     {
-    case DIMINISHING_BANISH:
-    case DIMINISHING_CONTROLLED_STUN:
-    case DIMINISHING_CONTROLLED_ROOT:
-    case DIMINISHING_CYCLONE:
-    case DIMINISHING_DISORIENT:
-    case DIMINISHING_ENTRAPMENT:
-    case DIMINISHING_FEAR:
-    case DIMINISHING_HORROR:
-    case DIMINISHING_MIND_CONTROL:
-    case DIMINISHING_OPENING_STUN:
-    case DIMINISHING_ROOT:
-    case DIMINISHING_STUN:
-    case DIMINISHING_SLEEP:
-    case DIMINISHING_LIMITONLY:
-        return true;
-    default:
-        return false;
+        case DIMINISHING_BANISH:
+        case DIMINISHING_CONTROLLED_STUN:
+        case DIMINISHING_CONTROLLED_ROOT:
+        case DIMINISHING_CYCLONE:
+        case DIMINISHING_DISORIENT:
+        case DIMINISHING_ENTRAPMENT:
+        case DIMINISHING_FEAR:
+        case DIMINISHING_HORROR:
+        case DIMINISHING_MIND_CONTROL:
+        case DIMINISHING_OPENING_STUN:
+        case DIMINISHING_ROOT:
+        case DIMINISHING_STUN:
+        case DIMINISHING_SLEEP:
+        case DIMINISHING_LIMITONLY:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -3425,6 +3425,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                 break;
+            case 5782:  // Fear
+                spellInfo->Mechanic = 0;
+                spellInfo->Effects[0].Mechanic = MECHANIC_NONE;
+                break;
             case 51460: // Runic Corruption
                 spellInfo->Effects[EFFECT_1].Effect = 0;
                 spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_POWER_REGEN_PERCENT;
@@ -3656,6 +3660,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 122292:// Intervene (Symbiosis)
                 spellInfo->Effects[1].BasePoints = 100;
+                break;
+            case 6358:  // Seduce (succubus)
+                spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
                 break;
             case 131116:// Allow to use Raging Blow
                 spellInfo->ProcCharges = 2;
