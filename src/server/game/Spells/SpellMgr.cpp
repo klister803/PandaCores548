@@ -3346,6 +3346,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 31935: // Avenger's Shield
                 spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                 break;
+            case 44203: // Tranquility (triggered)
+                spellInfo->MaxAffectedTargets = 5;
+                break;
             case 121118:// Dire Beast summons
             case 122802:
             case 122804:
