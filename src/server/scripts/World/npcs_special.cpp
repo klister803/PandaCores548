@@ -1728,7 +1728,7 @@ class npc_snake_trap : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                if (me->getVictim()->HasBreakableByDamageCrowdControlAura(me))
+                if (me->getVictim()->HasCrowdControlAura(me))
                 {
                     me->InterruptNonMeleeSpells(false);
                     return;

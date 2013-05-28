@@ -93,7 +93,7 @@ void PetAI::UpdateAI(const uint32 diff)
     if (me->getVictim())
     {
         // is only necessary to stop casting, the pet must not exit combat
-        if (me->getVictim()->HasBreakableByDamageCrowdControlAura(me))
+        if (me->getVictim()->HasCrowdControlAura(me))
         {
             me->InterruptNonMeleeSpells(false);
             return;
@@ -384,26 +384,26 @@ Unit* PetAI::SelectNextTarget()
     if (me->HasReactState(REACT_PASSIVE))
         return NULL;
 
-    Unit* target = me->getAttackerForHelper();
+    // Check pet attackers first so we don't drag a bunch of targets to the owner
+    if (Unit* myAttacker = me->getAttackerForHelper())
+        if (!myAttacker->HasCrowdControlAura())
+            return myAttacker;
 
-    // Check pet's attackers first to prevent dragging mobs back to owner
-    if (target && !target->HasBreakableByDamageCrowdControlAura())
-        return target;
+    // Not sure why we wouldn't have an owner but just in case...
+    if (!me->GetCharmerOrOwner())
+        return NULL;
 
-    if (me->GetCharmerOrOwner())
-    {
-        // Check owner's attackers if pet didn't have any
-        target = me->GetCharmerOrOwner()->getAttackerForHelper();
-        if (target && !target->HasBreakableByDamageCrowdControlAura())
-            return target;
+    // Check owner attackers
+    if (Unit* ownerAttacker = me->GetCharmerOrOwner()->getAttackerForHelper())
+        if (!ownerAttacker->HasCrowdControlAura())
+            return ownerAttacker;
 
-        // 3.0.2 - Pets now start attacking their owners target in defensive mode as soon as the hunter does
-        target = me->GetCharmerOrOwner()->getVictim();
-        if (target && !target->HasBreakableByDamageCrowdControlAura())
-            return target;
-    }
+    // Check owner victim
+    // 3.0.2 - Pets now start attacking their owners victim in defensive mode as soon as the hunter does
+    if (Unit* ownerVictim = me->GetCharmerOrOwner()->getVictim())
+        return ownerVictim;
 
-    // Default
+    // Default - no valid targets
     return NULL;
 }
 
