@@ -3672,13 +3672,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 2641:  // Dismiss Pet
                 spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
                 break;
-            case 53390: // Tidal Waves
-                spellInfo->Effects[0].BasePoints = -30;
-                spellInfo->Effects[0].SpellClassMask[0] |= 0x10000;
-                spellInfo->Effects[0].SpellClassMask[2] |= 0x40;
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
-                spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
-                break;
             case 52042: // Healing Stream - Totem
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
                 spellInfo->Effects[0].BasePoints = 31;
