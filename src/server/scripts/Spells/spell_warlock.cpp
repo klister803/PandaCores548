@@ -1502,7 +1502,7 @@ class spell_warl_conflagrate_aura : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (!target->HasAura(WARLOCK_IMMOLATE) && !target->HasAura(WARLOCK_GLYPH_OF_CONFLAGRATE))
+                        if (!target->HasAura(WARLOCK_IMMOLATE) && !_player->HasAura(WARLOCK_GLYPH_OF_CONFLAGRATE))
                             if (AuraPtr conflagrate = target->GetAura(WARLOCK_CONFLAGRATE))
                                 target->RemoveAura(WARLOCK_CONFLAGRATE);
                         if (!target->HasAura(WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE))
