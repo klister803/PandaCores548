@@ -7859,7 +7859,7 @@ void Player::SendNewCurrency(uint32 id) const
 
     ByteBuffer currencyData;
     WorldPacket packet(SMSG_INIT_CURRENCY, 4 + 1*(5*4 + 1));
-    packet.WriteBits(_currencyStorage.size(), 22);
+    packet.WriteBits(1, 22);
     
     CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(id);
     if (!entry) // should never happen
