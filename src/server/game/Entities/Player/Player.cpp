@@ -2452,9 +2452,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     }
     else
     {
-        //if (getClass() == CLASS_DEATH_KNIGHT && GetMapId() == 609 && !isGameMaster() && !HasSpell(50977))
-            //return false;
-        
         // Pandarie
         if ( mapid == 870  && getLevel() < 85 && getClass() != CLASS_MONK  && !isGameMaster())
             return false;
@@ -2497,9 +2494,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             }
 
             SetSelection(0);
-
             CombatStop();
-
             ResetContestedPvP();
 
             // remove player from battleground on far teleport (when changing maps)
