@@ -3793,21 +3793,37 @@ class npc_wild_imp : public CreatureScript
                 if (!me->GetOwner())
                     return;
 
+                if (!me->GetOwner()->ToPlayer())
+                    return;
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 if (!charges)
                     me->DespawnOrUnsummon();
 
-                if ((me->getVictim() || me->GetOwner()->getVictim()) && charges)
+                if ((me->getVictim() || me->GetOwner()->getAttackerForHelper()))
                 {
-                    me->CastSpell(me->getVictim() ? me->getVictim() : me->GetOwner()->getVictim(), FIREBOLT, false);
+                    me->CastSpell(me->getVictim() ? me->getVictim() : me->GetOwner()->getAttackerForHelper(), FIREBOLT, false);
                     me->GetOwner()->EnergizeBySpell(me->GetOwner(), FIREBOLT, 5, POWER_DEMONIC_FURY);
                     charges--;
 
                     if (me->GetOwner()->HasAura(122351))
                         if (roll_chance_i(8))
                             me->GetOwner()->CastSpell(me->GetOwner(), 122355, true);
+                }
+                else if (Pet* pet = me->GetOwner()->ToPlayer()->GetPet())
+                {
+                    if (pet->getAttackerForHelper())
+                    {
+                        me->CastSpell(me->getVictim() ? me->getVictim() : pet->getAttackerForHelper(), FIREBOLT, false);
+                        me->GetOwner()->EnergizeBySpell(me->GetOwner(), FIREBOLT, 5, POWER_DEMONIC_FURY);
+                        charges--;
+
+                        if (me->GetOwner()->HasAura(122351))
+                            if (roll_chance_i(8))
+                                me->GetOwner()->CastSpell(me->GetOwner(), 122355, true);
+                    }
                 }
             }
         };
