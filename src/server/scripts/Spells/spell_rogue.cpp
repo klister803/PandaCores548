@@ -28,7 +28,6 @@
 enum RogueSpells
 {
     ROGUE_SPELL_SHIV_TRIGGERED                   = 5940,
-    ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670,
     ROGUE_SPELL_RECUPERATE                       = 73651,
     ROGUE_SPELL_DEADLY_POISON                    = 2823,
     ROGUE_SPELL_WOUND_POISON                     = 8679,
@@ -377,7 +376,7 @@ class spell_rog_hemorrhage : public SpellScriptLoader
                     {
                         int32 bp = int32(GetHitDamage() / 2 / 8);
 
-                        _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                        _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, true);
                     }
                 }
             }
@@ -582,7 +581,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                                         // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
                                         caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
                                         int32 bp = 10;
-                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
                                     }
                                 }
                                 // Garrote will not trigger this effect if the enemy is also afflicted by your Rupture
@@ -594,7 +593,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                                         // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
                                         caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
                                         int32 bp = 10;
-                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
                                     }
                                 }
                             }
@@ -616,7 +615,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                             {
                                 // If an enemy dies while afflicted by your Rupture, you regain energy proportional to the remaining Rupture duration
                                 int32 duration = int32(rupture->GetDuration() / 1000);
-                                caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &duration, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &duration, NULL, NULL, true);
                             }
                         }
                     }
@@ -740,7 +739,7 @@ class spell_rog_crimson_tempest : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         int32 damage = int32(GetHitDamage() * 0.30f / 6); // 30% / number_of_ticks
-                        _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                        _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
                     }
                 }
             }
@@ -943,9 +942,9 @@ class spell_rog_shiv : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                            _player->CastSpell(target, ROGUE_SPELL_DEBILITATING_POISON, true);
-                        else if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
                             _player->CastSpell(target, ROGUE_SPELL_MIND_PARALYSIS, true);
+                        else if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                            _player->CastSpell(target, ROGUE_SPELL_DEBILITATING_POISON, true);
                         else if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
                             _player->CastSpell(_player, ROGUE_SPELL_LEECH_VITALITY, true);
                         else if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
@@ -1139,51 +1138,6 @@ class spell_rog_preparation : public SpellScriptLoader
         }
 };
 
-// 51685-51689 Prey on the Weak
-class spell_rog_prey_on_the_weak : public SpellScriptLoader
-{
-public:
-    spell_rog_prey_on_the_weak() : SpellScriptLoader("spell_rog_prey_on_the_weak") { }
-
-    class spell_rog_prey_on_the_weak_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_rog_prey_on_the_weak_AuraScript);
-
-        bool Validate(SpellInfo const* /*spellEntry*/)
-        {
-            if (!sSpellMgr->GetSpellInfo(ROGUE_SPELL_PREY_ON_THE_WEAK))
-                return false;
-            return true;
-        }
-
-        void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
-        {
-            Unit* target = GetTarget();
-            Unit* victim = target->getVictim();
-            if (victim && (target->GetHealthPct() > victim->GetHealthPct()))
-            {
-                if (!target->HasAura(ROGUE_SPELL_PREY_ON_THE_WEAK))
-                {
-                    int32 bp = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
-                    target->CastCustomSpell(target, ROGUE_SPELL_PREY_ON_THE_WEAK, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
-                }
-            }
-            else
-                target->RemoveAurasDueToSpell(ROGUE_SPELL_PREY_ON_THE_WEAK);
-        }
-
-        void Register()
-        {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_prey_on_the_weak_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_rog_prey_on_the_weak_AuraScript();
-    }
-};
-
 class spell_rog_deadly_poison : public SpellScriptLoader
 {
     public:
@@ -1333,7 +1287,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_poisons();
     new spell_rog_recuperate();
     new spell_rog_preparation();
-    new spell_rog_prey_on_the_weak();
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
 }

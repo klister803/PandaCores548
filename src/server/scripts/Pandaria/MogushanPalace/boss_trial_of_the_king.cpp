@@ -334,7 +334,7 @@ class mob_whirling_dervish : public CreatureScript
 
                 events.Update(diff);
 
-                if (me->getVictim()->GetDistance2d(me) > 5.0f)
+                if (me->getVictim() && me->getVictim()->GetDistance2d(me) > 5.0f)
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())

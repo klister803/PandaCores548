@@ -1728,7 +1728,7 @@ class npc_snake_trap : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                if (me->getVictim()->HasBreakableByDamageCrowdControlAura(me))
+                if (me->getVictim()->HasCrowdControlAura(me))
                 {
                     me->InterruptNonMeleeSpells(false);
                     return;
@@ -3145,34 +3145,6 @@ class npc_rate_xp_modifier : public CreatureScript
         }
 };
 
-#define GOSSIP_DEMORPH      "Je souhaiterais retrouver mon apparence normale"
-
-class npc_event_demorph : public CreatureScript
-{
-    public:
-        npc_event_demorph() : CreatureScript("npc_event_demorph") { }
-
-        bool OnGossipHello(Player *pPlayer, Creature *pCreature)
-        {
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_DEMORPH, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-		
-            pPlayer->PlayerTalkClass->SendGossipMenu(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
-        {
-            pPlayer->PlayerTalkClass->ClearMenus();
-
-            if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
-                pPlayer->DeMorph();
-
-            pPlayer->PlayerTalkClass->SendCloseGossip();
-
-            return true;
-        }
-};
-
 /*######
 ## npc_capacitor_totem
 ######*/
@@ -3881,7 +3853,7 @@ class npc_stone_bulwark_totem : public CreatureScript
 ## npc_earthgrab_totem
 ######*/
 
-#define EARTHGRAB     116943
+#define EARTHGRAB       116943
 
 class npc_earthgrab_totem : public CreatureScript
 {
@@ -3988,16 +3960,11 @@ class npc_ring_of_frost : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
 
-            bool isReady;
-            uint32 releaseTimer;
-
             void Reset()
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                releaseTimer = 3000;
-                isReady = false;
             }
 
             void InitializeAI()
@@ -4021,7 +3988,7 @@ class npc_ring_of_frost : public CreatureScript
 
             void CheckIfMoveInRing(Unit *who)
             {
-                if (who->isAlive() && me->IsInRange(who, 2.0f, 4.7f) && me->IsWithinLOSInMap(who) && isReady)
+                if (who->isAlive() && me->IsInRange(who, 2.0f, 4.7f) && me->IsWithinLOSInMap(who))
                 {
                     if (!who->HasAura(82691))
                     {
@@ -4037,18 +4004,6 @@ class npc_ring_of_frost : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (releaseTimer <= diff)
-                {
-                    if (!isReady)
-                    {
-                        isReady = true;
-                        releaseTimer = 9000; // 9sec
-                    }
-                    else
-                        me->DisappearAndDie();
-                }
-                else releaseTimer -= diff;
-
                 // Find all the enemies
                 std::list<Unit*> targets;
                 JadeCore::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 5.0f);
@@ -4100,7 +4055,6 @@ void AddSC_npcs_special()
     new npc_generic_harpoon_cannon();
     new npc_choose_faction();
     new npc_rate_xp_modifier();
-    new npc_event_demorph();
     new npc_capacitor_totem();
     new npc_feral_spirit();
     new npc_spirit_link_totem();

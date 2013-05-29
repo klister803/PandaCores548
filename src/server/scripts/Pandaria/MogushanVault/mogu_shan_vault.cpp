@@ -34,14 +34,14 @@ enum spells
     SPELL_FOCUSED_ASSAULT       = 116990
 };
 
-class mob_cursed_mogu_sculture : public CreatureScript
+class mob_cursed_mogu_sculpture : public CreatureScript
 {
     public:
-        mob_cursed_mogu_sculture() : CreatureScript("mob_cursed_mogu_sculture") {}
+        mob_cursed_mogu_sculpture() : CreatureScript("mob_cursed_mogu_sculture") {}
 
-        struct mob_cursed_mogu_scultureAI : public ScriptedAI
+        struct mob_cursed_mogu_sculptureAI : public ScriptedAI
         {
-            mob_cursed_mogu_scultureAI(Creature* creature) : ScriptedAI(creature)
+            mob_cursed_mogu_sculptureAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
             }
@@ -53,17 +53,30 @@ class mob_cursed_mogu_sculture : public CreatureScript
 
             void Reset()
             {
-                spiritBoltTimer = urand(5000, 8000);
-                groundSlamTimer = urand(8000, 10500);
+                spiritBoltTimer = urand(10000, 40000);
+                groundSlamTimer = urand(20000, 40000);
 
-                me->AddAura(120661, me);
-                me->AddAura(120613, me);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+
+                if (me->GetEntry() == 61334)
+                {
+                    me->AddAura(120613, me); // Pose
+                    me->AddAura(120661, me); // Bronze
+                }
+                else if (me->GetEntry() == 61989)
+                {
+                    me->AddAura(120650, me); // Pose
+                    me->AddAura(120663, me); // Pierre
+                }
             }
 
             void EnterCombat(Unit* attacker)
             {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(120661);
                 me->RemoveAurasDueToSpell(120613);
+                me->RemoveAurasDueToSpell(120650);
+                me->RemoveAurasDueToSpell(120663);
             }
 
             void UpdateAI(const uint32 diff)
@@ -76,7 +89,7 @@ class mob_cursed_mogu_sculture : public CreatureScript
                     if (Unit* target = me->SelectNearestTarget(5.0f))
                         if (!target->IsFriendlyTo(me))
                             me->CastSpell(target, SPELL_SPIRIT_BOLT, true);
-                    spiritBoltTimer = urand(5000, 8000);
+                    spiritBoltTimer = urand(10000, 30000);
                 }
                 else
                     spiritBoltTimer -= diff;
@@ -86,7 +99,7 @@ class mob_cursed_mogu_sculture : public CreatureScript
                     if (Unit* target = me->SelectNearestTarget(5.0f))
                         if (!target->IsFriendlyTo(me))
                             me->CastSpell(target, SPELL_GROUND_SLAM, true);
-                    groundSlamTimer = urand(8000, 10500);
+                    groundSlamTimer = urand(20000, 30000);
                 }
                 else
                     groundSlamTimer -= diff;
@@ -98,8 +111,16 @@ class mob_cursed_mogu_sculture : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new mob_cursed_mogu_scultureAI(creature);
+            return new mob_cursed_mogu_sculptureAI(creature);
         }
+};
+
+float quilenNewY[2] = {1170.0f, 1240.0f};
+
+enum enormousQuilenEvent
+{
+    EVENT_MONSTROUS_BITE = 1,
+    EVENT_NEXT_MOVEMENT  = 2
 };
 
 class mob_enormous_stone_quilen : public CreatureScript
@@ -112,38 +133,90 @@ class mob_enormous_stone_quilen : public CreatureScript
             mob_enormous_stone_quilenAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
+                prevPosition = 1;
+
+                if (me->GetPositionX() > 3900)
+                    prevPosition = 2;
+
+                nextMovementTimer = 0;
+                me->SetWalk(true);
+                me->GetMotionMaster()->MovePoint(prevPosition, me->GetPositionX(), quilenNewY[prevPosition - 1], me->GetPositionZ());
             }
 
             InstanceScript* pInstance;
             EventMap events;
-            uint32 monstrousBiteTimer;
+            uint32 nextMovementTimer;
+            uint8 prevPosition;
 
             void Reset()
             {
-                monstrousBiteTimer = urand (3000, 5000);
+                events.ScheduleEvent(EVENT_MONSTROUS_BITE, urand (3000, 5000));
+            }
+
+            void JustReachedHome()
+            {
+                prevPosition = 1;
+
+                if (me->GetPositionX() > 3900)
+                    prevPosition = 2;
+
+                nextMovementTimer = 0;
+                me->SetWalk(true);
+                me->GetMotionMaster()->MovePoint(prevPosition, me->GetPositionX(), quilenNewY[prevPosition - 1], me->GetPositionZ());
+            }
+
+            void MovementInform(uint32 typeId, uint32 pointId)
+            {
+                if (typeId != POINT_MOTION_TYPE)
+                    return;
+
+                if (me->isInCombat())
+                    return;
+
+                prevPosition = pointId;
+                nextMovementTimer = 500;
             }
 
             void EnterCombat(Unit* attacker)
             {
-                me->AddAura(SPELL_PETRIFICATION, me);
+                me->SetWalk(false);
+                //me->AddAura(SPELL_PETRIFICATION, me);
             }
 
             void UpdateAI(const uint32 diff)
             {
+                if (nextMovementTimer)
+                {
+                    if (nextMovementTimer <= diff)
+                    {
+                        me->GetMotionMaster()->MovePoint(prevPosition == 2 ? 1: 2, me->GetPositionX(), quilenNewY[prevPosition == 2 ? 0: 1], me->GetPositionZ());
+                        nextMovementTimer = 0;
+                    }
+                    else
+                        nextMovementTimer -= diff;
+                }
+
                 if (!UpdateVictim())
                     return;
 
-                if (monstrousBiteTimer <= diff)
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
                 {
-                    if (Unit* target = me->SelectNearestTarget(5.0f))
+                    switch (eventId)
                     {
-                        if (!target->IsFriendlyTo(me))
-                            me->CastSpell(target, SPELL_MONSTROUS_BITE, true);
+                        case EVENT_MONSTROUS_BITE:
+                        {
+                            if (Unit* target = me->SelectNearestTarget(5.0f))
+                            {
+                                if (!target->IsFriendlyTo(me))
+                                    me->CastSpell(target, SPELL_MONSTROUS_BITE, true);
+                            }
+                            events.ScheduleEvent(EVENT_MONSTROUS_BITE, urand(6000, 8000));
+                            break;
+                        }
                     }
-                    monstrousBiteTimer = urand(6000, 8000);
                 }
-                else
-                    monstrousBiteTimer -= diff;
 
                 DoMeleeAttackIfReady();
             }
@@ -236,6 +309,78 @@ class mob_stone_quilen : public CreatureScript
             return new mob_stone_quilenAI(creature);
         }
 };
+enum eSkullCharger
+{
+    SPELL_TROLL_RUSH    = 116006,
+    EVENT_TROLL_RUSH    = 1,
+};
+
+class mob_zandalari_skullcharger : public CreatureScript
+{
+    public:
+        mob_zandalari_skullcharger() : CreatureScript("mob_zandalari_skullcharger") {}
+
+        struct mob_zandalari_skullchargerAI : public ScriptedAI
+        {
+            mob_zandalari_skullchargerAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+            EventMap events;
+
+            void Reset()
+            {
+                events.Reset();
+
+                events.ScheduleEvent(EVENT_TROLL_RUSH, urand (5000, 6000));
+            }
+
+            void JustReachedHome()
+            {
+
+            }
+
+            void MovementInform(uint32 typeId, uint32 pointId)
+            {
+
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_TROLL_RUSH:
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST))
+                            {
+                                me->CastSpell(target, SPELL_TROLL_RUSH, true);
+                                me->GetMotionMaster()->MoveChase(target);
+                            }
+                            events.ScheduleEvent(EVENT_TROLL_RUSH,   urand (5000, 6000));
+                            break;
+                        }
+
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_zandalari_skullchargerAI(creature);
+        }
+};
 
 class spell_mogu_petrification : public SpellScriptLoader
 {
@@ -279,8 +424,9 @@ class spell_mogu_petrification : public SpellScriptLoader
 
 void AddSC_mogu_shan_vault()
 {
-    new mob_cursed_mogu_sculture();
+    new mob_cursed_mogu_sculpture();
     new mob_enormous_stone_quilen();
     new mob_stone_quilen();
+    new mob_zandalari_skullcharger();
     new spell_mogu_petrification();
 }

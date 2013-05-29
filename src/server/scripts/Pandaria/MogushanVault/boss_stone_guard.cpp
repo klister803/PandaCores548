@@ -98,7 +98,6 @@ class boss_stone_guard_controler : public CreatureScript
             EventMap events;
 
             uint32 lastPetrifierEntry;
-            uint32 killLeRouxTimer;
 
             uint8 totalGuardian;
 
@@ -111,7 +110,6 @@ class boss_stone_guard_controler : public CreatureScript
 
                 fightInProgress = false;
                 lastPetrifierEntry = 0;
-                killLeRouxTimer = 5000;
 
                 totalGuardian = 4;
 
@@ -181,6 +179,10 @@ class boss_stone_guard_controler : public CreatureScript
                                 if (Player* player = i->getSource())
                                     if (player->HasAura(SPELL_TOTALY_PETRIFIED))
                                         me->Kill(player);
+
+                            for (uint32 entry: guardiansEntry)
+                                if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(entry)))
+                                    pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gardian);
 
                             events.Reset();
                             events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
@@ -278,7 +280,7 @@ class boss_generic_guardian : public CreatureScript
                         spellPetrificationId        = SPELL_AMETHYST_PETRIFICATION;
                         spellPetrificationBarId     = SPELL_AMETHYST_PETRIFICATION_BAR;
                         spellTrueFormId             = SPELL_AMETHYST_TRUE_FORM;
-                        spellMainAttack             = SPELL_AMETHYST_POOL;
+                        spellMainAttack             = 0;//SPELL_AMETHYST_POOL; Not working actually, +/- 1000% bigger than it should be
                         break;
                     case NPC_COBALT:
                         spellOverloadId             = SPELL_COBALT_OVERLOAD;
@@ -340,7 +342,7 @@ class boss_generic_guardian : public CreatureScript
 
                     if (damage >= me->GetHealth())
                     {
-                        me->LowerPlayerDamageReq(me->GetHealth()); // Allow player loots even if only the controller has damaged the guardian
+                        me->LowerPlayerDamageReq(me->GetMaxHealth()); // Allow player loots even if only the controller has damaged the guardian
                         controller->AI()->DoAction(ACTION_GUARDIAN_DIED);
                     }
                 }
@@ -434,7 +436,7 @@ class boss_generic_guardian : public CreatureScript
                         if (Unit* victim = SelectTarget(SELECT_TARGET_TOPAGGRO))
                             me->CastSpell(victim, SPELL_REND_FLESH, false);
 
-                        events.ScheduleEvent(EVENT_REND_FLESH, 20000);
+                        events.ScheduleEvent(EVENT_REND_FLESH, urand(20000, 25000));
                         break;
                     case EVENT_MAIN_ATTACK:
                         if (isInTrueForm)
@@ -444,7 +446,7 @@ class boss_generic_guardian : public CreatureScript
                                 case NPC_JADE:
                                 {
                                     if (Unit* victim = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                                        me->CastSpell(victim, spellMainAttack, false);
+                                        me->CastSpell(victim, SPELL_JADE_SHARDS, false);
                                     break;
                                 }
                                 case NPC_COBALT:
@@ -555,6 +557,7 @@ class mob_cobalt_mine : public CreatureScript
         }
 };
 
+// Petrification - 115852 / 116006 / 116036 / 116057
 class spell_petrification : public SpellScriptLoader
 {
     public:
@@ -615,6 +618,7 @@ class spell_petrification : public SpellScriptLoader
         }
 };
 
+// Jasper Chains - 130395
 class spell_jasper_chains : public SpellScriptLoader
 {
     public:

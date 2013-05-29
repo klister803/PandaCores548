@@ -9,10 +9,24 @@
 #include "VMapFactory.h"
 #include "mogu_shan_vault.h"
 
+DoorData const doorData[] =
+{
+    {GOB_STONE_GUARD_DOOR_ENTRANCE,          DATA_STONE_GUARD,          DOOR_TYPE_ROOM,       BOUNDARY_S   },
+    {GOB_STONE_GUARD_DOOR_EXIT,              DATA_STONE_GUARD,          DOOR_TYPE_PASSAGE,    BOUNDARY_N   },
+    {GOB_FENG_DOOR_FENCE,                    DATA_FENG,                 DOOR_TYPE_ROOM,       BOUNDARY_NONE},
+    {GOB_FENG_DOOR_EXIT,                     DATA_FENG,                 DOOR_TYPE_PASSAGE,    BOUNDARY_N   },
+    {GOB_GARAJAL_FENCE,                      DATA_GARAJAL,              DOOR_TYPE_ROOM,       BOUNDARY_NONE},
+    //{GOB_GARAJAL_EXIT,                       DATA_GARAJAL,              DOOR_TYPE_PASSAGE,    BOUNDARY_W   },
+    //{GOB_SPIRIT_KINGS_WIND_WALL,             DATA_SPIRIT_KINGS          DOOR_TYPE_ROOM,       BOUNDARY_NONE},
+    //{GOB_SPIRIT_KINGS_EXIT,                  DATA_SPIRIT_KINGS,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {0,                                      0,                         DOOR_TYPE_ROOM,       BOUNDARY_NONE},// END
+};
+
 class instance_mogu_shan_vault : public InstanceMapScript
 {
 public:
     instance_mogu_shan_vault() : InstanceMapScript("instance_mogu_shan_vault", 1008) { }
+
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
@@ -24,18 +38,21 @@ public:
         instance_mogu_shan_vault_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 actualPetrifierEntry;
-        uint8  randomDespawnStoneGuardian;
+        int8   randomDespawnStoneGuardian;
 
         uint32 StoneGuardPetrificationTimer;
 
         uint64 stoneGuardControlerGuid;
         uint64 fengGuid;
+        uint64 inversionGobGuid;
+        uint64 cancelGobGuid;
         std::vector<uint64> stoneGuardGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
 
         void Initialize()
         {
             SetBossNumber(DATA_MAX_BOSS_DATA);
+            LoadDoorData(doorData);
 
             actualPetrifierEntry = 0;
             StoneGuardPetrificationTimer = 10000;
@@ -59,6 +76,7 @@ public:
                 case NPC_AMETHYST:
                 case NPC_COBALT:
                     stoneGuardGUIDs.push_back(creature->GetGUID());
+                    creature->Respawn(true);
 
                     if (--randomDespawnStoneGuardian == 0)
                     {
@@ -78,11 +96,27 @@ public:
         {
             switch (go->GetEntry())
             {
+                case GOB_STONE_GUARD_DOOR_ENTRANCE:
+                case GOB_STONE_GUARD_DOOR_EXIT:
+                case GOB_FENG_DOOR_FENCE:
+                case GOB_FENG_DOOR_EXIT:
+                case GOB_GARAJAL_FENCE:
+                case GOB_GARAJAL_EXIT:
+                case GOB_SPIRIT_KINGS_WIND_WALL:
+                case GOB_SPIRIT_KINGS_EXIT:
+                    AddDoor(go, true);
+                    break;
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
                 case GOB_SHIELD_STATUE:
                 case GOB_STAFF_STATUE:
                     fengStatuesGUIDs.push_back(go->GetGUID());
+                    break;
+                case GOB_INVERSION:
+                    inversionGobGuid = go->GetGUID();
+                    break;
+                case GOB_CANCEL:
+                    cancelGobGuid = go->GetGUID();
                     break;
             }
         }
@@ -167,6 +201,8 @@ public:
                                 return guid;
                     break;
                 }
+                case GOB_INVERSION: return inversionGobGuid;
+                case GOB_CANCEL:    return cancelGobGuid;
             }
             return 0;
         }

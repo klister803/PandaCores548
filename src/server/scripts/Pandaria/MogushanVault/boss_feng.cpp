@@ -161,10 +161,13 @@ class boss_feng : public CreatureScript
                 for (int i = 1; i <= (IsHeroic() ? 4: 3); ++i)
                     phaseList.push_back(i);
 
-                //std::random_shuffle(phaseList.begin(), phaseList.end());
+                //std::random_shuffle(phaseList.begin(), phaseList.end()); Todo : changer chaque semaine
 
                 for (auto visualSpellId: fengVisualId)
                     me->RemoveAurasDueToSpell(visualSpellId);
+
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
 
                 // Desactivate old statue
                 if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
@@ -172,6 +175,12 @@ class boss_feng : public CreatureScript
                     oldStatue->SetLootState(GO_READY);
                     oldStatue->UseDoorOrButton();
                 }
+
+                if (GameObject* inversionGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_INVERSION)))
+                    inversionGob->Respawn();
+
+                if (GameObject* cancelGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_CANCEL)))
+                    cancelGob->Respawn();
 
                 actualPhase  = PHASE_NONE;
                 nextPhasePct = 95;
@@ -497,7 +506,7 @@ class mob_wild_spark : public CreatureScript
             void Reset()
             {
                 me->SetReactState(REACT_PASSIVE);
-                me->CastSpell(me, 60438, true); // Fire aura
+                me->CastSpell(me, 116717, true); // Fire aura
             }
     
             void SpellHit(Unit* caster, SpellInfo const* spell)
@@ -511,12 +520,13 @@ class mob_wild_spark : public CreatureScript
                 if (type != POINT_MOTION_TYPE)
                     return;
 
-                if (InstanceScript* pInstance = me->GetInstanceScript())
-                    if (Creature* feng = pInstance->instance->GetCreature(pInstance->GetData64(NPC_FENG)))
-                    {
-                        feng->AI()->DoAction(ACTION_SPARK);
-                        me->DespawnOrUnsummon();
-                    }
+                if (id == 1)
+                    if (InstanceScript* pInstance = me->GetInstanceScript())
+                        if (Creature* feng = pInstance->instance->GetCreature(pInstance->GetData64(NPC_FENG)))
+                        {
+                            feng->AI()->DoAction(ACTION_SPARK);
+                            me->DespawnOrUnsummon();
+                        }
             }
 
             void UpdateAI(const uint32 diff)
@@ -530,6 +540,7 @@ class mob_wild_spark : public CreatureScript
         }
 };
 
+// Mogu Epicenter - 116040
 class spell_mogu_epicenter : public SpellScriptLoader
 {
     public:
@@ -565,6 +576,7 @@ class spell_mogu_epicenter : public SpellScriptLoader
         }
 };
 
+// Wildfire Spark - 116583
 class spell_mogu_wildfire_spark : public SpellScriptLoader
 {
     public:
@@ -603,6 +615,7 @@ class spell_mogu_wildfire_spark : public SpellScriptLoader
         }
 };
 
+// Wildfire Infusion - 116816
 class spell_mogu_wildfire_infusion : public SpellScriptLoader
 {
     public:
@@ -631,6 +644,7 @@ class spell_mogu_wildfire_infusion : public SpellScriptLoader
         }
 };
 
+// Arcane Velocity - 116365
 class spell_mogu_arcane_velocity : public SpellScriptLoader
 {
     public:
@@ -666,6 +680,7 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
         }
 };
 
+// Arcane Resonance - 116434
 class spell_mogu_arcane_resonance : public SpellScriptLoader
 {
     public:
@@ -703,6 +718,7 @@ class spell_mogu_arcane_resonance : public SpellScriptLoader
         }
 };
 
+// Mogu Inversion - 118300 / 118302 / 118304 / 118305 / 118307 / 118308 / 132296 / 132297 / 132298
 class spell_mogu_inversion : public SpellScriptLoader
 {
     public:

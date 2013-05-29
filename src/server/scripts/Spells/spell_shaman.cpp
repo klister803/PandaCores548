@@ -63,7 +63,8 @@ enum ShamanSpells
     SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661,
     SPELL_SHA_FIRE_NOVA                     = 1535,
     SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786,
-    SPELL_SHA_TIDAL_WAVES                   = 53390,
+    SPELL_SHA_TIDAL_WAVES                   = 51564,
+    SPELL_SHA_TIDAL_WAVES_PROC              = 53390,
     SPELL_SHA_MANA_TIDE                     = 16191,
     SPELL_SHA_FROST_SHOCK_FREEZE            = 63685,
     SPELL_SHA_FROZEN_POWER                  = 63374,
@@ -308,7 +309,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                     for (auto itr : memberList)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -320,7 +321,7 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                     for (auto itr : memberList)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -386,7 +387,7 @@ class spell_sha_ancestral_guidance : public SpellScriptLoader
 
                     bp = int32(bp * 0.40f);
 
-                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, true);
                 }
             }
 
@@ -506,12 +507,7 @@ class spell_sha_earthgrab : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         if (target->HasAura(SPELL_SHA_EARTHGRAB_IMMUNITY, caster->GetGUID()))
-                        {
-                            if (target->HasAura(GetSpellInfo()->Id), caster->GetGUID())
-                                target->RemoveAura(GetSpellInfo()->Id, caster->GetGUID());
-
                             caster->CastSpell(target, SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM, true);
-                        }
                         else
                             caster->CastSpell(target, SPELL_SHA_EARTHGRAB_IMMUNITY, true);
                     }
@@ -765,38 +761,46 @@ class spell_sha_mana_tide : public SpellScriptLoader
 // Tidal Waves - 51564
 class spell_sha_tidal_waves : public SpellScriptLoader
 {
-public:
-    spell_sha_tidal_waves() : SpellScriptLoader("spell_sha_tidal_waves") { }
+    public:
+        spell_sha_tidal_waves() : SpellScriptLoader("spell_sha_tidal_waves") { }
 
-    class spell_sha_tidal_waves_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_sha_tidal_waves_SpellScript)
-
-        bool Validate(SpellEntry const * /*spellEntry*/)
+        class spell_sha_tidal_waves_SpellScript : public SpellScript
         {
-            if (!sSpellMgr->GetSpellInfo(1064) || !sSpellMgr->GetSpellInfo(61295))
-                return false;
-            return true;
-        }
+            PrepareSpellScript(spell_sha_tidal_waves_SpellScript)
 
-        void HandleOnHit()
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(1064) || !sSpellMgr->GetSpellInfo(61295))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_SHA_TIDAL_WAVES))
+                    {
+                        if (Unit* target = GetHitUnit())
+                        {
+                            int32 bp0 = -(sSpellMgr->GetSpellInfo(SPELL_SHA_TIDAL_WAVES)->Effects[0].BasePoints);
+                            int32 bp1 = sSpellMgr->GetSpellInfo(SPELL_SHA_TIDAL_WAVES)->Effects[1].BasePoints;
+                            _player->CastCustomSpell(_player, SPELL_SHA_TIDAL_WAVES_PROC, &bp0, &bp1, NULL, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_tidal_waves_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript *GetSpellScript() const
         {
-            if (Player* _player = GetCaster()->ToPlayer())
-                if (_player->HasAura(51564))
-                    if (Unit* target = GetHitUnit())
-                        _player->CastSpell(_player, SPELL_SHA_TIDAL_WAVES, true);
+            return new spell_sha_tidal_waves_SpellScript();
         }
-
-        void Register()
-        {
-            OnHit += SpellHitFn(spell_sha_tidal_waves_SpellScript::HandleOnHit);
-        }
-    };
-
-    SpellScript *GetSpellScript() const
-    {
-        return new spell_sha_tidal_waves_SpellScript();
-    }
 };
 
 // Fire Nova - 1535
@@ -1459,32 +1463,6 @@ class EarthenPowerTargetSelector
         }
 };
 
-class spell_sha_earthen_power : public SpellScriptLoader
-{
-    public:
-        spell_sha_earthen_power() : SpellScriptLoader("spell_sha_earthen_power") { }
-
-        class spell_sha_earthen_power_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_earthen_power_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& unitList)
-            {
-                unitList.remove_if(EarthenPowerTargetSelector());
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_earthen_power_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_earthen_power_SpellScript();
-        }
-};
-
 class spell_sha_bloodlust : public SpellScriptLoader
 {
     public:
@@ -1598,7 +1576,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScriptLoader
             {
                 int32 damage = GetEffectValue();
                 if (GetCaster() && GetHitUnit())
-                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, true);
             }
 
             void Register()
@@ -1788,7 +1766,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_earthquake();
     new spell_sha_healing_rain();
     new spell_sha_ascendance();
-    new spell_sha_earthen_power();
     new spell_sha_bloodlust();
     new spell_sha_heroism();
     new spell_sha_ancestral_awakening_proc();

@@ -2829,16 +2829,16 @@ bool SpellInfo::IsBreakingCamouflage() const
 
     switch (Id)
     {
-        case 136: // Mend Pet
-        case 982: // Revive Pet
-        case 1130: // Hunter's Mark
-        case 1462: // Beast Lore
-        case 1499: // Frost Trap
-        case 1543: // Flare
-        case 3045: // Rapid Fire
-        case 5384: // Feign Death
-        case 6197: // Eagle Eye
-        case 6991: // Feed Pet
+        case 136:   // Mend Pet
+        case 982:   // Revive Pet
+        case 1130:  // Hunter's Mark
+        case 1462:  // Beast Lore
+        case 1499:  // Frost Trap
+        case 1543:  // Flare
+        case 3045:  // Rapid Fire
+        case 5384:  // Feign Death
+        case 6197:  // Eagle Eye
+        case 6991:  // Feed Pet
         case 13795: // Immolation Trap
         case 13809: // Ice Trap
         case 13813: // Explosive Trap
@@ -2860,6 +2860,7 @@ bool SpellInfo::IsBreakingCamouflage() const
         case 82945: // Immolation Trap Launcher
         case 82948: // Snake Trap launcher
         case 93435: // Roar of Courage (Special Ability)
+        case 109259:// Powershot
             return false;
     }
 

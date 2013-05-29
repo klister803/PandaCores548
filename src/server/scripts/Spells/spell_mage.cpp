@@ -125,7 +125,7 @@ class spell_mage_cauterize : public SpellScriptLoader
                     return;
 
                 int bp1 = target->CountPctFromMaxHealth(healtPct);
-                target->CastCustomSpell(target, SPELL_MAGE_CAUTERIZE, NULL, &bp1, NULL, NULL, NULL, NULL, true);
+                target->CastCustomSpell(target, SPELL_MAGE_CAUTERIZE, NULL, &bp1, NULL, true);
                 target->ToPlayer()->AddSpellCooldown(SPELL_MAGE_CAUTERIZE, 0, time(NULL) + 60);
 
                 absorbAmount = dmgInfo.GetDamage();
@@ -273,7 +273,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                             JadeCore::Containers::RandomResizeList(targetList, chargeCount);
 
                             for (auto itr : targetList)
-                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, NULL, NULL, NULL, true, 0, NULLAURA_EFFECT, _player->GetGUID());
+                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, _player->GetGUID());
                         }
                     }
                 }
@@ -660,7 +660,7 @@ class spell_mage_combustion : public SpellScriptLoader
                         }
 
                         if (combustionBp)
-                            _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, NULL, NULL, NULL, true);
+                            _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
                     }
                 }
             }
@@ -754,7 +754,7 @@ class spell_mage_inferno_blast : public SpellScriptLoader
 
                                 igniteBp += int32(GetHitDamage() * value / 2);
 
-                                _player->CastCustomSpell(itr, SPELL_MAGE_IGNITE, &igniteBp, NULL, NULL, NULL, NULL, NULL, true);
+                                _player->CastCustomSpell(itr, SPELL_MAGE_IGNITE, &igniteBp, NULL, NULL, true);
                             }
 
                             // 2 : Pyroblast
@@ -773,7 +773,7 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                                     combustionBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
                                 if (combustionBp)
-                                    _player->CastCustomSpell(itr, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, NULL, NULL, NULL, true);
+                                    _player->CastCustomSpell(itr, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
                             }
                         }
                     }
@@ -1224,7 +1224,7 @@ class spell_mage_incanters_absorbtion_base_AuraScript : public AuraScript
             if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(SPELL_MAGE_INCANTERS_ABSORBTION_R1, EFFECT_0))
             {
                 int32 bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
-                target->CastCustomSpell(target, SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED, &bp, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff);
+                target->CastCustomSpell(target, SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
             }
         }
 };

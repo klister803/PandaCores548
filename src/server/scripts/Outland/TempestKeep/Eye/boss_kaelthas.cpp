@@ -747,7 +747,7 @@ class boss_kaelthas : public CreatureScript
                                         //interruptable
                                         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, false);
                                         int32 dmg = 20000+rand()%5000;
-                                        me->CastCustomSpell(me->getVictim(), SPELL_FIREBALL, &dmg, 0, 0, NULL, NULL, NULL, false);
+                                        me->CastCustomSpell(me->getVictim(), SPELL_FIREBALL, &dmg, 0, 0, false);
                                         IsCastingFireball = true;
                                         Fireball_Timer = 2500;
                                     }

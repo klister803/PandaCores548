@@ -87,6 +87,104 @@ enum WarlockSpells
     WARLOCK_GLYPH_OF_CONFLAGRATE            = 56235,
 };
 
+// Grimoire of Sacrifice - 108503
+class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
+{
+    public:
+        spell_warl_grimoire_of_sacrifice() : SpellScriptLoader("spell_warl_grimoire_of_sacrifice") { }
+
+        class spell_warl_grimoire_of_sacrifice_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_grimoire_of_sacrifice_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* player = GetCaster()->ToPlayer())
+                {
+                    // EFFECT_0 : Instakill
+                    // EFFECT_1 : 2% health every 5s
+                    // EFFECT_2 : +50% DOT damage for Malefic Grasp, Drain Life and Drain Soul
+                    // EFFECT_3 : +30% damage for Shadow Bolt, Hand of Gul'Dan, Soul Fire, Wild Imps and Fel Flame
+                    // EFFECT_4 : +25% damage for Incinerate, Conflagrate, Chaos Bolt, Shadowburn and Fel Flame
+                    // EFFECT_5 : +50% damage for Fel Flame
+                    // EFFECT_6 : +20% Health if Soul Link talent is also chosen
+                    // EFFECT_7 : +50% on EFFECT_2 of Malefic Grasp
+                    // EFFECT_8 : +50% on EFFECT_4 and EFFECT_5 of Drain Soul -> Always set to 0
+                    // EFFECT_9 : Always set to 0
+                    // EFFECT_10 : Always set to 0
+                    if (AuraPtr grimoireOfSacrifice = player->GetAura(WARLOCK_GRIMOIRE_OF_SACRIFICE))
+                    {
+                        if (grimoireOfSacrifice->GetEffect(EFFECT_10))
+                            grimoireOfSacrifice->GetEffect(EFFECT_10)->SetAmount(0);
+                        if (grimoireOfSacrifice->GetEffect(EFFECT_9))
+                            grimoireOfSacrifice->GetEffect(EFFECT_9)->SetAmount(0);
+                        if (grimoireOfSacrifice->GetEffect(EFFECT_8))
+                            grimoireOfSacrifice->GetEffect(EFFECT_8)->SetAmount(0);
+
+                        if (!player->HasSpell(108415))
+                            if (grimoireOfSacrifice->GetEffect(EFFECT_6))
+                                grimoireOfSacrifice->GetEffect(EFFECT_6)->SetAmount(0);
+
+                        switch (player->GetSpecializationId(player->GetActiveSpec()))
+                        {
+                            case SPEC_WARLOCK_AFFLICTION:
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_3))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_3)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_4))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_4)->SetAmount(0);
+                                break;
+                            case SPEC_WARLOCK_DEMONOLOGY:
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_2))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_2)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_4))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_4)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_5))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_5)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_7))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_7)->SetAmount(0);
+                                break;
+                            case SPEC_WARLOCK_DESTRUCTION:
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_2))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_2)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_3))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_3)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_5))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_5)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_7))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_7)->SetAmount(0);
+                                break;
+                            case SPEC_NONE:
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_2))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_2)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_3))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_3)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_4))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_4)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_5))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_5)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_6))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_6)->SetAmount(0);
+                                if (grimoireOfSacrifice->GetEffect(EFFECT_7))
+                                    grimoireOfSacrifice->GetEffect(EFFECT_7)->SetAmount(0);
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_grimoire_of_sacrifice_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_grimoire_of_sacrifice_SpellScript();
+        }
+};
+
 // Flames of Xoroth - 120451
 class spell_warl_flames_of_xoroth : public SpellScriptLoader
 {
@@ -332,7 +430,7 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
                         if (!bp)
                             return;
 
-                        _player->CastCustomSpell(target, WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                        _player->CastCustomSpell(target, WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, true);
                     }
                 }
 
@@ -387,7 +485,7 @@ class spell_warl_archimondes_vengance_passive : public SpellScriptLoader
                         if (!bp)
                             return;
 
-                        _player->CastCustomSpell(eventInfo.GetActor(), WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                        _player->CastCustomSpell(eventInfo.GetActor(), WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, true);
                     }
                 }
             }
@@ -751,10 +849,10 @@ class spell_warl_soul_leech : public SpellScriptLoader
                         {
                             int32 bp = int32(GetHitDamage() / 10);
 
-                            _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                            _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
 
                             if (Guardian* pet = _player->GetGuardianPet())
-                                _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                                _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
                         }
                     }
                 }
@@ -1545,7 +1643,7 @@ class spell_warl_drain_life : public SpellScriptLoader
                     if (_player->HasAura(WARLOCK_SOULBURN_AURA))
                         basepoints = int32(basepoints * 1.5f);
 
-                    _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                    _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
                 }
             }
 
@@ -1679,7 +1777,7 @@ class spell_warl_harvest_life : public SpellScriptLoader
 
                     if (!_player->HasSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL))
                     {
-                        _player->CastCustomSpell(_player, WARLOCK_HARVEST_LIFE_HEAL, &basepoints, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
+                        _player->CastCustomSpell(_player, WARLOCK_HARVEST_LIFE_HEAL, &basepoints, NULL, NULL, true);
                         // prevent the heal to proc off for each targets
                         _player->AddSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL, 0, time(NULL) + 1);
                     }
@@ -1792,70 +1890,6 @@ public:
     }
 };
 
-// Updated 4.3.4
-// 47193 Demonic Empowerment
-class spell_warl_demonic_empowerment : public SpellScriptLoader
-{
-    public:
-        spell_warl_demonic_empowerment() : SpellScriptLoader("spell_warl_demonic_empowerment") { }
-
-        class spell_warl_demonic_empowerment_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_demonic_empowerment_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_SUCCUBUS) || !sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER) || !sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_FELGUARD) || !sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_FELHUNTER) || !sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_IMP))
-                    return false;
-                return true;
-            }
-
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
-            {
-                if (Creature* targetCreature = GetHitCreature())
-                {
-                    if (targetCreature->isPet())
-                    {
-                        CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(targetCreature->GetEntry());
-                        switch (ci->family)
-                        {
-                        case CREATURE_FAMILY_SUCCUBUS:
-                            targetCreature->CastSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_SUCCUBUS, true);
-                            break;
-                        case CREATURE_FAMILY_VOIDWALKER:
-                        {
-                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER);
-                            int32 hp = int32(targetCreature->CountPctFromMaxHealth(GetCaster()->CalculateSpellDamage(targetCreature, spellInfo, 0)));
-                            targetCreature->CastCustomSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER, &hp, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true);
-                            //unitTarget->CastSpell(unitTarget, 54441, true);
-                            break;
-                        }
-                        case CREATURE_FAMILY_FELGUARD:
-                            targetCreature->CastSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_FELGUARD, true);
-                            break;
-                        case CREATURE_FAMILY_FELHUNTER:
-                            targetCreature->CastSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_FELHUNTER, true);
-                            break;
-                        case CREATURE_FAMILY_IMP:
-                            targetCreature->CastSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_IMP, true);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warl_demonic_empowerment_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_demonic_empowerment_SpellScript();
-        }
-};
-
 // Create Healthstone - 6201
 class spell_warl_create_healthstone : public SpellScriptLoader
 {
@@ -1880,36 +1914,6 @@ class spell_warl_create_healthstone : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warl_create_healthstone_SpellScript();
-        }
-};
-
-// 47422 Everlasting Affliction
-class spell_warl_everlasting_affliction : public SpellScriptLoader
-{
-    public:
-        spell_warl_everlasting_affliction() : SpellScriptLoader("spell_warl_everlasting_affliction") { }
-
-        class spell_warl_everlasting_affliction_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_everlasting_affliction_SpellScript);
-
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* unitTarget = GetHitUnit())
-                    // Refresh corruption on target
-                    if (AuraEffectPtr aur = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, 0x2, 0, 0, GetCaster()->GetGUID()))
-                        aur->GetBase()->RefreshDuration();
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warl_everlasting_affliction_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_everlasting_affliction_SpellScript();
         }
 };
 
@@ -2094,7 +2098,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
                     {
                         int32 damage = aurEff->GetAmount() * 7;
                         // backfire damage and silence
-                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, NULL, NULL, NULL, true, NULL, aurEff);
+                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
                     }
             }
 
@@ -2112,6 +2116,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_grimoire_of_sacrifice();
     new spell_warl_flames_of_xoroth();
     new spell_warl_soul_link_dummy();
     new spell_warl_soul_link();
@@ -2154,9 +2159,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_harvest_life();
     new spell_warl_fear();
     new spell_warl_banish();
-    new spell_warl_demonic_empowerment();
     new spell_warl_create_healthstone();
-    new spell_warl_everlasting_affliction();
     new spell_warl_seed_of_corruption();
     new spell_warl_soulshatter();
     new spell_warl_demonic_circle_summon();
