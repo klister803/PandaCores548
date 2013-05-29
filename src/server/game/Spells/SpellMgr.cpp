@@ -3527,7 +3527,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 115294:// Mana Tea
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); // 1s
                 break;
-            case 44461: // Living Bomb
+            case 44457: // Living Bomb
                 spellInfo->MaxAffectedTargets = 3;
                 break;
             case 12051: // Evocation
