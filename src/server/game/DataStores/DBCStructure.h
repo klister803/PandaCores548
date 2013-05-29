@@ -1684,7 +1684,7 @@ struct SkillLineAbilityEntry
     uint32    learnOnGetSkill;                              // 7        m_acquireMethod
     uint32    max_value;                                    // 8        m_trivialSkillLineRankHigh
     uint32    min_value;                                    // 9        m_trivialSkillLineRankLow
-    //uint32  skill_gain                                    // 10       m_skillgain 1-5
+    uint32    skill_gain;                                   // 10       m_skillgain 1-5
     //uint32                                                // 11       4.0.0 unk (increment id)
     //uint32                                                // 12       5.0.5
 };
