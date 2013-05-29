@@ -522,27 +522,27 @@ bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName, uint
     return false;
 }
 
-bool Unit::HasBreakableByDamageAuraType(AuraType type, uint32 excludeAura) const
+bool Unit::HasCrowdControlAuraType(AuraType type, uint32 excludeAura) const
 {
     AuraEffectList const& auras = GetAuraEffectsByType(type);
     for (AuraEffectList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
         if ((!excludeAura || excludeAura != (*itr)->GetSpellInfo()->Id) && //Avoid self interrupt of channeled Crowd Control spells like Seduction
-            ((*itr)->GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
+            ((*itr)->GetSpellInfo()->Attributes & SPELL_ATTR0_BREAKABLE_BY_DAMAGE || (*itr)->GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
             return true;
     return false;
 }
 
-bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) const
+bool Unit::HasCrowdControlAura(Unit* excludeCasterChannel) const
 {
     uint32 excludeAura = 0;
     if (Spell* currentChanneledSpell = excludeCasterChannel ? excludeCasterChannel->GetCurrentSpell(CURRENT_CHANNELED_SPELL) : NULL)
         excludeAura = currentChanneledSpell->GetSpellInfo()->Id; //Avoid self interrupt of channeled Crowd Control spells like Seduction
 
-    return (   HasBreakableByDamageAuraType(SPELL_AURA_MOD_CONFUSE, excludeAura)
-            || HasBreakableByDamageAuraType(SPELL_AURA_MOD_FEAR, excludeAura)
-            || HasBreakableByDamageAuraType(SPELL_AURA_MOD_STUN, excludeAura)
-            || HasBreakableByDamageAuraType(SPELL_AURA_MOD_ROOT, excludeAura)
-            || HasBreakableByDamageAuraType(SPELL_AURA_TRANSFORM, excludeAura));
+    return (   HasCrowdControlAuraType(SPELL_AURA_MOD_CONFUSE, excludeAura)
+            || HasCrowdControlAuraType(SPELL_AURA_MOD_FEAR, excludeAura)
+            || HasCrowdControlAuraType(SPELL_AURA_MOD_STUN, excludeAura)
+            || HasCrowdControlAuraType(SPELL_AURA_MOD_ROOT, excludeAura)
+            || HasCrowdControlAuraType(SPELL_AURA_TRANSFORM, excludeAura));
 }
 
 void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
@@ -894,6 +894,17 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_DAMAGE_DONE, damage, 0, victim);
         killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HIT_DEALT, damage);
+    }
+    else if (GetTypeId() == TYPEID_UNIT && this != victim && isPet())
+    {
+        if (GetOwner() && GetOwner()->ToPlayer())
+        {
+            Player* killerOwner = GetOwner()->ToPlayer();
+
+            if (victim->GetTypeId() == TYPEID_PLAYER)
+                if (Battleground* bg = killerOwner->GetBattleground())
+                    bg->UpdatePlayerScore(killerOwner, SCORE_DAMAGE_DONE, damage);
+        }
     }
 
     if (victim->GetTypeId() == TYPEID_PLAYER)
@@ -3449,7 +3460,7 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
         {
             for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 if (aura->GetEffect(i))
-                    aura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount() * 2);
+                    aura->GetEffect(i)->SetAmount(aura->GetSpellInfo()->Effects[i].BasePoints * 2);
         }
     }
 
@@ -3985,7 +3996,8 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
     if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
         if (spell->getState() == SPELL_STATE_CASTING
             && (spell->m_spellInfo->ChannelInterruptFlags & flag)
-            && spell->m_spellInfo->Id != except)
+            && spell->m_spellInfo->Id != except
+            && !(spell->m_spellInfo->Id == 120360 && flag == AURA_INTERRUPT_FLAG_MOVE))
             InterruptNonMeleeSpells(false);
 
     UpdateInterruptMask();
@@ -10072,7 +10084,7 @@ void Unit::SetCharm(Unit* charm, bool apply)
     }
 }
 
-int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
+int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto)
 {
     int32 gain = 0;
 
@@ -10104,7 +10116,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
     // 117907 - Mastery : Gift of the Serpent
-    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907))
+    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907) && spellProto && spellProto->Id != 124041)
     {
         float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.22f;
 
@@ -10361,7 +10373,7 @@ int32 Unit::HealBySpell(Unit* victim, SpellInfo const* spellInfo, uint32 addHeal
     // calculate heal absorb and reduce healing
     CalcHealAbsorb(victim, spellInfo, addHealth, absorb);
 
-    int32 gain = DealHeal(victim, addHealth);
+    int32 gain = DealHeal(victim, addHealth, spellInfo);
     SendHealSpellLog(victim, spellInfo->Id, addHealth, uint32(addHealth - gain), absorb, critical);
     return gain;
 }
@@ -11691,6 +11703,11 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
         else if ((*i)->GetBase()->GetId() == 974) // Hack fix for Earth Shield
             AddPct(TakenTotalMod, (*i)->GetAmount());
     }
+
+    AuraEffectList const& mHotPct = GetAuraEffectsByType(SPELL_AURA_MOD_HOT_PCT);
+    for (AuraEffectList::const_iterator i = mHotPct.begin(); i != mHotPct.end(); ++i)
+        if (damagetype == DOT)
+            AddPct(TakenTotalMod, (*i)->GetAmount());
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
@@ -15439,17 +15456,32 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (isVictim)
             procExtra &= ~PROC_EX_INTERNAL_REQ_FAMILY;
 
+        // only auras that has triggered spell should proc from fully absorbed damage
         SpellInfo const* spellProto = itr->second->GetBase()->GetSpellInfo();
+        if ((procExtra & PROC_EX_ABSORB && isVictim) || ((procFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG) && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC))
+        {
+            bool triggerSpell = false;
+            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                if (spellProto->Effects[i].TriggerSpell)
+                    triggerSpell = true;
+
+            if (damage || triggerSpell)
+                active = true;
+        }
 
         // Custom MoP Script
         // Breath of Fire DoT shoudn't remove Breath of Fire disorientation - Hack Fix
         if (procSpell && procSpell->Id == 123725 && itr->first == 123393)
             continue;
 
-        // only auras that has triggered spell should proc from fully absorbed damage
-        if (procExtra & PROC_EX_ABSORB && isVictim)
-            if (damage || spellProto->Effects[EFFECT_0].TriggerSpell || spellProto->Effects[EFFECT_1].TriggerSpell || spellProto->Effects[EFFECT_2].TriggerSpell)
-                active = true;
+        // time for hardcode! Some spells can proc on absorb
+        if (triggerData.aura && triggerData.aura->GetSpellInfo() && (triggerData.aura->GetSpellInfo()->Id == 33757 ||
+            triggerData.aura->GetSpellInfo()->Id == 28305 || triggerData.aura->GetSpellInfo()->Id == 2823 ||
+            triggerData.aura->GetSpellInfo()->Id == 3408 || triggerData.aura->GetSpellInfo()->Id == 5761 ||
+            triggerData.aura->GetSpellInfo()->Id == 8679 || triggerData.aura->GetSpellInfo()->Id == 108211 ||
+            triggerData.aura->GetSpellInfo()->Id == 108215 || triggerData.aura->GetSpellInfo()->GetSpellSpecific() == SPELL_SPECIFIC_SEAL ||
+            triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH) || triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_INVISIBILITY)))
+            active = true;
 
         if (!IsTriggeredAtSpellProcEvent(target, triggerData.aura, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent))
             continue;
@@ -15725,6 +15757,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         //break;
                     default:
                         // nothing do, just charges counter
+                        // Don't drop charge for Earth Shield because of second effect
+                        if (triggeredByAura->GetId() == 974)
+                            break;
+
                         takeCharges = true;
                         break;
                 } // switch (triggeredByAura->GetAuraType())

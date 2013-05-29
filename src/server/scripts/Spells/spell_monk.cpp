@@ -1898,9 +1898,57 @@ class spell_monk_soothing_mist : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (!GetCaster())
+                    return;
+
+                if (Unit* target = GetTarget())
+                    target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (Unit* target = GetTarget())
-                        target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
+                    {
+                        std::list<Unit*> playerList;
+                        std::list<Creature*> tempList;
+                        std::list<Creature*> statueList;
+                        Creature* statue;
+
+                        _player->GetPartyMembers(playerList);
+
+                        if (playerList.size() > 1)
+                        {
+                            playerList.remove(target);
+                            playerList.sort(JadeCore::HealthPctOrderPred());
+                            playerList.resize(1);
+                        }
+
+                        _player->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
+                        _player->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
+
+                        // Remove other players jade statue
+                        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                        {
+                            Unit* owner = (*i)->GetOwner();
+                            if (owner && owner == _player && (*i)->isSummon())
+                                continue;
+
+                            statueList.remove((*i));
+                        }
+
+                        for (auto itr : playerList)
+                        {
+                            if (statueList.size() == 1)
+                            {
+                                for (auto itrBis : statueList)
+                                    statue = itrBis;
+
+                                if (statue && (statue->isPet() || statue->isGuardian()))
+                                    if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _player->GetGUID())
+                                        statue->CastSpell(itr, GetSpellInfo()->Id, true);
+                            }
+                        }
+                    }
+                }
             }
 
             void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)

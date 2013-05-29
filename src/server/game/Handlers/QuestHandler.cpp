@@ -129,6 +129,9 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
         return;
     }
 
+    if (object && object->GetTypeId() == TYPEID_PLAYER && !object->hasQuest(questId))
+        return;
+
     // some kind of WPE protection
     if (!_player->CanInteractWithQuestGiver(object))
         return;
@@ -142,6 +145,9 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
             _player->SetDivider(0);
             return;
         }
+
+        if (object && object->GetTypeId() == TYPEID_PLAYER && !quest->HasFlag(QUEST_FLAGS_SHARABLE))
+            return;
 
         if (_player->GetDivider() != 0)
         {
@@ -618,7 +624,7 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
                     continue;
                 }
 
-                player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true);
+                player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, _player->GetGUID(), true);
                 player->SetDivider(_player->GetGUID());
             }
         }

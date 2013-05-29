@@ -19,6 +19,10 @@ enum eZhaoEvents
 enum eSpells
 {
     SPELL_JADE_FIRE         = 127422,
+    SPELL_JADE_STRENGHT     = 127462,
+    SPELL_LIGHTNING_BREATH  = 126491,
+    SPELL_LIGHTNING_POOL    = 129695,
+    SPELL_LIGHTNING_WHIRL   = 126522,
 };
 class mob_zhao_jin : public CreatureScript
 {
@@ -191,7 +195,7 @@ class mob_reanimated_jade_warrior : public CreatureScript
 
                 if (jadeStrenghtTimer <= diff)
                 {
-                    me->CastSpell(me, 1, true);
+                    me->CastSpell(me, SPELL_JADE_STRENGHT, true);
                     jadeStrenghtTimer = urand(20000, 22000);
                 }
                 else
@@ -206,9 +210,82 @@ class mob_reanimated_jade_warrior : public CreatureScript
             return new mob_reanimated_jade_warriorAI(creature);
         }
 };
+
+class mob_subjuged_serpent : public CreatureScript
+{
+    public:
+        mob_subjuged_serpent() : CreatureScript("mob_subjuged_serpent") {}
+
+        struct mob_subjuged_serpentAI : public ScriptedAI
+        {
+            mob_subjuged_serpentAI(Creature* creature) : ScriptedAI(creature) { }
+
+            uint32 lightningBreathTimer;
+            uint32 lightningPoolTimer;
+            uint32 lightningWhirlTimer;
+
+            void Reset()
+            {
+                lightningBreathTimer = urand(2000, 3000);
+                lightningPoolTimer   = urand(5000, 7000);
+                lightningWhirlTimer  = urand(3000, 6000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (lightningBreathTimer <= diff)
+                {
+                    if (Unit* target = me->SelectNearestTarget(5.0f))
+                        if (!target->IsFriendlyTo(me))
+                        {
+                            me->CastSpell(target, SPELL_LIGHTNING_BREATH, true);
+                            lightningBreathTimer = urand(13000, 18000);
+                        }
+                }
+                else
+                    lightningBreathTimer -= diff;
+
+                if (lightningPoolTimer <= diff)
+                {
+                    if (Unit* target = me->SelectNearestTarget(5.0f))
+                        if (!target->IsFriendlyTo(me))
+                        {
+                            me->CastSpell(target, SPELL_LIGHTNING_POOL, true);
+                            lightningPoolTimer = urand(27000, 29000);
+                        }
+                 }
+                 else
+                     lightningPoolTimer -= diff;
+
+                 if (lightningWhirlTimer <= diff)
+                 {
+                     if (Unit* target = me->SelectNearestTarget(5.0f))
+                         if (!target->IsFriendlyTo(me))
+                         {
+                             me->CastSpell(target, SPELL_LIGHTNING_WHIRL, true);
+                             lightningWhirlTimer = urand(7000, 10000);
+                         }
+                 }
+                 else
+                 lightningWhirlTimer -= diff;
+
+                 DoMeleeAttackIfReady();
+                 }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_subjuged_serpentAI(creature);
+        }
+};
+
 void AddSC_vale_of_eternal_blossoms()
 {
     new mob_zhao_jin();
     new npc_lao_softfoot();
     new mob_reanimated_jade_warrior();
+    new mob_subjuged_serpent();
 }

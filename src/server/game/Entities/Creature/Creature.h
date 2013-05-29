@@ -618,6 +618,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void SendAIReaction(AiReaction reactionType);
 
         Unit* SelectNearestTarget(float dist = 0) const;
+        Unit* SelectNearestTargetNoCC(float dist = 0) const;
         Unit* SelectNearestTargetInAttackDistance(float dist = 0) const;
         Player* SelectNearestPlayer(float distance = 0) const;
         Player* SelectNearestPlayerNotGM(float distance = 0) const;

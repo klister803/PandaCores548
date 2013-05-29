@@ -34,14 +34,14 @@ enum spells
     SPELL_FOCUSED_ASSAULT       = 116990
 };
 
-class mob_cursed_mogu_sculture : public CreatureScript
+class mob_cursed_mogu_sculpture : public CreatureScript
 {
     public:
-        mob_cursed_mogu_sculture() : CreatureScript("mob_cursed_mogu_sculture") {}
+        mob_cursed_mogu_sculpture() : CreatureScript("mob_cursed_mogu_sculture") {}
 
-        struct mob_cursed_mogu_scultureAI : public ScriptedAI
+        struct mob_cursed_mogu_sculptureAI : public ScriptedAI
         {
-            mob_cursed_mogu_scultureAI(Creature* creature) : ScriptedAI(creature)
+            mob_cursed_mogu_sculptureAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
             }
@@ -111,7 +111,7 @@ class mob_cursed_mogu_sculture : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new mob_cursed_mogu_scultureAI(creature);
+            return new mob_cursed_mogu_sculptureAI(creature);
         }
 };
 
@@ -424,7 +424,7 @@ class spell_mogu_petrification : public SpellScriptLoader
 
 void AddSC_mogu_shan_vault()
 {
-    new mob_cursed_mogu_sculture();
+    new mob_cursed_mogu_sculpture();
     new mob_enormous_stone_quilen();
     new mob_stone_quilen();
     new mob_zandalari_skullcharger();

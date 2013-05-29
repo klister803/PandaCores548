@@ -313,8 +313,14 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive())
+    if (!unitTarget || (!unitTarget->isAlive() && m_spellInfo->Id != 108503))
         return;
+
+    if (m_spellInfo->Id == 108503 && (!unitTarget->GetHealth() || !unitTarget->isAlive()))
+    {
+        unitTarget->ToPet()->Remove(PET_SLOT_ACTUAL_PET_SLOT);
+        return;
+    }
 
     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
         if (unitTarget->ToPlayer()->GetCommandStatus(CHEAT_GOD))
@@ -637,31 +643,31 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
-                    case 108561: // Jab (Staff)
+                    case 108557: // Jab (Staff)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
-                    case 115697: // Jab (Polearm)
+                    case 115698: // Jab (Polearm)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
-                    case 115689: // Jab (Axes)
+                    case 115687: // Jab (Axes)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
-                    case 115694: // Jab (Maces)
+                    case 115693: // Jab (Maces)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
-                    case 115696: // Jab (Swords)
+                    case 115695: // Jab (Swords)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
                     case 115080: // Touch of Death
                         if (Unit* caster = GetCaster())
                             if (Unit* victim = caster->getVictim())
-                                damage = victim->GetHealth() * 2;
-                        break;
+                                m_caster->DealDamage(victim, victim->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        return;
                     case 100787: // Tiger Palm
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 3.0f, 14);
