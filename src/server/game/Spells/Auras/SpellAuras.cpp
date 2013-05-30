@@ -928,6 +928,10 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
         }
 
         SetCharges(charges);
+
+        // Molten Core : charges = stackAmount
+        if (GetId() == 122355)
+            SetStackAmount(charges);
     }
     return false;
 }
@@ -992,6 +996,9 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
         // Fix Backdraft can stack up to 6 charges max
         if (m_spellInfo->Id == 117828)
             SetCharges((GetCharges() + 3) > 6 ? 6 : GetCharges() + 3);
+        // Molten Core - Just apply one charge by one charge
+        else if (m_spellInfo->Id == 122355)
+           SetCharges(GetCharges() + 1);
         // reset charges
         else
             SetCharges(CalcMaxCharges());

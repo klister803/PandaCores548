@@ -3235,7 +3235,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetB = 0;
                 break;
             case 122355:// Molten Core
-                spellInfo->StackAmount = 2;
+                spellInfo->StackAmount = 255;
                 break;
             case 6203:  // Soulstone
                 spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
