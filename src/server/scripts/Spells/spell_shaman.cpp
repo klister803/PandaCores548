@@ -89,6 +89,7 @@ enum ShamanSpells
     SPELL_SHA_SOLAR_BEAM                    = 113286,
     SPELL_SHA_SOLAR_BEAM_SILENCE            = 113288,
     SPELL_SHA_GHOST_WOLF                    = 2645,
+    SPELL_SHA_ITEM_T14_4P                   = 123124,
 };
 
 // Prowl - 113289
@@ -979,12 +980,22 @@ class spell_sha_rolling_thunder : public SpellScriptLoader
 
                                 uint8 lsCharges = lightningShield->GetCharges();
 
-                                if (lsCharges < 9)
+                                if (lsCharges < 6)
+                                {
+                                    uint8 chargesBonus = _player->HasAura(SPELL_SHA_ITEM_T14_4P) ? 2 : 1;
+                                    lightningShield->SetCharges(lsCharges + chargesBonus);
+                                    lightningShield->RefreshDuration();
+                                }
+                                else if (lsCharges < 7)
                                 {
                                     lightningShield->SetCharges(lsCharges + 1);
                                     lightningShield->RefreshDuration();
                                 }
-                                if (lsCharges > 7 && _player->HasAura(SPELL_SHA_FULMINATION))
+
+                                // refresh to handle Fulmination visual
+                                lsCharges = lightningShield->GetCharges();
+
+                                if (lsCharges >= 7 && _player->HasAura(SPELL_SHA_FULMINATION))
                                     _player->CastSpell(_player, SPELL_SHA_FULMINATION_INFO, true);
                             }
                         }
@@ -1007,60 +1018,62 @@ class spell_sha_rolling_thunder : public SpellScriptLoader
 // 88766 Fulmination handled in 8042 Earth Shock
 class spell_sha_fulmination : public SpellScriptLoader
 {
-public:
-    spell_sha_fulmination() : SpellScriptLoader("spell_sha_fulmination") { }
+    public:
+        spell_sha_fulmination() : SpellScriptLoader("spell_sha_fulmination") { }
 
-    class spell_sha_fulmination_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_sha_fulmination_SpellScript)
-
-        bool Validate(SpellEntry const * /*spellEntry*/)
+        class spell_sha_fulmination_SpellScript : public SpellScript
         {
-            if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_TRIGGERED) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_INFO))
-                return false;
-            return true;
-        }
+            PrepareSpellScript(spell_sha_fulmination_SpellScript)
 
-        void HandleFulmination(SpellEffIndex /*effIndex*/)
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_TRIGGERED) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_INFO))
+                    return false;
+                return true;
+            }
+
+            void HandleFulmination(SpellEffIndex /*effIndex*/)
+            {
+                // make caster cast a spell on a unit target of effect
+                Unit *target = GetHitUnit();
+                Unit *caster = GetCaster();
+                if(!target || !caster)
+                    return;
+
+                AuraEffectPtr fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
+                if (!fulminationAura)
+                    return;
+
+                AuraPtr lightningShield = caster->GetAura(324);
+                if(!lightningShield)
+                    return;
+
+                uint8 lsCharges = lightningShield->GetCharges();
+                if(lsCharges <= 1)
+                    return;
+
+                uint8 usedCharges = lsCharges - 1;
+
+                SpellEntry const* spellInfo = sSpellStore.LookupEntry(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
+                int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
+                uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE);
+
+                caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
+                lightningShield->SetCharges(lsCharges - usedCharges);
+
+                caster->RemoveAura(SPELL_SHA_FULMINATION_INFO);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_sha_fulmination_SpellScript::HandleFulmination, EFFECT_FIRST_FOUND, SPELL_EFFECT_ANY);
+            }
+        };
+
+        SpellScript *GetSpellScript() const
         {
-            // make caster cast a spell on a unit target of effect
-            Unit *target = GetHitUnit();
-            Unit *caster = GetCaster();
-            if(!target || !caster)
-                return;
-
-            AuraEffectPtr fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
-            if (!fulminationAura)
-                return;
-
-            AuraPtr lightningShield = caster->GetAura(324);
-            if(!lightningShield)
-                return;
-
-            uint8 lsCharges = lightningShield->GetCharges();
-            if(lsCharges <= 1)
-                return;
-
-            uint8 usedCharges = lsCharges - 1;
-
-            SpellEntry const* spellInfo = sSpellStore.LookupEntry(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
-            int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
-            uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE);
-
-            caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
-            lightningShield->SetCharges(lsCharges - usedCharges);
+            return new spell_sha_fulmination_SpellScript();
         }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_sha_fulmination_SpellScript::HandleFulmination, EFFECT_FIRST_FOUND, SPELL_EFFECT_ANY);
-        }
-    };
-
-    SpellScript *GetSpellScript() const
-    {
-        return new spell_sha_fulmination_SpellScript();
-    }
 };
 
 // Triggered by Flame Shock - 8050
