@@ -3301,9 +3301,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[2].TargetA = TARGET_DEST_TARGET_ENEMY;
                 spellInfo->Effects[2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                 break;
-            case 73680: // Unleash Elements
-                spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
-                break;
             case 853:   // Hammer of Justice
                 spellInfo->OverrideSpellList.push_back(105593); // Replace Hammer of Justice by Fist of Justice
                 break;
@@ -3809,7 +3806,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].BasePoints = 1;
                 break;
             case 107223:
-                spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 break;
             case 106909:
@@ -3829,12 +3825,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 }
                 break;
             case 106736:
-                spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                 break;
             case 106113:
-                spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                 break;
@@ -3853,7 +3847,6 @@ void SpellMgr::LoadSpellCustomAttr()
                         break;
 
                     spellInfo->Effects[0].RadiusEntry = radius; //200yards.
-                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_DEST_LOCATION;
                 }
                 break;
             case 106847:
@@ -3920,6 +3913,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 116606:
                 spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
+            case 118303:
+                spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
+                spellInfo->Effects[EFFECT_0].TargetB = 0;
+                spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
             default:
                 break;
             }
@@ -3942,6 +3940,25 @@ void SpellMgr::LoadSpellCustomAttr()
 
             // This must be re-done if targets changed since the spellinfo load
             spellInfo->ExplicitTargetMask = spellInfo->_GetExplicitTargetMask();
+
+            switch (spellInfo->Id)
+            {
+                case 73680: // Unleash Elements
+                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
+                    break;
+                case 107223:
+                    spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
+                   break;
+                case 106736:
+                    spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
+                    break;
+                case 106112:
+                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_DEST_LOCATION;
+                    break;
+                case 106113:
+                    spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
+                    break;
+            }
         }
     }
 
