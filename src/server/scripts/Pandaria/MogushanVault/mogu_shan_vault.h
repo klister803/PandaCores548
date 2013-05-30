@@ -37,7 +37,8 @@ enum eActions
     // Spirit Kings
     ACTION_FIRST_FIGHT              = 6,
     ACTION_FLANKING_MOGU            = 7,
-    ACTION_SPIRIT_KILLED            = 8
+    ACTION_SPIRIT_LOW_HEALTH        = 8,
+    ACTION_SPIRIT_KILLED            = 9
 };
 
 enum eCreatures
@@ -49,9 +50,11 @@ enum eCreatures
     NPC_AMETHYST                    = 60047,
     NPC_COBALT                      = 60051,
 
+    // Feng
     NPC_FENG                        = 60009,
     NPC_PHASE_CONTROLER             = 61124,
 
+    // Garajal
     NPC_GARAJAL                     = 60143,
     NPC_SHADOWY_MINION_REAL         = 60940,
     NPC_SHADOWY_MINION_SPIRIT       = 60184,
@@ -59,14 +62,19 @@ enum eCreatures
 
     // Spirit kings
     NPC_SPIRIT_GUID_CONTROLER       = 60984,
+
     NPC_ZIAN                        = 60701,
     NPC_MENG                        = 60708,
     NPC_QIANG                       = 60709,
     NPC_SUBETAI                     = 60710,
-    NPC_FLANKING_MOGU               = 60847,
 
+    NPC_FLANKING_MOGU               = 60847,
+    NPC_PINNING_ARROW               = 60958,
+
+    // Elegon
     NPC_ELEGON                      = 60410,
     
+    // End
     NPC_QANXI                       = 60399,
     NPC_JANXI                       = 60400
 };
