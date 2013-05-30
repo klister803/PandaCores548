@@ -25,11 +25,19 @@ enum eData
 enum eActions
 {
     ACTION_ENTER_COMBAT             = 1,
-    ACTION_GUARDIAN_DIED            = 2,
-    ACTION_PETRIFICATION            = 3,
-    ACTION_FAIL                     = 4,
+    ACTION_FAIL                     = 2,
 
-    ACTION_SPARK                    = 5
+    // Stone Guard
+    ACTION_GUARDIAN_DIED            = 3,
+    ACTION_PETRIFICATION            = 4,
+
+    // Feng
+    ACTION_SPARK                    = 5,
+
+    // Spirit Kings
+    ACTION_FIRST_FIGHT              = 6,
+    ACTION_FLANKING_MOGU            = 7,
+    ACTION_SPIRIT_KILLED            = 8
 };
 
 enum eCreatures
@@ -50,10 +58,12 @@ enum eCreatures
     NPC_SOUL_CUTTER                 = 62003,
 
     // Spirit kings
+    NPC_SPIRIT_GUID_CONTROLER       = 60984,
     NPC_ZIAN                        = 60701,
     NPC_MENG                        = 60708,
     NPC_QIANG                       = 60709,
     NPC_SUBETAI                     = 60710,
+    NPC_FLANKING_MOGU               = 60847,
 
     NPC_ELEGON                      = 60410,
     

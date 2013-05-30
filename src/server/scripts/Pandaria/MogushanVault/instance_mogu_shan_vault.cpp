@@ -46,8 +46,11 @@ public:
         uint64 fengGuid;
         uint64 inversionGobGuid;
         uint64 cancelGobGuid;
+        uint64 spiritKingsControlerGuid;
+
         std::vector<uint64> stoneGuardGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
+        std::vector<uint64> spiritKingsGUIDs;
 
         void Initialize()
         {
@@ -56,10 +59,16 @@ public:
 
             actualPetrifierEntry = 0;
             StoneGuardPetrificationTimer = 10000;
+
             stoneGuardControlerGuid = 0;
+            fengGuid = 0;
+            inversionGobGuid = 0;
+            cancelGobGuid = 0;
+            spiritKingsControlerGuid = 0;
 
             stoneGuardGUIDs.clear();
             fengStatuesGUIDs.clear();
+            spiritKingsGUIDs.clear();
 
             randomDespawnStoneGuardian = urand(1,4);
         }
@@ -86,6 +95,15 @@ public:
                     break;
                 case NPC_FENG:
                     fengGuid = creature->GetGUID();
+                    break;
+                case NPC_SPIRIT_GUID_CONTROLER:
+                    spiritKingsControlerGuid = creature->GetGUID();
+                    break;
+                case NPC_ZIAN:
+                case NPC_MENG:
+                case NPC_QIANG:
+                case NPC_SUBETAI:
+                    spiritKingsGUIDs.push_back(creature->GetGUID());
                     break;
                 default:
                     break;
@@ -153,6 +171,27 @@ public:
                     }
                     break;
                 }
+                case DATA_SPIRIT_KINGS:
+                {
+                    switch (state)
+                    {
+                        case IN_PROGRESS:
+                        {
+                            if (Creature* spiritKingsControler = instance->GetCreature(spiritKingsControlerGuid))
+                                spiritKingsControler->AI()->DoAction(ACTION_ENTER_COMBAT);
+                            break;
+                        }
+                        case FAIL:
+                        {
+                            for (auto spiritKingsGuid: spiritKingsGUIDs)
+                                if (Creature* spiritKings = instance->GetCreature(spiritKingsGuid))
+                                    spiritKings->AI()->DoAction(ACTION_FAIL);
+                        }
+                        default:
+                            break;
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -189,6 +228,17 @@ public:
                 }
                 case NPC_FENG:
                     return fengGuid;
+                case NPC_ZIAN:
+                case NPC_MENG:
+                case NPC_QIANG:
+                case NPC_SUBETAI:
+                {
+                    for (auto guid: spiritKingsGUIDs)
+                        if (Creature* spiritKing = instance->GetCreature(guid))
+                            if (spiritKing->GetEntry() == type)
+                                return guid;
+                    break;
+                }
                 // Gameobject
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:

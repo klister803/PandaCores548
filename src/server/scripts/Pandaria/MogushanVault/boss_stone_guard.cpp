@@ -129,6 +129,7 @@ class boss_stone_guard_controler : public CreatureScript
                             if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(entry)))
                                 pInstance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, gardian);
 
+                        events.ScheduleEvent(EVENT_PETRIFICATION, 15000);
                         fightInProgress = true;
                         break;
                     }
@@ -186,25 +187,27 @@ class boss_stone_guard_controler : public CreatureScript
 
                             events.Reset();
                             events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
-                            events.ScheduleEvent(EVENT_PETRIFICATION, 15000);
                         }
                         else
                             events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
                         break;
                     case EVENT_PETRIFICATION:
                     {
-                        uint32 nextPetrifierEntry = 0;
-                        do
+                        if (fightInProgress)
                         {
-                            nextPetrifierEntry = guardiansEntry[rand() % 4];
+                            uint32 nextPetrifierEntry = 0;
+                            do
+                            {
+                                nextPetrifierEntry = guardiansEntry[rand() % 4];
+                            }
+                            while (nextPetrifierEntry == lastPetrifierEntry);
+
+                            if (uint64 stoneGuardGuid = pInstance->GetData64(nextPetrifierEntry))
+                                if (Creature* stoneGuard = pInstance->instance->GetCreature(stoneGuardGuid))
+                                    stoneGuard->AI()->DoAction(ACTION_PETRIFICATION);
+
+                            events.ScheduleEvent(EVENT_PETRIFICATION, 90000);
                         }
-                        while (nextPetrifierEntry == lastPetrifierEntry);
-
-                        if (uint64 stoneGuardGuid = pInstance->GetData64(nextPetrifierEntry))
-                            if (Creature* stoneGuard = pInstance->instance->GetCreature(stoneGuardGuid))
-                                stoneGuard->AI()->DoAction(ACTION_PETRIFICATION);
-
-                        events.ScheduleEvent(EVENT_PETRIFICATION, 90000);
                         break;
                     }
                 }
