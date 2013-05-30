@@ -1032,12 +1032,15 @@ class spell_sha_fulmination : public SpellScriptLoader
                 return true;
             }
 
-            void HandleFulmination(SpellEffIndex /*effIndex*/)
+            void HandleOnHit()
             {
                 // make caster cast a spell on a unit target of effect
                 Unit *target = GetHitUnit();
                 Unit *caster = GetCaster();
-                if(!target || !caster)
+                if (!target || !caster)
+                    return;
+
+                if (!GetHitDamage())
                     return;
 
                 AuraEffectPtr fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
@@ -1045,11 +1048,11 @@ class spell_sha_fulmination : public SpellScriptLoader
                     return;
 
                 AuraPtr lightningShield = caster->GetAura(324);
-                if(!lightningShield)
+                if (!lightningShield)
                     return;
 
                 uint8 lsCharges = lightningShield->GetCharges();
-                if(lsCharges <= 1)
+                if (lsCharges <= 1)
                     return;
 
                 uint8 usedCharges = lsCharges - 1;
@@ -1066,7 +1069,7 @@ class spell_sha_fulmination : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_sha_fulmination_SpellScript::HandleFulmination, EFFECT_FIRST_FOUND, SPELL_EFFECT_ANY);
+                OnHit += SpellHitFn(spell_sha_fulmination_SpellScript::HandleOnHit);
             }
         };
 
