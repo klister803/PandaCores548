@@ -3524,7 +3524,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 115294:// Mana Tea
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); // 1s
                 break;
-            case 44461: // Living Bomb
+            case 44457: // Living Bomb
                 spellInfo->MaxAffectedTargets = 3;
                 break;
             case 12051: // Evocation
@@ -3660,6 +3660,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 6358:  // Seduce (succubus)
                 spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
+                break;
+            case 980:   // Agony
+                spellInfo->StackAmount = 10;
+                break;
+            case 131740:// Corruption (Malefic Grasp)
+            case 131736:// Unstable Affliction (Malefic Grasp)
+            case 132566:// Seed of Corruption (Malefic Grasp)
+            case 131737:// Agony (Malefic Grasp)
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                 break;
             case 131116:// Allow to use Raging Blow
                 spellInfo->ProcCharges = 2;

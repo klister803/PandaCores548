@@ -1198,11 +1198,28 @@ void Battleground::AddPlayer(Player* player)
         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(m_TypeID), GetElapsedTime(), GetArenaType());
     player->GetSession()->SendPacket(&data);
 
+    player->Dismount();
     player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+    player->RemoveAurasByType(SPELL_AURA_FLY);
 
     // add arena specific auras
     if (isArena())
     {
+        player->ResummonPetTemporaryUnSummonedIfAny();
+
+        // Removing pet's buffs and debuffs which are not permanent on Arena enter
+        if (Pet* pet = player->GetPet())
+        {
+            if (!pet->isAlive())
+                pet->setDeathState(ALIVE);
+
+            // Set pet at full health
+            pet->SetHealth(pet->GetMaxHealth());
+
+            pet->RemoveAllAuras();
+            pet->CastPetAuras(true);
+        }
+
         player->RemoveArenaEnchantments(TEMP_ENCHANTMENT_SLOT);
         if (team == ALLIANCE)                                // gold
         {

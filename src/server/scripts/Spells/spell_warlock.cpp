@@ -85,6 +85,77 @@ enum WarlockSpells
     WARLOCK_ARCHIMONDES_VENGEANCE_PASSIVE   = 116403,
     WARLOCK_SOUL_LINK_DUMMY_AURA            = 108446,
     WARLOCK_GLYPH_OF_CONFLAGRATE            = 56235,
+    WARLOCK_SHIELD_OF_SHADOW                = 115232,
+    WARLOCK_THREATENING_PRESENCE            = 112042,
+};
+
+// Voidwalker : Shield of Shadow - 103130
+class spell_warl_shield_of_shadow : public SpellScriptLoader
+{
+    public:
+        spell_warl_shield_of_shadow() : SpellScriptLoader("spell_warl_shield_of_shadow") { }
+
+        class spell_warl_shield_of_shadow_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_shield_of_shadow_AuraScript);
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Pet* pet = _player->GetPet())
+                    {
+                        if (pet->GetEntry() == 1860) // Voidwalker
+                        {
+                            if (!pet->HasSpell(WARLOCK_SHIELD_OF_SHADOW))
+                                pet->addSpell(WARLOCK_SHIELD_OF_SHADOW);
+                            if (!pet->HasSpell(WARLOCK_THREATENING_PRESENCE))
+                                pet->addSpell(WARLOCK_THREATENING_PRESENCE);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_warl_shield_of_shadow_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_shield_of_shadow_AuraScript();
+        }
+};
+
+// Agony - 980
+class spell_warl_agony : public SpellScriptLoader
+{
+    public:
+        spell_warl_agony() : SpellScriptLoader("spell_warl_agony") { }
+
+        class spell_warl_agony_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_agony_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    if (GetTarget())
+                        if (AuraPtr agony = GetTarget()->GetAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
+                            agony->ModStackAmount(1);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_agony_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_agony_AuraScript();
+        }
 };
 
 // Grimoire of Sacrifice - 108503
@@ -1431,7 +1502,7 @@ class spell_warl_conflagrate_aura : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (!target->HasAura(WARLOCK_IMMOLATE) && !target->HasAura(WARLOCK_GLYPH_OF_CONFLAGRATE))
+                        if (!target->HasAura(WARLOCK_IMMOLATE) && !_player->HasAura(WARLOCK_GLYPH_OF_CONFLAGRATE))
                             if (AuraPtr conflagrate = target->GetAura(WARLOCK_CONFLAGRATE))
                                 target->RemoveAura(WARLOCK_CONFLAGRATE);
                         if (!target->HasAura(WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE))
@@ -2116,6 +2187,8 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_shield_of_shadow();
+    new spell_warl_agony();
     new spell_warl_grimoire_of_sacrifice();
     new spell_warl_flames_of_xoroth();
     new spell_warl_soul_link_dummy();
