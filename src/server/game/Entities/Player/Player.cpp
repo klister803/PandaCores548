@@ -6720,15 +6720,10 @@ bool Player::UpdateCraftSkill(uint32 spellid)
             int skill_gain_chance = SkillGainChance(SkillValue, _spell_idx->second->max_value, (_spell_idx->second->max_value + _spell_idx->second->min_value)/2, _spell_idx->second->min_value);
             
             // Since 4.0.x, we have bonus skill point reward with somes items ...
-            SkillLineAbilityMapBounds bounds = sSpellMgr->GetSkillLineAbilityMapBounds(spellid);
-            for (SkillLineAbilityMap::const_iterator _spell_idx = bounds.first; _spell_idx != bounds.second; ++_spell_idx)
+            if (_spell_idx->second && _spell_idx->second->skill_gain && skill_gain_chance == sWorld->getIntConfig(CONFIG_SKILL_CHANCE_ORANGE)*10)
             {
-                SkillLineAbilityEntry const* pAbility = _spell_idx->second;
-                if (pAbility && pAbility->skill_gain && skill_gain_chance == sWorld->getIntConfig(CONFIG_SKILL_CHANCE_ORANGE)*10)
-                {
-                    craft_skill_gain = pAbility->skill_gain;
-                    break;
-                }
+                craft_skill_gain = _spell_idx->second->skill_gain;
+                break;
             }
 
             return UpdateSkillPro(_spell_idx->second->skillId, skill_gain_chance, craft_skill_gain);
