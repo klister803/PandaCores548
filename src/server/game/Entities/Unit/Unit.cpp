@@ -17810,7 +17810,7 @@ void Unit::ApplyResilience(Unit const* victim, int32* damage, bool isCrit) const
         return;
 
     // Resilience works only for players or pets against other players or pets
-    if (GetTypeId() != TYPEID_PLAYER || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
+    if (GetTypeId() != TYPEID_PLAYER && (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
         return;
 
     // Don't consider resilience if not in PvP - player or pet
