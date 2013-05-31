@@ -3376,9 +3376,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 0;
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_CRIT_PCT;
                 break;
-            case 53271: // Master's Call
-                spellInfo->Effects[0].TargetA = TARGET_UNIT_PET;
-                break;
             case 1126:  // Mark of the Wild
             case 19740: // Blessing of Might
             case 20217: // Blessing of Kings
