@@ -1621,10 +1621,6 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
         int32 addhealth = damage;
 
-        // Spinning Crane Kick - Heal : Do not heal the monk
-        if (m_spellInfo->Id == 117640)
-            if (unitTarget->GetGUID() == m_caster->GetGUID())
-                return;
         // Vessel of the Naaru (Vial of the Sunwell trinket)
         if (m_spellInfo->Id == 45064)
         {
