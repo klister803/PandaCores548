@@ -7084,6 +7084,11 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
                         uint32 targetAmount = m_UniqueTargetInfo.size();
                         if (targetAmount > 10)
                             m_damage = m_damage * 10/targetAmount;
+
+                        // Hack Fix Frost Bomb : Doesn't add AoE damage to main target
+                        if (m_spellInfo->Id == 113092 && targetAmount > 1)
+                            if (targetInfo.targetGUID == (*m_UniqueTargetInfo.begin()).targetGUID)
+                                continue;
                     }
                 }
             }
