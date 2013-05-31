@@ -2583,6 +2583,8 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!affected)
                         dynObjOwnerCaster->RemoveAura(116014);
+
+                    break;
                 }
                 case 115817: // Cancel Barrier
                 {
