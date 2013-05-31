@@ -161,6 +161,7 @@ enum DB2Types
     DB2_REPLY_SCENE_SCRIPT                    = 3568395212,           // hash of ScreneScript.db2
     DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES    = 1672791226,           // hash of BattlePetEffectProperties.db2
     DB2_REPLY_BROADCAST_TEXT                  = 35137211,             // hash of BroadcastText.db2
+    DB2_REPLY_ITEM_EXTENDED_COST              = 3146089301,           // hash of ItemExtendedCost.db2
 };
 
 //class to deal with packet processing
