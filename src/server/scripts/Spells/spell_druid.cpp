@@ -55,10 +55,9 @@ enum DruidSpells
     SPELL_DRUID_SWIFTMEND                   = 81262,
     SPELL_DRUID_SWIFTMEND_TICK              = 81269,
     DRUID_NPC_WILD_MUSHROOM                 = 47649,
-    DRUID_TALENT_FUNGAL_GROWTH_1            = 78788,
-    DRUID_TALENT_FUNGAL_GROWTH_2            = 78789,
-    DRUID_NPC_FUNGAL_GROWTH_1               = 81291,
-    DRUID_NPC_FUNGAL_GROWTH_2               = 81283,
+    DRUID_SPELL_FUNGAL_GROWTH_SUMMON        = 81283,
+    DRUID_SPELL_MUSHROOM_BIRTH_VISUAL       = 94081,
+    DRUID_SPELL_WILD_MUSHROOM_DEATH_VISUAL  = 92701,
     DRUID_SPELL_WILD_MUSHROOM_SUICIDE       = 92853,
     DRUID_SPELL_WILD_MUSHROOM_DAMAGE        = 78777,
     SPELL_DRUID_WILD_MUSHROOM_HEAL          = 102792,
@@ -1743,6 +1742,7 @@ class spell_dru_wild_mushroom : public SpellScriptLoader
                     summon->setFaction(player->getFaction());
                     summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
                     summon->SetMaxHealth(5);
+                    summon->CastSpell(summon, DRUID_SPELL_MUSHROOM_BIRTH_VISUAL, true); // Wild Mushroom : Detonate Birth Visual
                 }
             }
 
@@ -1835,12 +1835,6 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
             {
                 if (Player* player = GetCaster()->ToPlayer())
                 {
-                    uint32 fungal = NULL;
-                    if (player->HasAura(DRUID_TALENT_FUNGAL_GROWTH_1)) // Fungal Growth Rank 1
-                        fungal = DRUID_NPC_FUNGAL_GROWTH_1;
-                    else if (player->HasAura(DRUID_TALENT_FUNGAL_GROWTH_2)) // Fungal Growth Rank 2
-                        fungal = DRUID_NPC_FUNGAL_GROWTH_2;
-
                     for (std::list<TempSummon*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
                     {
                         Position shroomPos;
@@ -1848,11 +1842,10 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
                         if (!player->IsWithinDist3d(&shroomPos, spellRange))
                             continue;
 
-                        (*i)->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_SUICIDE, true); // Explosion visual and suicide
-                        player->CastSpell((*i)->GetPositionX(), (*i)->GetPositionY(), (*i)->GetPositionZ(), DRUID_SPELL_WILD_MUSHROOM_DAMAGE, true); // damage
-
-                        if (fungal)
-                            player->CastSpell((*i)->GetPositionX(), (*i)->GetPositionY(), (*i)->GetPositionZ(), fungal, true); // Summoning fungal growth
+                        player->CastSpell((*i)->GetPositionX(), (*i)->GetPositionY(), (*i)->GetPositionZ(), DRUID_SPELL_FUNGAL_GROWTH_SUMMON, true);// Fungal Growth
+                        player->CastSpell((*i)->GetPositionX(), (*i)->GetPositionY(), (*i)->GetPositionZ(), DRUID_SPELL_WILD_MUSHROOM_DAMAGE, true);// Damage
+                        (*i)->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_DEATH_VISUAL, true);                                                        // Explosion visual
+                        (*i)->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_SUICIDE, true);                                                             // Suicide
                     }
                 }
             }
@@ -1947,12 +1940,6 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
             {
                 if (Player* player = GetCaster()->ToPlayer())
                 {
-                    uint32 fungal = NULL;
-                    if (player->HasAura(DRUID_TALENT_FUNGAL_GROWTH_1)) // Fungal Growth Rank 1
-                        fungal = DRUID_NPC_FUNGAL_GROWTH_1;
-                    else if (player->HasAura(DRUID_TALENT_FUNGAL_GROWTH_2)) // Fungal Growth Rank 2
-                        fungal = DRUID_NPC_FUNGAL_GROWTH_2;
-
                     for (std::list<TempSummon*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
                     {
                         Position shroomPos;
@@ -1962,9 +1949,6 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
 
                         (*i)->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_SUICIDE, true); // Explosion visual and suicide
                         player->CastSpell((*i)->GetPositionX(), (*i)->GetPositionY(), (*i)->GetPositionZ(), SPELL_DRUID_WILD_MUSHROOM_HEAL, true); // heal
-
-                        if (fungal)
-                            player->CastSpell((*i)->GetPositionX(), (*i)->GetPositionY(), (*i)->GetPositionZ(), fungal, true); // Summoning fungal growth
                     }
                 }
             }

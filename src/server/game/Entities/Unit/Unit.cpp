@@ -13682,6 +13682,23 @@ void Unit::setDeathState(DeathState s)
                 }
             }
         }
+        // Druid: Fungal Growth
+        switch (GetEntry())
+        {
+            case 47649:
+            {
+                if (Unit* owner = GetOwner())
+                {
+                    if (owner->GetTypeId() != TYPEID_PLAYER || owner->ToPlayer()->HasSpellCooldown(81283))
+                        break;
+
+                    owner->ToPlayer()->AddSpellCooldown(81283, 0, time(NULL) + sSpellMgr->GetSpellInfo(81283)->RecoveryTime / 1000);
+                }
+                break;
+            }
+            default:
+                break;
+        }
     }
     else if (s == JUST_RESPAWNED)
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)

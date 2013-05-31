@@ -6271,6 +6271,15 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
     float radius = 5.0f;
     int32 duration = m_spellInfo->GetDuration();
 
+    switch (m_spellInfo->Id)
+    {
+        case 81283: // Fungal Growth
+            numGuardians = 1;
+            break;
+        default:
+            break;
+    }
+
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
 

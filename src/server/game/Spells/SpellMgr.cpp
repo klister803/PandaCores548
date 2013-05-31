@@ -3306,6 +3306,12 @@ void SpellMgr::LoadSpellCustomAttr()
             case 853:   // Hammer of Justice
                 spellInfo->OverrideSpellList.push_back(105593); // Replace Hammer of Justice by Fist of Justice
                 break;
+            case 94339: // Fungal Area
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(18); // 20s
+                break;
+            case 81282: // Fungal Growth
+                spellInfo->Effects[0].BasePoints = 100;
+                break;
             case 108446:// Soul Link
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
