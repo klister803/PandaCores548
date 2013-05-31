@@ -932,6 +932,8 @@ class ObjectMgr
 
         void LoadPhaseDefinitions();
         void LoadSpellPhaseInfo();
+    
+        void LoadItemExtendedCost();
 
         PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
         SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }
@@ -1201,6 +1203,11 @@ class ObjectMgr
 
         ///Temporaire pour la création des Z, a remettre en private après
         GameObjectDataContainer _gameObjectDataStore;
+    
+        std::set<uint32> const& GetOverwriteExtendedCosts() const
+        {
+            return _overwriteExtendedCosts;
+        }
 
     private:
         // first free id for selected id type
@@ -1337,6 +1344,8 @@ class ObjectMgr
 
         std::set<uint32> _difficultyEntries[MAX_DIFFICULTY - 1]; // already loaded difficulty 1 value in creatures, used in CheckCreatureTemplate
         std::set<uint32> _hasDifficultyEntries[MAX_DIFFICULTY - 1]; // already loaded creatures with difficulty 1 values, used in CheckCreatureTemplate
+    
+        std::set<uint32> _overwriteExtendedCosts;
 
         enum CreatureLinkedRespawnType
         {

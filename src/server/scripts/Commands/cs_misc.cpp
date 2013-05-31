@@ -65,6 +65,7 @@ public:
         static ChatCommand auraCommandTable[] =
         {
             { "duration",           SEC_ADMINISTRATOR,      true,  &HandleAuraDurationCommand,          "", NULL },
+            { "charges",            SEC_ADMINISTRATOR,      true,  &HandleAuraChargesCommand,           "", NULL },
             { "",                   SEC_ADMINISTRATOR,      true,  &HandleAuraCommand,                  "", NULL },
             { NULL,                 0,                      false, NULL,                                "", NULL }
         };
@@ -291,6 +292,41 @@ public:
         {
             if (AuraPtr aura = target->GetAura(spellId))
                 aura->SetDuration(duration);
+            else
+                return false;
+        }
+
+        return true;
+    }
+
+    static bool HandleAuraChargesCommand(ChatHandler* handler, char const* args)
+    {
+        Unit* target = handler->getSelectedUnit();
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
+        uint32 spellId = handler->extractSpellIdFromLink((char*)args);
+
+        if (!spellId)
+            return false;
+        
+        char const* ccharges = strtok(NULL, " ");
+        int32 charges = 1;
+
+        if (ccharges)
+            charges = strtol(ccharges, NULL, 10);
+
+        if (!charges)
+            target->RemoveAurasDueToSpell(spellId);
+        else
+        {
+            if (AuraPtr aura = target->GetAura(spellId))
+                aura->SetCharges(charges);
             else
                 return false;
         }

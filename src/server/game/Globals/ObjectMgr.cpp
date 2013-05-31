@@ -9084,3 +9084,48 @@ void ObjectMgr::RestructGameObjectGUID(uint32 nbLigneToRestruct)
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "%u lignes ont ete restructuree.", nbLigneToRestruct);
 }
+
+void ObjectMgr::LoadItemExtendedCost()
+{
+    QueryResult result = WorldDatabase.PQuery("SELECT ID, RequiredArenaSlot, RequiredItem1, RequiredItem2, RequiredItem3, RequiredItem4, RequiredItem5, RequiredItemCount1, RequiredItemCount2, RequiredItemCount3, RequiredItemCount4, RequiredItemCount5,RequiredPersonalArenaRating, RequiredCurrency1, RequiredCurrency2, RequiredCurrency3, RequiredCurrency4, RequiredCurrency5, RequiredCurrencyCount1, RequiredCurrencyCount2, RequiredCurrencyCount3, RequiredCurrencyCount4, RequiredCurrencyCount5 FROM item_extended_cost");
+    
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 item extended cost info. DB table `item_extended_cost` is empty.");
+        return;
+    }
+    
+    uint32 counter = 0;
+    
+    do
+    {
+        Field* field = result->Fetch();
+        int index = 0;
+        counter++;
+        
+        ItemExtendedCostEntry* extendedCost = new ItemExtendedCostEntry();
+        extendedCost->ID = field[index++].GetUInt32();
+        extendedCost->RequiredArenaSlot = field[index++].GetUInt32();
+        
+        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; i++)
+            extendedCost->RequiredItem[i] = field[index++].GetUInt32();
+        
+        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; i++)
+            extendedCost->RequiredItemCount[i] = field[index++].GetUInt32();
+        
+        extendedCost->RequiredPersonalArenaRating = field[index++].GetUInt32();
+        
+        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
+            extendedCost->RequiredCurrency[i] = field[index++].GetUInt32();
+        
+        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
+            extendedCost->RequiredCurrencyCount[i] = field[index++].GetUInt32();
+        
+        sItemExtendedCostStore.EraseEntry(extendedCost->ID);
+        sItemExtendedCostStore.AddEntry(extendedCost->ID, (const ItemExtendedCostEntry*)extendedCost);
+        _overwriteExtendedCosts.insert(extendedCost->ID);
+        
+    } while(result->NextRow());
+    
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u item extended cost info.", counter);
+}

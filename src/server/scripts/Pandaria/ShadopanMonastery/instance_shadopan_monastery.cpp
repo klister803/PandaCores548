@@ -307,13 +307,8 @@ public:
 
         uint32 GetData(uint32 type)
         {
-            switch (type)
-            {
-                default:
-                    if (type < MAX_DATA)
-                        return dataStorage[type];
-                    break;
-            }
+            if (type < MAX_DATA)
+                return dataStorage[type];
 
             return 0;
         }

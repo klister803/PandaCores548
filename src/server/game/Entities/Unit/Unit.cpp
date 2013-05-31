@@ -1194,6 +1194,24 @@ void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32
     CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
 }
 
+void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, int32 const* bp3, int32 const* bp4, int32 const* bp5, bool triggered, Item* castItem, constAuraEffectPtr triggeredByAura, uint64 originalCaster)
+{
+    CustomSpellValues values;
+    if (bp0)
+        values.AddSpellMod(SPELLVALUE_BASE_POINT0, *bp0);
+    if (bp1)
+        values.AddSpellMod(SPELLVALUE_BASE_POINT1, *bp1);
+    if (bp2)
+        values.AddSpellMod(SPELLVALUE_BASE_POINT2, *bp2);
+    if (bp3)
+        values.AddSpellMod(SPELLVALUE_BASE_POINT3, *bp3);
+    if (bp4)
+        values.AddSpellMod(SPELLVALUE_BASE_POINT4, *bp4);
+    if (bp5)
+        values.AddSpellMod(SPELLVALUE_BASE_POINT5, *bp5);
+    CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
+}
+
 void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* target, bool triggered, Item* castItem, constAuraEffectPtr triggeredByAura, uint64 originalCaster)
 {
     CustomSpellValues values;

@@ -64,7 +64,7 @@ set(scripts_STAT_SRCS
   Pandaria/WanderingIsland/WanderingIsland_South.cpp
 
   Pandaria/kun_lai_summit.cpp
-  
+  Pandaria/jade_forest.cpp
   Pandaria/vale_of_eternal_blossoms.cpp
 )
 
