@@ -36,6 +36,7 @@ enum eSpells
     SPELL_VOLLEY_2              = 118105,
     SPELL_VOLLEY_3              = 118106,
     SPELL_RAIN_OF_ARROWS        = 118122,
+    SPELL_SLEIGHT_OF_HAND       = 118162, // Heroic
 
     // Zian
     SPELL_UNDYING_SHADOWS       = 117506, // Also when vanquished
@@ -51,7 +52,8 @@ enum eSpells
     SPELL_MADDENING_SHOUT       = 117708, // Also when vanquished
     SPELL_CRAZED                = 117737,
     SPELL_COWARDICE             = 117756,
-    SPELL_DELIRIOUS             = 117837,
+    SPELL_CRAZY_TOUGHT          = 117833,
+    SPELL_DELIRIOUS             = 117837, // Heroic
 
     // Shared
     SPELL_INACTIVE              = 118205,
@@ -82,6 +84,11 @@ enum eEvents
 
     // Zian
     EVENT_UNDYING_SHADOWS       = 10,
+    EVENT_SHADOW_BLAST          = 11,
+    EVENT_CHARGED_SHADOWS       = 12,
+
+    // Meng
+    EVENT_MADDENING_SHOUT       = 13,
 };
 
 #define MAX_FLANKING_MOGU   48
@@ -232,13 +239,11 @@ class boss_spirit_kings_controler : public CreatureScript
                     case ACTION_FLANKING_MOGU:
                     {
                         uint8 moguBegin = urand(0, 47);
-                        float x = 0.0f, y = 0.0f;
+                        uint8 middleMogu = (moguBegin + 3) > 47 ? (moguBegin + 3) - 48: (moguBegin + 3);
+                        float orientation = 0.0f;
 
-                        if (Creature* flankingMogu = pInstance->instance->GetCreature(flankingGuid[moguBegin]))
-                            GetPositionWithDistInOrientation(flankingMogu, 80.0f, flankingMogu->GetOrientation(), x, y);
-
-                        if (!x && !y)
-                            return;
+                        if (Creature* flankingMogu = pInstance->instance->GetCreature(flankingGuid[middleMogu]))
+                            orientation = flankingMogu->GetOrientation();
 
                         for (uint8 i = moguBegin; i < moguBegin + 6; ++i)
                         {
@@ -251,6 +256,13 @@ class boss_spirit_kings_controler : public CreatureScript
                             {
                                 flankingMogu->RemoveAurasDueToSpell(SPELL_GHOST_VISUAL);
                                 flankingMogu->AddAura(SPELL_TRIGGER_ATTACK, flankingMogu);
+
+                                float x = 0.0f, y = 0.0f;
+                                GetPositionWithDistInOrientation(flankingMogu, 80.0f, orientation, x, y);
+
+                                if (!x && !y)
+                                    continue;
+
                                 flankingMogu->GetMotionMaster()->MovePoint(1, x, y, flankingMogu->GetPositionZ());
                                 flankingMogu->DespawnOrUnsummon(20000);
 
@@ -381,15 +393,23 @@ class boss_spirit_kings : public CreatureScript
             EventMap   events;
             SummonList summons;
 
-            uint32 tiredSpell;
             bool vanquished;
+
+            uint8 shadowCount;
+            uint8 maxShadowCount;
 
             void Reset()
             {
+                shadowCount = 0;
+                maxShadowCount = 3;
+
                 vanquished = false;
                 me->CastSpell(me, SPELL_INACTIVE, true);
                 me->CastSpell(me, SPELL_INACTIVE_STUN, true);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                
+                me->RemoveAurasDueToSpell(SPELL_CRAZED);
+                me->RemoveAurasDueToSpell(SPELL_COWARDICE);
 
                 switch (me->GetEntry())
                 {
@@ -405,11 +425,14 @@ class boss_spirit_kings : public CreatureScript
                         events.ScheduleEvent(EVENT_RAIN_OF_ARROWS, 45000);
                         break;
                     case NPC_ZIAN:
+                        events.ScheduleEvent(EVENT_UNDYING_SHADOWS, 30000);
+                        events.ScheduleEvent(EVENT_SHADOW_BLAST, 15000);
+                        events.ScheduleEvent(EVENT_CHARGED_SHADOWS, 10000);
                         break;
                     case NPC_MENG:
+                        events.ScheduleEvent(EVENT_MADDENING_SHOUT, 30000);
                         break;
                     default:
-                        tiredSpell = 0;
                         break;
                 }
             }
@@ -423,6 +446,9 @@ class boss_spirit_kings : public CreatureScript
             {
                 if (pInstance)
                     pInstance->SetBossState(DATA_SPIRIT_KINGS, IN_PROGRESS);
+
+                if (me->GetEntry() == NPC_MENG)
+                    me->AddAura(SPELL_CRAZED, me);
             }
 
             void DoAction(const int32 action)
@@ -456,11 +482,17 @@ class boss_spirit_kings : public CreatureScript
             void JustSummoned(Creature* summon)
             {
                 summons.Summon(summon);
+
+                if (summon->GetEntry() == NPC_UNDYING_SHADOW)
+                    ++shadowCount;
             }
 
             void SummonedCreatureDespawn(Creature* summon)
             {
                 summons.Despawn(summon);
+
+                if (summon->GetEntry() == NPC_UNDYING_SHADOW)
+                    --shadowCount;
             }
 
             void DamageTaken(Unit* attacker, uint32& damage)
@@ -482,21 +514,28 @@ class boss_spirit_kings : public CreatureScript
                     events.Reset();
                     switch (me->GetEntry())
                     {
-                        case NPC_ZIAN:
-                            break;
-                        case NPC_MENG:
-                            break;
                         case NPC_QIANG:
                             events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
                             break;
                         case NPC_SUBETAI:
                             events.ScheduleEvent(EVENT_PILLAGE, 30000);
                             break;
+                        case NPC_ZIAN:
+                            events.ScheduleEvent(EVENT_UNDYING_SHADOWS, 30000);
+                            break;
+                        case NPC_MENG:
+                            break;
                         default:
-                            tiredSpell = 0;
                             break;
                     }
                 }
+
+                if (me->HasAura(SPELL_COWARDICE))
+                    if (AuraPtr aura = me->GetAura(SPELL_COWARDICE))
+                    {
+                        float charges = aura->GetCharges();
+                        me->DealDamage(attacker, damage * (charges / 100));
+                    } 
             }
 
             void UpdateAI(const uint32 diff)
@@ -566,12 +605,30 @@ class boss_spirit_kings : public CreatureScript
                         // Zian
                         case EVENT_UNDYING_SHADOWS:
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
-                                me->CastSpell(target, SPELL_UNDYING_SHADOWS, false);
+                            if (shadowCount < maxShadowCount) // Max 3 undying shadow during the fight
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
+                                    me->CastSpell(target, SPELL_UNDYING_SHADOWS, false);
 
                             events.ScheduleEvent(EVENT_UNDYING_SHADOWS, 45000);
                             break;
                         }
+                        case EVENT_SHADOW_BLAST:
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
+                                me->CastSpell(target, SPELL_SHADOW_BLAST, false);
+
+                            events.ScheduleEvent(EVENT_SHADOW_BLAST, 15000);
+                            break;
+                        }
+                        case EVENT_CHARGED_SHADOWS:
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
+                                me->CastSpell(target, SPELL_CHARGED_SHADOWS, false);
+
+                            events.ScheduleEvent(EVENT_CHARGED_SHADOWS, 15000);
+                            break;
+                        }
+                        // Meng
                         default:
                             break;
                     }
@@ -823,6 +880,109 @@ class spell_pinned_down : public SpellScriptLoader
         }
 };
 
+class spell_maddening_shout : public SpellScriptLoader
+{
+    public:
+        spell_maddening_shout() : SpellScriptLoader("spell_maddening_shout") { }
+
+        class spell_maddening_shout_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_maddening_shout_AuraScript);
+
+            void OnAbsorb(AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* attacker = dmgInfo.GetAttacker())
+                    if (attacker->GetTypeId() != TYPEID_PLAYER)
+                        absorbAmount = 0;
+            }
+
+            void Register()
+            {
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_maddening_shout_AuraScript::OnAbsorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_maddening_shout_AuraScript();
+        }
+};
+
+class spell_crazed_cowardice : public SpellScriptLoader
+{
+    public:
+        spell_crazed_cowardice() : SpellScriptLoader("spell_crazed_cowardice") { }
+
+        class spell_crazed_cowardice_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_crazed_cowardice_AuraScript);
+
+            void HandlePeriodic(constAuraEffectPtr /*aurEff*/)
+            {
+                PreventDefaultAction();
+                
+                if (Unit* caster = GetCaster())
+                {
+                    if (AuraPtr aura = GetAura())
+                    {
+                        if (aura->GetId() == SPELL_CRAZED) // Refresh work with SPELL_CRAZED but not with SPELL_COWARDICE
+                            caster->CastSpell(caster, SPELL_CRAZED, true);
+                        else
+                            aura->SetCharges(aura->GetCharges() + 1);
+
+                        if (aura->GetCharges() >= 100)
+                        {
+                            caster->CastSpell(caster, aura->GetId() == SPELL_CRAZED ? SPELL_COWARDICE: SPELL_CRAZED, true);
+                            aura->Remove();
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_crazed_cowardice_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_crazed_cowardice_AuraScript();
+        }
+};
+
+class spell_crazy_tought : public SpellScriptLoader
+{
+    public:
+        spell_crazy_tought() : SpellScriptLoader("spell_crazy_tought") { }
+
+        class spell_crazy_tought_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_crazy_tought_SpellScript);
+
+            void HandleEffect(SpellEffIndex effIndex)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (AuraPtr aura = caster->GetAura(SPELL_CRAZED))
+                        aura->SetCharges(aura->GetCharges() + 10);
+                    else if (AuraPtr aura = caster->GetAura(SPELL_COWARDICE))
+                        aura->SetCharges(aura->GetCharges() + 10);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_crazy_tought_SpellScript::HandleEffect, EFFECT_0, SPELL_EFFECT_ENERGIZE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_crazy_tought_SpellScript();
+        }
+};
+
 void AddSC_boss_spirit_kings()
 {
     new boss_spirit_kings_controler();
@@ -832,4 +992,7 @@ void AddSC_boss_spirit_kings()
     new spell_massive_attacks();
     new spell_volley();
     new spell_pinned_down();
+    new spell_maddening_shout();
+    new spell_crazed_cowardice();
+    new spell_crazy_tought();
 }
