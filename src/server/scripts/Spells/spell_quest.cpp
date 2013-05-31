@@ -1652,6 +1652,47 @@ class spell_q27421_rayne_seed : public SpellScriptLoader
         };
 };
 
+// 50662 Resuscitate
+
+class spell_q12512_resuscitate: public SpellScriptLoader
+{
+    public:
+        spell_q12512_resuscitate() : SpellScriptLoader("spell_q12512_resuscitate") { }
+
+        class spell_q12512_resuscitate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q12512_resuscitate_SpellScript);
+
+            void HandleScript(SpellEffIndex effIndex)
+            {
+                if (GetCaster() && GetHitUnit())
+                {
+                    if (Player* caster = GetCaster()->ToPlayer())
+                    {
+                        if (GetHitUnit()->GetEntry() == 28136) //Crusader Jonathan
+                            caster->KilledMonsterCredit(28136, 0);
+                    
+                        else if (GetHitUnit()->GetEntry() == 28142) //Crusader Lamoof
+                            caster->KilledMonsterCredit(28142, 0);
+
+                        else if (GetHitUnit()->GetEntry() == 28148) //Crusader Josephine
+                            caster->KilledMonsterCredit(28148, 0);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_q12512_resuscitate_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_q12512_resuscitate_SpellScript();
+        };
+};
+
 void AddSC_quest_spell_scripts()
 {
     new spell_q55_sacred_cleansing();
@@ -1692,4 +1733,5 @@ void AddSC_quest_spell_scripts()
     new spell_q13291_q13292_q13239_q13261_frostbrood_skytalon_grab_decoy();
     new spell_q13291_q13292_q13239_q13261_armored_decoy_summon_skytalon();
     new spell_q27421_rayne_seed();
+    new spell_q12512_resuscitate();
 }

@@ -3235,7 +3235,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetB = 0;
                 break;
             case 122355:// Molten Core
-                spellInfo->StackAmount = 2;
+                spellInfo->StackAmount = 255;
                 break;
             case 6203:  // Soulstone
                 spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
@@ -3890,6 +3890,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 104855:
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
                 break;
+            // Add Server-Side dummy spell for Fishing
+            // TODO : Add more generic system to load server-side spell
             case 7733:
             case 7734:
             case 18249:
@@ -3897,8 +3899,13 @@ void SpellMgr::LoadSpellCustomAttr()
             case 54084:
             case 51293:
             case 88869:
-                spellInfo->Effects[0].TriggerSpell = 131490;
+            case 110412:
+            {
+                SpellInfo* fishingDummy = new SpellInfo(sSpellStore.LookupEntry(131474), difficulty);
+                fishingDummy->Id = spellInfo->Effects[0].TriggerSpell;
+                mSpellInfoMap[difficulty][spellInfo->Effects[0].TriggerSpell] = fishingDummy;
                 break;
+            }
             // Mogu'shan Vault
             case 116000:
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;

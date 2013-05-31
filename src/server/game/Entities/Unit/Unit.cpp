@@ -7137,6 +7137,34 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Lightning Shield
+                case 324:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    Player* _plr = ToPlayer();
+
+                    if (AuraPtr lightningShield = _plr->GetAura(324))
+                    {
+                        // Improved Lightning Shield
+                        if (!_plr->HasAura(100956))
+                        {
+                            if (lightningShield->GetCharges() > 1)
+                                lightningShield->DropCharge();
+                        }
+                        else
+                        {
+                            if (lightningShield->GetCharges() < 7)
+                                lightningShield->SetCharges(lightningShield->GetCharges() + 1);
+
+                            if (lightningShield->GetCharges() >= 7)
+                                _plr->CastSpell(_plr, 95774, true); // Fulmination Info
+                        }
+                    }
+
+                    break;
+                }
                 // Totemic Power (The Earthshatterer set)
                 case 28823:
                 {

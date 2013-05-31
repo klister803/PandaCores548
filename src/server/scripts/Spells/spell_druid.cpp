@@ -983,8 +983,12 @@ class spell_dru_dash : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (_player->HasAura(SPELL_DRUID_STAMPEDING_ROAR))
                         _player->RemoveAura(SPELL_DRUID_STAMPEDING_ROAR);
+
+                    _player->RemoveMovementImpairingAuras();
+                }
             }
 
             void Register()

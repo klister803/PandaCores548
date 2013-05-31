@@ -786,6 +786,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_DelayedOperations = 0;
     m_bCanDelayTeleport = false;
     m_bHasDelayedTeleport = false;
+    m_isMoltenCored = false;
     m_teleport_options = 0;
 
     m_trade = NULL;
@@ -1496,6 +1497,10 @@ void Player::HandleDrowning(uint32 time_diff)
     // In water
     if (m_MirrorTimerFlags & UNDERWATER_INWATER)
     {
+        // Vash'jir zones
+        if (m_zoneUpdateId == 4815 || m_zoneUpdateId == 4816 || m_zoneUpdateId == 5144 || m_zoneUpdateId == 5145|| m_zoneUpdateId == 5146)
+            return;
+        
         // Breath timer not activated - activate it
         if (m_MirrorTimer[BREATH_TIMER] == DISABLED_MIRROR_TIMER)
         {
@@ -6714,17 +6719,13 @@ bool Player::UpdateCraftSkill(uint32 spellid)
                 if (uint32 discoveredSpell = GetSkillDiscoverySpell(_spell_idx->second->skillId, spellid, this))
                     learnSpell(discoveredSpell, false);
             }
-            
 
             uint32 craft_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING);
             int skill_gain_chance = SkillGainChance(SkillValue, _spell_idx->second->max_value, (_spell_idx->second->max_value + _spell_idx->second->min_value)/2, _spell_idx->second->min_value);
             
             // Since 4.0.x, we have bonus skill point reward with somes items ...
             if (_spell_idx->second && _spell_idx->second->skill_gain && skill_gain_chance == sWorld->getIntConfig(CONFIG_SKILL_CHANCE_ORANGE)*10)
-            {
                 craft_skill_gain = _spell_idx->second->skill_gain;
-                break;
-            }
 
             return UpdateSkillPro(_spell_idx->second->skillId, skill_gain_chance, craft_skill_gain);
         }
