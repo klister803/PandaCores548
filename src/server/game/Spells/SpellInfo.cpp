@@ -2858,3 +2858,19 @@ bool SpellInfo::IsBreakingCamouflage() const
 
     return true;
 }
+
+bool SpellInfo::IsAfflictionPeriodicDamage() const
+{
+    switch (Id)
+    {
+        case 172:   // Corruption
+        case 980:   // Agony
+        case 30108: // Unstable Affliction
+        case 131736:// Unstable Affliction (triggered)
+        case 131737:// Agony (triggered)
+        case 131740:// Corruption (triggered)
+            return true;
+        default:
+            return false;
+    }
+}

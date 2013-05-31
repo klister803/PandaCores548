@@ -10532,7 +10532,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Custom MoP Script
     // 77215 - Mastery : Potent Afflictions
     // Increase periodic damage of Corruption, Agony and Unstable Affliction
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->IsAfflictionPeriodicDamage() && damagetype == DOT && HasAura(77215))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f;
         AddPct(DoneTotalMod, Mastery);
