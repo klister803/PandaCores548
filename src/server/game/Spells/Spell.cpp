@@ -1062,6 +1062,19 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
         m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_129)
         coneAngle = M_PI/6;
 
+    switch (m_spellInfo->Id)
+    {
+        case 118094:
+            coneAngle = M_PI/2;
+            break;
+        case 118105:
+            coneAngle = M_PI/4;
+            break;
+        case 118106:
+            coneAngle = M_PI/6;
+            break;
+    }
+
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster) * m_spellValue->RadiusMod;
 
     if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))
@@ -5917,6 +5930,10 @@ SpellCastResult Spell::CheckCasterAuras() const
     else if (unitflag & UNIT_FLAG_SILENCED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
         prevented_reason = SPELL_FAILED_SILENCED;
     else if (unitflag & UNIT_FLAG_PACIFIED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY)
+        prevented_reason = SPELL_FAILED_PACIFIED;
+    else if (unitflag & UNIT_FLAG_PACIFIED &&
+        (m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_UNK2 ||
+        m_spellInfo->Id == 1850)) // THIS ... IS ... HACKYYYY !
         prevented_reason = SPELL_FAILED_PACIFIED;
 
     // Attr must make flag drop spell totally immune from all effects

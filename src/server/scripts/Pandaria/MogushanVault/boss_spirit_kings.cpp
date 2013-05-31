@@ -22,30 +22,36 @@
 
 enum eSpells
 {
+
+    // Quiang
+    SPELL_FLANKING_ORDERS       = 117910, // Also when vanquished
+    SPELL_MASSIVE_ATTACKS       = 117921,
+    SPELL_ANNIHILATE            = 117948,
+    SPELL_IMPERVIOUS_SHIELD     = 117961, // Heroic
+
+    // Subetai
+    SPELL_PILLAGE               = 118047, // Also when vanquished
+    SPELL_VOLLEY_VISUAL         = 118100,
+    SPELL_VOLLEY_1              = 118094,
+    SPELL_VOLLEY_2              = 118105,
+    SPELL_VOLLEY_3              = 118106,
+    SPELL_RAIN_OF_ARROWS        = 118122,
+
     // Zian
     SPELL_UNDYING_SHADOWS       = 117506, // Also when vanquished
+    SPELL_FIXATE                = 118303,
+    SPELL_UNDYING_SHADOW_DOT    = 117514,
+    SPELL_COALESCING_SHADOW_DOT = 117539,
+
     SPELL_SHADOW_BLAST          = 117628,
     SPELL_CHARGED_SHADOWS       = 117685,
-    SPELL_SHIELD_OF_DARKNESS    = 117697, // Heroique
+    SPELL_SHIELD_OF_DARKNESS    = 117697, // Heroic
 
     // Meng
     SPELL_MADDENING_SHOUT       = 117708, // Also when vanquished
     SPELL_CRAZED                = 117737,
     SPELL_COWARDICE             = 117756,
     SPELL_DELIRIOUS             = 117837,
-
-    // Quiang
-    SPELL_FLANKING_ORDERS       = 117910, // Also when vanquished
-    SPELL_MASSIVE_ATTACKS       = 117920,
-    SPELL_ANNIHILATE            = 117948,
-    SPELL_IMPERVIOUS_SHIELD     = 117961, // Heroic
-
-    // Subetai
-    SPELL_PILLAGE               = 118049, // Also when vanquished
-    SPELL_VOLLEY_1              = 118094,
-    SPELL_VOLLEY_2              = 118105,
-    SPELL_VOLLEY_3              = 118106,
-    SPELL_RAIN_OF_ARROWS        = 118122,
 
     // Shared
     SPELL_INACTIVE              = 118205,
@@ -64,8 +70,18 @@ enum eEvents
 
     // Quiang
     EVENT_FLANKING_MOGU         = 2,
-    EVENT_ANNIHILATE            = 3,
-    EVENT_ANNIHILATE_STOP       = 4,
+    EVENT_MASSIVE_ATTACK        = 3,
+    EVENT_ANNIHILATE            = 4,
+
+    // Subetai
+    EVENT_PILLAGE               = 5,
+    EVENT_VOLLEY_1              = 6,
+    EVENT_VOLLEY_2              = 7,
+    EVENT_VOLLEY_3              = 8,
+    EVENT_RAIN_OF_ARROWS        = 9,
+
+    // Zian
+    EVENT_UNDYING_SHADOWS       = 10,
 };
 
 #define MAX_FLANKING_MOGU   48
@@ -138,6 +154,13 @@ Position spiritKingsPos[4] =
     {4198.78f, 1590.29f, 438.841f, 6.26345f}
 };
 
+uint32 volleySpells[3] =
+{
+    SPELL_VOLLEY_1,
+    SPELL_VOLLEY_2,
+    SPELL_VOLLEY_3
+};
+
 class boss_spirit_kings_controler : public CreatureScript
 {
     public:
@@ -167,12 +190,11 @@ class boss_spirit_kings_controler : public CreatureScript
                     flankingGuid[i] = 0;
 
                 spawnSpiritKings();
+                me->SetReactState(REACT_PASSIVE);
             }
 
             void spawnSpiritKings()
             {
-                uint8 randFirstFight = urand(0, 3);
-
                 for (uint8 i = 0; i < 4; ++i)
                     if (Creature* king = me->SummonCreature(spiritKingsEntry[i], spiritKingsPos[i].GetPositionX(), spiritKingsPos[i].GetPositionY(), spiritKingsPos[i].GetPositionZ(), spiritKingsPos[i].GetOrientation()))
                         if (i == 0) // No more random, qiang is alway the first one
@@ -203,6 +225,8 @@ class boss_spirit_kings_controler : public CreatureScript
                     {
                         for (uint8 i = 0; i < MAX_FLANKING_MOGU; ++i)
                             spawnFlankingMogu(i);
+
+                        fightInProgress = true;
                         break;
                     }
                     case ACTION_FLANKING_MOGU:
@@ -236,6 +260,17 @@ class boss_spirit_kings_controler : public CreatureScript
                         }
                         break;
                     }
+                    case ACTION_SPIRIT_LOW_HEALTH:
+                    {
+                        uint8 nextSpirit = vanquishedCount + 1;
+                        if (nextSpirit >= 4)
+                            break;
+
+                        if (Creature* spirit = pInstance->instance->GetCreature(pInstance->GetData64(spiritKingsEntry[nextSpirit])))
+                            spirit->AI()->DoAction(ACTION_SPIRIT_LOW_HEALTH);
+
+                        break;
+                    }
                     case ACTION_SPIRIT_KILLED:
                     {
                         uint8 nextSpirit = ++vanquishedCount;
@@ -243,6 +278,15 @@ class boss_spirit_kings_controler : public CreatureScript
                         {
                             pInstance->SetBossState(DATA_SPIRIT_KINGS, DONE);
                             summons.DespawnEntry(NPC_FLANKING_MOGU);
+
+                            for (auto entry: spiritKingsEntry)
+                            {
+                                if (Creature* spirit = pInstance->instance->GetCreature(pInstance->GetData64(entry)))
+                                {
+                                    spirit->LowerPlayerDamageReq(spirit->GetMaxHealth());
+                                    me->Kill(spirit);
+                                }
+                            }
                         }
                         else
                         {
@@ -282,24 +326,27 @@ class boss_spirit_kings_controler : public CreatureScript
                     {
                         case EVENT_CHECK_WIPE:
                         {
-                            if (pInstance->IsWipe())
+                            if (fightInProgress)
                             {
-                                fightInProgress = false;
-                                pInstance->SetBossState(DATA_SPIRIT_KINGS, FAIL);
+                                if (pInstance->IsWipe())
+                                {
+                                    fightInProgress = false;
+                                    pInstance->SetBossState(DATA_SPIRIT_KINGS, FAIL);
 
-                                for (auto entry: spiritKingsEntry)
-                                    if (Creature* spirit = pInstance->instance->GetCreature(pInstance->GetData64(entry)))
-                                        spirit->SetFullHealth();
+                                    for (auto entry: spiritKingsEntry)
+                                        if (Creature* spirit = pInstance->instance->GetCreature(pInstance->GetData64(entry)))
+                                            spirit->SetFullHealth();
 
-                                vanquishedCount = 0;
+                                    vanquishedCount = 0;
 
-                                summons.DespawnEntry(NPC_FLANKING_MOGU);
+                                    summons.DespawnEntry(NPC_FLANKING_MOGU);
 
-                                events.Reset();
-                                events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
+                                    events.Reset();
+                                    events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
+                                }
+                                else
+                                    events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
                             }
-                            else
-                                events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
                             break;
                         }
                         default:
@@ -346,19 +393,20 @@ class boss_spirit_kings : public CreatureScript
 
                 switch (me->GetEntry())
                 {
-                    case NPC_ZIAN:
-                        tiredSpell = SPELL_UNDYING_SHADOWS;
-                        break;
-                    case NPC_MENG:
-                        tiredSpell = SPELL_MADDENING_SHOUT;
-                        break;
                     case NPC_QIANG:
-                        tiredSpell = SPELL_FLANKING_ORDERS;
+                        DoAction(ACTION_FIRST_FIGHT);
                         events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
+                        events.ScheduleEvent(EVENT_MASSIVE_ATTACK, 3500);
                         events.ScheduleEvent(EVENT_ANNIHILATE, urand(15000, 20000));
                         break;
                     case NPC_SUBETAI:
-                        tiredSpell = SPELL_PILLAGE;
+                        events.ScheduleEvent(EVENT_PILLAGE, 30000);
+                        events.ScheduleEvent(EVENT_VOLLEY_1, urand(15000, 20000));
+                        events.ScheduleEvent(EVENT_RAIN_OF_ARROWS, 45000);
+                        break;
+                    case NPC_ZIAN:
+                        break;
+                    case NPC_MENG:
                         break;
                     default:
                         tiredSpell = 0;
@@ -392,6 +440,11 @@ class boss_spirit_kings : public CreatureScript
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                         me->setFaction(14);
                         break;
+                    case ACTION_SPIRIT_LOW_HEALTH: // Previous spirit is low hp, add preparation aura
+                    {
+                        //me->AddAura(SPELL_SPIRIT_PREPARATION, me);
+                        break;
+                    }
                     case ACTION_FAIL:
                         EnterEvadeMode();
                         break;
@@ -423,7 +476,7 @@ class boss_spirit_kings : public CreatureScript
                     me->AddAura(SPELL_INACTIVE, me);
                     me->SetReactState(REACT_PASSIVE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
-                    me->CombatStop();
+                    me->getThreatManager().resetAllAggro();
 
                     // We reschedule only the vanquished spell
                     events.Reset();
@@ -437,6 +490,7 @@ class boss_spirit_kings : public CreatureScript
                             events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
                             break;
                         case NPC_SUBETAI:
+                            events.ScheduleEvent(EVENT_PILLAGE, 30000);
                             break;
                         default:
                             tiredSpell = 0;
@@ -459,6 +513,7 @@ class boss_spirit_kings : public CreatureScript
                 {
                     switch(eventId)
                     {
+                        // Qiang
                         case EVENT_FLANKING_MOGU:
                         {
                             if (Creature* controler = GetControler())
@@ -469,10 +524,52 @@ class boss_spirit_kings : public CreatureScript
                             events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
                             break;
                         }
+                        case EVENT_MASSIVE_ATTACK:
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(target, SPELL_MASSIVE_ATTACKS, false);
+
+                            events.ScheduleEvent(EVENT_MASSIVE_ATTACK, 3500);
+                            break;
+                        }
                         case EVENT_ANNIHILATE:
                         {
                             me->CastSpell(me, SPELL_ANNIHILATE, false);
                             events.ScheduleEvent(EVENT_ANNIHILATE, urand(15000, 20000));
+                            break;
+                        }
+                        // Subetai
+                        case EVENT_PILLAGE:
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                                me->CastSpell(target, SPELL_PILLAGE, false);
+
+                            events.ScheduleEvent(EVENT_PILLAGE, 30000);
+                            break;
+                        }
+                        case EVENT_VOLLEY_1:
+                        case EVENT_VOLLEY_2:
+                        case EVENT_VOLLEY_3:
+                        {
+                            me->CastSpell(me, volleySpells[eventId - EVENT_VOLLEY_1], false);
+                            events.ScheduleEvent(eventId == EVENT_VOLLEY_3 ? EVENT_VOLLEY_1: eventId + 1, eventId == EVENT_VOLLEY_3 ? urand(15000, 2000): 50);
+                            break;
+                        }
+                        case EVENT_RAIN_OF_ARROWS:
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
+                                me->CastSpell(target, SPELL_RAIN_OF_ARROWS, false);
+
+                            events.ScheduleEvent(EVENT_RAIN_OF_ARROWS, 45000);
+                            break;
+                        }
+                        // Zian
+                        case EVENT_UNDYING_SHADOWS:
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
+                                me->CastSpell(target, SPELL_UNDYING_SHADOWS, false);
+
+                            events.ScheduleEvent(EVENT_UNDYING_SHADOWS, 45000);
                             break;
                         }
                         default:
@@ -490,6 +587,125 @@ class boss_spirit_kings : public CreatureScript
         }
 };
 
+class mob_pinning_arrow : public CreatureScript
+{
+    public:
+        mob_pinning_arrow() : CreatureScript("mob_pinning_arrow") {}
+
+        struct mob_pinning_arrowAI : public ScriptedAI
+        {
+            mob_pinning_arrowAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+            uint64 playerGuid;
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                playerGuid = 0;
+            }
+
+            void SetGUID(uint64 guid, int32 /*id*/ = 0)
+            {
+                playerGuid = guid;
+
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
+                {
+                    me->EnterVehicle(player);
+                    me->AddAura(118141, me); // Pinnig arrow visual
+                }
+            }
+
+            void JustDied(Unit* attacker)
+            {
+                if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
+                    player->RemoveAurasDueToSpell(118135); // DOT
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_pinning_arrowAI(creature);
+        }
+};
+
+#define PHASE_UNDYING_SHADOW    true
+#define PHASE_COALESCING_SHADOW false
+
+class mob_undying_shadow : public CreatureScript
+{
+    public:
+        mob_undying_shadow() : CreatureScript("mob_undying_shadow") {}
+
+        struct mob_undying_shadowAI : public ScriptedAI
+        {
+            mob_undying_shadowAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+            bool phase;
+            uint32 switchPhaseTimer;
+
+            void Reset()
+            {
+                me->CastSpell(me, SPELL_UNDYING_SHADOW_DOT, true);
+                DoZoneInCombat();
+
+                if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST))
+                    me->CastSpell(target, SPELL_FIXATE, true);
+
+                switchPhaseTimer = 0;
+
+                phase = PHASE_UNDYING_SHADOW;
+            }
+
+            void DamageTaken(Unit* attacker, uint32& damage)
+            {
+                if (phase == PHASE_UNDYING_SHADOW)
+                {
+                    if (damage >= me->GetHealth())
+                    {
+                        me->RemoveAurasDueToSpell(SPELL_UNDYING_SHADOW_DOT);
+                        me->AddAura(SPELL_COALESCING_SHADOW_DOT, me);
+                        me->AddUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                        phase = PHASE_COALESCING_SHADOW;
+                        switchPhaseTimer = 30000;
+                    }
+                }
+                else
+                    damage = 0;
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (switchPhaseTimer)
+                {
+                    if (switchPhaseTimer <= diff)
+                    {
+                        me->RemoveAurasDueToSpell(SPELL_COALESCING_SHADOW_DOT);
+                        me->AddAura(SPELL_UNDYING_SHADOW_DOT, me);
+                        me->ClearUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                        phase = PHASE_UNDYING_SHADOW;
+                        switchPhaseTimer = 0;
+                    }
+                    else switchPhaseTimer -= diff;
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_undying_shadowAI(creature);
+        }
+};
+
 class spell_massive_attacks : public SpellScriptLoader
 {
     public:
@@ -501,7 +717,7 @@ class spell_massive_attacks : public SpellScriptLoader
 
             uint8 targetsCount;
 
-            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
+            void CheckTargets(std::list<WorldObject*>& targets)
             {
                 targetsCount = targets.size();
             }
@@ -513,7 +729,7 @@ class spell_massive_attacks : public SpellScriptLoader
 
             void Register()
             {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_massive_attacks_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_54);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_massive_attacks_SpellScript::CheckTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_54);
                 OnEffectHitTarget += SpellEffectFn(spell_massive_attacks_SpellScript::RecalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
         };
@@ -524,9 +740,96 @@ class spell_massive_attacks : public SpellScriptLoader
         }
 };
 
+class spell_volley : public SpellScriptLoader
+{
+    public:
+        spell_volley() : SpellScriptLoader("spell_volley") { }
+
+        class spell_volley_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_volley_SpellScript);
+
+            void HandleDummyLaunch(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+
+                if (!caster)
+                    return;
+
+                float coneAngle = 0.0f;
+
+                switch (GetSpellInfo()->Id)
+                {
+                    case 118094:
+                        coneAngle = M_PI / (1.5);
+                        break;
+                    case 118105:
+                        coneAngle = M_PI / 4;
+                        break;
+                    case 118106:
+                        coneAngle = M_PI / 6;
+                        break;
+                }
+
+                float startAngle = caster->GetOrientation() - (coneAngle / 2);
+                float maxAngle   = caster->GetOrientation() + (coneAngle / 2);
+
+                for (float actualAngle = startAngle; actualAngle <= maxAngle; actualAngle += 0.1f)
+                {
+                    float x = 0.0f, y = 0.0f;
+                    GetPositionWithDistInOrientation(caster, 100.0f, actualAngle, x, y);
+
+                    caster->CastSpell(x, y, caster->GetPositionZ(), SPELL_VOLLEY_VISUAL, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectLaunch += SpellEffectFn(spell_volley_SpellScript::HandleDummyLaunch, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_volley_SpellScript();
+        }
+};
+
+class spell_pinned_down : public SpellScriptLoader
+{
+    public:
+        spell_pinned_down() : SpellScriptLoader("spell_pinned_down") { }
+
+        class spell_pinned_down_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pinned_down_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Unit* target = GetHitUnit())
+                    if (Creature* pinningArrow = target->SummonCreature(NPC_PINNING_ARROW, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN))
+                        pinningArrow->AI()->SetGUID(target->GetGUID());
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_pinned_down_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pinned_down_SpellScript();
+        }
+};
+
 void AddSC_boss_spirit_kings()
 {
     new boss_spirit_kings_controler();
     new boss_spirit_kings();
+    new mob_pinning_arrow();
+    new mob_undying_shadow();
     new spell_massive_attacks();
+    new spell_volley();
+    new spell_pinned_down();
 }

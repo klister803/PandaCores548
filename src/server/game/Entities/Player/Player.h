@@ -3133,6 +3133,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_DelayedOperations;
         bool m_bCanDelayTeleport;
         bool m_bHasDelayedTeleport;
+        bool m_isMoltenCored;
 
         // Temporary removed pet cache
         uint32 m_temporaryUnsummonedPetNumber;
@@ -3183,6 +3184,8 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
     float totalmul = 1.0f;
     int32 totalflat = 0;
     bool chaosBolt = false;
+    bool soulFire = false;
+    int32 value = 0;
 
     // Drop charges for triggering spells instead of triggered ones
     if (m_spellModTakingSpell)
@@ -3211,6 +3214,8 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
                 continue;
 
+            value = mod->value;
+
             // Fix don't apply Backdraft twice for Chaos Bolt
             if (mod->spellId == 117828 && mod->op == SPELLMOD_CASTING_TIME && spellInfo->Id == 116858)
             {
@@ -3219,12 +3224,29 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
                 else
                     chaosBolt = true;
             }
+            // Fix don't apply Molten Core multiple times for Soul Fire
+            else if (mod->spellId == 122355 && (spellInfo->Id == 6353 || spellInfo->Id == 104027))
+            {
+                if (soulFire)
+                    continue;
+                else
+                    soulFire = true;
 
-            totalmul += CalculatePct(1.0f, mod->value);
+                if (m_isMoltenCored)
+                    m_isMoltenCored = false;
+                else if (mod->op == SPELLMOD_CASTING_TIME)
+                    m_isMoltenCored = true;
+
+                value = mod->value / mod->charges;
+            }
+
+            totalmul += CalculatePct(1.0f, value);
         }
 
-        DropModCharge(mod, spell);
+        if (!m_isMoltenCored)
+            DropModCharge(mod, spell);
     }
+
     float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
     basevalue = T((float)basevalue + diff);
     return T(diff);

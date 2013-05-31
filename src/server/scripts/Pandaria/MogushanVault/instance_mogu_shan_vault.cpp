@@ -212,7 +212,9 @@ public:
         {
             switch (type)
             {
-                // Creature
+                /// Creature
+
+                // Stone Guard
                 case NPC_STONE_GUARD_CONTROLER:
                     return stoneGuardControlerGuid;
                 case NPC_JASPER:
@@ -226,8 +228,14 @@ public:
                                 return guid;
                     break;
                 }
+
+                // Feng
                 case NPC_FENG:
                     return fengGuid;
+
+                // Spirit Kings
+                case NPC_SPIRIT_GUID_CONTROLER:
+                    return spiritKingsControlerGuid;
                 case NPC_ZIAN:
                 case NPC_MENG:
                 case NPC_QIANG:
@@ -239,7 +247,7 @@ public:
                                 return guid;
                     break;
                 }
-                // Gameobject
+                /// Gameobject
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
                 case GOB_SHIELD_STATUE:

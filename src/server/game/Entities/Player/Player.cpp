@@ -786,6 +786,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_DelayedOperations = 0;
     m_bCanDelayTeleport = false;
     m_bHasDelayedTeleport = false;
+    m_isMoltenCored = false;
     m_teleport_options = 0;
 
     m_trade = NULL;
