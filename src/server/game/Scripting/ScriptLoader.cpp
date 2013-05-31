@@ -351,6 +351,7 @@ void AddSC_moonglade();
 void AddSC_mulgore();
 void AddSC_orgrimmar();
 void AddSC_silithus();
+void AddSC_southern_barrens();
 void AddSC_stonetalon_mountains();
 void AddSC_tanaris();
 void AddSC_teldrassil();
@@ -640,6 +641,7 @@ void AddSC_boss_feng();
 void AddSC_boss_garajal();
 void AddSC_boss_spirit_kings();
 
+void AddSC_jade_forest();
 void AddSC_vale_of_eternal_blossoms();
 void AddSC_kun_lai_summit();
 
@@ -1026,6 +1028,7 @@ void AddKalimdorScripts()
     AddSC_mulgore();
     AddSC_orgrimmar();
     AddSC_silithus();
+    AddSC_southern_barrens();
     AddSC_stonetalon_mountains();
     AddSC_tanaris();
     AddSC_teldrassil();
@@ -1327,6 +1330,7 @@ void AddPandarieScripts()
     AddSC_boss_garajal();
     AddSC_boss_spirit_kings();
 
+    AddSC_jade_forest();
     AddSC_kun_lai_summit();
     AddSC_vale_of_eternal_blossoms();
 

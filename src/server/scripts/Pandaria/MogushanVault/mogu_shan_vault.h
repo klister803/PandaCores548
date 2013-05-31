@@ -71,6 +71,8 @@ enum eCreatures
     NPC_FLANKING_MOGU               = 60847,
     NPC_PINNING_ARROW               = 60958,
 
+    NPC_UNDYING_SHADOW              = 60731,
+
     // Elegon
     NPC_ELEGON                      = 60410,
     

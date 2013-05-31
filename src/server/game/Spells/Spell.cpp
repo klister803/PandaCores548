@@ -7159,6 +7159,15 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
         case SPELLVALUE_BASE_POINT2:
             m_spellValue->EffectBasePoints[2] = m_spellInfo->Effects[EFFECT_2].CalcBaseValue(value);
             break;
+        case SPELLVALUE_BASE_POINT3:
+            m_spellValue->EffectBasePoints[3] = m_spellInfo->Effects[EFFECT_3].CalcBaseValue(value);
+            break;
+        case SPELLVALUE_BASE_POINT4:
+            m_spellValue->EffectBasePoints[4] = m_spellInfo->Effects[EFFECT_4].CalcBaseValue(value);
+            break;
+        case SPELLVALUE_BASE_POINT5:
+            m_spellValue->EffectBasePoints[5] = m_spellInfo->Effects[EFFECT_5].CalcBaseValue(value);
+            break;
         case SPELLVALUE_RADIUS_MOD:
             m_spellValue->RadiusMod = (float)value / 10000;
             break;
