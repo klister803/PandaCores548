@@ -10136,7 +10136,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
 
     Unit* unit = this;
 
-    if (GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem())
+    if (GetTypeId() == TYPEID_UNIT && (ToCreature()->isTotem() || ToCreature()->GetEntry() == 60849))
         unit = GetOwner();
 
     // Custom MoP Script
@@ -10153,11 +10153,12 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
     // 117907 - Mastery : Gift of the Serpent
-    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907) && spellProto && spellProto->Id != 124041)
+    else if (unit && unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(117907) && unit->getLevel() >= 80 && addhealth > 0 && spellProto && spellProto->Id != 124041)
     {
         float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.22f;
+        float scaling = spellProto->GetGiftOfTheSerpentScaling(this);
 
-        if (roll_chance_f(Mastery))
+        if (roll_chance_f(Mastery * scaling))
         {
             std::list<Unit*> targetList;
 
@@ -10178,19 +10179,13 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
         }
     }
     // 76669 - Mastery : Illuminated Healing
-    if (unit && victim && addhealth != 0)
+    else if (unit && victim && addhealth != 0 && unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(76669) && unit->getLevel() >= 80)
     {
-        if (unit->GetTypeId() == TYPEID_PLAYER)
-        {
-            if (unit->HasAura(76669) && unit->getLevel() >= 80)
-            {
-                float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
+        float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
 
-                int32 bp = CalculatePct(addhealth, Mastery) * 100;
+        int32 bp = CalculatePct(addhealth, Mastery) * 100;
 
-                unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
-            }
-        }
+        unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
     }
 
     if (Player* player = unit->ToPlayer())

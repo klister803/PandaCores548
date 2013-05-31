@@ -520,6 +520,7 @@ public:
     bool IsDifferentRankOf(SpellInfo const* spellInfo) const;
     bool IsHighRankOf(SpellInfo const* spellInfo) const;
     bool IsAfflictionPeriodicDamage() const;
+    float GetGiftOfTheSerpentScaling(Unit* caster) const;
 
     // helpers for breaking by damage spells
     bool IsBreakingCamouflage() const;
