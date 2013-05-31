@@ -389,6 +389,8 @@ class spell_warl_soul_link : public SpellScriptLoader
                         {
                             target->SetMaxHealth(target->GetMaxHealth() * 2);
                             target->SetHealth(target->GetHealth() * 2);
+                            _player->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
+                            target->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
                         }
                     }
                 }
