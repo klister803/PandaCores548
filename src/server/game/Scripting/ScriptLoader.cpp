@@ -640,6 +640,7 @@ void AddSC_boss_stone_guard();
 void AddSC_boss_feng();
 void AddSC_boss_garajal();
 void AddSC_boss_spirit_kings();
+void AddSC_boss_elegon();
 
 void AddSC_jade_forest();
 void AddSC_vale_of_eternal_blossoms();
@@ -1329,6 +1330,7 @@ void AddPandarieScripts()
     AddSC_boss_feng();
     AddSC_boss_garajal();
     AddSC_boss_spirit_kings();
+    AddSC_boss_elegon();
 
     AddSC_jade_forest();
     AddSC_kun_lai_summit();
