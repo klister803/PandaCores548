@@ -4125,6 +4125,12 @@ class npc_fungal_growth : public CreatureScript
                 me->CastSpell(me, FUNGAL_GROWTH_PERIODIC, true);    // Periodic Trigger spell : decrease speed
                 me->CastSpell(me, FUNGAL_GROWTH_AREA, true);        // Persistent Area
             }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!me->HasAura(FUNGAL_GROWTH_PERIODIC))
+                    me->CastSpell(me, FUNGAL_GROWTH_PERIODIC, true);
+            }
         };
 
         CreatureAI* GetAI(Creature* pCreature) const

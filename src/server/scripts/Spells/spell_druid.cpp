@@ -1770,7 +1770,7 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
 
             // Globals variables
             float spellRange;
-            std::list<TempSummon*> mushroomList;
+            std::list<Creature*> mushroomList;
 
             bool Load()
             {
@@ -1781,19 +1781,17 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
                     return false;
 
                 std::list<Creature*> list;
-                std::list<TempSummon*> summonList;
-                player->GetCreatureListWithEntryInGrid(list, DRUID_NPC_WILD_MUSHROOM, 500.0f);
+                player->GetCreatureListWithEntryInGrid(list, DRUID_NPC_WILD_MUSHROOM, 50.0f);
 
                 for (std::list<Creature*>::const_iterator i = list.begin(); i != list.end(); ++i)
                 {
                     Unit* owner = (*i)->GetOwner();
                     if (owner && owner == player && (*i)->isSummon())
                     {
-                        summonList.push_back((*i)->ToTempSummon());
+                        mushroomList.push_back((*i)->ToTempSummon());
                         continue;
                     }
                 }
-                mushroomList = summonList;
 
                 if (!spellRange)
                     return false;
@@ -1812,7 +1810,7 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
 
                 bool inRange = false;
 
-                for (std::list<TempSummon*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
+                for (std::list<Creature*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
                 {
                     Position shroomPos;
                     (*i)->GetPosition(&shroomPos);
@@ -1835,17 +1833,22 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
             {
                 if (Player* player = GetCaster()->ToPlayer())
                 {
-                    for (std::list<TempSummon*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
+                    for (std::list<Creature*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
                     {
                         Position shroomPos;
                         (*i)->GetPosition(&shroomPos);
                         if (!player->IsWithinDist3d(&shroomPos, spellRange))
                             continue;
 
-                        player->CastSpell((*i)->GetPositionX(), (*i)->GetPositionY(), (*i)->GetPositionZ(), DRUID_SPELL_FUNGAL_GROWTH_SUMMON, true);// Fungal Growth
-                        player->CastSpell((*i)->GetPositionX(), (*i)->GetPositionY(), (*i)->GetPositionZ(), DRUID_SPELL_WILD_MUSHROOM_DAMAGE, true);// Damage
-                        (*i)->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_DEATH_VISUAL, true);                                                        // Explosion visual
-                        (*i)->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_SUICIDE, true);                                                             // Suicide
+                        (*i)->SetVisible(true);
+
+                        player->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_DAMAGE, true);    // Damage
+
+                        player->CastSpell((*i), DRUID_SPELL_FUNGAL_GROWTH_SUMMON, true);    // Fungal Growth
+
+                        (*i)->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_DEATH_VISUAL, true);// Explosion visual
+                        (*i)->CastSpell((*i), DRUID_SPELL_WILD_MUSHROOM_SUICIDE, true);     // Suicide
+                        (*i)->DespawnOrUnsummon(500);
                     }
                 }
             }

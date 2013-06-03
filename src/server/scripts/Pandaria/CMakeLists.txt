@@ -24,10 +24,10 @@ set(scripts_STAT_SRCS
   Pandaria/TempleJadeSerpent/boss_liu_flameheart.cpp
   Pandaria/TempleJadeSerpent/boss_sha_of_doubt.cpp
 
-  Pandaria/StormstoutBrewery/boss_ook_ook.cpp
   Pandaria/StormstoutBrewery/instance_stormstout_brewery.cpp
   Pandaria/StormstoutBrewery/stormstout_brewery.cpp
   Pandaria/StormstoutBrewery/stormstout_brewery.h
+  Pandaria/StormstoutBrewery/boss_ook_ook.cpp
 
   Pandaria/GateSettingSun/instance_gate_setting_sun.cpp
   Pandaria/GateSettingSun/gate_setting_sun.cpp
@@ -46,17 +46,18 @@ set(scripts_STAT_SRCS
   Pandaria/ShadopanMonastery/boss_taran_zhu.cpp
   
   Pandaria/SiegeNiuzaoTemple/instance_siege_of_the_niuzoa_temple.cpp
+  Pandaria/SiegeNiuzaoTemple/siege_of_the_niuzoa_temple.cpp
   Pandaria/SiegeNiuzaoTemple/siege_of_the_niuzoa_temple.h
   Pandaria/SiegeNiuzaoTemple/boss_jinbak.cpp
-  Pandaria/SiegeNiuzaoTemple/siege_of_the_niuzoa_temple.cpp
 
   Pandaria/MogushanVault/instance_mogu_shan_vault.cpp
-  Pandaria/MogushanVault/mogu_shan_vault.h
   Pandaria/MogushanVault/mogu_shan_vault.cpp
+  Pandaria/MogushanVault/mogu_shan_vault.h
   Pandaria/MogushanVault/boss_stone_guard.cpp
   Pandaria/MogushanVault/boss_feng.cpp
   Pandaria/MogushanVault/boss_garajal.cpp
   Pandaria/MogushanVault/boss_spirit_kings.cpp
+  Pandaria/MogushanVault/boss_elegon.cpp
 
   Pandaria/WanderingIsland/WanderingIsland_North.cpp
   Pandaria/WanderingIsland/WanderingIsland_East.cpp

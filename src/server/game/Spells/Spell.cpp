@@ -7092,6 +7092,19 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
                     }
                 }
             }
+            else if (m_damage < 0)
+            {
+                if (m_spellInfo->Id == 88686 || // Holy Word: Sanctuary
+                    m_spellInfo->Id == 73921)   // Healing Rain
+                {
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        uint32 targetAmount = m_UniqueTargetInfo.size();
+                        if (targetAmount > 6)
+                            m_damage = (m_damage * 6) / int32(targetAmount);
+                    }
+                }
+            }
 
             if (m_applyMultiplierMask & (1 << i))
             {

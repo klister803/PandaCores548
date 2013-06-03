@@ -236,18 +236,18 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
 {
     switch (group)
     {
-    case DIMINISHING_TAUNT:
-    case DIMINISHING_CONTROLLED_STUN:
-    case DIMINISHING_STUN:
-    case DIMINISHING_OPENING_STUN:
-    case DIMINISHING_CYCLONE:
-    case DIMINISHING_CHARGE:
-        return DRTYPE_ALL;
-    case DIMINISHING_LIMITONLY:
-    case DIMINISHING_NONE:
-        return DRTYPE_NONE;
-    default:
-        return DRTYPE_PLAYER;
+        case DIMINISHING_TAUNT:
+        case DIMINISHING_CONTROLLED_STUN:
+        case DIMINISHING_STUN:
+        case DIMINISHING_OPENING_STUN:
+        case DIMINISHING_CYCLONE:
+        case DIMINISHING_CHARGE:
+            return DRTYPE_ALL;
+        case DIMINISHING_LIMITONLY:
+        case DIMINISHING_NONE:
+            return DRTYPE_NONE;
+        default:
+            return DRTYPE_PLAYER;
     }
 }
 
@@ -255,10 +255,10 @@ DiminishingLevels GetDiminishingReturnsMaxLevel(DiminishingGroup group)
 {
     switch (group)
     {
-    case DIMINISHING_TAUNT:
-        return DIMINISHING_LEVEL_TAUNT_IMMUNE;
-    default:
-        return DIMINISHING_LEVEL_IMMUNE;
+        case DIMINISHING_TAUNT:
+            return DIMINISHING_LEVEL_TAUNT_IMMUNE;
+        default:
+            return DIMINISHING_LEVEL_IMMUNE;
     }
 }
 

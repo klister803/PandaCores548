@@ -1293,6 +1293,13 @@ bool SpellInfo::CanPierceImmuneAura(SpellInfo const* aura) const
     if (Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
         return true;
 
+    if (aura && aura->Id == 33786)
+    {
+        // Re-cyclone & Fiery Fire
+        if (Id == aura->Id || SpellIconID == 109)
+            return false;
+    }
+
     // these spells (Cyclone for example) can pierce all...
     if ((AttributesEx & SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)
         // ...but not these (Divine shield for example)
