@@ -10154,7 +10154,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
 
     Unit* unit = this;
 
-    if (GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem())
+    if (GetTypeId() == TYPEID_UNIT && (ToCreature()->isTotem() || ToCreature()->GetEntry() == 60849))
         unit = GetOwner();
 
     // Custom MoP Script
@@ -10171,11 +10171,12 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
     // 117907 - Mastery : Gift of the Serpent
-    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907) && spellProto && spellProto->Id != 124041)
+    else if (unit && unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(117907) && unit->getLevel() >= 80 && addhealth > 0 && spellProto && spellProto->Id != 124041)
     {
         float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.22f;
+        float scaling = spellProto->GetGiftOfTheSerpentScaling(this);
 
-        if (roll_chance_f(Mastery))
+        if (roll_chance_f(Mastery * scaling))
         {
             std::list<Unit*> targetList;
 
@@ -10196,19 +10197,13 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
         }
     }
     // 76669 - Mastery : Illuminated Healing
-    if (unit && victim && addhealth != 0)
+    else if (unit && victim && addhealth != 0 && unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(76669) && unit->getLevel() >= 80)
     {
-        if (unit->GetTypeId() == TYPEID_PLAYER)
-        {
-            if (unit->HasAura(76669) && unit->getLevel() >= 80)
-            {
-                float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
+        float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
 
-                int32 bp = CalculatePct(addhealth, Mastery) * 100;
+        int32 bp = CalculatePct(addhealth, Mastery) * 100;
 
-                unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
-            }
-        }
+        unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
     }
 
     if (Player* player = unit->ToPlayer())
@@ -10550,7 +10545,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Custom MoP Script
     // 77215 - Mastery : Potent Afflictions
     // Increase periodic damage of Corruption, Agony and Unstable Affliction
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->IsAfflictionPeriodicDamage() && damagetype == DOT && HasAura(77215))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f;
         AddPct(DoneTotalMod, Mastery);
@@ -13692,6 +13687,36 @@ void Unit::setDeathState(DeathState s)
         // players in instance don't have ZoneScript, but they have InstanceScript
         if (ZoneScript* zoneScript = GetZoneScript() ? GetZoneScript() : (ZoneScript*)GetInstanceScript())
             zoneScript->OnUnitDeath(this);
+
+        if (isPet())
+        {
+            if (Unit* owner = GetOwner())
+            {
+                // Fix Demonic Rebirth
+                if (owner->HasAura(108559) && !owner->HasAura(89140))
+                {
+                    owner->CastSpell(owner, 88448, true);
+                    owner->CastSpell(owner, 89140, true); // Cooldown marker
+                }
+            }
+        }
+        // Druid: Fungal Growth
+        switch (GetEntry())
+        {
+            case 47649:
+            {
+                if (Unit* owner = GetOwner())
+                {
+                    if (owner->GetTypeId() != TYPEID_PLAYER || owner->ToPlayer()->HasSpellCooldown(81283))
+                        break;
+
+                    owner->ToPlayer()->AddSpellCooldown(81283, 0, time(NULL) + sSpellMgr->GetSpellInfo(81283)->RecoveryTime / 1000);
+                }
+                break;
+            }
+            default:
+                break;
+        }
     }
     else if (s == JUST_RESPAWNED)
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)
@@ -17828,7 +17853,7 @@ void Unit::ApplyResilience(Unit const* victim, int32* damage, bool isCrit) const
         return;
 
     // Resilience works only for players or pets against other players or pets
-    if (GetTypeId() != TYPEID_PLAYER || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
+    if (GetTypeId() != TYPEID_PLAYER && (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
         return;
 
     // Don't consider resilience if not in PvP - player or pet

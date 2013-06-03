@@ -1526,8 +1526,9 @@ class spell_hun_masters_call : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 if (Player* caster = GetCaster()->ToPlayer())
-                    if (Pet* pet = caster->GetPet())
-                        pet->CastSpell(caster, HUNTER_SPELL_MASTERS_CALL_TRIGGERED, true);
+                    if (Unit* target = GetHitUnit())
+                        if (Pet* pet = caster->GetPet())
+                            pet->CastSpell(target, HUNTER_SPELL_MASTERS_CALL_TRIGGERED, true);
             }
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)

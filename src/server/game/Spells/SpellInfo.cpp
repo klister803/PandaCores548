@@ -2858,3 +2858,71 @@ bool SpellInfo::IsBreakingCamouflage() const
 
     return true;
 }
+
+bool SpellInfo::IsAfflictionPeriodicDamage() const
+{
+    switch (Id)
+    {
+        case 172:   // Corruption
+        case 980:   // Agony
+        case 30108: // Unstable Affliction
+        case 131736:// Unstable Affliction (triggered)
+        case 131737:// Agony (triggered)
+        case 131740:// Corruption (triggered)
+            return true;
+        default:
+            return false;
+    }
+}
+
+float SpellInfo::GetGiftOfTheSerpentScaling(Unit* caster) const
+{
+    float scale = 1.0f;
+
+    switch (Id)
+    {
+        case 117640:// Spinning Crane Kick (Heal)
+            scale = 0.1f;
+            break;
+        case 115151:// Renewing Mist
+        case 115310:// Revival
+        case 119611:// Renewing Mist (HoT)
+        case 124040:// Chi Torpedo
+        case 124101:// Zen Sphere : Detonate
+        case 130654:// Chi Burst (Heal)
+            scale = 0.15f;
+            break;
+        case 117895:// Eminence
+        case 132120:// Enveloping Mist
+            scale = 0.2f;
+            break;
+        case 116670:// Uplift
+        case 124081:// Zen Sphere (HoT)
+        case 132463:// Chi Wave (Heal)
+            scale = 0.25f;
+            break;
+        case 115175:// Soothing Mist
+            scale = 0.3f;
+            break;
+        default:
+            break;
+    }
+
+    // Serpent Statue has different scaling
+    if (caster->GetTypeId() == TYPEID_UNIT && caster->ToUnit()->GetEntry() == 60849)
+    {
+        switch (Id)
+        {
+            case 117895:// Eminence
+                scale = 0.1f;
+                break;
+            case 115175:// Soothing Mist
+                scale = 0.15f;
+                break;
+            default:
+                break;
+        }
+    }
+
+    return scale;
+}

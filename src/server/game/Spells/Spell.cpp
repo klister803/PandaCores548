@@ -1368,10 +1368,10 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             unitTargets.remove(m_targets.GetUnitTarget());
 
         // Custom MoP Script
-        // 107270 - Spinning Crane Kick : Give 1 Chi if the spell hits at least 3 targets
+        // 107270 / 117640 - Spinning Crane Kick : Give 1 Chi if the spell hits at least 3 targets
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
         {
-            if (m_spellInfo->Id == 107270 && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
+            if ((m_spellInfo->Id == 107270 || m_spellInfo->Id == 117640) && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
             {
                 m_caster->CastSpell(m_caster, 129881, true);
                 m_caster->ToPlayer()->AddSpellCooldown(129881, 0, time(NULL) + 3);
@@ -3880,6 +3880,22 @@ void Spell::finish(bool ok)
     // Stop Attack for some spells
     if (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET)
         m_caster->AttackStop();
+
+    switch (m_spellInfo->Id)
+    {
+        case 53351: // Kill Shot
+        {
+            if (!unitTarget || !unitTarget->isAlive() || unitTarget->GetHealthPct() >= 20.0f || m_caster->HasAura(90967))
+                break;
+
+            m_caster->CastSpell(m_caster, 90967, true); // Effect cooldown marker
+            m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
+
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void Spell::SendCastResult(SpellCastResult result)
@@ -7068,6 +7084,11 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
                         uint32 targetAmount = m_UniqueTargetInfo.size();
                         if (targetAmount > 10)
                             m_damage = m_damage * 10/targetAmount;
+
+                        // Hack Fix Frost Bomb : Doesn't add AoE damage to main target
+                        if (m_spellInfo->Id == 113092 && targetAmount > 1)
+                            if (targetInfo.targetGUID == (*m_UniqueTargetInfo.begin()).targetGUID)
+                                continue;
                     }
                 }
             }

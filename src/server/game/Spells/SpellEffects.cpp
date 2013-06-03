@@ -1621,10 +1621,6 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
         int32 addhealth = damage;
 
-        // Spinning Crane Kick - Heal : Do not heal the monk
-        if (m_spellInfo->Id == 117640)
-            if (unitTarget->GetGUID() == m_caster->GetGUID())
-                return;
         // Vessel of the Naaru (Vial of the Sunwell trinket)
         if (m_spellInfo->Id == 45064)
         {
@@ -6304,6 +6300,15 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
     float radius = 5.0f;
     int32 duration = m_spellInfo->GetDuration();
+
+    switch (m_spellInfo->Id)
+    {
+        case 81283: // Fungal Growth
+            numGuardians = 1;
+            break;
+        default:
+            break;
+    }
 
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);

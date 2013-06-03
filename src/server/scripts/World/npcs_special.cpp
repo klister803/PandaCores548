@@ -4037,6 +4037,102 @@ class npc_ring_of_frost : public CreatureScript
         }
 };
 
+/*######
+# npc_wild_mushroom
+######*/
+
+#define WILD_MUSHROOM_INVISIBILITY   92661
+
+class npc_wild_mushroom : public CreatureScript
+{
+    public:
+        npc_wild_mushroom() : CreatureScript("npc_wild_mushroom") { }
+
+        struct npc_wild_mushroomAI : public ScriptedAI
+        {
+            uint32 CastTimer;
+            bool stealthed;
+
+            npc_wild_mushroomAI(Creature *creature) : ScriptedAI(creature)
+            {
+                CastTimer = 6000;
+                stealthed = false;
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (CastTimer <= diff && !stealthed)
+                {
+                    DoCast(me, WILD_MUSHROOM_INVISIBILITY, true);
+                    stealthed = true;
+                }
+                else
+                {
+                    CastTimer -= diff;
+
+                    if (!stealthed)
+                        me->RemoveAura(WILD_MUSHROOM_INVISIBILITY);
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_wild_mushroomAI(creature);
+        }
+};
+
+/*######
+## npc_fungal_growth
+######*/
+
+#define FUNGAL_GROWTH_PERIODIC  81282
+#define FUNGAL_GROWTH_AREA      94339
+
+class npc_fungal_growth : public CreatureScript
+{
+    public:
+        npc_fungal_growth() : CreatureScript("npc_fungal_growth") { }
+
+        struct npc_fungal_growthAI : public Scripted_NoMovementAI
+        {
+            npc_fungal_growthAI(Creature *c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            }
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            }
+
+            void InitializeAI()
+            {
+                ScriptedAI::InitializeAI();
+                Unit * owner = me->GetOwner();
+                if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+                me->CastSpell(me, FUNGAL_GROWTH_PERIODIC, true);    // Periodic Trigger spell : decrease speed
+                me->CastSpell(me, FUNGAL_GROWTH_AREA, true);        // Persistent Area
+            }
+        };
+
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return new npc_fungal_growthAI(pCreature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -4090,4 +4186,6 @@ void AddSC_npcs_special()
     new npc_windwalk_totem();
     new npc_healing_tide_totem();
     new npc_ring_of_frost();
+    new npc_wild_mushroom();
+    new npc_fungal_growth();
 }
