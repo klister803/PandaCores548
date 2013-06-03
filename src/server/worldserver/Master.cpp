@@ -491,7 +491,7 @@ public:
                     cmd.clear();
                     
                     // Get new dump
-                    cmd << "wget " << ipTransfert[from-1] << "/transfert" << from << "/" << perso_guid << ".dump /home/transfert" << from << "/" << perso_guid << ".dump";
+                    cmd << "wget " << ipTransfert[from-1] << "/transfert" << from << "/" << perso_guid << ".dump --directory-prefix=/home/transfert" << from << "/" << perso_guid << ".dump";
                     system(cmd.str().c_str());
                     cmd.clear();
                     
