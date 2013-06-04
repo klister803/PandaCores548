@@ -41,11 +41,14 @@ class mob_master_shang_xi_temple : public CreatureScript
         {
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                if (Creature* vehicle = player->SummonCreature(55685, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
+                /* The vehicle bug for now on TaranZhu, too much lags
+                 *if (Creature* vehicle = player->SummonCreature(55685, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
                 {
                     player->AddAura(99385, vehicle);
                     player->EnterVehicle(vehicle);
-                }
+                }*/
+
+                player->NearTeleportTo(926.58f, 3605.33f, 251.63f, 3.114f);
             }
 
             player->PlayerTalkClass->SendCloseGossip();
