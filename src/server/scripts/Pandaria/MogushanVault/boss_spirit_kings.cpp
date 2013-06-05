@@ -89,6 +89,8 @@ enum eEvents
 
     // Meng
     EVENT_MADDENING_SHOUT       = 13,
+    EVENT_CRAZED                = 14,
+    EVENT_CRAZY_TOUGHT          = 15
 };
 
 #define MAX_FLANKING_MOGU   48
@@ -198,6 +200,8 @@ class boss_spirit_kings_controler : public CreatureScript
 
                 spawnSpiritKings();
                 me->SetReactState(REACT_PASSIVE);
+
+                events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
             }
 
             void spawnSpiritKings()
@@ -258,13 +262,13 @@ class boss_spirit_kings_controler : public CreatureScript
                                 flankingMogu->AddAura(SPELL_TRIGGER_ATTACK, flankingMogu);
 
                                 float x = 0.0f, y = 0.0f;
-                                GetPositionWithDistInOrientation(flankingMogu, 80.0f, orientation, x, y);
+                                GetPositionWithDistInOrientation(flankingMogu, 100.0f, orientation, x, y);
 
                                 if (!x && !y)
                                     continue;
 
                                 flankingMogu->GetMotionMaster()->MovePoint(1, x, y, flankingMogu->GetPositionZ());
-                                flankingMogu->DespawnOrUnsummon(20000);
+                                flankingMogu->DespawnOrUnsummon(15000);
 
                                 // Spawn a new one to remplace the old one
                                 spawnFlankingMogu(j);
@@ -324,10 +328,10 @@ class boss_spirit_kings_controler : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim())
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
+                if (!fightInProgress)
                     return;
 
                 events.Update(diff);
@@ -338,27 +342,13 @@ class boss_spirit_kings_controler : public CreatureScript
                     {
                         case EVENT_CHECK_WIPE:
                         {
-                            if (fightInProgress)
+                            if (pInstance->IsWipe())
                             {
-                                if (pInstance->IsWipe())
-                                {
-                                    fightInProgress = false;
-                                    pInstance->SetBossState(DATA_SPIRIT_KINGS, FAIL);
-
-                                    for (auto entry: spiritKingsEntry)
-                                        if (Creature* spirit = pInstance->instance->GetCreature(pInstance->GetData64(entry)))
-                                            spirit->SetFullHealth();
-
-                                    vanquishedCount = 0;
-
-                                    summons.DespawnEntry(NPC_FLANKING_MOGU);
-
-                                    events.Reset();
-                                    events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
-                                }
-                                else
-                                    events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
+                                pInstance->SetBossState(DATA_SPIRIT_KINGS, FAIL);
+                                Reset();
                             }
+                            else
+                                events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
                             break;
                         }
                         default:
@@ -415,22 +405,24 @@ class boss_spirit_kings : public CreatureScript
                 {
                     case NPC_QIANG:
                         DoAction(ACTION_FIRST_FIGHT);
-                        events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
-                        events.ScheduleEvent(EVENT_MASSIVE_ATTACK, 3500);
-                        events.ScheduleEvent(EVENT_ANNIHILATE, urand(15000, 20000));
+                        events.ScheduleEvent(EVENT_FLANKING_MOGU,       30000);
+                        events.ScheduleEvent(EVENT_MASSIVE_ATTACK,      3500);
+                        events.ScheduleEvent(EVENT_ANNIHILATE,          urand(15000, 20000));
                         break;
                     case NPC_SUBETAI:
-                        events.ScheduleEvent(EVENT_PILLAGE, 30000);
-                        events.ScheduleEvent(EVENT_VOLLEY_1, urand(15000, 20000));
-                        events.ScheduleEvent(EVENT_RAIN_OF_ARROWS, 45000);
+                        events.ScheduleEvent(EVENT_PILLAGE,             30000);
+                        events.ScheduleEvent(EVENT_VOLLEY_1,            urand(15000, 20000));
+                        events.ScheduleEvent(EVENT_RAIN_OF_ARROWS,      45000);
                         break;
                     case NPC_ZIAN:
-                        events.ScheduleEvent(EVENT_UNDYING_SHADOWS, 30000);
-                        events.ScheduleEvent(EVENT_SHADOW_BLAST, 15000);
-                        events.ScheduleEvent(EVENT_CHARGED_SHADOWS, 10000);
+                        events.ScheduleEvent(EVENT_UNDYING_SHADOWS,     30000);
+                        events.ScheduleEvent(EVENT_SHADOW_BLAST,        15000);
+                        events.ScheduleEvent(EVENT_CHARGED_SHADOWS,     10000);
                         break;
                     case NPC_MENG:
-                        events.ScheduleEvent(EVENT_MADDENING_SHOUT, 30000);
+                        events.ScheduleEvent(EVENT_MADDENING_SHOUT,     30000);
+                        events.ScheduleEvent(EVENT_CRAZED,              5000);
+                        events.ScheduleEvent(EVENT_CRAZY_TOUGHT,        10000);
                         break;
                     default:
                         break;
@@ -471,9 +463,6 @@ class boss_spirit_kings : public CreatureScript
                         //me->AddAura(SPELL_SPIRIT_PREPARATION, me);
                         break;
                     }
-                    case ACTION_FAIL:
-                        EnterEvadeMode();
-                        break;
                     default:
                         break;
                 }
@@ -509,6 +498,8 @@ class boss_spirit_kings : public CreatureScript
                     me->SetReactState(REACT_PASSIVE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     me->getThreatManager().resetAllAggro();
+                    me->SetSpeed(MOVE_RUN, 0.0f, true);
+                    me->SetSpeed(MOVE_WALK, 0.0f, true);
 
                     // We reschedule only the vanquished spell
                     events.Reset();
@@ -591,7 +582,7 @@ class boss_spirit_kings : public CreatureScript
                         case EVENT_VOLLEY_3:
                         {
                             me->CastSpell(me, volleySpells[eventId - EVENT_VOLLEY_1], false);
-                            events.ScheduleEvent(eventId == EVENT_VOLLEY_3 ? EVENT_VOLLEY_1: eventId + 1, eventId == EVENT_VOLLEY_3 ? urand(15000, 2000): 50);
+                            events.ScheduleEvent(eventId == EVENT_VOLLEY_3 ? EVENT_VOLLEY_1: eventId + 1, eventId == EVENT_VOLLEY_3 ? urand(15000, 20000): 50);
                             break;
                         }
                         case EVENT_RAIN_OF_ARROWS:
@@ -629,12 +620,30 @@ class boss_spirit_kings : public CreatureScript
                             break;
                         }
                         // Meng
+                        case EVENT_MADDENING_SHOUT:
+                        {
+                            me->CastSpell(me, SPELL_MADDENING_SHOUT, false);
+                            events.ScheduleEvent(EVENT_MADDENING_SHOUT, 30000);
+                            break;
+                        }
+                        case EVENT_CRAZED:
+                        {
+                            me->CastSpell(me, SPELL_CRAZED, false);
+                            break;
+                        }
+                        case EVENT_CRAZY_TOUGHT:
+                        {
+                            me->CastSpell(me, SPELL_CRAZY_TOUGHT, false);
+                            events.ScheduleEvent(EVENT_CRAZY_TOUGHT, 10000);
+                            break;
+                        }
                         default:
                             break;
                     }
                 }
 
-                DoMeleeAttackIfReady();
+                if (!vanquished)
+                    DoMeleeAttackIfReady();
             }
         };
 
@@ -714,8 +723,10 @@ class mob_undying_shadow : public CreatureScript
                 DoZoneInCombat();
 
                 if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST))
+                {
                     me->CastSpell(target, SPELL_FIXATE, true);
-
+                    me->GetMotionMaster()->MoveChase(target);
+                }
                 switchPhaseTimer = 0;
 
                 phase = PHASE_UNDYING_SHADOW;
@@ -733,6 +744,7 @@ class mob_undying_shadow : public CreatureScript
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                         phase = PHASE_COALESCING_SHADOW;
                         switchPhaseTimer = 30000;
+                        damage = 0;
                     }
                 }
                 else
@@ -751,6 +763,13 @@ class mob_undying_shadow : public CreatureScript
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                         phase = PHASE_UNDYING_SHADOW;
                         switchPhaseTimer = 0;
+                        DoZoneInCombat();
+
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                        {
+                            me->CastSpell(target, SPELL_FIXATE, true);
+                            me->GetMotionMaster()->MoveChase(target);
+                        }
                     }
                     else switchPhaseTimer -= diff;
                 }
@@ -925,12 +944,12 @@ class spell_crazed_cowardice : public SpellScriptLoader
                 {
                     if (AuraPtr aura = GetAura())
                     {
-                        if (aura->GetId() == SPELL_CRAZED) // Refresh work with SPELL_CRAZED but not with SPELL_COWARDICE
-                            caster->CastSpell(caster, SPELL_CRAZED, true);
+                        if (aura->GetId() == SPELL_CRAZED)
+                            aura->SetStackAmount(aura->GetStackAmount() + 1);
                         else
                             aura->SetCharges(aura->GetCharges() + 1);
 
-                        if (aura->GetCharges() >= 100)
+                        if (aura->GetStackAmount() >= 100 || aura->GetCharges() >= 100)
                         {
                             caster->CastSpell(caster, aura->GetId() == SPELL_CRAZED ? SPELL_COWARDICE: SPELL_CRAZED, true);
                             aura->Remove();
@@ -965,7 +984,7 @@ class spell_crazy_tought : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     if (AuraPtr aura = caster->GetAura(SPELL_CRAZED))
-                        aura->SetCharges(aura->GetCharges() + 10);
+                        aura->SetStackAmount(aura->GetStackAmount() + 10);
                     else if (AuraPtr aura = caster->GetAura(SPELL_COWARDICE))
                         aura->SetCharges(aura->GetCharges() + 10);
                 }

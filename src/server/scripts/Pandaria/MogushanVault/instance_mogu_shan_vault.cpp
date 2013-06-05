@@ -185,12 +185,6 @@ public:
                                 spiritKingsControler->AI()->DoAction(ACTION_ENTER_COMBAT);
                             break;
                         }
-                        case FAIL:
-                        {
-                            for (auto spiritKingsGuid: spiritKingsGUIDs)
-                                if (Creature* spiritKings = instance->GetCreature(spiritKingsGuid))
-                                    spiritKings->AI()->DoAction(ACTION_FAIL);
-                        }
                         default:
                             break;
                     }
