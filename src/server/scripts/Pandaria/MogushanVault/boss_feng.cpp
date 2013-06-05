@@ -210,7 +210,7 @@ class boss_feng : public CreatureScript
             void PrepareNewPhase(uint8 newPhase)
             {
                 events.Reset();
-                events.ScheduleEvent(EVENT_DOT_ATTACK, 17500);
+                events.ScheduleEvent(EVENT_DOT_ATTACK, 15000);
                 events.ScheduleEvent(EVENT_RE_ATTACK,  500);
 
                 me->SetReactState(REACT_PASSIVE);
@@ -359,7 +359,7 @@ class boss_feng : public CreatureScript
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                             me->CastSpell(target, dotSpellId, false);
 
-                        events.ScheduleEvent(EVENT_DOT_ATTACK, 17500);
+                        events.ScheduleEvent(EVENT_DOT_ATTACK, 15000);
                         break;
                     }
                     case EVENT_RE_ATTACK:
@@ -388,7 +388,7 @@ class boss_feng : public CreatureScript
                     {
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             me->CastSpell(target, SPELL_WILDFIRE_SPARK, false);
-                        events.ScheduleEvent(EVENT_WILDFIRE_SPARK, 20000);
+                        events.ScheduleEvent(EVENT_WILDFIRE_SPARK, urand(25000, 35000));
                         break;
                     }
                     case EVENT_DRAW_FLAME: 
@@ -558,7 +558,7 @@ class spell_mogu_epicenter : public SpellScriptLoader
                 if (!caster || !target)
                     return;
                 
-                float distance = caster->GetDistance(target);
+                float distance = caster->GetExactDist2d(target);
 
                 if (distance >= 0 && distance <= 60)
                     SetHitDamage(GetHitDamage() * (1 - (distance / MAX_DIST)));
@@ -662,7 +662,7 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
                 if (!caster || !target)
                     return;
                 
-                float distance = caster->GetDistance(target);
+                float distance = caster->GetExactDist2d(target);
 
                 if (distance >= 0 && distance <= 60)
                     SetHitDamage(GetHitDamage() * (distance / MAX_DIST));

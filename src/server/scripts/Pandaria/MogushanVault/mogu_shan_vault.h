@@ -59,6 +59,7 @@ enum eCreatures
     NPC_SHADOWY_MINION_REAL         = 60940,
     NPC_SHADOWY_MINION_SPIRIT       = 60184,
     NPC_SOUL_CUTTER                 = 62003,
+    NPC_SPIRIT_TOTEM                = 60240,
 
     // Spirit kings
     NPC_SPIRIT_GUID_CONTROLER       = 60984,

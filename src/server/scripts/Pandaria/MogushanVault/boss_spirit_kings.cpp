@@ -818,7 +818,7 @@ class spell_volley : public SpellScriptLoader
                 switch (GetSpellInfo()->Id)
                 {
                     case 118094:
-                        coneAngle = M_PI / (1.5);
+                        coneAngle = M_PI / (1.5f);
                         break;
                     case 118105:
                         coneAngle = M_PI / 4;
