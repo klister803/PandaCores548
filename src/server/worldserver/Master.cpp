@@ -366,6 +366,13 @@ char* dumpTables[32] =
     "pet_spell_cooldown"
 };
 
+char* ipTransfert[3] =
+{
+    "5.39.73.129",      // Rassharom
+    "88.190.50.220",    // Taran'Zhu
+    "88.190.50.220"     // Elegon
+};
+
 class CharactersTransfertRunnable : public ACE_Based::Runnable
 {
 public:
@@ -476,11 +483,20 @@ public:
                     uint32 account = field[1].GetUInt32();
                     uint32 perso_guid = field[2].GetUInt32();
                     uint32 from = field[3].GetUInt32();
-
-                    std::ostringstream fileName;
-                    fileName << "/home/transfert" << from << "/" << perso_guid << ".dump";
-                    printf("file : %s\n", fileName.str().c_str());
-                    DumpReturn dump = PlayerDumpReader().LoadDump(fileName.str(), account, "", 0, AT_LOGIN_RENAME);
+                    std::ostringstream cmd;
+                    
+                    // Delete old dump
+                    cmd << "rm /home/transfert" << from << "/" << perso_guid << ".dump";
+                    system(cmd.str().c_str());
+                    cmd.clear();
+                    
+                    // Get new dump
+                    cmd << "wget " << ipTransfert[from-1] << "/transfert" << from << "/" << perso_guid << ".dump --directory-prefix=/home/transfert" << from << "/" << perso_guid << ".dump";
+                    system(cmd.str().c_str());
+                    cmd.clear();
+                    
+                    cmd << "/home/transfert" << from << "/" << perso_guid << ".dump";
+                    DumpReturn dump = PlayerDumpReader().LoadDump(cmd.str(), account, "", 0, AT_LOGIN_RENAME);
 
                     if (dump == DUMP_SUCCESS)
                     {
