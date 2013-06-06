@@ -280,15 +280,15 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_arcane_barrage_SpellScript);
 
-            uint8 chargeCount;
-            int32 bp;
-
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
+                        uint8 chargeCount = 0;
+                        int32 bp = 0;
+
                         if (AuraPtr arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
                         {
                             chargeCount = arcaneCharge->GetStackAmount();
@@ -315,7 +315,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_mage_arcane_barrage_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_mage_arcane_barrage_SpellScript::HandleAfterHit);
             }
         };
 
