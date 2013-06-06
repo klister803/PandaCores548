@@ -187,6 +187,20 @@ class boss_feng : public CreatureScript
                 dotSpellId = 0;
             }
 
+            void JustDied(Unit* attacker)
+            {
+                _JustDied();
+
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
+
+                if (GameObject* inversionGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_INVERSION)))
+                    inversionGob->Delete();
+
+                if (GameObject* cancelGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_CANCEL)))
+                    cancelGob->Delete();
+            }
+
             void MovementInform(uint32 type, uint32 id)
             {
                 if (type != POINT_MOTION_TYPE)
@@ -359,7 +373,7 @@ class boss_feng : public CreatureScript
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                             me->CastSpell(target, dotSpellId, false);
 
-                        events.ScheduleEvent(EVENT_DOT_ATTACK, 15000);
+                        events.ScheduleEvent(EVENT_DOT_ATTACK, 12500);
                         break;
                     }
                     case EVENT_RE_ATTACK:
@@ -428,7 +442,8 @@ class boss_feng : public CreatureScript
 enum eLightningFistSpell
 {
     SPELL_FIST_BARRIER      = 115856,
-    SPELL_FIST_CHARGE       = 116374
+    SPELL_FIST_CHARGE       = 116374,
+    SPELL_FIST_VISUAL       = 116225
 };
 
 class mob_lightning_fist : public CreatureScript
@@ -447,6 +462,7 @@ class mob_lightning_fist : public CreatureScript
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->AddAura(SPELL_FIST_BARRIER, me);
+                me->AddAura(SPELL_FIST_VISUAL, me);
 
                 float x = 0, y = 0;
                 GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);

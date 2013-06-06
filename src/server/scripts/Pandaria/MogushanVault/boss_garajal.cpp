@@ -96,6 +96,8 @@ class boss_garajal : public CreatureScript
 
             void JustDied(Unit* attacker)
             {
+                _JustDied();
+
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
             }
@@ -246,6 +248,7 @@ class mob_spirit_totem : public CreatureScript
 
             void Reset()
             {
+                me->AddAura(116827, me);
                 me->SetReactState(REACT_PASSIVE);
             }
 
@@ -409,10 +412,17 @@ class mob_soul_cutter : public CreatureScript
 
             void JustDied(Unit* attacker)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true, SPELL_SOUL_CUT_SUICIDE))
+                std::list<uint64> playerList;
+                me->GetMustBeVisibleForPlayersList(playerList);
+
+                for (auto guid: playerList)
                 {
-                    target->RemoveAurasDueToSpell(SPELL_SOUL_CUT_SUICIDE);
-                    target->RemoveAurasDueToSpell(SPELL_SOUL_CUT_DAMAGE);
+                    if (Player* player = ObjectAccessor::FindPlayer(guid))
+                    {
+                        player->RemoveAurasDueToSpell(SPELL_BANISHMENT);
+                        player->RemoveAurasDueToSpell(SPELL_SOUL_CUT_SUICIDE);
+                        player->RemoveAurasDueToSpell(SPELL_SOUL_CUT_DAMAGE);
+                    }
                 }
             }
 

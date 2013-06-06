@@ -897,7 +897,7 @@ class WorldObject : public Object, public WorldLocation
 
         // Personal visibility system
         bool MustBeVisibleOnlyForSomePlayers() const { return !_visibilityPlayerList.empty(); }
-        void GetMustBeVisibleForPlayersList(std::list<uint64/* guid*/>& _playerList) const;
+        void GetMustBeVisibleForPlayersList(std::list<uint64/* guid*/>& playerList) { playerList = _visibilityPlayerList; }
 
         bool IsPlayerInPersonnalVisibilityList(uint64 guid) const;
         void AddPlayerInPersonnalVisibilityList(uint64 guid) { if (IS_PLAYER_GUID(guid)) _visibilityPlayerList.push_back(guid); }
