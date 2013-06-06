@@ -2733,10 +2733,6 @@ void SpellMgr::LoadSpellClassInfo()
             mSpellClassInfo[ClassID].insert(88344);
             mSpellClassInfo[ClassID].insert(88345);
             mSpellClassInfo[ClassID].insert(88346);
-            mSpellClassInfo[ClassID].insert(132620);
-            mSpellClassInfo[ClassID].insert(132621);
-            mSpellClassInfo[ClassID].insert(132626);
-            mSpellClassInfo[ClassID].insert(132627);
         }
 
         // Ancestral Focus
