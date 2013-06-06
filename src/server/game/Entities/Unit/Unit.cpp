@@ -10553,7 +10553,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 76803 - Mastery : Potent Poisons
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680 || spellProto->Id == 113780) && pdamage != 0 && HasAura(76803))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f;
         AddPct(DoneTotalMod, Mastery);
