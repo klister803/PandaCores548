@@ -454,8 +454,6 @@ class npc_feral_defender : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 DoCast(me, SPELL_SUMMON_ESSENCE);
-                if (Creature* Auriaya = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_AURIAYA)))
-                    Auriaya->AI()->DoAction(ACTION_RESPAWN_DEFENDER);
             }
 
         private:
