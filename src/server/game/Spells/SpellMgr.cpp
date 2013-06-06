@@ -3908,6 +3908,7 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 case 73680: // Unleash Elements
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
+                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ENEMY;
                     break;
                 case 107223:
                     spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
