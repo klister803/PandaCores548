@@ -6083,16 +6083,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
                     return true;
                 }
-                // Ignite
-                case 11119:
-                case 11120:
-                case 12846:
-                {
-                    basepoints0 = CalculatePct(damage, triggerAmount);
-                    triggered_spell_id = 12654;
-                    basepoints0 += victim->GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_DAMAGE);
-                    break;
-                }
                 // Glyph of Ice Block
                 case 56372:
                 {
