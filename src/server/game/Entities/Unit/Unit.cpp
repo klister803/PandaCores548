@@ -8509,6 +8509,27 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Arcane Missiles !
+        case 79684:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id == 4143 || procSpell->Id == 7268)
+                return false;
+
+            if (AuraPtr arcaneMissiles = GetAura(79683))
+            {
+                arcaneMissiles->ModCharges(1);
+                arcaneMissiles->RefreshDuration();
+                return false;
+            }
+
+            break;
+        }
         // Lightning Shield (Symbiosis)
         case 110803:
         {
@@ -15824,7 +15845,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         // Remove charge (aura can be removed by triggers)
         if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
             && i->aura->GetId() != 119962 && i->aura->GetId() != 131116 && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004)
-            && !(i->aura->GetId() == 115191))
+            && !(i->aura->GetId() == 115191) && !(i->aura->GetId() == 79683))
         {
             // Hack Fix for Tiger Strikes
             if (i->aura->GetId() == 120273)

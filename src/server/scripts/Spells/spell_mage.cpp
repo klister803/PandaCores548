@@ -84,6 +84,40 @@ enum MageSpells
     SPELL_MAGE_PYROMANIAC_DAMAGE_DONE            = 132210,
     SPELL_MAGE_MIRROR_IMAGE_SUMMON               = 58832,
     SPELL_MAGE_CAUTERIZE                         = 87023,
+    SPELL_MAGE_ARCANE_MISSILES                   = 79683,
+};
+
+// Arcane Missiles - 5143
+class spell_mage_arcane_missile : public SpellScriptLoader
+{
+    public:
+        spell_mage_arcane_missile() : SpellScriptLoader("spell_mage_arcane_missile") { }
+
+        class spell_mage_arcane_missile_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_arcane_missile_AuraScript);
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (AuraPtr arcaneMissiles = _player->GetAura(SPELL_MAGE_ARCANE_MISSILES))
+                        arcaneMissiles->DropCharge();
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_mage_arcane_missile_AuraScript::OnApply, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+            }
+
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_arcane_missile_AuraScript();
+        }
 };
 
 // Cauterize - 86949
@@ -1312,6 +1346,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_arcane_missile();
     new spell_mage_cauterize();
     new spell_mage_mirror_images();
     new spell_mage_pyromaniac();
