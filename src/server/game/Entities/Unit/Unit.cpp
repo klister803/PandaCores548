@@ -15442,7 +15442,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             countCrit = 0;
 
     // Hack Fix Ice Floes - Drop charges
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !isVictim && !(procExtra & PROC_EX_INTERNAL_DOT))
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !(procExtra & PROC_EX_INTERNAL_DOT)
+        && (procSpell->Id == 30451 && damage > 0))
     {
         AuraApplication* aura = GetAuraApplication(108839, GetGUID());
         if (aura)
