@@ -1483,6 +1483,11 @@ class spell_dru_natures_cure : public SpellScriptLoader
                         {
                             uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
                             uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
+
+                            // Nature's Cure can dispell all Magic, Curse and poison
+                            if (GetSpellInfo()->Id == 88423)
+                                dispelMask = ((1<<DISPEL_MAGIC) | (1<<DISPEL_CURSE) | (1<<DISPEL_POISON));
+
                             DispelChargesList dispelList;
                             target->GetDispellableAuraList(caster, dispelMask, dispelList);
 
