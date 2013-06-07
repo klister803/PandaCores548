@@ -15465,11 +15465,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             aura->GetBase()->DropCharge();
     }
 
-    // Hack Fix Shooting Stars - Drop charge
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(93400) && getClass() == CLASS_DRUID && procSpell && procSpell->Id == 78674)
-        if (AuraPtr aura = GetAura(93400))
-            RemoveAura(93400);
-
     // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
         if (AuraPtr aura = GetAura(53257))
