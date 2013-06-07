@@ -4554,7 +4554,7 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
 
     float value = float(GetAmount());
 
-    if (target->GetTypeId() == TYPEID_PLAYER && (GetId() == 109466 || GetId() == 109468 || GetId() == 116198))
+    if (target->GetTypeId() == TYPEID_PLAYER && (GetId() == 109466 || GetId() == 109468 || GetId() == 116198 || GetId() == 73975))
         value /= 2.0f;
 
     target->ApplyCastTimePercentMod(value, apply);
