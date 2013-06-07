@@ -525,6 +525,7 @@ public:
     // helpers for breaking by damage spells
     bool IsBreakingCamouflage() const;
     bool IsBreakingCamouflageAfterHit() const;
+    bool IsBreakingSubterfuge() const;
 
     // loading helpers
     uint32 _GetExplicitTargetMask() const;

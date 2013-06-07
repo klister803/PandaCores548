@@ -85,12 +85,16 @@ public:
                 case NPC_AMETHYST:
                 case NPC_COBALT:
                     stoneGuardGUIDs.push_back(creature->GetGUID());
-                    creature->Respawn(true);
 
-                    if (--randomDespawnStoneGuardian == 0)
+                    if (GetBossState(DATA_STONE_GUARD) != DONE)
                     {
-                        creature->DespawnOrUnsummon();
-                        randomDespawnStoneGuardian = -1;
+                        creature->Respawn(true);
+
+                        if (--randomDespawnStoneGuardian == 0)
+                        {
+                            creature->DespawnOrUnsummon();
+                            randomDespawnStoneGuardian = -1;
+                        }
                     }
                     break;
                 case NPC_FENG:
@@ -180,12 +184,6 @@ public:
                             if (Creature* spiritKingsControler = instance->GetCreature(spiritKingsControlerGuid))
                                 spiritKingsControler->AI()->DoAction(ACTION_ENTER_COMBAT);
                             break;
-                        }
-                        case FAIL:
-                        {
-                            for (auto spiritKingsGuid: spiritKingsGUIDs)
-                                if (Creature* spiritKings = instance->GetCreature(spiritKingsGuid))
-                                    spiritKings->AI()->DoAction(ACTION_FAIL);
                         }
                         default:
                             break;

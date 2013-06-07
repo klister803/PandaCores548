@@ -6083,16 +6083,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
                     return true;
                 }
-                // Ignite
-                case 11119:
-                case 11120:
-                case 12846:
-                {
-                    basepoints0 = CalculatePct(damage, triggerAmount);
-                    triggered_spell_id = 12654;
-                    basepoints0 += victim->GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_DAMAGE);
-                    break;
-                }
                 // Glyph of Ice Block
                 case 56372:
                 {
@@ -8519,6 +8509,27 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Arcane Missiles !
+        case 79684:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id == 4143 || procSpell->Id == 7268)
+                return false;
+
+            if (AuraPtr arcaneMissiles = GetAura(79683))
+            {
+                arcaneMissiles->ModCharges(1);
+                arcaneMissiles->RefreshDuration();
+                return false;
+            }
+
+            break;
+        }
         // Lightning Shield (Symbiosis)
         case 110803:
         {
@@ -10553,7 +10564,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 76803 - Mastery : Potent Poisons
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680 || spellProto->Id == 113780) && pdamage != 0 && HasAura(76803))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f;
         AddPct(DoneTotalMod, Mastery);
@@ -15431,7 +15442,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             countCrit = 0;
 
     // Hack Fix Ice Floes - Drop charges
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !isVictim && !(procExtra & PROC_EX_INTERNAL_DOT))
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !(procExtra & PROC_EX_INTERNAL_DOT)
+        && (procSpell->Id == 30451 && damage > 0))
     {
         AuraApplication* aura = GetAuraApplication(108839, GetGUID());
         if (aura)
@@ -15833,7 +15845,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         // Remove charge (aura can be removed by triggers)
         if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
-            && i->aura->GetId() != 119962 && i->aura->GetId() != 131116 && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004))
+            && i->aura->GetId() != 119962 && i->aura->GetId() != 131116 && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004)
+            && !(i->aura->GetId() == 115191) && !(i->aura->GetId() == 79683))
         {
             // Hack Fix for Tiger Strikes
             if (i->aura->GetId() == 120273)

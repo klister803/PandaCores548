@@ -59,6 +59,7 @@ enum eCreatures
     NPC_SHADOWY_MINION_REAL         = 60940,
     NPC_SHADOWY_MINION_SPIRIT       = 60184,
     NPC_SOUL_CUTTER                 = 62003,
+    NPC_SPIRIT_TOTEM                = 60240,
 
     // Spirit kings
     NPC_SPIRIT_GUID_CONTROLER       = 60984,
@@ -92,14 +93,24 @@ enum eGameObjects
     GOB_SPIRIT_KINGS_WIND_WALL      = 215114,
     GOB_SPIRIT_KINGS_EXIT           = 213373,
 
+    // Feng
     GOB_SPEAR_STATUE                = 213245,
     GOB_FIST_STATUE                 = 213246,
     GOB_SHIELD_STATUE               = 213247,
     GOB_STAFF_STATUE                = 213248,
 
     GOB_INVERSION                   = 211628,
-    GOB_CANCEL                      = 211626
+    GOB_CANCEL                      = 211626,
 
+    // Elegon
+    GOB_ENERGY_PLATFORM             = 213526,
+    GOB_ENERGY_TITAN_DISK           = 213506,
+    GOB_ENERGY_TITAN_CIRCLE_1       = 213528,
+    GOB_ENERGY_TITAN_CIRCLE_2       = 213527,
+    GOB_ENERGY_TITAN_CIRCLE_3       = 213529,
+
+    GOB_MOGU_RUNE_FIRST             = 213937,
+    GOB_MOGU_RUNE_END               = 213955,
 };
 
 #endif // MOGUSHAN_VAULT_H_

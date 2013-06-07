@@ -2933,3 +2933,14 @@ float SpellInfo::GetGiftOfTheSerpentScaling(Unit* caster) const
 
     return scale;
 }
+
+bool SpellInfo::IsBreakingSubterfuge() const
+{
+    switch (SpellFamilyName)
+    {
+        case SPELLFAMILY_POTION:
+            return true;
+    }
+
+    return false;
+}

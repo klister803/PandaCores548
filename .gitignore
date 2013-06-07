@@ -29,6 +29,7 @@ bin/
 *.sln
 *.dep
 *.rc
+*.autosave
 /dep/mysqllite/config.h
 my_config.h
 mysql_version.h

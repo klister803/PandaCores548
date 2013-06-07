@@ -195,6 +195,24 @@ class boss_stone_guard_controler : public CreatureScript
                     {
                         if (fightInProgress)
                         {
+                            bool alreadyOnePetrificationInProgress = false;
+
+                            for (uint8 i = 0; i < 4; ++i)
+                                if (uint64 stoneGuardGuid = pInstance->GetData64(guardiansEntry[i]))
+                                    if (Creature* stoneGuard = pInstance->instance->GetCreature(stoneGuardGuid))
+                                        if (stoneGuard->HasAura(SPELL_JASPER_PETRIFICATION)   || stoneGuard->HasAura(SPELL_JADE_PETRIFICATION) ||
+                                            stoneGuard->HasAura(SPELL_AMETHYST_PETRIFICATION) || stoneGuard->HasAura(SPELL_COBALT_PETRIFICATION))
+                                        {
+                                            alreadyOnePetrificationInProgress = true;
+                                            break;
+                                        }
+
+                            if (alreadyOnePetrificationInProgress)
+                            {
+                                events.ScheduleEvent(EVENT_PETRIFICATION, 20000);
+                                break;
+                            }
+
                             uint32 nextPetrifierEntry = 0;
                             do
                             {
@@ -203,10 +221,23 @@ class boss_stone_guard_controler : public CreatureScript
                             while (nextPetrifierEntry == lastPetrifierEntry);
 
                             if (uint64 stoneGuardGuid = pInstance->GetData64(nextPetrifierEntry))
+                            {
                                 if (Creature* stoneGuard = pInstance->instance->GetCreature(stoneGuardGuid))
-                                    stoneGuard->AI()->DoAction(ACTION_PETRIFICATION);
-
-                            events.ScheduleEvent(EVENT_PETRIFICATION, 90000);
+                                {
+                                    if (stoneGuard->isAlive())
+                                    {
+                                        stoneGuard->AI()->DoAction(ACTION_PETRIFICATION);
+                                        lastPetrifierEntry = nextPetrifierEntry;
+                                        events.ScheduleEvent(EVENT_PETRIFICATION, 90000);
+                                    }
+                                    else
+                                        events.ScheduleEvent(EVENT_PETRIFICATION, 2000);
+                                }
+                                else
+                                    events.ScheduleEvent(EVENT_PETRIFICATION, 2000);
+                            }
+                            else
+                                events.ScheduleEvent(EVENT_PETRIFICATION, 2000);
                         }
                         break;
                     }

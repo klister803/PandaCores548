@@ -2733,10 +2733,6 @@ void SpellMgr::LoadSpellClassInfo()
             mSpellClassInfo[ClassID].insert(88344);
             mSpellClassInfo[ClassID].insert(88345);
             mSpellClassInfo[ClassID].insert(88346);
-            mSpellClassInfo[ClassID].insert(132620);
-            mSpellClassInfo[ClassID].insert(132621);
-            mSpellClassInfo[ClassID].insert(132626);
-            mSpellClassInfo[ClassID].insert(132627);
         }
 
         // Ancestral Focus
@@ -3912,6 +3908,7 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 case 73680: // Unleash Elements
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
+                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ENEMY;
                     break;
                 case 107223:
                     spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
