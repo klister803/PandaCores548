@@ -3728,6 +3728,21 @@ void Unit::RemoveAura(uint32 spellId, uint64 caster, uint32 reqEffMask, AuraRemo
     }
 }
 
+void Unit::RemoveAllSymbiosisAuras()
+{
+    RemoveAura(110309);// Caster
+    RemoveAura(110478);// Death Knight
+    RemoveAura(110479);// Hunter
+    RemoveAura(110482);// Mage
+    RemoveAura(110483);// Monk
+    RemoveAura(110484);// Paladin
+    RemoveAura(110485);// Priest
+    RemoveAura(110486);// Rogue
+    RemoveAura(110488);// Shaman
+    RemoveAura(110490);// Warlock
+    RemoveAura(110491);// Warrior
+}
+
 void Unit::RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode)
 {
     // we've special situation here, RemoveAura called while during aura removal
