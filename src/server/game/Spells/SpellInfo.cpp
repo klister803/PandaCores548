@@ -2944,3 +2944,18 @@ bool SpellInfo::IsBreakingSubterfuge() const
 
     return false;
 }
+
+bool SpellInfo::IsReducingCastTime() const
+{
+    switch (Id)
+    {
+        case 5760:  // Mind-Numbing
+        case 73975: // Necrotic Strike
+        case 109466:// Curse of Enfeeblement
+        case 109468:// Curse of Enfeeblement (Soulburn)
+        case 116198:// Enfeeblement Aura (Metamorphosis)
+            return true;
+    }
+
+    return false;
+}
