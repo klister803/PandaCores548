@@ -864,30 +864,6 @@ class spell_hun_binding_shot : public SpellScriptLoader
     public:
         spell_hun_binding_shot() : SpellScriptLoader("spell_hun_binding_shot") { }
 
-        class spell_hun_binding_shot_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_binding_shot_SpellScript);
-
-            SpellCastResult checkImmunity()
-            {
-                if (GetExplTargetUnit())
-                    if (GetExplTargetUnit()->HasAura(HUNTER_SPELL_BINDING_SHOT_IMMUNE))
-                        return SPELL_FAILED_DONT_REPORT;
-
-                return SPELL_CAST_OK;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_hun_binding_shot_SpellScript::checkImmunity);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_binding_shot_SpellScript();
-        }
-
         class spell_hun_binding_shot_zone_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_hun_binding_shot_zone_AuraScript);
@@ -928,8 +904,8 @@ class spell_hun_binding_shot : public SpellScriptLoader
                         {
                             if (!target->HasAura(HUNTER_SPELL_BINDING_SHOT_IMMUNE))
                             {
-                                caster->AddAura(HUNTER_SPELL_BINDING_SHOT_STUN, target);
-                                caster->CastSpell(target, HUNTER_SPELL_BINDING_SHOT_IMMUNE, true);
+                                target->CastSpell(target, HUNTER_SPELL_BINDING_SHOT_STUN, true);
+                                target->CastSpell(target, HUNTER_SPELL_BINDING_SHOT_IMMUNE, true);
                             }
                         }
                     }
