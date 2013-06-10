@@ -840,6 +840,11 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 {
+    // Prevent flood of CMSG_PLAYER_LOGIN
+    playerLoginCounter++;
+    if (playerLoginCounter > 5)
+        KickPlayer();
+    
     if (PlayerLoading() || GetPlayer() != NULL)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Player tries to login again, AccountId = %d", GetAccountId());
