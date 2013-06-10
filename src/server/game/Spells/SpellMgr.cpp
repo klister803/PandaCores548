@@ -3881,6 +3881,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[EFFECT_0].TargetB = 0;
                 spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
+            case 15850: // Chilled
+            case 16927: // Chilled
+            case 20005: // Chilled
+                spellInfo->Mechanic = MECHANIC_SNARE;
             default:
                 break;
             }

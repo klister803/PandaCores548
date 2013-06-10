@@ -70,74 +70,6 @@ enum RogueSpells
     ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE  = 112947,
     ROGUE_SPELL_COMBAT_READINESS                 = 74001,
     ROGUE_SPELL_COMBAT_INSIGHT                   = 74002,
-    ROGUE_SPELL_SUBTERFUGE						 = 115192,
-    ROGUE_SPELL_SUBTERFUGE_STEALTH				 = 115191,
-};
-
-// Subterfuge - 115192
-class spell_rog_subterfuge_aura : public SpellScriptLoader
-{
-    public:
-        spell_rog_subterfuge_aura() : SpellScriptLoader("spell_rog_subterfuge_aura") { }
-
-        class spell_rog_subterfuge_aura_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_rog_subterfuge_aura_AuraScript);
-
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
-            {
-                if (GetCaster())
-                    if (AuraPtr subterfuge = GetCaster()->GetAura(ROGUE_SPELL_SUBTERFUGE_STEALTH))
-                        subterfuge->DropCharge();
-            }
-
-            void Register()
-            {
-                OnEffectRemove += AuraEffectRemoveFn(spell_rog_subterfuge_aura_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_rog_subterfuge_aura_AuraScript();
-        }
-};
-
-// Subterfuge - 115191
-class spell_rog_subterfuge_proc : public SpellScriptLoader
-{
-    public:
-        spell_rog_subterfuge_proc() : SpellScriptLoader("spell_rog_subterfuge_proc") { }
-
-        class spell_rog_subterfuge_proc_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_rog_subterfuge_proc_AuraScript);
-
-            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
-            {
-                PreventDefaultAction();
-
-                if (!GetCaster() || !GetTarget())
-                    return;
-
-                if (!eventInfo.GetDamageInfo()->GetDamage() ||
-                    (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->IsPositive()))
-                    return;
-
-                if (Unit* target = GetTarget())
-                    target->CastSpell(target, ROGUE_SPELL_SUBTERFUGE, true);
-            }
-
-            void Register()
-            {
-                OnEffectProc += AuraEffectProcFn(spell_rog_subterfuge_proc_AuraScript::OnProc, EFFECT_1, SPELL_AURA_MOD_STEALTH);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_rog_subterfuge_proc_AuraScript();
-        }
 };
 
 // Growl - 113613
@@ -1333,8 +1265,6 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
-    new spell_rog_subterfuge_aura();
-    new spell_rog_subterfuge_proc();
     new spell_rog_growl();
     new spell_rog_cloak_of_shadows();
     new spell_rog_combat_readiness();
