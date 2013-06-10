@@ -571,7 +571,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         }
     }
     // Blade Flurry
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(13877) && damage > 0 && (!spellProto || (spellProto && spellProto->Id != 22482)))
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(13877) && damage > 0 && !spellProto)
     {
         Unit* target = SelectNearbyTarget(victim);
         int32 bp = damage;
