@@ -923,12 +923,13 @@ enum PlayerRestState
 
 enum PlayerCommandStates
 {
-    CHEAT_NONE = 0x00,
-    CHEAT_GOD = 0x01,
-    CHEAT_CASTTIME = 0x02,
-    CHEAT_COOLDOWN = 0x04,
-    CHEAT_POWER = 0x08,
-    CHEAT_WATERWALK = 0x10
+    CHEAT_NONE          = 0x00,
+    CHEAT_GOD           = 0x01,
+    CHEAT_CASTTIME      = 0x02,
+    CHEAT_COOLDOWN      = 0x04,
+    CHEAT_POWER         = 0x08,
+    CHEAT_WATERWALK     = 0x10,
+    CHEAT_ALL_SPELLS    = 0x20,
 };
 
 struct auraEffectData
