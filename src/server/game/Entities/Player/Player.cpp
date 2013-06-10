@@ -4351,6 +4351,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     {
         SetUsedTalentCount(GetUsedTalentCount() + 1);
         SetFreeTalentPoints(GetFreeTalentPoints() -1);
+        CastPassiveTalentSpell(spellInfo->Id);
     }
 
     // update free primary prof.points (if any, can be none in case GM .learn prof. learning)
@@ -4609,24 +4610,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
             SetFreePrimaryProfessions(freeProfs);
     }
 
-    // Ancestral Swiftness
-    if (spell_id == 16188)
-    {
-        if (HasAura(51470))
-            RemoveAura(51470);
-        if (HasAura(121617))
-            RemoveAura(121617);
-    }
-    // Archimonde's Vengeance
-    else if (spell_id == 108505)
-    {
-        if (HasAura(116403))
-            RemoveAura(116403);
-    }
-    // Soul Link
-    else if (spell_id == 108415)
-        if (HasAura(108446))
-            RemoveAura(108446);
+    RemovePassiveTalentSpell(spell_id);
 
     // remove dependent skill
     SpellLearnSkillNode const* spellLearnSkill = sSpellMgr->GetSpellLearnSkill(spell_id);
@@ -26081,16 +26065,7 @@ bool Player::LearnTalent(uint32 talentId)
     // learn! (other talent ranks will unlearned at learning)
     learnSpell(spellid, false);
     AddTalent(spellid, GetActiveSpec(), true);
-
-    // Ancestral Swiftness
-    if (spellid == 16188)
-    {
-        CastSpell(this, 51470, true);  // +5% spell haste
-        CastSpell(this, 121617, true); // +5% melee haste
-    }
-    // Archimonde's Vengeance
-    else if (spellid == 108505)
-        CastSpell(this, 116403, true); // Passive
+    CastPassiveTalentSpell(spellid);
 
     sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
     return true;
@@ -27748,5 +27723,50 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
             else
                 RemoveAurasDueToSpell(itr->second->spellId);
         }
+    }
+}
+
+void Player::CastPassiveTalentSpell(uint32 spellId)
+{
+    switch (spellId)
+    {
+        case 1463:  // Incanter's Ward
+            if (!HasAura(118858))
+                CastSpell(this, 118858, true); // +6% damage and 65% mana regen
+            break;
+        case 16188: // Ancestral Swiftness
+            if (!HasAura(51470))
+                CastSpell(this, 51470, true);  // +5% spell haste
+            if (!HasAura(121617))
+                CastSpell(this, 121617, true); // +5% melee haste
+            break;
+        case 108505:// Archimonde's Vengeance
+            if (!HasAura(116403))
+                CastSpell(this, 116403, true); // Passive
+            break;
+        default:
+            break;
+    }
+}
+
+void Player::RemovePassiveTalentSpell(uint32 spellId)
+{
+    switch (spellId)
+    {
+        case 1463:  // Incanter's Ward
+            RemoveAura(118858);
+            break;
+        case 16188: // Ancestral Swiftness
+            RemoveAura(51470);
+            RemoveAura(121617);
+            break;
+        case 108415:// Soul Link
+            RemoveAura(108446);
+            break;
+        case 108505:// Archimonde's Vengeance
+            RemoveAura(116403);
+            break;
+        default:
+            break;
     }
 }
