@@ -70,6 +70,55 @@ enum RogueSpells
     ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE  = 112947,
     ROGUE_SPELL_COMBAT_READINESS                 = 74001,
     ROGUE_SPELL_COMBAT_INSIGHT                   = 74002,
+    ROGUE_SPELL_BLADE_FLURRY_DAMAGE              = 22482,
+};
+
+// Blade Flurry - 13877
+class spell_rog_blade_flurry : public SpellScriptLoader
+{
+    public:
+        spell_rog_blade_flurry() : SpellScriptLoader("spell_rog_blade_flurry") { }
+
+        class spell_rog_blade_flurry_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_blade_flurry_AuraScript);
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != GetTarget()->GetGUID())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 damage = eventInfo.GetDamageInfo()->GetDamage();
+                    SpellInfo const* spellInfo = eventInfo.GetDamageInfo()->GetSpellInfo();
+
+                    if (!damage || eventInfo.GetDamageInfo()->GetDamageType() == DOT)
+                        return;
+
+                    if (spellInfo && !spellInfo->CanTriggerBladeFlurry())
+                        return;
+
+                    if (Unit* target = _player->SelectNearbyTarget(eventInfo.GetActionTarget()))
+                        _player->CastCustomSpell(target, ROGUE_SPELL_BLADE_FLURRY_DAMAGE, &damage, NULL, NULL, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_rog_blade_flurry_AuraScript::OnProc, EFFECT_0, SPELL_AURA_MOD_POWER_REGEN_PERCENT);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_blade_flurry_AuraScript();
+        }
 };
 
 // Growl - 113613
@@ -1265,6 +1314,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_blade_flurry();
     new spell_rog_growl();
     new spell_rog_cloak_of_shadows();
     new spell_rog_combat_readiness();

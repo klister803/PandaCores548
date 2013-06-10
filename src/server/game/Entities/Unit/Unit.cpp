@@ -570,15 +570,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 blackOxStatue->SetScriptData(0, damage);
         }
     }
-    // Blade Flurry
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(13877) && damage > 0 && !spellProto)
-    {
-        Unit* target = SelectNearbyTarget(victim);
-        int32 bp = damage;
-
-        if (target)
-            CastCustomSpell(target, 22482, &bp, NULL, NULL, true);
-    }
     // Cheat Death : An attack that would otherwise be fatal will instead reduce you to no less than 10% of your maximum health
     if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_ROGUE && damage != 0)
     {
@@ -5252,27 +5243,6 @@ bool Unit::HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
     uint32 triggered_spell_id = 0;
     Unit* target = victim;
     int32 basepoints0 = 0;
-
-    switch (hasteSpell->SpellFamilyName)
-    {
-        case SPELLFAMILY_ROGUE:
-        {
-            switch (hasteSpell->Id)
-            {
-                // Blade Flurry
-                case 33735:
-                {
-                    target = SelectNearbyTarget(victim);
-                    if (!target)
-                        return false;
-                    basepoints0 = damage;
-                    triggered_spell_id = 22482;
-                    break;
-                }
-            }
-            break;
-        }
-    }
 
     // processed charge only counting case
     if (!triggered_spell_id)
