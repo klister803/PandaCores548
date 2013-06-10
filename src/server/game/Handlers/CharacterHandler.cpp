@@ -843,7 +843,10 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
     // Prevent flood of CMSG_PLAYER_LOGIN
     playerLoginCounter++;
     if (playerLoginCounter > 5)
+    {
+        sLog->OutPandashan("Player kicked due to flood of CMSG_PLAYER_LOGIN");
         KickPlayer();
+    }
     
     if (PlayerLoading() || GetPlayer() != NULL)
     {
