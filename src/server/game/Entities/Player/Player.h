@@ -923,12 +923,13 @@ enum PlayerRestState
 
 enum PlayerCommandStates
 {
-    CHEAT_NONE = 0x00,
-    CHEAT_GOD = 0x01,
-    CHEAT_CASTTIME = 0x02,
-    CHEAT_COOLDOWN = 0x04,
-    CHEAT_POWER = 0x08,
-    CHEAT_WATERWALK = 0x10
+    CHEAT_NONE          = 0x00,
+    CHEAT_GOD           = 0x01,
+    CHEAT_CASTTIME      = 0x02,
+    CHEAT_COOLDOWN      = 0x04,
+    CHEAT_POWER         = 0x08,
+    CHEAT_WATERWALK     = 0x10,
+    CHEAT_ALL_SPELLS    = 0x20,
 };
 
 struct auraEffectData
@@ -1860,6 +1861,8 @@ class Player : public Unit, public GridObject<Player>
         bool AddTalent(uint32 spellId, uint8 spec, bool learning);
         bool HasTalent(uint32 spell_id, uint8 spec) const;
         uint32 CalculateTalentsPoints() const;
+        void CastPassiveTalentSpell(uint32 spellId);
+        void RemovePassiveTalentSpell(uint32 spellId);
 
         void ResetSpec();
 

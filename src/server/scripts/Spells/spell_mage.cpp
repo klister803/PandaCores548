@@ -85,6 +85,115 @@ enum MageSpells
     SPELL_MAGE_MIRROR_IMAGE_SUMMON               = 58832,
     SPELL_MAGE_CAUTERIZE                         = 87023,
     SPELL_MAGE_ARCANE_MISSILES                   = 79683,
+    SPELL_MAGE_INCANTERS_WARD_ENERGIZE           = 113842,
+    SPELL_MAGE_INCANTERS_ABSORBTION              = 116267,
+    SPELL_MAGE_INCANTERS_ABSORBTION_PASSIVE      = 118858,
+};
+
+// Incanter's Ward (Cooldown marker) - 118859
+class spell_mage_incanters_ward_cooldown : public SpellScriptLoader
+{
+    public:
+        spell_mage_incanters_ward_cooldown() : SpellScriptLoader("spell_mage_incanters_ward_cooldown") { }
+
+        class spell_mage_incanters_ward_cooldown_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_incanters_ward_cooldown_AuraScript);
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    caster->RemoveAura(SPELL_MAGE_INCANTERS_ABSORBTION_PASSIVE);
+            }
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (!caster->HasAura(SPELL_MAGE_INCANTERS_ABSORBTION_PASSIVE))
+                        caster->CastSpell(caster, SPELL_MAGE_INCANTERS_ABSORBTION_PASSIVE, true);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_mage_incanters_ward_cooldown_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_mage_incanters_ward_cooldown_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_incanters_ward_cooldown_AuraScript();
+        }
+};
+
+// Incanter's Ward - 1463
+class spell_mage_incanters_ward : public SpellScriptLoader
+{
+    public:
+        spell_mage_incanters_ward() : SpellScriptLoader("spell_mage_incanters_ward") { }
+
+        class spell_mage_incanters_ward_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_incanters_ward_AuraScript);
+
+            float absorbTotal;
+            float absorbtionAmount;
+
+            bool Load()
+            {
+                absorbTotal = 0.0f;
+                absorbtionAmount = 0.0f;
+                return true;
+            }
+
+            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            {
+                if (Unit* caster = GetCaster())
+                    amount += caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ARCANE);
+
+                absorbtionAmount = float(amount);
+            }
+
+            void OnAbsorb(AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* caster = dmgInfo.GetVictim())
+                {
+                    if (Unit* attacker = dmgInfo.GetAttacker())
+                    {
+                        absorbTotal += float(dmgInfo.GetDamage());
+
+                        int32 pct = aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue(GetCaster());
+                        int32 manaGain = CalculatePct(caster->GetMaxPower(POWER_MANA), CalculatePct(((float(dmgInfo.GetDamage()) / absorbtionAmount) * 100.0f), pct));
+
+                        caster->EnergizeBySpell(caster, SPELL_MAGE_INCANTERS_WARD_ENERGIZE, manaGain, POWER_MANA);
+                    }
+                }
+            }
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    int32 damageGain = CalculatePct(sSpellMgr->GetSpellInfo(SPELL_MAGE_INCANTERS_ABSORBTION)->Effects[0].BasePoints, ((absorbTotal / absorbtionAmount) * 100.0f));
+                    if (!damageGain)
+                        return;
+
+                    caster->CastCustomSpell(caster, SPELL_MAGE_INCANTERS_ABSORBTION, &damageGain, NULL, NULL, true);
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_incanters_ward_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_mage_incanters_ward_AuraScript::OnAbsorb, EFFECT_0);
+                OnEffectRemove += AuraEffectRemoveFn(spell_mage_incanters_ward_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_incanters_ward_AuraScript();
+        }
 };
 
 // Arcane Missiles - 5143
@@ -1346,6 +1455,8 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_incanters_ward_cooldown();
+    new spell_mage_incanters_ward();
     new spell_mage_arcane_missile();
     new spell_mage_cauterize();
     new spell_mage_mirror_images();

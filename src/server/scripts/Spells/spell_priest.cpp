@@ -78,6 +78,7 @@ enum PriestSpells
     PRIEST_STRENGTH_OF_SOUL_AURA                = 89488,
     PRIEST_STRENGTH_OF_SOUL_REDUCE_TIME         = 89490,
     PRIEST_WEAKENED_SOUL                        = 6788,
+    PRIEST_STRENGTH_OF_SOUL                     = 89488,
     PRIEST_EVANGELISM_AURA                      = 81662,
     PRIEST_EVANGELISM_STACK                     = 81661,
     PRIEST_ARCHANGEL                            = 81700,
@@ -743,12 +744,15 @@ class spell_pri_strength_of_soul : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (AuraPtr weakenedSoul = target->GetAura(PRIEST_WEAKENED_SOUL, _player->GetGUID()))
+                        if (_player->HasAura(PRIEST_STRENGTH_OF_SOUL))
                         {
-                            if (weakenedSoul->GetDuration() > 2000)
-                                weakenedSoul->SetDuration(weakenedSoul->GetDuration() - 2000);
-                            else
-                                target->RemoveAura(PRIEST_WEAKENED_SOUL);
+                            if (AuraPtr weakenedSoul = target->GetAura(PRIEST_WEAKENED_SOUL, _player->GetGUID()))
+                            {
+                                if (weakenedSoul->GetDuration() > 2000)
+                                    weakenedSoul->SetDuration(weakenedSoul->GetDuration() - 2000);
+                                else
+                                    target->RemoveAura(PRIEST_WEAKENED_SOUL);
+                            }
                         }
                     }
                 }

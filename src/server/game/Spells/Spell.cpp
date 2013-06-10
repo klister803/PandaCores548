@@ -2852,7 +2852,9 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         // Expel Harm - 115072 apply wrong aura (Flying Serpent Kick - 101545)
         if (m_spellInfo->Id == 115072 && m_preCastSpell == 101545)
             return;
-
+        // Incanter's Ward (passive) - 118858 apply wrong aura (Incanter's Ward (cooldown marker) - 118859)
+        if (m_spellInfo->Id == 118858 && m_preCastSpell == 118859)
+            return;
         // Fan of Knives - 51723 apply wrong aura on ennemies (Killing Spree - 51690)
         if (m_spellInfo->Id == 51723 && m_preCastSpell == 51690)
             return;
