@@ -106,7 +106,8 @@ timeLastChannelModerCommand(0), timeLastChannelOwnerCommand(0),
 timeLastChannelSetownerCommand(0),
 timeLastChannelUnmoderCommand(0),
 timeLastChannelUnmuteCommand(0),
-timeLastChannelKickCommand(0)
+timeLastChannelKickCommand(0),
+timeCharEnumOpcode(0)
 {
     _warden = NULL;
     _filterAddonMessages = false;

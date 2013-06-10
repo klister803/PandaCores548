@@ -184,20 +184,6 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
 
     char const* mapName = entry->name;
 
-    Group* group = player->GetGroup();
-    if (entry->IsRaid())
-    {
-        // can only enter in a raid group
-        if ((!group || !group->isRaidGroup()) && !sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_RAID))
-        {
-            // probably there must be special opcode, because client has this string constant in GlobalStrings.lua
-            // TODO: this is not a good place to send the message
-            player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(LANG_INSTANCE_RAID_GROUP_ONLY), mapName);
-            sLog->outDebug(LOG_FILTER_MAPS, "MAP: Player '%s' must be in a raid group to enter instance '%s'", player->GetName(), mapName);
-            return false;
-        }
-    }
-
     if (!player->isAlive())
     {
         if (Corpse* corpse = player->GetCorpse())
@@ -226,6 +212,20 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
         }
         else
             sLog->outDebug(LOG_FILTER_MAPS, "Map::CanPlayerEnter - player '%s' is dead but does not have a corpse!", player->GetName());
+    }
+    
+    Group* group = player->GetGroup();
+    if (entry->IsRaid())
+    {
+        // can only enter in a raid group
+        if ((!group || !group->isRaidGroup()) && !sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_RAID))
+        {
+            // probably there must be special opcode, because client has this string constant in GlobalStrings.lua
+            // TODO: this is not a good place to send the message
+            player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(LANG_INSTANCE_RAID_GROUP_ONLY), mapName);
+            sLog->outDebug(LOG_FILTER_MAPS, "MAP: Player '%s' must be in a raid group to enter instance '%s'", player->GetName(), mapName);
+            return false;
+        }
     }
 
     //Get instance where player's group is bound & its map
