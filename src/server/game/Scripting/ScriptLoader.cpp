@@ -641,6 +641,7 @@ void AddSC_boss_feng();
 void AddSC_boss_garajal();
 void AddSC_boss_spirit_kings();
 void AddSC_boss_elegon();
+void AddSC_boss_will_of_emperor();
 
 void AddSC_jade_forest();
 void AddSC_vale_of_eternal_blossoms();
@@ -1331,6 +1332,7 @@ void AddPandarieScripts()
     AddSC_boss_garajal();
     AddSC_boss_spirit_kings();
     AddSC_boss_elegon();
+    AddSC_boss_will_of_emperor();
 
     AddSC_jade_forest();
     AddSC_kun_lai_summit();
