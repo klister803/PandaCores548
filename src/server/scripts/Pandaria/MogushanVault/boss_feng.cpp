@@ -420,7 +420,8 @@ class boss_feng : public CreatureScript
                     }
                     case EVENT_ARCANE_RESONANCE:
                     {
-                        me->CastSpell(me, SPELL_ARCANE_RESONANCE, false);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
+                            target->AddAura(SPELL_ARCANE_RESONANCE, target);
                         events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 40000);
                         break;
                     }
