@@ -268,6 +268,17 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket & recvData)
         _player->SendEquipError(EQUIP_ERR_DROP_BOUND_ITEM, NULL, NULL);
         return;
     }
+    
+    //! If trading
+    if (TradeData* tradeData = _player->GetTradeData())
+    {
+        //! If current item is in trade window (only possible with packet spoofing - silent return)
+        if (tradeData->GetTradeSlotForItem(pItem->GetGUID()) != TRADE_SLOT_INVALID)
+        {
+            _player->SendEquipError(EQUIP_ERR_OBJECT_IS_BUSY, NULL, NULL);
+            return;
+        }
+    }
 
     if (count)
     {

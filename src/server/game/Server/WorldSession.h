@@ -1073,6 +1073,7 @@ class WorldSession
         bool isRecruiter;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
         time_t timeLastWhoCommand;
+        time_t timeCharEnumOpcode;
         time_t timeLastChannelInviteCommand;
         time_t timeLastChannelPassCommand;
         time_t timeLastChannelMuteCommand;
