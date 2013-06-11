@@ -289,7 +289,7 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_necrotic_strike_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 amount = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
             }
@@ -303,6 +303,53 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_dk_necrotic_strike_AuraScript();
+        }
+
+        class spell_dk_necrotic_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_necrotic_strike_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        for (uint32 i = 0; i < MAX_RUNES; ++i)
+                        {
+                            RuneType rune = _player->GetCurrentRune(i);
+
+                            if (!_player->GetRuneCooldown(i) && rune == RUNE_DEATH)
+                            {
+                                uint32 cooldown = _player->GetRuneBaseCooldown(i);
+                                _player->SetRuneCooldown(i, cooldown);
+
+                                bool takePower = true;
+                                if (uint32 spell = _player->GetRuneConvertSpell(i))
+                                    takePower = spell != 54637;
+
+                                // keep Death Rune type if player has Blood of the North
+                                if (takePower)
+                                {
+                                    _player->RestoreBaseRune(i);
+                                    _player->SetDeathRuneUsed(i, true);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_dk_necrotic_strike_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_necrotic_strike_SpellScript();
         }
 };
 
