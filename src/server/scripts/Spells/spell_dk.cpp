@@ -816,6 +816,19 @@ class spell_dk_blood_tap : public SpellScriptLoader
                     }
                     else
                         return SPELL_FAILED_DONT_REPORT;
+
+                    bool cooldown = false;
+
+                    for (uint8 i = 0; i < MAX_RUNES; ++i)
+                    {
+                        if (GetCaster()->ToPlayer()->GetCurrentRune(i) == RUNE_DEATH || !GetCaster()->ToPlayer()->GetRuneCooldown(i))
+                            continue;
+
+                        cooldown = true;
+                    }
+
+                    if (!cooldown)
+                        return SPELL_FAILED_DONT_REPORT;
                 }
 
                 return SPELL_CAST_OK;
@@ -837,24 +850,25 @@ class spell_dk_blood_tap : public SpellScriptLoader
                                 bloodCharges->SetStackAmount(newAmount - 5);
                         }
 
+                        bool runeActivated = false;
+
                         for (uint8 i = 0; i < MAX_RUNES; ++i)
                         {
-                            if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                            if (_player->GetCurrentRune(i) == RUNE_DEATH || !_player->GetRuneCooldown(i))
                                 continue;
 
-                            if (!_player->GetRuneCooldown(i))
-                                continue;
+                            if (runeActivated)
+                                break;
 
                             // Should always update the rune with the lowest cd
                             if (_player->GetRuneCooldown(i) >= _player->GetRuneCooldown(i+1))
                                 i++;
 
-                            _player->ConvertRune(i, RUNE_DEATH);
                             _player->SetRuneCooldown(i, 0);
-                            break;
+                            _player->ResyncRunes(MAX_RUNES);
+                            _player->ConvertRune(i, RUNE_DEATH);
+                            runeActivated = true;
                         }
-
-                        _player->ResyncRunes(MAX_RUNES);
                     }
                 }
             }
