@@ -83,6 +83,7 @@ enum PaladinSpells
     PALADIN_SPELL_DIVINE_PROTECTION              = 498,
     PALADIN_SPELL_GLYPH_OF_AVENGING_WRATH        = 54927,
     PALADIN_SPELL_AVENGING_WRATH_REGEN_BY_GLYPH  = 115547,
+    PALADIN_SPELL_SACRED_CLEANSING               = 53551,
 };
 
 // Called by Avenging Wrath - 31884
@@ -623,6 +624,11 @@ class spell_pal_cleanse : public SpellScriptLoader
                         {
                             uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
                             uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
+
+                            // Epuration can dispell Magic with Sacred Cleansing
+                            if (caster->HasAura(PALADIN_SPELL_SACRED_CLEANSING) && GetSpellInfo()->Id == 4987)
+                                dispelMask = DISPEL_ALL_MASK;
+
                             DispelChargesList dispelList;
                             target->GetDispellableAuraList(caster, dispelMask, dispelList);
 

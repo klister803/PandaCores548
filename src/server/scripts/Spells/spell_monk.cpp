@@ -406,7 +406,8 @@ class spell_monk_zen_flight_check : public SpellScriptLoader
                     if (_player->GetMap()->IsBattlegroundOrArena())
                         return SPELL_FAILED_NOT_IN_BATTLEGROUND;
 
-                    if (!_player->HasAura(90267))
+                    // In Kalimdor and Eastern Kingdom
+                    if (!_player->HasSpell(90267) && (_player->GetMapId() == 1 || _player->GetMapId() == 0))
                         return SPELL_FAILED_NOT_HERE;
                 }
 
@@ -422,6 +423,33 @@ class spell_monk_zen_flight_check : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_monk_zen_flight_check_SpellScript();
+        }
+
+        class spell_monk_zen_flight_check_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_zen_flight_check_AuraScript);
+
+            bool Load()
+            {
+                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+            }
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                    if (caster->GetSkillValue(SKILL_RIDING) >= 375)
+                        amount = 310;
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_zen_flight_check_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_zen_flight_check_AuraScript();
         }
 };
 

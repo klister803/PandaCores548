@@ -917,6 +917,10 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
         int32 charges = m_procCharges + num;
         int32 maxCharges = CalcMaxCharges();
 
+        // Hack Fix - Arcane Missiles !
+        if (GetId() == 79683)
+            maxCharges = 2;
+
         // limit charges (only on charges increase, charges may be changed manually)
         if ((num > 0) && (charges > int32(maxCharges)))
             charges = maxCharges;
@@ -929,8 +933,8 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
 
         SetCharges(charges);
 
-        // Molten Core : charges = stackAmount
-        if (GetId() == 122355)
+        // Molten Core and Arcane Missiles ! : charges = stackAmount
+        if (GetId() == 122355 || GetId() == 79683)
             SetStackAmount(charges);
     }
     return false;
@@ -1224,7 +1228,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 for (std::vector<int32>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                 {
                     if (*itr < 0)
-                        target->RemoveAurasDueToSpell(-(*itr));
+                    {
+                        if (!(aurApp->GetBase()->GetId() == 5143 && (-(*itr)) == 36032))
+                            target->RemoveAurasDueToSpell(-(*itr));
+                    }
                     else if (removeMode != AURA_REMOVE_BY_DEATH)
                         target->CastSpell(target, *itr, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
                 }

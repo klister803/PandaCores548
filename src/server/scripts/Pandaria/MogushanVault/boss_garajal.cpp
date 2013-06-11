@@ -29,6 +29,7 @@ enum eSpells
     SPELL_VOODOO_DOLL_VISUAL    = 122151,
     SPELL_VOODOO_DOLL_SHARE     = 116000,
     SPELL_SUMMON_SPIRIT_TOTEM   = 116174,
+    SPELL_SUMMON_MINION         = 118087,
 
     // attaques ombreuses
     SPELL_RIFHT_CROSS           = 117215,
@@ -55,12 +56,13 @@ enum eEvents
 {
     EVENT_SECONDARY_ATTACK      = 1,
     EVENT_SUMMON_TOTEM          = 2,
-    EVENT_VOODOO_DOLL           = 3,
-    EVENT_BANISHMENT            = 4,
+    EVENT_SUMMON_SHADOWY_MINION = 3,
+    EVENT_VOODOO_DOLL           = 4,
+    EVENT_BANISHMENT            = 5,
 
     // Shadowy Minion
-    EVENT_SHADOW_BOLT           = 5,
-    EVENT_SPIRITUAL_GRASP       = 6,
+    EVENT_SHADOW_BOLT           = 6,
+    EVENT_SPIRITUAL_GRASP       = 7,
 };
 
 class boss_garajal : public CreatureScript
@@ -82,9 +84,22 @@ class boss_garajal : public CreatureScript
             {
                 _Reset();
 
-                events.ScheduleEvent(EVENT_SECONDARY_ATTACK, urand(5000, 10000));
-                events.ScheduleEvent(EVENT_SUMMON_TOTEM,     urand(27500, 32500));
-                events.ScheduleEvent(EVENT_VOODOO_DOLL,      2500);
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
+
+                events.ScheduleEvent(EVENT_SECONDARY_ATTACK,        urand(5000, 10000));
+                events.ScheduleEvent(EVENT_SUMMON_TOTEM,            urand(27500, 32500));
+                events.ScheduleEvent(EVENT_SUMMON_SHADOWY_MINION,   urand(10000, 15000));
+                events.ScheduleEvent(EVENT_BANISHMENT,              90000);
+                events.ScheduleEvent(EVENT_VOODOO_DOLL,             2500);
+            }
+
+            void JustDied(Unit* attacker)
+            {
+                _JustDied();
+
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
             }
 
             void JustSummoned(Creature* summon)
@@ -135,8 +150,16 @@ class boss_garajal : public CreatureScript
                         {
                             float x = 0.0f, y = 0.0f;
                             GetRandPosFromCenterInDist(4277.08f, 1341.35f, frand(0.0f, 30.0f), x, y);
-                            me->CastSpell(x, y, 454.55f, SPELL_SUMMON_SPIRIT_TOTEM, true);
-                            events.ScheduleEvent(EVENT_SUMMON_TOTEM,     urand(27500, 32500));
+                            me->SummonCreature(NPC_SPIRIT_TOTEM, x, y, 454.55f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
+                            events.ScheduleEvent(EVENT_SUMMON_TOTEM,     urand(47500, 52500));
+                            break;
+                        }
+                        case EVENT_SUMMON_SHADOWY_MINION:
+                        {
+                            float x = 0.0f, y = 0.0f;
+                            GetRandPosFromCenterInDist(4277.08f, 1341.35f, frand(0.0f, 30.0f), x, y);
+                            me->SummonCreature(NPC_SHADOWY_MINION_REAL, x, y, 454.55f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
+                            events.ScheduleEvent(EVENT_SUMMON_SHADOWY_MINION,     urand(10000, 15000));
                             break;
                         }
                         case EVENT_VOODOO_DOLL:
@@ -178,8 +201,10 @@ class boss_garajal : public CreatureScript
                                 for (uint8 i = 0; i < mobCount; ++i)
                                     if (Creature* soulCutter = me->SummonCreature(NPC_SOUL_CUTTER, target->GetPositionX() + 2.0f, target->GetPositionY() + 2.0f, target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000, i == 0 ? viewerGuid: 0))
                                     {
+                                        soulCutter->SetPhaseMask(2, true);
                                         soulCutter->AI()->AttackStart(target);
-                                        soulCutter->getThreatManager().addThreat(target, 1000000000.0f);
+                                        soulCutter->SetInCombatWith(target);
+                                        soulCutter->getThreatManager().addThreat(target, 10000.0f);
                                     }
 
                                 me->getThreatManager().resetAllAggro();
@@ -215,10 +240,17 @@ class mob_spirit_totem : public CreatureScript
         struct mob_spirit_totemAI : public ScriptedAI
         {
             mob_spirit_totemAI(Creature* creature) : ScriptedAI(creature)
-            {}
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
 
             void Reset()
-            {}
+            {
+                me->AddAura(116827, me);
+                me->SetReactState(REACT_PASSIVE);
+            }
 
             void JustDied(Unit* attacker)
             {
@@ -248,6 +280,13 @@ class mob_spirit_totem : public CreatureScript
                     }
                 }
             }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (pInstance)
+                    if (pInstance->GetBossState(DATA_GARAJAL) != IN_PROGRESS)
+                        me->DespawnOrUnsummon();
+            }
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -264,7 +303,11 @@ class mob_shadowy_minion : public CreatureScript
         struct mob_shadowy_minionAI : public Scripted_NoMovementAI
         {
             mob_shadowy_minionAI(Creature* creature) : Scripted_NoMovementAI(creature)
-            {}
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
 
             uint64 spiritGuid;
             EventMap events;
@@ -282,6 +325,7 @@ class mob_shadowy_minion : public CreatureScript
                         spirit->SetPhaseMask(2, true);
                     }
 
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     events.ScheduleEvent(EVENT_SPIRITUAL_GRASP, urand(2000, 5000));
                 }
                 else
@@ -296,9 +340,25 @@ class mob_shadowy_minion : public CreatureScript
                     me->DespawnOrUnsummon();
             }
 
+            void JustDied(Unit* attacker)
+            {
+                if (me->GetEntry() == NPC_SHADOWY_MINION_SPIRIT)
+                    if (me->ToTempSummon())
+                        if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                            if (summoner->ToCreature())
+                                summoner->ToCreature()->DespawnOrUnsummon();
+            }
+
             void UpdateAI(const uint32 diff)
             {
+                if (pInstance)
+                    if (pInstance->GetBossState(DATA_GARAJAL) != IN_PROGRESS)
+                        me->DespawnOrUnsummon();
+
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -310,7 +370,7 @@ class mob_shadowy_minion : public CreatureScript
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                                 me->CastSpell(target, SPELL_SHADOW_BOLT, false);
 
-                            events.ScheduleEvent(EVENT_SHADOW_BOLT, urand(2000, 5000));
+                            events.ScheduleEvent(EVENT_SHADOW_BOLT, urand(2000, 3000));
                             break;
                         }
                         // Real World
@@ -341,18 +401,38 @@ class mob_soul_cutter : public CreatureScript
         struct mob_soul_cutterAI : public ScriptedAI
         {
             mob_soul_cutterAI(Creature* creature) : ScriptedAI(creature)
-            {}
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
 
             void Reset()
             {}
 
             void JustDied(Unit* attacker)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true, SPELL_SOUL_CUT_SUICIDE))
+                std::list<uint64> playerList;
+                me->GetMustBeVisibleForPlayersList(playerList);
+
+                for (auto guid: playerList)
                 {
-                    target->RemoveAurasDueToSpell(SPELL_SOUL_CUT_SUICIDE);
-                    target->RemoveAurasDueToSpell(SPELL_SOUL_CUT_DAMAGE);
+                    if (Player* player = ObjectAccessor::FindPlayer(guid))
+                    {
+                        player->RemoveAurasDueToSpell(SPELL_BANISHMENT);
+                        player->RemoveAurasDueToSpell(SPELL_SOUL_CUT_SUICIDE);
+                        player->RemoveAurasDueToSpell(SPELL_SOUL_CUT_DAMAGE);
+                    }
                 }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (pInstance)
+                    if (pInstance->GetBossState(DATA_GARAJAL) != IN_PROGRESS)
+                        me->DespawnOrUnsummon();
+
+                DoMeleeAttackIfReady();
             }
         };
 

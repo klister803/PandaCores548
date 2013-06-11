@@ -2733,10 +2733,6 @@ void SpellMgr::LoadSpellClassInfo()
             mSpellClassInfo[ClassID].insert(88344);
             mSpellClassInfo[ClassID].insert(88345);
             mSpellClassInfo[ClassID].insert(88346);
-            mSpellClassInfo[ClassID].insert(132620);
-            mSpellClassInfo[ClassID].insert(132621);
-            mSpellClassInfo[ClassID].insert(132626);
-            mSpellClassInfo[ClassID].insert(132627);
         }
 
         // Ancestral Focus
@@ -3885,6 +3881,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[EFFECT_0].TargetB = 0;
                 spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
+            case 15850: // Chilled
+            case 16927: // Chilled
+            case 20005: // Chilled
+                spellInfo->Mechanic = MECHANIC_SNARE;
             default:
                 break;
             }
@@ -3912,6 +3912,7 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 case 73680: // Unleash Elements
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
+                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ENEMY;
                     break;
                 case 107223:
                     spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;

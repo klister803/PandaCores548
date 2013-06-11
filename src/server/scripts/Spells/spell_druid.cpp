@@ -110,6 +110,7 @@ enum DruidSpells
     SPELL_DRUID_RAKE                        = 1822,
     SPELL_DRUID_CONSECRATION_DUMMY          = 81298,
     SPELL_DRUID_CONSECRATION_DAMAGE         = 110705,
+    SPELL_DRUID_SHOOTING_STARS              = 93400,
 };
 
 // Play Death - 110597
@@ -1483,6 +1484,11 @@ class spell_dru_natures_cure : public SpellScriptLoader
                         {
                             uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
                             uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
+
+                            // Nature's Cure can dispell all Magic, Curse and poison
+                            if (GetSpellInfo()->Id == 88423)
+                                dispelMask = ((1<<DISPEL_MAGIC) | (1<<DISPEL_CURSE) | (1<<DISPEL_POISON));
+
                             DispelChargesList dispelList;
                             target->GetDispellableAuraList(caster, dispelMask, dispelList);
 
@@ -2479,11 +2485,10 @@ class spell_dru_eclipse : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_eclipse_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            void HandleAfterCast()
             {
-                if (!sSpellMgr->GetSpellInfo(SPELL_DRUID_WRATH) || !sSpellMgr->GetSpellInfo(SPELL_DRUID_STARFIRE) || !sSpellMgr->GetSpellInfo(SPELL_DRUID_STARSURGE))
-                    return false;
-                return true;
+                if (Player* _plr = GetCaster()->ToPlayer())
+                    _plr->RemoveAura(SPELL_DRUID_SHOOTING_STARS);
             }
 
             void HandleOnHit()
@@ -2620,6 +2625,7 @@ class spell_dru_eclipse : public SpellScriptLoader
             void Register()
             {
                 OnHit += SpellHitFn(spell_dru_eclipse_SpellScript::HandleOnHit);
+                AfterCast += SpellCastFn(spell_dru_eclipse_SpellScript::HandleAfterCast);
             }
         };
 

@@ -489,6 +489,8 @@ class npc_snowdrift_novice : public CreatureScript
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
+                    me->SetReactState(REACT_PASSIVE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     me->setFaction(35);
                     stillInFight = false;
                     events.Reset();
@@ -586,6 +588,8 @@ class npc_snowdrift_miniboss : public CreatureScript
                 {
                     damage = 0;
                     me->setFaction(35);
+                    me->SetReactState(REACT_PASSIVE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     me->CombatStop();
                     events.Reset();
                     stillInFight = false;

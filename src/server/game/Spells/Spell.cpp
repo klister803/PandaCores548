@@ -2852,7 +2852,9 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         // Expel Harm - 115072 apply wrong aura (Flying Serpent Kick - 101545)
         if (m_spellInfo->Id == 115072 && m_preCastSpell == 101545)
             return;
-
+        // Incanter's Ward (passive) - 118858 apply wrong aura (Incanter's Ward (cooldown marker) - 118859)
+        if (m_spellInfo->Id == 118858 && m_preCastSpell == 118859)
+            return;
         // Fan of Knives - 51723 apply wrong aura on ennemies (Killing Spree - 51690)
         if (m_spellInfo->Id == 51723 && m_preCastSpell == 51690)
             return;
@@ -3880,6 +3882,11 @@ void Spell::finish(bool ok)
     // Stop Attack for some spells
     if (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET)
         m_caster->AttackStop();
+    
+    if (m_castItemGUID && m_caster->GetTypeId() == TYPEID_PLAYER)
+        if (Item* item = m_caster->ToPlayer()->GetItemByGuid(m_castItemGUID))
+            if (item->IsEquipable() && !item->IsEquipped())
+                m_caster->ToPlayer()->ApplyItemEquipSpell(item, false);
 
     switch (m_spellInfo->Id)
     {
@@ -4948,7 +4955,12 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (m_spellInfo->Id == 132365)
         return SPELL_FAILED_DONT_REPORT;
 
+    // Gloves S12 - Druid
     if (m_spellInfo->Id == 33830 && m_caster->HasAura(33830))
+        return SPELL_FAILED_DONT_REPORT;
+
+    // Gloves S12 - Shaman
+    if (m_spellInfo->Id == 32973 && m_caster->HasAura(32973))
         return SPELL_FAILED_DONT_REPORT;
 
     // check death state

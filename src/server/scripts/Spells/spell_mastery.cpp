@@ -37,6 +37,7 @@ enum MasterySpells
     MASTERY_SPELL_COMBO_BREAKER_1       = 118864,
     MASTERY_SPELL_COMBO_BREAKER_2       = 116768,
     MASTERY_SPELL_DISCIPLINE_SHIELD     = 77484,
+    SPELL_DK_SCENT_OF_BLOOD             = 50421,
 };
 
 // Called by Power Word : Shield - 17, Power Word : Shield (Divine Insight) - 123258, Spirit Shell - 114908, Angelic Bulwark - 114214 and Divine Aegis - 47753
@@ -139,20 +140,23 @@ class spell_mastery_blood_shield : public SpellScriptLoader
 
             void HandleAfterHit()
             {
-                if (Unit* caster = GetCaster())
+                if (Player* _plr = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(77513))
+                        if (_plr->GetTypeId() == TYPEID_PLAYER && _plr->HasAura(77513) && _plr->getLevel() >= 80)
                         {
                             // Check the Mastery aura while in Blood presence
-                            if (caster->HasAura(77513) && caster->HasAura(48263))
+                            if (_plr->HasAura(77513) && _plr->HasAura(48263))
                             {
-                                float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 6.25f / 100.0f;
+                                float Mastery = _plr->GetFloatValue(PLAYER_MASTERY) * 6.25f / 100.0f;
 
-                                int32 bp = int32(GetHitHeal() * Mastery);
+                                int32 bp = -int32(GetHitDamage() * Mastery);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, true);
+                                if (AuraPtr scentOfBlood = _plr->GetAura(SPELL_DK_SCENT_OF_BLOOD))
+                                    AddPct(bp, (scentOfBlood->GetStackAmount() * 20));
+
+                                _plr->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, true);
                             }
                         }
                     }

@@ -54,7 +54,7 @@ class mob_cursed_mogu_sculpture : public CreatureScript
             void Reset()
             {
                 spiritBoltTimer = urand(10000, 40000);
-                groundSlamTimer = urand(20000, 40000);
+                groundSlamTimer = urand(40000, 60000);
 
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
 
@@ -99,7 +99,7 @@ class mob_cursed_mogu_sculpture : public CreatureScript
                     if (Unit* target = me->SelectNearestTarget(5.0f))
                         if (!target->IsFriendlyTo(me))
                             me->CastSpell(target, SPELL_GROUND_SLAM, true);
-                    groundSlamTimer = urand(20000, 30000);
+                    groundSlamTimer = urand(40000, 60000);
                 }
                 else
                     groundSlamTimer -= diff;

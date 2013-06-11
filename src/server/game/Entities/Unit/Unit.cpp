@@ -570,15 +570,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 blackOxStatue->SetScriptData(0, damage);
         }
     }
-    // Blade Flurry
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(13877) && damage > 0 && (!spellProto || (spellProto && spellProto->Id != 22482)))
-    {
-        Unit* target = SelectNearbyTarget(victim);
-        int32 bp = damage;
-
-        if (target)
-            CastCustomSpell(target, 22482, &bp, NULL, NULL, true);
-    }
     // Cheat Death : An attack that would otherwise be fatal will instead reduce you to no less than 10% of your maximum health
     if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_ROGUE && damage != 0)
     {
@@ -3728,6 +3719,21 @@ void Unit::RemoveAura(uint32 spellId, uint64 caster, uint32 reqEffMask, AuraRemo
     }
 }
 
+void Unit::RemoveAllSymbiosisAuras()
+{
+    RemoveAura(110309);// Caster
+    RemoveAura(110478);// Death Knight
+    RemoveAura(110479);// Hunter
+    RemoveAura(110482);// Mage
+    RemoveAura(110483);// Monk
+    RemoveAura(110484);// Paladin
+    RemoveAura(110485);// Priest
+    RemoveAura(110486);// Rogue
+    RemoveAura(110488);// Shaman
+    RemoveAura(110490);// Warlock
+    RemoveAura(110491);// Warrior
+}
+
 void Unit::RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode)
 {
     // we've special situation here, RemoveAura called while during aura removal
@@ -5238,27 +5244,6 @@ bool Unit::HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
     Unit* target = victim;
     int32 basepoints0 = 0;
 
-    switch (hasteSpell->SpellFamilyName)
-    {
-        case SPELLFAMILY_ROGUE:
-        {
-            switch (hasteSpell->Id)
-            {
-                // Blade Flurry
-                case 33735:
-                {
-                    target = SelectNearbyTarget(victim);
-                    if (!target)
-                        return false;
-                    basepoints0 = damage;
-                    triggered_spell_id = 22482;
-                    break;
-                }
-            }
-            break;
-        }
-    }
-
     // processed charge only counting case
     if (!triggered_spell_id)
         return true;
@@ -6082,16 +6067,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     RemoveAurasByType(SPELL_AURA_HASTE_SPELLS, 0, NULLAURA, true, false);
                     RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
                     return true;
-                }
-                // Ignite
-                case 11119:
-                case 11120:
-                case 12846:
-                {
-                    basepoints0 = CalculatePct(damage, triggerAmount);
-                    triggered_spell_id = 12654;
-                    basepoints0 += victim->GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_DAMAGE);
-                    break;
                 }
                 // Glyph of Ice Block
                 case 56372:
@@ -8519,6 +8494,27 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Arcane Missiles !
+        case 79684:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id == 4143 || procSpell->Id == 7268)
+                return false;
+
+            if (AuraPtr arcaneMissiles = GetAura(79683))
+            {
+                arcaneMissiles->ModCharges(1);
+                arcaneMissiles->RefreshDuration();
+                return false;
+            }
+
+            break;
+        }
         // Lightning Shield (Symbiosis)
         case 110803:
         {
@@ -10553,7 +10549,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 76803 - Mastery : Potent Poisons
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680 || spellProto->Id == 113780) && pdamage != 0 && HasAura(76803))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f;
         AddPct(DoneTotalMod, Mastery);
@@ -15431,17 +15427,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             countCrit = 0;
 
     // Hack Fix Ice Floes - Drop charges
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !isVictim && !(procExtra & PROC_EX_INTERNAL_DOT))
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !(procExtra & PROC_EX_INTERNAL_DOT)
+        && (procSpell->Id == 30451 && damage > 0))
     {
         AuraApplication* aura = GetAuraApplication(108839, GetGUID());
         if (aura)
             aura->GetBase()->DropCharge();
     }
-
-    // Hack Fix Shooting Stars - Drop charge
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(93400) && getClass() == CLASS_DRUID && procSpell && procSpell->Id == 78674)
-        if (AuraPtr aura = GetAura(93400))
-            RemoveAura(93400);
 
     // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
@@ -15833,7 +15825,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         // Remove charge (aura can be removed by triggers)
         if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
-            && i->aura->GetId() != 119962 && i->aura->GetId() != 131116 && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004))
+            && i->aura->GetId() != 119962 && i->aura->GetId() != 131116 && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004)
+            && !(i->aura->GetId() == 79683))
+
         {
             // Hack Fix for Tiger Strikes
             if (i->aura->GetId() == 120273)
