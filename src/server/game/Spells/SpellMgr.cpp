@@ -3602,6 +3602,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                 break;
+            case 90259: // Glyph of Frost Pillar (Root Aura)
+                spellInfo->Effects[0].MiscValue = 0;
+                spellInfo->Effects[0].MiscValueB = 0;
+                break;
             case 49821: // Mind Sear
                 spellInfo->Effects[0].TargetA = TARGET_DEST_CHANNEL_TARGET;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
