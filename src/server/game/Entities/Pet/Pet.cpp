@@ -868,6 +868,13 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             uint32 val  = (fire > shadow) ? fire : shadow;
             SetBonusDamage(int32 (val));
 
+            // Hardcode : Ghoul Base HP
+            if (IsPetGhoul() && getLevel() > 86)
+            {
+                SetCreateHealth(GetCreateHealth() / 7);
+                CastSpell(this, 47466, true);
+            }
+
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
             break;
@@ -890,6 +897,25 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         {
             switch (GetEntry())
             {
+                case 26125:// Ghoul (Guardian)
+                {
+                    //the damage bonus used for pets is either fire or shadow damage, whatever is higher
+                    uint32 fire  = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
+                    uint32 shadow = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+                    uint32 val  = (fire > shadow) ? fire : shadow;
+                    SetBonusDamage(int32 (val));
+
+                    // Hardcode : Ghoul Base HP
+                    if (IsPetGhoul() && getLevel() > 86)
+                    {
+                        SetCreateHealth(GetCreateHealth() / 7);
+                        CastSpell(this, 47466, true);
+                    }
+
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+                    break;
+                }
                 case 416:  // Imp
                 case 1860: // Voidwalker
                 case 1863: // Succubus

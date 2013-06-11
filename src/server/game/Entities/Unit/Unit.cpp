@@ -14512,11 +14512,12 @@ uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
 {
     if (powerId == POWER_ENERGY)
     {
-        if (isPet() && GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
+        if (ToPet() && ToPet()->IsWarlockPet())
             return 0;
 
         switch (this->GetEntry())
         {
+            case 26125:
             case 59915:
             case 60043:
             case 60047:

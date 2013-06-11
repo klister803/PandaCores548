@@ -734,8 +734,44 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
-                // Soulstone
-                case 6203:
+                case 47468: // Ghoul: Claw
+                {
+                    if (!unitTarget)
+                        return;
+
+                    // Dark Transformation - Replace spell
+                    if (m_caster->HasAura(63560))
+                        m_caster->CastSpell(unitTarget, 91778, true); // Sweeping Claws
+                    else
+                        m_caster->CastSpell(unitTarget, 91776, true); // Claw
+
+                    break;
+                }
+                case 47484: // Ghoul: Huddle
+                {
+                    if (!unitTarget)
+                        return;
+
+                    // Dark Transformation - Replace spell
+                    if (m_caster->HasAura(63560))
+                        m_caster->CastSpell(unitTarget, 91837, true); // Putrid Bulwark
+                    else
+                        m_caster->CastSpell(unitTarget, 91838, true); // Huddle
+                    break;
+                }
+                case 47482: // Ghoul: Leap
+                {
+                    if (!unitTarget)
+                        return;
+
+                    // Dark Transformation - Replace spell
+                    if (m_caster->HasAura(63560))
+                        m_caster->CastSpell(unitTarget, 91802, true); // Shambling Rush
+                    else
+                        m_caster->CastSpell(unitTarget, 91809, true); // Leap
+                    break;
+                }
+                case 6203:  // Soulstone
                 {
                     if (!unitTarget->isAlive())
                         unitTarget->CastSpell(unitTarget, 3026, true); // Self resurrect
