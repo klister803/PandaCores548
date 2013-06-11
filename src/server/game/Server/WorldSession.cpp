@@ -107,7 +107,8 @@ timeLastChannelSetownerCommand(0),
 timeLastChannelUnmoderCommand(0),
 timeLastChannelUnmuteCommand(0),
 timeLastChannelKickCommand(0),
-timeCharEnumOpcode(0)
+timeCharEnumOpcode(0),
+playerLoginCounter(0)
 {
     _warden = NULL;
     _filterAddonMessages = false;

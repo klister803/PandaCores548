@@ -3602,10 +3602,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                 break;
-            case 31230: // Cheat Death
-            case 114556:// Purgatory
-                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+            case 90259: // Glyph of Frost Pillar (Root Aura)
+                spellInfo->Effects[0].MiscValue = 0;
+                spellInfo->Effects[0].MiscValueB = 0;
                 break;
             case 49821: // Mind Sear
                 spellInfo->Effects[0].TargetA = TARGET_DEST_CHANNEL_TARGET;

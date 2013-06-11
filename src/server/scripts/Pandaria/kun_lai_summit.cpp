@@ -92,7 +92,188 @@ class mob_nessos_the_oracle : public CreatureScript
         };
 };
 
+enum eSkiThikSpells
+{
+    SPELL_BLADE_FURY    = 125370,
+    SPELL_TORNADO       = 125398,
+    SPELL_TORNADO_DMG   = 131693,
+    SPELL_WINDSONG      = 125373,
+};
+
+enum eSkiThikEvents
+{
+    EVENT_BLADE_FURY    = 1,
+    EVENT_TORNADO       = 2,
+    EVENT_WINDSONG      = 3,
+};
+
+class mob_ski_thik : public CreatureScript
+{
+    public:
+        mob_ski_thik() : CreatureScript("mob_ski_thik") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_ski_thikAI(creature);
+        }
+
+        struct mob_ski_thikAI : public ScriptedAI
+        {
+            mob_ski_thikAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+
+            EventMap events;
+
+            void Reset()
+            {
+                events.Reset();
+                
+                events.ScheduleEvent(EVENT_BLADE_FURY,      8000);
+                events.ScheduleEvent(EVENT_TORNADO,         40000);
+                events.ScheduleEvent(EVENT_WINDSONG,        32000);
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+            }
+
+            void JustSummoned(Creature* summon)
+            {
+                if (summon->GetEntry() == 64267)
+                {
+                    summon->AddAura(SPELL_TORNADO_DMG, summon);
+                    summon->SetReactState(REACT_PASSIVE);
+                    summon->GetMotionMaster()->MoveRandom(20.0f);
+                }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                events.Update(diff);
+                
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_BLADE_FURY:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(target, SPELL_BLADE_FURY, false);
+                            events.ScheduleEvent(EVENT_BLADE_FURY,      8000);
+                            break;
+                        case EVENT_TORNADO:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(target, SPELL_TORNADO, false);
+                            events.ScheduleEvent(EVENT_TORNADO, 40000);
+                            break;
+                        case EVENT_WINDSONG:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(target, SPELL_WINDSONG, false);
+                            events.ScheduleEvent(EVENT_WINDSONG, 32000);
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
+enum eMogujiaSoulCallerSpells
+{
+    SPELL_DRAIN_LIFE        = 84533,
+    SPELL_SHADOW_BOLT       = 9613,
+    SPELL_SHADOW_CRASH      = 129132,
+};
+
+enum eMogujiaSoulCallerEvents
+{
+    EVENT_DRAIN_LIFE    = 1,
+    EVENT_SHADOW_BOLT       = 2,
+    EVENT_SHADOW_CRASH      = 3,
+};
+
+class mob_mogujia_soul_caller : public CreatureScript
+{
+    public:
+        mob_mogujia_soul_caller() : CreatureScript("mob_mogujia_soul_caller") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_mogujia_soul_callerAI(creature);
+        }
+
+        struct mob_mogujia_soul_callerAI : public ScriptedAI
+        {
+            mob_mogujia_soul_callerAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+
+            EventMap events;
+
+            void Reset()
+            {
+                events.Reset();
+                
+                events.ScheduleEvent(EVENT_DRAIN_LIFE,      20000);
+                events.ScheduleEvent(EVENT_SHADOW_BOLT,         15000);
+                events.ScheduleEvent(EVENT_SHADOW_CRASH,        32000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                events.Update(diff);
+                
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_DRAIN_LIFE:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(target, SPELL_DRAIN_LIFE, false);
+                            events.ScheduleEvent(EVENT_DRAIN_LIFE,      20000);
+                            break;
+                        case EVENT_SHADOW_BOLT:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(target, SPELL_SHADOW_BOLT, false);
+                            events.ScheduleEvent(EVENT_SHADOW_BOLT, 15000);
+                            break;
+                        case EVENT_SHADOW_CRASH:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                me->CastSpell(target, SPELL_SHADOW_CRASH, false);
+                            events.ScheduleEvent(EVENT_SHADOW_CRASH, 32000);
+                            break;
+							
+                        default:
+                            break;
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
 void AddSC_kun_lai_summit()
 {
     new mob_nessos_the_oracle();
+    new mob_ski_thik();
+    new mob_mogujia_soul_caller();
 }

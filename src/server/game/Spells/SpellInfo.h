@@ -526,7 +526,7 @@ public:
     bool IsBreakingCamouflage() const;
     bool IsBreakingCamouflageAfterHit() const;
     bool IsReducingCastTime() const;
-
+    bool CanTriggerBladeFlurry() const;
 
     // loading helpers
     uint32 _GetExplicitTargetMask() const;
