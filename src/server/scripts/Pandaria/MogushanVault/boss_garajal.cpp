@@ -268,6 +268,9 @@ class mob_spirit_totem : public CreatureScript
 
                     if (Creature* clone = me->SummonCreature(56405, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
                     {
+                        if (player->GetHealthPct() >= 10.0f)
+                            player->SetHealth(player->GetMaxHealth() / 10);
+
                         player->CastSpell(player, SPELL_CLONE_VISUAL, true);
                         player->CastSpell(player, SPELL_CROSSED_OVER, true);
 

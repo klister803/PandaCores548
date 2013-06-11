@@ -19,6 +19,9 @@ DoorData const doorData[] =
     //{GOB_GARAJAL_EXIT,                       DATA_GARAJAL,              DOOR_TYPE_PASSAGE,    BOUNDARY_W   },
     //{GOB_SPIRIT_KINGS_WIND_WALL,             DATA_SPIRIT_KINGS          DOOR_TYPE_ROOM,       BOUNDARY_NONE},
     //{GOB_SPIRIT_KINGS_EXIT,                  DATA_SPIRIT_KINGS,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    //{GOB_ELEGON_DOOR_ENTRANCE,               DATA_SPIRIT_KINGS,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    //{GOB_ELEGON_CELESTIAL_DOOR,              DATA_ELEGON,               DOOR_TYPE_ROOM,       BOUNDARY_E   },
+    //{GOB_WILL_OF_EMPEROR_ENTRANCE,           DATA_ELEGON,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                         DOOR_TYPE_ROOM,       BOUNDARY_NONE},// END
 };
 
@@ -37,16 +40,20 @@ public:
     {
         instance_mogu_shan_vault_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
-        uint32 actualPetrifierEntry;
         int8   randomDespawnStoneGuardian;
-
+        uint8  willOfEmperorPhase;
+        
+        uint32 actualPetrifierEntry;
         uint32 StoneGuardPetrificationTimer;
+        uint32 willOfEmperorTimer;
 
         uint64 stoneGuardControlerGuid;
         uint64 fengGuid;
         uint64 inversionGobGuid;
         uint64 cancelGobGuid;
         uint64 spiritKingsControlerGuid;
+        uint64 janxiGuid;
+        uint64 qinxiGuid;
 
         std::vector<uint64> stoneGuardGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
@@ -57,20 +64,22 @@ public:
             SetBossNumber(DATA_MAX_BOSS_DATA);
             LoadDoorData(doorData);
 
-            actualPetrifierEntry = 0;
-            StoneGuardPetrificationTimer = 10000;
+            randomDespawnStoneGuardian      = urand(1,4);
+            willOfEmperorPhase              = 0;
 
-            stoneGuardControlerGuid = 0;
-            fengGuid = 0;
-            inversionGobGuid = 0;
-            cancelGobGuid = 0;
-            spiritKingsControlerGuid = 0;
+            actualPetrifierEntry            = 0;
+            StoneGuardPetrificationTimer    = 10000;
+            willOfEmperorTimer              = 0;
+
+            stoneGuardControlerGuid         = 0;
+            fengGuid                        = 0;
+            inversionGobGuid                = 0;
+            cancelGobGuid                   = 0;
+            spiritKingsControlerGuid        = 0;
 
             stoneGuardGUIDs.clear();
             fengStatuesGUIDs.clear();
             spiritKingsGUIDs.clear();
-
-            randomDespawnStoneGuardian = urand(1,4);
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -108,6 +117,12 @@ public:
                 case NPC_QIANG:
                 case NPC_SUBETAI:
                     spiritKingsGUIDs.push_back(creature->GetGUID());
+                    break;
+                case NPC_QIN_XI:
+                    qinxiGuid = creature->GetGUID();
+                    break;
+                case NPC_JAN_XI:
+                    janxiGuid = creature->GetGUID();
                     break;
                 default:
                     break;
@@ -245,6 +260,13 @@ public:
                                 return guid;
                     break;
                 }
+
+                // Will of Emperor
+                case NPC_QIN_XI:
+                    return qinxiGuid;
+                case NPC_JAN_XI:
+                    return janxiGuid;
+
                 /// Gameobject
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
@@ -282,6 +304,32 @@ public:
             }
 
             return true;
+        }
+
+        void Update(uint32 diff)
+        {
+            if (GetBossState(DATA_WILL_OF_EMPEROR) != IN_PROGRESS)
+                return;
+
+            if (willOfEmperorTimer)
+            {
+                if (willOfEmperorTimer <= diff)
+                {
+                    switch (willOfEmperorPhase)
+                    {
+                        case PHASE_WOE_RAGE:
+                            break;
+                        case PHASE_WOE_COURAGE:
+                            break;
+                        case PHASE_WOE_STRENGHT:
+                            break;
+                        case PHASE_WOE_GAZ:
+                            break;
+                    }
+                }
+                else
+                    willOfEmperorTimer -= diff;
+            }
         }
     };
 
