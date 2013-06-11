@@ -897,7 +897,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         {
             switch (GetEntry())
             {
-                case 26125:// Ghoul (Guardian)
+                case ENTRY_GHOUL:
                 {
                     //the damage bonus used for pets is either fire or shadow damage, whatever is higher
                     uint32 fire  = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
@@ -916,11 +916,11 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
                     break;
                 }
-                case 416:  // Imp
-                case 1860: // Voidwalker
-                case 1863: // Succubus
-                case 417:  // Felhunter
-                case 17252:// Felguard
+                case ENTRY_IMP:
+                case ENTRY_VOIDWALKER:
+                case ENTRY_SUCCUBUS:
+                case ENTRY_FELHUNTER:
+                case ENTRY_FELGUARD:
                 {
                     if (getPowerType() != POWER_ENERGY)
                         setPowerType(POWER_ENERGY);
@@ -929,14 +929,14 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                     break;
                 }
-                case 510: // mage Water Elemental
+                case ENTRY_WATER_ELEMENTAL:
                 {
                     SetCreateHealth(m_owner->CountPctFromMaxHealth(50));
                     SetCreateMana(m_owner->GetMaxPower(POWER_MANA));
                     SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FROST)));
                     break;
                 }
-                case 1964: //force of nature
+                case ENTRY_TREANT:
                 {
                     if (!pInfo)
                         SetCreateHealth(30 + 30*petlevel);
@@ -1083,13 +1083,13 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
                     break;
                 }
-                case 19833: //Snake Trap - Venomous Snake
+                case 19833: // Snake Trap - Venomous Snake
                 {
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel / 2) - 25));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel / 2) - 18));
                     break;
                 }
-                case 19921: //Snake Trap - Viper
+                case 19921: // Snake Trap - Viper
                 {
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel / 2 - 10));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel / 2));
@@ -1130,7 +1130,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetSpeed(MOVE_SWIM, m_owner->GetSpeedRate(MOVE_SWIM));
                     break;
                 }
-                case 27829: // Ebon Gargoyle
+                case ENTRY_GARGOYLE:
                 {
                     if (!pInfo)
                     {
@@ -1142,12 +1142,13 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
                     break;
                 }
-                case 28524: // Bloodworms
+                case ENTRY_BLOODWORM:
                 {
                     SetCreateHealth(4 * petlevel);
                     SetBonusDamage(int32(m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.006f));
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - 30 - (petlevel / 4)));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel - 30 + (petlevel / 4)));
+                    break;
                 }
             }
             break;

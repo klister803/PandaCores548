@@ -8190,22 +8190,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                         AuraPtr charge = GetAura(50241);
                         if (charge->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL))
                             RemoveAurasDueToSpell(50240);
+                        break;
                     }
                     // Warrior - Vigilance, SPELLFAMILY_GENERIC
-                    if (auraSpellInfo->Id == 50720)
+                    case 50720:
                     {
                         target = triggeredByAura->GetCaster();
                         if (!target)
                             return false;
+
+                        break;
                     }
-                }
-                break;
-            case SPELLFAMILY_WARRIOR:
-                if (auraSpellInfo->Id == 50421)             // Scent of Blood
-                {
-                    CastSpell(this, 50422, true);
-                    RemoveAuraFromStack(auraSpellInfo->Id);
-                    return false;
                 }
                 break;
             case SPELLFAMILY_PRIEST:
@@ -8453,6 +8448,22 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 49509: // Scent of Blood
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (getClass() != CLASS_DEATH_KNIGHT)
+                return false;
+
+            if (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) != SPEC_DK_BLOOD)
+                return false;
+
+            if (!roll_chance_i(15))
+                return false;
+
+            break;
+        }
         // Arcane Missiles !
         case 79684:
         {

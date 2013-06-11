@@ -82,7 +82,7 @@ enum CreatureFlagsExtra
 #define ENTRY_TREANT            1964
 #define ENTRY_FIRE_ELEMENTAL    15438
 #define ENTRY_GHOUL             26125
-#define ENTRY_BLOODWORM         28524
+#define ENTRY_BLOODWORM         28017
 #define ENTRY_GARGOYLE          27829
 
 #define MAX_KILL_CREDIT 2
