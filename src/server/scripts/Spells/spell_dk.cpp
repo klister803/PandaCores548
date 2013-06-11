@@ -195,7 +195,7 @@ class spell_dk_dark_transformation_form : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* pet = GetHitUnit())
                         if (pet->HasAura(DK_SPELL_DARK_INFUSION_STACKS))
-                            pet->RemoveAura(DK_SPELL_DARK_INFUSION_STACKS);
+                            _player->RemoveAura(DK_SPELL_DARK_INFUSION_STACKS);
             }
 
             void Register()
