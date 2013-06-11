@@ -8880,6 +8880,11 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (GetHealthPct() > 30.0f)
                 return false;
 
+            if (ToPlayer()->HasSpellCooldown(81164))
+                return false;
+
+            ToPlayer()->AddSpellCooldown(81164, 0, time(NULL) + 45);
+
             break;
         }
         // Persistent Shield (Scarab Brooch trinket)
