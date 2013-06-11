@@ -70,73 +70,107 @@ enum RogueSpells
     ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE  = 112947,
     ROGUE_SPELL_COMBAT_READINESS                 = 74001,
     ROGUE_SPELL_COMBAT_INSIGHT                   = 74002,
-    ROGUE_SPELL_SUBTERFUGE						 = 115192,
-    ROGUE_SPELL_SUBTERFUGE_STEALTH				 = 115191,
+    ROGUE_SPELL_BLADE_FLURRY_DAMAGE              = 22482,
+    ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE        = 45182,
 };
 
-// Subterfuge - 115192
-class spell_rog_subterfuge_aura : public SpellScriptLoader
+// Cheat Death - 31230
+class spell_rog_cheat_death : public SpellScriptLoader
 {
     public:
-        spell_rog_subterfuge_aura() : SpellScriptLoader("spell_rog_subterfuge_aura") { }
+        spell_rog_cheat_death() : SpellScriptLoader("spell_rog_cheat_death") { }
 
-        class spell_rog_subterfuge_aura_AuraScript : public AuraScript
+        class spell_rog_cheat_death_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_rog_subterfuge_aura_AuraScript);
+            PrepareAuraScript(spell_rog_cheat_death_AuraScript);
 
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            void CalculateAmount(constAuraEffectPtr /*auraEffect*/, int32& amount, bool& /*canBeRecalculated*/)
             {
-                if (GetCaster())
-                    if (AuraPtr subterfuge = GetCaster()->GetAura(ROGUE_SPELL_SUBTERFUGE_STEALTH))
-                        subterfuge->DropCharge();
+                amount = -1;
+            }
+
+            void Absorb(AuraEffectPtr /*auraEffect*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* target = GetTarget())
+                {
+                    if (dmgInfo.GetDamage() < target->GetHealth())
+                        return;
+
+                    if (target->ToPlayer()->HasSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE))
+                        return;
+
+                    target->CastSpell(target, ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, true);
+                    target->ToPlayer()->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, 0, time(NULL) + 90);
+
+                    uint32 health10 = target->CountPctFromMaxHealth(10);
+
+                    // hp > 10% - absorb hp till 10%
+                    if (target->GetHealth() > health10)
+                        absorbAmount = dmgInfo.GetDamage() - target->GetHealth() + health10;
+                    // hp lower than 10% - absorb everything
+                    else
+                        absorbAmount = dmgInfo.GetDamage();
+                }
             }
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_rog_subterfuge_aura_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_cheat_death_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_rog_cheat_death_AuraScript::Absorb, EFFECT_0);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
-            return new spell_rog_subterfuge_aura_AuraScript();
+            return new spell_rog_cheat_death_AuraScript();
         }
 };
 
-// Subterfuge - 115191
-class spell_rog_subterfuge_proc : public SpellScriptLoader
+// Blade Flurry - 13877
+class spell_rog_blade_flurry : public SpellScriptLoader
 {
     public:
-        spell_rog_subterfuge_proc() : SpellScriptLoader("spell_rog_subterfuge_proc") { }
+        spell_rog_blade_flurry() : SpellScriptLoader("spell_rog_blade_flurry") { }
 
-        class spell_rog_subterfuge_proc_AuraScript : public AuraScript
+        class spell_rog_blade_flurry_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_rog_subterfuge_proc_AuraScript);
+            PrepareAuraScript(spell_rog_blade_flurry_AuraScript);
 
             void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
 
-                if (!GetCaster() || !GetTarget())
+                if (!GetCaster())
                     return;
 
-                if (!eventInfo.GetDamageInfo()->GetDamage() ||
-                    (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->IsPositive()))
+                if (eventInfo.GetActor()->GetGUID() != GetTarget()->GetGUID())
                     return;
 
-                if (Unit* target = GetTarget())
-                    target->CastSpell(target, ROGUE_SPELL_SUBTERFUGE, true);
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 damage = eventInfo.GetDamageInfo()->GetDamage();
+                    SpellInfo const* spellInfo = eventInfo.GetDamageInfo()->GetSpellInfo();
+
+                    if (!damage || eventInfo.GetDamageInfo()->GetDamageType() == DOT)
+                        return;
+
+                    if (spellInfo && !spellInfo->CanTriggerBladeFlurry())
+                        return;
+
+                    if (Unit* target = _player->SelectNearbyTarget(eventInfo.GetActionTarget()))
+                        _player->CastCustomSpell(target, ROGUE_SPELL_BLADE_FLURRY_DAMAGE, &damage, NULL, NULL, true);
+                }
             }
 
             void Register()
             {
-                OnEffectProc += AuraEffectProcFn(spell_rog_subterfuge_proc_AuraScript::OnProc, EFFECT_1, SPELL_AURA_MOD_STEALTH);
+                OnEffectProc += AuraEffectProcFn(spell_rog_blade_flurry_AuraScript::OnProc, EFFECT_0, SPELL_AURA_MOD_POWER_REGEN_PERCENT);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
-            return new spell_rog_subterfuge_proc_AuraScript();
+            return new spell_rog_blade_flurry_AuraScript();
         }
 };
 
@@ -1333,8 +1367,8 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
-    new spell_rog_subterfuge_aura();
-    new spell_rog_subterfuge_proc();
+    new spell_rog_cheat_death();
+    new spell_rog_blade_flurry();
     new spell_rog_growl();
     new spell_rog_cloak_of_shadows();
     new spell_rog_combat_readiness();

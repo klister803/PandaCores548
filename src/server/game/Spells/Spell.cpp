@@ -2377,7 +2377,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         return;                                             // No missinfo in that case
 
     // Some spells should remove Camouflage after hit (traps, some spells that have casting time)
-    if (target->targetGUID != m_caster->GetGUID() && m_spellInfo && (m_spellInfo->IsBreakingCamouflageAfterHit() || m_spellInfo->IsBreakingSubterfuge()))
+    if (target->targetGUID != m_caster->GetGUID() && m_spellInfo && m_spellInfo->IsBreakingCamouflageAfterHit())
     {
         if (TempSummon* summon = m_caster->ToTempSummon())
         {
@@ -2852,7 +2852,9 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         // Expel Harm - 115072 apply wrong aura (Flying Serpent Kick - 101545)
         if (m_spellInfo->Id == 115072 && m_preCastSpell == 101545)
             return;
-
+        // Incanter's Ward (passive) - 118858 apply wrong aura (Incanter's Ward (cooldown marker) - 118859)
+        if (m_spellInfo->Id == 118858 && m_preCastSpell == 118859)
+            return;
         // Fan of Knives - 51723 apply wrong aura on ennemies (Killing Spree - 51690)
         if (m_spellInfo->Id == 51723 && m_preCastSpell == 51690)
             return;
@@ -3138,7 +3140,7 @@ void Spell::prepare(SpellCastTargets const* targets, constAuraEffectPtr triggere
     {
         // stealth must be removed at cast starting (at show channel bar)
         // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
-        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && (m_spellInfo->IsBreakingStealth() && m_spellInfo->IsBreakingSubterfuge()) && (!m_caster->HasAuraType(SPELL_AURA_MOD_CAMOUFLAGE) || m_spellInfo->IsBreakingCamouflage()))
+        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && m_spellInfo->IsBreakingStealth() && (!m_caster->HasAuraType(SPELL_AURA_MOD_CAMOUFLAGE) || m_spellInfo->IsBreakingCamouflage()))
         {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -3880,6 +3882,11 @@ void Spell::finish(bool ok)
     // Stop Attack for some spells
     if (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET)
         m_caster->AttackStop();
+    
+    if (m_castItemGUID && m_caster->GetTypeId() == TYPEID_PLAYER)
+        if (Item* item = m_caster->ToPlayer()->GetItemByGuid(m_castItemGUID))
+            if (item->IsEquipable() && !item->IsEquipped())
+                m_caster->ToPlayer()->ApplyItemEquipSpell(item, false);
 
     switch (m_spellInfo->Id)
     {
@@ -4757,7 +4764,7 @@ void Spell::TakeRunePower(bool didHit)
 
                 bool takePower = didHit;
                 if (uint32 spell = player->GetRuneConvertSpell(i))
-                    takePower = spell != 54637 && spell != 89056;
+                    takePower = spell != 54637;
 
                 // keep Death Rune type if missed or player has Blood of the North
                 if (takePower)

@@ -2934,17 +2934,6 @@ float SpellInfo::GetGiftOfTheSerpentScaling(Unit* caster) const
     return scale;
 }
 
-bool SpellInfo::IsBreakingSubterfuge() const
-{
-    switch (SpellFamilyName)
-    {
-        case SPELLFAMILY_POTION:
-            return true;
-    }
-
-    return false;
-}
-
 bool SpellInfo::IsReducingCastTime() const
 {
     switch (Id)
@@ -2954,6 +2943,32 @@ bool SpellInfo::IsReducingCastTime() const
         case 109466:// Curse of Enfeeblement
         case 109468:// Curse of Enfeeblement (Soulburn)
         case 116198:// Enfeeblement Aura (Metamorphosis)
+            return true;
+    }
+
+    return false;
+}
+
+bool SpellInfo::CanTriggerBladeFlurry() const
+{
+    switch (Id)
+    {
+        case 1752:  // Sinister Strike
+        case 2098:  // Eviscerate
+        case 5374:  // Mutilate
+        case 5938:  // Shiv
+        case 8676:  // Ambush
+        case 26679: // Deadly Throw
+        case 27576: // Mutilate Off-Hand
+        case 51723: // Fan of Knives
+        case 57841: // Killing Spree
+        case 57842: // Killing Spree Off-Hand
+        case 84617: // Revealing Strike
+        case 86392: // Main Gauche
+        case 114014:// Shuriken Toss
+        case 121411:// Crimson Tempest
+        case 121473:// Shadow Blade
+        case 121474:// Shadow Blade Off-Hand
             return true;
     }
 

@@ -91,10 +91,11 @@ enum eEvents
     EVENT_DRAW_FLAME            = 6,
 
     EVENT_ARCANE_VELOCITY       = 7,
-    EVENT_ARCANE_RESONANCE      = 8,
+    EVENT_ARCANE_VELOCITY_END   = 8,
+    EVENT_ARCANE_RESONANCE      = 9,
 };
 
-enum ePhases
+enum eFengPhases
 {
     PHASE_NONE                  = 0,
     PHASE_FIST                  = 1,
@@ -414,13 +415,21 @@ class boss_feng : public CreatureScript
                     // Staff Phase
                     case EVENT_ARCANE_VELOCITY:
                     {
+                        me->SetSpeed(MOVE_RUN, 0.0f);
                         me->CastSpell(me, SPELL_ARCANE_VELOCITY, false);
-                        events.ScheduleEvent(EVENT_ARCANE_VELOCITY, 15000);
+                        events.ScheduleEvent(EVENT_ARCANE_VELOCITY_END, 100);   // The eventmap don't update while the creature is casting
+                        events.ScheduleEvent(EVENT_ARCANE_VELOCITY,     15000);
+                        break;
+                    }
+                    case EVENT_ARCANE_VELOCITY_END:
+                    {
+                        me->SetSpeed(MOVE_RUN, 1.14f);
                         break;
                     }
                     case EVENT_ARCANE_RESONANCE:
                     {
-                        me->CastSpell(me, SPELL_ARCANE_RESONANCE, false);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
+                            target->AddAura(SPELL_ARCANE_RESONANCE, target);
                         events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 40000);
                         break;
                     }
