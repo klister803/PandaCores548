@@ -481,6 +481,8 @@ class boss_generic_guardian : public CreatureScript
                                 {
                                     if (Unit* victim = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                         me->CastSpell(victim, SPELL_JADE_SHARDS, false);
+
+                                    events.ScheduleEvent(EVENT_MAIN_ATTACK, urand(5000, 1000));
                                     break;
                                 }
                                 case NPC_COBALT:
@@ -488,6 +490,8 @@ class boss_generic_guardian : public CreatureScript
                                 {
                                     if (Unit* victim = SelectTarget(SELECT_TARGET_RANDOM))
                                         me->CastSpell(victim, spellMainAttack, false);
+
+                                    events.ScheduleEvent(EVENT_MAIN_ATTACK, urand(5000, 1000));
                                     break;
                                 }
                                 case NPC_JASPER:
@@ -516,12 +520,12 @@ class boss_generic_guardian : public CreatureScript
 
                                     if (AuraPtr aura = me->AddAura(SPELL_JASPER_CHAINS, SecondPlayer))
                                         aura->SetScriptGuid(0, firstPlayer->GetGUID());
+
+                                    events.ScheduleEvent(EVENT_MAIN_ATTACK, 17500);
                                     break;
                                 }
                             }
                         }
-
-                        events.ScheduleEvent(EVENT_MAIN_ATTACK, 17500);
                         break;
                     default:
                         break;
