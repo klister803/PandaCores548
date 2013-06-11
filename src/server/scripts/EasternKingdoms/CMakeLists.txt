@@ -202,6 +202,14 @@ set(scripts_STAT_SRCS
   EasternKingdoms/Karazhan/karazhan.h
   EasternKingdoms/Gilneas/gilneas.cpp
   EasternKingdoms/Gilneas/gilneas.h
+  EasternKingdoms/BlackrockCaverns/boss_romogg_bonecrusher.cpp
+  EasternKingdoms/BlackrockCaverns/boss_corla_hearld_of_twilight.cpp
+  EasternKingdoms/BlackrockCaverns/boss_karsh_steelbender.cpp
+  EasternKingdoms/BlackrockCaverns/boss_beauty.cpp
+  EasternKingdoms/BlackrockCaverns/boss_ascendant_lord_obsidius.cpp
+  EasternKingdoms/BlackrockCaverns/instance_blackrock_caverns.cpp
+  EasternKingdoms/BlackrockCaverns/blackrock_caverns_teleport.cpp
+  EasternKingdoms/BlackrockCaverns/blackrock_caverns.h
 )
 
 message("  -> Prepared: Eastern Kingdoms")
