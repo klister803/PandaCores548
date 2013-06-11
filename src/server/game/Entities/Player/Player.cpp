@@ -27740,6 +27740,10 @@ void Player::CastPassiveTalentSpell(uint32 spellId)
             if (!HasAura(121617))
                 CastSpell(this, 121617, true); // +5% melee haste
             break;
+        case 96268: // Death's Advance
+            if (!HasAura(124285))
+                CastSpell(this, 124285, true); // +10% speed
+            break;
         case 108505:// Archimonde's Vengeance
             if (!HasAura(116403))
                 CastSpell(this, 116403, true); // Passive
@@ -27759,6 +27763,9 @@ void Player::RemovePassiveTalentSpell(uint32 spellId)
         case 16188: // Ancestral Swiftness
             RemoveAura(51470);
             RemoveAura(121617);
+            break;
+        case 96268: // Death's Advance
+            RemoveAura(124285);
             break;
         case 108415:// Soul Link
             RemoveAura(108446);
