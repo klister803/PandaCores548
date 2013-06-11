@@ -46,6 +46,8 @@ enum DeathKnightSpells
     DK_SPELL_CHILBLAINS                         = 50041,
     DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534,
     DK_SPELL_PLAGUE_LEECH                       = 123693,
+    DK_SPELL_PERDITION                          = 123981,
+    DK_SPELL_SHROUD_OF_PURGATORY                = 116888,
     DK_SPELL_PURGATORY_INSTAKILL                = 123982,
     DK_SPELL_BLOOD_RITES                        = 50034,
     DK_SPELL_DEATH_SIPHON_HEAL                  = 116783,
@@ -1030,6 +1032,59 @@ class spell_dk_purgatory : public SpellScriptLoader
         }
 };
 
+// Purgatory - 114556
+class spell_dk_purgatory_absorb : public SpellScriptLoader
+{
+    public:
+        spell_dk_purgatory_absorb() : SpellScriptLoader("spell_dk_purgatory_absorb") { }
+
+        class spell_dk_purgatory_absorb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_purgatory_absorb_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*auraEffect*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                amount = -1;
+            }
+
+            void Absorb(AuraEffectPtr /*auraEffect*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                Unit* target = GetTarget();
+
+                if (dmgInfo.GetDamage() < target->GetHealth())
+                    return;
+
+                // No damage received under Shroud of Purgatory
+                if (target->ToPlayer()->HasAura(DK_SPELL_SHROUD_OF_PURGATORY))
+                {
+                    absorbAmount = dmgInfo.GetDamage();
+                    return;
+                }
+
+                if (target->ToPlayer()->HasAura(DK_SPELL_PERDITION))
+                    return;
+
+                int32 bp = dmgInfo.GetDamage();
+
+                target->CastCustomSpell(target, DK_SPELL_SHROUD_OF_PURGATORY, &bp, NULL, NULL, true);
+                target->CastSpell(target, DK_SPELL_PERDITION, true);
+                target->SetHealth(1);
+                absorbAmount = dmgInfo.GetDamage();
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_purgatory_absorb_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_dk_purgatory_absorb_AuraScript::Absorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_purgatory_absorb_AuraScript();
+        }
+};
+
 // Plague Leech - 123693
 class spell_dk_plague_leech : public SpellScriptLoader
 {
@@ -1768,6 +1823,7 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_unholy_presence();
     new spell_dk_death_strike();
     new spell_dk_purgatory();
+    new spell_dk_purgatory_absorb();
     new spell_dk_plague_leech();
     new spell_dk_unholy_blight();
     new spell_dk_chilblains();

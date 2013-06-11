@@ -570,22 +570,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 blackOxStatue->SetScriptData(0, damage);
         }
     }
-    // Purgatory : fight on through damage that would kill mere mortals
-    if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_DEATH_KNIGHT && damage != 0)
-    {
-        // Has talent Purgatory and hasn't Perdition (3min CD for purgatory)
-        if (victim->HasAura(114556) && !victim->HasAura(123981) && damage > victim->GetHealth())
-        {
-            // absorbing incoming healing equal to the amount of damage prevented
-            int32 bp = damage;
-            victim->CastCustomSpell(victim, 116888, &bp, NULL, NULL, true);
-            victim->CastSpell(victim, 123981, true);
-            damage = (victim->GetHealth() - 1);
-        }
-        // No damage if victim is on Purgatory effect
-        else if (victim->HasAura(116888))
-            return 0;
-    }
     // Leeching Poison - 112961 each attack heal the player for 10% of the damage
     if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_ROGUE && damage != 0)
     {
