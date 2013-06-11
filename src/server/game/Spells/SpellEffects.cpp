@@ -6459,6 +6459,9 @@ void Spell::EffectDamageFromMaxHealthPCT(SpellEffIndex /*effIndex*/)
     if (!unitTarget)
         return;
 
+    if (m_spellInfo->Id == 125372)
+        damage = damage / 100;
+
     m_damage += unitTarget->CountPctFromMaxHealth(damage);
 }
 
