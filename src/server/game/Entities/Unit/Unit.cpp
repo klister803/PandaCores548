@@ -570,31 +570,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 blackOxStatue->SetScriptData(0, damage);
         }
     }
-    // Cheat Death : An attack that would otherwise be fatal will instead reduce you to no less than 10% of your maximum health
-    if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_ROGUE && damage != 0)
-    {
-        // Has talent Cheat Death and hasn't Cooldown for it
-        if (victim->HasAura(31230) && !victim->ToPlayer()->HasSpellCooldown(45182))
-        {
-            if (victim->GetHealthPct() < 10.0f && damage > victim->GetHealth())
-            {
-                // Reduce all damage taken by 80% for 3sec
-                victim->CastSpell(victim, 45182, true);
-                // This effect cannot occur more than once per 90sec
-                victim->ToPlayer()->AddSpellCooldown(45182, 0, time(NULL) + 90);
-                return 0;
-            }
-            else if (victim->GetHealthPct() > 10.0f && damage > victim->GetHealth())
-            {
-                victim->SetHealth(int32(victim->GetMaxHealth() * 0.1f));
-                // Reduce all damage taken by 80% for 3sec
-                victim->CastSpell(victim, 45182, true);
-                // This effect cannot occur more than once per 90sec
-                victim->ToPlayer()->AddSpellCooldown(45182, 0, time(NULL) + 90);
-                return 0;
-            }
-        }
-    }
     // Purgatory : fight on through damage that would kill mere mortals
     if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_DEATH_KNIGHT && damage != 0)
     {

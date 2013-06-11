@@ -71,6 +71,59 @@ enum RogueSpells
     ROGUE_SPELL_COMBAT_READINESS                 = 74001,
     ROGUE_SPELL_COMBAT_INSIGHT                   = 74002,
     ROGUE_SPELL_BLADE_FLURRY_DAMAGE              = 22482,
+    ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE        = 45182,
+};
+
+// Cheat Death - 31230
+class spell_rog_cheat_death : public SpellScriptLoader
+{
+    public:
+        spell_rog_cheat_death() : SpellScriptLoader("spell_rog_cheat_death") { }
+
+        class spell_rog_cheat_death_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_cheat_death_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*auraEffect*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                amount = -1;
+            }
+
+            void Absorb(AuraEffectPtr /*auraEffect*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* target = GetTarget())
+                {
+                    if (dmgInfo.GetDamage() < target->GetHealth())
+                        return;
+
+                    if (target->ToPlayer()->HasSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE))
+                        return;
+
+                    target->CastSpell(target, ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, true);
+                    target->ToPlayer()->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, 0, time(NULL) + 90);
+
+                    uint32 health10 = target->CountPctFromMaxHealth(10);
+
+                    // hp > 10% - absorb hp till 10%
+                    if (target->GetHealth() > health10)
+                        absorbAmount = dmgInfo.GetDamage() - target->GetHealth() + health10;
+                    // hp lower than 10% - absorb everything
+                    else
+                        absorbAmount = dmgInfo.GetDamage();
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_cheat_death_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_rog_cheat_death_AuraScript::Absorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_cheat_death_AuraScript();
+        }
 };
 
 // Blade Flurry - 13877
@@ -1314,6 +1367,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_cheat_death();
     new spell_rog_blade_flurry();
     new spell_rog_growl();
     new spell_rog_cloak_of_shadows();
