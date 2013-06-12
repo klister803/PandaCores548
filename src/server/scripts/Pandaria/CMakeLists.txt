@@ -65,6 +65,8 @@ set(scripts_STAT_SRCS
   Pandaria/WanderingIsland/WanderingIsland_West.cpp
   Pandaria/WanderingIsland/WanderingIsland_South.cpp
 
+  Pandaria/valley_of_the_four_winds.cpp
+  Pandaria/krasarang_wilds.cpp
   Pandaria/kun_lai_summit.cpp
   Pandaria/jade_forest.cpp
   Pandaria/vale_of_eternal_blossoms.cpp
