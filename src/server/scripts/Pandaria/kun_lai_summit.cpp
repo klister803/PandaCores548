@@ -22,7 +22,9 @@ enum eNessosEvents
 class mob_nessos_the_oracle : public CreatureScript
 {
     public:
-        mob_nessos_the_oracle() : CreatureScript("mob_nessos_the_oracle") { }
+        mob_nessos_the_oracle() : CreatureScript("mob_nessos_the_oracle") 
+		{ 
+		}
 
         CreatureAI* GetAI(Creature* creature) const
         {
@@ -110,7 +112,9 @@ enum eSkiThikEvents
 class mob_ski_thik : public CreatureScript
 {
     public:
-        mob_ski_thik() : CreatureScript("mob_ski_thik") { }
+        mob_ski_thik() : CreatureScript("mob_ski_thik") 
+		{ 
+		}
 
         CreatureAI* GetAI(Creature* creature) const
         {
@@ -129,7 +133,7 @@ class mob_ski_thik : public CreatureScript
             {
                 events.Reset();
                 
-                events.ScheduleEvent(EVENT_BLADE_FURY,      8000);
+                events.ScheduleEvent(EVENT_BLADE_FURY,       8000);
                 events.ScheduleEvent(EVENT_TORNADO,         40000);
                 events.ScheduleEvent(EVENT_WINDSONG,        32000);
             }
@@ -191,14 +195,14 @@ class mob_ski_thik : public CreatureScript
 
 enum eMogujiaSoulCallerSpells
 {
-    SPELL_DRAIN_LIFE        = 84533,
-    SPELL_SHADOW_BOLT       = 9613,
+    SPELL_DRAIN_LIFE        =  84533,
+    SPELL_SHADOW_BOLT       =   9613,
     SPELL_SHADOW_CRASH      = 129132,
 };
 
 enum eMogujiaSoulCallerEvents
 {
-    EVENT_DRAIN_LIFE    = 1,
+    EVENT_DRAIN_LIFE		= 1,
     EVENT_SHADOW_BOLT       = 2,
     EVENT_SHADOW_CRASH      = 3,
 };
@@ -206,7 +210,9 @@ enum eMogujiaSoulCallerEvents
 class mob_mogujia_soul_caller : public CreatureScript
 {
     public:
-        mob_mogujia_soul_caller() : CreatureScript("mob_mogujia_soul_caller") { }
+        mob_mogujia_soul_caller() : CreatureScript("mob_mogujia_soul_caller") 
+		{ 
+		}
 
         CreatureAI* GetAI(Creature* creature) const
         {
@@ -226,8 +232,8 @@ class mob_mogujia_soul_caller : public CreatureScript
                 events.Reset();
                 
                 events.ScheduleEvent(EVENT_DRAIN_LIFE,      20000);
-                events.ScheduleEvent(EVENT_SHADOW_BOLT,         15000);
-                events.ScheduleEvent(EVENT_SHADOW_CRASH,        32000);
+                events.ScheduleEvent(EVENT_SHADOW_BOLT,     15000);
+                events.ScheduleEvent(EVENT_SHADOW_CRASH,    32000);
             }
 
             void UpdateAI(const uint32 diff)
