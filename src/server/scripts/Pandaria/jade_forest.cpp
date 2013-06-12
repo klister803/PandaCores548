@@ -20,7 +20,9 @@ enum eShadowOfDoubtEvents
 class mob_shadow_of_doubt : public CreatureScript
 {
     public:
-        mob_shadow_of_doubt() : CreatureScript("mob_shadow_of_doubt") { }
+        mob_shadow_of_doubt() : CreatureScript("mob_shadow_of_doubt") 
+		{ 
+		}
 
         CreatureAI* GetAI(Creature* creature) const
         {
@@ -40,8 +42,8 @@ class mob_shadow_of_doubt : public CreatureScript
                 events.Reset();
                 
                 events.ScheduleEvent(EVENT_DEAFENED,      30000);
-                events.ScheduleEvent(EVENT_GROWING_DOUBT, 9000);
-                events.ScheduleEvent(EVENT_SHA_BOLT, 15000);
+                events.ScheduleEvent(EVENT_GROWING_DOUBT,  9000);
+                events.ScheduleEvent(EVENT_SHA_BOLT,	  15000);
             }
 
             void JustDied(Unit* /*killer*/)
