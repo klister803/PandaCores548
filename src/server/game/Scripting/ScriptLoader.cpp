@@ -643,6 +643,8 @@ void AddSC_boss_spirit_kings();
 void AddSC_boss_elegon();
 void AddSC_boss_will_of_emperor();
 
+void AddSC_valley_of_the_four_winds();
+void AddSC_krasarang_wilds();
 void AddSC_jade_forest();
 void AddSC_vale_of_eternal_blossoms();
 void AddSC_kun_lai_summit();
@@ -1334,6 +1336,8 @@ void AddPandarieScripts()
     AddSC_boss_elegon();
     AddSC_boss_will_of_emperor();
 
+	AddSC_valley_of_the_four_winds();
+	AddSC_krasarang_wilds();
     AddSC_jade_forest();
     AddSC_kun_lai_summit();
     AddSC_vale_of_eternal_blossoms();
