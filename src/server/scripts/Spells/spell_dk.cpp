@@ -46,6 +46,8 @@ enum DeathKnightSpells
     DK_SPELL_CHILBLAINS                         = 50041,
     DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534,
     DK_SPELL_PLAGUE_LEECH                       = 123693,
+    DK_SPELL_PERDITION                          = 123981,
+    DK_SPELL_SHROUD_OF_PURGATORY                = 116888,
     DK_SPELL_PURGATORY_INSTAKILL                = 123982,
     DK_SPELL_BLOOD_RITES                        = 50034,
     DK_SPELL_DEATH_SIPHON_HEAL                  = 116783,
@@ -193,7 +195,7 @@ class spell_dk_dark_transformation_form : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* pet = GetHitUnit())
                         if (pet->HasAura(DK_SPELL_DARK_INFUSION_STACKS))
-                            pet->RemoveAura(DK_SPELL_DARK_INFUSION_STACKS);
+                            _player->RemoveAura(DK_SPELL_DARK_INFUSION_STACKS);
             }
 
             void Register()
@@ -287,9 +289,13 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_necrotic_strike_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 amount = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
+
+                if (Unit* target = aurEff->GetBase()->GetUnitOwner())
+                    if (target->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
+                        amount += target->GetRemainingPeriodicAmount(GetCaster()->GetGUID(), aurEff->GetSpellInfo()->Id, SPELL_AURA_SCHOOL_HEAL_ABSORB, 0);
             }
 
             void Register()
@@ -301,6 +307,53 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_dk_necrotic_strike_AuraScript();
+        }
+
+        class spell_dk_necrotic_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_necrotic_strike_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        for (uint32 i = 0; i < MAX_RUNES; ++i)
+                        {
+                            RuneType rune = _player->GetCurrentRune(i);
+
+                            if (!_player->GetRuneCooldown(i) && rune == RUNE_DEATH)
+                            {
+                                uint32 cooldown = _player->GetRuneBaseCooldown(i);
+                                _player->SetRuneCooldown(i, cooldown);
+
+                                bool takePower = true;
+                                if (uint32 spell = _player->GetRuneConvertSpell(i))
+                                    takePower = spell != 54637;
+
+                                // keep Death Rune type if player has Blood of the North
+                                if (takePower)
+                                {
+                                    _player->RestoreBaseRune(i);
+                                    _player->SetDeathRuneUsed(i, true);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_dk_necrotic_strike_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_necrotic_strike_SpellScript();
         }
 };
 
@@ -763,6 +816,19 @@ class spell_dk_blood_tap : public SpellScriptLoader
                     }
                     else
                         return SPELL_FAILED_DONT_REPORT;
+
+                    bool cooldown = false;
+
+                    for (uint8 i = 0; i < MAX_RUNES; ++i)
+                    {
+                        if (GetCaster()->ToPlayer()->GetCurrentRune(i) == RUNE_DEATH || !GetCaster()->ToPlayer()->GetRuneCooldown(i))
+                            continue;
+
+                        cooldown = true;
+                    }
+
+                    if (!cooldown)
+                        return SPELL_FAILED_DONT_REPORT;
                 }
 
                 return SPELL_CAST_OK;
@@ -784,24 +850,25 @@ class spell_dk_blood_tap : public SpellScriptLoader
                                 bloodCharges->SetStackAmount(newAmount - 5);
                         }
 
+                        bool runeActivated = false;
+
                         for (uint8 i = 0; i < MAX_RUNES; ++i)
                         {
-                            if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                            if (_player->GetCurrentRune(i) == RUNE_DEATH || !_player->GetRuneCooldown(i))
                                 continue;
 
-                            if (!_player->GetRuneCooldown(i))
-                                continue;
+                            if (runeActivated)
+                                break;
 
                             // Should always update the rune with the lowest cd
                             if (_player->GetRuneCooldown(i) >= _player->GetRuneCooldown(i+1))
                                 i++;
 
-                            _player->ConvertRune(i, RUNE_DEATH);
                             _player->SetRuneCooldown(i, 0);
-                            break;
+                            _player->ResyncRunes(MAX_RUNES);
+                            _player->ConvertRune(i, RUNE_DEATH);
+                            runeActivated = true;
                         }
-
-                        _player->ResyncRunes(MAX_RUNES);
                     }
                 }
             }
@@ -1027,6 +1094,59 @@ class spell_dk_purgatory : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_dk_purgatory_AuraScript();
+        }
+};
+
+// Purgatory - 114556
+class spell_dk_purgatory_absorb : public SpellScriptLoader
+{
+    public:
+        spell_dk_purgatory_absorb() : SpellScriptLoader("spell_dk_purgatory_absorb") { }
+
+        class spell_dk_purgatory_absorb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_purgatory_absorb_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*auraEffect*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                amount = -1;
+            }
+
+            void Absorb(AuraEffectPtr /*auraEffect*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                Unit* target = GetTarget();
+
+                if (dmgInfo.GetDamage() < target->GetHealth())
+                    return;
+
+                // No damage received under Shroud of Purgatory
+                if (target->ToPlayer()->HasAura(DK_SPELL_SHROUD_OF_PURGATORY))
+                {
+                    absorbAmount = dmgInfo.GetDamage();
+                    return;
+                }
+
+                if (target->ToPlayer()->HasAura(DK_SPELL_PERDITION))
+                    return;
+
+                int32 bp = dmgInfo.GetDamage();
+
+                target->CastCustomSpell(target, DK_SPELL_SHROUD_OF_PURGATORY, &bp, NULL, NULL, true);
+                target->CastSpell(target, DK_SPELL_PERDITION, true);
+                target->SetHealth(1);
+                absorbAmount = dmgInfo.GetDamage();
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_purgatory_absorb_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_dk_purgatory_absorb_AuraScript::Absorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_purgatory_absorb_AuraScript();
         }
 };
 
@@ -1768,6 +1888,7 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_unholy_presence();
     new spell_dk_death_strike();
     new spell_dk_purgatory();
+    new spell_dk_purgatory_absorb();
     new spell_dk_plague_leech();
     new spell_dk_unholy_blight();
     new spell_dk_chilblains();

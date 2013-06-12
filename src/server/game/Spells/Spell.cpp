@@ -4764,7 +4764,7 @@ void Spell::TakeRunePower(bool didHit)
 
                 bool takePower = didHit;
                 if (uint32 spell = player->GetRuneConvertSpell(i))
-                    takePower = spell != 54637 && spell != 89056;
+                    takePower = spell != 54637;
 
                 // keep Death Rune type if missed or player has Blood of the North
                 if (takePower)

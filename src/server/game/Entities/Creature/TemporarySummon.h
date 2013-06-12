@@ -56,6 +56,8 @@ class Minion : public TempSummon
         float GetFollowAngle() const { return m_followAngle; }
         void SetFollowAngle(float angle) { m_followAngle = angle; }
         bool IsPetGhoul() const {return GetEntry() == 26125;} // Ghoul may be guardian or pet
+        bool IsPetGargoyle() const { return GetEntry() == 27829; }
+        bool IsWarlockPet() const;
         bool IsGuardianPet() const;
     protected:
         Unit* const m_owner;

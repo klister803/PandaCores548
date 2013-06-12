@@ -281,7 +281,7 @@ class spell_mage_cauterize : public SpellScriptLoader
             }
         };
 
-        AuraScript *GetAuraScript() const
+        AuraScript* GetAuraScript() const
         {
             return new spell_mage_cauterize_AuraScript();
         }

@@ -1198,6 +1198,11 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     float healthmod = _GetHealthMod(rank);
 
     uint32 basehp = stats->GenerateHealth(cinfo);
+
+    // Harcode Ghoul HP (Guardian)
+    if (GetEntry() == 26125)
+        basehp /= 7;
+
     uint32 health = uint32(basehp * healthmod);
 
     SetCreateHealth(health);

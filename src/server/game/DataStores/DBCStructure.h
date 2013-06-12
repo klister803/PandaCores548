@@ -543,10 +543,10 @@ struct AreaTableEntry
     //uint32 unk6;                                          // 7
     //uint32 unk7;                                          // 8
     //uint32 unk8;                                          // 9
-    //char*  unk505_2                                       // 10
+    //char*  unk505_2                                       // 10   Area name
     //uint32 unk9;                                          // 11
     int32   area_level;                                     // 12
-    char*   area_name;                                      // 13
+    char*   area_name;                                      // 13   Area name loc
     uint32  team;                                           // 14
     uint32  LiquidTypeOverride[4];                          // 15-18 liquid override by type
     float   MaxDepth;                                       // 19 determine the maximum depth that a player an reach in an area before being teleported back up.

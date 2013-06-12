@@ -570,47 +570,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 blackOxStatue->SetScriptData(0, damage);
         }
     }
-    // Cheat Death : An attack that would otherwise be fatal will instead reduce you to no less than 10% of your maximum health
-    if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_ROGUE && damage != 0)
-    {
-        // Has talent Cheat Death and hasn't Cooldown for it
-        if (victim->HasAura(31230) && !victim->ToPlayer()->HasSpellCooldown(45182))
-        {
-            if (victim->GetHealthPct() < 10.0f && damage > victim->GetHealth())
-            {
-                // Reduce all damage taken by 80% for 3sec
-                victim->CastSpell(victim, 45182, true);
-                // This effect cannot occur more than once per 90sec
-                victim->ToPlayer()->AddSpellCooldown(45182, 0, time(NULL) + 90);
-                return 0;
-            }
-            else if (victim->GetHealthPct() > 10.0f && damage > victim->GetHealth())
-            {
-                victim->SetHealth(int32(victim->GetMaxHealth() * 0.1f));
-                // Reduce all damage taken by 80% for 3sec
-                victim->CastSpell(victim, 45182, true);
-                // This effect cannot occur more than once per 90sec
-                victim->ToPlayer()->AddSpellCooldown(45182, 0, time(NULL) + 90);
-                return 0;
-            }
-        }
-    }
-    // Purgatory : fight on through damage that would kill mere mortals
-    if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_DEATH_KNIGHT && damage != 0)
-    {
-        // Has talent Purgatory and hasn't Perdition (3min CD for purgatory)
-        if (victim->HasAura(114556) && !victim->HasAura(123981) && damage > victim->GetHealth())
-        {
-            // absorbing incoming healing equal to the amount of damage prevented
-            int32 bp = damage;
-            victim->CastCustomSpell(victim, 116888, &bp, NULL, NULL, true);
-            victim->CastSpell(victim, 123981, true);
-            damage = (victim->GetHealth() - 1);
-        }
-        // No damage if victim is on Purgatory effect
-        else if (victim->HasAura(116888))
-            return 0;
-    }
     // Leeching Poison - 112961 each attack heal the player for 10% of the damage
     if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_ROGUE && damage != 0)
     {
@@ -8231,22 +8190,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                         AuraPtr charge = GetAura(50241);
                         if (charge->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL))
                             RemoveAurasDueToSpell(50240);
+                        break;
                     }
                     // Warrior - Vigilance, SPELLFAMILY_GENERIC
-                    if (auraSpellInfo->Id == 50720)
+                    case 50720:
                     {
                         target = triggeredByAura->GetCaster();
                         if (!target)
                             return false;
+
+                        break;
                     }
-                }
-                break;
-            case SPELLFAMILY_WARRIOR:
-                if (auraSpellInfo->Id == 50421)             // Scent of Blood
-                {
-                    CastSpell(this, 50422, true);
-                    RemoveAuraFromStack(auraSpellInfo->Id);
-                    return false;
                 }
                 break;
             case SPELLFAMILY_PRIEST:
@@ -8494,6 +8448,22 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 49509: // Scent of Blood
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (getClass() != CLASS_DEATH_KNIGHT)
+                return false;
+
+            if (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) != SPEC_DK_BLOOD)
+                return false;
+
+            if (!roll_chance_i(15))
+                return false;
+
+            break;
+        }
         // Arcane Missiles !
         case 79684:
         {
@@ -8920,6 +8890,11 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             if (GetHealthPct() > 30.0f)
                 return false;
+
+            if (ToPlayer()->HasSpellCooldown(81164))
+                return false;
+
+            ToPlayer()->AddSpellCooldown(81164, 0, time(NULL) + 45);
 
             break;
         }
@@ -14553,11 +14528,12 @@ uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
 {
     if (powerId == POWER_ENERGY)
     {
-        if (isPet() && GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
+        if (ToPet() && ToPet()->IsWarlockPet())
             return 0;
 
         switch (this->GetEntry())
         {
+            case 26125:
             case 59915:
             case 60043:
             case 60047:

@@ -481,6 +481,8 @@ class boss_generic_guardian : public CreatureScript
                                 {
                                     if (Unit* victim = SelectTarget(SELECT_TARGET_TOPAGGRO))
                                         me->CastSpell(victim, SPELL_JADE_SHARDS, false);
+
+                                    events.ScheduleEvent(EVENT_MAIN_ATTACK, urand(15000, 19000));
                                     break;
                                 }
                                 case NPC_COBALT:
@@ -488,40 +490,45 @@ class boss_generic_guardian : public CreatureScript
                                 {
                                     if (Unit* victim = SelectTarget(SELECT_TARGET_RANDOM))
                                         me->CastSpell(victim, spellMainAttack, false);
+
+                                    events.ScheduleEvent(EVENT_MAIN_ATTACK, urand(15000, 19000));
                                     break;
                                 }
                                 case NPC_JASPER:
                                 {
-                                    std::list<Player*> playerList;
-                                    std::list<Player*> tempPlayerList;
-                                    GetPlayerListInGrid(playerList, me, 100.0f);
+                                    for (uint8 i = 0; i < 2; ++i)
+                                    {
+                                        std::list<Player*> playerList;
+                                        std::list<Player*> tempPlayerList;
+                                        GetPlayerListInGrid(playerList, me, 100.0f);
 
-                                    for (auto player: playerList)
-                                        if (player->isAlive() && !player->HasAura(SPELL_JASPER_CHAINS))
-                                            tempPlayerList.push_back(player);
+                                        for (auto player: playerList)
+                                            if (player->isAlive() && !player->HasAura(SPELL_JASPER_CHAINS))
+                                                tempPlayerList.push_back(player);
 
-                                    if (tempPlayerList.size() < 2)
-                                        break;
+                                        if (tempPlayerList.size() < 2)
+                                            break;
 
-                                    JadeCore::Containers::RandomResizeList(tempPlayerList, 2);
+                                        JadeCore::Containers::RandomResizeList(tempPlayerList, 2);
                                     
-                                    Player* firstPlayer  = *tempPlayerList.begin();
-                                    Player* SecondPlayer = *(++(tempPlayerList.begin()));
+                                        Player* firstPlayer  = *tempPlayerList.begin();
+                                        Player* SecondPlayer = *(++(tempPlayerList.begin()));
 
-                                    if (!firstPlayer || !SecondPlayer)
-                                        break;
+                                        if (!firstPlayer || !SecondPlayer)
+                                            break;
 
-                                    if (AuraPtr aura = me->AddAura(SPELL_JASPER_CHAINS, firstPlayer))
-                                        aura->SetScriptGuid(0, SecondPlayer->GetGUID());
+                                        if (AuraPtr aura = me->AddAura(SPELL_JASPER_CHAINS, firstPlayer))
+                                            aura->SetScriptGuid(0, SecondPlayer->GetGUID());
 
-                                    if (AuraPtr aura = me->AddAura(SPELL_JASPER_CHAINS, SecondPlayer))
-                                        aura->SetScriptGuid(0, firstPlayer->GetGUID());
+                                        if (AuraPtr aura = me->AddAura(SPELL_JASPER_CHAINS, SecondPlayer))
+                                            aura->SetScriptGuid(0, firstPlayer->GetGUID());
+                                    }
+
+                                    events.ScheduleEvent(EVENT_MAIN_ATTACK, urand(45000, 75000));
                                     break;
                                 }
                             }
                         }
-
-                        events.ScheduleEvent(EVENT_MAIN_ATTACK, 17500);
                         break;
                     default:
                         break;
