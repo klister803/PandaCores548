@@ -25675,8 +25675,6 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
         SendEquipError(EQUIP_ERR_LOOT_GONE, NULL, NULL);
         return;
     }
-    
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item->itemid);
 
     // questitems use the blocked field for other purposes
     if (!qitem && item->is_blocked)
@@ -25690,23 +25688,6 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
     if (msg == EQUIP_ERR_OK)
     {
         AllowedLooterSet looters = item->GetAllowedLooters();
-        
-        bool canLoot = false;
-        for (AllowedLooterSet::const_iterator itr = looters.begin(); itr != looters.end(); ++itr)
-        {
-            if (*itr == GetGUID())
-            {
-                canLoot = true;
-                break;
-            }
-        }
-
-        if (!canLoot && GetMap()->IsRaidOrHeroicDungeon() && proto && proto->GetMaxStackSize() == 1 && proto->Class != ITEM_CLASS_QUEST)
-        {
-            SendEquipError(EQUIP_ERR_NOT_EQUIPPABLE, NULL, NULL, item->itemid);
-            return;
-        }
-        
         Item* newitem = StoreNewItem(dest, item->itemid, true, item->randomPropertyId, looters);
 
         if (qitem)
