@@ -6,7 +6,7 @@
 
 enum eZhaoSpells
 {
-    SPELL_LAVA_BURST        = 75068,
+    SPELL_LAVA_BURST        =  75068,
     SPELL_LIGHTNING_SPEAR   = 116570,
 };
 
@@ -27,7 +27,9 @@ enum eSpells
 class mob_zhao_jin : public CreatureScript
 {
     public:
-        mob_zhao_jin() : CreatureScript("mob_zhao_jin") { }
+        mob_zhao_jin() : CreatureScript("mob_zhao_jin")
+		{ 
+		}
 
         CreatureAI* GetAI(Creature* creature) const
         {
@@ -96,7 +98,9 @@ class mob_zhao_jin : public CreatureScript
 class npc_lao_softfoot : public CreatureScript
 {
     public:
-        npc_lao_softfoot() : CreatureScript("npc_lao_softfoot") { }
+        npc_lao_softfoot() : CreatureScript("npc_lao_softfoot") 
+		{ 
+		}
 
         bool OnGossipHello(Player* player, Creature* creature)
         {
@@ -164,7 +168,9 @@ class npc_lao_softfoot : public CreatureScript
 class mob_reanimated_jade_warrior : public CreatureScript
 {
     public:
-        mob_reanimated_jade_warrior() : CreatureScript("mob_reanimated_jade_warrior") {}
+        mob_reanimated_jade_warrior() : CreatureScript("mob_reanimated_jade_warrior") 
+		{
+		}
 
         struct mob_reanimated_jade_warriorAI : public ScriptedAI
         {
@@ -175,7 +181,7 @@ class mob_reanimated_jade_warrior : public CreatureScript
 
             void Reset()
             {
-                jadeFireTimer = urand(10000, 12000);
+                jadeFireTimer	  = urand(10000, 12000);
                 jadeStrenghtTimer = urand(5000, 7000);
             }
 
@@ -214,7 +220,9 @@ class mob_reanimated_jade_warrior : public CreatureScript
 class mob_subjuged_serpent : public CreatureScript
 {
     public:
-        mob_subjuged_serpent() : CreatureScript("mob_subjuged_serpent") {}
+        mob_subjuged_serpent() : CreatureScript("mob_subjuged_serpent") 
+		{
+		}
 
         struct mob_subjuged_serpentAI : public ScriptedAI
         {
