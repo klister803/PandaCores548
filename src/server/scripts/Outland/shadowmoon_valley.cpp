@@ -2007,7 +2007,9 @@ enum eCollidusTheWarpWatcherEvents
 class mob_collidus_the_warp_watcher : public CreatureScript
 {
     public:
-        mob_collidus_the_warp_watcher() : CreatureScript("mob_collidus_the_warp_watcher") { }
+        mob_collidus_the_warp_watcher() : CreatureScript("mob_collidus_the_warp_watcher")
+		{ 
+		}
 
         CreatureAI* GetAI(Creature* creature) const
         {
@@ -2028,7 +2030,7 @@ class mob_collidus_the_warp_watcher : public CreatureScript
                 
                 events.ScheduleEvent(EVENT_BLINK,			 10000);
                 events.ScheduleEvent(EVENT_FOCUSED_BURSTS,   25000);
-                events.ScheduleEvent(EVENT_PSYCHIC_SCREAM,    7000);
+                events.ScheduleEvent(EVENT_PSYCHIC_SCREAM,   10000);
 			}
 
             void UpdateAI(const uint32 diff)
