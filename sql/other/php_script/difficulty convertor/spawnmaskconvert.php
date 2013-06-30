@@ -29,8 +29,8 @@ while (($data = fgetcsv($csv)) !== FALSE)
 }
 
 // Mysql Connect
-$connect = mysql_connect("192.168.0.17", "Millenium", "pig8000") or die (mysql_error());
-mysql_select_db("505_world", $connect);
+$connect = mysql_connect("localhost:5876", "root", "rWwubSTy3JE1Oem") or die (mysql_error());
+mysql_select_db("trinworld505", $connect);
 
 
 // Convert creature spawns data
