@@ -13,6 +13,7 @@ MySQL - 5.5.24-0ubuntu0.12.04.1 : Database - 505_world_test_quest
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 /*Table structure for table `creature_classlevelstats` */
 
+DROP TABLE IF EXISTS `creature_classlevelstats`;
 CREATE TABLE `creature_classlevelstats` (
   `level` tinyint(4) NOT NULL,
   `class` tinyint(4) NOT NULL,

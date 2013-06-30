@@ -1,10 +1,13 @@
--- stape 1
 DELETE FROM `spell_proc_event` WHERE entry in (78228,33191,79133,16235,16176,79134);
 ALTER TABLE `spell_proc_event` DROP COLUMN `effectmask`;
 ALTER TABLE `spell_bonus_data` DROP COLUMN `damage_bonus`;
 ALTER TABLE `spell_bonus_data` DROP COLUMN `heal_bonus`;
 ALTER TABLE `instance_template` DROP COLUMN `bossCount`;
 ALTER TABLE player_levelstats CHANGE sta sta INT(5);
+ALTER TABLE player_levelstats CHANGE agi agi INT(5);
+ALTER TABLE player_levelstats CHANGE str str INT(5);
+ALTER TABLE player_levelstats CHANGE inte inte INT(5);
+ALTER TABLE player_levelstats CHANGE spi spi INT(5);
 
 DROP TABLE IF EXISTS `spell_dbc`;
 CREATE TABLE `spell_dbc` (
@@ -104,6 +107,5 @@ CREATE TABLE `spell_dbc` (
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Custom spell.dbc entries';
 
--- stape 2
 ALTER TABLE `creature` ADD COLUMN `isActive` tinyint(1) unsigned NOT NULL DEFAULT '0' AFTER `dynamicflags`;
 ALTER TABLE `gameobject` ADD COLUMN `isActive` tinyint(1) unsigned NOT NULL DEFAULT '0' AFTER `state`;
