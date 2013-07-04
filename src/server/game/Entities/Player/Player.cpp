@@ -187,7 +187,7 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level
         SetTaximaskNode(213);                               //Shattered Sun Staging Area
 
     // Add Taxi Nodes availables from player level
-    for (uint32 i = 0; i < sTaxiNodesStore.GetNumRows(); i++)
+    /*for (uint32 i = 0; i < sTaxiNodesStore.GetNumRows(); i++)
     {
         TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
         if (!node)
@@ -231,7 +231,7 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level
 
         if (minLevel <= level)
             SetTaximaskNode(node->ID);
-    }
+    }*/
 }
 
 void PlayerTaxi::LoadTaxiMask(std::string const &data)
