@@ -1036,8 +1036,7 @@ void World::LoadConfigSettings(bool reload)
     m_float_configs[CONFIG_THREAT_RADIUS] = ConfigMgr::GetFloatDefault("ThreatRadius", 60.0f);
 
     // always use declined names in the russian client
-    m_bool_configs[CONFIG_DECLINED_NAMES_USED] =
-        (m_int_configs[CONFIG_REALM_ZONE] == REALM_ZONE_RUSSIAN) ? true : ConfigMgr::GetBoolDefault("DeclinedNames", false);
+    m_bool_configs[CONFIG_DECLINED_NAMES_USED] = ConfigMgr::GetBoolDefault("DeclinedNames", false);
 
     m_float_configs[CONFIG_LISTEN_RANGE_SAY]       = ConfigMgr::GetFloatDefault("ListenRange.Say", 25.0f);
     m_float_configs[CONFIG_LISTEN_RANGE_TEXTEMOTE] = ConfigMgr::GetFloatDefault("ListenRange.TextEmote", 25.0f);
