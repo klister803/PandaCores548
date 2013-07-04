@@ -1093,7 +1093,7 @@ BeepAtStart = 1
 #        Example:     "Welcome to John\'s Server@This server runs on Trinity Core."
 #        Default:     "Welcome to a Trinity Core server."
 
-Motd = "Bienvenue sur Pandashan, le premier serveur Mist of Pandaria au monde !"
+Motd = "Welcome to a Trinity Core server 505."
 
 #
 #    Server.LoginInfo

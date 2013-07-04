@@ -109,3 +109,111 @@ CREATE TABLE `spell_dbc` (
 
 ALTER TABLE `creature` ADD COLUMN `isActive` tinyint(1) unsigned NOT NULL DEFAULT '0' AFTER `dynamicflags`;
 ALTER TABLE `gameobject` ADD COLUMN `isActive` tinyint(1) unsigned NOT NULL DEFAULT '0' AFTER `state`;
+ALTER TABLE `creature_template` ADD COLUMN `speed_fly` float NOT NULL DEFAULT '1.14286' COMMENT 'Result of 8.0/7.0, most common value' AFTER `speed_run`;
+
+ALTER TABLE `locales_quest`
+ADD COLUMN `Title_loc9` text AFTER `Title_loc8`,
+ADD COLUMN `Title_loc10` text AFTER `Title_loc9`,
+ADD COLUMN `Details_loc9` text AFTER `Details_loc8`,
+ADD COLUMN `Details_loc10` text AFTER `Details_loc9`,
+ADD COLUMN `Objectives_loc9` text AFTER `Objectives_loc8`,
+ADD COLUMN `Objectives_loc10` text AFTER `Objectives_loc9`,
+ADD COLUMN `OfferRewardText_loc9` text AFTER `OfferRewardText_loc8`,
+ADD COLUMN `OfferRewardText_loc10` text AFTER `OfferRewardText_loc9`,
+ADD COLUMN `RequestItemsText_loc9` text AFTER `RequestItemsText_loc8`,
+ADD COLUMN `RequestItemsText_loc10` text AFTER `RequestItemsText_loc9`,
+ADD COLUMN `EndText_loc9` text AFTER `EndText_loc8`,
+ADD COLUMN `EndText_loc10` text AFTER `EndText_loc9`,
+ADD COLUMN `CompletedText_loc9` text AFTER `CompletedText_loc8`,
+ADD COLUMN `CompletedText_loc10` text AFTER `CompletedText_loc9`,
+ADD COLUMN `ObjectiveText1_loc9` text AFTER `ObjectiveText1_loc8`,
+ADD COLUMN `ObjectiveText1_loc10` text AFTER `ObjectiveText1_loc9`,
+ADD COLUMN `ObjectiveText2_loc9` text AFTER `ObjectiveText2_loc8`,
+ADD COLUMN `ObjectiveText2_loc10` text AFTER `ObjectiveText2_loc9`,
+ADD COLUMN `ObjectiveText3_loc9` text AFTER `ObjectiveText3_loc8`,
+ADD COLUMN `ObjectiveText3_loc10` text AFTER `ObjectiveText3_loc9`,
+ADD COLUMN `ObjectiveText4_loc9` text AFTER `ObjectiveText4_loc8`,
+ADD COLUMN `ObjectiveText4_loc10` text AFTER `ObjectiveText4_loc9`,
+ADD COLUMN `QuestGiverTextWindow_loc9` text AFTER `QuestGiverTextWindow_loc8`,
+ADD COLUMN `QuestGiverTextWindow_loc10` text AFTER `QuestGiverTextWindow_loc9`,
+ADD COLUMN `QuestGiverTargetName_loc9` text AFTER `QuestGiverTargetName_loc8`,
+ADD COLUMN `QuestGiverTargetName_loc10` text AFTER `QuestGiverTargetName_loc9`,
+ADD COLUMN `QuestTurnTextWindow_loc9` text AFTER `QuestTurnTextWindow_loc8`,
+ADD COLUMN `QuestTurnTextWindow_loc10` text AFTER `QuestTurnTextWindow_loc9`,
+ADD COLUMN `QuestTurnTargetName_loc9` text AFTER `QuestTurnTargetName_loc8`,
+ADD COLUMN `QuestTurnTargetName_loc10` text AFTER `QuestTurnTargetName_loc9`;
+
+ALTER TABLE `locales_npc_text`
+ADD COLUMN  `Text8_0_loc1` longtext AFTER `Text7_1_loc10`,
+ADD COLUMN  `Text8_0_loc2` longtext AFTER `Text8_0_loc1`,
+ADD COLUMN  `Text8_0_loc3` longtext AFTER `Text8_0_loc2`,
+ADD COLUMN  `Text8_0_loc4` longtext AFTER `Text8_0_loc3`,
+ADD COLUMN  `Text8_0_loc5` longtext AFTER `Text8_0_loc4`,
+ADD COLUMN  `Text8_0_loc6` longtext AFTER `Text8_0_loc5`,
+ADD COLUMN  `Text8_0_loc7` longtext AFTER `Text8_0_loc6`,
+ADD COLUMN  `Text8_0_loc8` longtext AFTER `Text8_0_loc7`,
+ADD COLUMN  `Text8_0_loc9` longtext AFTER `Text8_0_loc8`,
+ADD COLUMN  `Text8_0_loc10` longtext AFTER `Text8_0_loc9`,
+ADD COLUMN  `Text8_1_loc1` longtext AFTER `Text8_0_loc10`,
+ADD COLUMN  `Text8_1_loc2` longtext AFTER `Text8_1_loc1`,
+ADD COLUMN  `Text8_1_loc3` longtext AFTER `Text8_1_loc2`,
+ADD COLUMN  `Text8_1_loc4` longtext AFTER `Text8_1_loc3`,
+ADD COLUMN  `Text8_1_loc5` longtext AFTER `Text8_1_loc4`,
+ADD COLUMN  `Text8_1_loc6` longtext AFTER `Text8_1_loc5`,
+ADD COLUMN  `Text8_1_loc7` longtext AFTER `Text8_1_loc6`,
+ADD COLUMN  `Text8_1_loc8` longtext AFTER `Text8_1_loc7`,
+ADD COLUMN  `Text8_1_loc9` longtext AFTER `Text8_1_loc8`,
+ADD COLUMN  `Text8_1_loc10` longtext AFTER `Text8_1_loc9`,
+ADD COLUMN  `Text9_0_loc1` longtext AFTER `Text8_1_loc10`,
+ADD COLUMN  `Text9_0_loc2` longtext AFTER `Text9_0_loc1`,
+ADD COLUMN  `Text9_0_loc3` longtext AFTER `Text9_0_loc2`,
+ADD COLUMN  `Text9_0_loc4` longtext AFTER `Text9_0_loc3`,
+ADD COLUMN  `Text9_0_loc5` longtext AFTER `Text9_0_loc4`,
+ADD COLUMN  `Text9_0_loc6` longtext AFTER `Text9_0_loc5`,
+ADD COLUMN  `Text9_0_loc7` longtext AFTER `Text9_0_loc6`,
+ADD COLUMN  `Text9_0_loc8` longtext AFTER `Text9_0_loc7`,
+ADD COLUMN  `Text9_0_loc9` longtext AFTER `Text9_0_loc8`,
+ADD COLUMN  `Text9_0_loc10` longtext AFTER `Text9_0_loc9`,
+ADD COLUMN  `Text9_1_loc1` longtext AFTER `Text9_0_loc10`,
+ADD COLUMN  `Text9_1_loc2` longtext AFTER `Text9_1_loc1`,
+ADD COLUMN  `Text9_1_loc3` longtext AFTER `Text9_1_loc2`,
+ADD COLUMN  `Text9_1_loc4` longtext AFTER `Text9_1_loc3`,
+ADD COLUMN  `Text9_1_loc5` longtext AFTER `Text9_1_loc4`,
+ADD COLUMN  `Text9_1_loc6` longtext AFTER `Text9_1_loc5`,
+ADD COLUMN  `Text9_1_loc7` longtext AFTER `Text9_1_loc6`,
+ADD COLUMN  `Text9_1_loc8` longtext AFTER `Text9_1_loc7`,
+ADD COLUMN  `Text9_1_loc9` longtext AFTER `Text9_1_loc8`,
+ADD COLUMN  `Text9_1_loc10` longtext AFTER `Text9_1_loc9`;
+
+
+ALTER TABLE `locales_achievement_reward`
+ADD COLUMN  `subject_loc9` varchar(100) NOT NULL DEFAULT '' AFTER `subject_loc8`,
+ADD COLUMN  `subject_loc10` varchar(100) NOT NULL DEFAULT '' AFTER `subject_loc9`,
+ADD COLUMN  `text_loc9` text AFTER `text_loc8`,
+ADD COLUMN  `text_loc10` text AFTER `text_loc9`;
+
+ALTER TABLE `db_script_string`
+ADD COLUMN  `content_loc9` text AFTER `content_loc8`,
+ADD COLUMN  `content_loc10` text AFTER `content_loc9`;
+ALTER TABLE `script_texts`
+ADD COLUMN  `content_loc9` text AFTER `content_loc8`,
+ADD COLUMN  `content_loc10` text AFTER `content_loc9`;
+ALTER TABLE `trinity_string`
+ADD COLUMN  `content_loc9` text AFTER `content_loc8`,
+ADD COLUMN  `content_loc10` text AFTER `content_loc9`;
+ALTER TABLE `custom_texts`
+ADD COLUMN  `content_loc9` text AFTER `content_loc8`,
+ADD COLUMN  `content_loc10` text AFTER `content_loc9`;
+
+DROP TABLE IF EXISTS `lfg_dungeon_rewards`;
+CREATE TABLE `lfg_dungeon_rewards` (
+  `dungeonId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Dungeon entry from dbc',
+  `maxLevel` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT 'Max level at which this reward is rewarded',
+  `firstQuestId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Quest id with rewards for first dungeon this day',
+  `firstMoneyVar` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Money multiplier for completing the dungeon first time in a day with less players than max',
+  `firstXPVar` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Experience multiplier for completing the dungeon first time in a day with less players than max',
+  `otherQuestId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Quest id with rewards for Nth dungeon this day',
+  `otherMoneyVar` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Money multiplier for completing the dungeon Nth time in a day with less players than max',
+  `otherXPVar` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Experience multiplier for completing the dungeon Nth time in a day with less players than max',
+  PRIMARY KEY (`dungeonId`,`maxLevel`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;

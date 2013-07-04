@@ -1,5 +1,5 @@
 # Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
-# Copyright (C) 2012-2013 Pandashan <http://www.pandashan.com/>
+# Copyright (C) 2012-2013 Uwow <http://uwow.biz/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
