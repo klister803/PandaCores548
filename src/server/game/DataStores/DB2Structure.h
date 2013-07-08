@@ -155,6 +155,15 @@ struct BattlePetSpeciesEntry
     uint32 CreatureEntry;
 };
 
+struct QuestPackageItem
+{
+    uint32 ID;
+    uint32 packageEntry;
+    uint32 ItemID;
+    //uint32 unk1;
+    //uint32 unk2;
+};
+
 // GCC has alternative #pragma pack(N) syntax and old gcc version does not support pack(push, N), also any gcc version does not support it at some platform
 #if defined(__GNUC__)
 #pragma pack()
