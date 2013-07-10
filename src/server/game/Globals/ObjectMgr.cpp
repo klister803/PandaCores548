@@ -1430,7 +1430,7 @@ void ObjectMgr::LoadCreatures()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    _creatureDataStore.rehash(result->GetRowCount());
+    //_creatureDataStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
