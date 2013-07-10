@@ -1323,7 +1323,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->HasSpellCooldown(itr->effect))
                         continue;
 
-                    if (Aura* triggeredAura = target->GetAura(itr->effect, GetCasterGUID()))
+                    if (AuraPtr triggeredAura = target->GetAura(itr->effect, GetCasterGUID()))
                         triggeredAura->ModStackAmount(GetStackAmount() - triggeredAura->GetStackAmount());
 
                     if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)

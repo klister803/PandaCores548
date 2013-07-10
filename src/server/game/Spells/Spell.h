@@ -564,6 +564,8 @@ class Spell
         // ******************************************
         uint32 m_procAttacker;                // Attacker trigger flags
         uint32 m_procVictim;                  // Victim   trigger flags
+        uint32 m_procAttackerowner;           // Attacker trigger flags
+        uint32 m_procVictimowner;             // Victim   trigger flags
         uint32 m_procEx;
         void   prepareDataForTriggerSystem(constAuraEffectPtr triggeredByAura);
 
