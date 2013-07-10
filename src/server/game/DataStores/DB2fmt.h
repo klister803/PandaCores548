@@ -23,6 +23,6 @@ const char ItemCurrencyCostfmt[]="xn";
 const char ItemSparsefmt[]="niiiffiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiifiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiisssssiiiiiiiiiiiiiiiiiiiiiifiiifiii";
 const char ItemExtendedCostEntryfmt[]="nxxiiiiiiiiiiiixiiiiiiiiiixxxxx";
 const char BattlePetSpeciesEntryfmt[]="inxxxxxxx";
-const char QuestPackageItemfmt[]="iiixx";
+const char QuestPackageItemfmt[]="iiiix";
 
 #endif
