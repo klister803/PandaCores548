@@ -300,7 +300,7 @@ struct SpellProcEventEntry
     uint32      effectMask;                                 // Effect Mask for aply to effect
 };
 
-typedef UNORDERED_MAP<uint32, SpellProcEventEntry> SpellProcEventMap;
+typedef std::map<int32, std::vector<SpellProcEventEntry> > SpellProcEventMap;
 
 struct SpellProcEntry
 {
@@ -717,7 +717,7 @@ class SpellMgr
         SpellGroupStackRule CheckSpellGroupStackRules(SpellInfo const* spellInfo1, SpellInfo const* spellInfo2) const;
 
         // Spell proc event table
-        SpellProcEventEntry const* GetSpellProcEvent(uint32 spellId) const;
+        const std::vector<SpellProcEventEntry>* GetSpellProcEvent(uint32 spellId) const;
         bool IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellProcEvent, uint32 EventProcFlag, SpellInfo const* procSpell, uint32 procFlags, uint32 procExtra, bool active);
 
         // Spell proc table

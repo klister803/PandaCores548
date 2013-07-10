@@ -777,7 +777,7 @@ SpellGroupStackRule SpellMgr::CheckSpellGroupStackRules(SpellInfo const* spellIn
     return rule;
 }
 
-SpellProcEventEntry const* SpellMgr::GetSpellProcEvent(uint32 spellId) const
+const std::vector<SpellProcEventEntry>* SpellMgr::GetSpellProcEvent(uint32 spellId) const
 {
     SpellProcEventMap::const_iterator itr = mSpellProcEventMap.find(spellId);
     if (itr != mSpellProcEventMap.end())
@@ -1813,7 +1813,7 @@ void SpellMgr::LoadSpellProcEvents()
 
     mSpellProcEventMap.clear();                             // need for reload case
 
-    //                                                0      1           2                3                 4                 5                 6          7       8        9             10
+    //                                                0      1           2                3                 4                 5                 6          7       8        9             10            11
     QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask0, SpellFamilyMask1, SpellFamilyMask2, procFlags, procEx, ppmRate, CustomChance, Cooldown, effectmask FROM spell_proc_event");
     if (!result)
     {
@@ -1851,7 +1851,7 @@ void SpellMgr::LoadSpellProcEvents()
         spe.cooldown        = fields[10].GetUInt32();
         spe.effectMask        = fields[11].GetUInt32();
 
-        mSpellProcEventMap[entry] = spe;
+        mSpellProcEventMap[entry].push_back(spe);
 
         if (spell->ProcFlags == 0)
         {
