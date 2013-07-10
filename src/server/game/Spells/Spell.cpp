@@ -2049,16 +2049,19 @@ void Spell::prepareDataForTriggerSystem(constAuraEffectPtr /*triggeredByAura*/)
     //==========================================================================================
 
     m_procVictim = m_procAttacker = 0;
+    m_procVictimowner = m_procAttackerowner = 0;
     // Get data for type of attack and fill base info for trigger
     switch (m_spellInfo->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_MELEE:
             m_procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
+            m_procAttackerowner = PROC_FLAG_DONE_PET_SPELL_MELEE_DMG_CLASS;
             if (m_attackType == OFF_ATTACK)
                 m_procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
             else
                 m_procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
             m_procVictim   = PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS;
+            m_procVictimowner   = PROC_FLAG_TAKEN_PET_SPELL_MELEE_DMG_CLASS;
             break;
         case SPELL_DAMAGE_CLASS_RANGED:
             // Auto attack
@@ -2408,6 +2411,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Fill base trigger info
     uint32 procAttacker = m_procAttacker;
     uint32 procVictim   = m_procVictim;
+    uint32 procAttackerowner = m_procAttackerowner;
+    uint32 procVictimowner   = m_procVictimowner;
     uint32 procEx = m_procEx;
 
     m_spellAura = NULLAURA; // Set aura to null for every target-make sure that pointer is not used for unit without aura applied
@@ -2548,6 +2553,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
+            //proc for pet
+            if(caster->isPet() && procAttackerowner && procVictimowner)
+                if(Unit* owner = caster->GetOwner())
+                    owner->ProcDamageAndSpell(unitTarget, procAttackerowner, procVictimowner, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
             if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
                (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
@@ -2900,12 +2910,40 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
 
     // trigger linked auras remove/apply
     // TODO: remove/cleanup this, as this table is not documented and people are doing stupid things with it
-    if (std::vector<int32> const* spellTriggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT))
-        for (std::vector<int32>::const_iterator i = spellTriggered->begin(); i != spellTriggered->end(); ++i)
-            if (*i < 0)
-                unit->RemoveAurasDueToSpell(-(*i));
+    if (std::vector<SpellLinked> const* spellTriggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT))
+    {
+        for (std::vector<SpellLinked>::const_iterator i = spellTriggered->begin(); i != spellTriggered->end(); ++i)
+        {
+            if (i->effect < 0)
+                unit->RemoveAurasDueToSpell(-(i->effect));
             else
-                unit->CastSpell(unit, *i, true, 0, NULLAURA_EFFECT, m_caster->GetGUID());
+            {
+                if(i->type2)
+                {
+                    if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
+                        continue;
+                    if(i->hastalent2 != 0 && !m_caster->HasAura(i->hastalent2))
+                        continue;
+                }
+                else
+                {
+                    if(i->hastalent != 0 && !unit->HasAura(i->hastalent))
+                        continue;
+                    if(i->hastalent2 != 0 && !unit->HasAura(i->hastalent2))
+                        continue;
+                }
+                if(i->chance != 0 && !roll_chance_i(i->chance))
+                    continue;
+                if(i->cooldown != 0 && unit->GetTypeId() == TYPEID_PLAYER && unit->ToPlayer()->HasSpellCooldown(i->effect))
+                    continue;
+
+                unit->CastSpell(unit, i->effect, true, 0, 0, m_caster->GetGUID());
+
+                if(i->cooldown != 0 && unit->GetTypeId() == TYPEID_PLAYER)
+                    unit->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
+            }
+        }
+    }
 }
 
 void Spell::DoAllEffectOnTarget(GOTargetInfo* target)
@@ -3396,13 +3434,37 @@ void Spell::cast(bool skipCheck)
 
     CallScriptAfterCastHandlers();
 
-    if (const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
+    if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
     {
-        for (std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
-            if (*i < 0)
-                m_caster->RemoveAurasDueToSpell(-(*i));
+        for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+            if (i->effect < 0)
+                m_caster->RemoveAurasDueToSpell(-(i->effect));
             else
-                m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, *i, true);
+            {
+                if(i->type2 && m_targets.GetUnitTarget())
+                {
+                    if(i->hastalent != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent))
+                        continue;
+                    if(i->hastalent2 != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent2))
+                        continue;
+                }
+                else
+                {
+                    if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
+                        continue;
+                    if(i->hastalent2 != 0 && !m_caster->HasAura(i->hastalent2))
+                        continue;
+                }
+                if(i->chance != 0 && !roll_chance_i(i->chance))
+                    continue;
+                if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->HasSpellCooldown(i->effect))
+                    continue;
+
+                m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
+
+                if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
+                    m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
+            }
     }
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)

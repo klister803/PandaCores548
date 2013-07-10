@@ -1045,10 +1045,22 @@ bool SpellMgr::IsArenaAllowedEnchancment(uint32 ench_id) const
     return mEnchantCustomAttr[ench_id];
 }
 
-const std::vector<int32>* SpellMgr::GetSpellLinked(int32 spell_id) const
+const std::vector<SpellLinked>* SpellMgr::GetSpellLinked(int32 spell_id) const
 {
     SpellLinkedMap::const_iterator itr = mSpellLinkedMap.find(spell_id);
     return itr != mSpellLinkedMap.end() ? &(itr->second) : NULL;
+}
+
+const std::vector<SpellPrcoCheck>* SpellMgr::GetSpellPrcoCheck(int32 spell_id) const
+{
+    SpellPrcoCheckMap::const_iterator itr = mSpellPrcoCheckMap.find(spell_id);
+    return itr != mSpellPrcoCheckMap.end() ? &(itr->second) : NULL;
+}
+
+const std::vector<SpellTriggered>* SpellMgr::GetSpellTriggered(int32 spell_id) const
+{
+    SpellTriggeredMap::const_iterator itr = mSpellTriggeredMap.find(spell_id);
+    return itr != mSpellTriggeredMap.end() ? &(itr->second) : NULL;
 }
 
 PetLevelupSpellSet const* SpellMgr::GetPetLevelupSpellList(uint32 petFamily) const
@@ -1802,7 +1814,7 @@ void SpellMgr::LoadSpellProcEvents()
     mSpellProcEventMap.clear();                             // need for reload case
 
     //                                                0      1           2                3                 4                 5                 6          7       8        9             10
-    QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask0, SpellFamilyMask1, SpellFamilyMask2, procFlags, procEx, ppmRate, CustomChance, Cooldown FROM spell_proc_event");
+    QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask0, SpellFamilyMask1, SpellFamilyMask2, procFlags, procEx, ppmRate, CustomChance, Cooldown, effectmask FROM spell_proc_event");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell proc event conditions. DB table `spell_proc_event` is empty.");
@@ -1837,6 +1849,7 @@ void SpellMgr::LoadSpellProcEvents()
         spe.ppmRate         = fields[8].GetFloat();
         spe.customChance    = fields[9].GetFloat();
         spe.cooldown        = fields[10].GetUInt32();
+        spe.effectMask        = fields[11].GetUInt32();
 
         mSpellProcEventMap[entry] = spe;
 
@@ -1920,6 +1933,7 @@ void SpellMgr::LoadSpellProcs()
         float cooldown                = fields[13].GetFloat();
         baseProcEntry.cooldown        = uint32(cooldown);
         baseProcEntry.charges         = fields[14].GetUInt32();
+        baseProcEntry.modcharges      = fields[15].GetUInt32();
 
         while (true)
         {
@@ -2004,8 +2018,8 @@ void SpellMgr::LoadSpellBonusess()
 
     mSpellBonusMap.clear();                             // need for reload case
 
-    //                                                0      1             2          3         4
-    QueryResult result = WorldDatabase.Query("SELECT entry, direct_bonus, dot_bonus, ap_bonus, ap_dot_bonus FROM spell_bonus_data");
+    //                                                0      1             2          3         4                   5           6
+    QueryResult result = WorldDatabase.Query("SELECT entry, direct_bonus, dot_bonus, ap_bonus, ap_dot_bonus, damage_bonus, heal_bonus FROM spell_bonus_data");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell bonus data. DB table `spell_bonus_data` is empty.");
@@ -2031,6 +2045,8 @@ void SpellMgr::LoadSpellBonusess()
         sbe.dot_damage    = fields[2].GetFloat();
         sbe.ap_bonus      = fields[3].GetFloat();
         sbe.ap_dot_bonus   = fields[4].GetFloat();
+        sbe.damage_bonus   = fields[5].GetFloat();
+        sbe.heal_bonus   = fields[6].GetFloat();
 
         ++count;
     } while (result->NextRow());
@@ -2246,8 +2262,8 @@ void SpellMgr::LoadSpellLinked()
 
     mSpellLinkedMap.clear();    // need for reload case
 
-    //                                                0              1             2
-    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type FROM spell_linked_spell");
+    //                                                0              1             2        3        4          5        7         8
+    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, hastalent, hastalent2, chance, cooldown, type2 FROM spell_linked_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked spells. DB table `spell_linked_spell` is empty.");
@@ -2262,6 +2278,11 @@ void SpellMgr::LoadSpellLinked()
         int32 trigger = fields[0].GetInt32();
         int32 effect = fields[1].GetInt32();
         int32 type = fields[2].GetUInt8();
+        int32 hastalent = fields[3].GetInt32();
+        int32 hastalent2 = fields[4].GetInt32();
+        int32 chance = fields[5].GetInt32();
+        int32 cooldown = fields[6].GetUInt8();
+        int32 type2 = fields[7].GetUInt8();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(trigger));
         if (!spellInfo)
@@ -2283,12 +2304,132 @@ void SpellMgr::LoadSpellLinked()
             else
                 trigger -= SPELL_LINKED_MAX_SPELLS * type;
         }
-        mSpellLinkedMap[trigger].push_back(effect);
+        SpellLinked templink;
+        templink.effect = effect;
+        templink.hastalent = hastalent;
+        templink.hastalent2 = hastalent2;
+        templink.chance = chance;
+        templink.cooldown = cooldown;
+        templink.type2 = type2;
+        mSpellLinkedMap[trigger].push_back(templink);
 
         ++count;
     } while (result->NextRow());
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u linked spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::LoadSpellPrcoCheck()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellPrcoCheckMap.clear();    // need for reload case
+
+    //                                                0        1       2      3             4         5      6          7
+    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask FROM spell_proc_check");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 proc check spells. DB table `spell_proc_check` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 entry = fields[0].GetInt32();
+        int32 entry2 = fields[1].GetInt32();
+        int32 entry3 = fields[2].GetInt32();
+        int32 checkspell = fields[3].GetInt32();
+        int32 hastalent = fields[4].GetInt32();
+        int32 chance = fields[5].GetInt32();
+        int32 target = fields[6].GetInt32();
+        int32 effectmask = fields[7].GetInt32();
+
+        SpellInfo const* spellInfo = GetSpellInfo(abs(entry));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_proc_check` does not exist", abs(entry));
+            continue;
+        }
+
+        SpellPrcoCheck templink;
+        templink.checkspell = checkspell;
+        templink.hastalent = hastalent;
+        templink.chance = chance;
+        templink.target = target;
+        templink.effectmask = effectmask;
+        mSpellPrcoCheckMap[entry].push_back(templink);
+        if(entry2)
+            mSpellPrcoCheckMap[entry2].push_back(templink);
+        if(entry3)
+            mSpellPrcoCheckMap[entry3].push_back(templink);
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u proc check spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::LoadSpellTriggered()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellTriggeredMap.clear();    // need for reload case
+
+    //                                                    0           1             2           3       4      5      6         7           8
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger`");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 spell_id = fields[0].GetInt32();
+        int32 spell_trigger = fields[1].GetInt32();
+        int32 option = fields[2].GetInt32();
+        int32 target = fields[3].GetInt32();
+        int32 bp0 = fields[4].GetInt32();
+        int32 bp1 = fields[5].GetInt32();
+        int32 bp2 = fields[6].GetInt32();
+        int32 effectmask = fields[7].GetInt32();
+        int32 aura = fields[8].GetInt32();
+
+        SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_id` does not exist", abs(spell_id));
+            continue;
+        }
+        spellInfo = GetSpellInfo(abs(spell_trigger));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_trigger` does not exist", abs(spell_trigger));
+            continue;
+        }
+
+        SpellTriggered temptrigger;
+        temptrigger.spell_id = spell_id;
+        temptrigger.spell_trigger = spell_trigger;
+        temptrigger.option = option;
+        temptrigger.target = target;
+        temptrigger.bp0 = bp0;
+        temptrigger.bp1 = bp1;
+        temptrigger.bp2 = bp2;
+        temptrigger.effectmask = effectmask;
+        temptrigger.aura = aura;
+        mSpellTriggeredMap[spell_id].push_back(temptrigger);
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u triggered spell in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SpellMgr::LoadPetLevelupSpellMap()

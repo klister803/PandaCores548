@@ -139,8 +139,8 @@ class Aura : public std::enable_shared_from_this<Aura>
 
         uint8 GetCharges() const { return m_procCharges; }
         void SetCharges(uint8 charges);
-        uint8 CalcMaxCharges(Unit* caster) const;
-        uint8 CalcMaxCharges() const { return CalcMaxCharges(GetCaster()); }
+        uint8 CalcMaxCharges(Unit* caster, bool add = false) const;
+        uint8 CalcMaxCharges() const { return CalcMaxCharges(GetCaster(), true); }
         bool ModCharges(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         bool DropCharge(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) { return ModCharges(-1, removeMode); }
 

@@ -99,6 +99,16 @@ enum SpellLinkedType
     SPELL_LINK_REMOVE   = 0,
 };
 
+enum SpellTriggeredType
+{
+    SPELL_TRIGGER_BP            = 0,            // set basepoint to spell from amount
+    SPELL_TRIGGER_BP_CUSTOM     = 1,            // set basepoint to spell custom from BD
+    SPELL_TRIGGER_MANA_COST     = 2,            // set basepoint to spell mana cost
+    SPELL_TRIGGER_DAM_HEALTH    = 3,            // set basepoint to spell damage or heal percent
+    SPELL_TRIGGER_COOLDOWN      = 4,            // Set cooldown for trigger spell
+    SPELL_TRIGGER_UPDATE_DUR    = 5,            // Update duration for select spell
+    SPELL_TRIGGER_GET_DUR_AURA  = 6,            // Get duration from select aura to cast bp
+};
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
 enum ProcFlags
@@ -142,6 +152,14 @@ enum ProcFlags
     PROC_FLAG_DONE_OFFHAND_ATTACK             = 0x00800000,    // 23 Done off-hand melee attacks (spell and autoattack)
 
     PROC_FLAG_DEATH                           = 0x01000000,    // 24 Died in any way
+
+    PROC_FLAG_DONE_PET_SPELL_MELEE_DMG_CLASS  = 0x02000000,    // 25 Done attack by Spell by pet that has dmg class melee
+    PROC_FLAG_TAKEN_PET_SPELL_MELEE_DMG_CLASS = 0x04000000,    // 26 Taken attack by Spell by pet that has dmg class melee
+
+    PROC_FLAG_SUM_PET                         = 0x08000000,    // 27 Summon pet
+
+    PROC_FLAG_DONE_DISPEL_SPELL               = 0x10000000,    // 28 Done dispel spell
+    PROC_FLAG_TAKEN_DISPEL_SPELL              = 0x20000000,    // 29 Taken dispel spell
 
     // flag masks
     AUTO_ATTACK_PROC_FLAG_MASK                = PROC_FLAG_DONE_MELEE_AUTO_ATTACK | PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK
@@ -279,6 +297,7 @@ struct SpellProcEventEntry
     float       ppmRate;                                    // for melee (ranged?) damage spells - proc rate per minute. if zero, falls back to flat chance from Spell.dbc
     float       customChance;                               // Owerride chance (in most cases for debug only)
     uint32      cooldown;                                   // hidden cooldown used for some spell proc events, applied to _triggered_spell_
+    uint32      effectMask;                                 // Effect Mask for aply to effect
 };
 
 typedef UNORDERED_MAP<uint32, SpellProcEventEntry> SpellProcEventMap;
@@ -297,6 +316,7 @@ struct SpellProcEntry
     float       chance;                                     // if nonzero - owerwrite procChance field for given Spell.dbc entry, defines chance of proc to occur, not used if perMinuteRate set
     uint32      cooldown;                                   // if nonzero - cooldown in secs for aura proc, applied to aura
     uint32      charges;                                    // if nonzero - owerwrite procCharges field for given Spell.dbc entry, defines how many times proc can occur before aura remove, 0 - infinite
+    uint32      modcharges;                                 // if nonzero - procCharges field for given Spell.dbc entry, defines how many times proc can occur before aura remove, 0 - infinite
 };
 
 typedef UNORDERED_MAP<uint32, SpellProcEntry> SpellProcMap;
@@ -316,6 +336,8 @@ struct SpellBonusEntry
     float  dot_damage;
     float  ap_bonus;
     float  ap_dot_bonus;
+    float  damage_bonus;
+    float  heal_bonus;
 };
 
 typedef UNORDERED_MAP<uint32, SpellBonusEntry>     SpellBonusMap;
@@ -573,7 +595,42 @@ typedef std::vector<bool> EnchantCustomAttribute;
 
 typedef std::vector<SpellInfo*> SpellInfoMap;
 
-typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
+struct SpellLinked
+{
+    int32 effect;
+    int32 hastalent;
+    int32 hastalent2;
+    int32 chance;
+    int32 target;
+    int32 cooldown;
+    int32 type2;
+};
+
+struct SpellPrcoCheck
+{
+    int32 checkspell;
+    int32 hastalent;
+    int32 chance;
+    int32 target;
+    int32 effectmask;
+};
+
+struct SpellTriggered
+{
+    int32 spell_id;
+    int32 spell_trigger;
+    int32 target;
+    int32 option;
+    int32 bp0;
+    int32 bp1;
+    int32 bp2;
+    int32 effectmask;
+    int32 aura;
+};
+
+typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
+typedef std::map<int32, std::vector<SpellLinked> > SpellLinkedMap;
+typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
 
 bool IsPrimaryProfessionSkill(uint32 skill);
 
@@ -680,7 +737,9 @@ class SpellMgr
         SpellEnchantProcEntry const* GetSpellEnchantProcEvent(uint32 enchId) const;
         bool IsArenaAllowedEnchancment(uint32 ench_id) const;
 
-        const std::vector<int32> *GetSpellLinked(int32 spell_id) const;
+        const std::vector<SpellLinked> *GetSpellLinked(int32 spell_id) const;
+        const std::vector<SpellPrcoCheck> *GetSpellPrcoCheck(int32 spell_id) const;
+        const std::vector<SpellTriggered> *GetSpellTriggered(int32 spell_id) const;
 
         PetLevelupSpellSet const* GetPetLevelupSpellList(uint32 petFamily) const;
         PetDefaultSpellsEntry const* GetPetDefaultSpellsEntry(int32 id) const;
@@ -722,6 +781,8 @@ class SpellMgr
         void LoadEnchantCustomAttr();
         void LoadSpellEnchantProcData();
         void LoadSpellLinked();
+        void LoadSpellPrcoCheck();
+        void LoadSpellTriggered();
         void LoadPetLevelupSpellMap();
         void LoadPetDefaultSpells();
         void LoadSpellAreas();
@@ -754,6 +815,8 @@ class SpellMgr
         SpellThreatMap             mSpellThreatMap;
         SpellPetAuraMap            mSpellPetAuraMap;
         SpellLinkedMap             mSpellLinkedMap;
+        SpellPrcoCheckMap          mSpellPrcoCheckMap;
+        SpellTriggeredMap          mSpellTriggeredMap;
         SpellEnchantProcEventMap   mSpellEnchantProcEventMap;
         EnchantCustomAttribute     mEnchantCustomAttr;
         SpellAreaMap               mSpellAreaMap;

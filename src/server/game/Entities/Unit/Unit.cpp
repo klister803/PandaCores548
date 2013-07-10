@@ -557,6 +557,13 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
 
 uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
+    if(spellProto)
+    {
+        SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
+        if(bonus && bonus->damage_bonus)
+            damage *= bonus->damage_bonus;
+    }
+
 	// Log damage > 1 000 000 on worldboss
 	if (damage > 1000000 && GetTypeId() == TYPEID_PLAYER && victim->GetTypeId() == TYPEID_UNIT && victim->ToCreature()->GetCreatureTemplate()->rank)
 		sLog->OutPandashan("World Boss %u [%s] take more than 1M damage (%u) by player %u [%s] with spell %u", victim->GetEntry(), victim->GetName(), damage, GetGUIDLow(), GetName(), spellProto ? spellProto->Id : 0);
@@ -4984,12 +4991,20 @@ void Unit::RemoveAllGameObjects()
 
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage* log)
 {
+    uint32 newDamage = log->damage;
+    if(log->SpellID)
+    {
+        SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(log->SpellID);
+        if(bonus && bonus->damage_bonus)
+            newDamage *= bonus->damage_bonus;
+    }
+
     WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+4+1+4+4+1+1+4+4+1)); // we guess size
     data.append(log->target->GetPackGUID());
     data.append(log->attacker->GetPackGUID());
     data << uint32(log->SpellID);
-    data << uint32(log->damage);                            // damage amount
-    int32 overkill = log->damage - log->target->GetHealth();
+    data << uint32(newDamage);                            // damage amount
+    int32 overkill = newDamage - log->target->GetHealth();
     data << uint32(overkill > 0 ? overkill : 0);            // overkill
     data << uint8 (log->schoolMask);                        // damage school
     data << uint32(log->absorb);                            // AbsorbedDamage
@@ -10394,6 +10409,13 @@ int32 Unit::HealBySpell(Unit* victim, SpellInfo const* spellInfo, uint32 addHeal
     // calculate heal absorb and reduce healing
     CalcHealAbsorb(victim, spellInfo, addHealth, absorb);
 
+    if(spellInfo)
+    {
+        SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellInfo->Id);
+        if(bonus && bonus->heal_bonus)
+            addHealth *= bonus->heal_bonus;
+    }
+
     int32 gain = DealHeal(victim, addHealth, spellInfo);
     SendHealSpellLog(victim, spellInfo->Id, addHealth, uint32(addHealth - gain), absorb, critical);
     return gain;
@@ -15514,9 +15536,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH) || triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_INVISIBILITY)))
             active = true;
 
-        if (!IsTriggeredAtSpellProcEvent(target, triggerData.aura, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent))
-            continue;
-
         // do checks using conditions table
         ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_PROC, spellProto->Id);
         ConditionSourceInfo condInfo = ConditionSourceInfo(eventInfo.GetActor(), eventInfo.GetActionTarget());
@@ -15535,6 +15554,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         {
             if (itr->second->HasEffect(i))
             {
+                if (!IsTriggeredAtSpellProcEvent(target, spellProto, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent, i))
+                    continue;
                 AuraEffectPtr aurEff = itr->second->GetBase()->GetEffect(i);
                 // Skip this auras
                 if (isNonTriggerAura[aurEff->GetAuraType()])
@@ -15587,6 +15608,95 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         // Note: must SetCantProc(false) before return
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
             SetCantProc(true);
+
+        if(procSpell)
+        {
+            bool procCheck = false;
+            Unit* _checkTarget = this;
+            if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellInfo->Id))
+            {
+                for (std::vector<SpellPrcoCheck>::const_iterator itr = spellCheck->begin(); itr != spellCheck->end(); ++itr)
+                {
+                    if (!(itr->effectmask & i->effMask))
+                        continue;
+                    if(itr->target == 1 && target)
+                        _checkTarget = target;
+                    if (itr->checkspell < 0)
+                    {
+                        if (-(itr->checkspell) == procSpell->Id)
+                        {
+                            if(itr->hastalent != 0)
+                            {
+                                if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                                    procCheck = true;
+                                else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                                    procCheck = true;
+                                if(itr->chance != 0 && !roll_chance_i(itr->chance) && procCheck)
+                                    procCheck = false;
+                                if(!procCheck)
+                                    continue;
+                            }
+                            else if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                                procCheck = true;
+                            else
+                                procCheck = true;
+                            break;
+                        }
+                    }
+                    else if (itr->checkspell == procSpell->Id)
+                    {
+                        if(itr->hastalent != 0)
+                        {
+                            if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                            {
+                                procCheck = false;
+                                break;
+                            }
+                            else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                            {
+                                procCheck = false;
+                                break;
+                            }
+                            procCheck = true;
+                            continue;
+                        }
+                        if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        procCheck = false;
+                        break;
+                    }
+                    else if (itr->checkspell == 0)
+                    {
+                        procCheck = true;
+                        if(itr->hastalent != 0)
+                        {
+                            if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                            {
+                                procCheck = false;
+                                break;
+                            }
+                            else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                            {
+                                procCheck = false;
+                                break;
+                            }
+                        }
+                        if(itr->chance != 0 && roll_chance_i(itr->chance))
+                        {
+                            procCheck = false;
+                            break;
+                        }
+                    }
+                    else
+                        procCheck = true;
+                }
+            }
+            if(procCheck)
+                continue;
+        }
 
         i->aura->CallScriptProcHandlers(aurApp, eventInfo);
 
@@ -16518,16 +16628,28 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
     return true;
 }
 
-bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, AuraPtr aura, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent)
+bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect)
 {
-    SpellInfo const* spellProto = aura->GetSpellInfo();
-
-    // let the aura be handled by new proc system if it has new entry
-    if (sSpellMgr->GetSpellProcEntry(spellProto->Id))
+    if(!spellProto)
         return false;
 
+    // let the aura be handled by new proc system if it has new entry
+    //if (sSpellMgr->GetSpellProcEntry(spellProto->Id))
+        //return false;
+
     // Get proc Event Entry
-    spellProcEvent = sSpellMgr->GetSpellProcEvent(spellProto->Id);
+    //spellProcEvent = sSpellMgr->GetSpellProcEvent(spellProto->Id);
+    if (std::vector<SpellProcEventEntry> const* spellproc = sSpellMgr->GetSpellProcEvent(spellProto->Id))
+    {
+        for (std::vector<SpellProcEventEntry>::const_iterator itr = spellproc->begin(); itr != spellproc->end(); ++itr)
+        {
+            if (itr->effectMask & (1 << effect))
+            {
+                spellProcEvent = &(*itr);
+                break;
+            }
+        }
+    }
 
     // Get EventProcFlag
     uint32 EventProcFlag;
@@ -16565,8 +16687,8 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, AuraPtr aura, SpellInfo con
             allow = ToPlayer()->isHonorOrXPTarget(victim);
 
         // Shadow Word: Death - can trigger from every kill
-        if (aura->GetId() == 32409)
-            allow = true;
+        //if (aura->GetId() == 32409)
+            //allow = true;
         if (!allow)
             return false;
     }

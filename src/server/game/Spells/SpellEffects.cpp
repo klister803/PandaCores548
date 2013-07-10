@@ -2920,6 +2920,8 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     if (success_list.empty())
         return;
 
+    m_caster->ProcDamageAndSpell(unitTarget, PROC_FLAG_DONE_DISPEL_SPELL, PROC_FLAG_TAKEN_DISPEL_SPELL, PROC_EX_NORMAL_HIT, 1, BASE_ATTACK, m_spellInfo);
+
     WorldPacket dataSuccess(SMSG_SPELLDISPELLOG, 8+8+4+1+4+success_list.size()*5);
     // Send packet header
     dataSuccess.append(unitTarget->GetPackGUID());         // Victim GUID
