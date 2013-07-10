@@ -271,7 +271,7 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             data << uint32(0);
             data << uint32(0);
             // Unk 4.2.2 Part End
-            data << uint8(qRew->GetRewItemsCount() + qRew->GetRewCurrencyCount());
+            data << uint8(qRew->GetRewItemsCount() + qRew->GetRewCurrencyCount() + (qRew->GetRewPackageItem() ? 1 : 0));
             if (qRew->GetRewItemsCount())
             {
                 ItemTemplate const* iProto = NULL;
@@ -286,6 +286,21 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
                     data << uint32(iProto ? iProto->DisplayInfoID : 0);
                     data << uint32(qRew->RewardItemIdCount[i]);
                     data << uint8(0); // Is Currency
+                }
+            }
+            if (qRew->GetRewPackageItem())
+            {
+                ItemTemplate const* iProto = NULL;
+                if (uint32 packId = qRew->GetItemFromPakage(GetPlayer()->getClassMask()))
+                {
+                    if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
+                    {
+                        iProto = sObjectMgr->GetItemTemplate(PackageItem->ItemID);
+                        data << uint32(PackageItem->ItemID);
+                        data << uint32(iProto ? iProto->DisplayInfoID : 0);
+                        data << uint32(PackageItem->count);
+                        data << uint8(0); // Is Currency
+                    }
                 }
             }
             if (qRew->GetRewCurrencyCount())
@@ -704,7 +719,7 @@ void WorldSession::SendLfgPlayerReward(uint32 rdungeonEntry, uint32 sdungeonEntr
     if (!rdungeonEntry || !sdungeonEntry || !qRew)
         return;
 
-    uint8 itemNum = uint8(qRew ? qRew->GetRewItemsCount() : 0);
+    uint8 itemNum = uint8(qRew ? qRew->GetRewItemsCount() + (qRew->GetRewPackageItem() ? 1 : 0) : 0);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_PLAYER_REWARD [" UI64FMTD "] rdungeonEntry: %u - sdungeonEntry: %u - done: %u", GetPlayer()->GetGUID(), rdungeonEntry, sdungeonEntry, done);
     WorldPacket data(SMSG_LFG_PLAYER_REWARD, 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 1 + itemNum * (4 + 4 + 4));
@@ -732,6 +747,21 @@ void WorldSession::SendLfgPlayerReward(uint32 rdungeonEntry, uint32 sdungeonEntr
             data << uint32(iProto ? iProto->DisplayInfoID : 0);
 
             data << uint8(qRew->RewardItemIdCount[i]);
+        }
+        if (qRew->GetRewPackageItem())
+        {
+            ItemTemplate const* iProto = NULL;
+            if (uint32 packId = qRew->GetItemFromPakage(GetPlayer()->getClassMask()))
+            {
+                if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
+                {
+                    iProto = sObjectMgr->GetItemTemplate(PackageItem->ItemID);
+                    data << uint32(PackageItem->ItemID);
+                    data << uint32(0); //unk
+                    data << uint32(iProto ? iProto->DisplayInfoID : 0);
+                    data << uint32(PackageItem->count);
+                }
+            }
         }
     }
     SendPacket(&data);

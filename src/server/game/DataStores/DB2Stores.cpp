@@ -31,6 +31,7 @@ DB2Storage <BattlePetSpeciesEntry> sBattlePetSpeciesStore(BattlePetSpeciesEntryf
 DB2Storage <QuestPackageItem> sQuestPackageItemStore(QuestPackageItemfmt);
 
 typedef std::list<std::string> StoreProblemList1;
+static std::map<uint32, std::list<uint32> > sPackageItemList;
 
 uint32 DB2FilesCount = 0;
 
@@ -88,6 +89,15 @@ void LoadDB2Stores(const std::string& dataPath)
     LoadDB2(bad_db2_files, sItemSparseStore, db2Path, "Item-sparse.db2");
     LoadDB2(bad_db2_files, sItemExtendedCostStore, db2Path, "ItemExtendedCost.db2");
     LoadDB2(bad_db2_files, sQuestPackageItemStore, db2Path, "QuestPackageItem.db2");
+    for (uint32 i = 0; i < sQuestPackageItemStore.GetNumRows(); ++i)
+    {
+        if (QuestPackageItem const* sp = sQuestPackageItemStore.LookupEntry(i))
+        {
+            PackageItemList &plist = sPackageItemMap[sp->packageEntry];
+            plist.push_back(i);
+            sPackageItemList[sp->packageEntry].push_back(i);
+        }
+    }
 
     // error checks
     if (bad_db2_files.size() >= DB2FilesCount)
@@ -114,4 +124,9 @@ void LoadDB2Stores(const std::string& dataPath)
     }
 
     sLog->outInfo(LOG_FILTER_GENERAL, ">> Initialized %d DB2 data stores.", DB2FilesCount);
+}
+
+std::list<uint32> GetPackageItemList(uint32 packageEntry)
+{
+    return sPackageItemList[packageEntry];
 }

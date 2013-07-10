@@ -160,7 +160,7 @@ struct QuestPackageItem
     uint32 ID;
     uint32 packageEntry;
     uint32 ItemID;
-    //uint32 unk1;
+    uint32 count;
     //uint32 unk2;
 };
 

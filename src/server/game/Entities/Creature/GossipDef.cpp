@@ -420,7 +420,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << uint32(quest->GetQuestId());                    // quest id
     data << uint32(quest->GetQuestMethod());                // Accepted values: 0, 1 or 2. 0 == IsAutoComplete() (skip objectives/details)
     data << uint32(quest->GetQuestLevel());                 // may be -1, static data, in other cases must be used dynamic level: Player::GetQuestLevel (0 is not known, but assuming this is no longer valid for quest intended for client)
-    data << uint32(quest->GetExclusiveGroup());
+    data << uint32(quest->GetRewPackageItem());             // Test, send packageId
     data << uint32(quest->GetMinLevel());                   // min level
     data << uint32(quest->GetZoneOrSort());                 // zone or sort to display in quest log
 

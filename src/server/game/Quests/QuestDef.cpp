@@ -171,6 +171,7 @@ Quest::Quest(Field* questRecord)
 
     StartScript             = questRecord[index++].GetUInt32();
     CompleteScript          = questRecord[index++].GetUInt32();
+    PackageItem             = questRecord[index++].GetUInt32();;
 
     // int32 WDBVerified = questRecord[index++].GetInt32();
 
@@ -207,7 +208,6 @@ Quest::Quest(Field* questRecord)
     for (int i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
         if (RequiredCurrencyId[i])
             ++m_reqCurrencyCount;
-
 }
 
 uint32 Quest::XPValue(Player* player) const
@@ -360,4 +360,22 @@ uint32 Quest::CalculateHonorGain(uint8 level) const
     }*/
 
     return honor;
+}
+
+uint32 Quest::GetItemFromPakage(uint32 classMask) const
+{
+    if(GetRewPackageItem() == 0)
+        return 0;
+
+    std::list<uint32> tempList = GetPackageItemList(GetRewPackageItem());
+    if(!tempList.empty())
+    {
+        for (std::list<uint32>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+            if (QuestPackageItem const* sp = sQuestPackageItemStore.LookupEntry((*itr)))
+                if(ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(sp->ItemID))
+                    if(itemProto->AllowableClass & classMask)
+                        return (*itr);
+    }
+
+    return 0;
 }
