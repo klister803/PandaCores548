@@ -236,6 +236,8 @@ class Group
         bool IsLeader(uint64 guid) const;
         uint64 GetMemberGUID(const std::string& name);
         bool IsAssistant(uint64 guid) const;
+        bool IsGuildGroup(uint32 guildId, bool AllInSameMap = false, bool AllInSameInstanceId = false);
+        void UpdateGuildAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1, uint32 miscValue2, uint32 miscValue3, Unit* unit, WorldObject* rewardSource);
 
         Player* GetInvited(uint64 guid) const;
         Player* GetInvited(const std::string& name) const;
@@ -288,6 +290,7 @@ class Group
         void BroadcastAddonMessagePacket(WorldPacket* packet, const std::string& prefix, bool ignorePlayersInBGRaid, int group = -1, uint64 ignore = 0);
         void BroadcastReadyCheck(WorldPacket* packet);
         void OfflineReadyCheck();
+        bool leaderInstanceCheckFail();
 
         /*********************************************************/
         /***                   LOOT SYSTEM                     ***/

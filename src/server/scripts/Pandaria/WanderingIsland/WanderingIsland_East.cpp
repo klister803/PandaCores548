@@ -113,7 +113,7 @@ public:
                 return;
             }
 
-            JadeCore::Containers::RandomResizeList(poleList, 1);
+            Trinity::Containers::RandomResizeList(poleList, 1);
 
             for (auto creature: poleList)
                 me->EnterVehicle(creature);

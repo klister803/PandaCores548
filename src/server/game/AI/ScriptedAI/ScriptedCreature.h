@@ -27,6 +27,9 @@
 #define CAST_PLR(a)     (dynamic_cast<Player*>(a))
 #define CAST_CRE(a)     (dynamic_cast<Creature*>(a))
 #define CAST_AI(a, b)   (dynamic_cast<a*>(b))
+#define MAX_AGGRO_PULSE_TIMER            5000
+
+#define GET_SPELL(a)    (const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(a)))
 
 class InstanceScript;
 
@@ -43,7 +46,7 @@ class SummonList : public std::list<uint64>
         {
             // We need to use a copy of SummonList here, otherwise original SummonList would be modified
             std::list<uint64> listCopy = *this;
-            JadeCore::Containers::RandomResizeList<uint64, Predicate>(listCopy, predicate, max);
+            Trinity::Containers::RandomResizeList<uint64, Predicate>(listCopy, predicate, max);
             for (iterator i = listCopy.begin(); i != listCopy.end(); )
             {
                 Creature* summon = Unit::GetCreature(*me, *i++);
@@ -319,6 +322,25 @@ class BossAI : public ScriptedAI
             return false;
         }
 
+        bool CheckInArea(const uint32 diff, uint32 areaId)
+        {
+            if (_checkareaTimer <= diff)
+                _checkareaTimer = 3000;
+            else
+            {
+                _checkareaTimer -= diff;
+                return true;
+            }
+
+            if (me->GetAreaId() != areaId)
+            {
+                EnterEvadeMode();
+                return false;
+            }
+
+            return true;
+        }
+
         bool CheckBoundary(Unit* who);
         void TeleportCheaters();
 
@@ -328,6 +350,7 @@ class BossAI : public ScriptedAI
     private:
         BossBoundaryMap const* const _boundary;
         uint32 const _bossId;
+        uint32 _checkareaTimer;
 };
 
 class WorldBossAI : public ScriptedAI

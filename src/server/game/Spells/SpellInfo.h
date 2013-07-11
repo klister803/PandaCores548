@@ -534,8 +534,14 @@ public:
     bool _IsPositiveSpell() const;
     static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
 
+    // correction helpers
+    void SetDurationIndex(uint32 index);
+    void SetRangeIndex(uint32 index);
+    void SetCastTimeIndex(uint32 index);
+
     // unloading helpers
     void _UnloadImplicitTargetConditionLists();
+    bool IsSealSpell() const;
 };
 
 #endif // _SPELLINFO_H

@@ -562,3 +562,12 @@ bool npc_escortAI::GetWaypointPosition(uint32 pointId, float& x, float& y, float
 
     return false;
 }
+
+void npc_escortAI::SetCurentWP(uint32 id)
+{
+    for (std::list<Escort_Waypoint>::iterator itr = WaypointList.begin(); itr != WaypointList.end(); ++itr)
+    {
+        if (itr->id == id)
+            CurrentWP = itr;
+    }
+}

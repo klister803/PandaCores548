@@ -236,7 +236,7 @@ class ValithriaDespawner : public BasicEvent
 
         bool Execute(uint64 /*currTime*/, uint32 /*diff*/)
         {
-            JadeCore::CreatureWorker<ValithriaDespawner> worker(_creature, *this);
+            Trinity::CreatureWorker<ValithriaDespawner> worker(_creature, *this);
             _creature->VisitNearbyGridObject(333.0f, worker);
             return true;
         }
@@ -759,7 +759,7 @@ class npc_risen_archmage : public CreatureScript
                 {
                     std::list<Creature*> archmages;
                     RisenArchmageCheck check;
-                    JadeCore::CreatureListSearcher<RisenArchmageCheck> searcher(me, archmages, check);
+                    Trinity::CreatureListSearcher<RisenArchmageCheck> searcher(me, archmages, check);
                     me->VisitNearbyGridObject(100.0f, searcher);
                     for (std::list<Creature*>::iterator itr = archmages.begin(); itr != archmages.end(); ++itr)
                         (*itr)->AI()->DoAction(ACTION_ENTER_COMBAT);
@@ -1131,8 +1131,8 @@ class npc_dream_cloud : public CreatureScript
                         case EVENT_CHECK_PLAYER:
                         {
                             Player* player = NULL;
-                            JadeCore::AnyPlayerInObjectRangeCheck check(me, 5.0f);
-                            JadeCore::PlayerSearcher<JadeCore::AnyPlayerInObjectRangeCheck> searcher(me, player, check);
+                            Trinity::AnyPlayerInObjectRangeCheck check(me, 5.0f);
+                            Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, player, check);
                             me->VisitNearbyWorldObject(7.5f, searcher);
                             _events.ScheduleEvent(player ? EVENT_EXPLODE : EVENT_CHECK_PLAYER, 1000);
                             break;
@@ -1246,11 +1246,11 @@ class spell_dreamwalker_summoner : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& targets)
             {
-                targets.remove_if (JadeCore::UnitAuraCheck(true, SPELL_RECENTLY_SPAWNED));
+                targets.remove_if (Trinity::UnitAuraCheck(true, SPELL_RECENTLY_SPAWNED));
                 if (targets.empty())
                     return;
 
-                WorldObject* target = JadeCore::Containers::SelectRandomContainerElement(targets);
+                WorldObject* target = Trinity::Containers::SelectRandomContainerElement(targets);
                 targets.clear();
                 targets.push_back(target);
             }
@@ -1295,8 +1295,8 @@ class spell_dreamwalker_summon_suppresser : public SpellScriptLoader
 
                 std::list<Creature*> summoners;
                 GetCreatureListWithEntryInGrid(summoners, caster, NPC_WORLD_TRIGGER, 100.0f);
-                summoners.remove_if (JadeCore::UnitAuraCheck(true, SPELL_RECENTLY_SPAWNED));
-                JadeCore::Containers::RandomResizeList(summoners, 2);
+                summoners.remove_if (Trinity::UnitAuraCheck(true, SPELL_RECENTLY_SPAWNED));
+                Trinity::Containers::RandomResizeList(summoners, 2);
                 if (summoners.empty())
                     return;
 

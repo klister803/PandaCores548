@@ -1,33 +1,58 @@
-/*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
 #ifndef DEF_ZULAMAN_H
 #define DEF_ZULAMAN_H
 
-#define DATA_NALORAKKEVENT  1
-#define DATA_AKILZONEVENT   2
-#define DATA_JANALAIEVENT   3
-#define DATA_HALAZZIEVENT   4
-#define DATA_HEXLORDEVENT   5
-#define DATA_ZULJINEVENT    6
-#define DATA_CHESTLOOTED    7
-#define TYPE_RAND_VENDOR_1  8
-#define TYPE_RAND_VENDOR_2  9
+enum Data
+{
+    DATA_AKILZON            = 0,
+    DATA_NALORAKK           = 1,
+    DATA_JANALAI            = 2,
+    DATA_HALAZZI            = 3,
+    DATA_HEX_LORD_MALACRASS = 4,
+    DATA_DAAKARA            = 5,
+    DATA_MAIN_GATE          = 6,
+    DATA_TEMPEST            = 7,
+    DATA_VENDOR_1           = 8,
+    DATA_VENDOR_2           = 9,
+};
+
+enum CreaturesIds
+{
+    NPC_AKILZON             = 23574,
+    NPC_NALORAKK            = 23576,
+    NPC_JANALAI             = 23578,
+    NPC_HALAZZI             = 23577,
+    NPC_HEX_LORD_MALACRASS  = 24239,
+    NPC_DAAKARA             = 23863,
+
+    NPC_FOREST_FROG         = 24396,
+    NPC_HARALD              = 52915, // Vendor 1
+    NPC_EULINDA             = 52914, // Vendor 2
+    NPC_ARINOTH             = 52919, // Money Bag
+    NPC_LENZO               = 52917, // Money Bag
+    NPC_MELISSA             = 52947, // Amani Charm Box
+    NPC_MAWAGO              = 52920, // Amani Charm Box
+    NPC_MELASONG            = 52916, // Amani Charm Box
+    NPC_ROSA                = 52905, // Amani Charm Box
+    NPC_RELISSA             = 52912, // Amani Charm Box
+    NPC_TYLLAN              = 52909, // Amani Charm Box
+
+    NPC_AMANISHI_TEMPEST    = 24549,
+    NPC_AMANISHI_WARRIOR    = 24225,
+    NPC_AMANI_EAGLE         = 24159,
+    NPC_AMANISHI_LOOKOUT    = 24175,
+};
+
+enum GameObjectsIds
+{
+    GO_STRANGE_GONG         = 187359,
+    GO_MAIN_GATE            = 186728,
+    GO_AKILZON_EXIT         = 186858,
+    GO_HALAZZI_ENTRANCE     = 186304,
+    GO_HALAZZI_EXIT         = 186303,
+    GO_MALACRASS_ENTRANCE   = 186305,
+    GO_MALACRASS_EXIT       = 186306,
+    GO_DAAKARA_EXIT         = 186859,
+};
 
 #endif
 

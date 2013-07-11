@@ -2770,6 +2770,33 @@ SpellCooldownsEntry const* SpellInfo::GetSpellCooldowns() const
     return SpellCooldownsId ? sSpellCooldownsStore.LookupEntry(SpellCooldownsId) : NULL;
 }
 
+void SpellInfo::SetDurationIndex(uint32 index)
+{
+    SpellDurationEntry const* durationIndex = sSpellDurationStore.LookupEntry(index);
+    if (!durationIndex)
+        return;
+
+    DurationEntry = durationIndex;
+}
+
+void SpellInfo::SetRangeIndex(uint32 index)
+{
+    SpellRangeEntry const* rangeIndex = sSpellRangeStore.LookupEntry(index);
+    if (!rangeIndex)
+        return;
+
+    RangeEntry = rangeIndex;
+}
+
+void SpellInfo::SetCastTimeIndex(uint32 index)
+{
+    SpellCastTimesEntry const* castTimeIndex = sSpellCastTimesStore.LookupEntry(index);
+    if (!castTimeIndex)
+        return;
+
+    CastTimeEntry = castTimeIndex;
+}
+
 SpellEffectEntry const* SpellEntry::GetSpellEffect(uint32 eff, uint32 difficulty) const
 {
     return GetSpellEffectEntry(Id, eff, difficulty);
@@ -2972,5 +2999,20 @@ bool SpellInfo::CanTriggerBladeFlurry() const
             return true;
     }
 
+    return false;
+}
+
+bool SpellInfo::IsSealSpell() const
+{
+    //Collection of all the seal family flags. No other paladin spell has any of those.
+    //Collection of all the seal Id. No other paladin spell has any of those.
+    switch (Id)
+    {
+        case 20154:
+        case 20165:
+        case 20164:
+        case 31801:
+            return true;
+    }
     return false;
 }

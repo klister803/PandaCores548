@@ -776,6 +776,7 @@ class WorldObject : public Object, public WorldLocation
         bool isInBack(WorldObject const* target, float arc = M_PI) const;
 
         bool IsInBetween(const WorldObject* obj1, const WorldObject* obj2, float size = 0) const;
+        bool IsInBetween(const WorldObject* obj1, float x2, float y2, float size = 0) const;
 
         virtual void CleanupsBeforeDelete(bool finalCleanup = true);  // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
 
@@ -850,6 +851,7 @@ class WorldObject : public Object, public WorldLocation
 
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
         GameObject* FindNearestGameObject(uint32 entry, float range) const;
+        Player*     FindNearestPlayer(float range, bool alive = true);
         GameObject* FindNearestGameObjectOfType(GameobjectTypes type, float range) const;
 
         void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
@@ -943,7 +945,7 @@ class WorldObject : public Object, public WorldLocation
         bool CanDetectStealthOf(WorldObject const* obj) const;
 };
 
-namespace JadeCore
+namespace Trinity
 {
     // Binary predicate to sort WorldObjects based on the distance to a reference WorldObject
     class ObjectDistanceOrderPred

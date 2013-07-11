@@ -186,7 +186,9 @@ public:
             new_length = cacher(*this, i);
             lengths[++i] = new_length;
 
-            ASSERT(prev_length <= new_length);
+            //ASSERT(prev_length <= new_length);
+            if(prev_length > new_length)
+                break;
             prev_length = new_length;
         }
     }

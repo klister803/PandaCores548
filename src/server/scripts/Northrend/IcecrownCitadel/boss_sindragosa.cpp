@@ -1181,7 +1181,7 @@ class spell_sindragosa_unchained_magic : public SpellScriptLoader
                 targets.remove_if(UnchainedMagicTargetSelector());
                 uint32 maxSize = uint32(GetCaster()->GetMap()->GetSpawnMode() & 1 ? 6 : 2);
                 if (targets.size() > maxSize)
-                    JadeCore::Containers::RandomResizeList(targets, maxSize);
+                    Trinity::Containers::RandomResizeList(targets, maxSize);
             }
 
             void Register()
@@ -1505,7 +1505,7 @@ class spell_frostwarden_handler_order_whelp : public SpellScriptLoader
                         ++itr;
                 }
 
-                WorldObject* target = JadeCore::Containers::SelectRandomContainerElement(targets);
+                WorldObject* target = Trinity::Containers::SelectRandomContainerElement(targets);
                 targets.clear();
                 targets.push_back(target);
             }
@@ -1519,7 +1519,7 @@ class spell_frostwarden_handler_order_whelp : public SpellScriptLoader
                 if (Creature* creature = GetCaster()->ToCreature())
                     targets.remove_if (OrderWhelpTargetSelector(creature));
 
-                JadeCore::Containers::SelectRandomContainerElement(targets)->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
+                Trinity::Containers::SelectRandomContainerElement(targets)->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
             }
 
             void Register()

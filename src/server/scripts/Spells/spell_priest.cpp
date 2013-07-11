@@ -953,7 +953,7 @@ class spell_pri_atonement : public SpellScriptLoader
 
                             if (groupList.size() > 1)
                             {
-                                groupList.sort(JadeCore::HealthPctOrderPred());
+                                groupList.sort(Trinity::HealthPctOrderPred());
                                 groupList.resize(1);
                             }
 
@@ -1347,7 +1347,7 @@ class spell_pri_cascade_second : public SpellScriptLoader
                             return;
 
                         // Each bound hit twice more targets up to 8 for the same bound
-                        JadeCore::Containers::RandomResizeList(targetList, (affectedUnits * 2));
+                        Trinity::Containers::RandomResizeList(targetList, (affectedUnits * 2));
 
                         for (auto itr : targetList)
                         {

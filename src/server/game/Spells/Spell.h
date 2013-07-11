@@ -689,7 +689,7 @@ class Spell
 #endif
 };
 
-namespace JadeCore
+namespace Trinity
 {
     struct WorldObjectSpellTargetCheck
     {

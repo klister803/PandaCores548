@@ -1666,6 +1666,10 @@ class Player : public Unit, public GridObject<Player>
         void AddTimedQuest(uint32 quest_id) { m_timedquests.insert(quest_id); }
         void RemoveTimedQuest(uint32 quest_id) { m_timedquests.erase(quest_id); }
 
+        void SendMusic(uint32 musicId, uint64 source);
+        void SendSound(uint32 soundId, uint64 source);
+        void SendSoundToAll(uint32 soundId, uint64 source);
+
         /*********************************************************/
         /***                   LOAD SYSTEM                     ***/
         /*********************************************************/

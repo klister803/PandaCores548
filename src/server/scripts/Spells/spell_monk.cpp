@@ -288,7 +288,7 @@ class spell_monk_black_ox_statue : public SpellScriptLoader
                                         targets.push_back(itr);
                                     }
 
-                                    JadeCore::Containers::RandomResizeList(targets, 1);
+                                    Trinity::Containers::RandomResizeList(targets, 1);
 
                                     for (auto itr : targets)
                                         statue->CastSpell(itr, SPELL_MONK_GUARD, true);
@@ -729,7 +729,7 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
 
                     if (!targetList.empty())
                     {
-                        JadeCore::Containers::RandomResizeList(targetList, 1);
+                        Trinity::Containers::RandomResizeList(targetList, 1);
 
                         for (auto itr : targetList)
                             _player->CastSpell(itr, SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE, true);
@@ -1128,7 +1128,7 @@ class spell_monk_renewing_mist : public SpellScriptLoader
 
                     if (playerList.size() > 1)
                     {
-                        playerList.sort(JadeCore::HealthPctOrderPred());
+                        playerList.sort(Trinity::HealthPctOrderPred());
                         playerList.resize(1);
                     }
 
@@ -1946,7 +1946,7 @@ class spell_monk_soothing_mist : public SpellScriptLoader
                         if (playerList.size() > 1)
                         {
                             playerList.remove(target);
-                            playerList.sort(JadeCore::HealthPctOrderPred());
+                            playerList.sort(Trinity::HealthPctOrderPred());
                             playerList.resize(1);
                         }
 
