@@ -490,9 +490,14 @@ void BossAI::_EnterCombat()
     if (instance)
     {
         // bosses do not respawn, check only on enter combat
-        if (!instance->CheckRequiredBosses(_bossId))
+        if (!instance->CheckRequiredBosses(_bossId, me->GetEntry()))
         {
             EnterEvadeMode();
+            me->m_Events.AddEvent(new SetPhaseDelayEvent(*me, me->GetPhaseMask()), me->m_Events.CalculateTime(30000));
+            me->ToUnit()->RemoveAllAuras();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->GetMotionMaster()->MoveTargetedHome();
             return;
         }
         instance->SetBossState(_bossId, IN_PROGRESS);
@@ -585,6 +590,34 @@ void BossAI::UpdateAI(uint32 const diff)
         ExecuteEvent(eventId);
 
     DoMeleeAttackIfReady();
+}
+
+bool BossAI::_EnterEvadeMode()
+{
+    if (!me->isAlive())
+        return false;
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "BossAI::_EnterEvadeMode %u enters evade mode.", me->GetEntry());
+
+    // dont remove vehicle auras, passengers arent supposed to drop off the vehicle
+    me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
+
+    // sometimes bosses stuck in combat?
+    me->DeleteThreatList();
+    me->CombatStop(true);
+    me->LoadCreaturesAddon();
+    me->SetLootRecipient(NULL);
+    me->ResetPlayerDamageReq();
+
+    me->m_Events.AddEvent(new SetPhaseDelayEvent(*me, me->GetPhaseMask()), me->m_Events.CalculateTime(30000));
+    me->ToUnit()->RemoveAllAuras();
+    me->SetPhaseMask(2, true);
+    me->GetMotionMaster()->MoveTargetedHome();
+
+    if (me->IsInEvadeMode())
+        return false;
+
+    return true;
 }
 
 // WorldBossAI - for non-instanced bosses

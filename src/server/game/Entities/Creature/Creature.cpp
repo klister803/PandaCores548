@@ -139,6 +139,14 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     return true;
 }
 
+bool SetPhaseDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
+{
+    m_owner.SetPhaseMask(m_phase, true);
+    m_owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+    m_owner.SetReactState(REACT_AGGRESSIVE);
+    return true;
+}
+
 Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapCreature(),
 lootForPickPocketed(false), lootForBody(false), m_groupLootTimer(0), lootingGroupLowGUID(0),
 m_PlayerDamageReq(0), m_lootRecipient(0), m_lootRecipientGroup(0), m_corpseRemoveTime(0), m_respawnTime(0),
@@ -167,6 +175,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL)
     ResetLootMode(); // restore default loot mode
     TriggerJustRespawned = false;
     m_isTempWorldObject = false;
+    bossid = 0;
 }
 
 Creature::~Creature()
@@ -838,6 +847,9 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
         //! Relocate again with updated Z coord
         Relocate(x, y, z, ang);
     }
+
+    if(CreatureAIInstance const* aiinstdata = sObjectMgr->GetCreatureAIInstaceData(Entry))
+        bossid = aiinstdata->bossid;
 
     uint32 displayID = GetNativeDisplayId();
     CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelRandomGender(&displayID);

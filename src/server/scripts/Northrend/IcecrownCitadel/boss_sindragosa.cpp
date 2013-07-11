@@ -258,13 +258,6 @@ class boss_sindragosa : public CreatureScript
 
             void EnterCombat(Unit* victim)
             {
-                if (!instance->CheckRequiredBosses(DATA_SINDRAGOSA, victim->ToPlayer()))
-                {
-                    EnterEvadeMode();
-                    instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
-                    return;
-                }
-
                 BossAI::EnterCombat(victim);
                 DoCast(me, SPELL_FROST_AURA);
                 DoCast(me, SPELL_PERMAEATING_CHILL);

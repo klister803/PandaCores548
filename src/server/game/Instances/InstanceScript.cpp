@@ -49,11 +49,13 @@ void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject* go)
         sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript: HandleGameObject failed");
 }
 
-bool InstanceScript::IsEncounterInProgress() const
+bool InstanceScript::IsEncounterInProgress()
 {
     for (std::vector<BossInfo>::const_iterator itr = bosses.begin(); itr != bosses.end(); ++itr)
         if (itr->state == IN_PROGRESS)
             return true;
+
+    ResurectCount = 0;
 
     return false;
 }
@@ -82,6 +84,17 @@ void InstanceScript::LoadDoorData(const DoorData* data)
     sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::LoadDoorData: " UI64FMTD " doors loaded.", uint64(doors.size()));
 }
 
+void InstanceScript::LoadDoorDataBase(std::vector<DoorData> const* data)
+{
+    for (std::vector<DoorData>::const_iterator itr = data->begin(); itr != data->end(); ++itr)
+    {
+        if (itr->bossId < bosses.size())
+            doors.insert(std::make_pair(itr->entry, DoorInfo(&bosses[itr->bossId], itr->type, BoundaryType(itr->boundary))));
+        sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::LoadDoorDataBase data->entry %u, data->bossId %u, bosses.size() %u, data->type %u, data->boundary %u", itr->entry, itr->bossId, bosses.size(), itr->type, itr->boundary);
+    }
+    sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::LoadDoorDataBase: " UI64FMTD " doors loaded.", uint64(doors.size()));
+}
+
 void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
 {
     switch (state)
@@ -105,6 +118,9 @@ void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
 
 void InstanceScript::UpdateDoorState(GameObject* door)
 {
+    if(!this || !door)
+        return;
+
     DoorInfoMap::iterator lower = doors.lower_bound(door->GetEntry());
     DoorInfoMap::iterator upper = doors.upper_bound(door->GetEntry());
     if (lower == upper)
@@ -210,6 +226,7 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
                     if ((*i)->isWorldBoss() && (*i)->isAlive())
                         return false;
 
+            ResurectCount = 0;
             bossInfo->state = state;
             SaveToDB();
         }
@@ -320,6 +337,32 @@ void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
     }
 }
 
+// Reset Achievement Criteria for all players in instance
+void InstanceScript::DoResetAchievementCriteria(AchievementCriteriaTypes type, uint64 miscValue1 /*= 0*/, uint64 miscValue2 /*= 0*/, bool evenIfCriteriaComplete /*= false*/)
+{
+    Map::PlayerList const &PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->getSource())
+                player->GetAchievementMgr().ResetAchievementCriteria(type, miscValue1, miscValue2, evenIfCriteriaComplete);
+}
+
+// Complete Achievement for all players in instance
+void InstanceScript::DoCompleteAchievement(uint32 achievement)
+{
+    AchievementEntry const* pAE = sAchievementStore.LookupEntry(achievement);
+    Map::PlayerList const &PlayerList = instance->GetPlayers();
+
+    if (!pAE)
+        return;
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player *pPlayer = i->getSource())
+                pPlayer->CompletedAchievement(pAE);
+}
+
 // Update Achievement Criteria for all players in instance
 void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= NULL*/)
 {
@@ -371,6 +414,16 @@ void InstanceScript::DoRemoveAurasDueToSpellOnPlayers(uint32 spell)
     }
 }
 
+void InstanceScript::DoNearTeleportPlayers(const Position pos, bool casting /*=false*/)
+{
+    Map::PlayerList const &PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->getSource())
+                player->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), casting);
+}
+
 // Cast spell on all players in instance
 void InstanceScript::DoCastSpellOnPlayers(uint32 spell)
 {
@@ -380,6 +433,16 @@ void InstanceScript::DoCastSpellOnPlayers(uint32 spell)
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if (Player* player = i->getSource())
                 player->CastSpell(player, spell, true);
+}
+
+void InstanceScript::DoSetAlternatePowerOnPlayers(int32 value)
+{
+    Map::PlayerList const &PlayerList = instance->GetPlayers();
+
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            if (Player* player = i->getSource())
+                player->SetPower(POWER_ALTERNATE_POWER, value);
 }
 
 // Add aura on all players in instance

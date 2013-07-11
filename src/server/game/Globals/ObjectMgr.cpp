@@ -1561,6 +1561,84 @@ void ObjectMgr::LoadCreatures()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creatures in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void ObjectMgr::LoadCreatureAIInstance()
+{
+    uint32 oldMSTime = getMSTime();
+
+    QueryResult result = WorldDatabase.Query("SELECT entry, bossid, bossidtoactivete FROM creature_ai_instance");
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 creature AI instance. DB table `creature_ai_instance` is empty.");
+        return;
+    }
+
+    //_creatureAIInstance.rehash(result->GetRowCount());
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 entry = fields[0].GetUInt32();
+
+        CreatureAIInstance& aiinstance = _creatureAIInstance[entry];
+
+        aiinstance.entry = entry;
+        aiinstance.bossid = fields[1].GetUInt32();
+        aiinstance.bossidactivete = fields[2].GetUInt32();
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature AI instance in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+
+    oldMSTime = getMSTime();
+
+    result = WorldDatabase.Query("SELECT instanceId, gobId, bossId, doortype, boundary FROM creature_ai_instance_door");
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 creature AI instance door. DB table `creature_ai_instance_door` is empty.");
+        return;
+    }
+
+    _creatureAIInstanceGo.clear();
+    _creatureAIInstanceDoor.clear();
+    count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 instanceId = fields[0].GetUInt32();
+        uint32 entry = fields[1].GetUInt32();
+
+        DoorData doorData;
+        DoorGoData doorGoData;
+
+        doorData.entry = entry;
+        doorData.bossId = fields[2].GetUInt32();
+        doorData.type = DoorType(fields[3].GetUInt32());
+        doorData.boundary = fields[4].GetUInt32();
+
+        doorGoData.entry = entry;
+        doorGoData.instanceId = instanceId;
+        doorGoData.bossId = fields[2].GetUInt32();
+        doorGoData.type = DoorType(fields[3].GetUInt32());
+        doorGoData.boundary = fields[4].GetUInt32();
+
+        _creatureAIInstanceDoor[instanceId].push_back(doorData);
+        _creatureAIInstanceGo[entry].push_back(doorGoData);
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature AI instance in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
 {
     uint32 mask = data->spawnMask;

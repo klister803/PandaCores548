@@ -208,13 +208,6 @@ class boss_professor_putricide : public CreatureScript
                 if (events.GetPhaseMask() & PHASE_MASK_NOT_SELF)
                     return;
 
-                if (!instance->CheckRequiredBosses(DATA_PROFESSOR_PUTRICIDE, who->ToPlayer()))
-                {
-                    EnterEvadeMode();
-                    instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
-                    return;
-                }
-
                 me->setActive(true);
                 events.Reset();
                 events.ScheduleEvent(EVENT_BERSERK, 600000);

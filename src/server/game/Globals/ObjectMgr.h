@@ -869,6 +869,7 @@ class ObjectMgr
         void RestructCreatureGUID(uint32 nbLigneToRestruct);
         void RestructGameObjectGUID(uint32 nbLigneToRestruct);
         void LoadCreatures();
+        void LoadCreatureAIInstance();
         void LoadLinkedRespawn();
         bool SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid);
         void LoadCreatureAddons();
@@ -987,6 +988,26 @@ class ObjectMgr
             if (itr == _creatureDataStore.end()) return NULL;
             return &itr->second;
         }
+
+        CreatureAIInstance const* GetCreatureAIInstaceData(uint32 entry) const
+        {
+            CreatureAIInstanceContainer::const_iterator itr = _creatureAIInstance.find(entry);
+            if (itr == _creatureAIInstance.end()) return NULL;
+            return &itr->second;
+        }
+
+        const std::vector<DoorData>* GetCreatureAIInstaceDoorData(int32 instanceId) const
+        {
+            CreatureAIInstanceDoorContainer::const_iterator itr = _creatureAIInstanceDoor.find(instanceId);
+            return itr != _creatureAIInstanceDoor.end() ? &(itr->second) : NULL;
+        }
+
+        const std::vector<DoorGoData>* GetCreatureAIInstaceGoData(int32 entry) const
+        {
+            CreatureAIInstanceGoContainer::const_iterator itr = _creatureAIInstanceGo.find(entry);
+            return itr != _creatureAIInstanceGo.end() ? &(itr->second) : NULL;
+        }
+
         CreatureData& NewOrExistCreatureData(uint32 guid) { return _creatureDataStore[guid]; }
         void DeleteCreatureData(uint32 guid);
         uint64 GetLinkedRespawnGuid(uint64 guid) const
@@ -1323,6 +1344,9 @@ class ObjectMgr
         CreatureModelContainer _creatureModelStore;
         CreatureAddonContainer _creatureAddonStore;
         CreatureAddonContainer _creatureTemplateAddonStore;
+        CreatureAIInstanceContainer _creatureAIInstance;
+        CreatureAIInstanceDoorContainer _creatureAIInstanceDoor;
+        CreatureAIInstanceGoContainer _creatureAIInstanceGo;
         EquipmentInfoContainer _equipmentInfoStore;
         LinkedRespawnContainer _linkedRespawnStore;
         CreatureLocaleContainer _creatureLocaleStore;

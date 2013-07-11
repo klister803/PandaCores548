@@ -68,6 +68,9 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
     mFollowArrivedEntry = 0;
     mFollowCreditType = 0;
     mInvincibilityHpLevel = 0;
+    _bossId = c->GetBossId();
+    instance = c->GetInstanceScript();
+    _boundary = instance ? instance->GetBossBoundary(_bossId) : NULL;
 }
 
 void SmartAI::UpdateDespawn(const uint32 diff)
@@ -92,6 +95,8 @@ void SmartAI::Reset()
 {
     if (!HasEscortState(SMART_ESCORT_ESCORTING))//dont mess up escort movement after combat
         SetRun(mRun);
+    if (instance && _bossId)
+        instance->SetBossState(_bossId, NOT_STARTED);
     GetScript()->OnReset();
 }
 
@@ -593,6 +598,21 @@ void SmartAI::EnterCombat(Unit* enemy)
     me->InterruptNonMeleeSpells(false); // must be before ProcessEvents
     GetScript()->ProcessEventsFor(SMART_EVENT_AGGRO, enemy);
     me->GetPosition(&mLastOOCPos);
+    if (instance && _bossId)
+    {
+        // bosses do not respawn, check only on enter combat
+        if (!instance->CheckRequiredBosses(_bossId, me->GetEntry()))
+        {
+            EnterEvadeMode();
+            me->m_Events.AddEvent(new SetPhaseDelayEvent(*me, me->GetPhaseMask()), me->m_Events.CalculateTime(30000));
+            me->ToUnit()->RemoveAllAuras();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->GetMotionMaster()->MoveTargetedHome();
+            return;
+        }
+        instance->SetBossState(_bossId, IN_PROGRESS);
+    }
 }
 
 void SmartAI::JustDied(Unit* killer)
@@ -600,6 +620,11 @@ void SmartAI::JustDied(Unit* killer)
     GetScript()->ProcessEventsFor(SMART_EVENT_DEATH, killer);
     if (HasEscortState(SMART_ESCORT_ESCORTING))
         EndPath(true);
+    if (instance && _bossId)
+    {
+        instance->SetBossState(_bossId, DONE);
+        instance->SaveToDB();
+    }
 }
 
 void SmartAI::KilledUnit(Unit* victim)
