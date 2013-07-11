@@ -174,7 +174,6 @@ void AddSC_boss_flamegor();
 void AddSC_boss_chromaggus();
 void AddSC_boss_nefarian();
 void AddSC_boss_victor_nefarius();
-void AddSC_boss_mr_smite();
 void AddSC_instance_deadmines(); // Deadmines
 void AddSC_deadmines();
 void AddSC_boss_glubtok();
@@ -957,7 +956,6 @@ void AddEasternKingdomsScripts()
     AddSC_boss_chromaggus();
     AddSC_boss_nefarian();
     AddSC_boss_victor_nefarius();
-    AddSC_boss_mr_smite();
     AddSC_instance_deadmines(); // Deadmines
     AddSC_deadmines();
     AddSC_boss_glubtok();
