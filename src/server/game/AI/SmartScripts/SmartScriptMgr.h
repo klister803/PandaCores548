@@ -940,6 +940,11 @@ struct SmartAction
             uint32 angle;
         } setRangedMovement;
 
+        struct
+        {
+            uint32 regenHealth;
+        } setHealthRegen;
+
         //! Note for any new future actions
         //! All parameters must have type uint32
 
