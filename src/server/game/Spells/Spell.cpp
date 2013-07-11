@@ -2040,7 +2040,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
     }
 }
 
-void Spell::prepareDataForTriggerSystem(constAuraEffectPtr /*triggeredByAuraPtr/)
+void Spell::prepareDataForTriggerSystem(constAuraEffectPtr /*triggeredByAuraPtr*/)
 {
     //==========================================================================================
     // Now fill data for trigger system, need know:

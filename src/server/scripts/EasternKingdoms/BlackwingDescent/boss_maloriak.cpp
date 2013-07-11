@@ -944,7 +944,7 @@ class EntryCheck
 {
     public:
         EntryCheck(uint32 entry) {i_entry = entry;}
-        bool operator()(Unit* obj) const
+        bool operator()(WorldObject* obj) const
         {
             if (!obj->ToCreature())
                 return true;
