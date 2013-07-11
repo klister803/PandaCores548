@@ -931,7 +931,7 @@ class GoCheck
 {
     public:
         GoCheck() {}
-        bool operator()(GameObject* obj) const
+        bool operator()(WorldObject* obj) const
         {
             if (!obj->ToGameObject())
                 return true;
@@ -1159,7 +1159,8 @@ class spell_maloriak_remedy : public SpellScriptLoader
             {
                 int32 baseAmount = aurEff->GetBaseAmount();
                 if (baseAmount > 0)
-                    const_cast<AuraEffect*>(aurEff)->SetAmount(baseAmount * aurEff->GetTickNumber());
+                if (AuraEffectPtr aurEffm = GetAura()->GetEffect(EFFECT_0))
+                    aurEffm->SetAmount(baseAmount * aurEff->GetTickNumber());
             }
 
             void Register()
