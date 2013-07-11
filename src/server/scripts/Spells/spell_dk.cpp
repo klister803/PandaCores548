@@ -1107,12 +1107,12 @@ class spell_dk_purgatory_absorb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_purgatory_absorb_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr /*AuraEffectPtr/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*AuraEffectPtr*/, int32& amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr /*AuraEffectPtr/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void Absorb(AuraEffectPtr /*AuraEffectPtr*/, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 Unit* target = GetTarget();
 

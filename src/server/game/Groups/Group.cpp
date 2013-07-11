@@ -3160,8 +3160,8 @@ void Group::UpdateGuildAchievementCriteria(AchievementCriteriaTypes type, uint32
                 if (bUnique && guildId)
                 {
                     guildList.push_back(guildId);
-                    if (Guild* pGuild = sGuildMgr->GetGuildById(guildId))
-                        pGuild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, pUnit, pPlayer);
+                    //if (Guild* pGuild = sGuildMgr->GetGuildById(guildId))
+                        //pGuild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, pUnit, pPlayer);
                 }
             }
             else
@@ -3169,8 +3169,8 @@ void Group::UpdateGuildAchievementCriteria(AchievementCriteriaTypes type, uint32
                 // If that's first guild in list
                 // then add to the list and update criteria
                 guildList.push_back(guildId);
-                if (Guild* pGuild = sGuildMgr->GetGuildById(guildId))
-                    pGuild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, pUnit, pPlayer);
+                //if (Guild* pGuild = sGuildMgr->GetGuildById(guildId))
+                    //pGuild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, pUnit, pPlayer);
             }
         }
     }

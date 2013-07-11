@@ -84,12 +84,12 @@ class spell_rog_cheat_death : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_cheat_death_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr /*AuraEffectPtr/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*AuraEffectPtr*/, int32& amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr /*AuraEffectPtr/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void Absorb(AuraEffectPtr /*AuraEffectPtr*/, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 if (Unit* target = GetTarget())
                 {
