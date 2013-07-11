@@ -5514,7 +5514,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 break;
                 case SPELL_TRIGGER_UPDATE_DUR:
                 {
-                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                    if(AuraPtr aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
                         aura->RefreshDuration();
                     check = true;
                     continue;
@@ -5522,7 +5522,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 break;
                 case SPELL_TRIGGER_GET_DUR_AURA:
                 {
-                    if(Aura* aura = target->GetAura(itr->aura, GetGUID()))
+                    if(AuraPtr aura = target->GetAura(itr->aura, GetGUID()))
                         basepoints0 = int32(aura->GetDuration() / 1000);
                     if(basepoints0)
                     {

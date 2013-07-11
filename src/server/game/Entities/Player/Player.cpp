@@ -23034,6 +23034,43 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, time_t end_time)
     m_spellCooldowns[spellid] = sc;
 }
 
+void Player::SpellCooldownReduction(uint32 spellid, time_t end_time)
+{
+    uint32 newCooldownDelay = GetSpellCooldownDelay(spellid);
+    if (newCooldownDelay < end_time)
+        newCooldownDelay = 0;
+    else
+        newCooldownDelay -= end_time;
+
+    AddSpellCooldown(spellid, 0, uint32(time(NULL) + newCooldownDelay));
+
+    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+    data << uint32(spellid);
+    data << uint64(GetGUID());
+    data << int32(-end_time);
+    GetSession()->SendPacket(&data);
+}
+
+void Player::ChangeSpellCooldown(uint32 spellid, float second)
+{
+    if(!this)
+        return;
+    if(!HasSpellCooldown(spellid))
+        return;
+
+    int32 newCooldownDelay = GetSpellCooldownDelay(spellid) + second;
+
+    RemoveSpellCooldown(spellid, false);
+    if(newCooldownDelay > 0)
+        AddSpellCooldown(spellid, 0, time(NULL) + newCooldownDelay);
+
+    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+    data << uint32(spellid);                  // Spell ID
+    data << uint64(GetGUID());              // Player GUID
+    data << int32(second*IN_MILLISECONDS);                 // Cooldown mod in milliseconds
+    GetSession()->SendPacket(&data);
+}
+
 void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
 {
     // start cooldowns at server side, if any
@@ -23690,6 +23727,19 @@ void Player::ClearComboPoints()
     m_comboPoints = 0;
 
     SendComboPoints();
+
+    int32 chancekd = 0;
+    if(HasAura(79095))
+        chancekd = -1;
+    if(HasAura(79096))
+        chancekd = -2;
+    if(chancekd != 0)
+    {
+        ChangeSpellCooldown(51690, chancekd);
+        ChangeSpellCooldown(13750, chancekd);
+        ChangeSpellCooldown(2983, chancekd);
+        ChangeSpellCooldown(73981, chancekd);
+    }
 
     if (Unit* target = ObjectAccessor::GetUnit(*this, m_comboTarget))
         target->RemoveComboPointHolder(GetGUIDLow());
