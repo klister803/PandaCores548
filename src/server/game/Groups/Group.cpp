@@ -35,6 +35,7 @@
 #include "Util.h"
 #include "LFGMgr.h"
 #include "UpdateFieldFlags.h"
+#include "GuildMgr.h"
 
 Roll::Roll(uint64 _guid, LootItem const& li) : itemGUID(_guid), itemid(li.itemid),
     itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix), itemCount(li.count),
@@ -3082,14 +3083,14 @@ bool Group::IsGuildGroup(uint32 guildId, bool AllInSameMap, bool AllInSameInstan
             {
                 switch (player->GetMap()->GetDifficulty())
                 {
-                    case RAID_DIFFICULTY_10MAN_NORMAL:
-                    case RAID_DIFFICULTY_10MAN_HEROIC:
+                    case MAN10_DIFFICULTY:
+                    case MAN10_HEROIC_DIFFICULTY:
                         if (count >= 8)
                             ret = true;
                         break;
 
-                    case RAID_DIFFICULTY_25MAN_NORMAL:
-                    case RAID_DIFFICULTY_25MAN_HEROIC:
+                    case MAN25_DIFFICULTY:
+                    case MAN25_HEROIC_DIFFICULTY:
                         if (count >= 20)
                             ret = true;
                         break;
