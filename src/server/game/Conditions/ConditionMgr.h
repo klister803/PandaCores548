@@ -43,7 +43,7 @@ enum ConditionTypes
     CONDITION_DRUNKENSTATE          = 10,                   // DrunkenState     0,             0                  true if player is drunk enough
     CONDITION_WORLD_STATE           = 11,                   // index            value          0                  true if world has the value for the index
     CONDITION_ACTIVE_EVENT          = 12,                   // event_id         0              0                  true if event is active
-    CONDITION_INSTANCE_DATA         = 13,                   // entry            data           0                  true if data is set in current instance
+    CONDITION_INSTANCE_INFO         = 13,                   // entry            data           0                  true if data is set in current instance
     CONDITION_QUEST_NONE            = 14,                   // quest_id         0              0                  true if doesn't have quest saved
     CONDITION_CLASS                 = 15,                   // class            0              0                  true if player's class is equal to class
     CONDITION_RACE                  = 16,                   // race             0              0                  true if player's race is equal to race
@@ -124,9 +124,9 @@ enum ConditionSourceType
     CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK                = 20,
     CONDITION_SOURCE_TYPE_VEHICLE_SPELL                  = 21,
     CONDITION_SOURCE_TYPE_SMART_EVENT                    = 22,
-    CONDITION_SOURCE_TYPE_NPC_VENDOR                     = 23,
-    CONDITION_SOURCE_TYPE_PHASE_DEFINITION               = 24,
-    CONDITION_SOURCE_TYPE_SPELL_PROC                     = 25,
+    CONDITION_SOURCE_TYPE_PHASE_DEFINITION               = 23,
+    CONDITION_SOURCE_TYPE_SPELL_PROC                     = 24,
+    CONDITION_SOURCE_TYPE_NPC_VENDOR                     = 25,
     CONDITION_SOURCE_TYPE_MAX                            = 26  //MAX
 };
 
@@ -149,6 +149,13 @@ enum RelationType
     RELATION_PASSENGER_OF,
     RELATION_CREATED_BY,
     RELATION_MAX
+};
+
+enum InstanceInfo
+{
+    INSTANCE_INFO_DATA = 0,
+    INSTANCE_INFO_DATA64,
+    INSTANCE_INFO_BOSS_STATE
 };
 
 enum
