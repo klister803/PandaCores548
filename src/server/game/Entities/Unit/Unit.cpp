@@ -5423,6 +5423,125 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
     int32 basepoints0 = 0;
     uint64 originalCaster = 0;
 
+    if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggered(dummySpell->Id))
+    {
+        bool check = false;
+        cooldown_spell_id = dummySpell->Id;
+        if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
+            return false;
+
+        for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
+        {
+            if (!(itr->effectmask & (1<<effIndex)) || !target)
+                continue;
+
+            if(itr->target == 1)
+                target = this;
+
+            switch (itr->option)
+            {
+                case SPELL_TRIGGER_BP:
+                {
+                    if(itr->spell_trigger > 0)
+                        basepoints0 = triggerAmount;
+                    else
+                        basepoints0 = -(triggerAmount);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_BP_CUSTOM:
+                {
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &itr->bp0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_MANA_COST:
+                {
+                    if(!procSpell)
+                        continue;
+                    int32 cost = int32(procSpell->ManaCost + CalculatePct(GetCreateMana(), procSpell->ManaCostPercentage));
+                    basepoints0 = CalculatePct(cost, itr->bp0);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_DAM_HEALTH:
+                {
+                    basepoints0 = CalculatePct(damage, triggerAmount);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_COOLDOWN:
+                {
+                    if(Player* player = target->ToPlayer())
+                    {
+                        uint32 spellid = abs(itr->spell_trigger);
+                        if(itr->bp0 == 0)
+                            player->RemoveSpellCooldown(spellid, true);
+                        else
+                        {
+                            if(itr->aura && !procSpell)
+                                continue;
+                            if(itr->aura && procSpell && itr->aura != procSpell->Id)
+                                continue;
+
+                            float delay = float(itr->bp0 / 1000);
+                            if(delay > -1.0f)
+                            {
+                                if(roll_chance_i(50))
+                                    player->ChangeSpellCooldown(spellid, -1.0f);
+                            }
+                            else
+                                player->ChangeSpellCooldown(spellid, delay);
+                        }
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_UPDATE_DUR:
+                {
+                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                        aura->RefreshDuration();
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_GET_DUR_AURA:
+                {
+                    if(Aura* aura = target->GetAura(itr->aura, GetGUID()))
+                        basepoints0 = int32(aura->GetDuration() / 1000);
+                    if(basepoints0)
+                    {
+                        triggered_spell_id = abs(itr->spell_trigger);
+                        CastCustomSpell(this, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+            }
+        }
+
+        if (cooldown && GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, time(NULL) + cooldown);
+        if(check)
+            return true;
+    }
+
     switch (dummySpell->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:

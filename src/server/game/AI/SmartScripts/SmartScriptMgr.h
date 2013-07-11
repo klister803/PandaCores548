@@ -53,9 +53,13 @@ enum SMART_EVENT_PHASE
     SMART_EVENT_PHASE_4       = 4,
     SMART_EVENT_PHASE_5       = 5,
     SMART_EVENT_PHASE_6       = 6,
-    SMART_EVENT_PHASE_MAX     = 7,
+    SMART_EVENT_PHASE_7       = 7,
+    SMART_EVENT_PHASE_8       = 8,
+    SMART_EVENT_PHASE_9       = 9,
+    SMART_EVENT_PHASE_10      = 10,
+    SMART_EVENT_PHASE_MAX     = 11,
 
-    SMART_EVENT_PHASE_COUNT   = 6,
+    SMART_EVENT_PHASE_COUNT   = 10
 };
 
 enum SMART_EVENT_PHASE_BITS
@@ -67,7 +71,11 @@ enum SMART_EVENT_PHASE_BITS
     SMART_EVENT_PHASE_4_BIT        = 8,
     SMART_EVENT_PHASE_5_BIT        = 16,
     SMART_EVENT_PHASE_6_BIT        = 32,
-    SMART_EVENT_PHASE_ALL          = SMART_EVENT_PHASE_1_BIT + SMART_EVENT_PHASE_2_BIT + SMART_EVENT_PHASE_3_BIT + SMART_EVENT_PHASE_4_BIT + SMART_EVENT_PHASE_5_BIT + SMART_EVENT_PHASE_6_BIT,
+    SMART_EVENT_PHASE_7_BIT        = 64,
+    SMART_EVENT_PHASE_8_BIT        = 128,
+    SMART_EVENT_PHASE_9_BIT        = 256,
+    SMART_EVENT_PHASE_10_BIT       = 512,
+    SMART_EVENT_PHASE_ALL          = SMART_EVENT_PHASE_1_BIT + SMART_EVENT_PHASE_2_BIT + SMART_EVENT_PHASE_3_BIT + SMART_EVENT_PHASE_4_BIT + SMART_EVENT_PHASE_5_BIT + SMART_EVENT_PHASE_6_BIT + SMART_EVENT_PHASE_7_BIT + SMART_EVENT_PHASE_8_BIT + SMART_EVENT_PHASE_9_BIT + SMART_EVENT_PHASE_10_BIT
 };
 
 const uint32 SmartPhaseMask[SMART_EVENT_PHASE_COUNT][2] =
@@ -78,6 +86,10 @@ const uint32 SmartPhaseMask[SMART_EVENT_PHASE_COUNT][2] =
     {SMART_EVENT_PHASE_4, SMART_EVENT_PHASE_4_BIT },
     {SMART_EVENT_PHASE_5, SMART_EVENT_PHASE_5_BIT },
     {SMART_EVENT_PHASE_6, SMART_EVENT_PHASE_6_BIT },
+    {SMART_EVENT_PHASE_7, SMART_EVENT_PHASE_7_BIT },
+    {SMART_EVENT_PHASE_8, SMART_EVENT_PHASE_8_BIT },
+    {SMART_EVENT_PHASE_9, SMART_EVENT_PHASE_9_BIT },
+    {SMART_EVENT_PHASE_10, SMART_EVENT_PHASE_10_BIT }
 };
 
 enum SMART_EVENT
@@ -157,7 +169,9 @@ enum SMART_EVENT
     SMART_EVENT_ACTION_DONE              = 72,      // eventId (SharedDefines.EventId)
     SMART_EVENT_ON_SPELLCLICK            = 73,      // clicker (unit)
 
-    SMART_EVENT_END                      = 74,
+    SMART_EVENT_CHECK_DIST_TO_HOME       = 74,      // clicker (unit)
+
+    SMART_EVENT_END                      = 75
 };
 
 struct SmartEvent
@@ -369,6 +383,14 @@ struct SmartEvent
             uint32 param3;
             uint32 param4;
         } raw;
+
+        struct
+        {
+            uint32 maxDist;
+            uint32 param2;
+            uint32 repeatMin;
+            uint32 repeatMax;
+        } dist;
     };
 };
 
@@ -486,8 +508,13 @@ enum SMART_ACTION
     SMART_ACTION_GO_SET_LOOT_STATE                  = 99,     // state
     SMART_ACTION_SEND_TARGET_TO_TARGET              = 100,    // id
     SMART_ACTION_SET_HOME_POS                       = 101,    // none
+    SMART_ACTION_SET_HEALTH_REGEN                   = 102,    // 0/1
+    SMART_ACTION_BOSS_EVADE                         = 200,    // No Params
+    SMART_ACTION_BOSS_ANOUNCE                       = 201,    // TextId from trinity_ctring
+    SMART_ACTION_MOVE_Z                             = 202,    // TextId from trinity_ctring
+    SMART_ACTION_SET_KD                             = 203,    // Set instanse kd
 
-    SMART_ACTION_END                                = 102,
+    SMART_ACTION_END                                = 204,
 };
 
 struct SmartAction
@@ -925,6 +952,22 @@ struct SmartAction
             uint32 param5;
             uint32 param6;
         } raw;
+
+        struct
+        {
+            uint32 tesxid;
+            uint32 area;
+            uint8 local;
+            uint32 idsample;
+        } announce;
+
+        struct
+        {
+            int32 targetX;
+            int32 targetY;
+            int32 targetZ;
+            uint8 flymode;
+        } movetoz;
     };
 };
 
@@ -966,7 +1009,10 @@ enum SMARTAI_TARGETS
     SMART_TARGET_ACTION_INVOKER_VEHICLE         = 22,   // Unit's vehicle who caused this Event to occur
     SMART_TARGET_OWNER_OR_SUMMONER              = 23,   // Unit's owner or summoner
     SMART_TARGET_THREAT_LIST                    = 24,   // All units on creature's threat list
-    SMART_TARGET_END                            = 25,
+    SMART_TARGET_HOSTILE_RANDOM_PLAYER          = 125,   // Just any random target on our threat list player
+    SMART_TARGET_HOSTILE_RANDOM_NOT_TOP_PLAYER  = 126,   // Any random target except top threat player
+    SMART_TARGET_HOSTILE_RANDOM_AURA            = 127,   // Any random target except top threat player
+    SMART_TARGET_END                            = 128
 };
 
 struct SmartTarget
@@ -1054,6 +1100,13 @@ struct SmartTarget
             uint32 param2;
             uint32 param3;
         } raw;
+
+        struct
+        {
+            int32 entry;
+            uint32 dist;
+            uint32 param3;
+        } spell;
     };
 };
 
@@ -1186,6 +1239,7 @@ const uint32 SmartAIEventMask[SMART_EVENT_END][2] =
     {SMART_EVENT_GO_EVENT_INFORM,           SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     {SMART_EVENT_ACTION_DONE,               SMART_SCRIPT_TYPE_MASK_CREATURE },
     {SMART_EVENT_ON_SPELLCLICK,             SMART_SCRIPT_TYPE_MASK_CREATURE },
+    {SMART_EVENT_CHECK_DIST_TO_HOME,        SMART_SCRIPT_TYPE_MASK_CREATURE }
 };
 
 enum SmartEventFlags

@@ -394,6 +394,10 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 if (!IsMinMaxValid(e, e.event.los.cooldownMin, e.event.los.cooldownMax))
                     return false;
                 break;
+            case SMART_EVENT_CHECK_DIST_TO_HOME:
+                if (!IsMinMaxValid(e, e.event.dist.repeatMin, e.event.dist.repeatMax))
+                    return false;
+                break;
             case SMART_EVENT_RESPAWN:
                 if (e.event.respawn.type == SMART_SCRIPT_RESPAWN_CONDITION_MAP && !sMapStore.LookupEntry(e.event.respawn.map))
                 {
@@ -905,6 +909,11 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_GO_SET_LOOT_STATE:
         case SMART_ACTION_SEND_TARGET_TO_TARGET:
         case SMART_ACTION_SET_HOME_POS:
+        case SMART_ACTION_SET_HEALTH_REGEN:
+        case SMART_ACTION_BOSS_EVADE:
+        case SMART_ACTION_BOSS_ANOUNCE:
+        case SMART_ACTION_MOVE_Z:
+        case SMART_ACTION_SET_KD:
             break;
         default:
             sLog->outError(LOG_FILTER_SQL, "SmartAIMgr: Not handled action_type(%u), event_type(%u), Entry %d SourceType %u Event %u, skipped.", e.GetActionType(), e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id);

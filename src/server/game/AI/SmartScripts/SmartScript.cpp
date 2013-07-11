@@ -741,6 +741,53 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_EVADE: Creature %u EnterEvadeMode", me->GetGUIDLow());
             return;
         }
+        case SMART_ACTION_BOSS_ANOUNCE:
+        {
+            if (!me)
+                break;
+
+            if(e.action.announce.area && e.action.announce.area != me->GetAreaId())
+                break;
+
+            LocaleConstant locale;
+
+            if(e.action.announce.local)
+                locale = (LocaleConstant) e.action.announce.local;
+            else
+                locale = sWorld->GetDefaultDbcLocale();
+
+            std::string text = sObjectMgr->GetTrinityString(e.action.announce.tesxid, locale);
+
+            sWorld->SendWorldText(e.action.announce.idsample, text.c_str());
+
+            sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_BOSS_ANOUNCE: Creature %u Announce", me->GetGUIDLow());
+            return;
+        }
+        case SMART_ACTION_BOSS_EVADE:
+        {
+            if (!me)
+                break;
+
+            ProcessEventsFor(SMART_EVENT_EVADE);
+            me->m_Events.AddEvent(new SetPhaseDelayEvent(*me, me->GetPhaseMask()), me->m_Events.CalculateTime(30000));
+            me->ToUnit()->RemoveAllAuras();
+
+            me->DeleteThreatList();
+            me->CombatStop(true);
+            me->LoadCreaturesAddon();
+            me->SetLootRecipient(NULL);
+            me->ResetPlayerDamageReq();
+            me->GetMotionMaster()->MoveTargetedHome();
+
+            if (InstanceScript* instance = me->GetInstanceScript())
+                if(uint32 _bossId = me->GetBossId())
+                    instance->SetBossState(_bossId, NOT_STARTED);
+
+            me->SetPhaseMask(2, true);
+
+            sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_BOSS_EVADE: Creature %u EnterEvadeMode", me->GetGUIDLow());
+            return;
+        }
         case SMART_ACTION_FLEE_FOR_ASSIST:
         {
             if (!me)
@@ -1898,6 +1945,48 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             // TODO: Resume path when reached jump location
             break;
         }
+        case SMART_ACTION_MOVE_Z:
+        {
+            if (!me)
+                break;
+
+            me->GetMotionMaster()->Clear();
+            if(e.action.movetoz.flymode)
+            {
+                me->SetCanFly(false);
+                me->SetDisableGravity(false);
+            }
+            else
+            {
+                me->SetCanFly(true);
+                me->SetDisableGravity(true);
+            }
+            float x,y,z,o;
+            me->GetPosition(x, y, z, o);
+            x += float(e.action.movetoz.targetX);
+            y += float(e.action.movetoz.targetY);
+            z += float(e.action.movetoz.targetZ);
+            me->GetMotionMaster()->MovePoint(0, x, y, z);
+            // TODO: Resume path when reached jump location
+            break;
+        }
+        case SMART_ACTION_SET_KD:
+        {
+            if (!me || !me->GetMap() || !me->GetMap()->ToInstanceMap())
+                break;
+
+            Map::PlayerList const& players = me->GetMap()->GetPlayers();
+            if (!players.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                {
+                    Player* player = itr->getSource();
+                    if (player)
+                        me->GetMap()->ToInstanceMap()->PermBindAllPlayers(player);
+                }
+            }
+            break;
+        }
         case SMART_ACTION_GO_SET_LOOT_STATE:
         {
             ObjectList* targets = GetTargets(e, unit);
@@ -1987,6 +2076,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                 break;
             }
+        case SMART_ACTION_SET_HEALTH_REGEN:
+        {
+            if (!me || me->GetTypeId() != TYPEID_UNIT)
+                break;
+            me->setRegeneratingHealth(e.action.setHealthRegen.regenHealth ? true : false);
+            break;
+        }
         default:
             sLog->outError(LOG_FILTER_SQL, "SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Unhandled Action type %u", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
             break;
@@ -2019,6 +2115,8 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                 AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, e.action.installTtemplate.param2, e.action.installTtemplate.param3, SMART_ACTION_CAST, e.action.installTtemplate.param1, e.target.raw.param1, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, 1);
                 AddEvent(SMART_EVENT_RANGE, 0, e.action.installTtemplate.param4, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 1);
                 AddEvent(SMART_EVENT_RANGE, 0, 0, e.action.installTtemplate.param4>10?e.action.installTtemplate.param4-10:0, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 1);
+                AddEvent(SMART_EVENT_CHECK_DIST_TO_HOME, 0, e.action.installTtemplate.param4, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 1);
+                AddEvent(SMART_EVENT_CHECK_DIST_TO_HOME, 0, 0, e.action.installTtemplate.param4>10?e.action.installTtemplate.param4-10:0, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 1);
                 AddEvent(SMART_EVENT_MANA_PCT, 0, e.action.installTtemplate.param5-15>100?100:e.action.installTtemplate.param5+15, 100, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 0);
                 AddEvent(SMART_EVENT_MANA_PCT, 0, 0, e.action.installTtemplate.param5, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 0, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 0);
                 AddEvent(SMART_EVENT_MANA_PCT, 0, 0, e.action.installTtemplate.param5, 1000, 1000, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 0);
@@ -2051,6 +2149,8 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
 
                 if (sCreatureTextMgr->TextExist(me->GetEntry(), (uint8)e.action.installTtemplate.param5))
                     AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_TALK, e.action.installTtemplate.param5, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 1);
+
+                AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_BOSS_ANOUNCE, e.action.installTtemplate.param5, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, 1);
                 break;
             }
         case SMARTAI_TEMPLATE_CAGED_GO_PART:
@@ -2824,6 +2924,19 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessAction(e, unit, var0);
             break;
         }
+        case SMART_EVENT_CHECK_DIST_TO_HOME:
+        {
+            if (!me || !me->isInCombat() || !me->getVictim())
+                return;
+
+            Position const& _homePosition = me->GetHomePosition();
+            if (me->GetDistance2d(_homePosition.GetPositionX(), _homePosition.GetPositionY()) > (float)e.event.dist.maxDist)
+            {
+                ProcessAction(e, me->getVictim());
+                RecalcTimer(e, e.event.dist.repeatMin, e.event.dist.repeatMax);
+            }
+            break;
+        }
         default:
             sLog->outError(LOG_FILTER_SQL, "SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
             break;
@@ -2901,6 +3014,7 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
             case SMART_EVENT_HAS_AURA:
             case SMART_EVENT_TARGET_BUFFED:
             case SMART_EVENT_IS_BEHIND_TARGET:
+            case SMART_EVENT_CHECK_DIST_TO_HOME:
             {
                 ProcessEvent(e);
                 if (e.GetScriptType() == SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
