@@ -3542,25 +3542,27 @@ void ObjectMgr::LoadQuests()
         "RewardFactionValueIdOverride1, RewardFactionValueIdOverride2, RewardFactionValueIdOverride3, RewardFactionValueIdOverride4, RewardFactionValueIdOverride5, "
         //    85        86      87      88          89       90        91      92          93             94              95
         "PointMapId, PointX, PointY, PointOption, Title, Objectives, Details, EndText, CompletedText, OfferRewardText, RequestItemsText, "
-        //        96              97               98               99                  100                     101                      102                  103
-        "RequiredNpcOrGo1, RequiredNpcOrGo2, RequiredNpcOrGo3, RequiredNpcOrGo4, RequiredNpcOrGoCount1, RequiredNpcOrGoCount2, RequiredNpcOrGoCount3, RequiredNpcOrGoCount4, "
         //         104                     105                    106                   107                     108                       109                     110                       111
         "RequiredSourceItemId1, RequiredSourceItemId2, RequiredSourceItemId3, RequiredSourceItemId4, RequiredSourceItemCount1, RequiredSourceItemCount2, RequiredSourceItemCount3, RequiredSourceItemCount4, "
-        //       112               113             114             115              116             117                 118                   119               120               121                 122                 123
-        "RequiredItemId1, RequiredItemId2, RequiredItemId3, RequiredItemId4, RequiredItemId5, RequiredItemId6, RequiredItemCount1, RequiredItemCount2, RequiredItemCount3, RequiredItemCount4, RequiredItemCount5, RequiredItemCount6, "
-        //      124             125                 126                127                  128              129              130             131           132
-        "RequiredSpell, RequiredSpellCast1, RequiredSpellCast2, RequiredSpellCast3, RequiredSpellCast4, ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4, "
-        //     133                  134               135               136                  137                  138                     139                   140
+        //    96           97           98           99           100         101          102          103          104          105
+        "RequiredId1, RequiredId2, RequiredId3, RequiredId4, RequiredId5, RequiredId6, RequiredId7, RequiredId8, RequiredId9, RequiredId10, "
+        //       106             107                108              109                110               111              112               113               114               115
+        "RequiredIdCount1, RequiredIdCount2, RequiredIdCount3, RequiredIdCount4, RequiredIdCount5, RequiredIdCount6, RequiredIdCount7, RequiredIdCount8, RequiredIdCount9, RequiredIdCount10, "
+        //       116              117              118               119               120               121               122                123               124               125
+        "RequirementType1, RequirementType2, RequirementType3, RequirementType4, RequirementType5, RequirementType6, RequirementType7, RequirementType8, RequirementType9, RequirementType10, "
+        //      126             127                 128                129                  130              131              132             133           134
+        "ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4, ObjectiveText5, ObjectiveText6, ObjectiveText7, ObjectiveText8, ObjectiveText9, ObjectiveText10, "
+        //      135             136                 137                138                  139
+        "RequiredSpell, RequiredSpellCast1, RequiredSpellCast2, RequiredSpellCast3, RequiredSpellCast4, "
+        //     140                  141               142               143                  144                  145                     146                   147
         "RewardCurrencyId1, RewardCurrencyId2, RewardCurrencyId3, RewardCurrencyId4, RewardCurrencyCount1, RewardCurrencyCount2, RewardCurrencyCount3, RewardCurrencyCount4, "
-        //      141                  142                 143                   144                    145                    146                     147                   148
-        "RequiredCurrencyId1, RequiredCurrencyId2, RequiredCurrencyId3, RequiredCurrencyId4, RequiredCurrencyCount1, RequiredCurrencyCount2, RequiredCurrencyCount3, RequiredCurrencyCount4, "
-        //      149                  150                 151                   152               153          154
+        //      164                  165                 166                   167               168          169
         "QuestGiverTextWindow, QuestGiverTargetName, QuestTurnTextWindow, QuestTurnTargetName, SoundAccept, SoundTurnIn, "
-        //      155          156           157            158               159                160                  161                  162                163             164
+        //      170          171           172            173               174                175                  176                  177                178             179
         "DetailsEmote1, DetailsEmote2, DetailsEmote3, DetailsEmote4, DetailsEmoteDelay1, DetailsEmoteDelay2, DetailsEmoteDelay3, DetailsEmoteDelay4, EmoteOnIncomplete, EmoteOnComplete, "
-        //      165                 166               167                168                   169                      170                     171                  172
+        //      180                 181               182                183                   184                      185                     186                  187
         "OfferRewardEmote1, OfferRewardEmote2, OfferRewardEmote3, OfferRewardEmote4, OfferRewardEmoteDelay1, OfferRewardEmoteDelay2, OfferRewardEmoteDelay3, OfferRewardEmoteDelay4, "
-        //    173           174           175          176
+        //    188           189           190          191
         "StartScript, CompleteScript, PackageItem, WDBVerified"
         " FROM quest_template");
     if (!result)

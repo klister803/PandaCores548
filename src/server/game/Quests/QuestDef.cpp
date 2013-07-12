@@ -109,43 +109,34 @@ Quest::Quest(Field* questRecord)
     OfferRewardText         = questRecord[index++].GetString();
     RequestItemsText        = questRecord[index++].GetString();
 
-    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-        RequiredNpcOrGo[i] = questRecord[index++].GetInt32();
-
-    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-        RequiredNpcOrGoCount[i] = questRecord[index++].GetUInt16();
-
     for (int i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
         RequiredSourceItemId[i] = questRecord[index++].GetUInt32();
 
     for (int i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
         RequiredSourceItemCount[i] = questRecord[index++].GetUInt16();
 
-    for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
-        RequiredItemId[i] = questRecord[index++].GetUInt32();
+    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        RequiredId[i] = questRecord[index++].GetInt32();
 
-    for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
-        RequiredItemCount[i] = questRecord[index++].GetUInt16();
+    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        RequiredIdCount[i] = questRecord[index++].GetUInt16();
 
-    RequiredSpell           = questRecord[index++].GetUInt32();
-
-    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i) // To be removed
-        RequiredSpellCast[i] = questRecord[index++].GetUInt32();
+    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        RequirementType[i] = questRecord[index++].GetUInt8();
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
         ObjectiveText[i] = questRecord[index++].GetString();
+
+    RequiredSpell           = questRecord[index++].GetUInt32();
+
+    for (int i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i) // To be removed
+        RequiredSpellCast[i] = questRecord[index++].GetUInt32();
 
     for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
         RewardCurrencyId[i] = questRecord[index++].GetUInt16();
 
     for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
         RewardCurrencyCount[i] = questRecord[index++].GetUInt8();
-
-    for (int i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
-        RequiredCurrencyId[i] = questRecord[index++].GetUInt16();
-
-    for (int i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
-        RequiredCurrencyCount[i] = questRecord[index++].GetUInt8();
 
     QuestGiverTextWindow    = questRecord[index++].GetString();
     QuestGiverTargetName    = questRecord[index++].GetString();
@@ -185,13 +176,35 @@ Quest::Quest(Field* questRecord)
     m_rewCurrencyCount = 0;
     m_reqCurrencyCount = 0;
 
-    for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
-        if (RequiredItemId[i])
-            ++m_reqItemsCount;
-
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-        if (RequiredNpcOrGo[i])
-            ++m_reqNpcOrGoCount;
+    {
+        if (RequiredId[i])
+        {
+            switch(RequirementType[i])
+            {
+                case 0:
+                    ++m_reqNpcOrGoCount;
+                    RequiredNpcOrGo[i] = RequiredId[i];
+                    RequiredNpcOrGoCount[i] = RequiredIdCount[i];
+                    break;
+                case 1:
+                    ++m_reqItemsCount;
+                    RequiredItemId[i] = RequiredId[i];
+                    RequiredItemCount[i] = RequiredIdCount[i];
+                    break;
+                case 2:
+                    ++m_reqNpcOrGoCount;
+                    RequiredNpcOrGo[i] = RequiredId[i] * (-1);
+                    RequiredNpcOrGoCount[i] = RequiredIdCount[i];
+                    break;
+                case 4:
+                    ++m_reqCurrencyCount;
+                    RequiredCurrencyId[i] = RequiredId[i];
+                    RewardCurrencyCount[i] = RequiredIdCount[i];
+                    break;
+            }
+        }
+    }
 
     for (int i = 0; i < QUEST_REWARDS_COUNT; ++i)
         if (RewardItemId[i])
@@ -204,10 +217,6 @@ Quest::Quest(Field* questRecord)
     for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
         if (RewardCurrencyId[i])
             ++m_rewCurrencyCount;
-
-    for (int i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
-        if (RequiredCurrencyId[i])
-            ++m_reqCurrencyCount;
 }
 
 uint32 Quest::XPValue(Player* player) const

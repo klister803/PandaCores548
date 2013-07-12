@@ -33,8 +33,8 @@ class ObjectMgr;
 
 #define MAX_QUEST_LOG_SIZE 25
 
-#define QUEST_OBJECTIVES_COUNT 4
-#define QUEST_ITEM_OBJECTIVES_COUNT 6
+#define QUEST_OBJECTIVES_COUNT 10
+#define QUEST_ITEM_OBJECTIVES_COUNT 10
 #define QUEST_SOURCE_ITEM_IDS_COUNT 4
 #define QUEST_REWARD_CHOICES_COUNT 6
 #define QUEST_REWARDS_COUNT 4
@@ -306,7 +306,7 @@ class Quest
         uint32 RequiredSourceItemCount[QUEST_SOURCE_ITEM_IDS_COUNT];
         int32  RequiredNpcOrGo[QUEST_OBJECTIVES_COUNT];   // >0 Creature <0 Gameobject
         uint32 RequiredNpcOrGoCount[QUEST_OBJECTIVES_COUNT];
-        uint32 RequiredSpellCast[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredSpellCast[QUEST_SOURCE_ITEM_IDS_COUNT];
         uint32 RewardChoiceItemId[QUEST_REWARD_CHOICES_COUNT];
         uint32 RewardChoiceItemCount[QUEST_REWARD_CHOICES_COUNT];
         uint32 RewardItemId[QUEST_REWARDS_COUNT];
@@ -323,6 +323,10 @@ class Quest
         uint32 RewardCurrencyCount[QUEST_REWARD_CURRENCY_COUNT];
         uint32 RequiredCurrencyId[QUEST_REQUIRED_CURRENCY_COUNT];
         uint32 RequiredCurrencyCount[QUEST_REQUIRED_CURRENCY_COUNT];
+        // 5.x
+        int32  RequiredId[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredIdCount[QUEST_OBJECTIVES_COUNT];
+        uint32 RequirementType[QUEST_OBJECTIVES_COUNT];
 
         uint32 GetReqItemsCount() const { return m_reqItemsCount; }
         uint32 GetReqCreatureOrGOcount() const { return m_reqNpcOrGoCount; }
