@@ -9165,7 +9165,7 @@ void ObjectMgr::RestructGameObjectGUID(uint32 nbLigneToRestruct)
 
 void ObjectMgr::LoadItemExtendedCost()
 {
-    QueryResult result = WorldDatabase.PQuery("SELECT ID, RequiredArenaSlot, RequiredItem1, RequiredItem2, RequiredItem3, RequiredItem4, RequiredItem5, RequiredItemCount1, RequiredItemCount2, RequiredItemCount3, RequiredItemCount4, RequiredItemCount5,RequiredPersonalArenaRating, RequiredCurrency1, RequiredCurrency2, RequiredCurrency3, RequiredCurrency4, RequiredCurrency5, RequiredCurrencyCount1, RequiredCurrencyCount2, RequiredCurrencyCount3, RequiredCurrencyCount4, RequiredCurrencyCount5 FROM item_extended_cost");
+    QueryResult result = WorldDatabase.PQuery("SELECT ID, RequiredArenaSlot, RequiredItem0, RequiredItem1, RequiredItem2, RequiredItem3, RequiredItem4, RequiredItemCount0, RequiredItemCount1, RequiredItemCount2, RequiredItemCount3, RequiredItemCount4,RequiredPersonalArenaRating, RequiredCurrency0, RequiredCurrency1, RequiredCurrency2, RequiredCurrency3, RequiredCurrency4, RequiredCurrencyCount0, RequiredCurrencyCount1, RequiredCurrencyCount2, RequiredCurrencyCount3, RequiredCurrencyCount4, flags FROM itemextendedcost_db2");
     
     if (!result)
     {
@@ -9199,6 +9199,8 @@ void ObjectMgr::LoadItemExtendedCost()
         for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
             extendedCost->RequiredCurrencyCount[i] = field[index++].GetUInt32();
         
+        extendedCost->flags = field[index++].GetUInt32();
+
         sItemExtendedCostStore.EraseEntry(extendedCost->ID);
         sItemExtendedCostStore.AddEntry(extendedCost->ID, (const ItemExtendedCostEntry*)extendedCost);
         _overwriteExtendedCosts.insert(extendedCost->ID);
