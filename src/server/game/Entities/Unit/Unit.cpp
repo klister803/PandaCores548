@@ -747,6 +747,9 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         pet->AI()->OwnerDamagedBy(this);
     }
 
+    if (victim->GetTypeId() != TYPEID_PLAYER && GetTypeId() != TYPEID_PLAYER && !victim->ToCreature()->isPet() && (victim->ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_HP_80_PERC) && victim->HealthBelowPct(80))
+        damage = 0;
+
     if (damagetype != NODAMAGE)
     {
         // interrupting auras with AURA_INTERRUPT_FLAG_DAMAGE before checking !damage (absorbed damage breaks that type of auras)

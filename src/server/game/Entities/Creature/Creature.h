@@ -55,6 +55,8 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_TAUNT_DIMINISH  = 0x00080000,       // Taunt is a subject to diminishing returns on this creautre
     CREATURE_FLAG_EXTRA_ALL_DIMINISH    = 0x00100000,       // Creature is subject to all diminishing returns as player are
     CREATURE_FLAG_EXTRA_DUNGEON_BOSS    = 0x10000000,       // creature is a dungeon boss (SET DYNAMICALLY, DO NOT ADD IN DB)
+    CREATURE_FLAG_EXTRA_VEHICLE_ATTACKABLE_PASSENGERS   = 0x20000000,       // creature is vehicle, UNIT_STATE_ONVEHICLE will not add to passengers
+    CREATURE_FLAG_EXTRA_HP_80_PERC                      = 0x80000000,       // No damage if HP < 80% for target mob
 };
 
 #define CREATURE_FLAG_EXTRA_DB_ALLOWED (CREATURE_FLAG_EXTRA_INSTANCE_BIND | CREATURE_FLAG_EXTRA_CIVILIAN | \
@@ -62,7 +64,7 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_CRUSH | CREATURE_FLAG_EXTRA_NO_XP_AT_KILL | CREATURE_FLAG_EXTRA_TRIGGER | \
     CREATURE_FLAG_EXTRA_NO_TAUNT | CREATURE_FLAG_EXTRA_WORLDEVENT | CREATURE_FLAG_EXTRA_NO_CRIT | \
     CREATURE_FLAG_EXTRA_NO_SKILLGAIN | CREATURE_FLAG_EXTRA_TAUNT_DIMINISH | CREATURE_FLAG_EXTRA_ALL_DIMINISH | \
-    CREATURE_FLAG_EXTRA_GUARD)
+    CREATURE_FLAG_EXTRA_GUARD | CREATURE_FLAG_EXTRA_HP_80_PERC | CREATURE_FLAG_EXTRA_VEHICLE_ATTACKABLE_PASSENGERS)
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push, N), also any gcc version not support it at some platform
 #if defined(__GNUC__)
@@ -403,7 +405,7 @@ struct VendorItem
     uint8  Type;
 
     //helpers
-    bool IsGoldRequired(ItemTemplate const* pProto) const { return pProto->Flags2 & ITEM_FLAGS_EXTRA_EXT_COST_REQUIRES_GOLD || !ExtendedCost; }
+    bool IsGoldRequired(ItemTemplate const* pProto) const { return pProto->Flags2 & ITEM_FLAGS_EXTRA_EXT_COST_REQUIRES_GOLD || !ExtendedCost || ExtendedCost > 4999; }
 };
 typedef std::vector<VendorItem*> VendorItemList;
 
