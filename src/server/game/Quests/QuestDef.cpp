@@ -194,7 +194,7 @@ Quest::Quest(Field* questRecord)
                     break;
                 case 2:
                     ++m_reqNpcOrGoCount;
-                    RequiredNpcOrGo[i] = RequiredId[i] * (-1);
+                    RequiredNpcOrGo[i] = int32((-1)*RequiredId[i]);
                     RequiredNpcOrGoCount[i] = RequiredIdCount[i];
                     break;
                 case 4:

@@ -507,7 +507,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << questTurnTargetName;
     data << uint32(quest->GetSoundAccept());
     data << uint32(quest->GetSoundTurnIn());
-    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    for (uint32 i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
     {
         data << uint32(quest->RequiredSourceItemId[i]);
         data << uint32(quest->RequiredSourceItemCount[i]);
