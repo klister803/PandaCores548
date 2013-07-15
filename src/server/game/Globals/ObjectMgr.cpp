@@ -2381,7 +2381,7 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.InventoryType = db2Data->InventoryType;
         itemTemplate.AllowableClass = sparse->AllowableClass;
         itemTemplate.AllowableRace = sparse->AllowableRace;
-        itemTemplate.ItemLevel = sparse->ItemLevel;
+        itemTemplate.ItemLevel = sparse->ItemLevel < 1 ? 1 : sparse->ItemLevel;
         itemTemplate.RequiredLevel = sparse->RequiredLevel;
         itemTemplate.RequiredSkill = sparse->RequiredSkill;
         itemTemplate.RequiredSkillRank = sparse->RequiredSkillRank;

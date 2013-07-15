@@ -71,7 +71,7 @@ struct ItemSparseEntry
     uint32     InventoryType;                                // 6
     int32      AllowableClass;                               // 7
     int32      AllowableRace;                                // 8
-    uint32     ItemLevel;                                    // 9
+    int32      ItemLevel;                                    // 9
     int32      RequiredLevel;                                // 10
     uint32     RequiredSkill;                                // 11
     uint32     RequiredSkillRank;                            // 12
