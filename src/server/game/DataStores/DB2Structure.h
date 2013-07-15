@@ -63,6 +63,7 @@ struct ItemSparseEntry
     uint32     Quality;                                      // 1
     uint32     Flags;                                        // 2
     uint32     Flags2;                                       // 3
+    uint32     Unk520_1;
     float      Unk430_1;
     float      Unk430_2;
     uint32     BuyCount;
@@ -128,7 +129,7 @@ struct ItemSparseEntry
     float      StatScalingFactor;                            // 128
     int32      CurrencySubstitutionId;                       // 129
     int32      CurrencySubstitutionCount;                    // 130
-    int32      unk505;                                       // 131
+    //int32      unk505;                                       // 131
 };
 
 #define MAX_ITEM_EXT_COST_ITEMS         5
