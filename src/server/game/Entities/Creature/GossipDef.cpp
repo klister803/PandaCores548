@@ -514,7 +514,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     }
     ByteBuffer dataBuff;
     uint8 count = 0;
-    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
     {
         if (quest->RequiredId[i])
         {
