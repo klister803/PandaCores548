@@ -3894,7 +3894,7 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
+        for (uint8 j = 0; j < QUEST_SOURCE_ITEM_IDS_COUNT; ++j)
         {
             uint32 id = qinfo->RequiredSpellCast[j];
             if (id)
