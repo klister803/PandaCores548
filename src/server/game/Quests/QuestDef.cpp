@@ -184,7 +184,7 @@ Quest::Quest(Field* questRecord)
         RequiredItemCount[i] = 0;
         RequiredCurrencyId[i] = 0;
         RequiredCurrencyCount[i] = 0;
-        /*if (RequiredId[i])
+        if (RequiredId[i])
         {
             switch(RequirementType[i])
             {
@@ -209,7 +209,7 @@ Quest::Quest(Field* questRecord)
                     RequiredCurrencyCount[i] = RequiredIdCount[i];
                     break;
             }
-        }*/
+        }
     }
 
     for (int i = 0; i < QUEST_REWARDS_COUNT; ++i)
