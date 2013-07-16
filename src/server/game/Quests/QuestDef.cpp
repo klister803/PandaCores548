@@ -178,6 +178,12 @@ Quest::Quest(Field* questRecord)
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
     {
+        RequiredNpcOrGo[i] = 0;
+        RequiredNpcOrGoCount[i] = 0;
+        RequiredItemId[i] = 0;
+        RequiredItemCount[i] = 0;
+        RequiredCurrencyId[i] = 0;
+        RewardCurrencyCount[i] = 0;
         if (RequiredId[i])
         {
             switch(RequirementType[i])
