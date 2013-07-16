@@ -183,7 +183,7 @@ Quest::Quest(Field* questRecord)
         RequiredItemId[i] = 0;
         RequiredItemCount[i] = 0;
         RequiredCurrencyId[i] = 0;
-        RewardCurrencyCount[i] = 0;
+        RequiredCurrencyCount[i] = 0;
         if (RequiredId[i])
         {
             switch(RequirementType[i])
@@ -206,7 +206,7 @@ Quest::Quest(Field* questRecord)
                 case 4:
                     ++m_reqCurrencyCount;
                     RequiredCurrencyId[i] = RequiredId[i];
-                    RewardCurrencyCount[i] = RequiredIdCount[i];
+                    RequiredCurrencyCount[i] = RequiredIdCount[i];
                     break;
             }
         }
