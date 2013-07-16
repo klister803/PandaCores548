@@ -527,8 +527,8 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
             dataBuff << uint8(i); // objective index
             dataBuff << uint8(0);
             ++count;
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "QUEST_OBJECTIVES_COUNT RequirementType %u, RequiredId %u, RequiredIdCount %u, i %u", quest->RequirementType[i], quest->RequiredId[i], quest->RequiredIdCount[i], i);
         }
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "QUEST_OBJECTIVES_COUNT RequirementType %u, RequiredId %u, RequiredIdCount %u, i %u", quest->RequirementType[i], quest->RequiredId[i], quest->RequiredIdCount[i], i);
     }
 
     if(quest->GetRepObjectiveFaction() != 0)
