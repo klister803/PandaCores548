@@ -815,3 +815,63 @@ void WorldSession::HandleQueryQuestsCompleted(WorldPacket& /*recvData*/)
 
     SendPacket(&data);
 }
+
+void WorldSession::HandleQuestNpcQuery(WorldPacket& recvData)
+{
+    uint32 realCount = 0;
+    uint32 count = recvData.ReadBits(24);
+    QuestStarter* starterMap = sObjectMgr->GetCreatureQuestStarterMap();
+
+    uint32* quests = new uint32[count];
+    for (uint32 i = 0; i < count; ++i)
+    {
+        uint32 questId;
+        recvData >> questId;
+
+        Quest const* _quest = sObjectMgr->GetQuestTemplate(questId);
+        if (!_quest)
+        {
+            sLog->outError(LOG_FILTER_GENERAL, "HandleQuestNpcQuery: Invalide questId %u for player %u", questId, GetPlayer()->GetGUIDLow());
+            continue;
+        }
+
+        if (starterMap->find(questId) == starterMap->end())
+            continue;
+
+        quests[realCount++] = questId;
+    }
+
+    WorldPacket data(SMSG_QUEST_NPC_QUERY_RESPONSE, 3 + (realCount * 3) + (realCount * 8));
+    data.WriteBits(realCount, 23);
+
+    if (realCount == 0)
+    {
+        delete[] quests;
+
+        SendPacket(&data);
+        return;
+    }
+
+    ByteBuffer buffer(realCount * 8);
+
+    for (uint32 i = 0; i < realCount; ++i)
+    {
+        uint32 questId = quests[i];
+
+        QuestStarter::const_iterator itr = starterMap->find(questId);
+        data.WriteBits<int>(itr->second.size(), 24);
+
+        buffer << questId;
+        for (QuestObject::const_iterator obj = itr->second.begin(); obj != itr->second.end(); ++obj)
+        {
+            uint32 creatureId = (*obj);
+            buffer << creatureId;
+        }
+    }
+
+    data.append(buffer);
+
+    delete[] quests;
+
+    SendPacket(&data);
+}
