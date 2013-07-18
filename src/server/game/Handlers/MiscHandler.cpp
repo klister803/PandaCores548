@@ -2172,7 +2172,7 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
         _player->setFactionForRace(RACE_PANDAREN_HORDE);
         _player->SaveToDB();
-        WorldLocation location(1, -618.518f, -4251.67f, 38.718f, M_PI);
+        WorldLocation location(1, 1349.72f, -4374.50f, 26.15f, M_PI);
         _player->TeleportTo(location);
         _player->SetHomebind(location, 363);
         _player->learnSpell(669, false); // Language Orcish
@@ -2183,7 +2183,7 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_ALLI);
         _player->setFactionForRace(RACE_PANDAREN_ALLI);
         _player->SaveToDB();
-        WorldLocation location(0, -8914.57f, -133.909f, 80.5378f, M_PI);
+        WorldLocation location(0, -9076.77f, 424.74f, 92.42f, M_PI);
         _player->TeleportTo(location);
         _player->SetHomebind(location, 9);
         _player->learnSpell(668, false); // Language Common
