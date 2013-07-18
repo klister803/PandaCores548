@@ -1396,7 +1396,7 @@ class spell_rog_eviscerate : public SpellScriptLoader
                         if(caster->HasAura(14172))
                             chance *= 2;
                         if(roll_chance_i(chance))
-                            if(Aura* aura = target->GetAura(1943, caster->GetGUID()))
+                            if(AuraPtr aura = target->GetAura(1943, caster->GetGUID()))
                                 aura->RefreshDuration();
                     }
                 }
