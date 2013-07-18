@@ -1073,9 +1073,23 @@ class spell_warr_charge : public SpellScriptLoader
                 }
             }
 
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                if (caster)
+                {
+                    if (caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        caster->ToPlayer()->KilledMonsterCredit(44175, 0);
+                        caster->ToPlayer()->KilledMonsterCredit(44548, 0);
+                    }
+                }
+            }
+
             void Register()
             {
                 OnHit += SpellHitFn(spell_warr_charge_SpellScript::HandleOnHit);
+                OnEffectHitTarget += SpellEffectFn(spell_warr_charge_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
             }
         };
 

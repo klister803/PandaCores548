@@ -1365,6 +1365,55 @@ class spell_rog_shadowstep : public SpellScriptLoader
         }
 };
 
+class spell_rog_eviscerate : public SpellScriptLoader
+{
+    public:
+        spell_rog_eviscerate() : SpellScriptLoader("spell_rog_eviscerate") { }
+
+        class spell_rog_eviscerate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_eviscerate_SpellScript)
+
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                return true;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                Unit* target = GetHitUnit();
+                if (Unit * caster = GetCaster())
+                {
+                    if (caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        caster->ToPlayer()->KilledMonsterCredit(44175, 0);
+                        caster->ToPlayer()->KilledMonsterCredit(44548, 0);
+                    }
+                    if (target && caster->HasAura(14171) || caster->HasAura(14172))
+                    {
+                        uint8 comboPoint = caster->m_movedPlayer ? caster->m_movedPlayer->GetComboPoints() : 1;
+                        uint32 chance = 10 * comboPoint;
+                        if(caster->HasAura(14172))
+                            chance *= 2;
+                        if(roll_chance_i(chance))
+                            if(Aura* aura = target->GetAura(1943, caster->GetGUID()))
+                                aura->RefreshDuration();
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_rog_eviscerate_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_eviscerate_SpellScript();
+        }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     new spell_rog_cheat_death();
@@ -1393,4 +1442,5 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_preparation();
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
+    new spell_rog_eviscerate();
 }

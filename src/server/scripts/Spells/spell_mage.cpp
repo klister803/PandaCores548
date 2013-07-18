@@ -1453,6 +1453,44 @@ class spell_mage_living_bomb : public SpellScriptLoader
         }
 };
 
+class spell_mage_arcane_missiles_main : public SpellScriptLoader
+{
+    public:
+        spell_mage_arcane_missiles_main() : SpellScriptLoader("spell_mage_arcane_missiles_main") { }
+
+        class spell_mage_arcane_missiles_main_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_arcane_missiles_main_SpellScript)
+
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                return true;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit * caster = GetCaster())
+                {
+                    if (caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        caster->ToPlayer()->KilledMonsterCredit(44175, 0);
+                        caster->ToPlayer()->KilledMonsterCredit(44548, 0);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_mage_arcane_missiles_main_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_arcane_missiles_main_SpellScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -1484,4 +1522,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_incanters_absorbtion_manashield();
     new spell_mage_polymorph_cast_visual();
     new spell_mage_living_bomb();
+    new spell_mage_arcane_missiles_main();
 }

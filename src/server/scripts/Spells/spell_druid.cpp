@@ -2873,6 +2873,43 @@ class spell_dru_survival_instincts : public SpellScriptLoader
         }
 };
 
+class spell_druid_rejuvenation : public SpellScriptLoader
+{
+    public:
+        spell_druid_rejuvenation() : SpellScriptLoader("spell_druid_rejuvenation") { }
+
+        class spell_druid_rejuvenation_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_druid_rejuvenation_SpellScript)
+
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                return true;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit * caster = GetCaster())
+                {
+                    if (caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    caster->ToPlayer()->KilledMonsterCredit(44175, 0);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_druid_rejuvenation_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_druid_rejuvenation_SpellScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -2929,4 +2966,5 @@ void AddSC_druid_spell_scripts()
     new spell_dru_starfall_dummy();
     new spell_dru_savage_roar();
     new spell_dru_survival_instincts();
+    new spell_druid_rejuvenation();
 }

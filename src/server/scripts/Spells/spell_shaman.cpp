@@ -1753,6 +1753,37 @@ class spell_sha_chain_heal : public SpellScriptLoader
         }
 };
 
+// 73899 Primal strike
+class spell_shaman_primal_strike : public SpellScriptLoader
+{
+public:
+    spell_shaman_primal_strike() : SpellScriptLoader("spell_shaman_primal_strike") { }
+
+    class spell_shaman_primal_strike_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_shaman_primal_strike_SpellScript)
+
+        void HandleDummy(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (caster->GetTypeId() == TYPEID_PLAYER)
+                    caster->ToPlayer()->KilledMonsterCredit(44548, 0);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectHit += SpellEffectFn(spell_shaman_primal_strike_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_WEAPON_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_shaman_primal_strike_SpellScript();
+    }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_prowl();
@@ -1787,4 +1818,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_ancestral_awakening_proc();
     new spell_sha_lava_lash();
     new spell_sha_chain_heal();
+    new spell_shaman_primal_strike();
 }

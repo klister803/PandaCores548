@@ -1384,9 +1384,16 @@ class spell_hun_steady_shot : public SpellScriptLoader
                         _player->CastSpell(_player, HUNTER_SPELL_STEADY_SHOT_ENERGIZE, true);
             }
 
+        void HandleDummy(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit *caster = GetCaster())
+                caster->ToPlayer()->KilledMonsterCredit(44175, 0);
+        }
+
             void Register()
             {
                 OnHit += SpellHitFn(spell_hun_steady_shot_SpellScript::HandleOnHit);
+                OnEffectHit += SpellEffectFn(spell_hun_steady_shot_SpellScript::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
             }
         };
 
