@@ -343,46 +343,54 @@ public:
 class npc_rampaging_worgen : public CreatureScript
 {
 public:
-    npc_rampaging_worgen() : CreatureScript("npc_rampaging_worgen") {}
+    npc_rampaging_worgen() : CreatureScript("npc_rampaging_worgen") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new npc_rampaging_worgenAI (creature);
+        return new npc_rampaging_worgenAI (pCreature);
     }
 
     struct npc_rampaging_worgenAI : public ScriptedAI
     {
-        npc_rampaging_worgenAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_rampaging_worgenAI(Creature *c) : ScriptedAI(c) {}
 
         uint32 tEnrage;
-        bool willCastEnrage;
+        uint32 dmgCount;
+        uint32 tAnimate;
+        uint32 tSound;
+        bool playSound;
 
         void Reset()
         {
-            tEnrage        = 0;
-            willCastEnrage = urand(0, 1);
+            tEnrage = 0;
+            dmgCount = 0;
+            tAnimate = DELAY_ANIMATE;
+            tSound = DELAY_SOUND;
+            playSound = false;
         }
 
-        void DamageTaken(Unit* who, uint32& damage)
+        void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
         {
-            if (who->GetTypeId() == TYPEID_PLAYER)
+            if (target->GetTypeId() == TYPEID_UNIT)
+                dmgCount++;
+        }
+
+        void DamageTaken(Unit * pWho, uint32 &uiDamage)
+        {
+            if (pWho->GetTypeId() == TYPEID_PLAYER)
             {
                 me->getThreatManager().resetAllAggro();
-                who->AddThreat(me, 1.0f);
-                me->AddThreat(who, 1.0f);
-                me->AI()->AttackStart(who);
+                pWho->AddThreat(me, 100000.0f);
+                me->AddThreat(pWho, 100000.0f);
+                me->AI()->AttackStart(pWho);
+                dmgCount = 0;
             }
-            else if (who->isPet())
+            else if (pWho->isPet())
             {
                 me->getThreatManager().resetAllAggro();
-                me->AddThreat(who, 1.0f);
-                me->AI()->AttackStart(who);
-            }
-            else if (me->HealthBelowPct(AI_MIN_HP) && who->GetEntry() == NPC_GILNEAS_CITY_GUARD || who->GetEntry() == NPC_PRINCE_LIAM_GREYMANE)
-            {
-                me->AI()->AttackStart(who);
-                if (me->GetHealthPct() <= AI_MIN_HP)
-                damage = 0;
+                me->AddThreat(pWho, 100000.0f);
+                me->AI()->AttackStart(pWho);
+                dmgCount = 0;
             }
         }
 
@@ -390,20 +398,43 @@ public:
         {
             if (!UpdateVictim())
                 return;
+
+            if (tEnrage <= diff)
+            {
+                if (me->GetHealthPct() <= 30)
+                {
+                    DoCast(me, SPELL_ENRAGE);
+                    tEnrage = CD_ENRAGE;
+                }
+            }
+            else tEnrage -= diff;
+
+            //play attack sound
+            if (playSound == true) tSound -= diff;
+
+            if (tSound <= diff)
+            {
+                me->PlayDistanceSound(SOUND_SWORD_PLATE);
+                tSound = DELAY_SOUND;
+                playSound = false;
+            }
+            
+            if (dmgCount < 2)
+                DoMeleeAttackIfReady();
+            else if (me->getVictim()->GetTypeId() == TYPEID_PLAYER)
+                dmgCount = 0;
+            else if (me->getVictim()->isPet())
+                dmgCount = 0;
             else
             {
-                DoMeleeAttackIfReady();
-
-                if (tEnrage <= diff && willCastEnrage)
+                if (tAnimate <= diff)
                 {
-                    if (me->GetHealthPct() <= 30)
-                    {
-                        me->MonsterTextEmote(-106, 0);
-                        DoCast(me, SPELL_ENRAGE);
-                        tEnrage = CD_ENRAGE;
-                    }
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_ATTACK_UNARMED);
+                    tAnimate = DELAY_ANIMATE;
+                    playSound = true;
                 }
-                else tEnrage -= diff;
+                else
+                tAnimate -= diff;
             }
         }
     };
