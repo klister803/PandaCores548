@@ -514,14 +514,14 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     }
     ByteBuffer dataBuff;
     uint8 count = 0;
-    /*for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "QUEST_OBJECTIVES_COUNT RequirementType %u, RequiredId %u, RequiredIdCount %u, i %u, RequiredNpcOrGo %u", quest->RequirementType[i], quest->RequiredId[i], quest->RequiredIdCount[i], i, quest->RequiredNpcOrGo[i]);
-        if (quest->RequiredId[i])
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "QUEST_OBJECTIVES_COUNT RequirementType %u, RequiredId %u, RequiredIdCount %u, i %u, RequiredNpcOrGo %u, RequiredIdBack %u", quest->RequirementType[i], quest->RequiredId[i], quest->RequiredIdCount[i], i, quest->RequiredNpcOrGo[i], quest->RequiredIdBack[i]);
+        if (quest->RequiredIdBack[i])
         {
             dataBuff << uint32(0);  //unk
             dataBuff << uint8(quest->RequirementType[i]);   // RequirementType
-            dataBuff << uint32(quest->RequiredId[i]);
+            dataBuff << uint32(quest->RequiredIdBack[i]);
             dataBuff << uint32(quest->RequiredIdCount[i]);
             dataBuff << uint32(0);
             dataBuff << questObjectiveText[i];
@@ -529,9 +529,9 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
             dataBuff << uint8(0);
             ++count;
         }
-    }*/
+    }
 
-    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    /*for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
     {
         if (quest->RequiredNpcOrGo[i]!= 0)
         {
@@ -588,7 +588,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
             dataBuff << uint8(0);
             ++count;
         }
-    }
+    }*/
     if(quest->GetRepObjectiveFaction() != 0)
     {
         dataBuff << uint32(0); //unk

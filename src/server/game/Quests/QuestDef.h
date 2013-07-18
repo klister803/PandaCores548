@@ -324,7 +324,8 @@ class Quest
         uint32 RequiredCurrencyId[QUEST_REQUIRED_CURRENCY_COUNT];
         uint32 RequiredCurrencyCount[QUEST_REQUIRED_CURRENCY_COUNT];
         // 5.x
-        uint32  RequiredId[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredId[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredIdBack[QUEST_OBJECTIVES_COUNT];
         uint32 RequiredIdCount[QUEST_OBJECTIVES_COUNT];
         uint32 RequirementType[QUEST_OBJECTIVES_COUNT];
 
