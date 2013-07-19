@@ -15155,15 +15155,15 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
     ObjectGuid guid = GetGUID();
 
     data << uint8(item->GetBagSlot());                      // bagslot
-    data << uint32(11);
-    data << uint32(12);
-    data << uint32(13);
-    data << uint32(14);
-    data << uint32(15);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
     data << uint32(GetItemCount(item->GetEntry()));         // count of items in inventory
+    data << uint32(0);
     data << uint32(count);                                  // count of items
-    data << uint32(16);
-    data << uint32(17);
+    data << uint32(0);
     data << uint32(item->GetEntry());                       // item id
 
     data.WriteBit(1);
