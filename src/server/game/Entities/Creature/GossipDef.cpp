@@ -161,7 +161,7 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
             questStat = 2;
         
         data << uint32(questID);
-        data << uint32(questStat);
+        data << uint32(item.QuestIcon);
         data << int32(quest->GetQuestLevel());
         data << uint32(quest->GetFlags());              // 3.3.3 quest flags
         data << uint32(0); // unk
