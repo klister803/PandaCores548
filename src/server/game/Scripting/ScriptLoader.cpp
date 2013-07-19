@@ -27,6 +27,8 @@ void AddSC_example_commandscript();
 
 // Customs
 void AddSC_event_april();
+void AddSC_Loskutik();
+void AddSC_midsummer_fire_festival();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -1589,5 +1591,7 @@ void AddCustomScripts()
 {
 #ifdef SCRIPTS
     AddSC_event_april();
+    AddSC_Loskutik();
+    AddSC_midsummer_fire_festival();
 #endif
 }
