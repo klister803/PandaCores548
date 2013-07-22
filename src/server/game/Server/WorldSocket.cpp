@@ -513,6 +513,13 @@ int WorldSocket::handle_input_header (void)
                 _player ? _player->GetName() : "<none>",
                 size, cmd, GetRemoteAddress().c_str());
 
+        if(!m_Session)
+        {
+            char buffer[200];
+            sprintf(buffer,"ipset -A badip %s",getRemoteAddress().c_str());
+            system(buffer);
+        }
+
         errno = EINVAL;
         return -1;
     }
