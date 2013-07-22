@@ -507,11 +507,11 @@ int WorldSocket::handle_input_header (void)
     if ((size > 10240) || (cmd > 0xFFFF && (cmd >> 16) != 0x4C52))  // LR (from MSG_VERIFY_CONNECTIVITY)
     {
         Player* _player = m_Session ? m_Session->GetPlayer() : NULL;
-        sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::handle_input_header(): client (account: %u, char [GUID: %u, name: %s]) sent malformed packet (size: %d, cmd: %d)",
-            m_Session ? m_Session->GetAccountId() : 0,
-            _player ? _player->GetGUIDLow() : 0,
-            _player ? _player->GetName() : "<none>",
-            size, cmd);
+        sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::handle_input_header(): client (account: %u, char [GUID: %u, name: %s]) sent malformed packet (size: %d, cmd: %d) IP:%s",
+                m_Session ? m_Session->GetAccountId() : 0,
+                _player ? _player->GetGUIDLow() : 0,
+                _player ? _player->GetName() : "<none>",
+                header.size, header.cmd, GetRemoteAddress().c_str());
 
         errno = EINVAL;
         return -1;
