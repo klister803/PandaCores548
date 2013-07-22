@@ -516,7 +516,7 @@ int WorldSocket::handle_input_header (void)
         if(!m_Session)
         {
             char buffer[200];
-            sprintf(buffer,"ipset -A badip %s",getRemoteAddress().c_str());
+            sprintf(buffer,"ipset -A badip %s",GetRemoteAddress().c_str());
             system(buffer);
         }
 
