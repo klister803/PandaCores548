@@ -206,26 +206,26 @@ void WorldSession::SendTrainerList(uint64 guid, const std::string& strTitle)
                 data << uint32(prevSpellId);
                 ++maxReq;
             }
-            if (maxReq == 1)
+            if (maxReq == 2)
                 break;
             SpellsRequiringSpellMapBounds spellsRequired = sSpellMgr->GetSpellsRequiredForSpellBounds(tSpell->learnedSpell[i]);
-            for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequired.first; itr2 != spellsRequired.second && maxReq < 2; ++itr2)
+            for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequired.first; itr2 != spellsRequired.second && maxReq < 3; ++itr2)
             {
                 data << uint32(itr2->second);
                 ++maxReq;
             }
-            if (maxReq == 1)
+            if (maxReq == 2)
                 break;
         }
-        while (maxReq < 1)
+        while (maxReq < 2)
         {
             data << uint32(0);
             ++maxReq;
         }
 
-        data << uint32(primary_prof_first_rank && can_learn_primary_prof ? 1 : 0);
+        data << uint32(/*primary_prof_first_rank && can_learn_primary_prof ? 1 : */0);
         // primary prof. learn confirmation dialog
-        data << uint32(primary_prof_first_rank ? 1 : 0);    // must be equal prev. field to have learn button in enabled state
+        data << uint32(/*primary_prof_first_rank ? 1 : */0);    // must be equal prev. field to have learn button in enabled state
 
         ++count;
     }
