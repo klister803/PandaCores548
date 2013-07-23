@@ -125,6 +125,19 @@ struct LootStoreItem
                                                             // Checks correctness of values
 };
 
+struct CurrencyLoot
+{
+    uint32 Entry;
+    uint8 Type;
+    uint32 CurrencyId;
+    uint32 CurrencyAmount;
+    uint32 currencyMaxAmount;
+
+    CurrencyLoot(uint32 _entry, uint8 _type, uint32 _CurrencyId, uint32 _CurrencyAmount, uint32 _CurrencyMaxAmount) : Entry(_entry), Type(_type), CurrencyId(_CurrencyId), CurrencyAmount(_CurrencyAmount), currencyMaxAmount(_CurrencyMaxAmount)
+    {
+    }
+};
+
 typedef std::set<uint32> AllowedLooterSet;
 
 struct LootItem
@@ -287,6 +300,9 @@ struct Loot
     uint8 unlootedCount;
     uint64 roundRobinPlayer;                                // GUID of the player having the Round-Robin ownership for the loot. If 0, round robin owner has released.
     LootType loot_type;                                     // required for achievement system
+
+    uint32 objEntry;
+    uint8 objType;
 
     Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE) {}
     ~Loot() { clear(); }

@@ -47,6 +47,13 @@ struct WMOAreaTableTripple
     int32 adtId;
 };
 
+typedef UNORDERED_MAP<uint32, MaxCoordinat> QuestPOIPointMap;
+typedef UNORDERED_MAP<uint32, std::vector<PolygonVector> > PolygonQuestPOIPointMap;
+static QuestPOIPointMap m_questpoipoints;
+static PolygonQuestPOIPointMap m_polygonquestpoipoints;
+static std::map<uint32, std::list<uint32> > sDigestZonesList;
+static std::map<uint32, std::list<uint32> > sResearchProjectsList;
+
 typedef std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> WMOAreaInfoByTripple;
 
 DBCStorage <AreaTableEntry> sAreaStore(AreaTableEntryfmt);

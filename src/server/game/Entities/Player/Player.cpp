@@ -7914,7 +7914,7 @@ void Player::SendNewCurrency(uint32 id) const
     if (!entry) // should never happen
         return;
     
-    uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
     uint32 weekCount = itr->second.weekCount / precision;
     uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
     uint32 seasonTotal = itr->second.seasonTotal / precision;
@@ -7951,7 +7951,7 @@ void Player::SendCurrencies() const
         if (!entry) // should never happen
             continue;
 
-        uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
+        uint32 precision = (entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
         uint32 weekCount = itr->second.weekCount / precision;
         uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
         uint32 seasonTotal = itr->second.seasonTotal / precision;
@@ -7997,7 +7997,7 @@ uint32 Player::GetCurrency(uint32 id, bool usePrecision) const
         return 0;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
 
     return itr->second.totalCount / precision;
 }
@@ -8009,7 +8009,7 @@ uint32 Player::GetCurrencyOnWeek(uint32 id, bool usePrecision) const
         return 0;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
 
     return itr->second.weekCount / precision;
 }
@@ -8021,7 +8021,7 @@ uint32 Player::GetCurrencyOnSeason(uint32 id, bool usePrecision) const
         return 0;
     
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
     
     return itr->second.seasonTotal / precision;
 }
@@ -8043,7 +8043,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (!ignoreMultipliers)
         count *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_CURRENCY_GAIN, id);
 
-    int32 precision = currency->Flags & CURRENCY_FLAG_HIGH_PRECISION ? CURRENCY_PRECISION : 1;
+    int32 precision = currency->Flags & CURRENCY_FLAG_HAS_PRECISION ? CURRENCY_PRECISION : 1;
     uint32 oldTotalCount = 0;
     uint32 oldWeekCount = 0;
     uint32 oldSeasonTotalCount = 0;
@@ -8167,7 +8167,7 @@ uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision) const
     if (!entry)
         return 0;
 
-    uint32 precision = (usePrecision && entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (usePrecision && entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
 
     return GetCurrencyWeekCap(entry) / precision;
 }
@@ -8226,7 +8226,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
    {
        WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
        packet << uint32(currency->ID);
-       packet << uint32(cap / ((currency->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1));
+       packet << uint32(cap / ((currency->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1));
        GetSession()->SendPacket(&packet);
    }
 
@@ -8268,7 +8268,7 @@ void Player::UpdateConquestCurrencyCap(uint32 currency)
         if (!currencyEntry)
             continue;
 
-        uint32 precision = (currencyEntry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
+        uint32 precision = (currencyEntry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? 100 : 1;
         uint32 cap = GetCurrencyWeekCap(currencyEntry);
 
         WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
@@ -9664,6 +9664,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 if (groupRules)
                     group->UpdateLooterGuid(go, true);
 
+                loot->objEntry = go->GetGOInfo()->entry;
+                loot->objType = 3;
                 loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode());
 
                 // get next RR player (for next loot)
@@ -9755,6 +9757,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     break;
                 default:
                     loot->generateMoneyLoot(item->GetTemplate()->MinMoneyLoot, item->GetTemplate()->MaxMoneyLoot);
+                    loot->objEntry = item->GetEntry();
+                    loot->objType = 2;
                     loot->FillLoot(item->GetEntry(), LootTemplates_Item, this, true, loot->gold != 0);
                     break;
             }
@@ -16176,7 +16180,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
             CurrencyTypesEntry const* reqCurrency = sCurrencyTypesStore.LookupEntry(reqCurrencyId);
             if(int32 reqCountCurrency = quest->RequiredCurrencyCount[i])
             {
-                if(reqCurrency->Flags & CURRENCY_FLAG_HIGH_PRECISION)
+                if(reqCurrency->Flags & CURRENCY_FLAG_HAS_PRECISION)
                     reqCountCurrency *= 100;
                 ModifyCurrency(reqCurrencyId, -reqCountCurrency);
             }
@@ -16238,7 +16242,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                 CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(currencyId);
                 if(uint32 countCurrency = quest->RewardCurrencyCount[i])
                 {
-                    if(currency->Flags & CURRENCY_FLAG_HIGH_PRECISION)
+                    if(currency->Flags & CURRENCY_FLAG_HAS_PRECISION)
                         countCurrency *= 100;
                     ModifyCurrency(currencyId,countCurrency);
                 }
@@ -22549,7 +22553,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
                 return false;
             }
 
-            uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
+            uint32 precision = (entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
 
             if (!HasCurrency(iece->RequiredCurrency[i], (iece->RequiredCurrencyCount[i]) / precision))
             {
@@ -22679,7 +22683,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
                 return false;
             }
 
-            uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
+            uint32 precision = (entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
             
             // Second field in dbc is season count except two strange rows
             if (i == 1 && iece->ID != 2999)
@@ -28474,7 +28478,7 @@ bool Player::EventSolveProject(SpellInfo const* spell)
     ResearchBranchEntry const* rbe = sResearchBranchStore.LookupEntry( rs->RaceID );
     if(rbe)
     {
-        uint32 curcount = GetCurrencyCount(rbe->CurrencyID);
+        uint32 curcount = GetCurrency(rbe->CurrencyID, false);
         if(curcount < rs->RequiredCurrencyAmount)
         {
             if(!rs->RequiredItemCount || !rbe->ItemID)
@@ -28543,9 +28547,9 @@ bool Player::EventSolveProject(SpellInfo const* spell)
         AddProjecthistoryCount(projectId);
 
     if(rs->RequiredCurrencyAmount > 75)
-        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, 0, 1, 1);
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, 1, 1);
     else
-        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, 0, 1, 0);
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, 1, 0);
 
     //maybe add a random new one
     m_digsite.countProject--;

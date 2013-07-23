@@ -19,6 +19,8 @@
 #ifndef DBCENUMS_H
 #define DBCENUMS_H
 
+#include "ItemPrototype.h"
+
 enum LevelLimit
 {
     // Client expected level limitation, like as used in DBC item max levels for "until max player level"
