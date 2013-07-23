@@ -906,6 +906,10 @@ struct CurrencyTypesEntry
     uint32 WeekCap;                                         // 8
     uint32 Flags;                                           // 9
     //char* description;                                    // 10
+
+    bool HasPrecision() const   { return Flags & CURRENCY_FLAG_HAS_PRECISION; }
+    bool HasSeasonCount() const { return Flags & CURRENCY_FLAG_HAS_SEASON_COUNT; }
+    float GetPrecision() const  { return HasPrecision() ? CURRENCY_PRECISION : 1.0f; }
 };
 
 struct DestructibleModelDataEntry

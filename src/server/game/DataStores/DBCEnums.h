@@ -577,4 +577,19 @@ enum CurrencyTypes
     CURRENCY_TYPE_ZEN_JEWEL                 = 698  // Jewelcrafting token MoP NYI
 };
 
+#define CURRENCY_PRECISION 100.0f
+
+enum CurrencyCategory
+{
+    CURRENCY_CATEGORY_ARCHAEOLOGY   = 82,
+    CURRENCY_CATEGORY_META_CONQUEST = 89,
+};
+
+enum CurrencyFlags
+{
+    CURRENCY_FLAG_TRADEABLE         = 0x01,
+    CURRENCY_FLAG_HAS_PRECISION     = 0x08,
+    CURRENCY_FLAG_HAS_SEASON_COUNT  = 0x80, // guessed
+};
+
 #endif

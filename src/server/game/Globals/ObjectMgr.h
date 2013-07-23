@@ -635,6 +635,9 @@ class ObjectMgr
 
         typedef std::map<uint32, uint32> CharacterConversionMap;
 
+        typedef std::list<CurrencyLoot> CurrencysLoot;
+        std::list<CurrencyLoot> GetCurrencyLoot(uint32 entry, uint8 type);
+
         Player* GetPlayerByLowGUID(uint32 lowguid) const;
 
         GameObjectTemplate const* GetGameObjectTemplate(uint32 entry);
@@ -803,6 +806,7 @@ class ObjectMgr
             return NULL;
         }
 
+        void LoadCurrencysLoot();
         void LoadQuests();
         void LoadQuestRelations()
         {
@@ -1292,6 +1296,7 @@ class ObjectMgr
         QuestRelations _goQuestInvolvedRelations;
         QuestRelations _creatureQuestRelations;
         QuestRelations _creatureQuestInvolvedRelations;
+        CurrencysLoot  _currencysLoot;
 
         QuestStarter _goQuestStarter;
         QuestStarter _creatureQuestStarter;

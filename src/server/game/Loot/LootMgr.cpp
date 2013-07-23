@@ -473,21 +473,10 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
         return;
 
     // Process currency items
-    uint32 max_slot = GetMaxSlotInLootFor(player);
-    LootItem const* item = NULL;
-    uint32 itemsSize = uint32(items.size());
-    for (uint32 i = 0; i < max_slot; ++i)
-    {
-        if (i < items.size())
-            item = &items[i];
-        else
-            item = &quest_items[i-itemsSize];
-
-        if (!item->is_looted && item->freeforall && item->AllowedForPlayer(player))
-            if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item->itemid))
-                if (proto->IsCurrencyToken())
-                    player->StoreLootItem(i, this);
-    }
+    std::list<CurrencyLoot> temp = sObjectMgr->GetCurrencyLoot(objEntry, objType);
+    for (std::list<CurrencyLoot>::iterator i = temp.begin(); i != temp.end(); ++i)
+        if(CurrencyTypesEntry const* proto = sCurrencyTypesStore.LookupEntry(i->CurrencyId))
+            player->ModifyCurrency(i->CurrencyId, urand(i->CurrencyAmount, i->currencyMaxAmount) * proto->GetPrecision());
 }
 
 QuestItemList* Loot::FillFFALoot(Player* player)

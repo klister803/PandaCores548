@@ -265,6 +265,17 @@ ObjectMgr::~ObjectMgr()
             delete *encounterItr;
 }
 
+std::list<CurrencyLoot> ObjectMgr::GetCurrencyLoot(uint32 entry, uint8 type)
+{
+    std::list<CurrencyLoot> temp;
+    for (CurrencysLoot::iterator itr = _currencysLoot.begin(); itr != _currencysLoot.end(); ++itr)
+    {
+        if (itr->Entry == entry && itr->Type == type)
+            temp.push_back(*itr);
+    }
+    return temp;
+}
+
 void ObjectMgr::AddLocaleString(std::string const& s, LocaleConstant locale, StringVector& data)
 {
     if (!s.empty())
@@ -6653,6 +6664,46 @@ uint32 ObjectMgr::GeneratePetNumber()
 uint64 ObjectMgr::GenerateVoidStorageItemId()
 {
     return ++_voidItemId;
+}
+
+void ObjectMgr::LoadCurrencysLoot()
+{
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, type, currencyId, currencyAmount, currencyMaxAmount FROM currency_loot");
+    if (!result)
+        return;
+
+    uint32 count = 0;
+    do
+    {
+        Field* field = result->Fetch();
+
+        uint32 entry = field[0].GetUInt32();
+        uint8 type = field[1].GetInt8();
+        uint32 currencyId = field[2].GetUInt32();
+        uint32 currencyAmount = field[3].GetUInt32();
+        uint32 currencyMaxAmount = field[4].GetUInt32();
+
+        if (type < 1)
+        {
+            sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Currency 'type' can not be < 1 (entry = %u type = %i)", entry, type);
+            continue;
+        }
+        else if (type > 3)
+        {
+            sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Currency 'type' can not be > 3 (entry = %u type = %i)", entry, type);
+            continue;
+        }
+
+        CurrencyLoot loot = CurrencyLoot(entry, type, currencyId, currencyAmount, currencyMaxAmount);
+        _currencysLoot.push_back(loot);
+        ++count;
+    }
+    while (result->NextRow());
+
+    if (count)
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loaded %u currency loot definition", count);
+    else
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loaded 0 currency loot definition. Table is empty!");
 }
 
 void ObjectMgr::LoadCorpses()
