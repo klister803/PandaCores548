@@ -5587,6 +5587,7 @@ void ObjectMgr::GetTaxiPath(uint32 source, uint32 destination, uint32 &path, uin
 uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt_team /* = false */)
 {
     uint32 mount_id = 0;
+   sLog->outDebug(LOG_FILTER_NETWORKIO, "GetTaxiMountDisplayId TaxiNodesEntry %u, team %u", id, team);
 
     // select mount creature id
     TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(id);
@@ -5606,10 +5607,13 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
             mount_entry = team == ALLIANCE ? node->MountCreatureID[0] : node->MountCreatureID[1];
         }
 
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "GetTaxiMountDisplayId mount_entry %u", mount_entry);
+
         CreatureTemplate const* mount_info = GetCreatureTemplate(mount_entry);
         if (mount_info)
         {
             mount_id = mount_info->GetRandomValidModelId();
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "GetTaxiMountDisplayId mount_id %u", mount_id);
             if (!mount_id)
             {
                 sLog->outError(LOG_FILTER_SQL, "No displayid found for the taxi mount with the entry %u! Can't load it!", mount_entry);
