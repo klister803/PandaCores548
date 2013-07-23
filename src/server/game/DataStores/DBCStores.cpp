@@ -169,6 +169,11 @@ DBCStorage <QuestSortEntry> sQuestSortStore(QuestSortEntryfmt);
 DBCStorage <QuestXPEntry>   sQuestXPStore(QuestXPfmt);
 DBCStorage <QuestFactionRewEntry>  sQuestFactionRewardStore(QuestFactionRewardfmt);
 DBCStorage <RandomPropertiesPointsEntry> sRandomPropertiesPointsStore(RandomPropertiesPointsfmt);
+DBCStorage <ResearchBranchEntry> sResearchBranchStore(ResearchBranchfmt);
+DBCStorage <ResearchProjectEntry> sResearchProjectStore(ResearchProjectfmt);
+DBCStorage <ResearchSiteEntry> sResearchSiteStore(ResearchSitefmt);
+DBCStorage <QuestPOIBlobEntry> sQuestPOIBlobStore(QuestPOIBlobfmt);
+DBCStorage <QuestPOIPointEntry> sQuestPOIPointStore(QuestPOIPointfmt);
 DBCStorage <ScalingStatDistributionEntry> sScalingStatDistributionStore(ScalingStatDistributionfmt);
 DBCStorage <ScalingStatValuesEntry> sScalingStatValuesStore(ScalingStatValuesfmt);
 
@@ -516,6 +521,59 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sQuestSortStore,              dbcPath, "QuestSort.dbc");//14545
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sRandomPropertiesPointsStore, dbcPath, "RandPropPoints.dbc");//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sResearchBranchStore,         dbcPath, "ResearchBranch.dbc");//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sResearchProjectStore,        dbcPath, "ResearchProject.dbc");//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sResearchSiteStore,           dbcPath, "ResearchSite.dbc");//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sQuestPOIPointStore,          dbcPath, "QuestPOIPoint.dbc");//14545
+    for (uint32 i = 0; i < sQuestPOIPointStore.GetNumRows(); ++i)
+    {
+        if (QuestPOIPointEntry const* info = sQuestPOIPointStore.LookupEntry(i))
+        {
+            QuestPOIPointMap::iterator itr = m_questpoipoints.find(info->SpellID);
+            if(itr != m_questpoipoints.end())
+            {
+                MaxCoordinat point = itr->second;
+                if (point.minX > info->x)
+                    point.minX = info->x;
+                if (point.maxX < info->x)
+                    point.maxX = info->x;
+                if (point.minY > info->y)
+                    point.minY = info->y;
+                if (point.maxY < info->y)
+                    point.maxY = info->y;
+
+                m_questpoipoints[info->SpellID] = point;
+            }
+            else
+            {
+                MaxCoordinat point;
+                point.minX = info->x;
+                point.maxX = info->x;
+                point.minY = info->y;
+                point.maxY = info->y;
+                m_questpoipoints[info->SpellID] = point;
+            }
+            PolygonVector polygon;
+            polygon.x = info->x;
+            polygon.y = info->y;
+            m_polygonquestpoipoints[info->SpellID].push_back(polygon);
+        }
+    }
+    for (uint32 i = 0; i < sResearchProjectStore.GetNumRows(); ++i)
+    {
+        if (ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry(i))
+        {
+            ProjectRaseList &plist = sRaseProjectMap[rs->RaceID];
+            plist.push_back(i);
+            sResearchProjectsList[rs->RaceID].push_back(i);
+        }
+    }
+    for (uint32 i = 0; i < sResearchSiteStore.GetNumRows(); ++i)
+    {
+        if (ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(i))
+            sDigestZonesList[rs->MapID].push_back(i);
+    }
+    LoadDBC(availableDbcLocales, bad_dbc_files, sQuestPOIBlobStore,           dbcPath, "QuestPOIBlob.dbc");//14545
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sScalingStatDistributionStore, dbcPath, "ScalingStatDistribution.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sScalingStatValuesStore,      dbcPath, "ScalingStatValues.dbc");//14545
@@ -764,6 +822,43 @@ SimpleFactionsList const* GetFactionTeamList(uint32 faction)
         return &itr->second;
 
     return NULL;
+}
+
+ProjectRaseList const* GetProjectRaseList(uint32 RaceID)
+{
+    ProjectRaseMap::const_iterator itr = sRaseProjectMap.find(RaceID);
+    if (itr != sRaseProjectMap.end())
+        return &itr->second;
+
+    return NULL;
+}
+
+MaxCoordinat const* GetQuestPoints(uint32 id)
+{
+    QuestPOIPointMap::const_iterator itr = m_questpoipoints.find(id);
+    if (itr != m_questpoipoints.end())
+        return &itr->second;
+
+    return NULL;
+}
+
+std::vector<PolygonVector> const* GetPolygonQuestPOIPoints(uint32 SpellID)
+{
+    PolygonQuestPOIPointMap::const_iterator itr = m_polygonquestpoipoints.find(SpellID);
+    if (itr != m_polygonquestpoipoints.end())
+        return &itr->second;
+
+    return NULL;
+}
+
+std::map<uint32, std::list<uint32> > GetDigestZonesList()
+{
+    return sDigestZonesList;
+}
+
+std::map<uint32, std::list<uint32> > GetResearchProjectsList()
+{
+    return sResearchProjectsList;
 }
 
 char const* GetPetName(uint32 petfamily, uint32 /*dbclang*/)

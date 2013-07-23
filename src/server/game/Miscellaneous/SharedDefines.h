@@ -3674,12 +3674,13 @@ inline SkillType SkillByLockType(LockType locktype)
 {
     switch (locktype)
     {
-    case LOCKTYPE_PICKLOCK:    return SKILL_LOCKPICKING;
-    case LOCKTYPE_HERBALISM:   return SKILL_HERBALISM;
-    case LOCKTYPE_MINING:      return SKILL_MINING;
-    case LOCKTYPE_FISHING:     return SKILL_FISHING;
-    case LOCKTYPE_INSCRIPTION: return SKILL_INSCRIPTION;
-    default: break;
+        case LOCKTYPE_PICKLOCK:           return SKILL_LOCKPICKING;
+        case LOCKTYPE_HERBALISM:          return SKILL_HERBALISM;
+        case LOCKTYPE_MINING:             return SKILL_MINING;
+        case LOCKTYPE_FISHING:            return SKILL_FISHING;
+        case LOCKTYPE_INSCRIPTION:        return SKILL_INSCRIPTION;
+        case LOCKTYPE_ARCHEOLOGY_INSPECT: return SKILL_ARCHAEOLOGY;
+        default: break;
     }
     return SKILL_NONE;
 }

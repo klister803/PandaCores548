@@ -178,10 +178,36 @@ struct PlayerCurrency
    uint32 seasonTotal;
 };
 
+struct PlayerArchaelogy
+{
+    uint32 pointId;
+    uint32 count;
+    bool active;
+    time_t resetTime;
+};
+
+struct PlayerArchProject
+{
+    uint32 projectId;
+    uint32 RaceID;
+};
+
+struct PlayerArchProjectHistory
+{
+    uint32 projectId;
+    uint32 count;
+    time_t TimeCreated;
+};
+
+typedef UNORDERED_MAP<uint32, MaxCoordinat> QuestPOIPointMap;
+
 typedef UNORDERED_MAP<uint32, PlayerTalent*> PlayerTalentMap;
 typedef UNORDERED_MAP<uint32, PlayerSpell*> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
 typedef UNORDERED_MAP<uint32, PlayerCurrency> PlayerCurrenciesMap;
+typedef UNORDERED_MAP<uint32, PlayerArchaelogy> PlayerArchaelogyMap;
+typedef UNORDERED_MAP<uint32, PlayerArchProject> PlayerArchProjectMap;
+typedef UNORDERED_MAP<uint32, PlayerArchProjectHistory> PlayerArchProjectHistoryMap;
 
 typedef std::list<uint64> WhisperListContainer;
 
@@ -855,6 +881,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 35,
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
     //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 37, //id on TC.
+    PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 38,
     MAX_PLAYER_LOGIN_QUERY
 };
 
@@ -1463,6 +1490,200 @@ class Player : public Unit, public GridObject<Player>
         */
 
         void ModifyCurrency(uint32 id, int32 count, bool printLog = true, bool ignoreMultipliers = false);
+
+        // Archaelogy
+        void GenerateResearchDigSites(uint32 max = 4);
+        void GenerateResearchProjects(uint32 max, uint32 race = 0);
+        uint32 GetSurveyBotEntry(float &x,float &y,float &z,float &orientation, int32 &duration);
+        void LootResearchChest();
+        bool EventSolveProject(SpellInfo const* spell);
+        uint32 GetResearchPointCount(uint32 id)
+        {
+            PlayerArchaelogyMap::const_iterator itr = m_archaelogies.find(id);
+            return itr != m_archaelogies.end() ? itr->second.count : 0;
+        }
+        uint32 GetResearchId()
+        {
+            float x = GetPositionX();
+            float y = GetPositionY();
+
+            for (PlayerArchaelogyMap::iterator itr = m_archaelogies.begin(); itr != m_archaelogies.end(); ++itr)
+            {
+                if(itr->second.resetTime !=0 && itr->second.resetTime < time(NULL))
+                    m_archaelogies.erase(itr);
+                else
+                {
+                    ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(itr->first);
+                    //std::vector<PolygonVector> const*  PolygonVector = GetPolygonQuestPOIPoints(rs->ItemID);
+                    //sLog->outDebug(LOG_FILTER_NETWORKIO, "GetResearchId itr->first %u, HasPointInDigest %u", itr->first, HasPointInDigest(PolygonVector, x, y));
+                    if(MaxCoordinat const* itrpoint = GetQuestPoints(rs->ItemID))
+                    {
+                        if(x > itrpoint->minX && x < itrpoint->maxX && y > itrpoint->minY && y < itrpoint->maxY)
+                            return itr->first;
+                    }
+                }
+            }
+
+            return NULL;
+        }
+        bool GenereteInDigestXY(DigSiteInfo &m_digsite)
+        {
+            float x = GetPositionX();
+            float y = GetPositionY();
+
+            for(uint32 i = 0; i < 12; i++)
+            {
+                ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(m_digsite.currentDigest);
+                std::vector<PolygonVector> const*  PolygonVector = GetPolygonQuestPOIPoints(rs->ItemID);
+                MaxCoordinat const* itrpoint = GetQuestPoints(rs->ItemID);
+
+                if(PolygonVector && itrpoint)
+                {
+                    float x = frand(itrpoint->minX, itrpoint->maxX);
+                    float y = frand(itrpoint->minY, itrpoint->maxY);
+                    float z = GetPositionZ();
+                    /*Position pos;
+                    pos.m_positionX = x;
+                    pos.m_positionY = y;
+                    pos.m_positionZ = z;
+                    GetFirstCollisionPosition(pos, 10.0f, 180.0f);
+                    x = pos.m_positionX;
+                    y = pos.m_positionY;
+                    z = pos.m_positionZ;*/
+                    if(HasPointInDigest(PolygonVector, x, y))
+                    {
+                        m_digsite.x = x;
+                        m_digsite.y = y;
+                        m_digsite.z = z;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        uint32 GetProjectHistoryCount(uint32 id)
+        {
+            PlayerArchProjectHistoryMap::const_iterator itr = m_archprojecthistories.find(id);
+            return itr != m_archprojecthistories.end() ? itr->second.count : 0;
+        }
+        uint32 ExistProject(uint32 id)
+        {
+            PlayerArchProjectMap::const_iterator itr = m_archprojects.find(id);
+                if(itr != m_archprojects.end())
+                    return itr->second.projectId;
+
+            return NULL;
+        }
+        void SetResearchPointCount(uint32 id, uint32 count)
+        {
+            PlayerArchaelogyMap::iterator itr = m_archaelogies.find(id);
+            if(itr != m_archaelogies.end())
+            {
+                itr->second.count = count;
+                if(count <= 0)
+                {
+                    m_archaelogies.erase(itr);
+                    uint32 free_spot = 0;
+                    for(uint32 sites = 0; sites < MAX_RESEARCH_SITES / 2; sites++)
+                    {
+                        uint32 site_now_1 = GetUInt32Value( PLAYER_FIELD_RESERACH_SITE_1 + sites ) & 0xFFFF;
+                        uint32 site_now_2 = GetUInt32Value( PLAYER_FIELD_RESERACH_SITE_1 + sites ) >> 16;
+                        if(site_now_1 == id)
+                        {
+                            free_spot = sites * 2;
+                            uint32 new_value = ( site_now_2 << 16 ) | ( 0 );
+                            SetUInt32Value( PLAYER_FIELD_RESERACH_SITE_1 + free_spot / 2, new_value );
+                            break;
+                        }
+                        if(site_now_2 == id)
+                        {
+                            free_spot = sites * 2 + 1;
+                            uint32 new_value = ( 0 << 16 ) | ( site_now_1 );
+                            SetUInt32Value( PLAYER_FIELD_RESERACH_SITE_1 + free_spot / 2, new_value );
+                            break;
+                        }
+                    }
+
+                    CharacterDatabase.PExecute("DELETE FROM character_archaelogy WHERE pointId = '%u' and guid = '%u'", id, GetGUIDLow());
+                    AddDigestOrProject(GetMapId(), id, m_notactivedigestzones);
+                    DelDigestOrProject(GetMapId(), id, m_activedigestzones);
+                }
+            }
+        }
+        void AddProjecthistoryCount(uint32 id)
+        {
+            PlayerArchProjectHistoryMap::iterator itr = m_archprojecthistories.find(id);
+            if(itr != m_archprojecthistories.end())
+                itr->second.count = itr->second.count + 1;
+        }
+        void AddDigestOrProject(uint32 indexId, uint32 pointId, std::map<uint32, std::list<uint32> > & _addfor)
+        {
+            _addfor[indexId].push_back(pointId);
+        }
+        void DelDigestOrProject(uint32 indexId, uint32 pointId, std::map<uint32, std::list<uint32> > & _delfor)
+        {
+            std::list<uint32> &list = _delfor[indexId];
+            if (list.empty())
+                return;
+
+            for (std::list<uint32>::iterator itr = list.begin(); itr != list.end(); ++itr)
+            {
+                if(pointId == *itr)
+                {
+                    list.erase(itr);
+                    break;
+                }
+            }
+        }
+        PlayerArchProjectHistoryMap& getProjectHistoryMap() { return m_archprojecthistories; }
+        bool HasPointInDigest(std::vector<PolygonVector> const* polygon, float x, float y)
+        {
+            static const int q_patt[2][2]= { {0,1}, {3,2} };
+
+            if (polygon->size() < 3) return false;
+
+            std::vector<PolygonVector>::const_iterator end = polygon->end();
+            PolygonVector pred_pt = polygon->back();
+            pred_pt.x -= x;
+            pred_pt.y -= y;
+
+            int pred_q = q_patt[pred_pt.y < 0][pred_pt.x < 0];
+
+            int w = 0;
+
+            for(std::vector<PolygonVector>::const_iterator iter = polygon->begin(); iter != end; ++iter)
+            {
+                PolygonVector cur_pt = *iter;
+
+                cur_pt.x -= x;
+                cur_pt.y -= y;
+
+                int q = q_patt[cur_pt.y < 0][cur_pt.x < 0];
+
+                switch (q - pred_q)
+                {
+                    case -3:
+                        ++w;
+                        break;
+                    case 3:
+                        --w;
+                        break;
+                    case -2:
+                        if(pred_pt.x * cur_pt.y >= pred_pt.y * cur_pt.x)
+                            ++w;
+                        break;
+                    case 2:
+                        if(!(pred_pt.x * cur_pt.y >= pred_pt.y * cur_pt.x))
+                            --w;
+                        break;
+                }
+                pred_pt = cur_pt;
+                pred_q = q;
+            }
+
+            return w!=0;
+        }
 
         void ApplyEquipCooldown(Item* pItem);
         void QuickEquipItem(uint16 pos, Item* pItem);
@@ -2985,6 +3206,13 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_currentBuybackSlot;
 
         PlayerCurrenciesMap _currencyStorage;
+        PlayerArchaelogyMap m_archaelogies;
+        PlayerArchProjectMap m_archprojects;
+        PlayerArchProjectHistoryMap m_archprojecthistories;
+        std::map<uint32, std::list<uint32> > m_activedigestzones;
+        std::map<uint32, std::list<uint32> > m_notactivedigestzones;
+        std::map<uint32, std::list<uint32> > m_activeresearchprojects;
+        std::map<uint32, std::list<uint32> > m_notactiveresearchprojects;
 
         VoidStorageItem* _voidStorageItems[VOID_STORAGE_MAX_SLOT];
 
@@ -2993,6 +3221,7 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_ExtraFlags;
         uint64 m_curSelection;
+        DigSiteInfo m_digsite;
 
         uint64 m_comboTarget;
         int8 m_comboPoints;

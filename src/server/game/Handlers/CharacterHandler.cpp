@@ -219,6 +219,10 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt32(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADCURRENCY, stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PLAYER_ARCHAELOGY);
+    stmt->setUInt32(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADARCHAELOGY, stmt);
+
     return res;
 }
 
@@ -2455,4 +2459,28 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
     }
 
     CharacterDatabase.CommitTransaction(trans);
+}
+
+void WorldSession::HandleRequestReaserchHistory(WorldPacket &recv_data)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_RESEARCH_SETUP_HISTORY");
+
+    if(!_player)
+        return;
+
+    PlayerArchProjectHistoryMap history = _player->getProjectHistoryMap();
+    uint8 count = history.size();
+    if(count <= 0 || history.empty())
+        return;
+
+    WorldPacket data(SMSG_RESEARCH_SETUP_HISTORY);
+    data.WriteBits(count, 22); // count
+
+    for (PlayerArchProjectHistoryMap::const_iterator itr = history.begin(); itr != history.end(); ++itr)
+    {
+        data << uint32(itr->second.projectId); //Project Id
+        data << uint32(itr->second.count);   //Count
+        data << uint32(itr->second.TimeCreated);   //Time create
+    }
+    SendPacket(&data);
 }

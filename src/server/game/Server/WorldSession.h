@@ -1007,6 +1007,7 @@ class WorldSession
         void HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket);
         void HandleSetFactionOpcode(WorldPacket& recvPacket);
         int32 HandleEnableNagleAlgorithm();
+        void HandleRequestReaserchHistory(WorldPacket& recvPacket);
 
     private:
         void InitializeQueryCallbackParameters();

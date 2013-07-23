@@ -568,6 +568,31 @@ struct MovementInfo
     void OutDebug();
 };
 
+struct DigSiteInfo
+{
+    float x, y, z;
+    float last_cast_dist;
+    uint32 loot_GO_entry;
+    uint32 race;
+    uint32 pointCount[572];
+    uint32 countProject;
+    uint32 currentDigest;
+
+    DigSiteInfo()
+    {
+        x = y = z = 0.0f;
+        last_cast_dist = 0;
+        loot_GO_entry = 0;
+        race = 0;
+        countProject = 0;
+        currentDigest = 0;
+        pointCount[0] = 0;
+        pointCount[1] = 0;
+        pointCount[530] = 0;
+        pointCount[571] = 0;
+    }
+};
+
 #define MAPID_INVALID 0xFFFFFFFF
 
 class WorldLocation : public Position

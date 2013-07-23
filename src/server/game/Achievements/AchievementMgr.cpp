@@ -84,6 +84,7 @@ bool AchievementCriteriaData::IsValid(AchievementCriteriaEntry const* criteria)
     {
         case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE:
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
+        case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
         case ACHIEVEMENT_CRITERIA_TYPE_FALL_WITHOUT_DYING:
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST:          // only hardcoded list
         case ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL:
@@ -1371,6 +1372,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         switch (type)
         {
             // std. case: increment at 1
+            case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
             case ACHIEVEMENT_CRITERIA_TYPE_NUMBER_OF_TALENT_RESETS:
             case ACHIEVEMENT_CRITERIA_TYPE_LOSE_DUEL:
             case ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION:
@@ -1433,6 +1435,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_OWN_ITEM:
             case ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM:
             case ACHIEVEMENT_CRITERIA_TYPE_CURRENCY:
+            case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS:
                 SetCriteriaProgress(achievementCriteria, miscValue2, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
                 // std case: high value at miscValue1
@@ -1674,7 +1677,6 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_GUILD:
             case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILLS_GUILD:
             case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD:
-            case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS:
             case ACHIEVEMENT_CRITERIA_TYPE_UNK118:
             case ACHIEVEMENT_CRITERIA_TYPE_UNK120:
             case ACHIEVEMENT_CRITERIA_TYPE_UNK121:
@@ -1754,7 +1756,10 @@ bool AchievementMgr<T>::IsCompletedCriteria(AchievementCriteriaEntry const* achi
     switch (achievementCriteria->type)
     {
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
+        case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
             return progress->counter >= achievementCriteria->win_bg.winCount;
+        case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS:
+            return progress->counter >= achievementCriteria->archaelogy.itemCount;
         case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE:
             return progress->counter >= achievementCriteria->kill_creature.creatureCount;
         case ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL:
@@ -2799,6 +2804,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementCriteriaEntry const *ac
     case ACHIEVEMENT_CRITERIA_TYPE_WIN_DUEL:
     case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA:
     case ACHIEVEMENT_CRITERIA_TYPE_WON_AUCTIONS:
+        case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
         if (!miscValue1)
             return false;
         break;

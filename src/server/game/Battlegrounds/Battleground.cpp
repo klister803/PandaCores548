@@ -937,6 +937,9 @@ void Battleground::EndBattleground(uint32 winner)
                             guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, std::max<uint32>(winner_arena_team->GetRating(), 1), 0, NULL, player);
                     }
             }
+
+            //if (IsRBG())
+                //player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND, GetMapId());
         }
         else
         {

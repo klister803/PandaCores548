@@ -87,6 +87,13 @@ struct AchievementCriteriaEntry
             uint32  winCount;                               // 4
         } win_bg;
 
+        // ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS = 3
+        struct
+        {
+            uint32  type;                                   // 3
+            uint32  itemCount;                              // 4
+        } archaelogy;
+
         // ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL            = 125
         struct
         {
@@ -1610,6 +1617,54 @@ struct RandomPropertiesPointsEntry
     uint32    EpicPropertiesPoints[5];                      // 2-6
     uint32    RarePropertiesPoints[5];                      // 7-11
     uint32    UncommonPropertiesPoints[5];                  // 12-16
+};
+
+struct ResearchBranchEntry
+{
+    uint32    ID;                                           // 0 ID
+    char* Race;                                         // 1 Archeaology Race (Fossil, Troll, Nerubian)
+    //char* AlwaysDwarf;                                // 2 unk. Always Dwarf.
+    uint32    CurrencyID;                                   // 3 CurrencyID
+    //                                                      // 4 Icon Path
+    uint32    ItemID;                                       // 5 ItemID
+};
+
+struct ResearchProjectEntry
+{
+    uint32    ID;                                           // 0 ID
+    char* Name;                                         // 1 Name of item.
+    char* Description;                                  // 2 Item description
+    //char* TestStrings;                                // 3 unk. Only for test archaeology.
+    uint32    RaceID;                                       // 4 RaceID from ResearchBranch
+    uint32    SpellID;                                      // 5 SpellID - Reward
+    uint32    RequiredItemCount;                            // 6 Item from ResearchBranch
+    //                                                      // 7 Icon Path
+    uint32    RequiredCurrencyAmount;                       // 8 Required currency amount for create (should be * 100)
+};
+
+struct ResearchSiteEntry
+{
+    uint32    ID;                                           // 0 ID
+    uint32    MapID;                                        // 1 MapID
+    uint32    ItemID;                                       // 2 ItemID
+    char* Name;                                         // 3 Research site name
+    //uint32 unk;                                           // 4 unk. Always 177.
+};
+
+struct QuestPOIBlobEntry
+{
+    uint32    ID;                                           // 0 ID
+    uint32    Count;                                        // 1 MapID
+    uint32    MapID;                                        // 2 ItemID
+    //uint32 unk;                                           // 4 unk.
+};
+
+struct QuestPOIPointEntry
+{
+    uint32    ID;                                           // 0 ID
+    int32     x;                                            // 1 x
+    int32     y;                                            // 2 y
+    uint32    SpellID;                                      // 4 SpellID.
 };
 
 struct ScalingStatDistributionEntry
