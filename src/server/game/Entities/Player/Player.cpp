@@ -22084,7 +22084,6 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
     // node must have pos if taxi master case (npc != NULL)
     else if (npc)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "SendActivateTaxiReply ERR_TAXIUNSPECIFIEDSERVERERROR if npc");
         GetSession()->SendActivateTaxiReply(ERR_TAXIUNSPECIFIEDSERVERERROR);
         return false;
     }
@@ -22148,7 +22147,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
     // in spell case allow 0 model
     if ((mount_display_id == 0 && spellid == 0) || sourcepath == 0)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "SendActivateTaxiReply ERR_TAXIUNSPECIFIEDSERVERERROR mount_display_id == 0");
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "SendActivateTaxiReply ERR_TAXIUNSPECIFIEDSERVERERROR mount_display_id %u, spellid %u, sourcepath %u", mount_display_id, spellid, sourcepath);
         GetSession()->SendActivateTaxiReply(ERR_TAXIUNSPECIFIEDSERVERERROR);
         m_taxi.ClearTaxiDestinations();
         return false;
