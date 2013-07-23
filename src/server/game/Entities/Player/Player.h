@@ -744,6 +744,23 @@ enum ArenaTeamInfoType
 
 class InstanceSave;
 
+enum KillStates
+{
+    KILL_UNCHANGED  = 0,
+    KILL_CHANGED    = 1,
+    KILL_NEW        = 2
+    // no removed state, all kills are flushed at midnight
+};
+
+struct KillInfo
+{
+    uint32 count;
+    KillStates state;
+    KillInfo() : count(0), state(KILL_NEW) {}
+};
+
+typedef std::map<uint32, KillInfo> KillInfoMap;
+
 enum RestType
 {
     REST_TYPE_NO        = 0,
@@ -2909,6 +2926,8 @@ class Player : public Unit, public GridObject<Player>
         void _LoadTalents(PreparedQueryResult result);
         void _LoadInstanceTimeRestrictions(PreparedQueryResult result);
         void _LoadCurrency(PreparedQueryResult result);
+        void _LoadArchaelogy(PreparedQueryResult result);
+        void _LoadHonor();
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2932,6 +2951,8 @@ class Player : public Unit, public GridObject<Player>
         void _SaveStats(SQLTransaction& trans);
         void _SaveInstanceTimeRestrictions(SQLTransaction& trans);
         void _SaveCurrency(SQLTransaction& trans);
+        void _SaveArchaelogy(SQLTransaction& trans);
+        void _SaveHonor();
 
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
@@ -3060,6 +3081,10 @@ class Player : public Unit, public GridObject<Player>
         RestType rest_type;
         ////////////////////Rest System/////////////////////
 
+        //kill honor sistem
+        KillInfoMap m_killsPerPlayer;
+        bool m_flushKills;
+        bool m_saveKills;
         // Social
         PlayerSocial *m_social;
 

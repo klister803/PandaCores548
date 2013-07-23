@@ -844,6 +844,10 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
 
+    //kill honor sistem
+    m_flushKills = false;
+    m_saveKills = false;
+
     m_mailsLoaded = false;
     m_mailsUpdated = false;
     unReadMails = 0;
@@ -7643,6 +7647,9 @@ void Player::UpdateHonorFields()
             // no honor/kills yesterday or today, reset
             SetUInt32Value(PLAYER_FIELD_KILLS, 0);
         }
+        // clear all of today's kills, they will be flushed from the DB on next save
+        m_killsPerPlayer.clear();
+        m_flushKills = true;
     }
 
     m_lastHonorUpdateTime = now;
@@ -7733,6 +7740,8 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, victim->getRace());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA, GetAreaId());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL, 1, 0, victim);
+
+            m_saveKills = true;
         }
         else
         {
@@ -7761,6 +7770,24 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
 
     // Back to int now
     honor = int32(honor_f);
+
+    if (!InBattleground() && GetTypeId() == TYPEID_PLAYER && (victim) && victim->GetTypeId() == TYPEID_PLAYER)
+    {
+        uint8 limit = 6;
+
+        KillInfo &info = m_killsPerPlayer[victim->GetGUIDLow()];
+        // gradually decrease the honor for subsequent kills
+        // no honor reward for killing a player more than 'limit' times per day
+        honor *= (float)(limit - info.count) / (float)limit;
+        // if the kill is not present in the DB keep in new state so it will be insterted
+        // otherwise adding a kill means it will need to be updated
+        if(info.state != KILL_NEW)
+            info.state = KILL_CHANGED;
+
+        // count the number of times a certain player was killed in one day
+        if(info.count < limit)
+            ++info.count;
+    }
     // honor - for show honor points in log
     // victim_guid - for show victim name in log
     // victim_rank [1..4]  HK: <dishonored rank>
@@ -27877,5 +27904,60 @@ void Player::SendSoundToAll(uint32 soundId, uint64 source)
     {
         if (Player* player = i->getSource())
             player->SendSound(soundId, source);
+    }
+}
+
+void Player::_LoadHonor()
+{
+    // kills in the DB are for one day always
+    // so if the last was today then they all were
+    QueryResult result = CharacterDatabase.PQuery("SELECT victim_guid,count FROM character_kill WHERE guid='%u'", GetGUIDLow());
+    if (result)
+    {
+        do
+        {
+            Field *fields  = result->Fetch();
+            uint32 victim_guid = fields[0].GetUInt32();
+            uint32 count = fields[1].GetUInt32();
+
+            KillInfo &info = m_killsPerPlayer[victim_guid];
+            info.state = KILL_UNCHANGED;
+            info.count = count;
+        }
+        while( result->NextRow() );
+    }
+}
+
+void Player::_SaveHonor()
+{
+    // the character_kill tables are not used if the config is set to 0
+//    if(!sWorld.getConfig(CONFIG_HONOR_KILL_LIMIT))
+//        return;
+
+    // flush all kills from the DB at midnight
+    if(m_flushKills)
+    {
+        CharacterDatabase.PExecute("DELETE FROM character_kill WHERE guid = '%u'", GetGUIDLow());
+        m_flushKills = false;
+    }
+
+    // only if there's something to save
+    if(m_saveKills)
+    {
+        for(KillInfoMap::iterator itr = m_killsPerPlayer.begin(); itr != m_killsPerPlayer.end(); ++itr)
+        {
+            switch(itr->second.state)
+            {
+                case KILL_NEW:
+                    CharacterDatabase.PExecute("DELETE FROM character_kill WHERE guid = '%u' AND victim_guid = '%u'", GetGUIDLow(), itr->first);
+                    CharacterDatabase.PExecute("REPLACE INTO character_kill VALUES ('%u','%u','%u')", GetGUIDLow(), itr->first, itr->second.count);
+                    break;
+                case KILL_CHANGED:
+                    CharacterDatabase.PExecute("UPDATE character_kill SET count='%u' WHERE guid = '%u' AND victim_guid = '%u'", itr->second.count, GetGUIDLow(), itr->first);
+                    break;
+            }
+            itr->second.state = KILL_UNCHANGED;
+        }
+        m_saveKills = false;
     }
 }
