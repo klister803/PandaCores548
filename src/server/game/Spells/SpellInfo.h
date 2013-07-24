@@ -389,8 +389,8 @@ public:
     uint32 SpellShapeshiftId;
     uint32 SpellTargetRestrictionsId;
     uint32 SpellTotemsId;
-    uint32 SpellMiscId;
     uint32 ResearchProject;
+    uint32 SpellMiscId;
     // SpellScalingEntry
     int32  CastTimeMin;
     int32  CastTimeMax;
@@ -427,6 +427,7 @@ public:
     SpellScalingEntry const* GetSpellScaling() const;
     SpellShapeshiftEntry const* GetSpellShapeshift() const;
     SpellTotemsEntry const* GetSpellTotems() const;
+    ResearchProjectEntry const* GetSpellResearchProjects() const;
 
     SpellInfo(SpellEntry const* spellEntry, uint32 difficulty);
     ~SpellInfo();

@@ -805,6 +805,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     SpellShapeshiftId = spellEntry->SpellShapeshiftId;
     SpellTargetRestrictionsId = spellEntry->SpellTargetRestrictionsId;
     SpellTotemsId = spellEntry->SpellTotemsId;
+    ResearchProject = spellEntry->ResearchProject;
     SpellMiscId = spellEntry->SpellMiscId;
 
     // SpellDifficultyEntry
@@ -2738,6 +2739,11 @@ SpellShapeshiftEntry const* SpellInfo::GetSpellShapeshift() const
 SpellTotemsEntry const* SpellInfo::GetSpellTotems() const
 {
     return SpellTotemsId ? sSpellTotemsStore.LookupEntry(SpellTotemsId) : NULL;
+}
+
+ResearchProjectEntry const* SpellInfo::GetSpellResearchProjects() const
+{
+    return ResearchProject ? sResearchProjectStore.LookupEntry(ResearchProject) : NULL;
 }
 
 SpellAuraOptionsEntry const* SpellInfo::GetSpellAuraOptions() const

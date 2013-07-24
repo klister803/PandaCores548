@@ -18487,6 +18487,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetFallInformation(0, GetPositionZ());
 
     _LoadSpellCooldowns(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS));
+    _LoadHonor();
+    GenerateResearchDigSites();
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
@@ -20266,6 +20268,8 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveGlyphs(trans);
     _SaveInstanceTimeRestrictions(trans);
     _SaveCurrency(trans);
+    _SaveArchaelogy(trans);
+    _SaveHonor();
 
     // check if stats should only be saved on logout
     // save stats can be out of transaction
@@ -23878,6 +23882,7 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     ResetTimeSync();
     SendTimeSync();
+    GenerateResearchDigSites();
 
     CastSpell(this, 836, true);                             // LOGINEFFECT
 
@@ -28102,13 +28107,19 @@ void Player::_SaveArchaelogy(SQLTransaction& trans)
 
 void Player::GenerateResearchDigSites(uint32 max)
 {
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites.");
+
     uint32 skill_now = GetSkillValue( SKILL_ARCHAEOLOGY );
     if( skill_now == 0 )
         return;
 
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites skill.");
+
     uint32 _mapId = GetMapId();
     if((_mapId != 0 && _mapId != 1&& _mapId != 530 && _mapId != 571) || (_mapId == 530 && skill_now < 275) || (_mapId == 571 && skill_now < 350))
         return;
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites map.");
 
     if(m_digsite.pointCount[_mapId] == 0)
     {
@@ -28161,6 +28172,8 @@ void Player::GenerateResearchDigSites(uint32 max)
             else
                 new_value = ( site_now_2 << 16 ) | ( sRSid );
             SetUInt32Value( PLAYER_FIELD_RESERACH_SITE_1 + free_spot / 2, new_value );
+
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_FIELD_RESERACH_SITE_1 new_value %u, sRSid %u", new_value, sRSid);
 
             AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
             DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
@@ -28228,6 +28241,8 @@ void Player::GenerateResearchDigSites(uint32 max)
                 new_value = ( site_now_2 << 16 ) | ( sRSid );
             SetUInt32Value( PLAYER_FIELD_RESERACH_SITE_1 + free_spot / 2, new_value );
 
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_FIELD_RESERACH_SITE_1 new_value %u, sRSid %u", new_value, sRSid);
+
             AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
             DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
 
@@ -28254,6 +28269,8 @@ void Player::GenerateResearchDigSites(uint32 max)
 //each research branch can have 1 active project, we should pick rare projects rarely and crap projects more frecvently
 void Player::GenerateResearchProjects(uint32 max, uint32 race)
 {
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchProjects.");
+
     uint32 maxcount = 0;
     uint32 skill_now = GetSkillValue( SKILL_ARCHAEOLOGY );
     if( skill_now == 0 )

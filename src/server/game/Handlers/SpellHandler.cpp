@@ -397,11 +397,20 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     if (mover->GetTypeId() == TYPEID_PLAYER)
     {
         // not have spell in spellbook or spell passive and not casted by client
-        if (!mover->ToPlayer()->HasActiveSpell(spellId) || spellInfo->IsPassive())
+        if ((!mover->ToPlayer()->HasActiveSpell(spellId) || spellInfo->IsPassive()) && !spellInfo->ResearchProject && spellId != 101054)
         {
-            //cheater? kick? ban?
-            recvPacket.rfinish(); // prevent spam at ignore packet
-            return;
+            if(spellId == 101603)
+            {
+                mover->RemoveAurasDueToSpell(107837);
+                mover->RemoveAurasDueToSpell(101601);
+            }
+            else
+            {
+                //cheater? kick? ban?
+                sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: cheater? kick? ban? TYPEID_PLAYER spell id %u", spellId);
+                recvPacket.rfinish(); // prevent spam at ignore packet
+                return;
+            }
         }
     }
     else
