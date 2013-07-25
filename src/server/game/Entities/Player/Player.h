@@ -38,6 +38,7 @@
 #include "Util.h"                                           // for Tokenizer typedef
 #include "WorldSession.h"
 #include "PhaseMgr.h"
+#include "Object.h"
 
 // for template
 #include "SpellMgr.h"
