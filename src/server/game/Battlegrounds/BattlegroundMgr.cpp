@@ -628,6 +628,10 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                 buff << uint32(((BattleGroundKTScore*)itr2->second)->OrbHandles);
                 buff << uint32(((BattleGroundKTScore*)itr2->second)->Score * 10);
                 break;
+            case BATTLEGROUND_SSM:
+                data->WriteBits(0x00000002, 24);
+                buff << uint32(((BattleGroundSSMScore*)itr2->second)->CartsTaken);
+                break;
             case BATTLEGROUND_NA:
             case BATTLEGROUND_BE:
             case BATTLEGROUND_AA:
@@ -1059,6 +1063,7 @@ uint32 BattlegroundMgr::CreateBattleground(CreateBattlegroundData& data)
         case BATTLEGROUND_BFG: bg = new BattlegroundBFG; break;
         case BATTLEGROUND_RB: bg = new BattlegroundRB; break;
         case BATTLEGROUND_KT: bg = new BattlegroundKT; break;
+        case BATTLEGROUND_SSM: bg = new BattlegroundSSM; break;
         default:
             bg = new Battleground;
             break;
