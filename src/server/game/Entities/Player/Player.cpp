@@ -18488,7 +18488,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadSpellCooldowns(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS));
     _LoadHonor();
-    //GenerateResearchDigSites();
+    GenerateResearchDigSites();
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
@@ -23882,7 +23882,7 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     ResetTimeSync();
     SendTimeSync();
-    //GenerateResearchDigSites();
+    GenerateResearchDigSites();
 
     CastSpell(this, 836, true);                             // LOGINEFFECT
 
@@ -28143,8 +28143,8 @@ void Player::GenerateResearchDigSites(uint32 max)
             uint32 sites_found = 0;
             for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
             {
-                uint32 site_now_1 = GetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + sites ) & 0xFFFF;
-                uint32 site_now_2 = GetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + sites ) >> 16;
+                uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + sites ) & 0xFFFF;
+                uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + sites ) >> 16;
                 if( site_now_1 == sRSid || site_now_2 == sRSid )
                 {
                     have_site = true;
@@ -28164,14 +28164,14 @@ void Player::GenerateResearchDigSites(uint32 max)
             if( free_spot == 0 )
                 free_spot = 4;
             //assign the site to us
-            uint32 site_now_1 = GetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2 ) & 0xFFFF;
-            uint32 site_now_2 = GetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2 ) >> 16;
+            uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2 ) & 0xFFFF;
+            uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2 ) >> 16;
             uint32 new_value;
             if( free_spot % 2 == 1 )
                 new_value = ( sRSid << 16 ) | ( site_now_1 );
             else
                 new_value = ( site_now_2 << 16 ) | ( sRSid );
-            SetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2, new_value );
+            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2, new_value );
 
             sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES new_value %u, sRSid %u", new_value, sRSid);
 
@@ -28211,8 +28211,8 @@ void Player::GenerateResearchDigSites(uint32 max)
             uint32 sites_found = 0;
             for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
             {
-                uint32 site_now_1 = GetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + sites ) & 0xFFFF;
-                uint32 site_now_2 = GetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + sites ) >> 16;
+                uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + sites ) & 0xFFFF;
+                uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + sites ) >> 16;
                 if( site_now_1 == sRSid || site_now_2 == sRSid )
                 {
                     have_site = true;
@@ -28232,14 +28232,14 @@ void Player::GenerateResearchDigSites(uint32 max)
             if( free_spot == 0 )
                 free_spot = 4;
             //assign the site to us
-            uint32 site_now_1 = GetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2 ) & 0xFFFF;
-            uint32 site_now_2 = GetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2 ) >> 16;
+            uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2 ) & 0xFFFF;
+            uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2 ) >> 16;
             uint32 new_value;
             if( free_spot % 2 == 1 )
                 new_value = ( sRSid << 16 ) | ( site_now_1 );
             else
                 new_value = ( site_now_2 << 16 ) | ( sRSid );
-            SetUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2, new_value );
+            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES + free_spot / 2, new_value );
 
             sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES new_value %u, sRSid %u", new_value, sRSid);
 
