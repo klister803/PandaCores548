@@ -34,6 +34,9 @@ enum BG_SSM_ObjectTypes
     BG_SSM_CART_2,
     BG_SSM_CART_3,
 
+    BG_SSM_SPIRIT_MAIN_ALLIANCE,
+    BG_SSM_SPIRIT_MAIN_HORDE,
+
     BG_DOOR_1,
     BG_DOOR_2,
     BG_DOOR_3,
@@ -49,6 +52,13 @@ enum BG_SSM_SPELLS
     BG_SSM_SPELL_CONTROL_HORDE      = 116085,
 
     BG_SSM_SPELL_CART_MOVE          = 52406,
+};
+
+
+enum BG_SSM_Greveyards
+{
+    BG_SSM_HORDE_GRAVEYARD      = 4061,
+    BG_SSM_ALLIANCE_GRAVEYARD   = 4062
 };
 
 enum BG_SSM_Timers
@@ -209,6 +219,8 @@ class BattlegroundSSM : public Battleground
         void RemovePlayer(Player* player, uint64 guid, uint32 team);
 
         void StartingEventOpenDoors();
+
+        WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
 
     private:
         Creature* AddCart(uint32 type, Location loc);

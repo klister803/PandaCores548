@@ -79,6 +79,20 @@ bool BattlegroundSSM::SetupBattleground()
     AddObject(BG_DOOR_3, BG_SSM_DOOR, 825.491f, 144.609f, 328.926f, 2.91383f, 0, 0, 0.993f, 0.113f);
     AddObject(BG_DOOR_4, BG_SSM_DOOR, 847.954f, 156.54f, 328.801f, 3.09369f, 0, 0, 0.99f, 0.023f);
 
+    WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(BG_SSM_ALLIANCE_GRAVEYARD);
+    if (!sg || !AddSpiritGuide(BG_SSM_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE))
+    {
+        sLog->outError(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn Alliance spirit guide! Battleground not created!");
+        return false;
+    }
+
+    sg = sWorldSafeLocsStore.LookupEntry(BG_SSM_HORDE_GRAVEYARD);
+    if (!sg || !AddSpiritGuide(BG_SSM_SPIRIT_MAIN_HORDE, sg->x, sg->y, sg->z, 3.193953f, HORDE))
+    {
+        sLog->outError(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn Horde spirit guide! Battleground not created!");
+        return false;
+    }
+
     return true;
 }
 
@@ -403,4 +417,10 @@ void BattlegroundSSM::RemovePlayer(Player* player, uint64 guid, uint32 /*team*/)
             if (m_PlayersNearPoint[j][i] == guid)
                 m_PlayersNearPoint[j].erase(m_PlayersNearPoint[j].begin() + i);
     }
+}
+
+WorldSafeLocsEntry const* BattlegroundSSM::GetClosestGraveYard(Player* player)
+{
+    return (player->GetTeam() == ALLIANCE) ? sWorldSafeLocsStore.LookupEntry(BG_SSM_ALLIANCE_GRAVEYARD) :
+                                             sWorldSafeLocsStore.LookupEntry(BG_SSM_HORDE_GRAVEYARD);
 }
