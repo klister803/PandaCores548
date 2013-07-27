@@ -368,9 +368,9 @@ char* dumpTables[32] =
 
 char* ipTransfert[3] =
 {
-    "5.39.73.129",      // Rassharom
-    "88.190.50.220",    // Taran'Zhu
-    "88.190.50.220"     // Elegon
+    "127.0.0.1",      // Rassharom
+    "127.0.0.1",    // Taran'Zhu
+    "127.0.0.1"     // Elegon
 };
 
 class CharactersTransfertRunnable : public ACE_Based::Runnable
@@ -383,10 +383,10 @@ public:
 
         std::string hash_transfert = "";
 
-        for(int i = 0; i < 32; i++)
+        /*for(int i = 0; i < 32; i++)
         {
             char* tableName = dumpTables[i];
-            QueryResult tableInfo = CharacterDatabase.PQuery("select data_type from information_schema.columns where table_name = '%s' AND table_schema IN ('505_characters', '505_characters_us')", tableName);
+            QueryResult tableInfo = CharacterDatabase.PQuery("select data_type from information_schema.columns where table_name = '%s'", tableName);
             if(tableInfo)
             {
                 do
@@ -395,7 +395,7 @@ public:
                     hash_transfert += fieldInfo[0].GetString().substr(0, 1);
                 } while(tableInfo->NextRow());
             }
-        }
+        }*/
 
         printf("hash_transfert : %s\n", hash_transfert.c_str());
 
