@@ -18488,7 +18488,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadSpellCooldowns(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS));
     _LoadHonor();
-    //GenerateResearchDigSites();
+    GenerateResearchDigSites();
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
@@ -23882,7 +23882,7 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     ResetTimeSync();
     SendTimeSync();
-    //GenerateResearchDigSites();
+    GenerateResearchDigSites();
 
     CastSpell(this, 836, true);                             // LOGINEFFECT
 
@@ -28137,43 +28137,23 @@ void Player::GenerateResearchDigSites(uint32 max)
                 continue;
 
             //check if we have this site atm
-            bool have_site = false;
             uint32 sRSid = rs->ID;
             uint32 free_spot = 0;
-            uint32 sites_found = 0;
             for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
             {
-                uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) & 0xFFFF;
-                uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) >> 16;
-                if( site_now_1 == sRSid || site_now_2 == sRSid )
+                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
+                if( site_now == sRSid )
+                    break;
+                if( site_now == 0 && free_spot == 0 )
                 {
-                    have_site = true;
+                    free_spot = sites;
                     break;
                 }
-                if( site_now_1 == 0 && free_spot == 0 )
-                    free_spot = sites * 2;
-                else if( site_now_2 == 0 && free_spot == 0 )
-                    free_spot = sites * 2 + 1;
-                if( site_now_1 != 0 )
-                    sites_found++;
-                if( site_now_2 != 0 )
-                    sites_found++;
             }
 
-            //if this is not added because we do not have any, just because we want to refresh site then we random pick a slot
-            if( free_spot == 0 )
-                free_spot = 4;
-            //assign the site to us
-            uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2 ) & 0xFFFF;
-            uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2 ) >> 16;
-            uint32 new_value;
-            if( free_spot % 2 == 1 )
-                new_value = ( sRSid << 16 ) | ( site_now_1 );
-            else
-                new_value = ( site_now_2 << 16 ) | ( sRSid );
-            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2, new_value );
+            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid );
 
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES new_value %u, sRSid %u", new_value, sRSid);
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
 
             AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
             DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
@@ -28205,43 +28185,23 @@ void Player::GenerateResearchDigSites(uint32 max)
             ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(sRSid);
 
             //check if we have this site atm
-            bool have_site = false;
             sRSid = rs->ID;
             uint32 free_spot = 0;
-            uint32 sites_found = 0;
             for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
             {
-                uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) & 0xFFFF;
-                uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) >> 16;
-                if( site_now_1 == sRSid || site_now_2 == sRSid )
+                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
+                if( site_now == sRSid )
+                    break;
+                if( site_now == 0 && free_spot == 0 )
                 {
-                    have_site = true;
+                    free_spot = sites;
                     break;
                 }
-                if( site_now_1 == 0 && free_spot == 0 )
-                    free_spot = sites * 2;
-                else if( site_now_2 == 0 && free_spot == 0 )
-                    free_spot = sites * 2 + 1;
-                if( site_now_1 != 0 )
-                    sites_found++;
-                if( site_now_2 != 0 )
-                    sites_found++;
             }
 
-            //if this is not added because we do not have any, just because we want to refresh site then we random pick a slot
-            if( free_spot == 0 )
-                free_spot = 4;
-            //assign the site to us
-            uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2 ) & 0xFFFF;
-            uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2 ) >> 16;
-            uint32 new_value;
-            if( free_spot % 2 == 1 )
-                new_value = ( sRSid << 16 ) | ( site_now_1 );
-            else
-                new_value = ( site_now_2 << 16 ) | ( sRSid );
-            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2, new_value );
+            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid );
 
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES new_value %u, sRSid %u", new_value, sRSid);
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
 
             AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
             DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
