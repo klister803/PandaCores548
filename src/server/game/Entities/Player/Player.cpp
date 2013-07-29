@@ -27977,6 +27977,9 @@ void Player::_LoadArchaelogy(PreparedQueryResult result)
     //         0   1           2          4            5
     // "SELECT pointId, count, active, resetTime FROM character_archaelogy WHERE guid = '%u'"
 
+    for (uint32 site_id = 0; site_id < MAX_RESEARCH_SITES; ++site_id)
+        SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, site_id, 0);
+
     if (result)
     {
         do
