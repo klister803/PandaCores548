@@ -66,9 +66,9 @@ class boss_gekkan : public CreatureScript
 
             void JustDied(Unit* who)
             {
-                for (auto guid : entourage)
+                for (std::list<uint64>::iterator itr = entourage.begin(); itr != entourage.end(); ++itr)
                 {
-                    Creature* c = me->GetMap()->GetCreature(guid);
+                    Creature* c = me->GetMap()->GetCreature(*itr);
                     if (!c)
                         continue;
                     if (c->isAlive())
@@ -90,14 +90,14 @@ class boss_gekkan : public CreatureScript
                     {
                         //Delete the guid of the list if one dies.
                         uint64 dead_entourage = 0;
-                        for (auto guid : entourage)
+						for (std::list<uint64>::iterator itr = entourage.begin(); itr != entourage.end(); ++itr)
                         {
-                            Creature* c = me->GetMap()->GetCreature(guid);
+                            Creature* c = me->GetMap()->GetCreature(*itr);
                             if (!c)
                                 continue;
                             if (c->isDead())
                             {
-                                dead_entourage = guid;
+                                dead_entourage = *itr;
                                 break;
                             }
                         }

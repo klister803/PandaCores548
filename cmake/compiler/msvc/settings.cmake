@@ -50,3 +50,6 @@ if(NOT WITH_WARNINGS)
     message(STATUS "MSVC: Disabled generic compiletime warnings")
   endif()
 endif()
+
+string(REGEX REPLACE "/Zm[0-9]+ *" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm500" CACHE STRING "" FORCE)

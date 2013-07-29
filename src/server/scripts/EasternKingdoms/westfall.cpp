@@ -295,12 +295,12 @@ public:
             if(Player* invocer = me->ToTempSummon()->GetSummoner()->ToPlayer()) 
             {               
                 GetCreatureListWithEntryInGrid(clodoList, me, NPC_HOMELESS_STORMWIND_CITIZEN, 15.0f);
-                for (auto clodo: clodoList)
+				for (std::list<Creature*>::iterator itr = clodoList.begin(); itr != clodoList.end(); ++itr)
                 {
-                    if(clodo->getStandState() != UNIT_STAND_STATE_SIT)
+                    if((*itr)->getStandState() != UNIT_STAND_STATE_SIT)
                     {
-                        clodo->GetMotionMaster()->MoveFollow(me, 1, me->GetAngle(clodo));
-                        clodo->SetStandState(UNIT_STAND_STATE_SIT);
+                        (*itr)->GetMotionMaster()->MoveFollow(me, 1, me->GetAngle((*itr)));
+                        (*itr)->SetStandState(UNIT_STAND_STATE_SIT);
                         invocer->KilledMonsterCredit(KILL_CREDIT_WESTFALL_STEW, 0);
                     }
                 }               
@@ -312,10 +312,11 @@ public:
             {
                 if (time < diff)
                 {
-                    for (auto clodo: clodoList)
+					for (std::list<Creature*>::iterator itr = clodoList.begin(); itr != clodoList.end(); ++itr)
+					
                     {
-                        clodo->SetStandState(UNIT_STAND_STATE_STAND);
-                        clodo->SetDefaultMovementType(RANDOM_MOTION_TYPE);                   
+                        (*itr)->SetStandState(UNIT_STAND_STATE_STAND);
+                        (*itr)->SetDefaultMovementType(RANDOM_MOTION_TYPE);                   
                     } 
                     me->DespawnOrUnsummon();
                     booltest = false;

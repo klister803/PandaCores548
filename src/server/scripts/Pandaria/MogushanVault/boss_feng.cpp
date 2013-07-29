@@ -499,8 +499,8 @@ class mob_lightning_fist : public CreatureScript
                         std::list<Player*> playerList;
                         GetPlayerListInGrid(playerList, me, 5.0f);
 
-                        for (auto player: playerList)
-                            me->CastSpell(player, SPELL_FIST_CHARGE, true);
+						for (std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                            me->CastSpell((*itr), SPELL_FIST_CHARGE, true);
 
                         checkNearPlayerTimer = 500;
                     }

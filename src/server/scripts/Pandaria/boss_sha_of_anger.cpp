@@ -118,11 +118,11 @@ public:
                 std::list<Player*> playerList;
                 GetPlayerListInGrid(playerList, me, 25.0f);
 
-                for (auto player: playerList)
+				for (std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                 {
-                    if (player->isAlive())
+                    if ((*itr)->isAlive())
                     {
-                        AttackStart(player);
+                        AttackStart((*itr));
                         return;
                     }
                 }
@@ -184,8 +184,8 @@ public:
                     }
                     case EVENT_GROWING_ANGER:
                     {
-                        for (auto guid : targetedDominationPlayerGuids)
-                            if (Player* target = ObjectAccessor::GetPlayer(*me, guid))
+						for (std::list<uint64>::iterator itr = targetedDominationPlayerGuids.begin(); itr != targetedDominationPlayerGuids.end(); ++itr)
+                            if (Player* target = ObjectAccessor::GetPlayer(*me, *itr))
                                 if (target != me->getVictim())
                                     me->CastSpell(target, SPELL_DOMINATE_MIND, false);
 

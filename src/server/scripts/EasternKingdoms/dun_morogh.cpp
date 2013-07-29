@@ -209,8 +209,8 @@ public:
                     std::list<Creature*> canonList;
                     GetCreatureListWithEntryInGrid(canonList, me, 46208, 50.0f);
 
-                    for (auto canon : canonList)
-                        canon->CastSpell(me, 1000, false);
+					for (std::list<Creature*>::iterator itr = canonList.begin(); itr != canonList.end(); ++itr)
+                        (*itr)->CastSpell(me, 1000, false);
 
                     if (Passenger->ToPlayer())
                         Passenger->ToPlayer()->AreaExploredOrEventHappens(27635); // Decontamination

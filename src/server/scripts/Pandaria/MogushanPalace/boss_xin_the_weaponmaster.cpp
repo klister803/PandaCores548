@@ -316,13 +316,13 @@ class spell_dart : public SpellScriptLoader
                 targetList.remove_if(OnlyTriggerInFrontPredicate(GetCaster()));
 
                 //See if we intersect with any players.
-                for (auto object : targets)
-                    if (object->GetTypeId() == TYPEID_PLAYER)
-                        for (auto trigger : targetList)
-                            if (object->IsInBetween(GetCaster(), trigger, 2.0f))
+				for (std::list<WorldObject*>::iterator object = targets.begin(); object != targets.end(); ++object)
+                    if ((*object)->GetTypeId() == TYPEID_PLAYER)
+						for (std::list<WorldObject*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                            if ((*object)->IsInBetween(GetCaster(), *itr, 2.0f))
                             {
                                 const SpellInfo* damageSpell = sSpellMgr->GetSpellInfo(SPELL_THROW_DAMAGE, GetCaster()->GetMap()->GetDifficulty());
-                                GetCaster()->DealDamage(object->ToPlayer(), damageSpell->Effects[0].BasePoints, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, damageSpell);
+                                GetCaster()->DealDamage((*object)->ToPlayer(), damageSpell->Effects[0].BasePoints, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, damageSpell);
                             }
             }
 

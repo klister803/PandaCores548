@@ -7914,7 +7914,7 @@ void Player::SendNewCurrency(uint32 id) const
     if (!entry) // should never happen
         return;
     
-    uint32 precision = (entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = entry->GetPrecision();
     uint32 weekCount = itr->second.weekCount / precision;
     uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
     uint32 seasonTotal = itr->second.seasonTotal / precision;
@@ -7951,7 +7951,7 @@ void Player::SendCurrencies() const
         if (!entry) // should never happen
             continue;
 
-        uint32 precision = (entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
+        uint32 precision = entry->GetPrecision();
         uint32 weekCount = itr->second.weekCount / precision;
         uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
         uint32 seasonTotal = itr->second.seasonTotal / precision;
@@ -7997,7 +7997,7 @@ uint32 Player::GetCurrency(uint32 id, bool usePrecision) const
         return 0;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
 
     return itr->second.totalCount / precision;
 }
@@ -8009,7 +8009,7 @@ uint32 Player::GetCurrencyOnWeek(uint32 id, bool usePrecision) const
         return 0;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
 
     return itr->second.weekCount / precision;
 }
@@ -8021,7 +8021,7 @@ uint32 Player::GetCurrencyOnSeason(uint32 id, bool usePrecision) const
         return 0;
     
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision && currency->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
     
     return itr->second.seasonTotal / precision;
 }
@@ -8043,7 +8043,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (!ignoreMultipliers)
         count *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_CURRENCY_GAIN, id);
 
-    int32 precision = currency->Flags & CURRENCY_FLAG_HAS_PRECISION ? CURRENCY_PRECISION : 1;
+    int32 precision = currency->GetPrecision();
     uint32 oldTotalCount = 0;
     uint32 oldWeekCount = 0;
     uint32 oldSeasonTotalCount = 0;
@@ -8167,7 +8167,7 @@ uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision) const
     if (!entry)
         return 0;
 
-    uint32 precision = (usePrecision && entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
+    uint32 precision = (usePrecision) ? entry->GetPrecision() : entry->GetPrecision();
 
     return GetCurrencyWeekCap(entry) / precision;
 }
@@ -8207,18 +8207,18 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
             break;
         case CURRENCY_TYPE_CONQUEST_META_ARENA:
             // should add precision mod = 100
-            cap = Trinity::Currency::ConquestRatingCalculator(_maxPersonalArenaRate) * CURRENCY_PRECISION;
+            cap = Trinity::Currency::ConquestRatingCalculator(_maxPersonalArenaRate) * currency->GetPrecision();
             break;
         case CURRENCY_TYPE_CONQUEST_META_RBG:
             // should add precision mod = 100
-            cap = Trinity::Currency::BgConquestRatingCalculator(GetRBGPersonalRating()) * CURRENCY_PRECISION;
+            cap = Trinity::Currency::BgConquestRatingCalculator(GetRBGPersonalRating()) * currency->GetPrecision();
             break;
         case CURRENCY_TYPE_JUSTICE_POINTS:
             if (sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) > 0)
                 cap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS);
             break;
         case CURRENCY_TYPE_VALOR_POINTS:
-            cap = 3000 * CURRENCY_PRECISION;
+            cap = 3000 * currency->GetPrecision();
             break;
     }
 
@@ -8226,7 +8226,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
    {
        WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
        packet << uint32(currency->ID);
-       packet << uint32(cap / ((currency->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1));
+       packet << uint32(cap / currency->GetPrecision());
        GetSession()->SendPacket(&packet);
    }
 
@@ -8241,14 +8241,14 @@ uint32 Player::GetCurrencyTotalCap(CurrencyTypesEntry const* currency) const
     {
         case CURRENCY_TYPE_HONOR_POINTS:
         {
-            uint32 honorcap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_HONOR_POINTS) * CURRENCY_PRECISION;
+            uint32 honorcap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_HONOR_POINTS) * currency->GetPrecision();
             if (honorcap > 0)
                 cap = honorcap;
             break;
         }
         case CURRENCY_TYPE_JUSTICE_POINTS:
         {
-            uint32 justicecap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) * CURRENCY_PRECISION;
+            uint32 justicecap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) * currency->GetPrecision();
             if (justicecap > 0)
                 cap = justicecap;
             break;
@@ -22557,7 +22557,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
                 return false;
             }
 
-            uint32 precision = (entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
+            uint32 precision = entry->GetPrecision();
 
             if (!HasCurrency(iece->RequiredCurrency[i], (iece->RequiredCurrencyCount[i]) / precision))
             {
@@ -22687,7 +22687,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
                 return false;
             }
 
-            uint32 precision = (entry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? CURRENCY_PRECISION : 1;
+            uint32 precision = entry->GetPrecision();
             
             // Second field in dbc is season count except two strange rows
             if (i == 1 && iece->ID != 2999)

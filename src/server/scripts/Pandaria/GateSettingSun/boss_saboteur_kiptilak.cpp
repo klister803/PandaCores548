@@ -119,11 +119,11 @@ class boss_saboteur_kiptilak : public CreatureScript
                 std::list<Creature*> munitionList;
                 GetCreatureListWithEntryInGrid(munitionList, me, NPC_STABLE_MUNITION, 100.0f);
 
-                for (auto itr: munitionList)
+				for (std::list<Creature*>::iterator itr = munitionList.begin(); itr != munitionList.end(); ++itr)
                 {
-                    itr->RemoveAurasDueToSpell(SPELL_MUNITION_STABLE);
-                    itr->CastSpell(itr, SPELL_MUNITION_EXPLOSION, true);
-                    itr->DespawnOrUnsummon(2000);
+                    (*itr)->RemoveAurasDueToSpell(SPELL_MUNITION_STABLE);
+                    (*itr)->CastSpell((*itr), SPELL_MUNITION_EXPLOSION, true);
+                    (*itr)->DespawnOrUnsummon(2000);
                 }
             }
 

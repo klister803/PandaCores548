@@ -209,9 +209,9 @@ public:
                 }
                 case TYPE_ACTIVATE_ANIMATED_AXE:
                 {
-                    for (auto guid : animated_axes)
+					for (std::list<uint64>::iterator guid = animated_axes.begin(); guid != animated_axes.end(); ++guid)
                     {
-                        if (Creature* creature = instance->GetCreature(guid))
+                        if (Creature* creature = instance->GetCreature(*guid))
                         {
                             if (data)
                             {
@@ -245,11 +245,11 @@ public:
                        ***********
                            +         */
 
-                    for (auto itr: swordLauncherGuids)
+					for (std::list<uint64>::iterator guid = swordLauncherGuids.begin(); guid != swordLauncherGuids.end(); ++guid)
                     {
                         bool mustActivate = false;
 
-                        if (Creature* launcher = instance->GetCreature(itr))
+                        if (Creature* launcher = instance->GetCreature(*guid))
                         {
                             if (randPos) // Zone 2 & 3
                             {
@@ -394,9 +394,9 @@ public:
                     switch (data)
                     {
                     case 0:
-                        for (auto guid : adepts)
+						for (std::list<uint64>::iterator guid = adepts.begin(); guid != adepts.end(); ++guid)
                         {
-                            Creature* creature = instance->GetCreature(guid);
+                            Creature* creature = instance->GetCreature(*guid);
                             if (!creature)
                                 continue;
 
@@ -406,9 +406,9 @@ public:
                         }
                         break;
                     case 1:
-                        for (auto guid : scrappers)
+						for (std::list<uint64>::iterator guid = scrappers.begin(); guid != scrappers.end(); ++guid)
                         {
-                            Creature* creature = instance->GetCreature(guid);
+                            Creature* creature = instance->GetCreature(*guid);
                             if (!creature)
                                 continue;
 
@@ -418,9 +418,9 @@ public:
                         }
                         break;
                     case 2:
-                        for (auto guid : grunts)
+						for (std::list<uint64>::iterator guid = grunts.begin(); guid != grunts.end(); ++guid)
                         {
-                            Creature* creature = instance->GetCreature(guid);
+                            Creature* creature = instance->GetCreature(*guid);
                             if (!creature)
                                 continue;
 
@@ -435,9 +435,9 @@ public:
             case TYPE_MING_ATTACK:
                 {
                     //Move the adepts
-                    for (auto guid : adepts)
+					for (std::list<uint64>::iterator guid = adepts.begin(); guid != adepts.end(); ++guid)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(*guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(0); //EVENT_ENCOURAGE
@@ -453,9 +453,9 @@ public:
             case TYPE_KUAI_ATTACK:
                 {
                     //Move the scrappers
-                    for (auto guid : scrappers)
+					for (std::list<uint64>::iterator guid = scrappers.begin(); guid != scrappers.end(); ++guid)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(*guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(0); //EVENT_ENCOURAGE
@@ -471,9 +471,9 @@ public:
             case TYPE_HAIYAN_ATTACK:
                 {
                     //Move the scrappers
-                    for (auto guid : grunts)
+					for (std::list<uint64>::iterator guid = grunts.begin(); guid != grunts.end(); ++guid)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(*guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(0); //EVENT_ENCOURAGE
@@ -488,9 +488,9 @@ public:
                 break;
             case TYPE_ALL_ATTACK:
                 {
-                    for (auto guid : adepts)
+					for (std::list<uint64>::iterator guid = adepts.begin(); guid != adepts.end(); ++guid)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(*guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(2); //ACTION_ATTACK
@@ -502,9 +502,9 @@ public:
                         if (creature && grunt)
                             creature->Attack(grunt, true);
                     }
-                    for (auto guid : grunts)
+					for (std::list<uint64>::iterator guid = grunts.begin(); guid != grunts.end(); ++guid)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(*guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(2); //ACTION_ATTACK
@@ -516,9 +516,9 @@ public:
                         if (creature && scrapper)
                             creature->Attack(scrapper, true);
                     }
-                    for (auto guid : scrappers)
+					for (std::list<uint64>::iterator guid = scrappers.begin(); guid != scrappers.end(); ++guid)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(*guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(2); //ACTION_ATTACK
@@ -536,9 +536,9 @@ public:
                 break;
             case TYPE_MING_RETIRED:
                 //Retire the adepts
-                for (auto guid : adepts)
+				for (std::list<uint64>::iterator guid = adepts.begin(); guid != adepts.end(); ++guid)
                 {
-                    Creature* creature = instance->GetCreature(guid);
+                    Creature* creature = instance->GetCreature(*guid);
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE
@@ -546,9 +546,9 @@ public:
                 break;
             case TYPE_KUAI_RETIRED:
                 //Retire the adepts
-                for (auto guid : scrappers)
+				for (std::list<uint64>::iterator guid = scrappers.begin(); guid != scrappers.end(); ++guid)
                 {
-                    Creature* creature = instance->GetCreature(guid);
+                    Creature* creature = instance->GetCreature(*guid);
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE
@@ -556,9 +556,9 @@ public:
                 break;
             case TYPE_HAIYAN_RETIRED:
                 //Retire the adepts
-                for (auto guid : grunts)
+				for (std::list<uint64>::iterator guid = grunts.begin(); guid != grunts.end(); ++guid)
                 {
-                    Creature* creature = instance->GetCreature(guid);
+                    Creature* creature = instance->GetCreature(*guid);
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE

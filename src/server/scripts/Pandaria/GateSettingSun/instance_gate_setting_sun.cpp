@@ -186,8 +186,8 @@ public:
                 case DATA_KIPTILAK:
                 {
                     if (state == DONE)
-                        for (auto itr: mantidBombsGUIDs)
-                            if (GameObject* bomb = instance->GetGameObject(itr))
+						for (std::list<uint64>::iterator itr = mantidBombsGUIDs.begin(); itr != mantidBombsGUIDs.end(); ++itr)
+                            if (GameObject* bomb = instance->GetGameObject(*itr))
                                 bomb->SetPhaseMask(32768, true); // Set Invisible
                     break;
                 }
@@ -201,12 +201,12 @@ public:
                 {
                     uint8 generatorsCount = 0;
 
-                    for (auto itr: secondaryDoorGUIDs)
-                        HandleGameObject(itr, state != DONE);
+                    for (std::list<uint64>::iterator itr = secondaryDoorGUIDs.begin(); itr != secondaryDoorGUIDs.end(); ++itr)
+                        HandleGameObject(*itr, state != DONE);
 
-                    for (auto itr: rimokAddGenetarorsGUIDs)
+                    for (std::list<uint64>::iterator itr = rimokAddGenetarorsGUIDs.begin(); itr != rimokAddGenetarorsGUIDs.end(); ++itr)
                     {
-                        if (Creature* generator = instance->GetCreature(itr))
+                        if (Creature* generator = instance->GetCreature(*itr))
                         {
                             if (generator->AI())
                             {
@@ -222,9 +222,9 @@ public:
                 }
                 case DATA_RAIGONN:
                 {
-                    for (auto itr: artilleryGUIDs)
+                    for (std::list<uint64>::iterator itr = artilleryGUIDs.begin(); itr != artilleryGUIDs.end(); ++itr)
                     {
-                        if (Creature* artillery = instance->GetCreature(itr))
+                        if (Creature* artillery = instance->GetCreature(*itr))
                         {
                             artillery->ApplyModFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE, state != IN_PROGRESS);
                             artillery->ApplyModFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK, state == IN_PROGRESS);
@@ -262,14 +262,14 @@ public:
 
                             trigger->CastSpell(trigger, 115456); // Explosion
 
-                            for (auto itr: defensorList)
+							for (std::list<Creature*>::iterator itr = defensorList.begin(); itr != defensorList.end(); ++itr)
                             {
                                 uint8 random = rand() % 2;
 
                                 float posX = random ? 814.0f:  640.0f;
                                 float posY = random ? 2102.0f: 2112.0f;
-                                itr->KnockbackFrom(posX, posY, 25.0f, 20.0f);
-                                itr->DespawnOrUnsummon(1000);
+                                (*itr)->KnockbackFrom(posX, posY, 25.0f, 20.0f);
+                                (*itr)->DespawnOrUnsummon(1000);
                             }
                         }
                     }

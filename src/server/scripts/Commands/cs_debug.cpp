@@ -1460,9 +1460,9 @@ public:
 
     static bool HandleDebugLoadZ(ChatHandler* handler, char const* args)
     {
-        for (auto gameobject: sObjectMgr->_gameObjectDataStore)
+		for (GameObjectDataContainer::iterator itr = sObjectMgr->_gameObjectDataStore.begin(); itr != sObjectMgr->_gameObjectDataStore.end(); ++itr)
         {
-            GameObjectData data = gameobject.second;
+            GameObjectData data = itr->second;
 
             if (!data.posZ)
             {
@@ -1476,7 +1476,7 @@ public:
                     float newPosZ = map->GetHeight(data.phaseMask, data.posX, data.posY, MAX_HEIGHT, true);
 
                     if (newPosZ && newPosZ != -200000.0f)
-                        WorldDatabase.PExecute("UPDATE gameobject SET position_z = %f WHERE guid = %u", newPosZ, gameobject.first);
+                        WorldDatabase.PExecute("UPDATE gameobject SET position_z = %f WHERE guid = %u", newPosZ, itr->first);
                 }
             }
         }
