@@ -765,6 +765,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
         VendorItem const* vendorItem = vendorItems->GetItem(slot);
         if (!vendorItem) continue;
+        if (realCount >= MAX_VENDOR_ITEMS) continue;
 
         if (vendorItem->Type == ITEM_VENDOR_TYPE_ITEM)
         {
@@ -920,10 +921,8 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
     data.WriteBits(realCount, 21); // item count
 
-
     for (std::vector<bool>::const_iterator itr = enablers.begin(); itr != enablers.end(); ++itr)
         data.WriteBit(*itr);
-
 
     data.FlushBits();
     data.append(itemsData);
