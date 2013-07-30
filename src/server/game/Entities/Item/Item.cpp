@@ -360,7 +360,8 @@ void Item::SaveToDB(SQLTransaction& trans)
             stmt->setUInt32(++index, GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1)); // Transmogrification Id
             stmt->setUInt16(++index, GetUInt32Value(ITEM_FIELD_DURABILITY));
             stmt->setUInt32(++index, GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME));
-            stmt->setString(++index, m_text);
+            //stmt->setString(++index, m_text);
+            stmt->setString(++index, "");
             stmt->setUInt32(++index, guid);
 
             trans->Append(stmt);

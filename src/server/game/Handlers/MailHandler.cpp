@@ -51,6 +51,9 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     mailbox[1] = recvData.ReadBit();
     uint8 items_count = recvData.ReadBits(5);              // attached items count
 
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with unk1 = %u, unk2 = %u",
+    _player->GetGUIDLow(), items_count, money, COD, unk1, unk2);
+
     if (items_count > MAX_MAIL_ITEMS)                       // client limit
     {
         GetPlayer()->SendMailResult(0, MAIL_SEND, MAIL_ERR_TOO_MANY_ATTACHMENTS);
