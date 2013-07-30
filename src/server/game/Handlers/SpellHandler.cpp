@@ -765,11 +765,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    /*Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
-    spell->m_cast_count = 0;                       // set count of casts (5.0.5 disable client crash 132)
+    Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
+    spell->m_cast_count = castCount;                       // set count of casts (5.0.5 disable client crash 132)
     spell->m_glyphIndex = glyphIndex;
-    spell->prepare(&targets);*/
-    mover->CastSpell(targets, spellInfo, NULL, TRIGGERED_NONE);
+    spell->prepare(&targets);
 }
 
 void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
