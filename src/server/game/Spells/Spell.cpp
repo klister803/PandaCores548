@@ -3172,9 +3172,16 @@ void Spell::prepare(SpellCastTargets const* targets, constAuraEffectPtr triggere
     //Containers for channeled spells have to be set
     //TODO:Apply this to all casted spells if needed
     // Why check duration? 29350: channeled triggers channeled
-    //if ((_triggeredCastFlags & TRIGGERED_CAST_DIRECTLY) && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
-        //cast(true);
-    //else
+    if ((_triggeredCastFlags & TRIGGERED_CAST_DIRECTLY) && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
+    {
+        WorldPacket data(SMSG_DONT_AUTO_PUSH_SPELLS_TO_ACTION_BAR, (8+4+1));
+        data.append(m_caster->GetPackGUID());
+        data << uint8(m_cast_count);
+        data << uint32(m_spellInfo->Id);
+        m_caster->SendMessageToSet(&data, true);
+        cast(true);
+    }
+    else
     {
         // stealth must be removed at cast starting (at show channel bar)
         // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
