@@ -9452,7 +9452,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
 
             Spell* spell = new Spell(this, spellInfo, (count > 0) ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
             spell->m_CastItem = item;
-            spell->m_cast_count = cast_count;               // set count of casts
+            //spell->m_cast_count = cast_count;               // set count of casts
             spell->m_glyphIndex = glyphIndex;               // glyph index
             spell->prepare(&targets);
 

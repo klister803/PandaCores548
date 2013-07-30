@@ -806,7 +806,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     caster->ClearUnitState(UNIT_STATE_FOLLOW);
 
     Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE);
-    spell->m_cast_count = castCount;                    // probably pending spell cast
+    //spell->m_cast_count = castCount;                    // probably pending spell cast
     spell->m_targets = targets;
 
     // TODO: need to check victim?
