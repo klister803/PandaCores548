@@ -766,7 +766,8 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
-    spell->m_cast_count = castCount;                       // set count of casts (5.0.5 disable client crash 132)
+    if(!(!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration())
+        spell->m_cast_count = castCount;                       // set count of casts (5.0.5 disable client crash 132)
     spell->m_glyphIndex = glyphIndex;
     spell->prepare(&targets);
 }
