@@ -46,9 +46,11 @@ inline uint32 _GetGuildBankTabPrice(uint8 tabId)
 
 void Guild::SendCommandResult(WorldSession* session, GuildCommandType type, GuildCommandError errCode, const std::string& param)
 {
-    WorldPacket data(SMSG_GUILD_COMMAND_RESULT, 8 + param.size() + 1);
+    //WorldPacket data(SMSG_GUILD_COMMAND_RESULT, 8 + param.size() + 1);
+    WorldPacket data(SMSG_GUILD_COMMAND_RESULT, 8 + 1);
     data << uint32(type);
-    data << param;
+    //data << param;
+    data << "";
     data << uint32(errCode);
     session->SendPacket(&data);
 
@@ -1616,18 +1618,21 @@ void Guild::HandleInviteMember(WorldSession* session, const std::string& name)
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_NOT_ALLIED, name);
         return;
     }
+
     // Invited player cannot be in another guild
-    /*if (pInvitee->GetGuildId())
+    if (pInvitee->GetGuildId())
     {
         SendCommandResult(session, GUILD_INVITE, ERR_ALREADY_IN_GUILD_S, name);
         return;
-    }*/
+    }
+
     // Invited player cannot be invited
     if (pInvitee->GetGuildIdInvited())
     {
         SendCommandResult(session, GUILD_INVITE_S, ERR_ALREADY_INVITED_TO_GUILD_S, name);
         return;
     }
+
     // Inviting player must have rights to invite
     if (!_HasRankRight(player, GR_RIGHT_INVITE))
     {
