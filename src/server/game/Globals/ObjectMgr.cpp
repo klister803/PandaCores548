@@ -4047,7 +4047,7 @@ void ObjectMgr::LoadQuests()
         {
             if (qinfo->RewardFactionId[j])
             {
-                if (abs(qinfo->RewardFactionValueId[j]) > 9)
+                if (abs(qinfo->RewardFactionValueId[j]) > 10)
                 {
                sLog->outError(LOG_FILTER_SQL, "Quest %u has RewardFactionValueId%d = %i. That is outside the range of valid values (-9 to 9).", qinfo->GetQuestId(), j+1, qinfo->RewardFactionValueId[j]);
                 }
