@@ -28,6 +28,8 @@
 #include "DBCStores.h"
 #include "Item.h"
 #include "AccountMgr.h"
+#include "GridNotifiersImpl.h"
+#include "CellImpl.h"
 
 void WorldSession::HandleSendMail(WorldPacket& recvData)
 {
@@ -614,6 +616,11 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 
     uint32 mailsCount = 0;                                 // real send to client mails amount
     uint32 realCount  = 0;                                 // real mails amount
+
+    GameObject* _mailbox = NULL;
+    Trinity::MailBoxMasterCheck check(player);
+    Trinity::GameObjectSearcher<Trinity::MailBoxMasterCheck> searcher(player, _mailbox, check);
+    player->VisitNearbyObject(5.0f, searcher);
 
     WorldPacket data(SMSG_MAIL_LIST_RESULT, 200);         // guess size
     data << uint32(0);                                      // real mail's count

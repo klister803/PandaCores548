@@ -1505,6 +1505,28 @@ namespace Trinity
             AuraType _type;
     };
 
+    class MailBoxMasterCheck
+    {
+        public:
+            MailBoxMasterCheck(Player* plr) : _plr(plr) {}
+            bool operator()(GameObject* u)
+            {
+                if (!_plr->IsInWorld())
+                    return false;
+
+                if (_plr->isInFlight())
+                    return false;
+
+                if (!u->IsWithinDistInMap(_plr, INTERACTION_DISTANCE))
+                    return false;
+
+                return true;
+            }
+
+        private:
+            Player* _plr;
+    };
+
     // Player checks and do
 
     // Prepare using Builder localized packets with caching and send to player
