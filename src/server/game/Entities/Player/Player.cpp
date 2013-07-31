@@ -7920,17 +7920,18 @@ void Player::SendNewCurrency(uint32 id) const
     uint32 weekCount = itr->second.weekCount / precision;
     uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
     uint32 seasonTotal = itr->second.seasonTotal / precision;
+    bool hasSeason = itr->second.currencyEntry->HasSeasonCount();
     
     packet.WriteBit(weekCap);
-    packet.WriteBit(weekCount);
-    packet.WriteBit(seasonTotal);     // season total earned
+    packet.WriteBit(weekCap && weekCount);
+    packet.WriteBit(hasSeason);     // season total earned
     packet.WriteBits(0, 5);           // some flags
     
     if (weekCap)
         currencyData << uint32(weekCap);
-    if (weekCount)
+    if (weekCap && weekCount)
         currencyData << uint32(weekCount);
-    if (seasonTotal)
+    if (hasSeason)
         currencyData << uint32(seasonTotal);
     
     currencyData << uint32(itr->second.totalCount / precision);
@@ -7957,17 +7958,18 @@ void Player::SendCurrencies() const
         uint32 weekCount = itr->second.weekCount / precision;
         uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
         uint32 seasonTotal = itr->second.seasonTotal / precision;
+        bool hasSeason = itr->second.currencyEntry->HasSeasonCount();
         
         packet.WriteBit(weekCap);
-        packet.WriteBit(weekCount);
-        packet.WriteBit(seasonTotal);     // season total earned
+        packet.WriteBit(weekCap && weekCount);
+        packet.WriteBit(hasSeason);     // season total earned
         packet.WriteBits(0, 5); // some flags
         
         if (weekCap)
             currencyData << uint32(weekCap);
-        if (weekCount)
+        if (weekCap && weekCount)
             currencyData << uint32(weekCount);
-        if (seasonTotal)
+        if (hasSeason)
             currencyData << uint32(seasonTotal);
 
         currencyData << uint32(itr->second.totalCount / precision);
