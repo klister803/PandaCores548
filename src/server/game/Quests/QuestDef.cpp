@@ -261,7 +261,6 @@ uint32 Quest::XPValue(Player* player) const
 
 int32 Quest::GetRewOrReqMoney() const
 {
-    sLog->outError(LOG_FILTER_NETWORKIO, "GetRewOrReqMoney RewardOrRequiredMoney %i", RewardOrRequiredMoney);
     if (RewardOrRequiredMoney <= 0)
         return RewardOrRequiredMoney;
 
@@ -294,8 +293,6 @@ void Quest::BuildExtraQuestInfo(WorldPacket& data, Player* player) const
             data << uint32(0);
     }
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "GetRewOrReqMoney GetRewOrReqMoney %i", GetRewOrReqMoney());
-    data << int32(GetRewOrReqMoney());
 
     float QuestXpRate = 1;
     if(player->GetPersonnalXpRate())
@@ -304,6 +301,8 @@ void Quest::BuildExtraQuestInfo(WorldPacket& data, Player* player) const
         QuestXpRate = sWorld->getRate(RATE_XP_QUEST);
 
     data << uint32(XPValue(player) * QuestXpRate);
+
+    data << int32(GetRewOrReqMoney());
 
     data << uint32(0);                                      // unk
     data << uint32(GetBonusTalents());
