@@ -17595,8 +17595,8 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
 
     data << uint32(quest->GetBonusTalents());              // bonus talents (not verified for 4.x)
     data << uint32(quest->GetRewardSkillPoints());         // 4.x bonus skill points
-    data << uint32(moneyReward);
     data << uint32(xp);
+    data << uint32(moneyReward);
     data << uint32(questId);
     data << uint32(quest->GetRewardSkillId());             // 4.x bonus skill id
     data.FlushBits();
