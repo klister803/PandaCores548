@@ -124,13 +124,9 @@ namespace Trinity
 template<class Do>
 void Battleground::BroadcastWorker(Do& _do)
 {
-    sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::BroadcastWorker");
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER)))
-        {
             _do(player);
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::BroadcastWorker player %u", player->GetGUID());
-        }
 }
 
 Battleground::Battleground()
@@ -466,13 +462,11 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                 player->GetSession()->SendPacket(&data);
 
         m_CountdownTimer = 0;
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::_ProcessJoin: SMSG_START_TIMER");
     }
 
     if (!(m_Events & BG_STARTING_EVENT_1))
     {
         m_Events |= BG_STARTING_EVENT_1;
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::_ProcessJoin: BG_STARTING_EVENT_FIRST");
 
         if (!FindBgMap())
         {
@@ -498,14 +492,12 @@ inline void Battleground::_ProcessJoin(uint32 diff)
     {
         m_Events |= BG_STARTING_EVENT_2;
         SendMessageToAll(StartMessageIds[BG_STARTING_EVENT_SECOND], CHAT_MSG_BG_SYSTEM_NEUTRAL);
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::_ProcessJoin: BG_STARTING_EVENT_SECOND");
     }
     // After 30 or 15 seconds, warning is signaled
     else if (GetStartDelayTime() <= StartDelayTimes[BG_STARTING_EVENT_THIRD] && !(m_Events & BG_STARTING_EVENT_3))
     {
         m_Events |= BG_STARTING_EVENT_3;
         SendMessageToAll(StartMessageIds[BG_STARTING_EVENT_THIRD], CHAT_MSG_BG_SYSTEM_NEUTRAL);
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::_ProcessJoin: BG_STARTING_EVENT_THIRD");
     }
     // Delay expired (after 2 or 1 minute)
     else if (GetStartDelayTime() <= 0 && !(m_Events & BG_STARTING_EVENT_4))
@@ -514,7 +506,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
 
         StartingEventOpenDoors();
 
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::SendWarningToAll: BG_STARTING_EVENT_FOURTH", StartMessageIds[BG_STARTING_EVENT_FOURTH]);
         SendWarningToAll(StartMessageIds[BG_STARTING_EVENT_FOURTH]);
         SetStatus(STATUS_IN_PROGRESS);
         SetStartDelayTime(StartDelayTimes[BG_STARTING_EVENT_FOURTH]);
@@ -566,7 +557,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     player->ResetAllPowers();
                 }
             // Announce BG starting
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::_ProcessJoin: Announce BG starting");
             if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
                 sWorld->SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName(), GetMinLevel(), GetMaxLevel());
         }
