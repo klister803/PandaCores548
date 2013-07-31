@@ -26,6 +26,8 @@
 #include "BattlefieldMgr.h"
 #include "Opcodes.h"
 
+#include "RatedBattleground.h"
+
 //This send to player windows for invite player to join the war
 //Param1:(m_Guid) the BattleId of Bf
 //Param2:(ZoneId) the zone where the battle is (4197 for wg)
@@ -374,8 +376,25 @@ void WorldSession::HandleRequestRatedBgInfo(WorldPacket & recvData)
 
     /// @Todo: perfome research in this case
     WorldPacket data(SMSG_RATED_BG_STATS, 72);
-    for (int32 i = 0; i < 18; ++i)
-        data << uint32(0);
+    data << uint32(1);      // BgWeeklyWins20vs20
+    data << uint32(2);      // BgWeeklyPlayed20vs20
+    data << uint32(3);      // BgWeeklyPlayed15vs15
+    data << uint32(4);
+    data << uint32(_player->getRBG()->getWeekWins());      // BgWeeklyWins10vs10
+    data << uint32(5);
+    data << uint32(6);
+    data << uint32(7);
+    data << uint32(8);      // BgWeeklyWins15vs15
+    data << uint32(9);
+    data << uint32(10);
+    data << uint32(11);
+    data << uint32(12);
+    data << uint32(13);
+    data << uint32(14);
+    data << uint32(_player->getRBG()->getWeekGames());      // BgWeeklyPlayed10vs10 wins
+    data << uint32(15);
+    data << uint32(16);
+
     SendPacket(&data);
 }
 
@@ -406,7 +425,7 @@ void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_BG_STATS");
 
     WorldPacket data(SMSG_BATTLEFIELD_RATED_INFO, 29);
-    data << uint32(0);  //rating
+    data << uint32(_player->getRBG()->getRating());  //rating
     data << uint32(0);  //unk1
     data << uint32(0);  //unk2
     //data << _player->GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_BG, true);

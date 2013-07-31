@@ -25,6 +25,7 @@
 #include "BattlegroundQueue.h"
 #include "Object.h"
 #include <ace/Singleton.h>
+#include "RatedBattlegroundQueue.h"
 
 typedef std::map<uint32, Battleground*> BattlegroundSet;
 

@@ -192,6 +192,7 @@ enum BattlegroundQueueTypeId
     BATTLEGROUND_QUEUE_CTF3     = 14,
     BATTLEGROUND_QUEUE_SSM      = 15,
     BATTLEGROUND_QUEUE_TV       = 16,
+    BATTLEGROUND_QUEUE_RBG      = 17,
     MAX_BATTLEGROUND_QUEUE_TYPES
 };
 
@@ -535,6 +536,9 @@ class Battleground
         void CheckArenaWinConditions();
         void UpdateArenaWorldState();
 
+        uint32 GetSameTeamId() { return m_sameBgTeamId; }
+        void SetSameTeamId(uint32 team) { m_sameBgTeamId = team; }
+
         // Triggers handle
         // must be implemented in BG subclass
         virtual void HandleAreaTrigger(Player* /*Source*/, uint32 /*Trigger*/) {}
@@ -604,6 +608,9 @@ class Battleground
 
         virtual uint64 GetFlagPickerGUID(int32 /*team*/ = -1) const { return 0; }
 
+        bool IsRBG() { return m_rbgFlag; }
+        void SetRBG(bool enable) { m_rbgFlag = enable; }
+
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
         void EndNow();
@@ -665,6 +672,8 @@ class Battleground
         uint32 m_PrematureCountDownTimer;
         char const* m_Name;
         uint64 m_Guid;
+
+        uint32 m_sameBgTeamId;
 
         /* Pre- and post-update hooks */
 
@@ -736,6 +745,8 @@ class Battleground
         float m_StartMaxDist;
         uint32 m_holiday;
         uint32 ScriptId;
+
+        bool m_rbgFlag;
 };
 
 // helper functions for world state list fill

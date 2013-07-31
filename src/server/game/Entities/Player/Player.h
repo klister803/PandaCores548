@@ -59,6 +59,7 @@ class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
 class PhaseMgr;
+class RatedBattleground;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -2298,7 +2299,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetArenaPersonalRating(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_PERSONAL_RATING); }
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
-        uint32 GetRBGPersonalRating() const { return 0; }
 
         Difficulty GetDifficulty(bool isRaid) const { return isRaid ? m_raidDifficulty : m_dungeonDifficulty; }
         Difficulty GetDungeonDifficulty() const { return m_dungeonDifficulty; }
@@ -2899,6 +2899,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetLastPetNumber() const { return m_lastpetnumber; }
         void SetLastPetNumber(uint32 petnumber) { m_lastpetnumber = petnumber; }
 
+        RatedBattleground* getRBG() const { return m_rbg; }
+
         /*********************************************************/
         /***                   GROUP SYSTEM                    ***/
         /*********************************************************/
@@ -3434,6 +3436,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_groupUpdateDelay;
 
         bool m_Store;
+
+        RatedBattleground* m_rbg;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

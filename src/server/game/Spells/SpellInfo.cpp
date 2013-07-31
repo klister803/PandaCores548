@@ -1576,7 +1576,7 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
             if (!mapEntry)
                 return SPELL_FAILED_INCORRECT_AREA;
 
-            return mapEntry->IsBattleArena() && player && player->InBattleground() ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+            return mapEntry->IsBattlegroundOrArena() && player && player->InBattleground() ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         }
         case 32727:                                         // Arena Preparation
         {

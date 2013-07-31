@@ -88,7 +88,7 @@ enum Opcodes
     CMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0,      // 0x3902 in 4.3.4
     CMSG_BATTLEMASTER_JOIN                            = 0x5F8,  // 5.0.5 16048
     CMSG_BATTLEMASTER_JOIN_ARENA                      = 0x530,  // 5.0.5 16048
-    CMSG_BATTLEMASTER_JOIN_RATED                      = 0x1F0,  // 5.0.5 16048
+    CMSG_BATTLEMASTER_JOIN_RATED                      = 0x514,  // 5.0.5 16135
     CMSG_BEGIN_TRADE                                  = 0x618,  // 5.0.5 16048
     CMSG_BINDER_ACTIVATE                              = 0x90A,  // 5.0.5 16048
     CMSG_BOT_DETECTED2                                = 0x000,  // Not Usefull
@@ -442,7 +442,7 @@ enum Opcodes
     CMSG_REQUEST_CATEGORY_COOLDOWNS                   = 0x1F5,	// 5.0.5 16048
     CMSG_REQUEST_CEMETERY_LIST                        = 0,      // 0x720A in 4.3.4 @todo : find me and i give you bacon
     CMSG_REQUEST_HOTFIX                               = 0x643,	// 5.0.5 16048
-    CMSG_REQUEST_INSPECT_RATED_BG_STATS               = 0,      // 0x3010 in 4.3.4 @todo : find me and i give you bacon
+    CMSG_REQUEST_INSPECT_RATED_BG_STATS               = 0x1F0,      // 0x3010 in 4.3.4 @todo : find me and i give you bacon
     CMSG_REQUEST_PARTY_MEMBER_STATS                   = 0x44E,	// 5.0.5 16048
     CMSG_REQUEST_PET_INFO                             = 0xC50,  // 5.0.5 16048
     CMSG_REQUEST_PVP_OPTIONS_ENABLED                  = 0x743,	// 5.0.5 16048

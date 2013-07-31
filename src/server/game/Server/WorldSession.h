@@ -452,6 +452,8 @@ class WorldSession
         // new party stats
         void HandleInspectHonorStatsOpcode(WorldPacket& recvPacket);
 
+        void HandleInspectRatedBGStats(WorldPacket& recvPacket);
+
         void HandleMoveWaterWalkAck(WorldPacket& recvPacket);
         void HandleFeatherFallAck(WorldPacket& recvData);
 
@@ -820,6 +822,7 @@ class WorldSession
         void HandleBattlefieldListOpcode(WorldPacket& recvData);
         void HandleLeaveBattlefieldOpcode(WorldPacket& recvData);
         void HandleBattlemasterJoinArena(WorldPacket& recvData);
+        void HandleBattlemasterJoinRated(WorldPacket& recvData);
 
         void HandleReportPvPAFK(WorldPacket& recvData);
         void HandleRequestRatedBgInfo(WorldPacket & recvData);

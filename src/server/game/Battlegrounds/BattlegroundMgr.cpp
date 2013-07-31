@@ -216,14 +216,14 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
         {
             data->Initialize(SMSG_BATTLEFIELD_STATUS_QUEUED);
 
-            *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);
+            *data << uint32(bg->isArena() ? arenatype : (bg->GetTypeID() == BATTLEGROUND_RATED_10_VS_10) ? 10 : 1);
             *data << uint32(GetMSTimeDiffToNow(Time2));
             *data << uint32(Time1);                     // Estimated Wait Time
             *data << uint32(QueueSlot);
             *data << uint32(bg->GetClientInstanceID()); // Client Instance ID
             *data << uint8(0);
             *data << uint8(bg->GetMinLevel()); //BG Min level
-            *data << uint8(0);
+            *data << uint8(1);
             *data << uint32(Time2); //Time of the join
 
 
@@ -304,7 +304,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->WriteByteSeq(guidBytes2[5]);
             data->WriteByteSeq(guidBytes2[1]);
             data->WriteByteSeq(guidBytes1[2]);
-            *data << uint8(0);
+            *data << uint8(1);
             *data << uint8(bg->GetMinLevel());
             *data << uint32(Time1);
             data->WriteByteSeq(guidBytes2[0]);
@@ -316,7 +316,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             *data << uint8(0);
             *data << uint32(QueueSlot);
             data->WriteByteSeq(guidBytes2[2]);
-            *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);
+            *data << uint32(bg->isArena() ? arenatype : (bg->GetTypeID() == BATTLEGROUND_RATED_10_VS_10) ? 10 : 1);
             data->WriteByteSeq(guidBytes1[4]);
             break;
         }
@@ -661,9 +661,9 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         if (isArena)
             data->WriteBit(bg->GetPlayerTeam(guid) == ALLIANCE);
         else
-            data->WriteBit(player->GetTeam() == ALLIANCE);
+            data->WriteBit(player->GetBGTeam() == ALLIANCE);
 
-        if (player->GetTeam() == ALLIANCE)
+        if (player->GetBGTeam() == ALLIANCE)
             ++counta2;
         else
             ++counth2;
@@ -923,6 +923,11 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         selectionWeights = &m_BGSelectionWeights;
         isRandom = true;
     }
+    else if (bgTypeId == BATTLEGROUND_RATED_10_VS_10)
+    {
+        isRandom = true;
+        selectionWeights = NULL;
+    }
 
     if (selectionWeights)
     {
@@ -997,6 +1002,19 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
             break;
         case BATTLEGROUND_IC:
             bg = new BattlegroundIC(*(BattlegroundIC*)bg_template);
+            break;
+        case BATTLEGROUND_RATED_10_VS_10:
+            switch (/*urand(0,2)*/0)
+            {
+                case 0:
+                    bgTypeId =  BATTLEGROUND_WS;
+                    bg_template = GetBattlegroundTemplate(bgTypeId);
+                    bg = new BattlegroundWS(*(BattlegroundWS*)bg_template);
+                    break;
+//                case 1: return BATTLEGROUND_TP;
+//                case 2: return BATTLEGROUND_BFG;
+            }
+            bg->SetRandom(true);
             break;
         case BATTLEGROUND_TP:
             bg = new BattlegroundTP(*(BattlegroundTP*)bg_template);
@@ -1158,7 +1176,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
             data.Team1StartLocZ = start->z;
             data.Team1StartLocO = fields[6].GetFloat();
         }
-        else if (data.bgTypeId == BATTLEGROUND_AA || data.bgTypeId == BATTLEGROUND_RB)
+        else if (data.bgTypeId == BATTLEGROUND_AA || data.bgTypeId == BATTLEGROUND_RB || data.bgTypeId == BATTLEGROUND_RATED_10_VS_10)
         {
             data.Team1StartLocX = 0;
             data.Team1StartLocY = 0;
@@ -1179,7 +1197,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
             data.Team2StartLocZ = start->z;
             data.Team2StartLocO = fields[8].GetFloat();
         }
-        else if (data.bgTypeId == BATTLEGROUND_AA || data.bgTypeId == BATTLEGROUND_RB)
+        else if (data.bgTypeId == BATTLEGROUND_AA || data.bgTypeId == BATTLEGROUND_RB || data.bgTypeId == BATTLEGROUND_RATED_10_VS_10)
         {
             data.Team2StartLocX = 0;
             data.Team2StartLocY = 0;
@@ -1386,6 +1404,8 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
     {
         case BATTLEGROUND_WS:
             return BATTLEGROUND_QUEUE_WS;
+        case BATTLEGROUND_RATED_10_VS_10:
+            return BATTLEGROUND_QUEUE_RBG;
         case BATTLEGROUND_AB:
             return BATTLEGROUND_QUEUE_AB;
         case BATTLEGROUND_AV:
@@ -1466,6 +1486,8 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
         case BATTLEGROUND_QUEUE_3v3:
         case BATTLEGROUND_QUEUE_5v5:
             return BATTLEGROUND_AA;
+        case BATTLEGROUND_QUEUE_RBG:
+            return BATTLEGROUND_RATED_10_VS_10;
         default:
             return BattlegroundTypeId(0);                   // used for unknown template (it existed and do nothing)
     }
@@ -1578,7 +1600,6 @@ void BattlegroundMgr::LoadBattleMastersEntry()
     }
 
     uint32 count = 0;
-
     do
     {
         ++count;

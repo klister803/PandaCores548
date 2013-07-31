@@ -81,6 +81,7 @@
 #include "BattlefieldMgr.h"
 #include "BattlefieldMgr.h"
 #include "TicketMgr.h"
+#include "RatedBattleground.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -941,6 +942,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_groupUpdateDelay = 5000;
 
+    m_rbg = NULL;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 
     m_Store = false;
@@ -973,6 +976,9 @@ Player::~Player()
         delete ItemSetEff[x];
 
     delete m_declinedname;
+
+    if (m_rbg)
+        delete m_rbg;
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
@@ -8211,7 +8217,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
             break;
         case CURRENCY_TYPE_CONQUEST_META_RBG:
             // should add precision mod = 100
-            cap = Trinity::Currency::BgConquestRatingCalculator(GetRBGPersonalRating()) * currency->GetPrecision();
+            cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
             break;
         case CURRENCY_TYPE_JUSTICE_POINTS:
             if (sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) > 0)
@@ -10627,6 +10633,8 @@ void Player::SendBGWeekendWorldStates()
                 SendUpdateWorldState(bl->HolidayWorldStateId, 0);
         }
     }
+
+    SendUpdateWorldState(WORLD_STATE_ENABLE_RATED_BG, 1);
 }
 
 uint32 Player::GetXPRestBonus(uint32 xp)
@@ -18045,6 +18053,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadGroup(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGROUP));
 
     _LoadArenaTeamInfo(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADARENAINFO));
+
+    m_rbg = new RatedBattleground(GetGUID());
+    m_rbg->LoadStats();
 
     // check arena teams integrity
     for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)

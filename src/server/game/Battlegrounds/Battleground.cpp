@@ -36,6 +36,7 @@
 #include "Util.h"
 #include "Guild.h"
 #include "GuildMgr.h"
+#include "RatedBattleground.h"
 
 namespace Trinity
 {
@@ -210,6 +211,10 @@ Battleground::Battleground()
     StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_BG_WS_START_ONE_MINUTE;
     StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_WS_START_HALF_MINUTE;
     StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_BG_WS_HAS_BEGUN;
+
+    m_rbgFlag = false;
+
+    m_sameBgTeamId = false;
 }
 
 Battleground::~Battleground()
@@ -955,6 +960,19 @@ void Battleground::EndBattleground(uint32 winner)
         sBattlegroundMgr->BuildPvpLogDataPacket(&data, this);
         player->GetSession()->SendPacket(&data);
 
+        if (IsRBG())
+        {
+            uint32 realTeam = player->GetTeam();
+            if (realTeam != team)
+                player->setFactionForRace(player->getRace());
+
+            uint32 loser = winner == HORDE ? ALLIANCE : HORDE;
+            player->getRBG()->FinishGame(team == winner, GetArenaMatchmakerRating(team == winner ? loser : winner));
+
+            if (team == winner)
+                player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RBG, RatedBattleground::ConquestPointReward * 100);
+        }
+
         BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(GetTypeID(), GetArenaType());
         if (isArena())
             sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, player->GetBattlegroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(BATTLEGROUND_AA), GetElapsedTime(), GetArenaType());
@@ -1026,6 +1044,13 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         {
             player->ResurrectPlayer(1.0f);
             player->SpawnCorpseBones();
+        }
+
+        if (IsRBG())
+        {
+            uint32 realTeam = player->GetTeam();
+            if (realTeam != team)
+                player->setFactionForRace(player->getRace());
         }
     }
 
@@ -1204,6 +1229,13 @@ void Battleground::AddPlayer(Player* player)
     player->Dismount();
     player->RemoveAurasByType(SPELL_AURA_MOUNTED);
     player->RemoveAurasByType(SPELL_AURA_FLY);
+
+    if (IsRBG())
+    {
+        uint32 realTeam = player->GetTeam();
+        if (realTeam != team)
+            player->setFaction(team == ALLIANCE ? 1 : 2);
+    }
 
     // add arena specific auras
     if (isArena())
@@ -1931,6 +1963,7 @@ void Battleground::PlayerAddedToBGCheckIfBGIsRunning(Player* player)
 
     sBattlegroundMgr->BuildPvpLogDataPacket(&data, this);
     player->GetSession()->SendPacket(&data);
+
 
     sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, player->GetBattlegroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(GetTypeID()), GetElapsedTime(), GetArenaType());
     player->GetSession()->SendPacket(&data);

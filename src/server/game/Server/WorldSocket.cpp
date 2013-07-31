@@ -741,6 +741,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
         case CMSG_REORDER_CHARACTERS:
             sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
 
+
             if (m_Session)
                 if (OpcodeHandler* opHandle = opcodeTable[CMSG_REORDER_CHARACTERS])
                     (m_Session->*opHandle->handler)(*new_pct);
