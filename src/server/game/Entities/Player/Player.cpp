@@ -8066,15 +8066,15 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
     
-    // count can't be more then weekCap.
+    // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
     if (weekCap && count > int32(weekCap))
-    {
         count = weekCap;
-        
-        
-        
-    }
+
+    // count can't be more then totalCap if used (totalCap > 0)
+    uint32 totalCap = GetCurrencyTotalCap(currency);
+    if (totalCap && count > int32(totalCap))
+        count = totalCap;
 
     int32 newTotalCount = int32(oldTotalCount) + count;
     if (newTotalCount < 0)
@@ -8083,29 +8083,23 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     int32 newWeekCount = int32(oldWeekCount) + (count > 0 ? count : 0);
     if (newWeekCount < 0)
         newWeekCount = 0;
-    
-    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
-    if (weekCap)
+    // if we get more then weekCap just set to limit
+    if (weekCap && int32(weekCap) < newWeekCount)
     {
-        //ASSERT(weekCap >= oldWeekCount);
-
-        // TODO: fix conquest points
-        // if we get more then weekCap just set to limit
-        if (int32(weekCap) < newWeekCount)
-        {
-            newWeekCount = int32(weekCap);
-            // weekCap - oldWeekCount alwayt >= 0 as we set limit before!
-            newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
-        }
+        newWeekCount = int32(weekCap);
+        // weekCap - oldWeekCount always >= 0 as we set limit before!
+        newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
     }
 
     // if we get more then totalCap set to maximum;
-    if (currency->TotalCap && int32(currency->TotalCap) < newTotalCount)
+    if (totalCap && int32(totalCap) < newTotalCount)
     {
-        newTotalCount = int32(currency->TotalCap);
+        newTotalCount = int32(totalCap);
         newWeekCount = weekCap;
     }
+
+    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
