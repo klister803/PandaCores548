@@ -7887,6 +7887,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(2, itr->second.weekCount);
             stmt->setUInt32(3, itr->second.totalCount);
             stmt->setUInt32(4, itr->second.seasonTotal);
+            stmt->setUInt8(5, /*itr->second.flags*/0);
             trans->Append(stmt);
             break;
         case PLAYERCURRENCY_CHANGED:
@@ -7894,8 +7895,9 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(0, itr->second.weekCount);
             stmt->setUInt32(1, itr->second.totalCount);
             stmt->setUInt32(2, itr->second.seasonTotal);
-            stmt->setUInt32(3, GetGUIDLow());
-            stmt->setUInt16(4, itr->first);
+            stmt->setUInt8(3, /*itr->second.flags*/0);
+            stmt->setUInt32(4, GetGUIDLow());
+            stmt->setUInt16(5, itr->first);
             trans->Append(stmt);
             break;
         default:
@@ -7924,17 +7926,18 @@ void Player::SendNewCurrency(uint32 id) const
     uint32 weekCount = itr->second.weekCount / precision;
     uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
     uint32 seasonTotal = itr->second.seasonTotal / precision;
+    bool hasSeason = entry->HasSeasonCount();
     
     packet.WriteBit(weekCap);
-    packet.WriteBit(weekCount);
-    packet.WriteBit(seasonTotal);     // season total earned
+    packet.WriteBit(weekCap && weekCount);
+    packet.WriteBit(hasSeason);     // season total earned
     packet.WriteBits(0, 5);           // some flags
     
     if (weekCap)
         currencyData << uint32(weekCap);
-    if (weekCount)
+    if (weekCap && weekCount)
         currencyData << uint32(weekCount);
-    if (seasonTotal)
+    if (hasSeason)
         currencyData << uint32(seasonTotal);
     
     currencyData << uint32(itr->second.totalCount / precision);
@@ -7961,17 +7964,18 @@ void Player::SendCurrencies() const
         uint32 weekCount = itr->second.weekCount / precision;
         uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
         uint32 seasonTotal = itr->second.seasonTotal / precision;
+        bool hasSeason = entry->HasSeasonCount();
         
         packet.WriteBit(weekCap);
-        packet.WriteBit(weekCount);
-        packet.WriteBit(seasonTotal);     // season total earned
+        packet.WriteBit(weekCap && weekCount);
+        packet.WriteBit(hasSeason);     // season total earned
         packet.WriteBits(0, 5); // some flags
         
         if (weekCap)
             currencyData << uint32(weekCap);
-        if (weekCount)
+        if (weekCap && weekCount)
             currencyData << uint32(weekCount);
-        if (seasonTotal)
+        if (hasSeason)
             currencyData << uint32(seasonTotal);
 
         currencyData << uint32(itr->second.totalCount / precision);
@@ -8072,15 +8076,15 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
     
-    // count can't be more then weekCap.
+    // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
     if (weekCap && count > int32(weekCap))
-    {
         count = weekCap;
-        
-        
-        
-    }
+
+    // count can't be more then totalCap if used (totalCap > 0)
+    uint32 totalCap = GetCurrencyTotalCap(currency);
+    if (totalCap && count > int32(totalCap))
+        count = totalCap;
 
     int32 newTotalCount = int32(oldTotalCount) + count;
     if (newTotalCount < 0)
@@ -8089,29 +8093,23 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     int32 newWeekCount = int32(oldWeekCount) + (count > 0 ? count : 0);
     if (newWeekCount < 0)
         newWeekCount = 0;
-    
-    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
-    if (weekCap)
+    // if we get more then weekCap just set to limit
+    if (weekCap && int32(weekCap) < newWeekCount)
     {
-        //ASSERT(weekCap >= oldWeekCount);
-
-        // TODO: fix conquest points
-        // if we get more then weekCap just set to limit
-        if (int32(weekCap) < newWeekCount)
-        {
-            newWeekCount = int32(weekCap);
-            // weekCap - oldWeekCount alwayt >= 0 as we set limit before!
-            newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
-        }
+        newWeekCount = int32(weekCap);
+        // weekCap - oldWeekCount always >= 0 as we set limit before!
+        newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
     }
 
     // if we get more then totalCap set to maximum;
-    if (currency->TotalCap && int32(currency->TotalCap) < newTotalCount)
+    if (totalCap && int32(totalCap) < newTotalCount)
     {
-        newTotalCount = int32(currency->TotalCap);
+        newTotalCount = int32(totalCap);
         newWeekCount = weekCap;
     }
+
+    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
@@ -9396,7 +9394,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
 
         Spell* spell = new Spell(this, spellInfo, TRIGGERED_NONE);
         spell->m_CastItem = item;
-        //spell->m_cast_count = cast_count;                   //set count of casts
+        spell->m_cast_count = cast_count;                   //set count of casts
         spell->SetSpellValue(SPELLVALUE_BASE_POINT0, learning_spell_id);
         spell->prepare(&targets);
         return;
@@ -9427,7 +9425,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
 
         Spell* spell = new Spell(this, spellInfo, (count > 0) ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
         spell->m_CastItem = item;
-        //spell->m_cast_count = cast_count;                   // set count of casts
+        spell->m_cast_count = cast_count;                   // set count of casts
         spell->m_glyphIndex = glyphIndex;                   // glyph index
         spell->prepare(&targets);
 
@@ -9458,7 +9456,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
 
             Spell* spell = new Spell(this, spellInfo, (count > 0) ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
             spell->m_CastItem = item;
-            //spell->m_cast_count = cast_count;               // set count of casts
+            spell->m_cast_count = cast_count;               // set count of casts
             spell->m_glyphIndex = glyphIndex;               // glyph index
             spell->prepare(&targets);
 
@@ -17603,8 +17601,8 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
 
     data << uint32(quest->GetBonusTalents());              // bonus talents (not verified for 4.x)
     data << uint32(quest->GetRewardSkillPoints());         // 4.x bonus skill points
-    data << uint32(moneyReward);
     data << uint32(xp);
+    data << uint32(moneyReward);
     data << uint32(questId);
     data << uint32(quest->GetRewardSkillId());             // 4.x bonus skill id
     data.FlushBits();

@@ -28,6 +28,8 @@
 #include "DBCStores.h"
 #include "Item.h"
 #include "AccountMgr.h"
+#include "GridNotifiersImpl.h"
+#include "CellImpl.h"
 
 void WorldSession::HandleSendMail(WorldPacket& recvData)
 {
@@ -50,6 +52,9 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     receiverLength = recvData.ReadBits(7);
     mailbox[1] = recvData.ReadBit();
     uint8 items_count = recvData.ReadBits(5);              // attached items count
+
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with unk1 = %u, unk2 = %u",
+    _player->GetGUIDLow(), items_count, money, COD, unk1, unk2);
 
     if (items_count > MAX_MAIL_ITEMS)                       // client limit
     {
@@ -611,6 +616,11 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 
     uint32 mailsCount = 0;                                 // real send to client mails amount
     uint32 realCount  = 0;                                 // real mails amount
+
+    GameObject* _mailbox = NULL;
+    Trinity::MailBoxMasterCheck check(player);
+    Trinity::GameObjectSearcher<Trinity::MailBoxMasterCheck> searcher(player, _mailbox, check);
+    player->VisitNearbyObject(5.0f, searcher);
 
     WorldPacket data(SMSG_MAIL_LIST_RESULT, 200);         // guess size
     data << uint32(0);                                      // real mail's count

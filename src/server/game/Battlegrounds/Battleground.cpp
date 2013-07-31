@@ -77,7 +77,7 @@ namespace Trinity
                 data << uint64(target_guid);
                 data << uint32(strlen(text) + 1);
                 data << text;
-                data << uint8 (_source ? _source->GetChatTag() : 0);
+                data << uint16 (_source ? _source->GetChatTag() : 0);
             }
 
             ChatMsg _msgtype;
@@ -110,7 +110,7 @@ namespace Trinity
                 data << uint64(target_guid);
                 data << uint32(strlen(str) + 1);
                 data << str;
-                data << uint8 (_source ? _source->GetChatTag() : uint8(0));
+                data << uint16 (_source ? _source->GetChatTag() : uint8(0));
             }
 
         private:
@@ -302,7 +302,7 @@ void Battleground::Update(uint32 diff)
     }
 
     // Update start time and reset stats timer
-    m_StartTime += diff;
+    SetElapsedTime(GetElapsedTime() + diff);
     if (GetStatus() == STATUS_WAIT_JOIN)
     {
         m_ResetStatTimer += diff;
@@ -567,8 +567,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         }
     }
 
-    if (m_EndTime > 0 && (m_EndTime -= diff) > 0)
-        m_EndTime -= diff;
+    if (GetRemainingTime() > 0 && (m_EndTime -= diff) > 0)
+        SetRemainingTime(GetRemainingTime() - diff);
 
 
     // Find if the player left our start zone; if so, teleport it back
@@ -605,10 +605,10 @@ inline void Battleground::_ProcessLeave(uint32 diff)
     // ***           BATTLEGROUND ENDING SYSTEM              ***
     // *********************************************************
     // remove all players from battleground after 2 minutes
-    m_EndTime -= diff;
-    if (m_EndTime <= 0)
+    SetRemainingTime(GetRemainingTime() - diff);
+    if (GetRemainingTime() <= 0)
     {
-        m_EndTime = 0;
+        SetRemainingTime(0);
         BattlegroundPlayerMap::iterator itr, next;
         for (itr = m_Players.begin(); itr != m_Players.end(); itr = next)
         {
@@ -1291,7 +1291,16 @@ void Battleground::AddPlayer(Player* player)
     else
     {
         if (GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
+        {
             player->CastSpell(player, SPELL_PREPARATION, true);   // reduces all mana cost of spells.
+
+            int32 countdownMaxForBGType = isArena() ? ARENA_COUNTDOWN_MAX : BATTLEGROUND_COUNTDOWN_MAX;
+            WorldPacket data(SMSG_START_TIMER, 4+4+4);
+            data << uint32(0); // unk
+            data << uint32(countdownMaxForBGType - (GetElapsedTime() / 1000));
+            data << uint32(countdownMaxForBGType);
+            player->GetSession()->SendPacket(&data);
+        }
     }
 
     player->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP, GetMapId(), true);

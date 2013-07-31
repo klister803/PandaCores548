@@ -1647,6 +1647,11 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
                 sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) tried to transmogrify with an invalid item (lowguid: %u).", player->GetGUIDLow(), player->GetName(), GUID_LOPART(itemGuids[i]));
                 return;
             }
+            if(itemTransmogrifier->GetEntry() != newEntries[i])
+            {
+                //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleTransmogrifyItems Cheats - Player (GUID: %u, name: %s) tried to transmogrify with an invalid item (lowguid: %u).", player->GetGUIDLow(), player->GetName(), GUID_LOPART(itemGuids[i]));
+                return;
+            }
         }
 
         // transmogrified item
