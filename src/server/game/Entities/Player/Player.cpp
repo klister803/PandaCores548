@@ -7920,7 +7920,7 @@ void Player::SendNewCurrency(uint32 id) const
     uint32 weekCount = itr->second.weekCount / precision;
     uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
     uint32 seasonTotal = itr->second.seasonTotal / precision;
-    bool hasSeason = itr->second.currencyEntry->HasSeasonCount();
+    bool hasSeason = entry->HasSeasonCount();
     
     packet.WriteBit(weekCap);
     packet.WriteBit(weekCap && weekCount);
@@ -7958,7 +7958,7 @@ void Player::SendCurrencies() const
         uint32 weekCount = itr->second.weekCount / precision;
         uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
         uint32 seasonTotal = itr->second.seasonTotal / precision;
-        bool hasSeason = itr->second.currencyEntry->HasSeasonCount();
+        bool hasSeason = entry->HasSeasonCount();
         
         packet.WriteBit(weekCap);
         packet.WriteBit(weekCap && weekCount);
