@@ -7881,6 +7881,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(2, itr->second.weekCount);
             stmt->setUInt32(3, itr->second.totalCount);
             stmt->setUInt32(4, itr->second.seasonTotal);
+            stmt->setUInt8(5, /*itr->second.flags*/0);
             trans->Append(stmt);
             break;
         case PLAYERCURRENCY_CHANGED:
@@ -7888,8 +7889,9 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(0, itr->second.weekCount);
             stmt->setUInt32(1, itr->second.totalCount);
             stmt->setUInt32(2, itr->second.seasonTotal);
-            stmt->setUInt32(3, GetGUIDLow());
-            stmt->setUInt16(4, itr->first);
+            stmt->setUInt8(3, /*itr->second.flags*/0);
+            stmt->setUInt32(4, GetGUIDLow());
+            stmt->setUInt16(5, itr->first);
             trans->Append(stmt);
             break;
         default:
