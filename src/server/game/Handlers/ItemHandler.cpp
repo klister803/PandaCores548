@@ -1679,7 +1679,6 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
 
         if (!newEntries[i]) // reset look
         {
-            itemTransmogrified->ClearEnchantment(TRANSMOGRIFY_ENCHANTMENT_SLOT);
             itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, 0);
             player->SetVisibleItemSlot(slots[i], itemTransmogrified);
         }
@@ -1692,7 +1691,6 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
             }
 
             // All okay, proceed
-            itemTransmogrified->SetEnchantment(TRANSMOGRIFY_ENCHANTMENT_SLOT, newEntries[i], 0, 0);
             itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, newEntries[i]);
             player->SetVisibleItemSlot(slots[i], itemTransmogrified);
 
