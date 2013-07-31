@@ -294,7 +294,7 @@ void Quest::BuildExtraQuestInfo(WorldPacket& data, Player* player) const
             data << uint32(0);
     }
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "GetRewOrReqMoney GetRewOrReqMoney %i", GetRewOrReqMoney();
+    sLog->outError(LOG_FILTER_NETWORKIO, "GetRewOrReqMoney GetRewOrReqMoney %i", GetRewOrReqMoney());
     data << int32(GetRewOrReqMoney());
 
     float QuestXpRate = 1;
