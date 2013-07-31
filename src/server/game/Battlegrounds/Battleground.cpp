@@ -124,9 +124,13 @@ namespace Trinity
 template<class Do>
 void Battleground::BroadcastWorker(Do& _do)
 {
+    sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::BroadcastWorker");
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER)))
+        {
             _do(player);
+            sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::BroadcastWorker player %u", player->GetGUID());
+        }
 }
 
 Battleground::Battleground()
