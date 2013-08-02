@@ -8119,7 +8119,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %u, newSeasonTotalCount %u, newTotalCount %u, newWeekCount %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount);
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency newSeasonTotalCount %u, totalCap %u, newTotalCount %u, newWeekCount %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount);
     if (uint32(newTotalCount) != oldTotalCount)
     {
         if (itr->second.state != PLAYERCURRENCY_NEW)
@@ -8275,7 +8275,7 @@ void Player::UpdateConquestCurrencyCap(uint32 currency)
         if (!currencyEntry)
             continue;
 
-        uint32 precision = (currencyEntry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? 100 : 1;
+        uint32 precision = currencyEntry->GetPrecision();
         uint32 cap = GetCurrencyWeekCap(currencyEntry);
 
         WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
