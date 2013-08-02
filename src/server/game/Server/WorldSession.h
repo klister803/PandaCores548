@@ -1011,6 +1011,9 @@ class WorldSession
         void HandleSetFactionOpcode(WorldPacket& recvPacket);
         int32 HandleEnableNagleAlgorithm();
         void HandleRequestReaserchHistory(WorldPacket& recvPacket);
+        void HandleChangeCurrencyFlags(WorldPacket& recvPacket);
+        void HandleCemeteryListOpcode(WorldPacket& recvPacket);
+        void HandlerCategoryCooldownOpocde(WorldPacket& recvPacket);
 
     private:
         void InitializeQueryCallbackParameters();

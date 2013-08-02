@@ -178,6 +178,8 @@ struct PlayerCurrency
    uint32 totalCount;
    uint32 weekCount;
    uint32 seasonTotal;
+    uint8 flags;
+    CurrencyTypesEntry const * currencyEntry;
 };
 
 struct PlayerArchaelogy
@@ -1480,6 +1482,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const;
         uint32 GetCurrencyTotalCap(CurrencyTypesEntry const* currency) const;
         void UpdateConquestCurrencyCap(uint32 currency);
+        /// modify currency flag
+        void ModifyCurrencyFlag(uint32 id, uint8 flag);
 
         /**
         * @name ModifyCurrency
@@ -2412,6 +2416,7 @@ class Player : public Unit, public GridObject<Player>
         void ResurrectPlayer(float restore_percent, bool applySickness = false);
         void BuildPlayerRepop();
         void RepopAtGraveyard();
+        void SendCemeteryList(bool onMap);
 
         void DurabilityLossAll(double percent, bool inventory);
         void DurabilityLoss(Item* item, double percent);

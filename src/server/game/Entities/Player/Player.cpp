@@ -7855,14 +7855,21 @@ void Player::_LoadCurrency(PreparedQueryResult result)
         uint16 currencyID = fields[0].GetUInt16();
 
         CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(currencyID);
-        if (!currencyID)
+        if (!currency)
+        {
+            CharacterDatabase.PExecute("DELETE FROM character_currency WHERE id = '%u'", currencyID);
             continue;
+        }
 
         PlayerCurrency cur;
-        cur.state = PLAYERCURRENCY_UNCHANGED;
-        cur.weekCount = fields[1].GetUInt32();
-        cur.totalCount = fields[2].GetUInt32();
+        cur.state       = PLAYERCURRENCY_UNCHANGED;
+        cur.weekCount   = fields[1].GetUInt32();
+        cur.totalCount  = fields[2].GetUInt32();
         cur.seasonTotal = fields[3].GetUInt32();
+        uint8 flags     = fields[4].GetUInt8();
+
+        cur.flags = flags & PLAYERCURRENCY_MASK_USED_BY_CLIENT;
+        cur.currencyEntry = currency;
 
         _currencyStorage.insert(PlayerCurrenciesMap::value_type(currencyID, cur));
 
@@ -7887,7 +7894,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(2, itr->second.weekCount);
             stmt->setUInt32(3, itr->second.totalCount);
             stmt->setUInt32(4, itr->second.seasonTotal);
-            stmt->setUInt8(5, /*itr->second.flags*/0);
+            stmt->setUInt8(5, itr->second.flags);
             trans->Append(stmt);
             break;
         case PLAYERCURRENCY_CHANGED:
@@ -7895,7 +7902,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(0, itr->second.weekCount);
             stmt->setUInt32(1, itr->second.totalCount);
             stmt->setUInt32(2, itr->second.seasonTotal);
-            stmt->setUInt8(3, /*itr->second.flags*/0);
+            stmt->setUInt8(3, itr->second.flags);
             stmt->setUInt32(4, GetGUIDLow());
             stmt->setUInt16(5, itr->first);
             trans->Append(stmt);
@@ -7987,6 +7994,19 @@ void Player::SendCurrencies() const
     GetSession()->SendPacket(&packet);
 }
 
+void Player::ModifyCurrencyFlag(uint32 id, uint8 flag)
+{
+    if (!id)
+        return;
+
+    if (_currencyStorage.find(id) == _currencyStorage.end())
+        return;
+
+    _currencyStorage[id].flags = flag;
+    if (_currencyStorage[id].state != PLAYERCURRENCY_NEW)
+        _currencyStorage[id].state = PLAYERCURRENCY_CHANGED;
+}
+
 void Player::SendPvpRewards() const
 {
     WorldPacket packet(SMSG_REQUEST_PVP_REWARDS_RESPONSE, 24);
@@ -8054,7 +8074,8 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         return;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    ASSERT(currency);
+    if(!currency)
+        return;
 
     if (!ignoreMultipliers)
         count *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_CURRENCY_GAIN, id);
@@ -8072,6 +8093,8 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         cur.totalCount = 0;
         cur.weekCount = 0;
         cur.seasonTotal = 0;
+        cur.flags = 0;
+        cur.currencyEntry = currency;
         _currencyStorage[id] = cur;
         itr = _currencyStorage.find(id);
     }
@@ -8082,7 +8105,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency oldTotalCount %u, oldWeekCount %u, oldSeasonTotalCount %u, count %u", oldTotalCount, oldWeekCount, oldSeasonTotalCount, count);
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency oldTotalCount %u, oldWeekCount %u, oldSeasonTotalCount %u, count %u, id %u", oldTotalCount, oldWeekCount, oldSeasonTotalCount, count, id);
     // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
     if (weekCap && (count > int32(weekCap)))
@@ -8101,7 +8124,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %u, totalCap %u, newTotalCount %u, newWeekCount %u", weekCap, totalCap, newTotalCount, newWeekCount);
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %u, totalCap %u, newTotalCount %u, newWeekCount %u, id %u", weekCap, totalCap, newTotalCount, newWeekCount, id);
     // if we get more then weekCap just set to limit
     if (weekCap && (int32(weekCap) < newWeekCount))
     {
@@ -8119,7 +8142,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency newSeasonTotalCount %u, totalCap %u, newTotalCount %u, newWeekCount %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount);
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency newSeasonTotalCount %u, totalCap %u, newTotalCount %u, newWeekCount %u, id %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount, id);
     if (uint32(newTotalCount) != oldTotalCount)
     {
         if (itr->second.state != PLAYERCURRENCY_NEW)
@@ -8242,7 +8265,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
 
 uint32 Player::GetCurrencyTotalCap(CurrencyTypesEntry const* currency) const
 {
-    uint32 cap = currency->TotalCap / currency->GetPrecision();
+    uint32 cap = currency->TotalCap;
 
     switch (currency->ID)
     {
@@ -16189,8 +16212,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
             CurrencyTypesEntry const* reqCurrency = sCurrencyTypesStore.LookupEntry(reqCurrencyId);
             if(int32 reqCountCurrency = quest->RequiredCurrencyCount[i])
             {
-                if(reqCurrency->Flags & CURRENCY_FLAG_HAS_PRECISION)
-                    reqCountCurrency *= 100;
+                reqCountCurrency *= currency->GetPrecision();
                 ModifyCurrency(reqCurrencyId, -reqCountCurrency);
             }
         }
@@ -16251,8 +16273,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                 CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(currencyId);
                 if(uint32 countCurrency = quest->RewardCurrencyCount[i])
                 {
-                    if(currency->Flags & CURRENCY_FLAG_HAS_PRECISION)
-                        countCurrency *= 100;
+                    countCurrency *= currency->GetPrecision();
                     ModifyCurrency(currencyId,countCurrency);
                 }
             }
@@ -28701,4 +28722,25 @@ void Player::LootResearchChest()
         m_digsite.pointCount[_mapId]--;
         GenerateResearchDigSites(1);
     }
+}
+
+void Player::SendCemeteryList(bool onMap)
+{
+    ByteBuffer buf(16);
+    uint32 count = 0;
+
+    uint32 zoneId = GetZoneId();
+    GraveYardContainer::const_iterator graveLow  = sObjectMgr->GraveYardStore.lower_bound(zoneId);
+    GraveYardContainer::const_iterator graveUp   = sObjectMgr->GraveYardStore.upper_bound(zoneId);
+    for (GraveYardContainer::const_iterator itr = graveLow; itr != graveUp; ++itr)
+    {
+        ++count;
+        buf << uint32(itr->second.safeLocId);
+    }
+
+    WorldPacket packet(SMSG_REQUEST_CEMETERY_LIST_RESPONSE, buf.wpos()+4);
+    packet.WriteBit(onMap);
+    packet.WriteBits(count, 24);
+    packet.append(buf);
+    GetSession()->SendPacket(&packet);
 }
