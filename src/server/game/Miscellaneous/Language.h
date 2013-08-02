@@ -890,22 +890,22 @@ enum TrinityStrings
     // FREE IDS                           1245-1249
 
     // Battle For Gilneas
-    LANG_BG_BFG_START_TWO_MINUTES       = 1250,
-    LANG_BG_BFG_START_ONE_MINUTE        = 1251,
-    LANG_BG_BFG_START_HALF_MINUTE       = 1252,
-    LANG_BG_BFG_HAS_BEGUN               = 1253,
+    LANG_BG_BG_START_TWO_MINUTES        = 1250,
+    LANG_BG_BG_START_ONE_MINUTE         = 1251,
+    LANG_BG_BG_START_HALF_MINUTE        = 1252,
+    LANG_BG_BG_HAS_BEGUN                = 1253,
 
-    LANG_BG_BFG_ALLY                    = 1254,
-    LANG_BG_BFG_HORDE                   = 1255,
-    LANG_BG_BFG_NODE_LIGHTHOUSE         = 1256,
-    LANG_BG_BFG_NODE_WATERWORKS         = 1257,
-    LANG_BG_BFG_NODE_MINE               = 1258,
-    LANG_BG_BFG_NODE_TAKEN              = 1259,
-    LANG_BG_BFG_NODE_DEFENDED           = 1260,
-    LANG_BG_BFG_NODE_ASSAULTED          = 1261,
-    LANG_BG_BFG_NODE_CLAIMED            = 1262,
-    LANG_BG_BFG_A_NEAR_VICTORY          = 1263,
-    LANG_BG_BFG_H_NEAR_VICTORY          = 1264,
+    LANG_BG_BG_ALLY                    = 1254,
+    LANG_BG_BG_HORDE                   = 1255,
+    LANG_BG_BG_NODE_LIGHTHOUSE         = 1256,
+    LANG_BG_BG_NODE_WATERWORKS         = 1257,
+    LANG_BG_BG_NODE_MINE               = 1258,
+    LANG_BG_BG_NODE_TAKEN              = 1259,
+    LANG_BG_BG_NODE_DEFENDED           = 1260,
+    LANG_BG_BG_NODE_ASSAULTED          = 1261,
+    LANG_BG_BG_NODE_CLAIMED            = 1262,
+    LANG_BG_BG_A_NEAR_VICTORY          = 1263,
+    LANG_BG_BG_H_NEAR_VICTORY          = 1264,
     // FREE IDS                           1265-1299
 
     // AV
@@ -969,6 +969,9 @@ enum TrinityStrings
     LANG_BG_KT_PICKEDUP                 = 1350,
     LANG_BG_KT_O_PLACED                 = 1351,
     // FREE IDS                           1352-1999
+
+
+
 
     // Ticket Strings 2000-2029
     LANG_COMMAND_TICKETNEW              = 2000,
