@@ -8008,7 +8008,7 @@ uint32 Player::GetCurrency(uint32 id, bool usePrecision) const
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
 
-    if (!precision)
+    if (!usePrecision)
         itr->second.totalCount;
 
     return itr->second.totalCount / currency->GetPrecision();
@@ -8022,7 +8022,7 @@ uint32 Player::GetCurrencyOnWeek(uint32 id, bool usePrecision) const
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
 
-    if (!precision)
+    if (usePrecision)
         itr->second.weekCount;
 
     return itr->second.weekCount / currency->GetPrecision();
@@ -8036,7 +8036,7 @@ uint32 Player::GetCurrencyOnSeason(uint32 id, bool usePrecision) const
     
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
 
-    if (!precision)
+    if (!usePrecision)
         itr->second.seasonTotal;
     
     return itr->second.seasonTotal / currency->GetPrecision();
@@ -8177,7 +8177,7 @@ uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision) const
     if (!entry)
         return 0;
 
-    if (!precision)
+    if (!usePrecision)
         return GetCurrencyWeekCap(entry);
 
     return GetCurrencyWeekCap(entry) / entry->GetPrecision();
