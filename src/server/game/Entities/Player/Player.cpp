@@ -8101,7 +8101,6 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency oldTotalCount %i, oldWeekCount %ui, oldSeasonTotalCount %i, count %i, id %u", oldTotalCount, oldWeekCount, oldSeasonTotalCount, count, id);
     // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
     if (weekCap && (count > int32(weekCap)))
@@ -8120,7 +8119,6 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %i, totalCap %i, newTotalCount %i, newWeekCount %i, id %u", weekCap, totalCap, newTotalCount, newWeekCount, id);
     // if we get more then weekCap just set to limit
     if (weekCap && (int32(weekCap) < newWeekCount))
     {
@@ -8138,7 +8136,6 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency newSeasonTotalCount %i, totalCap %i, newTotalCount %i, newWeekCount %i, id %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount, id);
     if (uint32(newTotalCount) != oldTotalCount)
     {
         if (itr->second.state != PLAYERCURRENCY_NEW)
@@ -9419,6 +9416,20 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         spell->m_cast_count = cast_count;                   //set count of casts
         spell->SetSpellValue(SPELLVALUE_BASE_POINT0, learning_spell_id);
         spell->prepare(&targets);
+        return;
+    }
+
+    // special case for rewards curency
+    if (proto->Spells[0].SpellId == 13)
+    {
+        uint32 countefirs = GetItemCount(proto->ItemId, false);
+        uint32 curency = proto->Spells[1].SpellId;
+        uint32 curency_count = proto->Spells[1].SpellCooldown;
+        if(curency > 0 && curency_count > 0 && countefirs > 0)
+        {
+            ModifyCurrencyCount(curency, curency_count);
+            DestroyItemCount(proto->ItemId, 1, true);
+        }
         return;
     }
 
@@ -27051,6 +27062,8 @@ void Player::RefundItem(Item* item)
     {
         uint32 count = iece->RequiredItemCount[i];
         uint32 itemid = iece->RequiredItem[i];
+        if(itemid == 38186)
+            count = uint32(count * sWorld->getRate(RATE_DONATE));
 
         if (count && itemid)
         {
@@ -27068,6 +27081,23 @@ void Player::RefundItem(Item* item)
     {
         SendItemRefundResult(item, iece, 10);
         return;
+    }
+
+    for (int i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
+    {
+        if (iece->RequiredCurrency[i] == CURRENCY_NONE)
+            continue;
+
+        if (iece->IsSeasonCurrencyRequirement(i))
+            continue;
+
+        CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(iece->RequiredCurrency[i]);
+        if (!entry)
+            continue;
+
+        int32 cost = int32(iece->RequiredCurrencyCount[i]);
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::RefundItem  cost %i, id %i)", cost, entry->ID);
+        ModifyCurrencyCount(entry->ID, cost, false, false);
     }
 
     SendItemRefundResult(item, iece, 0);
@@ -27088,6 +27118,9 @@ void Player::RefundItem(Item* item)
     {
         uint32 count = iece->RequiredItemCount[i];
         uint32 itemid = iece->RequiredItem[i];
+        if(itemid == 38186)
+            count = uint32(count * sWorld->getRate(RATE_DONATE));
+
         if (count && itemid)
         {
             ItemPosCountVec dest;

@@ -494,7 +494,10 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
     recvData >> vendorguid >> itemguid >> count;
 
     if (!itemguid)
+    {
+        _player->SendSellError(SELL_ERR_CANT_FIND_ITEM, creature, itemguid);
         return;
+    }
 
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!creature)
@@ -536,13 +539,14 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
         // this probably happens when right clicking a refundable item, the client sends both
         // CMSG_SELL_ITEM and CMSG_REFUND_ITEM (unverified)
         if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
+        {
+            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
             return; // Therefore, no feedback to client
+        }
 
         // special case at auto sell (sell all)
         if (count == 0)
-
             count = pItem->GetCount();
-
         else
         {
             // prevent sell more items that exist in stack (possible only not from client)
