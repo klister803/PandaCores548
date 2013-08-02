@@ -164,6 +164,19 @@ struct SpellModifier
     constAuraPtr ownerAura;
 };
 
+enum PlayerCurrencyFlag
+{
+    PLAYERCURRENCY_FLAG_NONE                = 0x0,
+    PLAYERCURRENCY_FLAG_UNK1                = 0x1,  // unused?
+    PLAYERCURRENCY_FLAG_UNK2                = 0x2,  // unused?
+    PLAYERCURRENCY_FLAG_SHOW_IN_BACKPACK    = 0x4,
+    PLAYERCURRENCY_FLAG_UNUSED              = 0x8,
+
+    PLAYERCURRENCY_MASK_USED_BY_CLIENT =
+        PLAYERCURRENCY_FLAG_SHOW_IN_BACKPACK |
+        PLAYERCURRENCY_FLAG_UNUSED,
+};
+
 enum PlayerCurrencyState
 {
    PLAYERCURRENCY_UNCHANGED = 0,

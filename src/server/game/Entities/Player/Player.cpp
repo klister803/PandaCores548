@@ -16212,7 +16212,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
             CurrencyTypesEntry const* reqCurrency = sCurrencyTypesStore.LookupEntry(reqCurrencyId);
             if(int32 reqCountCurrency = quest->RequiredCurrencyCount[i])
             {
-                reqCountCurrency *= currency->GetPrecision();
+                reqCountCurrency *= reqCurrency->GetPrecision();
                 ModifyCurrency(reqCurrencyId, -reqCountCurrency);
             }
         }
