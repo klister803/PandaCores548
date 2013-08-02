@@ -8007,9 +8007,11 @@ uint32 Player::GetCurrency(uint32 id, bool usePrecision) const
         return 0;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
 
-    return itr->second.totalCount / precision;
+    if (!usePrecision)
+        itr->second.totalCount;
+
+    return itr->second.totalCount / currency->GetPrecision();
 }
 
 uint32 Player::GetCurrencyOnWeek(uint32 id, bool usePrecision) const
@@ -8019,9 +8021,11 @@ uint32 Player::GetCurrencyOnWeek(uint32 id, bool usePrecision) const
         return 0;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
 
-    return itr->second.weekCount / precision;
+    if (usePrecision)
+        itr->second.weekCount;
+
+    return itr->second.weekCount / currency->GetPrecision();
 }
 
 uint32 Player::GetCurrencyOnSeason(uint32 id, bool usePrecision) const
@@ -8031,9 +8035,11 @@ uint32 Player::GetCurrencyOnSeason(uint32 id, bool usePrecision) const
         return 0;
     
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
+
+    if (!usePrecision)
+        itr->second.seasonTotal;
     
-    return itr->second.seasonTotal / precision;
+    return itr->second.seasonTotal / currency->GetPrecision();
 }
 
 bool Player::HasCurrency(uint32 id, uint32 count) const
@@ -8075,18 +8081,19 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldWeekCount = itr->second.weekCount;
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
-    
+
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency oldTotalCount %u, oldWeekCount %u, oldSeasonTotalCount %u, count %u", oldTotalCount, oldWeekCount, oldSeasonTotalCount, count);
     // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
-    if (weekCap && count > int32(weekCap))
+    if (weekCap && (count > int32(weekCap)))
         count = weekCap;
 
     // count can't be more then totalCap if used (totalCap > 0)
     uint32 totalCap = GetCurrencyTotalCap(currency);
-    if (totalCap && count > int32(totalCap))
+    if (totalCap && (count > int32(totalCap)))
         count = totalCap;
 
-    int32 newTotalCount = int32(oldTotalCount) + count;
+    int32 newTotalCount = int32(oldTotalCount) + (count > 0 ? count : 0);
     if (newTotalCount < 0)
         newTotalCount = 0;
 
@@ -8094,8 +8101,9 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %u, totalCap %u, newTotalCount %u, newWeekCount %u", weekCap, totalCap, newTotalCount, newWeekCount);
     // if we get more then weekCap just set to limit
-    if (weekCap && int32(weekCap) < newWeekCount)
+    if (weekCap && (int32(weekCap) < newWeekCount))
     {
         newWeekCount = int32(weekCap);
         // weekCap - oldWeekCount always >= 0 as we set limit before!
@@ -8103,7 +8111,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     }
 
     // if we get more then totalCap set to maximum;
-    if (totalCap && int32(totalCap) < newTotalCount)
+    if (totalCap && (int32(totalCap) < newTotalCount))
     {
         newTotalCount = int32(totalCap);
         newWeekCount = weekCap;
@@ -8111,6 +8119,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency newSeasonTotalCount %u, totalCap %u, newTotalCount %u, newWeekCount %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount);
     if (uint32(newTotalCount) != oldTotalCount)
     {
         if (itr->second.state != PLAYERCURRENCY_NEW)
@@ -8171,9 +8180,10 @@ uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision) const
     if (!entry)
         return 0;
 
-    uint32 precision = (usePrecision) ? entry->GetPrecision() : entry->GetPrecision();
+    if (!usePrecision)
+        return GetCurrencyWeekCap(entry);
 
-    return GetCurrencyWeekCap(entry) / precision;
+    return GetCurrencyWeekCap(entry) / entry->GetPrecision();
 }
 
 void Player::ResetCurrencyWeekCap()
@@ -8217,13 +8227,6 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
             // should add precision mod = 100
             cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
             break;
-        case CURRENCY_TYPE_JUSTICE_POINTS:
-            if (sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) > 0)
-                cap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS);
-            break;
-        case CURRENCY_TYPE_VALOR_POINTS:
-            cap = 3000 * currency->GetPrecision();
-            break;
     }
 
    if (cap != currency->WeekCap && IsInWorld() && !GetSession()->PlayerLoading())
@@ -8239,20 +8242,20 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
 
 uint32 Player::GetCurrencyTotalCap(CurrencyTypesEntry const* currency) const
 {
-    uint32 cap = currency->TotalCap;
+    uint32 cap = currency->TotalCap / currency->GetPrecision();
 
     switch (currency->ID)
     {
         case CURRENCY_TYPE_HONOR_POINTS:
         {
-            uint32 honorcap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_HONOR_POINTS) * currency->GetPrecision();
+            uint32 honorcap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_HONOR_POINTS);
             if (honorcap > 0)
                 cap = honorcap;
             break;
         }
         case CURRENCY_TYPE_JUSTICE_POINTS:
         {
-            uint32 justicecap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) * currency->GetPrecision();
+            uint32 justicecap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS);
             if (justicecap > 0)
                 cap = justicecap;
             break;
@@ -8272,7 +8275,7 @@ void Player::UpdateConquestCurrencyCap(uint32 currency)
         if (!currencyEntry)
             continue;
 
-        uint32 precision = (currencyEntry->Flags & CURRENCY_FLAG_HAS_PRECISION) ? 100 : 1;
+        uint32 precision = currencyEntry->GetPrecision();
         uint32 cap = GetCurrencyWeekCap(currencyEntry);
 
         WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
