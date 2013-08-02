@@ -1455,7 +1455,7 @@ public:
         if (!currencyType)
             return false;
 
-        uint32 amount = atoi(strtok(NULL, " "));
+        int32 amount = atoi(strtok(NULL, " "));
         if (!amount)
             return false;
 

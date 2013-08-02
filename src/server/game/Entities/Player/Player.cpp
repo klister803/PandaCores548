@@ -7924,32 +7924,30 @@ void Player::SendNewCurrency(uint32 id) const
     ByteBuffer currencyData;
     WorldPacket packet(SMSG_INIT_CURRENCY, 4 + 1*(5*4 + 1));
     packet.WriteBits(1, 22);
-    
-    CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(id);
-    if (!entry) // should never happen
-        return;
-    
+
+    CurrencyTypesEntry const* entry = itr->second.currencyEntry;
+
     uint32 precision = entry->GetPrecision();
-    uint32 weekCount = itr->second.weekCount / precision;
-    uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
-    uint32 seasonTotal = itr->second.seasonTotal / precision;
+    uint32 weekCount = itr->second.weekCount;
+    uint32 weekCap = GetCurrencyWeekCap(entry);
+    uint32 seasonTotal = itr->second.seasonTotal;
     bool hasSeason = entry->HasSeasonCount();
-    
+
     packet.WriteBit(weekCap);
     packet.WriteBit(weekCap && weekCount);
     packet.WriteBit(hasSeason);     // season total earned
-    packet.WriteBits(0, 5);           // some flags
-    
+    packet.WriteBits(itr->second.flags, 5);           // some flags
+
     if (weekCap)
-        currencyData << uint32(weekCap);
+        currencyData << uint32(weekCap / precision);
     if (weekCap && weekCount)
-        currencyData << uint32(weekCount);
+        currencyData << uint32(weekCount / precision);
     if (hasSeason)
-        currencyData << uint32(seasonTotal);
-    
+        currencyData << uint32(seasonTotal / precision);
+
     currencyData << uint32(itr->second.totalCount / precision);
     currencyData << uint32(entry->ID);
-    
+
     packet.FlushBits();
     packet.append(currencyData);
     GetSession()->SendPacket(&packet);
@@ -7963,27 +7961,25 @@ void Player::SendCurrencies() const
 
     for (PlayerCurrenciesMap::const_iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
     {
-        CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(itr->first);
-        if (!entry) // should never happen
-            continue;
+        CurrencyTypesEntry const* entry = itr->second.currencyEntry;
 
         uint32 precision = entry->GetPrecision();
-        uint32 weekCount = itr->second.weekCount / precision;
-        uint32 weekCap = GetCurrencyWeekCap(entry) / precision;
-        uint32 seasonTotal = itr->second.seasonTotal / precision;
+        uint32 weekCount = itr->second.weekCount;
+        uint32 weekCap = GetCurrencyWeekCap(entry);
+        uint32 seasonTotal = itr->second.seasonTotal;
         bool hasSeason = entry->HasSeasonCount();
-        
+
         packet.WriteBit(weekCap);
         packet.WriteBit(weekCap && weekCount);
         packet.WriteBit(hasSeason);     // season total earned
-        packet.WriteBits(0, 5); // some flags
-        
+        packet.WriteBits(itr->second.flags, 5); // some flags
+
         if (weekCap)
-            currencyData << uint32(weekCap);
+            currencyData << uint32(weekCap / precision);
         if (weekCap && weekCount)
-            currencyData << uint32(weekCount);
+            currencyData << uint32(weekCount / precision);
         if (hasSeason)
-            currencyData << uint32(seasonTotal);
+            currencyData << uint32(seasonTotal / precision);
 
         currencyData << uint32(itr->second.totalCount / precision);
         currencyData << uint32(entry->ID);
@@ -8105,7 +8101,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency oldTotalCount %u, oldWeekCount %u, oldSeasonTotalCount %u, count %u, id %u", oldTotalCount, oldWeekCount, oldSeasonTotalCount, count, id);
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency oldTotalCount %i, oldWeekCount %ui, oldSeasonTotalCount %i, count %i, id %u", oldTotalCount, oldWeekCount, oldSeasonTotalCount, count, id);
     // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
     if (weekCap && (count > int32(weekCap)))
@@ -8116,7 +8112,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (totalCap && (count > int32(totalCap)))
         count = totalCap;
 
-    int32 newTotalCount = int32(oldTotalCount) + (count > 0 ? count : 0);
+    int32 newTotalCount = int32(oldTotalCount) + count;
     if (newTotalCount < 0)
         newTotalCount = 0;
 
@@ -8124,7 +8120,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %u, totalCap %u, newTotalCount %u, newWeekCount %u, id %u", weekCap, totalCap, newTotalCount, newWeekCount, id);
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %i, totalCap %i, newTotalCount %i, newWeekCount %i, id %u", weekCap, totalCap, newTotalCount, newWeekCount, id);
     // if we get more then weekCap just set to limit
     if (weekCap && (int32(weekCap) < newWeekCount))
     {
@@ -8142,7 +8138,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency newSeasonTotalCount %u, totalCap %u, newTotalCount %u, newWeekCount %u, id %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount, id);
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency newSeasonTotalCount %i, totalCap %i, newTotalCount %i, newWeekCount %i, id %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount, id);
     if (uint32(newTotalCount) != oldTotalCount)
     {
         if (itr->second.state != PLAYERCURRENCY_NEW)
