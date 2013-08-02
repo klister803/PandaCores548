@@ -8084,12 +8084,12 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     
     // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
-    if (weekCap && count > int32(weekCap))
+    if (weekCap && (count > int32(weekCap)))
         count = weekCap;
 
     // count can't be more then totalCap if used (totalCap > 0)
     uint32 totalCap = GetCurrencyTotalCap(currency);
-    if (totalCap && count > int32(totalCap))
+    if (totalCap && (count > int32(totalCap)))
         count = totalCap;
 
     int32 newTotalCount = int32(oldTotalCount) + count;
@@ -8101,7 +8101,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         newWeekCount = 0;
 
     // if we get more then weekCap just set to limit
-    if (weekCap && int32(weekCap) < newWeekCount)
+    if (weekCap && (int32(weekCap) < newWeekCount))
     {
         newWeekCount = int32(weekCap);
         // weekCap - oldWeekCount always >= 0 as we set limit before!
@@ -8109,7 +8109,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     }
 
     // if we get more then totalCap set to maximum;
-    if (totalCap && int32(totalCap) < newTotalCount)
+    if (totalCap && (int32(totalCap) < newTotalCount))
     {
         newTotalCount = int32(totalCap);
         newWeekCount = weekCap;
