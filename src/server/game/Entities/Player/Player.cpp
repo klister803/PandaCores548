@@ -8081,7 +8081,8 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldWeekCount = itr->second.weekCount;
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
-    
+
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency oldTotalCount %u, oldWeekCount %u, oldSeasonTotalCount %u, count %u", oldTotalCount, oldWeekCount, oldSeasonTotalCount, count);
     // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
     if (weekCap && (count > int32(weekCap)))
@@ -8092,7 +8093,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (totalCap && (count > int32(totalCap)))
         count = totalCap;
 
-    int32 newTotalCount = int32(oldTotalCount) + count;
+    int32 newTotalCount = int32(oldTotalCount) + (count > 0 ? count : 0);
     if (newTotalCount < 0)
         newTotalCount = 0;
 
@@ -8100,6 +8101,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %u, totalCap %u, newTotalCount %u, newWeekCount %u", weekCap, totalCap, newTotalCount, newWeekCount);
     // if we get more then weekCap just set to limit
     if (weekCap && (int32(weekCap) < newWeekCount))
     {
@@ -8117,6 +8119,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
 
+    sLog->outError(LOG_FILTER_NETWORKIO, "ModifyCurrency weekCap %u, newSeasonTotalCount %u, newTotalCount %u, newWeekCount %u", newSeasonTotalCount, totalCap, newTotalCount, newWeekCount);
     if (uint32(newTotalCount) != oldTotalCount)
     {
         if (itr->second.state != PLAYERCURRENCY_NEW)
