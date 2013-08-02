@@ -495,7 +495,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
 
     if (!itemguid)
     {
-        _player->SendSellError(SELL_ERR_CANT_FIND_ITEM, creature, itemguid);
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode - itemguid %u not fount.", itemguid);
         return;
     }
 
