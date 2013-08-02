@@ -540,8 +540,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
         // CMSG_SELL_ITEM and CMSG_REFUND_ITEM (unverified)
         if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
         {
-            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode ITEM_FLAG_REFUNDABLE itemguid %u not fount.", itemguid);
+            GetPlayer()->RefundItem(pItem);
             return; // Therefore, no feedback to client
         }
 
