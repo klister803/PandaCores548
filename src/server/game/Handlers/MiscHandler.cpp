@@ -2219,7 +2219,7 @@ void WorldSession::HandlerCategoryCooldownOpocde(WorldPacket& recvPacket)
     data.WriteBits<int>(list.size(), 23);
     for (Unit::AuraEffectList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
     {
-        AuraEffect* effect = *itr;
+        AuraEffectPtr effect = *itr;
         data << uint32(effect->GetMiscValue());
         data << int32(-effect->GetAmount());
     }
