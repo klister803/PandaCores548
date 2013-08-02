@@ -541,6 +541,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
         if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
         {
             _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode ITEM_FLAG_REFUNDABLE itemguid %u not fount.", itemguid);
             return; // Therefore, no feedback to client
         }
 
