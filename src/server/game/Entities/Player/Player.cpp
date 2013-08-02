@@ -8242,20 +8242,20 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
 
 uint32 Player::GetCurrencyTotalCap(CurrencyTypesEntry const* currency) const
 {
-    uint32 cap = currency->TotalCap;
+    uint32 cap = currency->TotalCap / currency->GetPrecision();
 
     switch (currency->ID)
     {
         case CURRENCY_TYPE_HONOR_POINTS:
         {
-            uint32 honorcap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_HONOR_POINTS) * currency->GetPrecision();
+            uint32 honorcap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_HONOR_POINTS);
             if (honorcap > 0)
                 cap = honorcap;
             break;
         }
         case CURRENCY_TYPE_JUSTICE_POINTS:
         {
-            uint32 justicecap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) * currency->GetPrecision();
+            uint32 justicecap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS);
             if (justicecap > 0)
                 cap = justicecap;
             break;
