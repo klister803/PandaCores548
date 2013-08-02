@@ -8224,13 +8224,6 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
             // should add precision mod = 100
             cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
             break;
-        //case CURRENCY_TYPE_JUSTICE_POINTS:
-            //if (sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) > 0)
-                //cap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS);
-            //break;
-        case CURRENCY_TYPE_VALOR_POINTS:
-            cap = 3000 * currency->GetPrecision();
-            break;
     }
 
    if (cap != currency->WeekCap && IsInWorld() && !GetSession()->PlayerLoading())
