@@ -1004,15 +1004,23 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
             bg = new BattlegroundIC(*(BattlegroundIC*)bg_template);
             break;
         case BATTLEGROUND_RATED_10_VS_10:
-            switch (/*urand(0,2)*/0)
+            switch (urand(0,2))
             {
                 case 0:
                     bgTypeId =  BATTLEGROUND_WS;
                     bg_template = GetBattlegroundTemplate(bgTypeId);
                     bg = new BattlegroundWS(*(BattlegroundWS*)bg_template);
                     break;
-//                case 1: return BATTLEGROUND_TP;
-//                case 2: return BATTLEGROUND_BFG;
+                case 1:
+                    bgTypeId =  BATTLEGROUND_BFG;
+                    bg_template = GetBattlegroundTemplate(bgTypeId);
+                    bg = new BattlegroundBFG(*(BattlegroundBFG*)bg_template);
+                    break;
+                default:
+                    bgTypeId =  BATTLEGROUND_WS;
+                    bg_template = GetBattlegroundTemplate(bgTypeId);
+                    bg = new BattlegroundWS(*(BattlegroundWS*)bg_template);
+                    break;
             }
             bg->SetRandom(true);
             break;
