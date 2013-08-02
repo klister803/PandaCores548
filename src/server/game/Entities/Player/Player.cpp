@@ -8007,9 +8007,11 @@ uint32 Player::GetCurrency(uint32 id, bool usePrecision) const
         return 0;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
 
-    return itr->second.totalCount / precision;
+    if (!precision)
+        itr->second.totalCount;
+
+    return itr->second.totalCount / currency->GetPrecision();
 }
 
 uint32 Player::GetCurrencyOnWeek(uint32 id, bool usePrecision) const
@@ -8019,9 +8021,11 @@ uint32 Player::GetCurrencyOnWeek(uint32 id, bool usePrecision) const
         return 0;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
 
-    return itr->second.weekCount / precision;
+    if (!precision)
+        itr->second.weekCount;
+
+    return itr->second.weekCount / currency->GetPrecision();
 }
 
 uint32 Player::GetCurrencyOnSeason(uint32 id, bool usePrecision) const
@@ -8031,9 +8035,11 @@ uint32 Player::GetCurrencyOnSeason(uint32 id, bool usePrecision) const
         return 0;
     
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
-    uint32 precision = (usePrecision) ? currency->GetPrecision() : currency->GetPrecision();
+
+    if (!precision)
+        itr->second.seasonTotal;
     
-    return itr->second.seasonTotal / precision;
+    return itr->second.seasonTotal / currency->GetPrecision();
 }
 
 bool Player::HasCurrency(uint32 id, uint32 count) const
@@ -8171,9 +8177,10 @@ uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision) const
     if (!entry)
         return 0;
 
-    uint32 precision = (usePrecision) ? entry->GetPrecision() : entry->GetPrecision();
+    if (!precision)
+        return GetCurrencyWeekCap(entry);
 
-    return GetCurrencyWeekCap(entry) / precision;
+    return GetCurrencyWeekCap(entry) / entry->GetPrecision();
 }
 
 void Player::ResetCurrencyWeekCap()
@@ -8217,10 +8224,10 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
             // should add precision mod = 100
             cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
             break;
-        case CURRENCY_TYPE_JUSTICE_POINTS:
-            if (sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) > 0)
-                cap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS);
-            break;
+        //case CURRENCY_TYPE_JUSTICE_POINTS:
+            //if (sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS) > 0)
+                //cap = sWorld->getIntConfig(CONFIG_CURRENCY_MAX_JUSTICE_POINTS);
+            //break;
         case CURRENCY_TYPE_VALOR_POINTS:
             cap = 3000 * currency->GetPrecision();
             break;
