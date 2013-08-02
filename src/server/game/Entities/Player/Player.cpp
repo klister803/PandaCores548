@@ -9427,7 +9427,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
         uint32 curency_count = proto->Spells[1].SpellCooldown;
         if(curency > 0 && curency_count > 0 && countefirs > 0)
         {
-            ModifyCurrencyCount(curency, curency_count);
+            ModifyCurrency(curency, curency_count);
             DestroyItemCount(proto->ItemId, 1, true);
         }
         return;
@@ -27097,7 +27097,7 @@ void Player::RefundItem(Item* item)
 
         int32 cost = int32(iece->RequiredCurrencyCount[i]);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::RefundItem  cost %i, id %i)", cost, entry->ID);
-        ModifyCurrencyCount(entry->ID, cost, false, false);
+        ModifyCurrency(entry->ID, cost);
     }
 
     SendItemRefundResult(item, iece, 0);

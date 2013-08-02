@@ -548,6 +548,7 @@ enum VehicleSeatFlagsB
 // CurrencyTypes.dbc
 enum CurrencyTypes
 {
+    CURRENCY_NONE                           = 0,
     CURRENCY_TYPE_DALARAN_JEWEL             = 61,  // Jewelcrafting token WoTLK
     CURRENCY_TYPE_EPICUREAN                 = 81,  // Cook token WoTLK
     CURRENCY_TYPE_CHAMPION_SEAL             = 241, // Argent tournament token
