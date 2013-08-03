@@ -1405,12 +1405,35 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
             if (curhealth < 1)
                 curhealth = 1;
         }
-        SetPower(POWER_MANA, data->curmana);
+
+        switch (getClass())
+        {
+            case CLASS_WARRIOR:
+                setPowerType(POWER_RAGE);
+                break;
+            case CLASS_ROGUE:
+                setPowerType(POWER_ENERGY);
+                break;
+            default:
+                SetPower(POWER_MANA, data->curmana);
+                break;
+        }
     }
     else
     {
         curhealth = GetMaxHealth();
-        SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+        switch (getClass())
+        {
+            case CLASS_WARRIOR:
+                setPowerType(POWER_RAGE);
+                break;
+            case CLASS_ROGUE:
+                setPowerType(POWER_ENERGY);
+                break;
+            default:
+                SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+                break;
+        }
     }
 
     SetHealth(m_deathState == ALIVE ? curhealth : 0);

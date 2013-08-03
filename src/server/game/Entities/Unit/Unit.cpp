@@ -5551,6 +5551,119 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Concentration, Majordomo Staghelm
+                case 98229:
+                    SetPower(POWER_ALTERNATE_POWER, 0);
+                    break;
+                // Bane of Havoc
+                case 85466:
+                {
+                    bool found = false;
+                    // find target of bane
+                    AuraList & scAuras = GetSingleCastAuras();
+                    for (AuraList::iterator iter = scAuras.begin(); iter != scAuras.end(); ++iter)
+                        if( (*iter)->GetId() == 80240)
+                        {
+                            if (target == (*iter)->GetUnitOwner())
+                                return false;
+                            target = (*iter)->GetUnitOwner();
+                            basepoints0 = int32(CalculatePct(damage, (*iter)->GetEffect(0)->GetAmount()));
+                            found = true;
+                        }
+                    // no target found, break
+                    if (!found)
+                        return false;
+
+                    triggered_spell_id = 85455;
+                    break;
+                }
+                case 97138: // Matrix Restabilizer (391)
+                case 96976: // Matrix Restabilizer (384)
+                {
+
+                    uint32 crit = this->ToPlayer()->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_MELEE);
+                    uint32 mastery = this->ToPlayer()->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_MASTERY);
+                    uint32 haste = this->ToPlayer()->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE);
+                    
+                    bool isheroic = (dummySpell->Id == 97138);
+                    if (crit > mastery && crit > haste)
+                        triggered_spell_id = isheroic ? 97140: 96978;
+                    else if (haste > mastery && haste > crit)
+                        triggered_spell_id = isheroic ? 97139: 96977;
+                    else if (mastery > haste && mastery > crit)
+                        triggered_spell_id = isheroic ? 97141: 96979;
+                    break;
+                }
+                // Item - Dragon Soul - Proc - Agi Melee 1H
+                case 109866:
+                case 109873:
+                case 107786:
+                {
+                    switch (dummySpell->Id)
+                    {
+                        case 109866:    // LFR
+                            triggered_spell_id = RAND(109867, 109869, 109871);
+                            break;
+                        case 109873:    // Heroic
+                            triggered_spell_id = RAND(109868, 109870, 109872);
+                            break;
+                        case 107786:
+                            triggered_spell_id = RAND(107785, 107789, 107787);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                }
+                case 26022:
+                case 26023:
+                {
+                    if(!procSpell)
+                        return false;
+                    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    {
+                        switch(procSpell->Effects[i].ApplyAuraName)
+                        {
+                            case SPELL_AURA_MOD_FEAR:
+                            case SPELL_AURA_MOD_STUN:
+                            case SPELL_AURA_MOD_ROOT:
+                                triggered_spell_id = 89024;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case 99262:
+                {
+                    if(target->HasAura(99252) && !HasAura(99263))
+                    {
+                        int32 newBp = 10;
+                        newBp += triggeredByAura->GetBase()->GetStackAmount() * 5;
+                        CastCustomSpell(this, 99263, &newBp, NULL, NULL, true, 0, 0, GetGUID());
+                    }
+                    return false;
+                }
+                case 99256:
+                case 100230:
+                case 100231:
+                case 100232:
+                {
+                    if(target->HasAura(99263))
+                        return false;
+
+                    uint32 stack = triggeredByAura->GetBase()->GetStackAmount() / 3;
+                    AuraPtr aura = target->GetAura(99262, target->GetGUID());
+                    if (aura)
+                        stack += aura->GetStackAmount();
+                    else
+                        aura = target->AddAura(99262, target);
+                    if (aura && stack)
+                    {
+                        aura->SetStackAmount(stack);
+                        aura->RefreshDuration();
+                    }
+                    return false;
+                }
                 // Bloodworms Health Leech
                 case 50453:
                 {

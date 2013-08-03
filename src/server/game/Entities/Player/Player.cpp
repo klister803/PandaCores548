@@ -3120,6 +3120,9 @@ void Player::ResetAllPowers()
         case POWER_CHI:
             SetPower(POWER_CHI, 0);
             break;
+        case POWER_ALTERNATE_POWER:
+            SetPower(POWER_ALTERNATE_POWER, 0);
+            break;
         default:
             break;
     }
