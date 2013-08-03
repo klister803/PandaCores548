@@ -8227,6 +8227,9 @@ void Player::ResetCurrencyWeekCap()
 
 uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
 {
+    if(!currency)
+        return 0;
+
     uint32 cap = currency->WeekCap;
 
     switch (currency->ID)
