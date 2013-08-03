@@ -8244,7 +8244,8 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
             break;
         case CURRENCY_TYPE_CONQUEST_META_RBG:
             // should add precision mod = 100
-            cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
+            if(getRBG())
+                cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
             break;
     }
 
