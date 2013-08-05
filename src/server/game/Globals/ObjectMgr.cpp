@@ -425,18 +425,7 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.Entry = entry;
 
         for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
-            index++;
-            //creatureTemplate.DifficultyEntry[i] = fields[index++].GetUInt32();
-        creatureTemplate.DifficultyEntry[0] = fields[0].GetUInt32();
-        creatureTemplate.DifficultyEntry[1] = fields[0].GetUInt32();
-        creatureTemplate.DifficultyEntry[2] = fields[1].GetUInt32();
-        creatureTemplate.DifficultyEntry[3] = fields[0].GetUInt32();
-        creatureTemplate.DifficultyEntry[4] = fields[1].GetUInt32();
-        creatureTemplate.DifficultyEntry[5] = fields[2].GetUInt32();
-        creatureTemplate.DifficultyEntry[6] = fields[3].GetUInt32();
-        creatureTemplate.DifficultyEntry[7] = fields[4].GetUInt32();
-        creatureTemplate.DifficultyEntry[8] = fields[4].GetUInt32();
-        creatureTemplate.DifficultyEntry[9] = fields[4].GetUInt32();
+            creatureTemplate.DifficultyEntry[i] = fields[index++].GetUInt32();
 
         for (uint8 i = 0; i < MAX_KILL_CREDIT; ++i)
             creatureTemplate.KillCredit[i] = fields[index++].GetUInt32();
@@ -622,12 +611,12 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         for (uint32 diff2 = 0; diff2 < MAX_DIFFICULTY - 1 && ok2; ++diff2)
         {
             ok2 = false;
-            /*if (_difficultyEntries[diff2].find(cInfo->Entry) != _difficultyEntries[diff2].end())
+            if (_difficultyEntries[diff2].find(cInfo->Entry) != _difficultyEntries[diff2].end())
             {
                 sLog->outError(LOG_FILTER_SQL, "Creature (Entry: %u) is listed as `difficulty_entry_%u` of another creature, but itself lists %u in `difficulty_entry_%u`.",
                     cInfo->Entry, diff2 + 1, cInfo->DifficultyEntry[diff], diff + 1);
                 continue;
-            }*/
+            }
 
             /*if (_difficultyEntries[diff2].find(cInfo->DifficultyEntry[diff]) != _difficultyEntries[diff2].end())
             {
@@ -635,12 +624,12 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
                 continue;
             }*/
 
-            /*if (_hasDifficultyEntries[diff2].find(cInfo->DifficultyEntry[diff]) != _hasDifficultyEntries[diff2].end())
+            if (_hasDifficultyEntries[diff2].find(cInfo->DifficultyEntry[diff]) != _hasDifficultyEntries[diff2].end())
             {
                 sLog->outError(LOG_FILTER_SQL, "Creature (Entry: %u) has `difficulty_entry_%u`=%u but creature entry %u has itself a value in `difficulty_entry_%u`.",
                     cInfo->Entry, diff + 1, cInfo->DifficultyEntry[diff], cInfo->DifficultyEntry[diff], diff2 + 1);
                 continue;
-            }*/
+            }
             ok2 = true;
         }
         if (!ok2)
@@ -1507,7 +1496,7 @@ void ObjectMgr::LoadCreatures()
             sLog->outError(LOG_FILTER_SQL, "Table `creature` have creature (GUID: %u) that have wrong spawn mask %u including not supported difficulty modes for map (Id: %u) spawnMasks[data.mapid]: %u.", guid, data.spawnMask, data.mapid, spawnMasks[data.mapid]);
 
         bool ok = true;
-        /*for (uint32 diff = 0; diff < MAX_DIFFICULTY - 1 && ok; ++diff)
+        for (uint32 diff = 0; diff < MAX_DIFFICULTY - 1 && ok; ++diff)
         {
             if (_difficultyEntries[diff].find(data.id) != _difficultyEntries[diff].end())
             {
@@ -1515,7 +1504,7 @@ void ObjectMgr::LoadCreatures()
                     guid, diff + 1, data.id);
                 ok = false;
             }
-        }*/
+        }
         if (!ok)
             continue;
 
