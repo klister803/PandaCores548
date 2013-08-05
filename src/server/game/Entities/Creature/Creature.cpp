@@ -1438,7 +1438,6 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
                 SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 break;
-
             default:
                 SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
                 break;

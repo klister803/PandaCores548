@@ -8656,16 +8656,16 @@ void ObjectMgr::LoadCreatureClassLevelStats()
 
         uint8 index = 0;
 
-        uint8 Level = fields[index++].GetInt8();
-        uint8 Class = fields[index++].GetInt8();
+        uint8 Level = fields[0].GetInt8();
+        uint8 Class = fields[1].GetInt8();
 
         CreatureBaseStats stats;
 
         for (uint8 i = 0; i < MAX_CREATURE_BASE_HP; ++i)
-            stats.BaseHealth[i] = fields[index++].GetUInt32();
+            stats.BaseHealth[i] = fields[i + 2].GetUInt32();
 
-        stats.BaseMana = fields[index++].GetUInt32();
-        stats.BaseArmor = fields[index++].GetUInt32();
+        stats.BaseMana = fields[7].GetUInt32();
+        stats.BaseArmor = fields[8].GetUInt32();
 
         if (!Class || ((1 << (Class - 1)) & CLASSMASK_ALL_CREATURES) == 0)
             sLog->outError(LOG_FILTER_SQL, "Creature base stats for level %u has invalid class %u", Level, Class);
