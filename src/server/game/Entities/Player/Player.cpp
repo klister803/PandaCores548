@@ -18535,7 +18535,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadSpellCooldowns(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS));
     _LoadHonor();
-    GenerateResearchDigSites();
+    //GenerateResearchDigSites();
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
@@ -23929,7 +23929,7 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     ResetTimeSync();
     SendTimeSync();
-    GenerateResearchDigSites();
+    //GenerateResearchDigSites();
 
     CastSpell(this, 836, true);                             // LOGINEFFECT
 

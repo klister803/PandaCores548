@@ -289,22 +289,22 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
             case NONE_DIFFICULTY:
             case REGULAR_DIFFICULTY:
             case MAN10_DIFFICULTY:
-                diff = 1;
+                diff = 2;
                 break;
             case HEROIC_DIFFICULTY:
             case MAN25_DIFFICULTY:
-                diff = 2;
-                break;
-            case MAN10_HEROIC_DIFFICULTY:
                 diff = 3;
                 break;
-            case MAN25_HEROIC_DIFFICULTY:
+            case MAN10_HEROIC_DIFFICULTY:
                 diff = 4;
+                break;
+            case MAN25_HEROIC_DIFFICULTY:
+                diff = 5;
                 break;
             case RAID_TOOL_DIFFICULTY:
             case CHALLENGE_MODE_DIFFICULTY:
             case MAN40_DIFFICULTY:
-                diff = 5;
+                diff = 6;
                 break;
         }
         if (normalInfo->DifficultyEntry[diff - 1])
