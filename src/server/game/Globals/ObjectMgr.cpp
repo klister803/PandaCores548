@@ -1507,7 +1507,7 @@ void ObjectMgr::LoadCreatures()
             sLog->outError(LOG_FILTER_SQL, "Table `creature` have creature (GUID: %u) that have wrong spawn mask %u including not supported difficulty modes for map (Id: %u) spawnMasks[data.mapid]: %u.", guid, data.spawnMask, data.mapid, spawnMasks[data.mapid]);
 
         bool ok = true;
-        for (uint32 diff = 0; diff < MAX_DIFFICULTY - 1 && ok; ++diff)
+        /*for (uint32 diff = 0; diff < MAX_DIFFICULTY - 1 && ok; ++diff)
         {
             if (_difficultyEntries[diff].find(data.id) != _difficultyEntries[diff].end())
             {
@@ -1515,7 +1515,7 @@ void ObjectMgr::LoadCreatures()
                     guid, diff + 1, data.id);
                 ok = false;
             }
-        }
+        }*/
         if (!ok)
             continue;
 
