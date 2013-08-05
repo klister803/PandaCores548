@@ -1409,13 +1409,11 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
         switch (getClass())
         {
             case CLASS_WARRIOR:
-                SetCreateMana(GetCreatePowers(POWER_RAGE));
                 setPowerType(POWER_RAGE);
                 SetMaxPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 SetPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 break;
             case CLASS_ROGUE:
-                SetCreateMana(GetCreatePowers(POWER_ENERGY)); 
                 setPowerType(POWER_ENERGY);
                 SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
@@ -1431,13 +1429,11 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
         switch (getClass())
         {
             case CLASS_WARRIOR:
-                SetCreateMana(GetCreatePowers(POWER_RAGE)); 
                 setPowerType(POWER_RAGE);
                 SetMaxPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 SetPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 break;
             case CLASS_ROGUE:
-                SetCreateMana(GetCreatePowers(POWER_ENERGY));
                 setPowerType(POWER_ENERGY);
                 SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
