@@ -28220,17 +28220,29 @@ void Player::GenerateResearchDigSites(uint32 max)
             uint32 free_spot = 0;
             for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
             {
-                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
-                if( site_now == sRSid )
+                uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) & 0xFFFF;
+                uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) >> 16;
+                if( site_now_1 == sRSid || site_now_2 == sRSid )
                     break;
-                if( site_now == 0 && free_spot == 0 )
-                {
-                    free_spot = sites;
-                    break;
-                }
+                if( site_now_1 == 0 && free_spot == 0 )
+                    free_spot = sites * 2;
+                else if( site_now_2 == 0 && free_spot == 0 )
+                    free_spot = sites * 2 + 1;
             }
 
-            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid );
+            //if this is not added because we do not have any, just because we want to refresh site then we random pick a slot
+            if( free_spot == 0 )
+                free_spot = 4;
+            //assign the site to us
+            uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2 ) & 0xFFFF;
+            uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2 ) >> 16;
+            uint32 new_value;
+            if( free_spot % 2 == 1 )
+                new_value = ( sRSid << 16 ) | ( site_now_1 );
+            else
+                new_value = ( site_now_2 << 16 ) | ( sRSid );
+
+            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2, new_value );
 
             sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
 
@@ -28268,17 +28280,29 @@ void Player::GenerateResearchDigSites(uint32 max)
             uint32 free_spot = 0;
             for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
             {
-                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
-                if( site_now == sRSid )
+                uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) & 0xFFFF;
+                uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) >> 16;
+                if( site_now_1 == sRSid || site_now_2 == sRSid )
                     break;
-                if( site_now == 0 && free_spot == 0 )
-                {
-                    free_spot = sites;
-                    break;
-                }
+                if( site_now_1 == 0 && free_spot == 0 )
+                    free_spot = sites * 2;
+                else if( site_now_2 == 0 && free_spot == 0 )
+                    free_spot = sites * 2 + 1;
             }
 
-            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid );
+            //if this is not added because we do not have any, just because we want to refresh site then we random pick a slot
+            if( free_spot == 0 )
+                free_spot = 4;
+            //assign the site to us
+            uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2 ) & 0xFFFF;
+            uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2 ) >> 16;
+            uint32 new_value;
+            if( free_spot % 2 == 1 )
+                new_value = ( sRSid << 16 ) | ( site_now_1 );
+            else
+                new_value = ( site_now_2 << 16 ) | ( sRSid );
+
+            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2, new_value );
 
             sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
 

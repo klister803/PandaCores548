@@ -1422,6 +1422,8 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
                 SetPower(POWER_MANA, data->curmana);
                 break;
         }
+        if( data->id == 52571)
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "Creature::LoadCreatureFromDB GetPower %u, GetMaxPower %u", GetPower(POWER_ENERGY), GetMaxPower(POWER_ENERGY));
     }
     else
     {
@@ -1442,6 +1444,8 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
                 SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
                 break;
         }
+        if( data->id == 52571)
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "Creature::LoadCreatureFromDB GetPower %u, GetMaxPower %u", GetPower(POWER_ENERGY), GetMaxPower(POWER_ENERGY));
     }
 
     SetHealth(m_deathState == ALIVE ? curhealth : 0);
