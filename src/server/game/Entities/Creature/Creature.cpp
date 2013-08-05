@@ -1410,11 +1410,17 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
         {
             case CLASS_WARRIOR:
                 setPowerType(POWER_RAGE);
+                SetMaxPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
+                SetPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 break;
             case CLASS_ROGUE:
                 setPowerType(POWER_ENERGY);
+                SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
+                SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 break;
             default:
+                setPowerType(POWER_MANA);
+                SetMaxPower(POWER_MANA, GetMaxPower(POWER_MANA));
                 SetPower(POWER_MANA, data->curmana);
                 break;
         }
@@ -1426,11 +1432,17 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
         {
             case CLASS_WARRIOR:
                 setPowerType(POWER_RAGE);
+                SetMaxPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
+                SetPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 break;
             case CLASS_ROGUE:
                 setPowerType(POWER_ENERGY);
+                SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
+                SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 break;
             default:
+                setPowerType(POWER_MANA);
+                SetMaxPower(POWER_MANA, GetMaxPower(POWER_MANA));
                 SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
                 break;
         }
