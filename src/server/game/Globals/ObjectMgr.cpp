@@ -622,12 +622,12 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         for (uint32 diff2 = 0; diff2 < MAX_DIFFICULTY - 1 && ok2; ++diff2)
         {
             ok2 = false;
-            if (_difficultyEntries[diff2].find(cInfo->Entry) != _difficultyEntries[diff2].end())
+            /*if (_difficultyEntries[diff2].find(cInfo->Entry) != _difficultyEntries[diff2].end())
             {
                 sLog->outError(LOG_FILTER_SQL, "Creature (Entry: %u) is listed as `difficulty_entry_%u` of another creature, but itself lists %u in `difficulty_entry_%u`.",
                     cInfo->Entry, diff2 + 1, cInfo->DifficultyEntry[diff], diff + 1);
                 continue;
-            }
+            }*/
 
             /*if (_difficultyEntries[diff2].find(cInfo->DifficultyEntry[diff]) != _difficultyEntries[diff2].end())
             {
