@@ -425,7 +425,18 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.Entry = entry;
 
         for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
-            creatureTemplate.DifficultyEntry[i] = fields[index++].GetUInt32();
+            index++;
+            //creatureTemplate.DifficultyEntry[i] = fields[index++].GetUInt32();
+        creatureTemplate.DifficultyEntry[0] = fields[0].GetUInt32();
+        creatureTemplate.DifficultyEntry[1] = fields[0].GetUInt32();
+        creatureTemplate.DifficultyEntry[2] = fields[1].GetUInt32();
+        creatureTemplate.DifficultyEntry[3] = fields[0].GetUInt32();
+        creatureTemplate.DifficultyEntry[4] = fields[1].GetUInt32();
+        creatureTemplate.DifficultyEntry[5] = fields[2].GetUInt32();
+        creatureTemplate.DifficultyEntry[6] = fields[3].GetUInt32();
+        creatureTemplate.DifficultyEntry[7] = fields[4].GetUInt32();
+        creatureTemplate.DifficultyEntry[8] = fields[4].GetUInt32();
+        creatureTemplate.DifficultyEntry[9] = fields[4].GetUInt32();
 
         for (uint8 i = 0; i < MAX_KILL_CREDIT; ++i)
             creatureTemplate.KillCredit[i] = fields[index++].GetUInt32();

@@ -343,14 +343,14 @@ enum Difficulty
 {
     NONE_DIFFICULTY              = 0,                       // entry
     REGULAR_DIFFICULTY           = 1,                       // entry 
-    HEROIC_DIFFICULTY            = 2,                       // difficulty_entry_2
+    HEROIC_DIFFICULTY            = 2,                       // difficulty_entry_2 new difficulty_entry_1
     MAN10_DIFFICULTY             = 3,                       // entry
-    MAN25_DIFFICULTY             = 4,                       // difficulty_entry_4
-    MAN10_HEROIC_DIFFICULTY      = 5,                       // difficulty_entry_5
-    MAN25_HEROIC_DIFFICULTY      = 6,                       // difficulty_entry_6
-    RAID_TOOL_DIFFICULTY         = 7,                       // difficulty_entry_7
-    CHALLENGE_MODE_DIFFICULTY    = 8,                       // difficulty_entry_8
-    MAN40_DIFFICULTY             = 9                        // difficulty_entry_9
+    MAN25_DIFFICULTY             = 4,                       // difficulty_entry_4 new difficulty_entry_1
+    MAN10_HEROIC_DIFFICULTY      = 5,                       // difficulty_entry_5 new difficulty_entry_2
+    MAN25_HEROIC_DIFFICULTY      = 6,                       // difficulty_entry_6 new difficulty_entry_3
+    RAID_TOOL_DIFFICULTY         = 7,                       // difficulty_entry_7 new difficulty_entry_4
+    CHALLENGE_MODE_DIFFICULTY    = 8,                       // difficulty_entry_8 new difficulty_entry_4
+    MAN40_DIFFICULTY             = 9                        // difficulty_entry_9 new difficulty_entry_4
 };
 
 #define RAID_DIFFICULTY_MASK_25MAN 1                        // since 25man difficulties are 1 and 3, we can check them like that
