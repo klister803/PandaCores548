@@ -27029,8 +27029,11 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
         {
             //data << uint32(iece->RequiredCurrencyCount[i]);
             //data << uint32(iece->RequiredCurrency[i]);
-            data << uint32(0);
-            data << uint32(0);
+            if(CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(iece->RequiredCurrency[i]))
+                data << uint32(iece->RequiredCurrencyCount[i] / entry->GetPrecision());
+            else
+                data << uint32(iece->RequiredCurrencyCount[i]);
+            data << uint32(iece->RequiredCurrency[i]);
         }
 
         data << uint32(item->GetPaidMoney());               // money cost
@@ -27119,7 +27122,7 @@ void Player::RefundItem(Item* item)
 
         int32 cost = int32(iece->RequiredCurrencyCount[i]);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::RefundItem  cost %i, id %i)", cost, entry->ID);
-        ModifyCurrency(entry->ID, cost);
+        ModifyCurrency(entry->ID, cost, false, true);
     }
 
     SendItemRefundResult(item, iece, 0);
