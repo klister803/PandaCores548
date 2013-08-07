@@ -27027,8 +27027,10 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
     {
         for (uint8 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
         {
-            data << uint32(iece->RequiredCurrencyCount[i]);
-            data << uint32(iece->RequiredCurrency[i]);
+            //data << uint32(iece->RequiredCurrencyCount[i]);
+            //data << uint32(iece->RequiredCurrency[i]);
+            data << uint32(0);
+            data << uint32(0);
         }
 
         data << uint32(item->GetPaidMoney());               // money cost
