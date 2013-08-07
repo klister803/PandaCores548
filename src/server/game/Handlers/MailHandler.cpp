@@ -33,6 +33,12 @@
 
 void WorldSession::HandleSendMail(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeLastHandleSendMail < 60)
+        return;
+    else
+       timeLastHandleSendMail = now;
+
     ObjectGuid mailbox;
     uint64 money, COD;
     std::string receiver, subject, body;

@@ -540,7 +540,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
         // CMSG_SELL_ITEM and CMSG_REFUND_ITEM (unverified)
         if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
         {
-            GetPlayer()->RefundItem(pItem);
+            //GetPlayer()->RefundItem(pItem);
             return; // Therefore, no feedback to client
         }
 

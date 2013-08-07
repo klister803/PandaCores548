@@ -1096,6 +1096,7 @@ class WorldSession
         time_t timeLastChannelUnmoderCommand;
         time_t timeLastChannelUnmuteCommand;
         time_t timeLastChannelKickCommand;
+        time_t timeLastHandleSendMail;
         uint8 playerLoginCounter;
         z_stream_s* _compressionStream;
 };
