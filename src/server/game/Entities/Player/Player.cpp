@@ -22470,6 +22470,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
 {
     ItemPosCountVec vDest;
     uint16 uiDest = 0;
+    uint32 uicount = 0;
     InventoryResult msg = bStore ?
         CanStoreNewItem(bag, slot, vDest, item, count) :
         CanEquipNewItem(slot, uiDest, item, false);
@@ -22487,7 +22488,11 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         for (int i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
         {
             if (iece->RequiredItem[i])
+            {
                 DestroyItemCount(iece->RequiredItem[i], iece->RequiredItemCount[i], true);
+                if(iece->RequiredItem[i] == 38186)
+                    uicount = iece->RequiredItemCount[i] * sWorld->getRate(RATE_DONATE);
+            }
         }
 
         for (int i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
@@ -22523,6 +22528,24 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
             it->SetPaidExtendedCost(crItem->ExtendedCost);
             it->SaveRefundDataToDB();
             AddRefundReference(it->GetGUIDLow());
+        }
+
+        if (uicount)
+        {
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+            uint8 index = 0;
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_ADD_ITEM_DONATE);
+            stmt->setUInt64(  index, GetGUIDLow());
+            stmt->setUInt64(  ++index, it->GetGUIDLow());
+            stmt->setUInt32(  ++index, it->GetEntry());
+            stmt->setUInt32(  ++index, uicount);
+            stmt->setUInt32(  ++index, count);
+            trans->Append(stmt);
+            CharacterDatabase.CommitTransaction(trans);
+
+            //CharacterDatabase.PExecute("INSERT INTO character_donate (`owner_guid`, `itemguid`, `itemEntry`, `efircount`, `count`)"
+            //" VALUES('%u', '%u', '%u', '%u', '%u')", GetGUIDLow(), it->GetGUIDLow(), it->GetEntry(), uicount, count);
         }
     }
     return true;
@@ -22715,10 +22738,21 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
         for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)
         {
-            if (iece->RequiredItem[i] && !HasItemCount(iece->RequiredItem[i], (iece->RequiredItemCount[i] * count)))
+            if(iece->RequiredItem[i] == 38186)
             {
-                SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
-                return false;
+                if (iece->RequiredItem[i] && !HasItemCount(iece->RequiredItem[i], (iece->RequiredItemCount[i] * count * sWorld->getRate(RATE_DONATE))))
+                {
+                    SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
+                    return false;
+                }
+            }
+            else
+            {
+                if (iece->RequiredItem[i] && !HasItemCount(iece->RequiredItem[i], (iece->RequiredItemCount[i] * count)))
+                {
+                    SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
+                    return false;
+                }
             }
         }
 

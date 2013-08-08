@@ -391,6 +391,7 @@ void Item::SaveToDB(SQLTransaction& trans)
             if (!isInTransaction)
                 CharacterDatabase.CommitTransaction(trans);
 
+            CharacterDatabase.PExecute("UPDATE character_donate SET state = 1 WHERE itemguid = '%u'", guid);
             delete this;
             return;
         }
@@ -504,6 +505,7 @@ void Item::DeleteFromDB(SQLTransaction& trans, uint32 itemGuid)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
     stmt->setUInt32(0, itemGuid);
     trans->Append(stmt);
+    CharacterDatabase.PExecute("UPDATE character_donate SET state = 1 WHERE itemguid = '%u'", itemGuid);
 }
 
 void Item::DeleteFromDB(SQLTransaction& trans)
