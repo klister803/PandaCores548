@@ -1339,7 +1339,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         data.WriteByteSeq(itemCreator[3]);
         data.WriteByteSeq(itemCreator[6]);
         // if unk
-        //      data << unk32
+        //      data << unk16
         for (uint32 j = 0; j < MAX_ENCHANTMENT_SLOT; ++j)
         {
             uint32 enchId = item->GetEnchantmentId(EnchantmentSlot(j));
