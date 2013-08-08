@@ -26973,13 +26973,13 @@ void Player::SendRefundInfo(Item* item)
     WorldPacket data(SMSG_ITEM_REFUND_INFO_RESPONSE, 8+4+4+4+4*4+4*4+4+4);
     data.WriteBit(guid[4]);
     data.WriteBit(guid[5]);
+    data.WriteBit(guid[0]);
     data.WriteBit(guid[2]);
     data.WriteBit(guid[6]);
     data.WriteBit(guid[3]);
-    data.WriteBit(guid[0]);
     data.WriteBit(guid[1]);
     data.WriteBit(guid[7]);
-    data.FlushBits();
+
     data.WriteByteSeq(guid[0]);
     for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)                             // item cost data
     {
