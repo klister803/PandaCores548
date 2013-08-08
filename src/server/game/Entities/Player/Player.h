@@ -1603,23 +1603,12 @@ class Player : public Unit, public GridObject<Player>
                 if(count <= 0)
                 {
                     m_archaelogies.erase(itr);
-                    uint32 free_spot = 0;
-                    for(uint32 sites = 0; sites < MAX_RESEARCH_SITES / 2; sites++)
+                    for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
                     {
-                        uint32 site_now_1 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) & 0xFFFF;
-                        uint32 site_now_2 = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites ) >> 16;
-                        if(site_now_1 == id)
+                        uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
+                        if(site_now == id)
                         {
-                            free_spot = sites * 2;
-                            uint32 new_value = ( site_now_2 << 16 ) | ( 0 );
-                            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2, new_value );
-                            break;
-                        }
-                        if(site_now_2 == id)
-                        {
-                            free_spot = sites * 2 + 1;
-                            uint32 new_value = ( 0 << 16 ) | ( site_now_1 );
-                            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot / 2, new_value );
+                            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites, id );
                             break;
                         }
                     }
