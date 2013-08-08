@@ -18535,7 +18535,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadSpellCooldowns(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS));
     _LoadHonor();
-    //GenerateResearchDigSites();
+    GenerateResearchDigSites();
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
@@ -23963,7 +23963,7 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     ResetTimeSync();
     SendTimeSync();
-    //GenerateResearchDigSites();
+    GenerateResearchDigSites();
 
     CastSpell(this, 836, true);                             // LOGINEFFECT
 
@@ -28265,7 +28265,7 @@ void Player::GenerateResearchDigSites(uint32 max)
             uint32 free_spot = 0;
             for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
             {
-                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites )
+                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
                 if( site_now == sRSid)
                     break;
                 if(site_now == 0)
@@ -28313,7 +28313,7 @@ void Player::GenerateResearchDigSites(uint32 max)
             uint32 free_spot = 0;
             for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
             {
-                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites )
+                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
                 if( site_now == sRSid)
                     break;
                 if(site_now == 0)
