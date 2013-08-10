@@ -1283,7 +1283,22 @@ bool SpellInfo::IsAffectedBySpellMod(SpellModifier* mod) const
 
     // true
     if (mod->mask & SpellFamilyFlags)
+    {
+        if(mod->spellId == 103827)
+        if (constAuraPtr aura = mod->ownerAura)
+            if (AuraEffectPtr aurEff = aura->GetEffect(0))
+                if (aurEff->GetAuraType() == SPELL_AURA_MOD_CHARGES)
+                {
+                    if(aurEff->GetAmount() == 0)
+                    {
+                        aurEff->ChangeAmount(2);
+                        return false;
+                    }
+                    else
+                        aurEff->ChangeAmount(aurEff->GetAmount() - 1);
+                }
         return true;
+    }
 
     return false;
 }
