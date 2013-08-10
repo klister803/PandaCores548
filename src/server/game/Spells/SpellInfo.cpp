@@ -1289,7 +1289,7 @@ bool SpellInfo::IsAffectedBySpellMod(SpellModifier* mod) const
             if (AuraEffectPtr aurEff = aura->GetEffect(0))
                 if (aurEff->GetAuraType() == SPELL_AURA_MOD_CHARGES)
                 {
-                    if(aurEff->GetAmount() == 0)
+                    if(aurEff->GetAmount() < 2)
                     {
                         aurEff->ChangeAmount(2);
                         return false;
