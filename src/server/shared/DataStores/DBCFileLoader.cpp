@@ -25,7 +25,6 @@
 
 DBCFileLoader::DBCFileLoader() : fieldsOffset(NULL), data(NULL), stringTable(NULL)
 {
-
 }
 
 bool DBCFileLoader::Load(const char* filename, const char* fmt)
