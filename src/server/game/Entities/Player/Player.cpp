@@ -3982,7 +3982,7 @@ void Player::SendNewMail()
 {
     // deliver undelivered mail
     WorldPacket data(SMSG_RECEIVED_MAIL, 4);
-    data << (uint32) 0;
+    data << float(0.0f);
     GetSession()->SendPacket(&data);
 }
 
