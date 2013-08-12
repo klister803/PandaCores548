@@ -75,6 +75,7 @@ public:
             { "getitemstate",   SEC_ADMINISTRATOR,  false, &HandleDebugGetItemStateCommand,    "", NULL },
             { "lootrecipient",  SEC_GAMEMASTER,     false, &HandleDebugGetLootRecipientCommand, "", NULL },
             { "getvalue",       SEC_ADMINISTRATOR,  false, &HandleDebugGetValueCommand,        "", NULL },
+            { "getdynamicvalue",SEC_ADMINISTRATOR,  false, &HandleDebugGetDynamicValueCommand, "", NULL },
             { "getitemvalue",   SEC_ADMINISTRATOR,  false, &HandleDebugGetItemValueCommand,    "", NULL },
             { "Mod32Value",     SEC_ADMINISTRATOR,  false, &HandleDebugMod32ValueCommand,      "", NULL },
             { "play",           SEC_MODERATOR,      false, NULL,              "", debugPlayCommandTable },
@@ -82,6 +83,7 @@ public:
             { "setaurastate",   SEC_ADMINISTRATOR,  false, &HandleDebugSetAuraStateCommand,    "", NULL },
             { "setitemvalue",   SEC_ADMINISTRATOR,  false, &HandleDebugSetItemValueCommand,    "", NULL },
             { "setvalue",       SEC_ADMINISTRATOR,  false, &HandleDebugSetValueCommand,        "", NULL },
+            { "setdynamicvalue",SEC_ADMINISTRATOR,  false, &HandleDebugSetDynamicValueCommand, "", NULL },
             { "spawnvehicle",   SEC_ADMINISTRATOR,  false, &HandleDebugSpawnVehicleCommand,    "", NULL },
             { "setvid",         SEC_ADMINISTRATOR,  false, &HandleDebugSetVehicleIdCommand,    "", NULL },
             { "entervehicle",   SEC_ADMINISTRATOR,  false, &HandleDebugEnterVehicleCommand,    "", NULL },
@@ -1186,6 +1188,49 @@ public:
         return true;
     }
 
+    static bool HandleDebugSetDynamicValueCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        char* x = strtok((char*)args, " ");
+        char* y = strtok(NULL, " ");
+        char* z = strtok(NULL, " ");
+
+        if (!x || !y || !z)
+            return false;
+
+        WorldObject* target = handler->getSelectedObject();
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        uint64 guid = target->GetGUID();
+
+        uint32 opcode = (uint32)atoi(x);
+        if (opcode >= target->GetDynamicValuesCount())
+        {
+            handler->PSendSysMessage(LANG_TOO_BIG_INDEX, opcode, GUID_LOPART(guid), target->GetDynamicValuesCount());
+            return false;
+        }
+
+        uint32 offs = (uint32)atoi(y);
+        if (offs >= 32)
+        {
+            handler->PSendSysMessage("Dynamic field index must be less than %u.", 32);
+            return  false;
+        }
+
+        uint32 value = (uint32)atoi(z);
+        target->SetDynamicUInt32Value(opcode, offs, value);
+        handler->PSendSysMessage("Dynamic value of field %u at offset %u set to %u", opcode, offs, value);
+
+        return true;
+    }
+
     static bool HandleDebugGetValueCommand(ChatHandler* handler, char const* args)
     {
         if (!*args)
@@ -1228,6 +1273,47 @@ public:
             float value = target->GetFloatValue(opcode);
             handler->PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), opcode, value);
         }
+
+        return true;
+    }
+
+    static bool HandleDebugGetDynamicValueCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        char* x = strtok((char*)args, " ");
+        char* y = strtok(NULL, " ");
+
+        if (!x || !y)
+            return false;
+
+        Unit* target = handler->getSelectedUnit();
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        uint64 guid = target->GetGUID();
+
+        uint32 opcode = (uint32)atoi(x);
+        if (opcode >= target->GetDynamicValuesCount())
+        {
+            handler->PSendSysMessage(LANG_TOO_BIG_INDEX, opcode, GUID_LOPART(guid), target->GetDynamicValuesCount());
+            return false;
+        }
+
+        uint32 offs = (uint32)atoi(y);
+        if (offs >= 32)
+        {
+            handler->PSendSysMessage("Dynamic field index must be less than %u.", 32);
+            return  false;
+        }
+
+        uint32 value = target->GetDynamicUInt32Value(opcode, offs);
+        handler->PSendSysMessage("Unit %u has dynamic value %u at field %u offset %u", GUID_LOPART(guid), value, opcode, offs);
 
         return true;
     }
