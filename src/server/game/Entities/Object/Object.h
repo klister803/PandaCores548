@@ -297,6 +297,8 @@ class Object
 
         // Dynamic Field function
 
+        uint16 GetDynamicValuesCount() const { return m_dynamicTab.size(); }
+
         uint32 GetDynamicUInt32Value(uint32 tab, uint16 index) const
         {
             ASSERT(tab < m_dynamicTab.size() || index < 32);
