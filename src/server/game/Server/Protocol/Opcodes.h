@@ -625,7 +625,7 @@ enum Opcodes
     MSG_PETITION_RENAME                               = 0xD53,  // 5.0.5 16048
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x97C,	// 5.0.5 16048
     MSG_QUEST_PUSH_RESULT                             = 0x939,	// 5.0.5 16048
-    MSG_RANDOM_ROLL                                   = 0xEDB,  // 5.0.5 16048
+    MSG_RANDOM_ROLL                                   = 0x047,  // 5.0.5 16135
     MSG_SAVE_GUILD_EMBLEM                             = 0xC3D,  // 5.0.5 16048
     MSG_SET_DUNGEON_DIFFICULTY                        = 0xD24,  // 5.0.5 16048
     MSG_SET_RAID_DIFFICULTY                           = 0x957,  // 5.0.5 16048
