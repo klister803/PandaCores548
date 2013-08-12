@@ -2355,7 +2355,6 @@ void FillDisenchantFields(uint32* disenchantID, uint32* requiredDisenchantSkill,
 
             *disenchantID = disenchant->Id;
             *requiredDisenchantSkill = disenchant->RequiredDisenchantSkill;
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "disenchantID %u, ItemId %u", disenchant->Id, itemTemplate.ItemId);
             return;
         }
     }
