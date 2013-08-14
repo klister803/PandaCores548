@@ -83,7 +83,6 @@ enum Opcodes
     CMSG_BATTLEFIELD_MGR_QUEUE_INVITE_RESPONSE        = 0x793,  // 5.0.5 16048
     CMSG_BATTLEFIELD_MGR_QUEUE_REQUEST                = 0x529,  // 5.0.5 16048
     CMSG_BATTLEFIELD_PORT                             = 0x056,  // 5.0.5 16048
-    CMSG_BATTLEFIELD_REQUEST_SCORE_DATA               = 0x220,  // 5.0.5 16048
     CMSG_BATTLEFIELD_STATUS                           = 0x04C,  // 5.0.5 16048
     CMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0,      // 0x3902 in 4.3.4
     CMSG_BATTLEMASTER_JOIN                            = 0x5F8,  // 5.0.5 16048
@@ -251,7 +250,6 @@ enum Opcodes
     CMSG_GUILD_CHANGE_NAME_REQUEST                    = 0x7E3,  // 5.0.5 16048
     CMSG_GUILD_DECLINE                                = 0x5A7,  // 5.0.5 16048
     CMSG_GUILD_DEL_RANK                               = 0x786,  // 5.0.5 16048
-    CMSG_GUILD_CHANGE_NAME_RANK                       = 0x5A6,  // 5.0.5 16048
     CMSG_GUILD_DEMOTE                                 = 0x000,  // 5.0.5 16048 Deprecated
     CMSG_GUILD_DISBAND                                = 0x062,  // 5.0.5 16048
     CMSG_GUILD_EVENT_LOG_QUERY                        = 0x6C3,  // 5.0.5 16048
@@ -607,7 +605,7 @@ enum Opcodes
     MSG_MOVE_STOP                                     = 0x455,  // 5.0.5 16048 Used ?
     MSG_MOVE_TELEPORT                                 = 0xA95,  // 5.0.5 16048 Used ?
     MSG_MOVE_TELEPORT_ACK                             = 0x69D,  // 5.0.5 16048 Used ?
-    MSG_MOVE_TELEPORT_CHEAT                           = 0xA95,  // 5.0.5 16048 Used ?
+    MSG_MOVE_TELEPORT_CHEAT                           = 0,
     MSG_MOVE_TIME_SKIPPED                             = 0xA52,  // 5.0.5 16048 Used ?
     MSG_MOVE_TOGGLE_COLLISION_CHEAT                   = 0,      // Client patched
     MSG_MOVE_TOGGLE_FALL_LOGGING                      = 0,      // Client patched
@@ -616,7 +614,6 @@ enum Opcodes
     MSG_MOVE_UPDATE_FLIGHT_SPEED                      = 0,      // Client patched
     MSG_MOVE_UPDATE_MOUSE                             = 0,      // Client patched
     MSG_MOVE_UPDATE_RUN_SPEED                         = 0,      // Client patched
-    MSG_MOVE_UPDATE_TELEPORT                          = 0xA80,  // 5.0.5 16048 Used ?
     MSG_MOVE_WATER_WALK                               = 0,      // Client patched
     MSG_MOVE_WORLDPORT_ACK                            = 0x3F6,  // 5.0.5 16048 Used ?
     MSG_NOTIFY_PARTY_SQUELCH                          = 0,      // 0x4D06 in 4.3.4 @todo : Find me and BACON !
@@ -895,7 +892,6 @@ enum Opcodes
     SMSG_GUILD_CHALLENGE_UPDATED                      = 0xEDC,  // 5.0.5 16048
     SMSG_GUILD_CHANGE_NAME_RESULT                     = 0xF07,  // 5.0.5 16048
     SMSG_GUILD_COMMAND_RESULT                         = 0xA59,  // 5.0.5 16048
-    SMSG_GUILD_COMMAND_RESULT_2                       = 0xA59,  // 5.0.5 16048
     SMSG_GUILD_CRITERIA_DATA                          = 0xA81,  // 5.0.5 16048
     SMSG_GUILD_CRITERIA_DELETED                       = 0xF6B,  // 5.0.5 16048
     SMSG_GUILD_DECLINE                                = 0x94F,  // 5.0.5 16048
@@ -904,7 +900,6 @@ enum Opcodes
     SMSG_GUILD_FLAGGED_FOR_RENAME                     = 0xACD,  // 5.0.5 16048
     SMSG_GUILD_INVITE                                 = 0xF69,  // 5.0.5 16048
     SMSG_GUILD_INVITE_CANCEL                          = 0,      // 0x0606 in 4.3.4 @todo : Find me and BACON !
-    SMSG_GUILD_KNOWN_RECIPES                          = 0xB7E,  // 5.0.5 16048
     SMSG_GUILD_MAX_DAILY_XP                           = 0xAAF,  // 5.0.5 16048
     SMSG_GUILD_MEMBERS_FOR_RECIPE                     = 0xA04,  // 5.0.5 16048
     SMSG_GUILD_MEMBER_DAILY_RESET                     = 0xA0C,  // 5.0.5 16048
@@ -1033,7 +1028,6 @@ enum Opcodes
     SMSG_MIRRORIMAGE_DATA                             = 0xDC1,  // 5.0.5 16048
     SMSG_MISSILE_CANCEL                               = 0xFD1,  // 5.0.5 16048
     SMSG_MODIFY_COOLDOWN                              = 0x9C7,  // 5.0.5 16048
-    SMSG_MONEY_NOTIFY                                 = 0xB33,  // 5.0.5 16048
     SMSG_MONSTER_MOVE                                 = 0x942,  // 5.0.5 16048
     SMSG_MONSTER_MOVE_TRANSPORT                       = 0xC35,  // 5.0.5 16048
     SMSG_MOTD                                         = 0x952,  // 5.0.5 16048
@@ -1062,7 +1056,6 @@ enum Opcodes
     SMSG_MOVE_SET_SWIM_BACK_SPEED                     = 0xE64,  // 5.0.5 16048
     SMSG_MOVE_SET_SWIM_SPEED                          = 0xE46,  // 5.0.5 16048
     SMSG_MOVE_SET_TURN_RATE                           = 0xE44,  // 5.0.5 16048
-    SMSG_MOVE_SET_VEHICLE_REC_ID                      = 0xAA7,  // 5.0.5 16048
     SMSG_MOVE_SET_WALK_SPEED                          = 0xA23,  // 5.0.5 16048
     SMSG_MOVE_UNROOT                                  = 0xB11,  // 5.0.5 16048
     SMSG_MOVE_UNSET_CAN_FLY                           = 0xBC9,  // 5.0.5 16048
@@ -1272,7 +1265,7 @@ enum Opcodes
     SMSG_SPLINE_MOVE_SET_FLYING                       = 0xE95,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_SET_HOVER                        = 0xA90,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_SET_LAND_WALK                    = 0xA49,  // 5.0.5 16048
-    SMSG_SPLINE_MOVE_SET_NORMAL_FALL                  = 0xF42,  // 5.0.5 16048
+    SMSG_SPLINE_MOVE_SET_NORMAL_FALL                  = 0,      //
     SMSG_SPLINE_MOVE_SET_PITCH_RATE                   = 0xE82,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_SET_RUN_BACK_SPEED               = 0xA10,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_SET_RUN_MODE                     = 0xA9A,  // 5.0.5 16048
@@ -1288,7 +1281,6 @@ enum Opcodes
     SMSG_SPLINE_MOVE_UNROOT                           = 0xAAC,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_UNSET_FLYING                     = 0xEB1,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_UNSET_HOVER                      = 0xBC0,  // 5.0.5 16048
-    SMSG_SPLINE_MOVE_WATER_WALK                       = 0xB69,  // 5.0.5 16048
     SMSG_STABLE_RESULT                                = 0x8F5,  // 5.0.5 16048
     SMSG_STANDSTATE_UPDATE                            = 0x8BB,  // 5.0.5 16048
     SMSG_START_MIRROR_TIMER                           = 0xCA9,  // 5.0.5 16048
@@ -1316,7 +1308,6 @@ enum Opcodes
     SMSG_TOTEM_CREATED                                = 0x918,  // 5.0.5 16048
     SMSG_TRADE_STATUS                                 = 0xF85,  // 5.0.5 16048
     SMSG_TRADE_STATUS_EXTENDED                        = 0xAFB,  // 5.0.5 16048
-    //SMSG_TRAINER_BUY_SUCCEEDED                        = 0xD31,  // 5.0.5 16048 removed in commit c041875
     SMSG_TRAINER_LIST                                 = 0xC65,  // 5.0.5 16048
     SMSG_TRAINER_SERVICE                              = 0xD31,  // 5.0.5 16048
     SMSG_TRANSFER_ABORTED                             = 0x889,  // 5.0.5 16048
@@ -1341,7 +1332,7 @@ enum Opcodes
     SMSG_UPDATE_SERVER_PLAYER_POSITION                = 0,      // 0x74A3  in 4.3.4 @todo find me 
     SMSG_UPDATE_TALENT_DATA                           = 0xCEC,  // 5.0.5 16048
     SMSG_UPDATE_WORLD_STATE                           = 0x847,  // 5.0.5 16048
-    SMSG_USERLIST_ADD                                 = 0x95A,  // 5.0.5 16048
+    //SMSG_USERLIST_ADD                                 = 0x95A,  // 5.0.5 16048
     SMSG_USERLIST_REMOVE                              = 0xD6E,  // 5.0.5 16048
     SMSG_USERLIST_UPDATE                              = 0x95A,  // 5.0.5 16048
     SMSG_VOICESESSION_FULL                            = 0xCA6,  // 5.0.5 16048
@@ -1364,7 +1355,7 @@ enum Opcodes
     SMSG_WEEKLY_LAST_RESET                            = 0xB2D,  // 5.0.5 16048
     SMSG_WEEKLY_RESET_CURRENCY                        = 0xEBB,  // 5.0.5 16048
     SMSG_WEEKLY_SPELL_USAGE                           = 0xB6D,  // 5.0.5 16048 //unused
-    SMSG_WEEKLY_SPELL_USAGE_UPDATE                    = 0xB6D,  // 5.0.5 16048 //unused
+    SMSG_WEEKLY_SPELL_USAGE_UPDATE                    = 0,      //
     SMSG_WHO                                          = 0x933,  // 5.0.5 16048
     SMSG_WHOIS                                        = 0x943,  // 5.0.5 16048
     SMSG_WORLD_SERVER_INFO                            = 0xA6D,  // 5.0.5 16048
