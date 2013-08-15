@@ -1597,26 +1597,23 @@ class Player : public Unit, public GridObject<Player>
         void SetResearchPointCount(uint32 id, uint32 count)
         {
             PlayerArchaelogyMap::iterator itr = m_archaelogies.find(id);
-            if(itr != m_archaelogies.end())
+            if (itr == m_archaelogies.end())
+                return;
+
+            itr->second.count = count;
+            if(count <= 0)
             {
-                itr->second.count = count;
-                if(count <= 0)
-                {
-                    m_archaelogies.erase(itr);
-                    for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
+                m_archaelogies.erase(itr);
+                for (uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
+                    if (GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, i ) == id)
                     {
-                        uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
-                        if(site_now == id)
-                        {
-                            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites, id );
-                            break;
-                        }
+                        SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, i, 0);
+                        break;
                     }
 
-                    CharacterDatabase.PExecute("DELETE FROM character_archaelogy WHERE pointId = '%u' and guid = '%u'", id, GetGUIDLow());
-                    AddDigestOrProject(GetMapId(), id, m_notactivedigestzones);
-                    DelDigestOrProject(GetMapId(), id, m_activedigestzones);
-                }
+                CharacterDatabase.PExecute("DELETE FROM character_archaelogy WHERE pointId = '%u' and guid = '%u'", id, GetGUIDLow());
+                AddDigestOrProject(GetMapId(), id, m_notactivedigestzones);
+                DelDigestOrProject(GetMapId(), id, m_activedigestzones);
             }
         }
         void AddProjecthistoryCount(uint32 id)

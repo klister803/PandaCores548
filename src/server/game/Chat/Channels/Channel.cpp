@@ -1069,9 +1069,9 @@ void Channel::JoinNotify(uint64 guid)
 {
     WorldPacket data;
 
-    if (IsConstant())
-        data.Initialize(SMSG_USERLIST_ADD, 8+1+1+4+GetName().size()+1);
-    else
+    //if (IsConstant())
+    //    data.Initialize(SMSG_USERLIST_ADD, 8+1+1+4+GetName().size()+1);
+    //else
         data.Initialize(SMSG_USERLIST_UPDATE, 8+1+1+4+GetName().size()+1);
 
     data << uint64(guid);

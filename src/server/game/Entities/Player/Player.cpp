@@ -28098,8 +28098,8 @@ void Player::_LoadArchaelogy(PreparedQueryResult result)
     //         0   1           2          4            5
     // "SELECT pointId, count, active, resetTime FROM character_archaelogy WHERE guid = '%u'"
 
-    for (uint32 site_id = 0; site_id < MAX_RESEARCH_SITES; ++site_id)
-        SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, site_id, 0);
+    for (uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
+        SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i, 0);
 
     if (result)
     {
@@ -28263,19 +28263,17 @@ void Player::GenerateResearchDigSites(uint32 max)
             //check if we have this site atm
             uint32 sRSid = rs->ID;
             uint32 free_spot = 0;
-            for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
+            for(uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
             {
-                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
-                if( site_now == sRSid)
-                    break;
-                if(site_now == 0)
+                uint32 site_now = GetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i);
+                if (site_now == sRSid || site_now == 0)
                 {
-                    free_spot = sites;
+                    free_spot = i;
                     break;
                 }
             }
 
-            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid );
+            SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid);
 
             sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
 
@@ -28294,7 +28292,6 @@ void Player::GenerateResearchDigSites(uint32 max)
         while (max > 0)
         {
             uint32 sRSid = 0;
-            bool lastcheck = false;
             if(!templist.empty())
             {
                 uint32 index = urand(0, templist.size() - 1);
@@ -28311,19 +28308,26 @@ void Player::GenerateResearchDigSites(uint32 max)
             //check if we have this site atm
             sRSid = rs->ID;
             uint32 free_spot = 0;
-            for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
+            bool needContinue = false;
+            for(uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
             {
-                uint32 site_now = GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, sites );
+                uint32 site_now = GetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i);
                 if( site_now == sRSid)
-                    break;
-                if(site_now == 0)
                 {
-                    free_spot = sites;
+                    needContinue = true;
+                    break;
+                }
+                if (site_now == 0)
+                {
+                    free_spot = i;
                     break;
                 }
             }
 
-            SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid );
+            if (needContinue)
+                continue;
+
+            SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid);
 
             sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
 
