@@ -1054,7 +1054,6 @@ enum EPlayerFields
     PLAYER_GLYPHS_ENABLED                            = UNIT_END + 0x706,
     PLAYER_PET_SPELL_POWER                           = UNIT_END + 0x707,
     PLAYER_FIELD_RESEARCHING_1                       = UNIT_END + 0x708,
-    PLAYER_FIELD_RESERACH_SITE_1                     = UNIT_END + 0x709,
     PLAYER_PROFESSION_SKILL_LINE_1                   = UNIT_END + 0x710,
     PLAYER_FIELD_UI_HIT_MODIFIER                     = UNIT_END + 0x712,
     PLAYER_FIELD_UI_SPELL_HIT_MODIFIER               = UNIT_END + 0x713,
@@ -1069,7 +1068,7 @@ enum EPlayerFields
 
 enum EPlayerDynamicFields
 {
-    PLAYER_DYNAMIC_RESEARCH_SITES                    = 0x0,
+    PLAYER_DYNAMIC_RESEARCH_SITES                    = 0x1,
     PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = 0x2,
     PLAYER_DYNAMIC_END                               = 0x4
 };
