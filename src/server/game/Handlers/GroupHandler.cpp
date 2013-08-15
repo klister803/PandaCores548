@@ -736,11 +736,14 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_RANDOM_ROLL");
-
     uint32 minimum, maximum, roll;
+    uint8 unk;
     recvData >> maximum;
     recvData >> minimum;
+    recvData >> unk;
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_RANDOM_ROLL min: %u max: %u unk: %u",
+        minimum, maximum, unk);
 
     /** error handling **/
     if (minimum > maximum || maximum > 10000)                // < 32768 for urand call
