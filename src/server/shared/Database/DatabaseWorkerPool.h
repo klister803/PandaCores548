@@ -463,6 +463,11 @@ class DatabaseWorkerPool
                 Enqueue(new PingOperation);
         }
 
+        char const* GetDatabaseName() const
+        {
+            return _connectionInfo.database.c_str();
+        }
+
     private:
         unsigned long EscapeString(char *to, const char *from, unsigned long length)
         {
@@ -494,11 +499,6 @@ class DatabaseWorkerPool
 
             //! This will be called when Celine Dion learns to sing
             return NULL;
-        }
-
-        char const* GetDatabaseName() const
-        {
-            return _connectionInfo.database.c_str();
         }
 
     private:

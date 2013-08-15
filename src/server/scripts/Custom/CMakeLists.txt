@@ -13,6 +13,7 @@ set(scripts_STAT_SRCS
 	Custom/event_april.cpp
 	Custom/Loskutik.cpp
 	Custom/midsummer_fire_festival.cpp
+	Custom/multi_vendor.cpp
 	Custom/rbg.cpp
 )
 
