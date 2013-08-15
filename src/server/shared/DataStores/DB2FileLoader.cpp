@@ -231,7 +231,7 @@ uint32 DB2FileLoader::GetFormatStringsFields(const char * format)
     return stringfields;
 }
 
-char* DB2FileLoader::AutoProduceData(const char* format, uint32& records, char**& indexTable)
+char* DB2FileLoader::AutoProduceData(const char* format, uint32& records, char**& indexTable, uint32 sqlRecordCount, uint32 sqlHighestIndex, char*& sqlDataTable)
 {
 
     typedef char * ptr;
@@ -253,6 +253,10 @@ char* DB2FileLoader::AutoProduceData(const char* format, uint32& records, char**
                 maxi = ind;
         }
 
+        // If higher index avalible from sql - use it instead of dbcs
+        if (sqlHighestIndex > maxi)
+            maxi = sqlHighestIndex;
+
         ++maxi;
         records = maxi;
         indexTable = new ptr[maxi];
@@ -260,11 +264,11 @@ char* DB2FileLoader::AutoProduceData(const char* format, uint32& records, char**
     }
     else
     {
-        records = recordCount;
-        indexTable = new ptr[recordCount];
+        records = recordCount + sqlRecordCount;
+        indexTable = new ptr[recordCount + sqlRecordCount];
     }
 
-    char* dataTable = new char[recordCount * recordsize];
+    char* dataTable = new char[(recordCount + sqlRecordCount) * recordsize];
 
     uint32 offset=0;
 
@@ -301,6 +305,8 @@ char* DB2FileLoader::AutoProduceData(const char* format, uint32& records, char**
             }
         }
     }
+
+    sqlDataTable = dataTable + offset;
 
     return dataTable;
 }

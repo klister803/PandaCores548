@@ -948,8 +948,6 @@ class ObjectMgr
 
         void LoadPhaseDefinitions();
         void LoadSpellPhaseInfo();
-    
-        void LoadItemExtendedCost();
 
         PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
         SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }

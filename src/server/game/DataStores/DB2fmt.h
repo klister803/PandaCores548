@@ -24,5 +24,7 @@ const char ItemSparsefmt[]="niiiiffiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
 const char ItemExtendedCostEntryfmt[]="nxxiiiiiiiiiiiixiiiiiiiiiixxixx";
 const char BattlePetSpeciesEntryfmt[]="inxxxxxxx";
 const char QuestPackageItemfmt[]="iiiix";
+const std::string CustomItemExtendedCostEntryfmt="paappppppppppppappppppppppaapaa";
+const std::string CustomItemExtendedCostEntryIndex = "ID";
 
 #endif

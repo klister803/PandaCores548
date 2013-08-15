@@ -28,6 +28,45 @@
 
 #include <vector>
 
+struct SqlDb2
+{
+    const std::string * formatString;
+    const std::string * indexName;
+    std::string sqlTableName;
+    int32 indexPos;
+    int32 sqlIndexPos;
+    SqlDb2(const std::string * _filename, const std::string * _format, const std::string * _idname, const char * fmt)
+        :formatString(_format), indexName (_idname), sqlIndexPos(0)
+    {
+        // Convert dbc file name to sql table name
+        sqlTableName = *_filename;
+        for (uint32 i = 0; i< sqlTableName.size(); ++i)
+        {
+            if (isalpha(sqlTableName[i]))
+                sqlTableName[i] = char(tolower(sqlTableName[i]));
+            else if (sqlTableName[i] == '.')
+                sqlTableName[i] = '_';
+        }
+
+        // Get sql index position
+        DB2FileLoader::GetFormatRecordSize(fmt, &indexPos);
+        if (indexPos >= 0)
+        {
+            uint32 uindexPos = uint32(indexPos);
+            for (uint32 x = 0; x < formatString->size(); ++x)
+            {
+                // Count only fields present in sql
+                if ((*formatString)[x] == FT_SQL_PRESENT)
+                {
+                    if (x == uindexPos)
+                        break;
+                    ++sqlIndexPos;
+                }
+            }
+        }
+    }
+};
+
 template<class T>
 class DB2Storage
 {
@@ -65,25 +104,158 @@ public:
             indexTable[id] = entryDst;
         }
 
-    bool Load(char const* fn)
+    bool Load(char const* fn, SqlDb2 * sql)
     {
         DB2FileLoader db2;
         // Check if load was sucessful, only then continue
         if (!db2.Load(fn, fmt))
             return false;
 
+            uint32 sqlRecordCount = 0;
+            uint32 sqlHighestIndex = 0;
+            Field* fields = NULL;
+            QueryResult result = QueryResult(NULL);
+            // Load data from sql
+            if (sql)
+            {
+                std::string query = "SELECT * FROM " + sql->sqlTableName;
+                if (sql->indexPos >= 0)
+                    query +=" ORDER BY " + *sql->indexName + " DESC";
+                query += ';';
+
+
+                result = WorldDatabase.Query(query.c_str());
+                if (result)
+                {
+                    sqlRecordCount = uint32(result->GetRowCount());
+                    if (sql->indexPos >= 0)
+                    {
+                        fields = result->Fetch();
+                        sqlHighestIndex = fields[sql->sqlIndexPos].GetUInt32();
+                    }
+                    // Check if sql index pos is valid
+                    if (int32(result->GetFieldCount()-1) < sql->sqlIndexPos)
+                    {
+                        sLog->outError(LOG_FILTER_GENERAL, "Invalid index pos for dbc:'%s'", sql->sqlTableName.c_str());
+                        return false;
+                    }
+                }
+            }
+
+            char * sqlDataTable;
         fieldCount = db2.GetCols();
 
         // load raw non-string data
-        m_dataTable = (T*)db2.AutoProduceData(fmt, nCount, (char**&)indexTable);
+        m_dataTable = (T*)db2.AutoProduceData(fmt, nCount, (char**&)indexTable,
+                sqlRecordCount, sqlHighestIndex, sqlDataTable);
 
         // create string holders for loaded string fields
         m_stringPoolList.push_back(db2.AutoProduceStringsArrayHolders(fmt, (char*)m_dataTable));
 
-        // load strings from dbc data
+        // load strings from db2 data
         m_stringPoolList.push_back(db2.AutoProduceStrings(fmt, (char*)m_dataTable));
 
-        // error in dbc file at loading if NULL
+            // Insert sql data into arrays
+            if (result)
+            {
+                if (indexTable)
+                {
+                    uint32 offset = 0;
+                    uint32 rowIndex = db2.GetNumRows();
+                    do
+                    {
+                        if (!fields)
+                            fields = result->Fetch();
+
+                        if (sql->indexPos >= 0)
+                        {
+                            uint32 id = fields[sql->sqlIndexPos].GetUInt32();
+                            if (indexTable[id])
+                            {
+                                sLog->outError(LOG_FILTER_GENERAL, "Index %d already exists in db2:'%s'", id, sql->sqlTableName.c_str());
+                                return false;
+                            }
+                            indexTable[id]=(T*)&sqlDataTable[offset];
+                        }
+                        else
+                            indexTable[rowIndex]=(T*)&sqlDataTable[offset];
+                        uint32 columnNumber = 0;
+                        uint32 sqlColumnNumber = 0;
+
+                        for (; columnNumber < sql->formatString->size(); ++columnNumber)
+                        {
+                            if ((*sql->formatString)[columnNumber] == FT_SQL_ABSENT)
+                            {
+                                switch (fmt[columnNumber])
+                                {
+                                    case FT_FLOAT:
+                                        *((float*)(&sqlDataTable[offset]))= 0.0f;
+                                        offset+=4;
+                                        break;
+                                    case FT_IND:
+                                    case FT_INT:
+                                        *((uint32*)(&sqlDataTable[offset]))=uint32(0);
+                                        offset+=4;
+                                        break;
+                                    case FT_BYTE:
+                                        *((uint8*)(&sqlDataTable[offset]))=uint8(0);
+                                        offset+=1;
+                                        break;
+                                    case FT_STRING:
+                                        // Beginning of the pool - empty string
+                                        *((char**)(&sqlDataTable[offset]))=m_stringPoolList.back();
+                                        offset+=sizeof(char*);
+                                        break;
+                                }
+                            }
+                            else if ((*sql->formatString)[columnNumber] == FT_SQL_PRESENT)
+                            {
+                                bool validSqlColumn = true;
+                                switch (fmt[columnNumber])
+                                {
+                                    case FT_FLOAT:
+                                        *((float*)(&sqlDataTable[offset]))=fields[sqlColumnNumber].GetFloat();
+                                        offset+=4;
+                                        break;
+                                    case FT_IND:
+                                    case FT_INT:
+                                        *((uint32*)(&sqlDataTable[offset]))=fields[sqlColumnNumber].GetUInt32();
+                                        offset+=4;
+                                        break;
+                                    case FT_BYTE:
+                                        *((uint8*)(&sqlDataTable[offset]))=fields[sqlColumnNumber].GetUInt8();
+                                        offset+=1;
+                                        break;
+                                    case FT_STRING:
+                                        sLog->outError(LOG_FILTER_GENERAL, "Unsupported data type in table '%s' at char %d", sql->sqlTableName.c_str(), columnNumber);
+                                        return false;
+                                    case FT_SORT:
+                                        break;
+                                    default:
+                                        validSqlColumn = false;
+                                }
+                                if (validSqlColumn && (columnNumber != (sql->formatString->size()-1)))
+                                    sqlColumnNumber++;
+                            }
+                            else
+                            {
+                                sLog->outError(LOG_FILTER_GENERAL, "Incorrect sql format string '%s' at char %d", sql->sqlTableName.c_str(), columnNumber);
+                                return false;
+                            }
+                        }
+                        if (sqlColumnNumber != (result->GetFieldCount()-1))
+                        {
+                            sLog->outError(LOG_FILTER_GENERAL, "SQL and db2 format strings are not matching for table: '%s'", sql->sqlTableName.c_str());
+                            return false;
+                        }
+
+                        fields = NULL;
+                        ++rowIndex;
+                    }while (result->NextRow());
+                }
+            }
+
+        // error in db2 file at loading if NULL
         return indexTable!=NULL;
     }
 
