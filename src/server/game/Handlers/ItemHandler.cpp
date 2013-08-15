@@ -863,15 +863,6 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
             itemsData << uint32(itemTemplate->MaxDurability);
             // if (!unk "enabler") data << uint32(something);
-            if (vendorItem->ExtendedCost != 0)
-            {
-                //Hack for donate
-                if(vendorItem->ExtendedCost > 4999)
-                {
-                    if(ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(vendorItem->ExtendedCost))
-                        price = uint32(iece->RequiredItemCount[0] * 10000 * sWorld->getRate(RATE_DONATE));
-                }
-            }
             itemsData << uint32(price);
             itemsData << uint32(vendorItem->Type);     // 1 is items, 2 is currency
             itemsData << uint32(itemTemplate->BuyCount);
