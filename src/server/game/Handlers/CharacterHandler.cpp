@@ -1047,10 +1047,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     SendPacket(&data);
     
     // Send item extended costs hotfix
-    std::set<uint32> extendedCostHotFix = sObjectMgr->GetOverwriteExtendedCosts();
-    for (auto itr : extendedCostHotFix)
+    for (uint32 i = 4999; i < sItemExtendedCostStore.GetNumRows(); ++i)
     {
-        const ItemExtendedCostEntry* extendedCost = sItemExtendedCostStore.LookupEntry(itr);
+        const ItemExtendedCostEntry* extendedCost = sItemExtendedCostStore.LookupEntry(i);
         
         if (!extendedCost)
             continue;
