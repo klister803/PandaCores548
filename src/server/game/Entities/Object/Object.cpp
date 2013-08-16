@@ -323,7 +323,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     data->WriteBit(flags & UPDATEFLAG_GO_TRANSPORT_POSITION);
     data->WriteBit(flags & UPDATEFLAG_STATIONARY_POSITION);
     data->WriteBits(bitCounter2, 21);				//BitCounter2
-    data->WriteBit(0);								//HasUnknown
+    data->WriteBit(flags & UPDATEFLAG_TRANSPORT);
     data->WriteBit(0);								//HasUnknown3
     data->WriteBit(flags & UPDATEFLAG_SELF);		//isSelf						
     data->WriteBit(flags & UPDATEFLAG_LIVING);		//isAlive
@@ -583,6 +583,9 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteByteSeq(victimGuid[0]);
         data->WriteByteSeq(victimGuid[2]);
     }
+
+    if (flags & UPDATEFLAG_TRANSPORT)
+        *data << uint32(getMSTime());
 
     if (flags & UPDATEFLAG_ROTATION)
         *data << uint64(ToGameObject()->GetRotation());

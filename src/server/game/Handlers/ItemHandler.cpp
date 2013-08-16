@@ -332,6 +332,7 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
         data << uint32(time(NULL)); // hotfix date
         data << uint32(DB2_REPLY_SPARSE);
         data << uint32(-1);         // entry
+        data << uint32(0);  // unk 5.0.5
         return;
     }
 
@@ -447,10 +448,11 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
 
     data << uint32(buff.size());
     data.append(buff);
-    
+
     data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_SPARSE));
     data << uint32(DB2_REPLY_SPARSE);
     data << uint32(entry);
+    data << uint32(0);  // unk 5.0.5
 
     SendPacket(&data);
 }
