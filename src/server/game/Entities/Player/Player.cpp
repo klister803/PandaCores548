@@ -2590,14 +2590,22 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
 
+            if (m_transport && GUID_HIPART(m_transport->GetGUID()) == HIGHGUID_MO_TRANSPORT)
+            {
+                final_x = m_movementInfo.t_pos.GetPositionX();
+                final_y = m_movementInfo.t_pos.GetPositionY();
+                final_z = m_movementInfo.t_pos.GetPositionZ();
+                final_o = m_movementInfo.t_pos.GetOrientation();
+            }
+
             if (!GetSession()->PlayerLogout())
             {
                 WorldPacket data(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
-                data << float(m_teleport_dest.GetOrientation());
-                data << float(m_teleport_dest.GetPositionX());
-                data << float(m_teleport_dest.GetPositionY());
+                data << float(final_z);
+                data << float(final_y);
+                data << float(final_o);
                 data << uint32(mapid);
-                data << float(m_teleport_dest.GetPositionZ());
+                data << float(final_x);
 
                 GetSession()->SendPacket(&data);
                 SendSavedInstances();
