@@ -2556,13 +2556,16 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 {
                     data.WriteBit(0);       // unknown
                     data.WriteBit(1);   // has transport
+                    data.FlushBits();
                     data  << m_transport->GetEntry() << GetMapId();
                 }
                 else
                 {
                     data.WriteBit(0);       // unknown
                     data.WriteBit(0);   // has transport
+                    data.FlushBits();
                 }
+
                 data << uint32(mapid);
                 GetSession()->SendPacket(&data);
             }
@@ -2577,7 +2580,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             float final_z = z;
             float final_o = orientation;
 
-            if (m_transport)
+            if (m_movementInfo.t_guid)
             {
                 final_x += m_movementInfo.t_pos.GetPositionX();
                 final_y += m_movementInfo.t_pos.GetPositionY();
