@@ -1091,6 +1091,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         SendPacket(&data);
         
     }
+    SendItemSparseDb2Reply(38186);
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 
