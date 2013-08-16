@@ -850,6 +850,8 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
     {
         sLog->OutPandashan("Player kicked due to flood of CMSG_PLAYER_LOGIN");
         KickPlayer();
+        recvData.rfinish();
+        return;
     }
     
     if (PlayerLoading() || GetPlayer() != NULL)
@@ -860,16 +862,18 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 
     m_playerLoading = true;
     ObjectGuid playerGuid;
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd Player Logon Message");
+    float unk;
 
     uint8 bitOrder[8] = {3, 5, 7, 0, 6, 2, 1, 4};
     recvData.ReadBitInOrder(playerGuid, bitOrder);
 
     uint8 byteOrder[8] = {1, 0, 3, 2, 4, 7, 5, 6};
     recvData.ReadBytesSeq(playerGuid, byteOrder);
+    recvData >> unk;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "Character (Guid: %u) logging in", GUID_LOPART(playerGuid));
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd Player Logon Message");
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "Character (Guid: %u) logging in, unk float: %f", GUID_LOPART(playerGuid), unk);
 
     if (!CharCanLogin(GUID_LOPART(playerGuid)))
     {
