@@ -292,7 +292,7 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket & recvData)
 void WorldSession::SendItemeExtendedCostDb2Reply(uint32 entry)
 {
     WorldPacket data(SMSG_DB_REPLY);
-    const ItemExtendedCostEntry* extendedCost = sItemExtendedCostStore.LookupEntry(i);
+    const ItemExtendedCostEntry* extendedCost = sItemExtendedCostStore.LookupEntry(entry);
     if (!extendedCost)
     {
         data << uint32(0);          // size of next block
