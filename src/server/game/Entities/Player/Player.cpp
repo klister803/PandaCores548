@@ -24024,6 +24024,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetSession()->SendPacket(&data);
 
     SendDeathRuneUpdate();
+    GetSession()->SendStablePet(0);
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()

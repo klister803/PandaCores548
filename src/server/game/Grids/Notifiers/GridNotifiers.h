@@ -1527,6 +1527,37 @@ namespace Trinity
             Player* _plr;
     };
 
+    class FriendlyStableMasterCheck
+    {
+        public:
+            FriendlyStableMasterCheck(Player* plr) : _plr(plr) {}
+            bool operator()(Creature* u)
+            {
+                if (!_plr->IsInWorld())
+                    return false;
+
+                if (_plr->isInFlight())
+                    return false;
+
+                if (!u->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_STABLEMASTER))
+                    return false;
+
+                if (u->GetCharmerGUID())
+                    return false;
+
+                if (u->IsHostileTo(_plr))
+                    return false;
+
+                if (!u->IsWithinDistInMap(_plr, INTERACTION_DISTANCE))
+                    return false;
+
+                return true;
+            }
+
+        private:
+            Player* _plr;
+    };
+
     // Player checks and do
 
     // Prepare using Builder localized packets with caching and send to player
