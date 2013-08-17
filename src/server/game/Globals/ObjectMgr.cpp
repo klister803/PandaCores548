@@ -2635,7 +2635,6 @@ void ObjectMgr::LoadItemTemplates()
             itemTemplate.MinMoneyLoot              = 0;
             itemTemplate.MaxMoneyLoot              = 0;
             ++dbCount;
-            sLog->outInfo(LOG_FILTER_SERVER_LOADING, "itemTemplate.ItemId %u, itemTemplate.Stackable %u", itemTemplate.ItemId, itemTemplate.Stackable);
         } while (result->NextRow());
     }
 
