@@ -1045,53 +1045,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         data << uint32(hotfix[i].Entry);
     }
     SendPacket(&data);
-    
-    // Send item extended costs hotfix
-    for (uint32 i = 4999; i < sItemExtendedCostStore.GetNumRows(); ++i)
-    {
-        const ItemExtendedCostEntry* extendedCost = sItemExtendedCostStore.LookupEntry(i);
-        
-        if (!extendedCost)
-            continue;
-        
-        WorldPacket data(SMSG_DB_REPLY);
-        ByteBuffer buff;
-        
-        buff << uint32(extendedCost->ID);
-        buff << uint32(0); // reqhonorpoints
-        buff << uint32(0); // reqarenapoints
-        buff << uint32(extendedCost->RequiredArenaSlot);
-        
-        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; i++)
-            buff << uint32(extendedCost->RequiredItem[i]);
-        
-        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; i++)
-            buff << uint32(extendedCost->RequiredItemCount[i]);
-        
-        buff << uint32(extendedCost->RequiredPersonalArenaRating);
-        buff << uint32(0); // ItemPurchaseGroup
-        
-        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
-            buff << uint32(extendedCost->RequiredCurrency[i]);
-        
-        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
-            buff << uint32(extendedCost->RequiredCurrencyCount[i]);
-        
-        // Unk
-        for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
-            buff << uint32(0);
-        
-        data << uint32(buff.size());
-        data.append(buff);
-        
-        data << uint32(sObjectMgr->GetHotfixDate(extendedCost->ID, DB2_REPLY_ITEM_EXTENDED_COST));
-        data << uint32(DB2_REPLY_ITEM_EXTENDED_COST);
-        data << uint32(extendedCost->ID);
-        
-        SendPacket(&data);
-        
-    }
-    SendItemSparseDb2Reply(38186);
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 

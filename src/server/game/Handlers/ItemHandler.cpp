@@ -289,6 +289,55 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket & recvData)
         _player->DestroyItem(bag, slot, true);
 }
 
+void WorldSession::SendItemeExtendedCostDb2Reply(uint32 entry)
+{
+    WorldPacket data(SMSG_DB_REPLY);
+    const ItemExtendedCostEntry* extendedCost = sItemExtendedCostStore.LookupEntry(i);
+    if (!extendedCost)
+    {
+        data << uint32(0);          // size of next block
+        data << uint32(time(NULL)); // hotfix date
+        data << uint32(DB2_REPLY_ITEM);
+        data << uint32(-1);         // entry
+        return;
+    }
+
+    ByteBuffer buff;
+
+    buff << uint32(extendedCost->ID);
+    buff << uint32(0); // reqhonorpoints
+    buff << uint32(0); // reqarenapoints
+    buff << uint32(extendedCost->RequiredArenaSlot);
+
+    for (uint32 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; i++)
+        buff << uint32(extendedCost->RequiredItem[i]);
+
+    for (uint32 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; i++)
+        buff << uint32(extendedCost->RequiredItemCount[i]);
+
+    buff << uint32(extendedCost->RequiredPersonalArenaRating);
+    buff << uint32(0); // ItemPurchaseGroup
+
+    for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
+        buff << uint32(extendedCost->RequiredCurrency[i]);
+
+    for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
+        buff << uint32(extendedCost->RequiredCurrencyCount[i]);
+
+    // Unk
+    for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
+        buff << uint32(0);
+
+    data << uint32(buff.size());
+    data.append(buff);
+
+    data << uint32(sObjectMgr->GetHotfixDate(extendedCost->ID, DB2_REPLY_ITEM_EXTENDED_COST));
+    data << uint32(DB2_REPLY_ITEM_EXTENDED_COST);
+    data << uint32(extendedCost->ID);
+
+    SendPacket(&data);
+}
+
 void WorldSession::SendItemDb2Reply(uint32 entry)
 {
     WorldPacket data(SMSG_DB_REPLY, 44);

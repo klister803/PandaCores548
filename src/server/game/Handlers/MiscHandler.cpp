@@ -2078,6 +2078,10 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
             printf("DB2_REPLY_BROADCAST_TEXT : %u\n", entry);
             SendBroadcastTextDb2Reply(entry);
             break;
+        case DB2_REPLY_ITEM_EXTENDED_COST:
+            printf("DB2_REPLY_ITEM_EXTENDED_COST : %u\n", entry);
+            SendItemeExtendedCostDb2Reply(entry);
+            break;
         default:
             sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
             recvPacket.rfinish();

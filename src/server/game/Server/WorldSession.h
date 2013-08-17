@@ -695,6 +695,7 @@ class WorldSession
         void HandleAutoEquipItemOpcode(WorldPacket& recvPacket);
         void SendItemDb2Reply(uint32 entry);
         void SendItemSparseDb2Reply(uint32 entry);
+        void SendItemeExtendedCostDb2Reply(uint32 entry);
         void SendBroadcastTextDb2Reply(uint32 entry);
         void HandleSellItemOpcode(WorldPacket& recvPacket);
         void HandleBuyItemInSlotOpcode(WorldPacket& recvPacket);
