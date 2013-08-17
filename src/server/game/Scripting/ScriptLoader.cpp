@@ -30,6 +30,7 @@ void AddSC_event_april();
 void AddSC_Loskutik();
 void AddSC_midsummer_fire_festival();
 void AddSC_rbg_commandscript();
+void AddSC_multi_vendor();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -1595,5 +1596,6 @@ void AddCustomScripts()
     AddSC_Loskutik();
     AddSC_midsummer_fire_festival();
     AddSC_rbg_commandscript();
+    AddSC_multi_vendor();
 #endif
 }
