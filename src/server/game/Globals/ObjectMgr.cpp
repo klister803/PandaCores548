@@ -2523,7 +2523,7 @@ void ObjectMgr::LoadItemTemplates()
             Field* fields = result->Fetch();
             uint32 itemId = fields[0].GetUInt32();
             if (_itemTemplateStore.find(itemId) != _itemTemplateStore.end())
-                continue;
+                --sparseCount;
 
             ItemTemplate& itemTemplate = _itemTemplateStore[itemId];
 
