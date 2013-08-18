@@ -236,6 +236,10 @@ public:
             cell.GridX(), cell.GridY(), cell.CellX(), cell.CellY(), object->GetInstanceId(),
             zoneX, zoneY, groundZ, floorZ, haveMap, haveVMap);
 
+        if (object->m_movementInfo.t_guid)
+            handler->PSendSysMessage("Transport position X: %f Y: %f Z: %f O: %f", object->m_movementInfo.t_pos.GetPositionX(), object->m_movementInfo.t_pos.GetPositionY(),
+            object->m_movementInfo.t_pos.GetPositionZ(), object->m_movementInfo.t_pos.GetOrientation());
+
         LiquidData liquidStatus;
         ZLiquidStatus status = map->getLiquidStatus(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
 
