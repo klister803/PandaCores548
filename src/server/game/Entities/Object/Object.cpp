@@ -480,11 +480,11 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             data->WriteByteSeq(transGuid[7]);
             data->WriteByteSeq(transGuid[3]);
             data->WriteByteSeq(transGuid[6]);
-            *data << float(self->GetTransOffsetZ());
+            *data << float(self->GetTransOffsetO());
             *data << uint32(self->GetTransTime());
             data->WriteByteSeq(transGuid[2]);
             data->WriteByteSeq(transGuid[1]);
-            *data << float(self->GetTransOffsetO());
+            *data << float(self->GetTransOffsetZ());
             data->WriteByteSeq(transGuid[5]);
         }
 
