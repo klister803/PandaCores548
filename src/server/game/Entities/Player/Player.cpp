@@ -2463,7 +2463,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             GetPosition(&oldPos);
             Relocate(x, y, z, orientation);
             SendTeleportPacket(oldPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
-            UpdateObjectVisibility();
         }
     }
     else
@@ -2581,11 +2580,11 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             float final_z = z;
             float final_o = orientation;
 
-            if (m_transport)
+            if (m_movementInfo.t_guid)
             {
                 final_x += m_movementInfo.t_pos.GetPositionX();
                 final_y += m_movementInfo.t_pos.GetPositionY();
-                final_z += m_movementInfo.t_pos.GetPositionZ() + 10.0f;
+                final_z += m_movementInfo.t_pos.GetPositionZ();
                 final_o += m_movementInfo.t_pos.GetOrientation();
             }
 
@@ -2598,18 +2597,18 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             {
                 final_x = m_movementInfo.t_pos.GetPositionX();
                 final_y = m_movementInfo.t_pos.GetPositionY();
-                final_z = m_movementInfo.t_pos.GetPositionZ() + 10.0f;
+                final_z = m_movementInfo.t_pos.GetPositionZ();
                 final_o = m_movementInfo.t_pos.GetOrientation();
             }
 
             if (!GetSession()->PlayerLogout())
             {
                 WorldPacket data(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
-                data << float(m_teleport_dest.GetOrientation());
-                data << float(m_teleport_dest.GetPositionX());
-                data << float(m_teleport_dest.GetPositionY());
+                data << float(final_z);
+                data << float(final_y);
+                data << float(final_o);
                 data << uint32(mapid);
-                data << float(m_teleport_dest.GetPositionZ());
+                data << float(final_x);
 
                 GetSession()->SendPacket(&data);
                 SendSavedInstances();
@@ -2618,7 +2617,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // move packet sent by client always after far teleport
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
             SetSemaphoreTeleportFar(true);
-            DisableSpline();
         }
         //else
         //    return false;
