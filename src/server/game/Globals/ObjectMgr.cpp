@@ -1590,7 +1590,7 @@ void ObjectMgr::LoadCreatures()
 
             if (MapManager::IsValidMapCoord(mapId, x, y))
             {
-                Map const* map = sMapMgr->CreateBaseMap(mapId);
+                Map* map = sMapMgr->CreateBaseMap(mapId);
                 float z = map->GetVmapHeight(x, y, MAX_HEIGHT);
                 WorldDatabase.PExecute("REPLACE INTO `creature_spawn_coord` SET `id`='%u', `map`='%u',`zoneId`='%u',`position_x`='%f',`position_y`='%f', `position_z`='%f';", entry, mapId, zoneId, x, y, z);
                 WorldDatabase.PExecute("DELETE FROM creature_spawn WHERE `entry` = '%u' AND `zone` = '%u' AND `grid_x` = '%f' AND `grid_y`='%f';", entry, zoneId, grid_x, grid_y);

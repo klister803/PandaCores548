@@ -1633,6 +1633,25 @@ bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, in
     return false;
 }
 
+float Map::GetVmapHeight(float x, float y, float z) const
+{
+    float mapHeight;
+
+    mapHeight = GetHeight(x, y, z, false);
+    if (fabs(mapHeight - z) < 0.1)
+        return mapHeight;
+
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+    if (!vmgr->isLineOfSightCalcEnabled())
+        return mapHeight;
+
+    float vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, z + 2.0f - mapHeight);
+    if (vmapHeight > VMAP_INVALID_HEIGHT_VALUE)
+        return vmapHeight;
+
+    return mapHeight;
+}
+
 uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
 {
     uint32 mogpFlags;
