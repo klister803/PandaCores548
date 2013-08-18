@@ -1579,17 +1579,20 @@ void ObjectMgr::LoadCreatures()
             Field* fields = result->Fetch();
             uint32 entry       = fields[0].GetUInt32();
             uint32 zoneId      = fields[1].GetUInt32();
-            float x       = fields[2].GetFloat();
-            float y       = fields[3].GetFloat();
-            // center of grid
-            //float x = (grid_x - CENTER_GRID_ID + 0.5f) * SIZE_OF_GRIDS;
-            //float y = (grid_y - CENTER_GRID_ID + 0.5f) * SIZE_OF_GRIDS;
+            float x            = fields[2].GetFloat();
+            float y            = fields[3].GetFloat();
 
             AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(zoneId);
+            if(!areaEntry)
+                continue;
             AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
+            if(!zoneEntry)
+                continue;
 
             Map const* map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
             Zone2MapCoordinates(x, y, zoneEntry->ID);
+            if(!map)
+                continue;
 
             float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
 
