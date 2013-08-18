@@ -2580,7 +2580,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             float final_z = z;
             float final_o = orientation;
 
-            if (m_movementInfo.t_guid)
+            if (m_transport)
             {
                 final_x += m_movementInfo.t_pos.GetPositionX();
                 final_y += m_movementInfo.t_pos.GetPositionY();
@@ -2595,10 +2595,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             if (m_transport && GUID_HIPART(m_transport->GetGUID()) == HIGHGUID_MO_TRANSPORT)
             {
-                final_x = m_movementInfo.t_pos.GetPositionX();
-                final_y = m_movementInfo.t_pos.GetPositionY();
-                final_z = m_movementInfo.t_pos.GetPositionZ();
-                final_o = m_movementInfo.t_pos.GetOrientation();
+                final_x = m_teleport_dest.GetPositionX();
+                final_y = m_teleport_dest.GetPositionY();
+                final_z = m_teleport_dest.GetPositionZ();
+                final_o = m_teleport_dest.GetOrientation();
             }
 
             if (!GetSession()->PlayerLogout())
