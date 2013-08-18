@@ -988,6 +988,14 @@ uint32 GetVirtualMapForMapAndZone(uint32 mapid, uint32 zoneId)
     return mapid;
 }
 
+int32 GetMapFromZone(uint32 zoneId)
+{
+    if (WorldMapAreaEntry const* wma = sWorldMapAreaStore.LookupEntry(zoneId))
+        return wma->virtual_map_id >= 0 ? wma->virtual_map_id : wma->map_id;
+
+    return -1;
+}
+
 uint32 GetMaxLevelForExpansion(uint32 expansion)
 {
     switch (expansion)
