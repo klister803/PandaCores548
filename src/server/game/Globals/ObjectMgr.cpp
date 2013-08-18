@@ -1579,22 +1579,23 @@ void ObjectMgr::LoadCreatures()
             Field* fields = result->Fetch();
             uint32 entry       = fields[0].GetUInt32();
             uint32 zoneId      = fields[1].GetUInt32();
-            float grid_x       = fields[2].GetFloat();
-            float grid_y       = fields[3].GetFloat();
+            float x       = fields[2].GetFloat();
+            float y       = fields[3].GetFloat();
             // center of grid
-            float x = (grid_x - CENTER_GRID_ID + 0.5f) * SIZE_OF_GRIDS;
-            float y = (grid_y - CENTER_GRID_ID + 0.5f) * SIZE_OF_GRIDS;
-            uint32 mapId = GetMapFromZone(zoneId);
-            if(mapId < 0)
-                continue;
+            //float x = (grid_x - CENTER_GRID_ID + 0.5f) * SIZE_OF_GRIDS;
+            //float y = (grid_y - CENTER_GRID_ID + 0.5f) * SIZE_OF_GRIDS;
 
-            if (MapManager::IsValidMapCoord(mapId, x, y))
-            {
-                Map* map = sMapMgr->CreateBaseMap(mapId);
-                float z = map->GetVmapHeight(x, y, MAX_HEIGHT);
-                WorldDatabase.PExecute("REPLACE INTO `creature_spawn_coord` SET `id`='%u', `map`='%u',`zoneId`='%u',`position_x`='%f',`position_y`='%f', `position_z`='%f';", entry, mapId, zoneId, x, y, z);
-                WorldDatabase.PExecute("DELETE FROM creature_spawn WHERE `entry` = '%u' AND `zone` = '%u' AND `grid_x` = '%f' AND `grid_y`='%f';", entry, zoneId, grid_x, grid_y);
-            }
+            AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(zoneId);
+            AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
+
+            Map const* map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
+            Zone2MapCoordinates(x, y, zoneEntry->ID);
+
+            float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
+
+            WorldDatabase.PExecute("REPLACE INTO `creature_spawn_coord` SET `id`='%u', `map`='%u',`zoneId`='%u',`position_x`='%f',`position_y`='%f', `position_z`='%f';", entry, zoneEntry->mapid, zoneId, x, y, z);
+            //WorldDatabase.PExecute("DELETE FROM creature_spawn WHERE `entry` = '%u' AND `zone` = '%u' AND `grid_x` = '%f' AND `grid_y`='%f';", entry, zoneId, grid_x, grid_y);
+
         } while (result->NextRow());
     }
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creatures in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
