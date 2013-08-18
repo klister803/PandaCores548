@@ -19315,7 +19315,7 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         DestroyForNearbyPlayers();
         UpdatePosition(x, y, z, orientation, true);
         UpdateObjectVisibility();
-        //SendMovementFlagUpdate();
+        SendMovementFlagUpdate();
     }
 }
 
