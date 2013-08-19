@@ -604,7 +604,6 @@ class spell_hun_lynx_rush : public SpellScriptLoader
 
                 Trinity::Containers::RandomResizeList(targetList, 1);
 
-                for (auto itr : targetList)
                 for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                 {
                     unitTarget = *itr;

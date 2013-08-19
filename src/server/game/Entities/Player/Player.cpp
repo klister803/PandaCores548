@@ -3497,7 +3497,7 @@ void Player::GiveGatheringXP()
 
     gain *= GatheringXpRate;
 
-    GiveXP(gain, nullptr);
+    GiveXP(gain, NULL);
 }
 
 // Update player to next level

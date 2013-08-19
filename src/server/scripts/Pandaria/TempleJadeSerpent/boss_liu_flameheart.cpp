@@ -224,7 +224,7 @@ class boss_liu_flameheart : public CreatureScript
                         break;
                     case EVENT_SERPENT_WAVE:
                         {
-                            TempSummon* sum = nullptr;
+                            TempSummon* sum = NULL;
                             sum = me->SummonCreature(CREATURE_TRIGGER_WAVE, 932.775f, -2548.743f, 179.821f, 1.254f);
                             if (sum)
                             {
@@ -290,7 +290,7 @@ class boss_liu_flameheart : public CreatureScript
                         break;
                     case EVENT_JADE_SERPENT_WAVE:
                         {
-                            TempSummon* sum = nullptr;
+                            TempSummon* sum = NULL;
                             sum = me->SummonCreature(CREATURE_TRIGGER_WAVE, 932.775f, -2548.743f, 179.821f, 1.254f);
                             if (sum)
                             {

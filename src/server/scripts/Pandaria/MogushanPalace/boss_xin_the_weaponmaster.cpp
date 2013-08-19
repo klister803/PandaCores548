@@ -213,7 +213,7 @@ class mob_animated_staff : public CreatureScript
                         case EVENT_SUMMON_RING_OF_FIRE:
                         {
                             events.ScheduleEvent(EVENT_UNSUMMON, 9000);
-                            Unit* target = nullptr;
+                            Unit* target = NULL;
                             std::list<Unit*> units;
 
                             Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();

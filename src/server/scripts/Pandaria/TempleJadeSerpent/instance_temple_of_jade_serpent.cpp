@@ -366,7 +366,7 @@ public:
             case TYPE_LIU_FLAMEHEART_STATUS:
                 {
                     Creature* creature = instance->GetCreature(liuGuid);
-                    if (creature == nullptr)
+                    if (creature == NULL)
                         return 2;
 
                     if (creature->GetHealthPct() < 70.f)
@@ -395,7 +395,7 @@ public:
             if (unit->GetEntry() == CREATURE_WISE_MARI)
             {
                 GameObject* go = instance->GetGameObject(doorWiseMari);
-                if (go != nullptr)
+                if (go != NULL)
                     go->SetGoState(GO_STATE_ACTIVE);
             }
         }
@@ -533,10 +533,10 @@ public:
 
                 //Open the door!
                 GameObject* go = instance->GetGameObject(doorLiu);
-                if (go != nullptr)
+                if (go != NULL)
                     go->SetGoState(GO_STATE_ACTIVE);
                 go = instance->GetGameObject(doorLiu_2);
-                if (go != nullptr)
+                if (go != NULL)
                     go->SetGoState(GO_STATE_ACTIVE);
             }
         }
@@ -559,7 +559,7 @@ public:
             for (std::list<uint64>::const_iterator guid = mobs_liu.begin(); guid != mobs_liu.end(); ++guid)
             {
                 Creature* crea = instance->GetCreature(*guid);
-                if (crea == nullptr)
+                if (crea == NULL)
                     continue;
                 crea->Respawn();
             }
@@ -573,7 +573,7 @@ public:
             case TYPE_SET_SCROLL_SELECTABLE:
                 {
                     Creature* c = instance->GetCreature(scroll);
-                    if (c == nullptr)
+                    if (c == NULL)
                         return;
                     c->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 }
@@ -742,7 +742,7 @@ public:
                     if (peril->isDead())
                     {
                         GameObject* go = instance->GetGameObject(door_lorewalker);
-                        if (go != nullptr)
+                        if (go != NULL)
                             go->SetGoState(GO_STATE_ACTIVE);
                         eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
 
@@ -769,7 +769,7 @@ public:
                     if (strife->isDead())
                     {
                         GameObject* go = instance->GetGameObject(door_lorewalker);
-                        if (go != nullptr)
+                        if (go != NULL)
                             go->SetGoState(GO_STATE_ACTIVE);
                         eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
 
@@ -792,7 +792,7 @@ public:
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_ZAO_SUNSEEKER)
             {
                 GameObject* go = instance->GetGameObject(door_lorewalker);
-                if (go != nullptr)
+                if (go != NULL)
                     go->SetGoState(GO_STATE_ACTIVE);
                 eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
 
@@ -844,7 +844,7 @@ public:
                         if (*guid == lorewalkter_stonestep)
                             continue;
                         Creature* c = instance->GetCreature(*guid);
-                        if (c == nullptr)
+                        if (c == NULL)
                             continue;
 
                         unit->AddAura(SPELL_DRAW_SHA_2, c);
@@ -855,7 +855,7 @@ public:
                         c->ForcedDespawn(2000);
                     }
 
-                    TempSummon* sum = nullptr;
+                    TempSummon* sum = NULL;
                     //Suns
                     sum = unit->SummonCreature(CREATURE_SUN, 830.067f, -2466.660f, 179.240f);
                     sum = unit->SummonCreature(CREATURE_SUN, 836.632f, -2467.159f, 178.139f);
@@ -878,7 +878,7 @@ public:
                     for (std::list<uint64>::const_iterator guid = sunfires.begin(); guid != sunfires.end(); ++guid)
                     {
                         Creature* c = instance->GetCreature(*guid);
-                        if (c == nullptr)
+                        if (c == NULL)
                             continue;
                         c->CastSpell(c, 67422, false); //Blustering Vortex, Fire vortex display
                     }
@@ -889,12 +889,12 @@ public:
                     if (lorewalker && lorewalker->GetAI())
                         lorewalker->GetAI()->DoAction(TYPE_GET_EVENT_LOREWALKER_STONESTEP);
 
-                    TempSummon* sum = nullptr;
+                    TempSummon* sum = NULL;
                     sum = unit->SummonCreature(CREATURE_STRIFE, 847.530f, -2469.184f, 174.960f);
-                    if (sum != nullptr)
+                    if (sum != NULL)
                         sum->SetFacingTo(1.525f);
                     sum = unit->SummonCreature(CREATURE_PERIL, 836.906f, -2465.859f, 174.960f);
-                    if (sum != nullptr)
+                    if (sum != NULL)
                         sum->SetFacingTo(1.014f);
                 }
             }
@@ -964,7 +964,7 @@ public:
             for (std::list<uint64>::const_iterator guid = sunfires.begin(); guid != sunfires.end(); ++guid)
             {
                 Creature* c = instance->GetCreature(*guid);
-                if (c == nullptr)
+                if (c == NULL)
                     continue;
                 c->RemoveAura(67422);
             }

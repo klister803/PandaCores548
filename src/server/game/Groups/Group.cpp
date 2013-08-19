@@ -1592,7 +1592,7 @@ void Group::DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot*
     uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), 0, HIGHGUID_ITEM);
     Roll* r = new Roll(newitemGUID, item);
     r->lootedGUID = guid;
-    WorldObject* pLootedObject = nullptr;
+    WorldObject* pLootedObject = NULL;
 
     if (IS_CRE_OR_VEH_GUID(guid))
         pLootedObject = player->GetMap()->GetCreature(guid);
@@ -2894,7 +2894,7 @@ void Group::setGroupMemberRole(uint64 guid, uint32 role)
         }
     }
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GROUP_MEMBER_ROLE);
-    if (stmt != nullptr)
+    if (stmt != NULL)
     {
         stmt->setUInt8(0, role);
         stmt->setUInt32(1, GUID_LOPART(guid));

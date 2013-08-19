@@ -1299,8 +1299,8 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     data.PutBits<uint32>(equipmentPos, equipmentCount, 22);
 
     Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId());
-    data.WriteBit(guild != nullptr);
-    if (guild != nullptr)
+    data.WriteBit(guild != NULL);
+    if (guild != NULL)
     {
         ObjectGuid guildGuid = guild->GetGUID();
     
@@ -1355,7 +1355,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         data << uint8(i);
     }
 
-    if (guild != nullptr)
+    if (guild != NULL)
     {
         ObjectGuid guildGuid = guild->GetGUID();
         

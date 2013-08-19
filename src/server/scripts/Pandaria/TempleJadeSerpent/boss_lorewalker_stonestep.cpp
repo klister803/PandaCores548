@@ -322,7 +322,7 @@ class mob_sun : public CreatureScript
                     {
                     case 1:
                         Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
-                        if (target != nullptr)
+                        if (target != NULL)
                             me->CastSpell(target, SPELL_SUNFIRE_RAYS, true);
                         events.ScheduleEvent(1, 5000);
                         break;
@@ -416,7 +416,7 @@ class mob_zao : public CreatureScript
                         if (isCorrupted)
                         {
                             Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
-                            if (target != nullptr)
+                            if (target != NULL)
                                 me->CastSpell(target, SPELL_HELLFIRE_ARROW, true);
                             events.ScheduleEvent(EVENT_ZAO_ATTACK, 3000);
                         }
@@ -426,7 +426,7 @@ class mob_zao : public CreatureScript
                             {
                                 uint32 rand = urand(0, suns.size());
                                 uint64 guid_target = 0;
-                                Creature* target = nullptr;
+                                Creature* target = NULL;
                                 for (std::list<uint64>::const_iterator guid = suns.begin(); guid != suns.end(); ++guid)
                                 {
                                     if (rand == 0)
@@ -437,7 +437,7 @@ class mob_zao : public CreatureScript
                                     --rand;
                                 }
                                 target = me->GetInstanceScript()->instance->GetCreature(guid_target);
-                                if (target != nullptr)
+                                if (target != NULL)
                                     me->CastSpell(target, SPELL_SHOOT_SUN, false);
                                 else
                                     suns.remove(guid_target);
