@@ -478,8 +478,6 @@ void SmartAI::EnterEvadeMode()
     else
         me->GetMotionMaster()->MoveTargetedHome();
 
-    sLog->OutPandashan("SmartAI::EnterEvadeMode Entry %u" , me->GetEntry());
-
     Reset();
 }
 

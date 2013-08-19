@@ -32,9 +32,6 @@
 #include "Configuration/Config.h"
 #include "Database/DatabaseEnv.h"
 #include "Database/DatabaseWorkerPool.h"
-#include "PlayerDump.h"
-#include "Player.h"
-#include "ObjectMgr.h"
 
 #include "CliRunnable.h"
 #include "Log.h"
@@ -82,6 +79,7 @@ public:
     uint32 m_loops, m_lastchange;
     uint32 w_loops, w_lastchange;
     uint32 _delaytime;
+    uint32 pid;
     void SetDelayTime(uint32 t) { _delaytime = t; }
     void run(void)
     {
@@ -106,463 +104,17 @@ public:
             else if (getMSTimeDiff(w_lastchange, curtime) > _delaytime)
             {
                 sLog->outError(LOG_FILTER_WORLDSERVER, "World Thread hangs, kicking out server!");
-                ASSERT(false);
+                if(pid)
+                {
+                    char buffer[20];
+                    sprintf(buffer,"kill -11 %s",pid);
+                    system(buffer);
+                }
+                else
+                    *((uint32 volatile*)NULL) = 0;                       // bang crash
             }
         }
         sLog->outInfo(LOG_FILTER_WORLDSERVER, "Anti-freeze thread exiting without problems.");
-    }
-};
-
-class GmLogToDBRunnable : public ACE_Based::Runnable
-{
-public:
-
-    void run ()
-    {
-        while (!World::IsStopped())
-        {
-            GmCommand * command;
-            while(!GmLogQueue.empty())
-            {
-                GmLogQueue.next(command);
-                CharacterDatabase.EscapeString(command->accountName[0]);
-                CharacterDatabase.EscapeString(command->accountName[1]);
-                CharacterDatabase.EscapeString(command->characterName[0]);
-                CharacterDatabase.EscapeString(command->characterName[1]);
-                CharacterDatabase.EscapeString(command->command);
-                //No sql injections. Strings are escaped.
-
-                //au cas ou on a pas les infos...
-                if(command->accountName[0] == "" && command->accountID[0] != 0)
-                {
-                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", command->accountID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->accountName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->accountName[0]);
-                    }
-                }
-
-                if(command->accountName[1] == "" && command->accountID[1] != 0)
-                {
-                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", command->accountID[1]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->accountName[1] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->accountName[1]);
-                    }
-                }
-
-                if(command->characterName[0] == "" && command->characterID[0] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->characterName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->characterName[0]);
-                    }
-                }
-
-                if(command->characterName[0] == "" && command->characterID[0] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->characterName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->characterName[0]);
-                    }
-                }
-
-                if(command->characterName[1] == "" && command->characterID[1] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[1]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        command->characterName[1] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(command->characterName[1]);
-                    }
-                }
-
-                std::string last_ip = " ";
-
-                QueryResult result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id = %u", command->accountID[0]);
-                if (result)
-                {
-                    Field *fields_ip = result->Fetch();
-                    last_ip = fields_ip[0].GetString();
-                }
-
-                if(command->accountID[1] == 0 && command->characterID == 0)
-                {
-                    command->accountID[1] = command->accountID[0];
-                    command->characterID[1] = command->characterID[0];
-                    command->accountName[1] = command->accountName[0];
-                    command->characterName[1] = command->characterName[0];
-                }
-
-                CharacterDatabase.PExecute(	"INSERT INTO log_gm(`date`, "
-                    "`gm_account_id`, `gm_account_name`, `gm_character_id`, `gm_character_name`, `gm_last_ip`,"
-                    "`sc_account_id`, `sc_account_name`, `sc_character_id`, `sc_character_name`,"
-                    "`command`)"
-                    "VALUES(NOW(),"
-                    "%u,'%s',%u,'%s','%s',"
-                    "%u,'%s',%u,'%s',"
-                    "'%s')",
-                    command->accountID[0], command->accountName[0].c_str(), command->characterID[0], command->characterName[0].c_str(), last_ip.c_str(),
-                    command->accountID[1], command->accountName[1].c_str(), command->characterID[1], command->characterName[1].c_str(),
-                    command->command.c_str());
-                delete command;
-            }
-            ACE_Based::Thread::Sleep(1000);
-        }
-    }
-};
-
-class GmChatLogToDBRunnable : public ACE_Based::Runnable
-{
-public:
-
-    void run ()
-    {
-        while (!World::IsStopped())
-        {
-            GmChat * ChatLog;
-            while(!GmChatLogQueue.empty())
-            {
-                GmChatLogQueue.next(ChatLog);
-                CharacterDatabase.EscapeString(ChatLog->accountName[0]);
-                CharacterDatabase.EscapeString(ChatLog->accountName[1]);
-                CharacterDatabase.EscapeString(ChatLog->characterName[0]);
-                CharacterDatabase.EscapeString(ChatLog->characterName[1]);
-                CharacterDatabase.EscapeString(ChatLog->message);
-                //No sql injections. Strings are escaped.
-
-                //au cas ou on a pas les infos...
-                if(ChatLog->accountName[0] == "" && ChatLog->accountID[0] != 0)
-                {
-                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", ChatLog->accountID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        ChatLog->accountName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(ChatLog->accountName[0]);
-                    }
-                }
-
-                if(ChatLog->accountName[1] == "" && ChatLog->accountID[1] != 0)
-                {
-                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", ChatLog->accountID[1]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        ChatLog->accountName[1] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(ChatLog->accountName[1]);
-                    }
-                }
-
-                if(ChatLog->characterName[0] == "" && ChatLog->characterID[0] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", ChatLog->characterID[0]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        ChatLog->characterName[0] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(ChatLog->characterName[0]);
-                    }
-                }
-
-                if(ChatLog->characterName[1] == "" && ChatLog->characterID[1] != 0)
-                {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", ChatLog->characterID[1]);
-                    if (result)
-                    {
-                        Field *fields = result->Fetch();
-                        ChatLog->characterName[1] = fields[0].GetString();
-                        CharacterDatabase.EscapeString(ChatLog->characterName[1]);
-                    }
-                }
-
-                CharacterDatabase.PExecute(	"INSERT INTO log_gm_chat(`type`, `date`, "
-                    "`from_account_id`, `from_account_name`, `from_character_id`, `from_character_name`,"
-                    "`to_account_id`, `to_account_name`, `to_character_id`, `to_character_name`,"
-                    "`message`)"
-                    "VALUES(%u, NOW(),"
-                    "%u,'%s',%u,'%s',"
-                    "%u,'%s',%u,'%s',"
-                    "'%s')",
-                    ChatLog->type,
-                    ChatLog->accountID[0], ChatLog->accountName[0].c_str(), ChatLog->characterID[0], ChatLog->characterName[0].c_str(),
-                    ChatLog->accountID[1], ChatLog->accountName[1].c_str(), ChatLog->characterID[1], ChatLog->characterName[1].c_str(),
-                    ChatLog->message.c_str());
-                delete ChatLog;
-            }
-            ACE_Based::Thread::Sleep(1000);
-        }
-    }
-};
-
-class ArenaLogToDBRunnable : public ACE_Based::Runnable
-{
-public:
-
-    void run ()
-    {
-        while (!World::IsStopped())
-        {
-            ArenaLog * log;
-            while(!ArenaLogQueue.empty())
-            {
-                ArenaLogQueue.next(log);
-                CharacterDatabase.EscapeString(log->str);
-                //No sql injections. Strings are escaped.
-
-                CharacterDatabase.PExecute("INSERT INTO log_arena (`id`, `timestamp`, `string`) VALUES (0, %u, '%s');", log->timestamp, log->str.c_str());
-                delete log;
-            }
-            ACE_Based::Thread::Sleep(1000);
-        }
-    }
-};
-
-char* dumpTables[32] =
-{
-    "characters",
-    "character_account_data",
-    "character_achievement",
-    "character_achievement_progress",
-    "character_action",
-    "character_aura",
-    "character_aura_effect",
-    "character_currency",
-    //{ "character_cuf_profiles",
-    "character_declinedname",
-    "character_equipmentsets",
-    "character_gifts",
-    "character_glyphs",
-    "character_homebind",
-    "character_inventory",
-    "character_pet",
-    "character_pet_declinedname",
-    "character_queststatus",
-    "character_queststatus_rewarded",
-    "character_rates",
-    "character_reputation",
-    "character_skills",
-    "character_spell",
-    "character_spell_cooldown",
-    "character_talent",
-    "character_void_storage",
-    "item_instance",
-    "mail",
-    "mail_items",
-    "pet_aura",
-    "pet_aura_effect",
-    "pet_spell",
-    "pet_spell_cooldown"
-};
-
-char* ipTransfert[3] =
-{
-    "127.0.0.1",      // Rassharom
-    "127.0.0.1",    // Taran'Zhu
-    "127.0.0.1"     // Elegon
-};
-
-class CharactersTransfertRunnable : public ACE_Based::Runnable
-{
-public:
-    CharactersTransfertRunnable() {}
-    void run(void)
-    {
-        printf("Thread de transfert de perso demarre.\n");
-
-        std::string hash_transfert = "";
-
-        /*for(int i = 0; i < 32; i++)
-        {
-            char* tableName = dumpTables[i];
-            QueryResult tableInfo = CharacterDatabase.PQuery("select data_type from information_schema.columns where table_name = '%s'", tableName);
-            if(tableInfo)
-            {
-                do
-                {
-                    Field* fieldInfo = tableInfo->Fetch();
-                    hash_transfert += fieldInfo[0].GetString().substr(0, 1);
-                } while(tableInfo->NextRow());
-            }
-        }*/
-
-        printf("hash_transfert : %s\n", hash_transfert.c_str());
-
-        while (!World::IsStopped())
-        {
-            ACE_Based::Thread::Sleep(1000);
-            QueryResult toDump = LoginDatabase.PQuery("SELECT `id`, `account`, `perso_guid` FROM transferts WHERE `from` = %u AND (state = 0 OR revision <> '%s')", sLog->GetRealmID(), hash_transfert.c_str());
-            QueryResult toLoad = LoginDatabase.PQuery("SELECT `id`, `account`, `perso_guid`, `from` FROM transferts WHERE `to` = %u AND state = 1 AND revision = '%s'", sLog->GetRealmID(), hash_transfert.c_str());
-
-
-            //id account perso_guid from to revision dump last_error nb_attempt
-            if(toDump)
-            {
-                do
-                {
-                    Field* field = toDump->Fetch();
-                    uint32 transaction = field[0].GetUInt32();
-                    uint32 perso_guid = field[2].GetUInt32();
-
-                    if (Player * pPlayer = sObjectMgr->GetPlayerByLowGUID(perso_guid))
-                    {
-                        pPlayer->GetSession()->SendNotification("Vous devez vous deconnecter pour pouvoir transferer votre personnage");
-                        continue;
-                    }
-
-                    CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%u'",  perso_guid);
-                    CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'",        perso_guid);
-
-                    std::ostringstream fileName;
-
-                    fileName << "/home/transfert" << sLog->GetRealmID() << "/" << perso_guid << ".dump";
-
-                    DumpReturn dump = PlayerDumpWriter().WriteDump(fileName.str().c_str(), perso_guid);
-
-                    if (dump == DUMP_SUCCESS)
-                    {
-                        CharacterDatabase.PExecute("UPDATE characters SET at_login = '%u' WHERE guid = '%u'", AT_LOGIN_LOCKED_FOR_TRANSFER, perso_guid);
-                        CharacterDatabase.PExecute("UPDATE characters SET deleteInfos_Name=name, deleteInfos_Account=account, deleteDate='" UI64FMTD "', name='', account=0 WHERE guid=%u", uint64(time(NULL)), perso_guid);
-                        LoginDatabase.PQuery("UPDATE transferts SET state = 1, revision = '%s' WHERE id = %u", hash_transfert.c_str(), transaction);
-                    }
-                    else
-                    {
-                    	LoginDatabase.PQuery("UPDATE transferts SET error = %u WHERE id = %u", dump, transaction);
-                    	continue;
-                    }
-
-                    /*std::string result = "";
-                    if(PlayerDumpWriter().GetDump(perso_guid, result))
-                    {
-                        std::string result2 = "";
-                        PlayerDumpWriter().GetDump(perso_guid, result2);
-                        if(result != result2)
-                            continue;
-
-                        std::string new_string = "";
-                        for(std::string::iterator i = result.begin(); i < result.end(); i++)
-                        {
-                            if((*i) == '\\')
-                                new_string.push_back('\\');
-                            new_string.push_back(*i);
-                        }
-
-                        PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_DUMP);
-                        if(stmt)
-                        {
-                            stmt->setString(0, new_string);
-                            stmt->setString(1, hash_transfert.c_str());
-                            stmt->setUInt32(2, transaction);
-                            LoginDatabase.Execute(stmt);
-
-                            CharacterDatabase.PExecute("UPDATE characters SET at_login = '%u' WHERE guid = '%u'", AT_LOGIN_LOCKED_FOR_TRANSFER, perso_guid);
-                            CharacterDatabase.PExecute("UPDATE characters SET deleteInfos_Name=name, deleteInfos_Account=account, deleteDate='" UI64FMTD "', name='', account=0 WHERE guid=%u", uint64(time(NULL)), perso_guid);
-                        }
-                    }*/
-                }
-                while(toDump->NextRow());
-            }
-
-            if(toLoad)
-            {
-                do
-                {
-                    Field* field = toLoad->Fetch();
-                    uint32 transaction = field[0].GetUInt32();
-                    uint32 account = field[1].GetUInt32();
-                    uint32 perso_guid = field[2].GetUInt32();
-                    uint32 from = field[3].GetUInt32();
-                    std::ostringstream cmd;
-                    
-                    // Delete old dump
-                    cmd << "rm /home/transfert" << from << "/" << perso_guid << ".dump";
-                    system(cmd.str().c_str());
-                    cmd.clear();
-                    
-                    // Get new dump
-                    cmd << "wget " << ipTransfert[from-1] << "/transfert" << from << "/" << perso_guid << ".dump --directory-prefix=/home/transfert" << from << "/" << perso_guid << ".dump";
-                    system(cmd.str().c_str());
-                    cmd.clear();
-                    
-                    cmd << "/home/transfert" << from << "/" << perso_guid << ".dump";
-                    DumpReturn dump = PlayerDumpReader().LoadDump(cmd.str(), account, "", 0, AT_LOGIN_RENAME);
-
-                    if (dump == DUMP_SUCCESS)
-                    {
-                    	LoginDatabase.PQuery("DELETE FROM transferts WHERE id = %u", transaction);
-                        PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_ADD_TRANSFERTS_LOGS);
-                        if(stmt)
-                        {
-                            stmt->setUInt32(0, transaction);
-                            stmt->setUInt32(1, account);
-                            stmt->setUInt32(2, perso_guid);
-                            stmt->setUInt32(3, from);
-                            stmt->setUInt32(4, sLog->GetRealmID());
-                            stmt->setString(5, "");
-                            LoginDatabase.Execute(stmt);
-                        }
-                    }
-                    else
-                    {
-                    	LoginDatabase.PQuery("UPDATE transferts SET error = %u, nb_attempt = nb_attempt + 1 WHERE id = %u", dump, transaction);
-                    	continue;
-                    }
-
-
-                    /*FILE *fout = fopen("temp.dump", "w");
-                    if(!fout)
-                        continue;
-                    fprintf(fout, "%s\n", dump.c_str());
-                    fclose(fout);
-
-                    switch(PlayerDumpReader().LoadDump("temp.dump", account, "", 0, AT_LOGIN_RENAME))
-                    {
-                        case DUMP_SUCCESS:
-                        {
-                            sLog->outString("Personne ok.");
-                            LoginDatabase.PQuery("DELETE FROM transferts WHERE id = %u", transaction);
-                            LoginDatabase.EscapeString(dump);
-
-                            PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_ADD_TRANSFERTS_LOGS);
-                            if(stmt)
-                            {
-                                stmt->setUInt32(0, transaction);
-                                stmt->setUInt32(1, account);
-                                stmt->setUInt32(2, perso_guid);
-                                stmt->setUInt32(3, from);
-                                stmt->setUInt32(4, sLog->GetRealmID());
-                                stmt->setString(5, dump.c_str());
-                                LoginDatabase.Execute(stmt);
-                            }
-                            break;
-                        }
-                        case DUMP_FILE_OPEN_ERROR:
-                            LoginDatabase.PQuery("UPDATE transferts SET last_error = 'DUMP_FILE_OPEN_ERROR', nb_attempt = nb_attempt + 1 WHERE id = %u", transaction);
-                            break;
-                        case DUMP_FILE_BROKEN:
-                            LoginDatabase.PQuery("UPDATE transferts SET last_error = 'DUMP_FILE_BROKEN', nb_attempt = nb_attempt + 1 WHERE id = %u", transaction);
-                            break;
-                        case DUMP_TOO_MANY_CHARS:
-                            LoginDatabase.PQuery("UPDATE transferts SET last_error = 'DUMP_TOO_MANY_CHARS', nb_attempt = nb_attempt + 1 WHERE id = %u", transaction);
-                            break;
-                        default:
-                            break;
-                    }*/
-                }
-                while (toLoad->NextRow());
-            }
-        }
     }
 };
 
@@ -579,6 +131,7 @@ int Master::Run()
 {
     BigNumber seed1;
     seed1.SetRand(16 * 8);
+    uint32 pid;
 
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "%s (worldserver-daemon)", _FULLVERSION);
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "<Ctrl-C> to stop.\n");
@@ -597,7 +150,7 @@ int Master::Run()
     std::string pidfile = ConfigMgr::GetStringDefault("PidFile", "");
     if (!pidfile.empty())
     {
-        uint32 pid = CreatePIDFile(pidfile);
+        pid = CreatePIDFile(pidfile);
         if (!pid)
         {
             sLog->outError(LOG_FILTER_WORLDSERVER, "Cannot create PID file %s.\n", pidfile.c_str());
@@ -648,10 +201,6 @@ int Master::Run()
     }
 
     ACE_Based::Thread rar_thread(new RARunnable);
-    ACE_Based::Thread gmLogToDB_thread(new GmLogToDBRunnable);
-    ACE_Based::Thread gmChatLogToDB_thread(new GmChatLogToDBRunnable);
-    ACE_Based::Thread arenaLogToDB_thread(new ArenaLogToDBRunnable);
-    ACE_Based::Thread CharactersTransfertRunnable_thread(new CharactersTransfertRunnable);
 
     ///- Handle affinity for multiple processors and process priority on Windows
     #ifdef _WIN32
@@ -709,6 +258,8 @@ int Master::Run()
     {
         FreezeDetectorRunnable* fdr = new FreezeDetectorRunnable();
         fdr->SetDelayTime(freeze_delay * 1000);
+        if(pid)
+            fdr->pid = pid;
         ACE_Based::Thread freeze_thread(fdr);
         freeze_thread.setPriority(ACE_Based::Highest);
     }

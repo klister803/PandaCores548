@@ -51,18 +51,8 @@ class Log
         void outWarn (LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
         void outError(LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
         void outFatal(LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
-        void outArena( const char * str, ... )               ATTR_PRINTF(2, 3);
-        void outCommand( uint32 gm_account_id  , std::string gm_account_name,
-                         uint32 gm_character_id, std::string gm_character_name,
-                         uint32 sc_account_id  , std::string sc_account_name,
-                         uint32 sc_character_id, std::string sc_character_name,
-                         const char * str, ...)              ATTR_PRINTF(10,11);
-        void outGmChat( uint32 message_type,
-                        uint32 from_account_id  , std::string from_account_name,
-                        uint32 from_character_id, std::string from_character_name,
-                        uint32 to_account_id  , std::string to_account_name,
-                        uint32 to_character_id, std::string to_character_name,
-                        const char * str);
+        void outArena(const char * str, ...)                 ATTR_PRINTF(2,3);
+        void outCommand(uint32 account, const char * str, ...) ATTR_PRINTF(3, 4);
         void outCharDump(char const* str, uint32 account_id, uint32 guid, char const* name);
 
         void OutPandashan(const char* str, ...);
@@ -71,6 +61,7 @@ class Log
         static std::string GetTimestampStr();
         
         void SetRealmID(uint32 id);
+        static void outTimestamp(FILE* file);
         uint32 GetRealmID() const { return realm; }
 
     private:
@@ -88,6 +79,8 @@ class Log
         AppenderMap appenders;
         LoggerMap loggers;
         uint8 AppenderId;
+        FILE* openLogFile(char const* configFileName, char const* configTimeStampFlag, char const* mode);
+        FILE* arenaLogFile;
 
         std::string m_logsDir;
         std::string m_logsTimestamp;

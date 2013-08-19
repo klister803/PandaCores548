@@ -458,33 +458,24 @@ void Log::outCharDump(char const* str, uint32 accountId, uint32 guid, char const
     write(msg);
 }
 
-void Log::outCommand(uint32 gm_account_id  , std::string gm_account_name, 
-                     uint32 gm_character_id, std::string gm_character_name,
-                     uint32 sc_account_id  , std::string sc_account_name,
-                     uint32 sc_character_id, std::string sc_character_name,
-                     const char * str, ...)
+void Log::outCommand(uint32 account, const char * str, ...)
 {
-    if (!str)
+    if (!str || !ShouldLog(LOG_FILTER_GMCOMMAND, LOG_LEVEL_INFO))
         return;
-
-    GmCommand * new_command = new GmCommand;
-    new_command->accountID[0]       = gm_account_id;
-    new_command->accountID[1]       = sc_account_id;
-    new_command->accountName[0]     = gm_account_name;
-    new_command->accountName[1]     = sc_account_name;
-    new_command->characterID[0]     = gm_character_id;
-    new_command->characterID[1]     = sc_character_id;
-    new_command->characterName[0]   = gm_character_name;
-    new_command->characterName[1]   = sc_character_name;
 
     va_list ap;
     va_start(ap, str);
-    char buffer[1024]; //buffer.
-    vsprintf(buffer, str, ap);
+    char text[MAX_QUERY_LEN];
+    vsnprintf(text, MAX_QUERY_LEN, str, ap);
     va_end(ap);
-    new_command->command = buffer;
 
-    GmLogQueue.add(new_command);
+    LogMessage* msg = new LogMessage(LOG_LEVEL_INFO, LOG_FILTER_GMCOMMAND, text);
+
+    std::ostringstream ss;
+    ss << account;
+    msg->param1 = ss.str();
+
+    write(msg);
 }
 
 void Log::SetRealmID(uint32 id)
@@ -494,6 +485,10 @@ void Log::SetRealmID(uint32 id)
 
 void Log::Close()
 {
+    if (arenaLogFile != NULL)
+        fclose(arenaLogFile);
+    arenaLogFile = NULL;
+
     delete worker;
     worker = NULL;
     loggers.clear();
@@ -516,31 +511,7 @@ void Log::LoadFromConfig()
             m_logsDir.push_back('/');
     ReadAppendersFromConfig();
     ReadLoggersFromConfig();
-}
-
-void Log::outGmChat( uint32 message_type,
-                     uint32 from_account_id  , std::string from_account_name,
-                     uint32 from_character_id, std::string from_character_name,
-                     uint32 to_account_id  , std::string to_account_name,
-                     uint32 to_character_id, std::string to_character_name,
-                     const char * str)
-{
-    if (!str)
-        return;
-
-    GmChat * new_message = new GmChat;
-    new_message->type               = message_type;
-    new_message->accountID[0]       = from_account_id;
-    new_message->accountID[1]       = to_account_id;
-    new_message->accountName[0]     = from_account_name;
-    new_message->accountName[1]     = to_account_name;
-    new_message->characterID[0]     = from_character_id;
-    new_message->characterID[1]     = to_character_id;
-    new_message->characterName[0]   = from_character_name;
-    new_message->characterName[1]   = to_character_name;
-    new_message->message            = str;
-
-    GmChatLogQueue.add(new_message);
+    arenaLogFile = openLogFile("ArenaLogFile", NULL, "a");
 }
 
 void Log::outArena(const char * str, ...)
@@ -548,20 +519,29 @@ void Log::outArena(const char * str, ...)
     if (!str)
         return;
 
-    char result[MAX_QUERY_LEN];
-    va_list ap;
+    if (arenaLogFile)
+    {
+        va_list ap;
+        outTimestamp(arenaLogFile);
+        va_start(ap, str);
+        vfprintf(arenaLogFile, str, ap);
+        fprintf(arenaLogFile, "\n");
+        va_end(ap);
+        fflush(arenaLogFile);
+    }
+}
 
-    va_start(ap, str);
-    vsnprintf(result, MAX_QUERY_LEN, str, ap);
-    va_end(ap);
-
-    std::string query = result;
-
-    ArenaLog * log = new ArenaLog;
-    log->timestamp = time(NULL);
-    log->str = query;
-
-    ArenaLogQueue.add(log);
+void Log::outTimestamp(FILE* file)
+{
+    time_t t = time(NULL);
+    tm* aTm = localtime(&t);
+    //       YYYY   year
+    //       MM     month (2 digits 01-12)
+    //       DD     day (2 digits 01-31)
+    //       HH     hour (2 digits 00-23)
+    //       MM     minutes (2 digits 00-59)
+    //       SS     seconds (2 digits 00-59)
+    fprintf(file, "%-4d-%02d-%02d %02d:%02d:%02d ", aTm->tm_year+1900, aTm->tm_mon+1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec);
 }
 
 void Log::OutPandashan(const char* str, ...)
@@ -579,4 +559,22 @@ void Log::OutPandashan(const char* str, ...)
 	std::string date = GetTimestampStr();
 	fprintf(pandashanLog, "[%s] Pandashan LOG : %s\n", date.c_str(), result);
 	fflush(pandashanLog);
+}
+
+FILE* Log::openLogFile(char const* configFileName, char const* configTimeStampFlag, char const* mode)
+{
+    std::string logfn=ConfigMgr::GetStringDefault(configFileName, "");
+    if (logfn.empty())
+        return NULL;
+
+    if (configTimeStampFlag && ConfigMgr::GetBoolDefault(configTimeStampFlag, false))
+    {
+        size_t dot_pos = logfn.find_last_of(".");
+        if (dot_pos!=logfn.npos)
+            logfn.insert(dot_pos, m_logsTimestamp);
+        else
+            logfn += m_logsTimestamp;
+    }
+
+    return fopen((m_logsDir+logfn).c_str(), mode);
 }
