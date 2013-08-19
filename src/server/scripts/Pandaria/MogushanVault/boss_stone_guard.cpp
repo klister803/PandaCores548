@@ -420,7 +420,7 @@ class boss_generic_guardian : public CreatureScript
             bool CheckNearGuardians()
             {
                 for (uint8 i = 0; i < 4; ++i)
-                    if (entry != me->GetEntry())
+                    if (guardiansEntry[i] != me->GetEntry())
                         if (Creature* gardian = GetClosestCreatureWithEntry(me, guardiansEntry[i], 12.0f, true))
                             return true;
 
