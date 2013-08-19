@@ -721,7 +721,7 @@ class spell_atramedes_vertigo : public SpellScriptLoader
         {
             PrepareAuraScript(spell_atramedes_vertigo_AuraScript);
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;

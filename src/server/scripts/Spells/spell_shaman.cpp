@@ -130,7 +130,7 @@ class spell_sha_solar_beam : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_solar_beam_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_SOLAR_BEAM))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_SOLAR_BEAM_SILENCE, true);
@@ -354,7 +354,7 @@ class spell_sha_ancestral_guidance : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_ancestral_guidance_AuraScript);
 
-            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
 
@@ -414,7 +414,7 @@ class spell_sha_echo_of_the_elements : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_echo_of_the_elements_AuraScript);
 
-            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
 
@@ -537,7 +537,7 @@ class spell_sha_stone_bulwark : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_stone_bulwark_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -582,7 +582,7 @@ class spell_sha_mail_specialization : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_mail_specialization_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                     return;
@@ -597,7 +597,7 @@ class spell_sha_mail_specialization : public SpellScriptLoader
                 }
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                     return;
@@ -974,7 +974,7 @@ class spell_sha_rolling_thunder : public SpellScriptLoader
                     {
                         if (roll_chance_i(60) && _player->HasAura(88764))
                         {
-                            if (AuraPtr lightningShield = _player->GetAura(324))
+                            if (Aura* lightningShield = _player->GetAura(324))
                             {
                                 _player->CastSpell(_player, SPELL_SHA_ROLLING_THUNDER_ENERGIZE, true);
 
@@ -1043,11 +1043,11 @@ class spell_sha_fulmination : public SpellScriptLoader
                 if (!GetHitDamage())
                     return;
 
-                AuraEffectPtr fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
+                AuraEffect* fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
                 if (!fulminationAura)
                     return;
 
-                AuraPtr lightningShield = caster->GetAura(324);
+                Aura* lightningShield = caster->GetAura(324);
                 if (!lightningShield)
                     return;
 
@@ -1090,7 +1090,7 @@ class spell_sha_lava_surge : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_lava_surge_AuraScript);
 
-            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
             {
                 // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
                 if (GetCaster())
@@ -1346,7 +1346,7 @@ class spell_sha_earthquake : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_earthquake_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_EARTHQUAKE))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_EARTHQUAKE_TICK, true);
@@ -1374,7 +1374,7 @@ class spell_sha_healing_rain : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_healing_rain_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_HEALING_RAIN))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_HEALING_RAIN_TICK, true);
@@ -1725,7 +1725,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
                 if (firstHeal)
                 {
                     // Check if the target has Riptide
-                    if (AuraEffectPtr aurEff = GetHitUnit()->GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_SHAMAN, 0, 0, 0x10, GetCaster()->GetGUID()))
+                    if (AuraEffect* aurEff = GetHitUnit()->GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_SHAMAN, 0, 0, 0x10, GetCaster()->GetGUID()))
                     {
                         riptide = true;
                         // Consume it

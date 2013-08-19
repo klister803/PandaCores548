@@ -326,8 +326,8 @@ class npc_iron_construct : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                AuraPtr aur = me->GetAura(SPELL_HEAT);
-                if (aur != NULLAURA)
+                Aura* aur = me->GetAura(SPELL_HEAT);
+                if (aur != NULL)
                 {
                     if (aur->GetStackAmount() >= 10)
                     {
@@ -443,7 +443,7 @@ class spell_ignis_slag_pot : public SpellScriptLoader
                 return true;
             }
 
-            void HandleEffectPeriodic(constAuraEffectPtr aurEff)
+            void HandleEffectPeriodic(AuraEffect const* aurEff)
             {
                 Unit* aurEffCaster = aurEff->GetCaster();
                 if (!aurEffCaster)
@@ -453,7 +453,7 @@ class spell_ignis_slag_pot : public SpellScriptLoader
                 aurEffCaster->CastSpell(target, SPELL_SLAG_POT_DAMAGE, true);
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->isAlive())
                     GetTarget()->CastSpell(GetTarget(), SPELL_SLAG_IMBUED, true);

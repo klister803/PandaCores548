@@ -2272,7 +2272,7 @@ class spell_the_lich_king_infest : public SpellScriptLoader
         {
             PrepareAuraScript(spell_the_lich_king_infest_AuraScript);
 
-            void OnPeriodic(constAuraEffectPtr /*aurEff*/)
+            void OnPeriodic(AuraEffect const* /*aurEff*/)
             {
                 if (GetUnitOwner()->HealthAbovePct(90))
                 {
@@ -2281,7 +2281,7 @@ class spell_the_lich_king_infest : public SpellScriptLoader
                 }
             }
 
-            void OnUpdate(AuraEffectPtr aurEff)
+            void OnUpdate(AuraEffect* aurEff)
             {
                 // multiply, starting from 2nd tick
                 if (aurEff->GetTickNumber() == 1)
@@ -2319,7 +2319,7 @@ class spell_the_lich_king_necrotic_plague : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* newCaster = GetTarget();
                 switch (GetTargetApplication()->GetRemoveMode())
@@ -2335,7 +2335,7 @@ class spell_the_lich_king_necrotic_plague : public SpellScriptLoader
                 CustomSpellValues values;
                 //values.AddSpellMod(SPELLVALUE_AURA_STACK, 2);
                 values.AddSpellMod(SPELLVALUE_MAX_TARGETS, 1);
-                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULL, GetCasterGUID());
                 if (Unit* caster = GetCaster())
                     caster->CastSpell(caster, SPELL_PLAGUE_SIPHON, true);
             }
@@ -2407,13 +2407,13 @@ class spell_the_lich_king_necrotic_plague_jump : public SpellScriptLoader
                 return true;
             }
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     caster->GetAI()->SetData(DATA_PLAGUE_STACK, GetStackAmount());
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 _lastAmount = aurEff->GetAmount();
                 switch (GetTargetApplication()->GetRemoveMode())
@@ -2427,17 +2427,17 @@ class spell_the_lich_king_necrotic_plague_jump : public SpellScriptLoader
 
                 CustomSpellValues values;
                 values.AddSpellMod(SPELLVALUE_AURA_STACK, GetStackAmount());
-                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULL, GetCasterGUID());
                 if (Unit* caster = GetCaster())
                     caster->CastSpell(caster, SPELL_PLAGUE_SIPHON, true);
             }
 
-            void OnDispel(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnDispel(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 _lastAmount = aurEff->GetAmount();
             }
 
-            void AfterDispel(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterDispel(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 // this means the stack increased so don't process as if dispelled
                 if (aurEff->GetAmount() > _lastAmount)
@@ -2446,7 +2446,7 @@ class spell_the_lich_king_necrotic_plague_jump : public SpellScriptLoader
                 CustomSpellValues values;
                 values.AddSpellMod(SPELLVALUE_AURA_STACK, GetStackAmount());
                 values.AddSpellMod(SPELLVALUE_BASE_POINT1, AURA_REMOVE_BY_ENEMY_SPELL); // add as marker (spell has no effect 1)
-                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULL, GetCasterGUID());
                 if (Unit* caster = GetCaster())
                     caster->CastSpell(caster, SPELL_PLAGUE_SIPHON, true);
 
@@ -2484,7 +2484,7 @@ class spell_the_lich_king_shadow_trap_visual : public SpellScriptLoader
         {
             PrepareAuraScript(spell_the_lich_king_shadow_trap_visual_AuraScript);
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes mode)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
             {
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                     GetTarget()->CastSpell(GetTarget(), SPELL_SHADOW_TRAP_AURA, TRIGGERED_NONE);
@@ -2763,7 +2763,7 @@ class spell_the_lich_king_soul_reaper : public SpellScriptLoader
                 return true;
             }
 
-            void OnPeriodic(constAuraEffectPtr /*aurEff*/)
+            void OnPeriodic(AuraEffect const* /*aurEff*/)
             {
                 if (Unit* caster = GetCaster())
                     GetTarget()->CastSpell(caster, SPELL_SOUL_REAPER_BUFF, true);
@@ -2953,7 +2953,7 @@ class spell_the_lich_king_vile_spirits : public SpellScriptLoader
                 return true;
             }
 
-            void OnPeriodic(constAuraEffectPtr aurEff)
+            void OnPeriodic(AuraEffect const* aurEff)
             {
                 if (_is25Man || ((aurEff->GetTickNumber() - 1) % 5))
                     GetTarget()->CastSpell((Unit*)NULL, GetSpellInfo()->Effects[aurEff->GetEffIndex()].TriggerSpell, true, NULL, aurEff, GetCasterGUID());
@@ -3106,11 +3106,11 @@ class spell_the_lich_king_harvest_soul : public SpellScriptLoader
                 return GetOwner()->GetInstanceScript() != NULL;
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 // m_originalCaster to allow stacking from different casters, meh
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
-                    GetTarget()->CastSpell((Unit*)NULL, SPELL_HARVESTED_SOUL, true, NULL, NULLAURA_EFFECT, GetTarget()->GetInstanceScript()->GetData64(DATA_THE_LICH_KING));
+                    GetTarget()->CastSpell((Unit*)NULL, SPELL_HARVESTED_SOUL, true, NULL, NULL, GetTarget()->GetInstanceScript()->GetData64(DATA_THE_LICH_KING));
             }
 
             void Register()
@@ -3134,14 +3134,14 @@ class spell_the_lich_king_lights_favor : public SpellScriptLoader
         {
             PrepareAuraScript(spell_the_lich_king_lights_favor_AuraScript);
 
-            void OnPeriodic(constAuraEffectPtr /*aurEff*/)
+            void OnPeriodic(AuraEffect const* /*aurEff*/)
             {
                 if (Unit* caster = GetCaster())
-                    if (AuraEffectPtr effect = GetAura()->GetEffect(EFFECT_1))
+                    if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_1))
                         effect->RecalculateAmount(caster);
             }
 
-            void CalculateBonus(constAuraEffectPtr /*aurEff*/, int32& amount, bool& canBeRecalculated)
+            void CalculateBonus(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
             {
                 canBeRecalculated = true;
                 amount = 0;
@@ -3171,7 +3171,7 @@ class spell_the_lich_king_soul_rip : public SpellScriptLoader
         {
             PrepareAuraScript(spell_the_lich_king_soul_rip_AuraScript);
 
-            void OnPeriodic(constAuraEffectPtr aurEff)
+            void OnPeriodic(AuraEffect const* aurEff)
             {
                 PreventDefaultAction();
                 // shouldn't be needed, this is channeled
@@ -3201,7 +3201,7 @@ class spell_the_lich_king_moisson_ame : public SpellScriptLoader
         {
             PrepareAuraScript(spell_the_lich_king_moisson_ame_AuraScript);
 
-            void OnPeriodic(constAuraEffectPtr aurEff)
+            void OnPeriodic(AuraEffect const* aurEff)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -3229,7 +3229,7 @@ class spell_the_lich_king_moisson_ame : public SpellScriptLoader
                                     break;
                             }
 
-                            if (AuraEffectPtr effect = GetAura()->GetEffect(EFFECT_0))
+                            if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_0))
                                 effect->ChangeAmount(new_amount);
                         }
                     }
@@ -3306,11 +3306,11 @@ class spell_the_lich_king_in_frostmourne_room : public SpellScriptLoader
                 return GetOwner()->GetInstanceScript() != NULL;
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 // m_originalCaster to allow stacking from different casters, meh
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
-                    GetTarget()->CastSpell((Unit*)NULL, SPELL_HARVESTED_SOUL, true, NULL, NULLAURA_EFFECT, GetTarget()->GetInstanceScript()->GetData64(DATA_THE_LICH_KING));
+                    GetTarget()->CastSpell((Unit*)NULL, SPELL_HARVESTED_SOUL, true, NULL, NULL, GetTarget()->GetInstanceScript()->GetData64(DATA_THE_LICH_KING));
             }
 
             void Register()

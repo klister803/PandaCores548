@@ -128,7 +128,7 @@ class spell_pal_unbreakable_spirit : public SpellScriptLoader
 
             uint32 holyPowerConsumed;
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 holyPowerConsumed = 0;
             }
@@ -276,7 +276,7 @@ class spell_pal_eternal_flame : public SpellScriptLoader
                         if (holyPower > 2)
                             holyPower = 2;
 
-                        if (AuraPtr eternalFlame = unitTarget->GetAura(GetSpellInfo()->Id, _player->GetGUID()))
+                        if (Aura* eternalFlame = unitTarget->GetAura(GetSpellInfo()->Id, _player->GetGUID()))
                             if (eternalFlame->GetEffect(1))
                                 eternalFlame->GetEffect(1)->ChangeAmount(eternalFlame->GetEffect(1)->GetAmount() * (holyPower + 1));
 
@@ -379,7 +379,7 @@ class spell_pal_sacred_shield : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pal_sacred_shield_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (Unit* _player = GetCaster())
                     if (Unit* target = GetTarget())
@@ -408,7 +408,7 @@ class spell_pal_sacred_shield_absorb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pal_sacred_shield_absorb_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
             {
                 if (GetCaster())
                     amount = int32(30 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
@@ -440,11 +440,11 @@ class spell_pal_emancipate : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    std::list<AuraPtr> auraList;
+                    std::list<Aura*> auraList;
 
                     for (auto itr : _player->GetAppliedAuras())
                     {
-                        AuraPtr aura = itr.second->GetBase();
+                        Aura* aura = itr.second->GetBase();
                         if (aura && aura->GetSpellInfo()->GetAllEffectsMechanicMask() & ((1<<MECHANIC_SNARE)|(1<<MECHANIC_ROOT)))
                             auraList.push_back(aura);
                     }
@@ -708,7 +708,7 @@ class spell_pal_inquisition : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (AuraPtr inquisition = _player->GetAura(PALADIN_SPELL_INQUISITION))
+                    if (Aura* inquisition = _player->GetAura(PALADIN_SPELL_INQUISITION))
                     {
                         int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
 
@@ -787,14 +787,14 @@ class spell_pal_lights_hammer : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pal_lights_hammer_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (GetCaster())
                 {
                     if (GetCaster()->GetOwner())
                     {
-                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_HEAL, true, 0, NULLAURA_EFFECT, GetCaster()->GetOwner()->GetGUID());
-                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_DAMAGE, true, 0, NULLAURA_EFFECT, GetCaster()->GetOwner()->GetGUID());
+                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_HEAL, true, 0, NULL, GetCaster()->GetOwner()->GetGUID());
+                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_DAMAGE, true, 0, NULL, GetCaster()->GetOwner()->GetGUID());
                     }
                 }
             }
@@ -945,7 +945,7 @@ class spell_pal_consecration : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pal_consecration_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(PALADIN_SPELL_CONSECRATION_AREA_DUMMY))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), PALADIN_SPELL_CONSECRATION_DAMAGE, true);
@@ -1026,7 +1026,7 @@ class spell_pal_word_of_glory : public SpellScriptLoader
 
                         if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
                         {
-                            AuraPtr aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player);
+                            Aura* aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player);
 
                             if (aura)
                             {
@@ -1124,13 +1124,13 @@ class spell_pal_ardent_defender : public SpellScriptLoader
                 return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & canBeRecalculated)
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & canBeRecalculated)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 Unit* victim = GetTarget();
                 int32 remainingHealth = victim->GetHealth() - dmgInfo.GetDamage();

@@ -396,12 +396,12 @@ class player_overlord_brandAI : public PlayerAI
         void DamageDealt(Unit* /*victim*/, uint32& damage, DamageEffectType /*damageType*/)
         {
             if (tyrannus->getVictim())
-                me->CastCustomSpell(SPELL_OVERLORD_BRAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, tyrannus->getVictim(), true, NULL, NULLAURA_EFFECT, tyrannus->GetGUID());
+                me->CastCustomSpell(SPELL_OVERLORD_BRAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, tyrannus->getVictim(), true, NULL, NULL, tyrannus->GetGUID());
         }
 
         void HealDone(Unit* /*target*/, uint32& addHealth)
         {
-            me->CastCustomSpell(SPELL_OVERLORD_BRAND_HEAL, SPELLVALUE_BASE_POINT0, int32(addHealth*5.5f), tyrannus, true, NULL, NULLAURA_EFFECT, tyrannus->GetGUID());
+            me->CastCustomSpell(SPELL_OVERLORD_BRAND_HEAL, SPELLVALUE_BASE_POINT0, int32(addHealth*5.5f), tyrannus, true, NULL, NULL, tyrannus->GetGUID());
         }
 
         void UpdateAI(const uint32 /*diff*/) { }
@@ -419,7 +419,7 @@ class spell_tyrannus_overlord_brand : public SpellScriptLoader
         {
             PrepareAuraScript(spell_tyrannus_overlord_brand_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -430,7 +430,7 @@ class spell_tyrannus_overlord_brand : public SpellScriptLoader
                 GetTarget()->GetAI()->SetGUID(GetCasterGUID());
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -465,7 +465,7 @@ class spell_tyrannus_mark_of_rimefang : public SpellScriptLoader
         {
             PrepareAuraScript(spell_tyrannus_mark_of_rimefang_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* caster = GetCaster();
                 if (!caster || caster->GetTypeId() != TYPEID_UNIT)

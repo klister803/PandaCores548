@@ -321,15 +321,15 @@ class spell_staghelm_searing_seeds_aura : public SpellScriptLoader
         {
             PrepareAuraScript(spell_staghelm_searing_seeds_aura_AuraScript);
 
-            void OnApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                AuraPtr aura = aurEff->GetBase();
+                Aura* aura = aurEff->GetBase();
                 uint32 duration = urand(3000, 45000);
                 aura->SetDuration(duration);
                 aura->SetMaxDuration(duration);
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 GetTarget()->CastSpell(GetTarget(), SPELL_SEARING_SEEDS_EXPLOSION, true);
             }
@@ -385,12 +385,12 @@ class spell_staghelm_concentration_aura : public SpellScriptLoader
         {
             PrepareAuraScript(spell_staghelm_concentration_aura_AuraScript);
 
-            void HandlePeriodicTick(constAuraEffectPtr /*aurEff*/)
+            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
             {
                 if (!GetUnitOwner())
                     return;
 
-                if (AuraEffectPtr aurEff = GetAura()->GetEffect(EFFECT_0))
+                if (AuraEffect* aurEff = GetAura()->GetEffect(EFFECT_0))
                 {
                     int32 oldamount = aurEff->GetAmount();
                     int32 newamount = oldamount + 1;

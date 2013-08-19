@@ -413,7 +413,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                         {
-                            if (AuraPtr aura = m_caster->GetAura(86700))
+                            if (Aura* aura = m_caster->GetAura(86700))
                             {
                                 uint8 stacks = aura->GetStackAmount();
                                 damage = stacks * (damage + 0.1f * m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()));
@@ -509,7 +509,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
                     // if target is under 25% of life, also reset rake duration
                     if (unitTarget->GetHealthPct() <= 25.0f)
-                        if (AuraPtr aura = unitTarget->GetAura(1822))
+                        if (Aura* aura = unitTarget->GetAura(1822))
                             aura->RefreshDuration();
                 }
                 // Maul - Deals 20% more damage if target is bleeding
@@ -859,7 +859,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     m_caster->CastSpell(m_caster, 80326, true);
 
                     if (m_caster->isInCombat())
-                        if (AuraPtr camouflage = m_caster->GetAura(51755))
+                        if (Aura* camouflage = m_caster->GetAura(51755))
                             camouflage->SetDuration(6000);
 
                     if (Unit* pet = m_caster->GetGuardianPet())
@@ -899,7 +899,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     bp *= 1.1f;
 
                 // Glyph of Dark Succor
-                if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(96279, 0))
+                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(96279, 0))
                     if (bp < int32(m_caster->CountPctFromMaxHealth(aurEff->GetAmount())))
                         if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
                             bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
@@ -1138,7 +1138,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         m_caster->ToPlayer()->RemoveSpellCooldown(spellInfo->Id);
 
     // original caster guid only for GO cast
-    m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULLAURA_EFFECT, m_originalCasterGUID);
+    m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
 }
 
 void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
@@ -1191,7 +1191,7 @@ void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
         m_caster->ToPlayer()->RemoveSpellCooldown(spellInfo->Id);
 
     // original caster guid only for GO cast
-    m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULLAURA_EFFECT, m_originalCasterGUID);
+    m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
 }
 
 void Spell::EffectForceCast(SpellEffIndex effIndex)
@@ -1223,7 +1223,7 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
                 break;
             case 52463: // Hide In Mine Car
             case 52349: // Overtake
-                unitTarget->CastCustomSpell(unitTarget, spellInfo->Id, &damage, NULL, NULL, true, NULL, NULLAURA_EFFECT, m_originalCasterGUID);
+                unitTarget->CastCustomSpell(unitTarget, spellInfo->Id, &damage, NULL, NULL, true, NULL, NULL, m_originalCasterGUID);
                 return;
         }
     }
@@ -1662,7 +1662,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
         {
             // Amount of heal - depends from stacked Holy Energy
             int damageAmount = 0;
-            if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(45062, 0))
+            if (AuraEffect const* aurEff = m_caster->GetAuraEffect(45062, 0))
             {
                 damageAmount+= aurEff->GetAmount();
                 m_caster->RemoveAurasDueToSpell(45062);
@@ -1675,7 +1675,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
         {
             int32 charges = 0;
 
-            if (AuraPtr selflessHealer = caster->GetAura(114250))
+            if (Aura* selflessHealer = caster->GetAura(114250))
                 charges = selflessHealer->GetStackAmount();
 
             if (charges && unitTarget->GetGUID() != caster->GetGUID())
@@ -1763,7 +1763,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
         }
         // Chakra : Serenity - 81208
         if (m_caster && addhealth && m_caster->HasAura(81208) && m_spellInfo->Effects[0].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) // Single heal target
-            if (AuraPtr renew = unitTarget->GetAura(139, m_caster->GetGUID()))
+            if (Aura* renew = unitTarget->GetAura(139, m_caster->GetGUID()))
                 renew->RefreshDuration();
 
         // Mogu'Shan Vault
@@ -2071,8 +2071,8 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             return;
         }
 
-        AuraPtr aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
-        if (aura != NULLAURA)
+        Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
+        if (aura != NULL)
         {
             m_spellAura = aura;
             m_spellAura->_RegisterForTargets();
@@ -3621,8 +3621,8 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 if (needCast)
                     m_caster->CastSpell(unitTarget, 58567, true);
 
-                AuraPtr aur = unitTarget->GetAura(58567, m_caster->GetGUID());
-                if (aur != NULLAURA)
+                Aura* aur = unitTarget->GetAura(58567, m_caster->GetGUID());
+                if (aur != NULL)
                 {
                     if (int32 num = (needCast ? 0 : 1))
                         aur->ModStackAmount(num);
@@ -3655,7 +3655,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                     m_caster->ToPlayer()->AddComboPoints(unitTarget, 1);
 
                 // Fan of Knives - Vile Poisons
-                if (AuraEffectPtr aur = m_caster->GetDummyAuraEffect(SPELLFAMILY_ROGUE, 857, 2))
+                if (AuraEffect* aur = m_caster->GetDummyAuraEffect(SPELLFAMILY_ROGUE, 857, 2))
                 {
                     if (roll_chance_i(aur->GetAmount()))
                     {
@@ -3670,7 +3670,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
         {
             // Skyshatter Harness item set bonus
             // Stormstrike
-            if (AuraEffectPtr aurEff = m_caster->IsScriptOverriden(m_spellInfo, 5634))
+            if (AuraEffect* aurEff = m_caster->IsScriptOverriden(m_spellInfo, 5634))
                 m_caster->CastSpell(m_caster, 38430, true, NULL, aurEff);
             break;
         }
@@ -3698,7 +3698,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             {
                 float bonusPct = m_spellInfo->Effects[EFFECT_3].BasePoints * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 10.0f;
                 // Death Knight T8 Melee 4P Bonus
-                if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
+                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
                     AddPct(bonusPct, aurEff->GetAmount());
                 AddPct(totalDamagePercentMod, bonusPct);
                 break;
@@ -3708,7 +3708,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             {
                 float bonusPct = m_spellInfo->Effects[EFFECT_2].CalcValue(m_caster) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID(), false) / 2.0f;
                 // Death Knight T8 Melee 4P Bonus
-                if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
+                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
                     AddPct(bonusPct, aurEff->GetAmount());
                 AddPct(totalDamagePercentMod, bonusPct);
                 break;
@@ -3718,7 +3718,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             {
                 float bonusPct = m_spellInfo->Effects[EFFECT_2].CalcValue(m_caster) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID());
                 // Death Knight T8 Melee 4P Bonus
-                if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
+                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
                     AddPct(bonusPct, aurEff->GetAmount());
 
                 AddPct(totalDamagePercentMod, bonusPct);
@@ -4004,7 +4004,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 63975:
                 {
                     // search our Rupture aura on target
-                    if (constAuraEffectPtr aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x00100000, 0, 0, m_caster->GetGUID()))
+                    if (AuraEffect const* aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x00100000, 0, 0, m_caster->GetGUID()))
                     {
                         uint32 countMin = aurEff->GetBase()->GetMaxDuration();
                         uint32 countMax = 12000; // this can be wrong, duration should be based on combo-points
@@ -4025,7 +4025,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     Unit::AuraEffectList const &mPeriodic = unitTarget->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
                     for (Unit::AuraEffectList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
                     {
-                        constAuraEffectPtr aurEff = *i;
+                        AuraEffect const* aurEff = *i;
                         SpellInfo const* spellInfo = aurEff->GetSpellInfo();
                         // search our Blood Plague and Frost Fever on target
                         if (spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellInfo->SpellFamilyFlags[2] & 0x2 &&
@@ -4037,7 +4037,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                             // this Glyph
                             countMax += 9000;
                             // talent Epidemic
-                            if (constAuraEffectPtr epidemic = m_caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 234, EFFECT_0))
+                            if (AuraEffect const* epidemic = m_caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 234, EFFECT_0))
                                 countMax += epidemic->GetAmount();
 
                             if (countMin < countMax)
@@ -4519,7 +4519,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         }
                     }
                     // Glyph of Stoneclaw Totem
-                    if (AuraEffectPtr aur=unitTarget->GetAuraEffect(63298, 0))
+                    if (AuraEffect* aur=unitTarget->GetAuraEffect(63298, 0))
                     {
                         basepoints0 *= aur->GetAmount();
                         m_caster->CastCustomSpell(unitTarget, 55277, &basepoints0, NULL, NULL, true);
@@ -4615,7 +4615,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 53412:
                 {
                     if (Player* owner = m_caster->GetOwner()->ToPlayer())
-                        if (AuraEffectPtr aurEff = owner->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_HUNTER, 3487, 0))
+                        if (AuraEffect* aurEff = owner->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_HUNTER, 3487, 0))
                             owner->EnergizeBySpell(owner, 53412, aurEff->GetAmount(), POWER_FOCUS);
                     break;
                 }
@@ -5657,7 +5657,7 @@ void Spell::EffectDispelMechanic(SpellEffIndex effIndex)
     Unit::AuraMap const& auras = unitTarget->GetOwnedAuras();
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {
-        AuraPtr aura = itr->second;
+        Aura* aura = itr->second;
         if (!aura->GetApplicationOfTarget(unitTarget->GetGUID()))
             continue;
         if (roll_chance_i(aura->CalcDispelChance(unitTarget, !unitTarget->IsFriendlyTo(m_caster))))
@@ -6059,7 +6059,7 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
     Unit::AuraMap const& auras = unitTarget->GetOwnedAuras();
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {
-        AuraPtr aura = itr->second;
+        Aura* aura = itr->second;
         AuraApplication * aurApp = aura->GetApplicationOfTarget(unitTarget->GetGUID());
         if (!aurApp)
             continue;
@@ -6750,8 +6750,8 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
             return;
         }
 
-        AuraPtr aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
-        if (aura != NULLAURA)
+        Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
+        if (aura != NULL)
         {
             m_spellAura = aura;
             m_spellAura->_RegisterForTargets();

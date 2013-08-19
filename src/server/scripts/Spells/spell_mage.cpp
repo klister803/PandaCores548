@@ -100,13 +100,13 @@ class spell_mage_incanters_ward_cooldown : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_incanters_ward_cooldown_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     caster->RemoveAura(SPELL_MAGE_INCANTERS_ABSORBTION_PASSIVE);
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     if (!caster->HasAura(SPELL_MAGE_INCANTERS_ABSORBTION_PASSIVE))
@@ -146,7 +146,7 @@ class spell_mage_incanters_ward : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
             {
                 if (Unit* caster = GetCaster())
                     amount += caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ARCANE);
@@ -154,7 +154,7 @@ class spell_mage_incanters_ward : public SpellScriptLoader
                 absorbtionAmount = float(amount);
             }
 
-            void OnAbsorb(AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 if (Unit* caster = dmgInfo.GetVictim())
                 {
@@ -170,7 +170,7 @@ class spell_mage_incanters_ward : public SpellScriptLoader
                 }
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -206,13 +206,13 @@ class spell_mage_arcane_missile : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_arcane_missile_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                     return;
 
                 if (Player* _player = GetCaster()->ToPlayer())
-                    if (AuraPtr arcaneMissiles = _player->GetAura(SPELL_MAGE_ARCANE_MISSILES))
+                    if (Aura* arcaneMissiles = _player->GetAura(SPELL_MAGE_ARCANE_MISSILES))
                         arcaneMissiles->DropCharge();
             }
 
@@ -249,12 +249,12 @@ class spell_mage_cauterize : public SpellScriptLoader
                 return GetUnitOwner()->ToPlayer();
             }
 
-            void CalculateAmount(constAuraEffectPtr /*AuraEffectPtr*/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr /*AuraEffectPtr*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void Absorb(AuraEffect* /*AuraEffect**/, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 Unit* target = GetTarget();
 
@@ -398,7 +398,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                         uint8 chargeCount = 0;
                         int32 bp = 0;
 
-                        if (AuraPtr arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                        if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
                         {
                             chargeCount = arcaneCharge->GetStackAmount();
                             _player->RemoveAura(SPELL_MAGE_ARCANE_CHARGE);
@@ -416,7 +416,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                             Trinity::Containers::RandomResizeList(targetList, chargeCount);
 
                             for (auto itr : targetList)
-                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULLAURA_EFFECT, _player->GetGUID());
+                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID());
                         }
                     }
                 }
@@ -449,7 +449,7 @@ class spell_mage_arcane_explosion : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_MAGE_ARCANE)
-                            if (AuraPtr arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                            if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
                                 arcaneCharge->RefreshDuration();
             }
 
@@ -483,7 +483,7 @@ class spell_mage_slow : public SpellScriptLoader
                     {
                         if (target->GetTypeId() == TYPEID_PLAYER)
                         {
-                            if (AuraPtr frostjaw = target->GetAura(SPELL_MAGE_SLOW, _player->GetGUID()))
+                            if (Aura* frostjaw = target->GetAura(SPELL_MAGE_SLOW, _player->GetGUID()))
                             {
                                 // Only half time against players
                                 frostjaw->SetDuration(frostjaw->GetMaxDuration() / 2);
@@ -549,7 +549,7 @@ class spell_mage_invocation : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_invocation_AuraScript);
 
-            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                 if (removeMode != AURA_REMOVE_BY_EXPIRE)
@@ -589,7 +589,7 @@ class spell_mage_frost_bomb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_frost_bomb_AuraScript);
 
-            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                 if (removeMode != AURA_REMOVE_BY_EXPIRE)
@@ -659,7 +659,7 @@ class spell_mage_nether_tempest : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_nether_tempest_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (GetCaster())
                 {
@@ -744,7 +744,7 @@ class spell_mage_frostjaw : public SpellScriptLoader
                     {
                         if (target->GetTypeId() == TYPEID_PLAYER)
                         {
-                            if (AuraPtr frostjaw = target->GetAura(SPELL_MAGE_FROSTJAW, _player->GetGUID()))
+                            if (Aura* frostjaw = target->GetAura(SPELL_MAGE_FROSTJAW, _player->GetGUID()))
                             {
                                 // Only half time against players
                                 frostjaw->SetDuration(frostjaw->GetMaxDuration() / 2);
@@ -1173,7 +1173,7 @@ class spell_mage_alter_time : public SpellScriptLoader
             uint32 map;
             std::set<auraData*> auras;
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                 {
@@ -1185,7 +1185,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                     Unit::AuraApplicationMap const& appliedAuras = _player->GetAppliedAuras();
                     for (Unit::AuraApplicationMap::const_iterator itr = appliedAuras.begin(); itr != appliedAuras.end(); ++itr)
                     {
-                        if (AuraPtr aura = itr->second->GetBase())
+                        if (Aura* aura = itr->second->GetBase())
                         {
                             SpellInfo const* auraInfo = aura->GetSpellInfo();
 
@@ -1203,13 +1203,13 @@ class spell_mage_alter_time : public SpellScriptLoader
                 }
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                 {
                     for (auto itr : auras)
                     {
-                        AuraPtr aura = !_player->HasAura(itr->m_id) ? _player->AddAura(itr->m_id, _player) : _player->GetAura(itr->m_id);
+                        Aura* aura = !_player->HasAura(itr->m_id) ? _player->AddAura(itr->m_id, _player) : _player->GetAura(itr->m_id);
                         if (aura)
                         {
                             aura->SetDuration(itr->m_duration);
@@ -1360,11 +1360,11 @@ class spell_mage_incanters_absorbtion_base_AuraScript : public AuraScript
                 && sSpellMgr->GetSpellInfo(SPELL_MAGE_INCANTERS_ABSORBTION_R1);
         }
 
-        void Trigger(AuraEffectPtr aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
+        void Trigger(AuraEffect* aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
         {
             Unit* target = GetTarget();
 
-            if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(SPELL_MAGE_INCANTERS_ABSORBTION_R1, EFFECT_0))
+            if (AuraEffect* talentAurEff = target->GetAuraEffectOfRankedSpell(SPELL_MAGE_INCANTERS_ABSORBTION_R1, EFFECT_0))
             {
                 int32 bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
                 target->CastCustomSpell(target, SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
@@ -1426,7 +1426,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_living_bomb_AuraScript);
 
-            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                 if (removeMode != AURA_REMOVE_BY_DEATH && removeMode != AURA_REMOVE_BY_EXPIRE)

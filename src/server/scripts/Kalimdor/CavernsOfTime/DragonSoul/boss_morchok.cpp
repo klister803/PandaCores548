@@ -737,7 +737,7 @@ class spell_morchok_black_blood_of_the_earth : public SpellScriptLoader
         {
             PrepareAuraScript(spell_morchok_black_blood_of_the_earth_AuraScript);
 
-            void HandlePeriodicTick(constAuraEffectPtr aurEff)
+            void HandlePeriodicTick(AuraEffect const* aurEff)
             {
                 float ticks = aurEff->GetTickNumber();
                 int counter = (int)floor(ticks / 5) + 1;
@@ -855,7 +855,7 @@ class spell_morchok_black_blood_of_the_earth_dmg : public SpellScriptLoader
                 if (unitList.empty())
                     return;
 
-                if (constAuraEffectPtr aurEff = GetCaster()->GetAuraEffect(SPELL_BLACK_BLOOD_OF_THE_EARTH, EFFECT_0))
+                if (AuraEffect const* aurEff = GetCaster()->GetAuraEffect(SPELL_BLACK_BLOOD_OF_THE_EARTH, EFFECT_0))
                 {
                     float ticks = aurEff->GetTickNumber();
                     int counter = (int)floor(ticks / 5) + 1;
@@ -990,11 +990,11 @@ class spell_morchok_resonating_crystal : public SpellScriptLoader
                 return true;
             }
 
-            void OnPeriodic(constAuraEffectPtr /*aurEff*/)
+            void OnPeriodic(AuraEffect const* /*aurEff*/)
             {
                 if(amount > 0)
                     amount -= 20;
-                if (AuraEffectPtr effect = GetAura()->GetEffect(EFFECT_1))
+                if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_1))
                     effect->ChangeAmount(amount);
             }
 

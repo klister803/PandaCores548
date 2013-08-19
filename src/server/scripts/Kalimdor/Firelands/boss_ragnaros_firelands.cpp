@@ -2452,7 +2452,7 @@ class spell_ragnaros_firelands_blazing_speed : public SpellScriptLoader
         {
             PrepareAuraScript(spell_ragnaros_firelands_blazing_speed_AuraScript);
 
-            void HandlePeriodicTick(constAuraEffectPtr /*aurEff*/)
+            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
             {
                 if (!GetCaster())
                     return;
@@ -2479,7 +2479,7 @@ class spell_ragnaros_firelands_blazing_speed : public SpellScriptLoader
                 else
                 {
                     uint8 stacks = uint8(0.2f * (health_pct - 50.0f));
-                    if (AuraPtr aur = GetCaster()->GetAura(spell_id))
+                    if (Aura* aur = GetCaster()->GetAura(spell_id))
                         aur->SetStackAmount(stacks);
                     else
                         GetCaster()->CastCustomSpell(spell_id, SPELLVALUE_AURA_STACK, int32(stacks), GetCaster(), true);
@@ -2681,7 +2681,7 @@ class spell_ragnaros_firelands_world_in_flame : public SpellScriptLoader
         {
             PrepareAuraScript(spell_ragnaros_firelands_world_in_flame_AuraScript);
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                     return;

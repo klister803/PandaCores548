@@ -84,12 +84,12 @@ class spell_rog_cheat_death : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_cheat_death_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr /*AuraEffectPtr*/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr /*AuraEffectPtr*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void Absorb(AuraEffect* /*AuraEffect**/, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 if (Unit* target = GetTarget())
                 {
@@ -136,7 +136,7 @@ class spell_rog_blade_flurry : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_blade_flurry_AuraScript);
 
-            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
 
@@ -273,7 +273,7 @@ class spell_rog_combat_readiness : public SpellScriptLoader
             uint32 update;
             bool hit;
 
-            void HandleApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
             {
                 if (GetCaster())
                 {
@@ -282,7 +282,7 @@ class spell_rog_combat_readiness : public SpellScriptLoader
                 }
             }
 
-            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
                 update -= diff;
 
@@ -320,7 +320,7 @@ class spell_rog_nerve_strike : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_combat_readiness_AuraScript);
 
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
             {
                 if (GetCaster() && GetTarget())
                     if (GetCaster()->HasAura(ROGUE_SPELL_NERVE_STRIKE_AURA))
@@ -377,7 +377,7 @@ class spell_rog_nightstalker : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_nightstalker_AuraScript);
 
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
             {
                 if (GetCaster())
                 {
@@ -412,7 +412,7 @@ class spell_rog_energetic_recovery : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_energetic_recovery_AuraScript);
 
-            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
             {
                 if (GetCaster())
                     GetCaster()->EnergizeBySpell(GetCaster(), 5171, 8, POWER_ENERGY);
@@ -632,7 +632,7 @@ class spell_rog_cut_to_the_chase : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (_player->HasAura(ROGUE_SPELL_CUT_TO_THE_CHASE_AURA))
-                            if (AuraPtr sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE, _player->GetGUID()))
+                            if (Aura* sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE, _player->GetGUID()))
                                 sliceAndDice->SetDuration(sliceAndDice->GetMaxDuration());
             }
 
@@ -659,7 +659,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_venomous_wounds_AuraScript);
 
-            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -675,7 +675,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                                 || target->HasAura(113952, caster->GetGUID())
                                 || target->HasAura(112961, caster->GetGUID()))
                             {
-                                if (AuraPtr rupture = target->GetAura(ROGUE_SPELL_RUPTURE_DOT, caster->GetGUID()))
+                                if (Aura* rupture = target->GetAura(ROGUE_SPELL_RUPTURE_DOT, caster->GetGUID()))
                                 {
                                     // ... you have a 75% chance ...
                                     if (roll_chance_i(75))
@@ -687,7 +687,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                                     }
                                 }
                                 // Garrote will not trigger this effect if the enemy is also afflicted by your Rupture
-                                else if (AuraPtr garrote = target->GetAura(ROGUE_SPELL_GARROTE_DOT, caster->GetGUID()))
+                                else if (Aura* garrote = target->GetAura(ROGUE_SPELL_GARROTE_DOT, caster->GetGUID()))
                                 {
                                     // ... you have a 75% chance ...
                                     if (roll_chance_i(75))
@@ -704,7 +704,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                 }
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -713,7 +713,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                         AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                         if (removeMode == AURA_REMOVE_BY_DEATH)
                         {
-                            if (AuraPtr rupture = aurEff->GetBase())
+                            if (Aura* rupture = aurEff->GetBase())
                             {
                                 // If an enemy dies while afflicted by your Rupture, you regain energy proportional to the remaining Rupture duration
                                 int32 duration = int32(rupture->GetDuration() / 1000);
@@ -807,7 +807,7 @@ class spell_rog_shroud_of_concealment : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
-                        if (AuraPtr shroudOfConcealment = target->GetAura(ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA, _player->GetGUID()))
+                        if (Aura* shroudOfConcealment = target->GetAura(ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA, _player->GetGUID()))
                             if (!target->IsInRaidWith(_player) && !target->IsInPartyWith(_player))
                                 target->RemoveAura(ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA, _player->GetGUID());
             }
@@ -904,7 +904,7 @@ class spell_rog_slice_and_dice : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (AuraPtr sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE))
+                    if (Aura* sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE))
                     {
                         int32 duration = sliceAndDice->GetDuration();
                         int32 maxDuration = sliceAndDice->GetMaxDuration();
@@ -1003,7 +1003,7 @@ class spell_rog_paralytic_poison : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (AuraPtr paralyticPoison = target->GetAura(ROGUE_SPELL_PARALYTIC_POISON_DEBUFF))
+                        if (Aura* paralyticPoison = target->GetAura(ROGUE_SPELL_PARALYTIC_POISON_DEBUFF))
                         {
                             if (paralyticPoison->GetStackAmount() == 5 && !target->HasAura(ROGUE_SPELL_TOTAL_PARALYSIS))
                             {
@@ -1168,7 +1168,7 @@ class spell_rog_recuperate : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (AuraPtr recuperate = _player->GetAura(ROGUE_SPELL_RECUPERATE))
+                    if (Aura* recuperate = _player->GetAura(ROGUE_SPELL_RECUPERATE))
                     {
                         int32 bp = _player->CountPctFromMaxHealth(3);
                         recuperate->GetEffect(0)->ChangeAmount(bp);
@@ -1260,7 +1260,7 @@ class spell_rog_deadly_poison : public SpellScriptLoader
             {
                 if (Unit* target = GetHitUnit())
                     // Deadly Poison
-                    if (constAuraEffectPtr aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x10000, 0x80000, 0, GetCaster()->GetGUID()))
+                    if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x10000, 0x80000, 0, GetCaster()->GetGUID()))
                         _stackAmount = aurEff->GetBase()->GetStackAmount();
             }
 
@@ -1396,7 +1396,7 @@ class spell_rog_eviscerate : public SpellScriptLoader
                         if(caster->HasAura(14172))
                             chance *= 2;
                         if(roll_chance_i(chance))
-                            if(AuraPtr aura = target->GetAura(1943, caster->GetGUID()))
+                            if(Aura* aura = target->GetAura(1943, caster->GetGUID()))
                                 aura->RefreshDuration();
                     }
                 }

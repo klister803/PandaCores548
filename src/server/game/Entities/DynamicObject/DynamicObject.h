@@ -20,8 +20,6 @@
 #define DYNAMICOBJECT_H
 
 #include "Object.h"
-#include "../SharedPtrs/SharedPtrs.h"
-
 
 class Unit;
 class Aura;
@@ -49,7 +47,7 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
         void SetDuration(int32 newDuration);
         int32 GetDuration() const;
         void Delay(int32 delaytime);
-        void SetAura(AuraPtr aura);
+        void SetAura(Aura* aura);
         void RemoveAura();
         void SetCasterViewpoint();
         void RemoveCasterViewpoint();
@@ -67,8 +65,8 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
         void YellToZone(int32 textId, uint32 language, uint64 targetGuid) { MonsterYellToZone(textId, language, targetGuid); }
 
     protected:
-        AuraPtr _aura;
-        AuraPtr _removedAura;
+        Aura* _aura;
+        Aura* _removedAura;
         Unit* _caster;
         int32 _duration; // for non-aura dynobjects
         bool _isViewpoint;

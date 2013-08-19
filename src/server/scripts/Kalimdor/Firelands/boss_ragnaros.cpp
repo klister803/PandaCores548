@@ -1135,7 +1135,7 @@ class npc_son_of_flame : public CreatureScript
                             events.ScheduleEvent(EVENT_ACTIVATE2, 6000);
                             break;
                         case EVENT_ACTIVATE:
-                            if(AuraPtr aura = me->AddAura(SPELL_BURNING_SPEED, me))
+                            if(Aura* aura = me->AddAura(SPELL_BURNING_SPEED, me))
                                 aura->SetStackAmount(10);
                             if (Creature* target = me->FindNearestCreature(NPC_SULFURAS_HAMMER, 100.0f))
                                 me->GetMotionMaster()->MovePoint(POINT_HAMMER, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());

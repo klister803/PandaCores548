@@ -586,7 +586,7 @@ class spell_magmaw_mangle : public SpellScriptLoader
         {
             PrepareAuraScript(spell_magmaw_mangle_AuraScript);
 
-            void OnApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget() && GetCaster())
                     return;
@@ -594,7 +594,7 @@ class spell_magmaw_mangle : public SpellScriptLoader
                 GetTarget()->SetControlled(true, UNIT_STATE_STUNNED);
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget() && GetCaster())
                     return;
@@ -625,7 +625,7 @@ class spell_parasitic_infection : public SpellScriptLoader
         {
             PrepareAuraScript(spell_parasitic_infection_AuraScript);
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;

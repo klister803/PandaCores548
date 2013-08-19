@@ -1435,7 +1435,7 @@ class spell_drakonid_chainwielder_grievous_wound : public SpellScriptLoader
         {
             PrepareAuraScript(spell_drakonid_chainwielder_grievous_wound_AuraScript)
 
-            void OnPeriodic(constAuraEffectPtr aurEff)
+            void OnPeriodic(AuraEffect const* aurEff)
             {
                 if (!GetTarget())
                     return;

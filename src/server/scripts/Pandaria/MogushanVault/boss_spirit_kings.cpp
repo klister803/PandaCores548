@@ -522,7 +522,7 @@ class boss_spirit_kings : public CreatureScript
                 }
 
                 if (me->HasAura(SPELL_COWARDICE))
-                    if (AuraPtr aura = me->GetAura(SPELL_COWARDICE))
+                    if (Aura* aura = me->GetAura(SPELL_COWARDICE))
                     {
                         float charges = aura->GetCharges();
                         me->DealDamage(attacker, damage * (charges / 100));
@@ -908,7 +908,7 @@ class spell_maddening_shout : public SpellScriptLoader
         {
             PrepareAuraScript(spell_maddening_shout_AuraScript);
 
-            void OnAbsorb(AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 if (Unit* attacker = dmgInfo.GetAttacker())
                     if (attacker->GetTypeId() != TYPEID_PLAYER)
@@ -936,13 +936,13 @@ class spell_crazed_cowardice : public SpellScriptLoader
         {
             PrepareAuraScript(spell_crazed_cowardice_AuraScript);
 
-            void HandlePeriodic(constAuraEffectPtr /*aurEff*/)
+            void HandlePeriodic(AuraEffect const* /*aurEff*/)
             {
                 PreventDefaultAction();
                 
                 if (Unit* caster = GetCaster())
                 {
-                    if (AuraPtr aura = GetAura())
+                    if (Aura* aura = GetAura())
                     {
                         if (aura->GetId() == SPELL_CRAZED)
                             aura->SetStackAmount(aura->GetStackAmount() + 1);
@@ -983,9 +983,9 @@ class spell_crazy_tought : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (AuraPtr aura = caster->GetAura(SPELL_CRAZED))
+                    if (Aura* aura = caster->GetAura(SPELL_CRAZED))
                         aura->SetStackAmount(aura->GetStackAmount() + 10);
-                    else if (AuraPtr aura = caster->GetAura(SPELL_COWARDICE))
+                    else if (Aura* aura = caster->GetAura(SPELL_COWARDICE))
                         aura->SetCharges(aura->GetCharges() + 10);
                 }
             }

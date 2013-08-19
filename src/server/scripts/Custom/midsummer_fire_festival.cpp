@@ -20,7 +20,7 @@ class spell_fire_dancing : public SpellScriptLoader
         {
             PrepareAuraScript(spell_fire_dancingAuraScript);
 
-            void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* caster = GetCaster();
                 // caster may be not avalible (logged out for example)
@@ -56,7 +56,7 @@ class spell_torches_caught : public SpellScriptLoader
         {
             PrepareAuraScript(spell_torches_caughtAuraScript);
 
-            void OnStackChange(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* caster = GetCaster();
                 // caster may be not avalible (logged out for example)
@@ -212,7 +212,7 @@ class spell_hawka : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hawkaAuraScript);
 
-            void OnStackChange(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit * target = GetTarget();
                 // caster may be not avalible (logged out for example)
@@ -239,11 +239,11 @@ class spell_hawka : public SpellScriptLoader
                             default:
                                 break;
                         }
-                        if(AuraPtr aura1 = target->GetAura(61841))
-                        if(AuraPtr aura2 = target->GetAura(61842))
-                        if(AuraPtr aura3 = target->GetAura(61843))
-                        if(AuraPtr aura4 = target->GetAura(61844))
-                        if(AuraPtr aura5 = target->GetAura(61845))
+                        if(Aura* aura1 = target->GetAura(61841))
+                        if(Aura* aura2 = target->GetAura(61842))
+                        if(Aura* aura3 = target->GetAura(61843))
+                        if(Aura* aura4 = target->GetAura(61844))
+                        if(Aura* aura5 = target->GetAura(61845))
                         {
                             if(aura1->GetStackAmount() >= 5 && aura2->GetStackAmount() >= 5 && aura3->GetStackAmount() >= 5 && aura4->GetStackAmount() >= 5 && aura5->GetStackAmount() >= 5)
                             {
@@ -373,7 +373,7 @@ class spell_turkey_tracker : public SpellScriptLoader
         {
             PrepareAuraScript(spell_turkey_trackerAuraScript);
 
-            void OnStackChange(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* caster = GetCaster();
                 // caster may be not avalible (logged out for example)

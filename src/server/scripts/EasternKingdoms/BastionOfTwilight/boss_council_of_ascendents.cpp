@@ -1755,7 +1755,7 @@ class spell_ignis_rising_flames : public SpellScriptLoader
         {
             PrepareAuraScript(spell_ignis_rising_flames_AuraScript)
 
-            void OnPeriodic(constAuraEffectPtr aurEff)
+            void OnPeriodic(AuraEffect const* aurEff)
             {
                 if (!GetCaster())
                     return;
@@ -2003,7 +2003,7 @@ class spell_terrastra_harden_skin : public SpellScriptLoader
         {
             PrepareAuraScript(spell_terrastra_harden_skin_AuraScript);
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes mode)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
             {
                 if (!GetTarget())
                     return;
@@ -2015,7 +2015,7 @@ class spell_terrastra_harden_skin : public SpellScriptLoader
                 }
             }
 
-            void OnAbsorb(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void OnAbsorb(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 dmgInfo.ModifyDamage(-(int32)(dmgInfo.GetDamage()/2));
             }
@@ -2042,7 +2042,7 @@ class spell_monstrosity_cryogenic_aura : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monstrosity_cryogenic_aura_AuraScript)
 
-            void OnPeriodic(constAuraEffectPtr aurEff)
+            void OnPeriodic(AuraEffect const* aurEff)
             {
                 if (!GetCaster())
                     return;
@@ -2078,7 +2078,7 @@ class spell_elemental_statis : public SpellScriptLoader
         {
             PrepareAuraScript(spell_elemental_statis_AuraScript);
 
-            void OnApply(constAuraEffectPtr aurEff, AuraEffectHandleModes mode)
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
             {
                 if (!GetCaster() || !GetTarget())
                     return;

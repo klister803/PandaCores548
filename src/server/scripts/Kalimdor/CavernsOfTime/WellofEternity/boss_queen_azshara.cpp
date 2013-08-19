@@ -27,7 +27,7 @@ class spell_boss_queen_azshara_drain_sssence : public SpellScriptLoader
                 return true;
             }
 
-            void PeriodicTick(constAuraEffectPtr /*aurEff*/)
+            void PeriodicTick(AuraEffect const* /*aurEff*/)
             {
                 if(Unit* target = GetTarget())
                 if (Unit* victim = target->getVictim())

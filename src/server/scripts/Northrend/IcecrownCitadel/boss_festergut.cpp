@@ -193,7 +193,7 @@ class boss_festergut : public CreatureScript
                                 // just cast and dont bother with target, conditions will handle it
                                 ++_inhaleCounter;
                                 if (_inhaleCounter < 3)
-                                    me->CastSpell(me, gaseousBlight[_inhaleCounter], true, NULL, NULLAURA_EFFECT, me->GetGUID());
+                                    me->CastSpell(me, gaseousBlight[_inhaleCounter], true, NULL, NULL, me->GetGUID());
                             }
 
                             events.ScheduleEvent(EVENT_INHALE_BLIGHT, urand(33500, 35000));
@@ -394,7 +394,7 @@ class spell_festergut_gastric_bloat : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                constAuraPtr aura = GetHitUnit()->GetAura(GetSpellInfo()->Id);
+                Aura const* aura = GetHitUnit()->GetAura(GetSpellInfo()->Id);
                 if (!(aura && aura->GetStackAmount() == 10))
                     return;
 
@@ -430,14 +430,14 @@ class spell_festergut_blighted_spores : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                     return;
 
                 uint32 currStack = 0;
                 uint32 inoculatedId = sSpellMgr->GetSpellIdForDifficulty(SPELL_INOCULATED, GetCaster());
-                if (constAuraPtr inoculate = GetTarget()->GetAura(inoculatedId))
+                if (Aura const* inoculate = GetTarget()->GetAura(inoculatedId))
                     currStack = inoculate->GetStackAmount();
 
                 GetTarget()->CastSpell(GetTarget(), inoculatedId, true);
@@ -449,7 +449,7 @@ class spell_festergut_blighted_spores : public SpellScriptLoader
 
                 currStack = 0;
                 uint32 dotId = sSpellMgr->GetSpellIdForDifficulty(SPELL_GAS_SPORE_DOT, GetCaster());
-                if (AuraPtr dot = GetTarget()->GetAura(dotId))
+                if (Aura* dot = GetTarget()->GetAura(dotId))
                 {
                     currStack = dot->GetStackAmount();
                     dot->SetStackAmount(currStack + 1);

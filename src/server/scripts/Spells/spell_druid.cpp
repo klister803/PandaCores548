@@ -126,13 +126,13 @@ class spell_dru_play_death : public SpellScriptLoader
             int32 health;
             int32 mana;
 
-            void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 health = GetTarget()->GetHealth();
                 mana = GetTarget()->GetPower(POWER_MANA);
             }
 
-            void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (health && mana)
                 {
@@ -164,7 +164,7 @@ class spell_dru_consecration : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_consecration_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_DRUID_CONSECRATION_DUMMY))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_CONSECRATION_DAMAGE, true);
@@ -303,13 +303,13 @@ class spell_dru_soul_swap : public SpellScriptLoader
                                 int32 rakeMaxDuration;
                                 int32 rakeAmount;
 
-                                if (AuraPtr rip = itr->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
+                                if (Aura* rip = itr->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
                                 {
                                     ripDuration = rip->GetDuration();
                                     ripMaxDuration = rip->GetMaxDuration();
                                     ripAmount = rip->GetEffect(0)->GetAmount();
                                 }
-                                if (AuraPtr rake = itr->GetAura(SPELL_DRUID_RAKE, _player->GetGUID()))
+                                if (Aura* rake = itr->GetAura(SPELL_DRUID_RAKE, _player->GetGUID()))
                                 {
                                     rakeDuration = rake->GetDuration();
                                     rakeMaxDuration = rake->GetMaxDuration();
@@ -322,13 +322,13 @@ class spell_dru_soul_swap : public SpellScriptLoader
                                 _player->AddAura(SPELL_DRUID_RIP, target);
                                 _player->AddAura(SPELL_DRUID_RAKE, target);
 
-                                if (AuraPtr rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
+                                if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
                                 {
                                     rip->SetDuration(ripDuration);
                                     rip->SetMaxDuration(ripMaxDuration);
                                     rip->GetEffect(0)->SetAmount(ripAmount);
                                 }
-                                if (AuraPtr rake = target->GetAura(SPELL_DRUID_RAKE, _player->GetGUID()))
+                                if (Aura* rake = target->GetAura(SPELL_DRUID_RAKE, _player->GetGUID()))
                                 {
                                     rake->SetDuration(rakeDuration);
                                     rake->SetMaxDuration(rakeMaxDuration);
@@ -450,7 +450,7 @@ class spell_dru_shattering_blow : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_symbiosis_aura_AuraScript);
 
-            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
                 if (!GetCaster() || !GetTarget())
                     return;
@@ -509,7 +509,7 @@ class spell_dru_symbiosis : public SpellScriptLoader
 
                     if (Player* target = GetHitUnit()->ToPlayer())
                     {
-                        if (AuraPtr symbiosis = _player->GetAura(110309))
+                        if (Aura* symbiosis = _player->GetAura(110309))
                         {
                             uint32 spellCaster = 0;
                             uint32 spellTarget = 0;
@@ -773,7 +773,7 @@ class spell_dru_natures_vigil : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_natures_vigil_AuraScript);
 
-            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
 
@@ -855,7 +855,7 @@ class spell_dru_cenarion_ward : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_cenarion_ward_AuraScript);
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes mode)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -915,7 +915,7 @@ class spell_dru_ursols_vortex : public SpellScriptLoader
 
             std::list<Unit*> targetList;
 
-            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
                 aurEff->GetTargetList(targetList);
 
@@ -952,7 +952,7 @@ class spell_dru_solar_beam : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_solar_beam_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_DRUID_SOLAR_BEAM))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_SOLAR_BEAM_SILENCE, true);
@@ -1056,7 +1056,7 @@ class spell_dru_rip_duration : public SpellScriptLoader
                         // Each time you Shred, Ravage, or Mangle the target while in Cat Form ...
                         if (_player->GetShapeshiftForm() == FORM_CAT)
                         {
-                            if (AuraPtr rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
+                            if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
                             {
                                 int32 duration = rip->GetDuration();
                                 int32 maxDuration = rip->GetMaxDuration();
@@ -1164,7 +1164,7 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (target->GetHealthPct() < 25.0f)
-                            if (AuraPtr rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
+                            if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
                                 rip->RefreshDuration();
             }
 
@@ -1196,7 +1196,7 @@ class spell_dru_bear_hug : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (AuraPtr bearHug = target->GetAura(SPELL_DRUID_BEAR_HUG, _player->GetGUID()))
+                        if (Aura* bearHug = target->GetAura(SPELL_DRUID_BEAR_HUG, _player->GetGUID()))
                         {
                             if (bearHug->GetEffect(1))
                             {
@@ -1259,7 +1259,7 @@ class spell_dru_lifebloom : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_lifebloom_AuraScript);
 
-            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 // Final heal only on duration end
                 if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
@@ -1295,7 +1295,7 @@ class spell_dru_lifebloom : public SpellScriptLoader
             {
                 if (Unit* target = GetUnitOwner())
                 {
-                    if (constAuraEffectPtr aurEff = GetEffect(EFFECT_1))
+                    if (AuraEffect const* aurEff = GetEffect(EFFECT_1))
                     {
                         // final heal
                         int32 healAmount = aurEff->GetAmount();
@@ -1305,11 +1305,11 @@ class spell_dru_lifebloom : public SpellScriptLoader
                             healAmount = caster->SpellHealingBonusDone(target, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
                             healAmount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
 
-                            target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                            target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
 
                             return;
                         }
-                        target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULLAURA_EFFECT, GetCasterGUID());
+                        target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
                     }
                 }
             }
@@ -1378,7 +1378,7 @@ class spell_dru_lifebloom_refresh : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
-                        if (AuraPtr lifebloom = target->GetAura(SPELL_DRUID_LIFEBLOOM, _player->GetGUID()))
+                        if (Aura* lifebloom = target->GetAura(SPELL_DRUID_LIFEBLOOM, _player->GetGUID()))
                             lifebloom->RefreshDuration();
             }
 
@@ -1405,7 +1405,7 @@ class spell_dru_omen_of_clarity : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_omen_of_clarity_AuraScript);
 
-            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
             {
                 if (Unit* caster = GetCaster())
                     if (caster->HasAura(SPELL_DRUID_OMEN_OF_CLARITY))
@@ -1526,7 +1526,7 @@ class spell_dru_glyph_of_regrowth : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_glyph_of_regrowth_AuraScript);
 
-            void HandleApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
             {
                 // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
                 if (GetCaster())
@@ -1534,13 +1534,13 @@ class spell_dru_glyph_of_regrowth : public SpellScriptLoader
                         GetTarget()->RemoveAura(SPELL_DRUID_REGROWTH, GetCaster()->GetGUID());
             }
 
-            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
             {
                 // Duration automatically refreshes to 6 sec each time Regrowth heals targets at or below 50% health
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetTarget())
                         if (target->GetHealthPct() < 50)
-                            if (AuraPtr regrowth = target->GetAura(SPELL_DRUID_REGROWTH, caster->GetGUID()))
+                            if (Aura* regrowth = target->GetAura(SPELL_DRUID_REGROWTH, caster->GetGUID()))
                                 regrowth->RefreshDuration();
             }
 
@@ -1594,20 +1594,20 @@ class spell_dru_cat_form : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_cat_form_AuraScript);
 
-            void OnApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
-                    if (AuraPtr dash = caster->GetAura(SPELL_DRUID_DASH))
+                    if (Aura* dash = caster->GetAura(SPELL_DRUID_DASH))
                         if (dash->GetEffect(0))
                             if (dash->GetEffect(0)->GetAmount() == 0)
                                 dash->GetEffect(0)->SetAmount(70);
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (AuraPtr dash = caster->GetAura(SPELL_DRUID_DASH))
+                    if (Aura* dash = caster->GetAura(SPELL_DRUID_DASH))
                         dash->GetEffect(0)->SetAmount(0);
 
                     if (caster->HasAura(SPELL_DRUID_PROWL))
@@ -1985,7 +1985,7 @@ class spell_dru_swiftmend : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_swiftmend_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_DRUID_SWIFTMEND))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_SWIFTMEND_TICK, true);
@@ -2013,7 +2013,7 @@ class spell_dru_astral_communion : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_astral_communion_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                 {
@@ -2101,7 +2101,7 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_celestial_alignment_AuraScript);
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                     return;
@@ -2294,7 +2294,7 @@ class spell_dru_innervate : public SpellScriptLoader
                         if (target->GetGUID() == _player->GetGUID())
                             mana *= 2;
 
-                        if (AuraPtr innervate = target->GetAura(29166))
+                        if (Aura* innervate = target->GetAura(29166))
                             innervate->GetEffect(0)->ChangeAmount(mana / 10);
                     }
                 }
@@ -2524,7 +2524,7 @@ class spell_dru_eclipse : public SpellScriptLoader
                                     // Your crits with wrath also increase sunfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
                                     {
-                                        if (AuraPtr aura = target->GetAura(SPELL_DRUID_SUNFIRE))
+                                        if (Aura* aura = target->GetAura(SPELL_DRUID_SUNFIRE))
                                         {
                                             aura->SetDuration(aura->GetDuration() + 2);
                                             if (aura->GetMaxDuration() < aura->GetDuration())
@@ -2553,7 +2553,7 @@ class spell_dru_eclipse : public SpellScriptLoader
                                     // Your crits with wrath also increase moonfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
                                     {
-                                        if (AuraPtr aura = target->GetAura(SPELL_DRUID_MOONFIRE))
+                                        if (Aura* aura = target->GetAura(SPELL_DRUID_MOONFIRE))
                                         {
                                             aura->SetDuration(aura->GetDuration() + 2);
                                             if (aura->GetMaxDuration() < aura->GetDuration())
@@ -2596,7 +2596,7 @@ class spell_dru_eclipse : public SpellScriptLoader
                                     // Your crits with wrath also increase sunfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
                                     {
-                                        if (AuraPtr aura = target->GetAura(SPELL_DRUID_SUNFIRE))
+                                        if (Aura* aura = target->GetAura(SPELL_DRUID_SUNFIRE))
                                         {
                                             aura->SetDuration(aura->GetDuration() + 2);
                                             if (aura->GetMaxDuration() < aura->GetDuration())
@@ -2606,7 +2606,7 @@ class spell_dru_eclipse : public SpellScriptLoader
                                     // Your crits with wrath also increase moonfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
                                     {
-                                        if (AuraPtr aura = target->GetAura(SPELL_DRUID_MOONFIRE))
+                                        if (Aura* aura = target->GetAura(SPELL_DRUID_MOONFIRE))
                                         {
                                             aura->SetDuration(aura->GetDuration() + 2);
                                             if (aura->GetMaxDuration() < aura->GetDuration())
@@ -2704,7 +2704,7 @@ class spell_dru_swift_flight_passive : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 if (Player* caster = GetCaster()->ToPlayer())
                     if (caster->GetSkillValue(SKILL_RIDING) >= 375)
@@ -2803,13 +2803,13 @@ class spell_dru_savage_roar : public SpellScriptLoader
                 return true;
             }
 
-            void AfterApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
                 target->CastSpell(target, DRUID_SAVAGE_ROAR, true, NULL, aurEff, GetCasterGUID());
             }
 
-            void AfterRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 GetTarget()->RemoveAurasDueToSpell(DRUID_SAVAGE_ROAR);
             }
@@ -2848,14 +2848,14 @@ class spell_dru_survival_instincts : public SpellScriptLoader
                 return true;
             }
 
-            void AfterApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
                 int32 bp0 = target->CountPctFromMaxHealth(aurEff->GetAmount());
                 target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, true);
             }
 
-            void AfterRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 GetTarget()->RemoveAurasDueToSpell(DRUID_SURVIVAL_INSTINCTS);
             }

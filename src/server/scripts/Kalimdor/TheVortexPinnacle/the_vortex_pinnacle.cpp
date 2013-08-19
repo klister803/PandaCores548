@@ -1167,7 +1167,7 @@ class spell_howling_gale_howling_gale : public SpellScriptLoader
         {
             PrepareAuraScript(spell_howling_gale_howling_gale_AuraScript)
 
-            void OnPeriodic(constAuraEffectPtr aurEff)
+            void OnPeriodic(AuraEffect const* aurEff)
             {
                 if (!GetCaster())
                     return;

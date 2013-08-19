@@ -516,17 +516,17 @@ void SpellScript::SetHitHeal(int32 heal)
     m_spell->m_healing = heal;
 }
 
-AuraPtr SpellScript::GetHitAura()
+Aura* SpellScript::GetHitAura()
 {
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitAura was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULLAURA;
+        return NULL;
     }
     if (!m_spell->m_spellAura)
-        return NULLAURA;
+        return NULL;
     if (m_spell->m_spellAura->IsRemoved())
-        return NULLAURA;
+        return NULL;
     return m_spell->m_spellAura;
 }
 
@@ -744,7 +744,7 @@ AuraScript::EffectPeriodicHandler::EffectPeriodicHandler(AuraEffectPeriodicFnTyp
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectPeriodicHandler::Call(AuraScript* auraScript, constAuraEffectPtr _aurEff)
+void AuraScript::EffectPeriodicHandler::Call(AuraScript* auraScript, AuraEffect const* _aurEff)
 {
     (auraScript->*pEffectHandlerScript)(_aurEff);
 }
@@ -755,7 +755,7 @@ AuraScript::EffectUpdateHandler::EffectUpdateHandler(AuraEffectUpdateFnType _pEf
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectUpdateHandler::Call(AuraScript* auraScript, uint32 diff, AuraEffectPtr aurEff)
+void AuraScript::EffectUpdateHandler::Call(AuraScript* auraScript, uint32 diff, AuraEffect* aurEff)
 {
     (auraScript->*pEffectHandlerScript)(diff, aurEff);
 }
@@ -766,7 +766,7 @@ AuraScript::EffectUpdatePeriodicHandler::EffectUpdatePeriodicHandler(AuraEffectU
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectUpdatePeriodicHandler::Call(AuraScript* auraScript, AuraEffectPtr aurEff)
+void AuraScript::EffectUpdatePeriodicHandler::Call(AuraScript* auraScript, AuraEffect* aurEff)
 {
     (auraScript->*pEffectHandlerScript)(aurEff);
 }
@@ -777,7 +777,7 @@ AuraScript::EffectCalcAmountHandler::EffectCalcAmountHandler(AuraEffectCalcAmoun
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectCalcAmountHandler::Call(AuraScript* auraScript, constAuraEffectPtr aurEff, int32& amount, bool& canBeRecalculated)
+void AuraScript::EffectCalcAmountHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, int32& amount, bool& canBeRecalculated)
 {
     (auraScript->*pEffectHandlerScript)(aurEff, amount, canBeRecalculated);
 }
@@ -788,7 +788,7 @@ AuraScript::EffectCalcPeriodicHandler::EffectCalcPeriodicHandler(AuraEffectCalcP
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectCalcPeriodicHandler::Call(AuraScript* auraScript, constAuraEffectPtr aurEff, bool& isPeriodic, int32& periodicTimer)
+void AuraScript::EffectCalcPeriodicHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, bool& isPeriodic, int32& periodicTimer)
 {
     (auraScript->*pEffectHandlerScript)(aurEff, isPeriodic, periodicTimer);
 }
@@ -799,7 +799,7 @@ AuraScript::EffectCalcSpellModHandler::EffectCalcSpellModHandler(AuraEffectCalcS
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectCalcSpellModHandler::Call(AuraScript* auraScript, constAuraEffectPtr aurEff, SpellModifier*& spellMod)
+void AuraScript::EffectCalcSpellModHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, SpellModifier*& spellMod)
 {
     (auraScript->*pEffectHandlerScript)(aurEff, spellMod);
 }
@@ -811,7 +811,7 @@ AuraScript::EffectApplyHandler::EffectApplyHandler(AuraEffectApplicationModeFnTy
     mode = _mode;
 }
 
-void AuraScript::EffectApplyHandler::Call(AuraScript* auraScript, constAuraEffectPtr _aurEff, AuraEffectHandleModes _mode)
+void AuraScript::EffectApplyHandler::Call(AuraScript* auraScript, AuraEffect const* _aurEff, AuraEffectHandleModes _mode)
 {
     if (_mode & mode)
         (auraScript->*pEffectHandlerScript)(_aurEff, _mode);
@@ -823,7 +823,7 @@ AuraScript::EffectAbsorbHandler::EffectAbsorbHandler(AuraEffectAbsorbFnType _pEf
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectAbsorbHandler::Call(AuraScript* auraScript, AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+void AuraScript::EffectAbsorbHandler::Call(AuraScript* auraScript, AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
 {
     (auraScript->*pEffectHandlerScript)(aurEff, dmgInfo, absorbAmount);
 }
@@ -834,7 +834,7 @@ AuraScript::EffectManaShieldHandler::EffectManaShieldHandler(AuraEffectAbsorbFnT
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectManaShieldHandler::Call(AuraScript* auraScript, AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+void AuraScript::EffectManaShieldHandler::Call(AuraScript* auraScript, AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
 {
     (auraScript->*pEffectHandlerScript)(aurEff, dmgInfo, absorbAmount);
 }
@@ -865,12 +865,12 @@ AuraScript::EffectProcHandler::EffectProcHandler(AuraEffectProcFnType effectHand
     _EffectHandlerScript = effectHandlerScript;
 }
 
-void AuraScript::EffectProcHandler::Call(AuraScript* auraScript, constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+void AuraScript::EffectProcHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, ProcEventInfo& eventInfo)
 {
     (auraScript->*_EffectHandlerScript)(aurEff, eventInfo);
 }
 
-bool AuraScript::_Load(AuraPtr aura)
+bool AuraScript::_Load(Aura* aura)
 {
     m_aura = aura;
     _PrepareScriptCall((AuraScriptHookType)SPELL_SCRIPT_STATE_LOADING, NULL);
@@ -971,7 +971,7 @@ void AuraScript::Remove(uint32 removeMode)
     m_aura->Remove((AuraRemoveMode)removeMode);
 }
 
-AuraPtr AuraScript::GetAura() const
+Aura* AuraScript::GetAura() const
 {
     return m_aura;
 }
@@ -1081,7 +1081,7 @@ bool AuraScript::HasEffect(uint8 effIndex) const
     return m_aura->HasEffect(effIndex);
 }
 
-AuraEffectPtr AuraScript::GetEffect(uint8 effIndex) const
+AuraEffect* AuraScript::GetEffect(uint8 effIndex) const
 {
     return m_aura->GetEffect(effIndex);
 }

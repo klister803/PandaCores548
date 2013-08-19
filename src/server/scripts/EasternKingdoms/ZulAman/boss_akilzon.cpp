@@ -321,7 +321,7 @@ class spell_akilzon_electrical_storm : public SpellScriptLoader
         {
             PrepareAuraScript(spell_akilzon_electrical_storm_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -336,7 +336,7 @@ class spell_akilzon_electrical_storm : public SpellScriptLoader
                 }
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;

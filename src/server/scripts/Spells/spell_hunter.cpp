@@ -373,7 +373,7 @@ class spell_hun_a_murder_of_crows : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_a_murder_of_crows_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (Unit* target = GetTarget())
                 {
@@ -445,9 +445,9 @@ class spell_hun_focus_fire : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (AuraPtr focusFire = _player->GetAura(HUNTER_SPELL_FOCUS_FIRE_AURA))
+                    if (Aura* focusFire = _player->GetAura(HUNTER_SPELL_FOCUS_FIRE_AURA))
                     {
-                        if (AuraPtr frenzy = _player->GetAura(HUNTER_SPELL_FRENZY_STACKS))
+                        if (Aura* frenzy = _player->GetAura(HUNTER_SPELL_FRENZY_STACKS))
                         {
                             if (Pet* pet = _player->GetPet())
                             {
@@ -495,7 +495,7 @@ class spell_hun_frenzy : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                     if (caster->GetOwner())
-                        if (AuraPtr frenzy = caster->GetAura(HUNTER_SPELL_FRENZY_STACKS))
+                        if (Aura* frenzy = caster->GetAura(HUNTER_SPELL_FRENZY_STACKS))
                             if (frenzy->GetStackAmount() >= 5)
                                 caster->GetOwner()->CastSpell(caster->GetOwner(), HUNTER_SPELL_FOCUS_FIRE_READY, true);
             }
@@ -515,7 +515,7 @@ class spell_hun_frenzy : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_frenzy_AuraScript);
 
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
             {
                 if (GetTarget()->GetOwner())
                     if (GetTarget()->GetOwner()->HasAura(HUNTER_SPELL_FOCUS_FIRE_READY))
@@ -544,7 +544,7 @@ class spell_hun_kindred_spirits : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_kindred_spirits_AuraScript);
 
-            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
                 if (GetCaster())
                     if (GetCaster()->ToPlayer())
@@ -575,7 +575,7 @@ class spell_hun_lynx_rush : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_lynx_rush_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 std::list<Unit*> tempList;
                 std::list<Unit*> targetList;
@@ -720,7 +720,7 @@ class spell_hun_beast_cleave_proc : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_beast_cleave_proc_AuraScript);
 
-            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
 
@@ -868,7 +868,7 @@ class spell_hun_binding_shot : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_binding_shot_zone_AuraScript);
 
-            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -934,7 +934,7 @@ class spell_hun_binding_shot_zone : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_binding_shot_zone_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(HUNTER_SPELL_BINDING_SHOT_AREA))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), HUNTER_SPELL_BINDING_SHOT_LINK, true);
@@ -971,7 +971,7 @@ class spell_hun_improved_serpent_sting : public SpellScriptLoader
                     {
                         if (_player->HasAura(HUNTER_SPELL_IMPROVED_SERPENT_STING_AURA))
                         {
-                            if (AuraPtr serpentSting = target->GetAura(HUNTER_SPELL_SERPENT_STING, _player->GetGUID()))
+                            if (Aura* serpentSting = target->GetAura(HUNTER_SPELL_SERPENT_STING, _player->GetGUID()))
                             {
                                 if (serpentSting->GetEffect(0))
                                 {
@@ -1089,13 +1089,13 @@ class spell_hun_feign_death : public SpellScriptLoader
             int32 health;
             int32 focus;
 
-            void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 health = GetTarget()->GetHealth();
                 focus = GetTarget()->GetPower(POWER_FOCUS);
             }
 
-            void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (health && focus)
                 {
@@ -1127,7 +1127,7 @@ class spell_hun_camouflage_visual : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_camouflage_visual_AuraScript);
 
-            void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster())
                 {
@@ -1296,7 +1296,7 @@ class spell_hun_rapid_fire : public SpellScriptLoader
                     {
                         if (AuraApplication* aura = _player->GetAuraApplication(HUNTER_SPELL_RAPID_FIRE))
                         {
-                            AuraPtr rapidFire = aura->GetBase();
+                            Aura* rapidFire = aura->GetBase();
 
                             rapidFire->GetEffect(1)->ChangeAmount(3200);
                         }
@@ -1305,7 +1305,7 @@ class spell_hun_rapid_fire : public SpellScriptLoader
                     {
                         if (AuraApplication* aura = _player->GetAuraApplication(HUNTER_SPELL_RAPID_FIRE))
                         {
-                            AuraPtr rapidFire = aura->GetBase();
+                            Aura* rapidFire = aura->GetBase();
 
                             rapidFire->GetEffect(1)->ChangeAmount(0);
                         }
@@ -1343,9 +1343,9 @@ class spell_hun_cobra_shot : public SpellScriptLoader
                     {
                         _player->CastSpell(_player, HUNTER_SPELL_COBRA_SHOT_ENERGIZE, true);
 
-                        if (AuraEffectPtr aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_HUNTER, 16384, 0, 0, GetCaster()->GetGUID()))
+                        if (AuraEffect* aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_HUNTER, 16384, 0, 0, GetCaster()->GetGUID()))
                         {
-                            AuraPtr serpentSting = aurEff->GetBase();
+                            Aura* serpentSting = aurEff->GetBase();
                             serpentSting->SetDuration(serpentSting->GetDuration() + (GetSpellInfo()->Effects[EFFECT_2].BasePoints * 1000));
 
                             if (serpentSting->GetMaxDuration() < serpentSting->GetDuration())
@@ -1419,7 +1419,7 @@ class spell_hun_chimera_shot : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        constAuraEffectPtr serpentSting = target->GetAuraEffect(HUNTER_SPELL_SERPENT_STING, EFFECT_0, _player->GetGUID());
+                        AuraEffect const* serpentSting = target->GetAuraEffect(HUNTER_SPELL_SERPENT_STING, EFFECT_0, _player->GetGUID());
 
                         if (serpentSting)
                             serpentSting->GetBase()->RefreshDuration();
@@ -1643,7 +1643,7 @@ class spell_hun_sniper_training : public SpellScriptLoader
                 return true;
             }
 
-            void HandlePeriodic(constAuraEffectPtr aurEff)
+            void HandlePeriodic(AuraEffect const* aurEff)
             {
                 PreventDefaultAction();
                 if (aurEff->GetAmount() <= 0)
@@ -1660,7 +1660,7 @@ class spell_hun_sniper_training : public SpellScriptLoader
                 }
             }
 
-            void HandleUpdatePeriodic(AuraEffectPtr aurEff)
+            void HandleUpdatePeriodic(AuraEffect* aurEff)
             {
                 if (Player* playerTarget = GetUnitOwner()->ToPlayer())
                 {
@@ -1801,7 +1801,7 @@ class spell_hun_misdirection : public SpellScriptLoader
 
             bool _hasGlyph;
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                 {
@@ -1819,7 +1819,7 @@ class spell_hun_misdirection : public SpellScriptLoader
                                     _hasGlyph = true;
             }
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                     return;
@@ -1864,7 +1864,7 @@ class spell_hun_misdirection_proc : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_misdirection_proc_AuraScript);
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster())
                     GetCaster()->SetReducedThreatPercent(0, 0);

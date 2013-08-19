@@ -51,7 +51,7 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mastery_shield_discipline_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -153,7 +153,7 @@ class spell_mastery_blood_shield : public SpellScriptLoader
 
                                 int32 bp = -int32(GetHitDamage() * Mastery);
 
-                                if (AuraPtr scentOfBlood = _plr->GetAura(SPELL_DK_SCENT_OF_BLOOD))
+                                if (Aura* scentOfBlood = _plr->GetAura(SPELL_DK_SCENT_OF_BLOOD))
                                     AddPct(bp, (scentOfBlood->GetStackAmount() * 20));
 
                                 _plr->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, true);

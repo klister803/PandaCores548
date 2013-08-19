@@ -1280,7 +1280,7 @@ class spell_lord_rhyolith_magma_flow : public SpellScriptLoader
                 return true;
             }
 
-            void PeriodicTick(constAuraEffectPtr aurEff)
+            void PeriodicTick(AuraEffect const* aurEff)
             {
                 if (!GetCaster())
                     return;

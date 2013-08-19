@@ -653,7 +653,7 @@ class npc_shannox_rageface : public CreatureScript
                 if (who->GetTypeId() != TYPEID_PLAYER)
                     return;
 
-                if (constAuraEffectPtr aurEff = me->GetAuraEffect(RAID_MODE(100129, 101212, 101213, 101214), EFFECT_1))
+                if (AuraEffect const* aurEff = me->GetAuraEffect(RAID_MODE(100129, 101212, 101213, 101214), EFFECT_1))
                 {
                     if (int32(damage) >= aurEff->GetAmount())
                     {
@@ -1029,14 +1029,14 @@ class spell_shannox_riplimb_dogged_determination : public SpellScriptLoader
         {
             PrepareAuraScript(spell_shannox_riplimb_dogged_determination_AuraScript);
 
-            void PeriodicTick(constAuraEffectPtr aurEff)
+            void PeriodicTick(AuraEffect const* aurEff)
             {
                 if (!GetCaster())
                     return;
 
-                if (AuraPtr aur = GetAura())
+                if (Aura* aur = GetAura())
                 {
-                    if (AuraEffectPtr auraEff = aur->GetEffect(EFFECT_0))
+                    if (AuraEffect* auraEff = aur->GetEffect(EFFECT_0))
                     {
                         int32 curr_amount = auraEff->GetAmount();
                         if (curr_amount < 100)
@@ -1066,7 +1066,7 @@ class spell_shannox_crystal_prison_trap : public SpellScriptLoader
         {
             PrepareAuraScript(spell_shannox_crystal_prison_trap_AuraScript);
 
-            void OnApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster() || !GetTarget())
                     return;
@@ -1077,7 +1077,7 @@ class spell_shannox_crystal_prison_trap : public SpellScriptLoader
                     pCrystalPrison->AI()->SetGUID(GetTarget()->GetGUID(), (GetTarget()->GetTypeId() == TYPEID_PLAYER)? DATA_TRAPPED_PLAYER: DATA_TRAPPED_DOG);   
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;

@@ -906,16 +906,16 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
     if (Player* _plr = GetPlayer())
     {
         Unit::AuraApplicationMap AuraList = _plr->GetAppliedAuras();
-        std::list<AuraPtr> auraModsList;
+        std::list<Aura*> auraModsList;
         for (Unit::AuraApplicationMap::iterator iter = AuraList.begin(); iter != AuraList.end(); ++iter)
         {
-            AuraPtr aura = iter->second->GetBase();
+            Aura* aura = iter->second->GetBase();
             if (!aura)
                 continue;
 
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
-                if (AuraEffectPtr aurEff = aura->GetEffect(i))
+                if (AuraEffect* aurEff = aura->GetEffect(i))
                 {
                     if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
                     {

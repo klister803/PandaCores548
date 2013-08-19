@@ -294,7 +294,7 @@ public:
             target->RemoveAurasDueToSpell(spellId);
         else
         {
-            if (AuraPtr aura = target->GetAura(spellId))
+            if (Aura* aura = target->GetAura(spellId))
                 aura->SetDuration(duration);
             else
                 return false;
@@ -329,7 +329,7 @@ public:
             target->RemoveAurasDueToSpell(spellId);
         else
         {
-            if (AuraPtr aura = target->GetAura(spellId))
+            if (Aura* aura = target->GetAura(spellId))
                 aura->SetCharges(charges);
             else
                 return false;

@@ -82,7 +82,7 @@ class spell_dk_might_of_ursoc : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_might_of_ursoc_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     if (caster->GetHealthPct() < 15.0f)
@@ -111,7 +111,7 @@ class spell_dk_wild_mushroom_plague : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_wild_mushroom_plague_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (!GetCaster())
                     return;
@@ -260,7 +260,7 @@ class spell_dk_desecrated_ground : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_desecrated_ground_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(DK_SPELL_DESECRATED_GROUND))
                     if (GetCaster()->GetDistance(dynObj) <= 8.0f)
@@ -289,7 +289,7 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_necrotic_strike_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 amount = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
 
@@ -473,17 +473,17 @@ class spell_dk_festering_strike : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (AuraPtr BP = target->GetAura(DK_SPELL_BLOOD_PLAGUE, _player->GetGUID()))
+                        if (Aura* BP = target->GetAura(DK_SPELL_BLOOD_PLAGUE, _player->GetGUID()))
                         {
                             uint32 dur = BP->GetDuration() + 6000;
                             BP->SetDuration(dur);
                         }
-                        if (AuraPtr FF = target->GetAura(DK_SPELL_FROST_FEVER, _player->GetGUID()))
+                        if (Aura* FF = target->GetAura(DK_SPELL_FROST_FEVER, _player->GetGUID()))
                         {
                             uint32 dur = FF->GetDuration() + 6000;
                             FF->SetDuration(dur);
                         }
-                        if (AuraPtr COI = target->GetAura(DK_SPELL_CHAINS_OF_ICE, _player->GetGUID()))
+                        if (Aura* COI = target->GetAura(DK_SPELL_CHAINS_OF_ICE, _player->GetGUID()))
                         {
                             uint32 dur = COI->GetDuration() + 6000;
                             COI->SetDuration(dur);
@@ -544,7 +544,7 @@ class spell_dk_death_strike_heal : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (AuraPtr scentOfBlood = _player->GetAura(DK_SPELL_SCENT_OF_BLOOD_AURA))
+                        if (Aura* scentOfBlood = _player->GetAura(DK_SPELL_SCENT_OF_BLOOD_AURA))
                         {
                             uint8 chg = scentOfBlood->GetStackAmount();
                             uint32 hl = GetHitHeal() * 0.2 * chg;
@@ -626,7 +626,7 @@ class spell_dk_conversion : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_conversion_AuraScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
                 if (GetCaster())
                 {
@@ -671,7 +671,7 @@ class spell_dk_remorseless_winter : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
-                        if (AuraPtr remorselessWinter = target->GetAura(DK_SPELL_REMORSELESS_WINTER))
+                        if (Aura* remorselessWinter = target->GetAura(DK_SPELL_REMORSELESS_WINTER))
                             if (remorselessWinter->GetStackAmount() == 5 && !target->HasAura(DK_SPELL_REMORSELESS_WINTER_STUN))
                                 _player->CastSpell(target, DK_SPELL_REMORSELESS_WINTER_STUN, true);
             }
@@ -698,7 +698,7 @@ class spell_dk_soul_reaper : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_soul_reaper_AuraScript);
 
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster())
                 {
@@ -732,13 +732,13 @@ class spell_dk_pillar_of_frost : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_pillar_of_frost_AuraScript);
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     _player->ApplySpellImmune(DK_SPELL_PILLAR_OF_FROST, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, false);
             }
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     _player->ApplySpellImmune(DK_SPELL_PILLAR_OF_FROST, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, true);
@@ -809,7 +809,7 @@ class spell_dk_blood_tap : public SpellScriptLoader
             {
                 if (GetCaster()->ToPlayer())
                 {
-                    if (AuraPtr bloodCharges = GetCaster()->ToPlayer()->GetAura(DK_SPELL_BLOOD_CHARGE))
+                    if (Aura* bloodCharges = GetCaster()->ToPlayer()->GetAura(DK_SPELL_BLOOD_CHARGE))
                     {
                         if (bloodCharges->GetStackAmount() < 5)
                             return SPELL_FAILED_DONT_REPORT;
@@ -840,7 +840,7 @@ class spell_dk_blood_tap : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (AuraPtr bloodCharges = _player->GetAura(DK_SPELL_BLOOD_CHARGE))
+                        if (Aura* bloodCharges = _player->GetAura(DK_SPELL_BLOOD_CHARGE))
                         {
                             int32 newAmount = bloodCharges->GetStackAmount();
 
@@ -976,13 +976,13 @@ class spell_dk_unholy_presence : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_unholy_presence_AuraScript);
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     _player->UpdateAllRunesRegen();
             }
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                     _player->UpdateAllRunesRegen();
@@ -1075,7 +1075,7 @@ class spell_dk_purgatory : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_purgatory_AuraScript);
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                 {
@@ -1107,12 +1107,12 @@ class spell_dk_purgatory_absorb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_purgatory_absorb_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr /*AuraEffectPtr*/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr /*AuraEffectPtr*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void Absorb(AuraEffect* /*AuraEffect**/, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
                 Unit* target = GetTarget();
 
@@ -1379,13 +1379,13 @@ class spell_dk_anti_magic_shell_raid : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 // TODO: this should absorb limited amount of damage, but no info on calculation formula
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                  absorbAmount = CalculatePct(dmgInfo.GetDamage(), absorbPct);
             }
@@ -1428,18 +1428,18 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 if (GetCaster())
                     amount = GetCaster()->CountPctFromMaxHealth(hpPct);
             }
 
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 absorbAmount = std::min(CalculatePct(dmgInfo.GetDamage(), absorbPct), GetTarget()->CountPctFromMaxHealth(hpPct));
             }
 
-            void Trigger(AuraEffectPtr aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
+            void Trigger(AuraEffect* aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
             {
                 Unit* target = GetTarget();
                 // damage absorbed by Anti-Magic Shell energizes the DK with additional runic power.
@@ -1487,7 +1487,7 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 SpellInfo const* talentSpell = sSpellMgr->GetSpellInfo(DK_SPELL_ANTI_MAGIC_SHELL_TALENT);
                 amount = 136800;
@@ -1495,7 +1495,7 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
                      amount += int32(player->GetStat(STAT_STRENGTH) * 4);
             }
 
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                  absorbAmount = CalculatePct(dmgInfo.GetDamage(), absorbPct);
             }
@@ -1717,7 +1717,7 @@ class spell_dk_scourge_strike : public SpellScriptLoader
                 {
                     multiplier = (GetEffectValue() * unitTarget->GetDiseasesByCaster(caster->GetGUID()) / 100.f);
                     // Death Knight T8 Melee 4P Bonus
-                    if (constAuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_DK_ITEM_T8_MELEE_4P_BONUS, EFFECT_0))
+                    if (AuraEffect const* aurEff = caster->GetAuraEffect(SPELL_DK_ITEM_T8_MELEE_4P_BONUS, EFFECT_0))
                         AddPct(multiplier, aurEff->GetAmount());
                 }
             }
@@ -1729,7 +1729,7 @@ class spell_dk_scourge_strike : public SpellScriptLoader
                 {
                     int32 bp = GetHitDamage() * multiplier;
 
-                    if (AuraEffectPtr aurEff = caster->GetAuraEffectOfRankedSpell(DK_SPELL_BLACK_ICE_R1, EFFECT_0))
+                    if (AuraEffect* aurEff = caster->GetAuraEffectOfRankedSpell(DK_SPELL_BLACK_ICE_R1, EFFECT_0))
                         AddPct(bp, aurEff->GetAmount());
 
                     caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, NULL, NULL, true);
@@ -1772,10 +1772,10 @@ class spell_dk_blood_boil : public SpellScriptLoader
                             _player->CastSpell(target, DK_SPELL_WEAKENED_BLOWS, true);
 
                             if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
-                                if (AuraPtr aura = target->GetAura(DK_SPELL_BLOOD_PLAGUE))
+                                if (Aura* aura = target->GetAura(DK_SPELL_BLOOD_PLAGUE))
                                     aura->SetDuration(aura->GetMaxDuration());
                             if (target->HasAura(DK_SPELL_FROST_FEVER))
-                                if (AuraPtr aura = target->GetAura(DK_SPELL_FROST_FEVER))
+                                if (Aura* aura = target->GetAura(DK_SPELL_FROST_FEVER))
                                     aura->SetDuration(aura->GetMaxDuration());
                         }
                         // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever

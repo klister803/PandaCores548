@@ -905,7 +905,7 @@ class spell_maloriak_flash_freeze : public SpellScriptLoader
         {
             PrepareAuraScript(spell_maloriak_flash_freeze_AuraScript);
 
-            void OnApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 Position pos;
                 aurEff->GetBase()->GetOwner()->GetPosition(&pos);
@@ -1155,11 +1155,11 @@ class spell_maloriak_remedy : public SpellScriptLoader
         {
             PrepareAuraScript(spell_maloriak_remedy_AuraScript);
 
-            void HandleTick(constAuraEffectPtr aurEff)
+            void HandleTick(AuraEffect const* aurEff)
             {
                 int32 baseAmount = aurEff->GetBaseAmount();
                 if (baseAmount > 0)
-                if (AuraEffectPtr aurEffm = GetAura()->GetEffect(EFFECT_0))
+                if (AuraEffect* aurEffm = GetAura()->GetEffect(EFFECT_0))
                     aurEffm->SetAmount(baseAmount * aurEff->GetTickNumber());
             }
 
@@ -1259,14 +1259,14 @@ class spell_lord_victor_nefarius_master_adventurer_award : public SpellScriptLoa
         {
             PrepareAuraScript(spell_lord_victor_nefarius_master_adventurer_award_AuraScript);
 
-            void OnApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget() && GetTarget()->GetTypeId() == TYPEID_PLAYER)
                     if (CharTitlesEntry const* title = sCharTitlesStore.LookupEntry(188))
                         GetTarget()->ToPlayer()->SetTitle(title);
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget() && GetTarget()->GetTypeId() == TYPEID_PLAYER)
                     if (CharTitlesEntry const* title = sCharTitlesStore.LookupEntry(188))
@@ -1302,7 +1302,7 @@ class spell_lord_victor_nefarius_master_adventurer_award : public SpellScriptLoa
                 return true;
             }
 
-            void HandleTick(constAuraEffectPtr aurEff)
+            void HandleTick(AuraEffect const* aurEff)
             {
                 m_custom_data += aurEff->GetAmount();
             }

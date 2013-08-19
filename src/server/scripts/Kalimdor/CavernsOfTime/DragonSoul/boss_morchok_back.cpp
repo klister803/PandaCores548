@@ -662,7 +662,7 @@ class spell_falling_fragments : public SpellScriptLoader
         {
             PrepareAuraScript(spell_falling_fragments_AuraScript);
 
-            void HandlePeriodicTick(constAuraEffectPtr /*aurEff*/)
+            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
             {
                 PreventDefaultAction();
 
@@ -1030,11 +1030,11 @@ class spell_morchok_resonating_crystal : public SpellScriptLoader
                 return true;
             }
 
-            void OnPeriodic(constAuraEffectPtr /*aurEff*/)
+            void OnPeriodic(AuraEffect const* /*aurEff*/)
             {
                 if(amount > 0)
                     amount -= 20;
-                if (AuraEffectPtr effect = GetAura()->GetEffect(EFFECT_1))
+                if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_1))
                     effect->ChangeAmount(amount);
             }
 

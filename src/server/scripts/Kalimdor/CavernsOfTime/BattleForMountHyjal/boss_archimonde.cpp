@@ -408,7 +408,7 @@ public:
             if (summoned->GetEntry() == CREATURE_DOOMFIRE)
             {
                 summoned->CastSpell(summoned, SPELL_DOOMFIRE_SPAWN, false);
-                summoned->CastSpell(summoned, SPELL_DOOMFIRE, true, 0, NULLAURA_EFFECT, me->GetGUID());
+                summoned->CastSpell(summoned, SPELL_DOOMFIRE, true, 0, NULL, me->GetGUID());
 
                 if (Unit* DoomfireSpirit = Unit::GetUnit(*me, DoomfireSpiritGUID))
                 {

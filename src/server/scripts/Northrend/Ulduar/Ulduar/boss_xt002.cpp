@@ -770,7 +770,7 @@ class spell_xt002_searing_light_spawn_life_spark : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* player = GetOwner()->ToPlayer())
                     if (Unit* xt002 = GetCaster())
@@ -806,7 +806,7 @@ class spell_xt002_gravity_bomb_aura : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* player = GetOwner()->ToPlayer())
                     if (Unit* xt002 = GetCaster())
@@ -814,7 +814,7 @@ class spell_xt002_gravity_bomb_aura : public SpellScriptLoader
                             player->CastSpell(player, SPELL_SUMMON_VOID_ZONE, true);
             }
 
-            void OnPeriodic(constAuraEffectPtr aurEff)
+            void OnPeriodic(AuraEffect const* aurEff)
             {
                 Unit* xt002 = GetCaster();
                 if (!xt002)
@@ -919,7 +919,7 @@ class spell_xt002_heart_overload_periodic : public SpellScriptLoader
                             {
                                 uint8 a = urand(0, 4);
                                 uint32 spellId = spells[a];
-                                toyPile->CastSpell(toyPile, spellId, true, NULL, NULLAURA_EFFECT, instance->GetData64(BOSS_XT002));
+                                toyPile->CastSpell(toyPile, spellId, true, NULL, NULL, instance->GetData64(BOSS_XT002));
                             }
                         }
                     }

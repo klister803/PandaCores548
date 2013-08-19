@@ -1324,7 +1324,7 @@ class spell_magmatron_flamethrower : public SpellScriptLoader
         {
             PrepareAuraScript(spell_magmatron_flamethrower_AuraScript);
 
-            void OnPereodic(constAuraEffectPtr /*aurEff*/)
+            void OnPereodic(AuraEffect const* /*aurEff*/)
             {
                 //PreventDefaultAction();
 
@@ -1355,7 +1355,7 @@ class spell_magmatron_barrier : public SpellScriptLoader
         {
             PrepareAuraScript(spell_magmatron_barrier_AuraScript);
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;

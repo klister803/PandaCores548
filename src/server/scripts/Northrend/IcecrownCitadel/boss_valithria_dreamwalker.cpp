@@ -196,7 +196,7 @@ class DelayedCastEvent : public BasicEvent
 
         bool Execute(uint64 /*time*/, uint32 /*diff*/)
         {
-            _trigger->CastSpell(_trigger, _spellId, false, NULL, NULLAURA_EFFECT, _originalCaster);
+            _trigger->CastSpell(_trigger, _spellId, false, NULL, NULL, _originalCaster);
             if (_despawnTime)
                 _trigger->DespawnOrUnsummon(_despawnTime);
             return true;
@@ -1140,7 +1140,7 @@ class npc_dream_cloud : public CreatureScript
                         case EVENT_EXPLODE:
                             me->GetMotionMaster()->MoveIdle();
                             // must use originalCaster the same for all clouds to allow stacking
-                            me->CastSpell(me, EMERALD_VIGOR, false, NULL, NULLAURA_EFFECT, _instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
+                            me->CastSpell(me, EMERALD_VIGOR, false, NULL, NULL, _instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
                             me->ForcedDespawn(100);
                             break;
                         default:
@@ -1169,7 +1169,7 @@ class spell_dreamwalker_mana_void : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dreamwalker_mana_void_AuraScript);
 
-            void PeriodicTick(constAuraEffectPtr aurEff)
+            void PeriodicTick(AuraEffect const* aurEff)
             {
                 // first 3 ticks have amplitude 1 second
                 // remaining tick every 500ms
@@ -1205,7 +1205,7 @@ class spell_dreamwalker_decay_periodic_timer : public SpellScriptLoader
                 return true;
             }
 
-            void DecayPeriodicTimer(AuraEffectPtr aurEff)
+            void DecayPeriodicTimer(AuraEffect* aurEff)
             {
                 int32 timer = aurEff->GetPeriodicTimer();
                 if (timer <= 5)
@@ -1261,7 +1261,7 @@ class spell_dreamwalker_summoner : public SpellScriptLoader
                 if (!GetHitUnit())
                     return;
 
-                GetHitUnit()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULLAURA_EFFECT, GetCaster()->GetInstanceScript()->GetData64(DATA_VALITHRIA_LICH_KING));
+                GetHitUnit()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULL, GetCaster()->GetInstanceScript()->GetData64(DATA_VALITHRIA_LICH_KING));
             }
 
             void Register()
@@ -1286,7 +1286,7 @@ class spell_dreamwalker_summon_suppresser : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dreamwalker_summon_suppresser_AuraScript);
 
-            void PeriodicTick(constAuraEffectPtr /*aurEff*/)
+            void PeriodicTick(AuraEffect const* /*aurEff*/)
             {
                 PreventDefaultAction();
                 Unit* caster = GetCaster();
@@ -1340,7 +1340,7 @@ class spell_dreamwalker_summon_suppresser_effect : public SpellScriptLoader
                 if (!GetHitUnit())
                     return;
 
-                GetHitUnit()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULLAURA_EFFECT, GetCaster()->GetInstanceScript()->GetData64(DATA_VALITHRIA_LICH_KING));
+                GetHitUnit()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULL, GetCaster()->GetInstanceScript()->GetData64(DATA_VALITHRIA_LICH_KING));
             }
 
             void Register()
@@ -1432,7 +1432,7 @@ class spell_dreamwalker_nightmare_cloud : public SpellScriptLoader
                 return _instance != NULL;
             }
 
-            void PeriodicTick(constAuraEffectPtr /*aurEff*/)
+            void PeriodicTick(AuraEffect const* /*aurEff*/)
             {
                 if (_instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != IN_PROGRESS)
                     PreventDefaultAction();
@@ -1469,7 +1469,7 @@ class spell_dreamwalker_twisted_nightmares : public SpellScriptLoader
                 //    return;
 
                 if (InstanceScript* instance = GetHitUnit()->GetInstanceScript())
-                    GetHitUnit()->CastSpell((Unit*)NULL, GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULLAURA_EFFECT, instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
+                    GetHitUnit()->CastSpell((Unit*)NULL, GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULL, instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
             }
 
             void Register()

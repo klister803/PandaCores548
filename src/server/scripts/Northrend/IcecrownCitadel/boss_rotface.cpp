@@ -346,8 +346,8 @@ class npc_big_ooze : public CreatureScript
                             if (hasExploded)
                                 break;
 
-                            AuraPtr unstable = me->GetAura(SPELL_UNSTABLE_OOZE);
-                            if (unstable != NULLAURA)
+                            Aura* unstable = me->GetAura(SPELL_UNSTABLE_OOZE);
+                            if (unstable != NULL)
                             {
                                 uint8 stack = uint8(unstable->GetStackAmount());
 
@@ -366,7 +366,7 @@ class npc_big_ooze : public CreatureScript
 
                                     DoAction(EVENT_STICKY_OOZE);
 
-                                    me->CastSpell(me, SPELL_UNSTABLE_OOZE_EXPLOSION, false, NULL, NULLAURA_EFFECT, me->GetGUID());
+                                    me->CastSpell(me, SPELL_UNSTABLE_OOZE_EXPLOSION, false, NULL, NULL, me->GetGUID());
 
                                     if (InstanceScript* instance = me->GetInstanceScript())
                                         instance->SetData(DATA_OOZE_DANCE_ACHIEVEMENT, uint32(false));
@@ -541,7 +541,7 @@ class spell_rotface_ooze_flood : public SpellScriptLoader
                 std::list<Creature*> triggers;
                 GetHitUnit()->GetCreatureListWithEntryInGrid(triggers, GetHitUnit()->GetEntry(), 12.5f);
                 triggers.sort(Trinity::ObjectDistanceOrderPred(GetHitUnit()));
-                GetHitUnit()->CastSpell(triggers.back(), uint32(GetEffectValue()), false, NULL, NULLAURA_EFFECT, GetOriginalCaster() ? GetOriginalCaster()->GetGUID() : 0);
+                GetHitUnit()->CastSpell(triggers.back(), uint32(GetEffectValue()), false, NULL, NULL, GetOriginalCaster() ? GetOriginalCaster()->GetGUID() : 0);
             }
 
             void FilterTargets(std::list<WorldObject*>& targetList)
@@ -721,11 +721,11 @@ class spell_rotface_large_ooze_combine : public SpellScriptLoader
                 if (!(GetHitCreature() && GetHitCreature()->isAlive()))
                     return;
 
-                AuraPtr unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE);
-                if (unstable != NULLAURA)
+                Aura* unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE);
+                if (unstable != NULL)
                 {
-                    AuraPtr targetAura = GetHitCreature()->GetAura(SPELL_UNSTABLE_OOZE);
-                    if (targetAura != NULLAURA)
+                    Aura* targetAura = GetHitCreature()->GetAura(SPELL_UNSTABLE_OOZE);
+                    if (targetAura != NULL)
                         unstable->ModStackAmount(targetAura->GetStackAmount());
                     else
                         unstable->ModStackAmount(1);
@@ -765,8 +765,8 @@ class spell_rotface_large_ooze_buff_combine : public SpellScriptLoader
                 if (!(GetHitCreature() && GetHitCreature()->isAlive()))
                     return;
 
-                AuraPtr unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE);
-                if (unstable != NULLAURA)
+                Aura* unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE);
+                if (unstable != NULL)
                 {
                     uint8 newStack = uint8(unstable->GetStackAmount()+1);
                     unstable->SetStackAmount(newStack);
@@ -786,7 +786,7 @@ class spell_rotface_large_ooze_buff_combine : public SpellScriptLoader
 
                         if (Creature* cre = GetCaster()->ToCreature())
                             cre->AI()->DoAction(EVENT_STICKY_OOZE);
-                        GetCaster()->CastSpell(GetCaster(), SPELL_UNSTABLE_OOZE_EXPLOSION, false, NULL, NULLAURA_EFFECT, GetCaster()->GetGUID());
+                        GetCaster()->CastSpell(GetCaster(), SPELL_UNSTABLE_OOZE_EXPLOSION, false, NULL, NULL, GetCaster()->GetGUID());
                         if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                             instance->SetData(DATA_OOZE_DANCE_ACHIEVEMENT, uint32(false));
                     }
@@ -869,7 +869,7 @@ class spell_rotface_unstable_ooze_explosion : public SpellScriptLoader
                 // let Rotface handle the cast - caster dies before this executes
                 if (InstanceScript* script = GetCaster()->GetInstanceScript())
                     if (Creature* rotface = script->instance->GetCreature(script->GetData64(DATA_ROTFACE)))
-                        rotface->CastSpell(x, y, z, triggered_spell_id, true, NULL, NULLAURA_EFFECT, GetCaster()->GetGUID());
+                        rotface->CastSpell(x, y, z, triggered_spell_id, true, NULL, NULL, GetCaster()->GetGUID());
             }
 
             void Register()
@@ -893,7 +893,7 @@ class spell_rotface_unstable_ooze_explosion_suicide : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rotface_unstable_ooze_explosion_suicide_AuraScript);
 
-            void DespawnSelf(constAuraEffectPtr /*aurEff*/)
+            void DespawnSelf(AuraEffect const* /*aurEff*/)
             {
                 PreventDefaultAction();
                 Unit* target = GetTarget();

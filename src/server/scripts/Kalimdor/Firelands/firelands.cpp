@@ -722,7 +722,7 @@ class spell_firelands_ancient_core_hound_dinner_time : public SpellScriptLoader
         {
             PrepareAuraScript(spell_firelands_ancient_core_hound_dinner_time_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -730,7 +730,7 @@ class spell_firelands_ancient_core_hound_dinner_time : public SpellScriptLoader
                 GetTarget()->SetControlled(true, UNIT_STATE_STUNNED);
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -760,7 +760,7 @@ class spell_firelands_ancient_core_hound_flame_breath : public SpellScriptLoader
         {
             PrepareAuraScript(spell_firelands_ancient_core_hound_flame_breath_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -768,7 +768,7 @@ class spell_firelands_ancient_core_hound_flame_breath : public SpellScriptLoader
                 GetTarget()->SetControlled(true, UNIT_STATE_STUNNED);
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -798,7 +798,7 @@ class spell_firelands_ancient_lava_dweller_lava_shower : public SpellScriptLoade
         {
             PrepareAuraScript(spell_firelands_ancient_lava_dweller_lava_shower_AuraScript);
 
-            void PeriodicTick(constAuraEffectPtr aurEff)
+            void PeriodicTick(AuraEffect const* aurEff)
             {
                 if (!GetCaster())
                     return;
@@ -829,7 +829,7 @@ class spell_firelands_fire_turtle_hatchling_shell_spin : public SpellScriptLoade
         {
             PrepareAuraScript(spell_firelands_fire_turtle_hatchling_shell_spin_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -837,7 +837,7 @@ class spell_firelands_fire_turtle_hatchling_shell_spin : public SpellScriptLoade
                 GetTarget()->SetControlled(true, UNIT_STATE_ROOT);
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -867,7 +867,7 @@ class spell_firelands_flame_archon_fiery_torment : public SpellScriptLoader
         {
             PrepareAuraScript(spell_firelands_flame_archon_fiery_torment_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -875,7 +875,7 @@ class spell_firelands_flame_archon_fiery_torment : public SpellScriptLoader
                 GetTarget()->SetControlled(true, UNIT_STATE_STUNNED);
             }
 
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;
@@ -883,7 +883,7 @@ class spell_firelands_flame_archon_fiery_torment : public SpellScriptLoader
                 GetTarget()->SetControlled(false, UNIT_STATE_STUNNED);                
             }
 
-            void PeriodicTick(constAuraEffectPtr aurEff)
+            void PeriodicTick(AuraEffect const* aurEff)
             {
                 if (!GetCaster())
                     return;

@@ -165,7 +165,7 @@ public:
                     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                         if(Player* player = itr->getSource())
                         {
-                            if (AuraPtr aura = player->GetAura(SPELL_BLACK_BLOOD_H))
+                            if (Aura* aura = player->GetAura(SPELL_BLACK_BLOOD_H))
                                 aura->SetStackAmount(aura->GetStackAmount() - 1);
                         }
             }
@@ -191,7 +191,7 @@ public:
             DoCast(me, SPELL_TANTRUM);
             //DoCast(me, SPELL_VOID_DIFFUSION_1);
             uint32 uStack = action;
-            if (AuraPtr aura = me->GetAura(SPELL_VOID_DIFFUSION_1))
+            if (Aura* aura = me->GetAura(SPELL_VOID_DIFFUSION_1))
                 uStack += aura->GetStackAmount();
 
             me->RemoveAurasDueToSpell(SPELL_VOID_DIFFUSION_1);
@@ -444,7 +444,7 @@ public:
                 }
                 else if (who->GetGUID() == me->ToTempSummon()->GetSummoner()->GetGUID())
                 {
-                    if (AuraPtr aura = me->GetAura(SPELL_VOID_DIFFUSION_2))
+                    if (Aura* aura = me->GetAura(SPELL_VOID_DIFFUSION_2))
                         who->GetAI()->DoAction(aura->GetStackAmount());
                     else
                         who->GetAI()->DoAction(1);

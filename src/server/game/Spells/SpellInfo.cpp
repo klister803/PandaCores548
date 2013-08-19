@@ -1285,8 +1285,8 @@ bool SpellInfo::IsAffectedBySpellMod(SpellModifier* mod) const
     if (mod->mask & SpellFamilyFlags)
     {
         if(mod->spellId == 103827)
-        if (constAuraPtr aura = mod->ownerAura)
-            if (AuraEffectPtr aurEff = aura->GetEffect(0))
+        if (Aura const* aura = mod->ownerAura)
+            if (AuraEffect* aurEff = aura->GetEffect(0))
                 if (aurEff->GetAuraType() == SPELL_AURA_MOD_CHARGES)
                 {
                     if(aurEff->GetAmount() < 2)

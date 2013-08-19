@@ -517,10 +517,10 @@ class boss_generic_guardian : public CreatureScript
                                         if (!firstPlayer || !SecondPlayer)
                                             break;
 
-                                        if (AuraPtr aura = me->AddAura(SPELL_JASPER_CHAINS, firstPlayer))
+                                        if (Aura* aura = me->AddAura(SPELL_JASPER_CHAINS, firstPlayer))
                                             aura->SetScriptGuid(0, SecondPlayer->GetGUID());
 
-                                        if (AuraPtr aura = me->AddAura(SPELL_JASPER_CHAINS, SecondPlayer))
+                                        if (Aura* aura = me->AddAura(SPELL_JASPER_CHAINS, SecondPlayer))
                                             aura->SetScriptGuid(0, firstPlayer->GetGUID());
                                     }
 
@@ -608,7 +608,7 @@ class spell_petrification : public SpellScriptLoader
         {
             PrepareAuraScript(spell_petrification_AuraScript);
 
-            void HandleTriggerSpell(constAuraEffectPtr aurEff)
+            void HandleTriggerSpell(AuraEffect const* aurEff)
             {
                 PreventDefaultAction();
 
@@ -631,7 +631,7 @@ class spell_petrification : public SpellScriptLoader
                     if (!target->HasAura(triggeredSpell))
                         caster->AddAura(triggeredSpell, target);
 
-                    if (AuraPtr triggeredAura = target->GetAura(triggeredSpell))
+                    if (Aura* triggeredAura = target->GetAura(triggeredSpell))
                     {
                         uint8 stackCount = triggeredAura->GetStackAmount();
 
@@ -682,7 +682,7 @@ class spell_jasper_chains : public SpellScriptLoader
                 playerLinkedGuid = guid;
             }
 
-            void HandlePeriodic(constAuraEffectPtr aurEff)
+            void HandlePeriodic(AuraEffect const* aurEff)
             {
                 Unit* caster = GetCaster();
                 Unit* target = GetTarget();
@@ -690,7 +690,7 @@ class spell_jasper_chains : public SpellScriptLoader
                 Player* linkedPlayer = sObjectAccessor->GetPlayer(*target, playerLinkedGuid);
 
                 if (!caster || !target || !spell || !linkedPlayer || !linkedPlayer->isAlive() || !linkedPlayer->HasAura(spell->Id))
-                    if (AuraPtr myaura = GetAura())
+                    if (Aura* myaura = GetAura())
                     {
                         myaura->Remove();
                         return;
@@ -698,7 +698,7 @@ class spell_jasper_chains : public SpellScriptLoader
 
                 if (target->GetDistance(linkedPlayer) > spell->Effects[EFFECT_0].BasePoints)
                 {
-                    if (AuraPtr aura = target->GetAura(spell->Id))
+                    if (Aura* aura = target->GetAura(spell->Id))
                     {
                         if (aura->GetStackAmount() >= 15)
                         {

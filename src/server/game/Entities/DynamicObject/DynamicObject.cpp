@@ -183,7 +183,7 @@ void DynamicObject::Delay(int32 delaytime)
     SetDuration(GetDuration() - delaytime);
 }
 
-void DynamicObject::SetAura(AuraPtr aura)
+void DynamicObject::SetAura(Aura* aura)
 {
     ASSERT(!_aura && aura);
     _aura = aura;
@@ -193,7 +193,7 @@ void DynamicObject::RemoveAura()
 {
     ASSERT(_aura && !_removedAura);
     _removedAura = _aura;
-    _aura = NULLAURA;
+    _aura = NULL;
     if (!_removedAura->IsRemoved())
         _removedAura->_Remove(AURA_REMOVE_BY_DEFAULT);
 }

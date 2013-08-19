@@ -1639,7 +1639,7 @@ class npc_alysrazor_molten_feather : public CreatureScript
                 return true;
 
             uint8 stacks = 0;
-            if (constAuraPtr aur = pPlayer->GetAura(SPELL_MOLTEN_FEATHER))
+            if (Aura const* aur = pPlayer->GetAura(SPELL_MOLTEN_FEATHER))
                 stacks = aur->GetStackAmount();
 
             if (stacks < 3)
@@ -1840,7 +1840,7 @@ class spell_alysrazor_molten_feather : public SpellScriptLoader
         {
             PrepareAuraScript(spell_alysrazor_molten_feather_AuraScript);
 
-			void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+			void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetTarget())
                     return;

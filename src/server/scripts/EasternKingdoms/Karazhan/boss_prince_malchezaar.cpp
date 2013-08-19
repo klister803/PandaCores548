@@ -339,7 +339,7 @@ public:
                     enfeeble_targets[i] = target->GetGUID();
                     enfeeble_health[i] = target->GetHealth();
 
-                    target->CastSpell(target, SPELL_ENFEEBLE, true, 0, NULLAURA_EFFECT, me->GetGUID());
+                    target->CastSpell(target, SPELL_ENFEEBLE, true, 0, NULL, me->GetGUID());
                     target->SetHealth(1);
                 }
         }

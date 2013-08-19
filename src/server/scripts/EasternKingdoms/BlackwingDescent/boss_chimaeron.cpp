@@ -513,12 +513,12 @@ class spell_chimaeron_finkles_mixture : public SpellScriptLoader
         {
             PrepareAuraScript(spell_chimaeron_finkles_mixture_AuraScript);
 
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
 
-            void Absorb(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 if (!GetTarget())
                     return;
@@ -531,7 +531,7 @@ class spell_chimaeron_finkles_mixture : public SpellScriptLoader
                 }
             }
 
-            void PeriodicTick(constAuraEffectPtr aurEff)
+            void PeriodicTick(AuraEffect const* aurEff)
             {
                 if (!GetTarget())
                     return;

@@ -2659,7 +2659,7 @@ void Player::ProcessDelayedOperations()
         SetPower(POWER_ECLIPSE, 0);
 
         if (uint32 aura = _resurrectionData->Aura)
-            CastSpell(this, aura, true, NULL, NULLAURA_EFFECT, _resurrectionData->GUID);
+            CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
 
         SpawnCorpseBones();
     }
@@ -5808,8 +5808,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         {
             int32 delta = (int32(getLevel()) - startLevel + 1)*MINUTE;
 
-            AuraPtr aur = GetAura(15007, GetGUID());
-            if (aur != NULLAURA)
+            Aura* aur = GetAura(15007, GetGUID());
+            if (aur != NULL)
             {
                 aur->SetDuration(delta*IN_MILLISECONDS);
             }
@@ -8692,7 +8692,7 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraApplicationMap &itsAuras = duel->opponent->GetAppliedAuras();
     for (AuraApplicationMap::iterator i = itsAuras.begin(); i != itsAuras.end();)
     {
-        constAuraPtr aura = i->second->GetBase();
+        Aura const* aura = i->second->GetBase();
         if (!i->second->IsPositive() && aura->GetCasterGUID() == GetGUID() && aura->GetApplyTime() >= duel->startTime)
             duel->opponent->RemoveAura(i);
         else
@@ -8702,7 +8702,7 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraApplicationMap &myAuras = GetAppliedAuras();
     for (AuraApplicationMap::iterator i = myAuras.begin(); i != myAuras.end();)
     {
-        constAuraPtr aura = i->second->GetBase();
+        Aura const* aura = i->second->GetBase();
         if (!i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
             RemoveAura(i);
         else
@@ -9097,7 +9097,7 @@ void Player::_ApplyWeaponDependentAuraMods(Item* item, WeaponAttackType attackTy
         _ApplyWeaponDependentAuraDamageMod(item, attackType, *itr, apply);
 }
 
-void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attackType, constAuraEffectPtr aura, bool apply)
+void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
 {
     // don't apply mod if item is broken or cannot be used
     if (item->IsBroken() || !CanUseAttackType(attackType))
@@ -9120,7 +9120,7 @@ void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attac
         HandleBaseModValue(mod, FLAT_MOD, float (aura->GetAmount()), apply);
 }
 
-void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType attackType, constAuraEffectPtr aura, bool apply)
+void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
 {
     // don't apply mod if item is broken or cannot be used
     if (item->IsBroken() || !CanUseAttackType(attackType))
@@ -15545,7 +15545,7 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             break;
         case GOSSIP_OPTION_SPIRITHEALER:
             if (isDead())
-                source->ToCreature()->CastSpell(source->ToCreature(), 17251, true, NULL, NULLAURA_EFFECT, GetGUID());
+                source->ToCreature()->CastSpell(source->ToCreature(), 17251, true, NULL, NULL, GetGUID());
             break;
         case GOSSIP_OPTION_QUESTGIVER:
             PrepareQuestMenu(guid);
@@ -15566,8 +15566,8 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             {
                 // Cast spells that teach dual spec
                 // Both are also ImplicitTarget self and must be cast by player
-                CastSpell(this, 63680, true, NULL, NULLAURA_EFFECT, GetGUID());
-                CastSpell(this, 63624, true, NULL, NULLAURA_EFFECT, GetGUID());
+                CastSpell(this, 63680, true, NULL, NULL, GetGUID());
+                CastSpell(this, 63624, true, NULL, NULL, GetGUID());
 
                 // Should show another Gossip text with "Congratulations..."
                 PlayerTalkClass->SendCloseGossip();
@@ -18825,8 +18825,8 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
                 }
             }
 
-            AuraPtr aura = Aura::TryCreate(spellInfo, effmask, this, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid);
-            if (aura != NULLAURA)
+            Aura* aura = Aura::TryCreate(spellInfo, effmask, this, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid);
+            if (aura != NULL)
             {
                 if (!aura->CanBeSaved())
                 {
@@ -20425,7 +20425,7 @@ void Player::_SaveAuras(SQLTransaction& trans)
         if (!itr->second->CanBeSaved())
             continue;
 
-        AuraPtr aura = itr->second;
+        Aura* aura = itr->second;
         AuraApplication * foundAura = GetAuraApplication(aura->GetId(), aura->GetCasterGUID(), aura->GetCastItemGUID());
 
         if(!foundAura)
@@ -20439,7 +20439,7 @@ void Player::_SaveAuras(SQLTransaction& trans)
         uint32 recalculateMask = 0;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (constAuraEffectPtr effect = aura->GetEffect(i))
+            if (AuraEffect const* effect = aura->GetEffect(i))
             {
                 index = 0;
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_AURA_EFFECT);
@@ -21775,7 +21775,7 @@ bool Player::IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod
         return false;
 
     // Mod out of charges
-    if (spell && mod->charges == -1 && spell->m_appliedMods.find(std::const_pointer_cast<Aura>(mod->ownerAura)) == spell->m_appliedMods.end())
+    if (spell && mod->charges == -1 && spell->m_appliedMods.find(mod->ownerAura) == spell->m_appliedMods.end())
         return false;
 
     // +duration to infinite duration spells making them limited
@@ -21847,7 +21847,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
 }
 
 // Restore spellmods in case of failed cast
-void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, AuraPtr aura)
+void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, Aura* aura)
 {
     if (!spell || spell->m_appliedMods.empty())
         return;
@@ -21871,7 +21871,7 @@ void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, AuraPtr aura)
 
             // check if mod affected this spell
             // first, check if the mod aura applied at least one spellmod to this spell
-            Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(std::const_pointer_cast<Aura>(mod->ownerAura));
+            Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(mod->ownerAura);
             if (iterMod == spell->m_appliedMods.end())
                 continue;
             // secondly, check if the current mod is one of the spellmods applied by the mod aura
@@ -21898,7 +21898,7 @@ void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, AuraPtr aura)
     }
 }
 
-void Player::RestoreAllSpellMods(uint32 ownerAuraId, AuraPtr aura)
+void Player::RestoreAllSpellMods(uint32 ownerAuraId, Aura* aura)
 {
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; ++i)
         if (m_currentSpells[i])
@@ -21925,7 +21925,7 @@ void Player::RemoveSpellMods(Spell* spell)
                 continue;
 
             // check if mod affected this spell
-            Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(std::const_pointer_cast<Aura>(mod->ownerAura));
+            Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(mod->ownerAura);
             if (iterMod == spell->m_appliedMods.end())
                 continue;
 
@@ -21933,7 +21933,8 @@ void Player::RemoveSpellMods(Spell* spell)
             spell->m_appliedMods.erase(iterMod);
 
             if (!(mod->ownerAura->GetId() == 117828 && spell->GetSpellInfo()->Id == 116858))
-                if (std::const_pointer_cast<Aura>(mod->ownerAura)->DropCharge(AURA_REMOVE_BY_EXPIRE))
+                if (mod->ownerAura)
+                if (mod->ownerAura->DropCharge(AURA_REMOVE_BY_EXPIRE))
                     itr = m_spellMods[i].begin();
         }
     }
@@ -21951,7 +21952,7 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
         if (--mod->charges == 0)
             mod->charges = -1;
 
-        spell->m_appliedMods.insert(std::const_pointer_cast<Aura>(mod->ownerAura));
+        spell->m_appliedMods.insert(mod->ownerAura);
     }
 }
 
@@ -24738,7 +24739,7 @@ void Player::RemoveItemDependentAurasAndCasts(Item* pItem)
 {
     for (AuraMap::iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end();)
     {
-        AuraPtr aura = itr->second;
+        Aura* aura = itr->second;
 
         // skip passive (passive item dependent spells work in another way) and not self applied auras
         SpellInfo const* spellInfo = aura->GetSpellInfo();
@@ -24974,7 +24975,7 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_CHI, 0);
 
     if (uint32 aura = _resurrectionData->Aura)
-        CastSpell(this, aura, true, NULL, NULLAURA_EFFECT, _resurrectionData->GUID);
+        CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
 
     SpawnCorpseBones();
 }

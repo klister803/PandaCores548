@@ -902,12 +902,12 @@ class spell_dragon_soul_shadowed_globule_deep_corruption : public SpellScriptLoa
         {
             PrepareAuraScript(spell_dragon_soul_shadowed_globule_deep_corruption_AuraScript);
 
-            void HandlePeriodicTick(constAuraEffectPtr aurEff)
+            void HandlePeriodicTick(AuraEffect const* aurEff)
             {
                 if (!GetTarget())
                     return;
 
-                if (AuraPtr aur = GetAura())
+                if (Aura* aur = GetAura())
                 {
                     if (aur->GetStackAmount() >= 5)
                     {

@@ -245,7 +245,7 @@ class spell_boss_perotharn_drain_sssence : public SpellScriptLoader
         {
             PrepareAuraScript(spell_boss_perotharn_drain_sssence_AuraScript);
 
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if(Unit* caster = GetTarget())
                     caster->AddAura(105545, caster);

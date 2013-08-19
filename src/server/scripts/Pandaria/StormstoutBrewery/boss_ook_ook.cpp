@@ -138,7 +138,7 @@ class spell_ook_ook_barrel_ride : public SpellScriptLoader
         {
             PrepareAuraScript(spell_ook_ook_barrel_ride_AuraScript);
 
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget())
                     if (Unit* barrelBase = GetTarget())
@@ -185,7 +185,7 @@ class spell_ook_ook_barrel : public SpellScriptLoader
                 return false;
             }
 
-            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
                 Unit* caster = GetCaster();
                 if (!caster)

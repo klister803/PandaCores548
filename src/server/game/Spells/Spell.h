@@ -345,7 +345,7 @@ class Spell
         int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
         void EffectResurrectWithAura(SpellEffIndex effIndex);
 
-        typedef std::set<AuraPtr> UsedSpellMods;
+        typedef std::set<Aura *> UsedSpellMods;
 
         Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, bool skipCheck = false);
         ~Spell();
@@ -376,7 +376,7 @@ class Spell
         void SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, Unit* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList);
         void SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, ConditionList* condList, bool isChainHeal);
 
-        void prepare(SpellCastTargets const* targets, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT);
+        void prepare(SpellCastTargets const* targets, AuraEffect const* triggeredByAura = NULL);
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
@@ -546,7 +546,7 @@ class Spell
         int32 damage;
         SpellEffectHandleMode effectHandleMode;
         // used in effects handlers
-        AuraPtr m_spellAura;
+        Aura* m_spellAura;
 
         // this is set in Spell Hit, but used in Apply Aura handler
         DiminishingLevels m_diminishLevel;
@@ -567,7 +567,7 @@ class Spell
         uint32 m_procAttackerowner;           // Attacker trigger flags
         uint32 m_procVictimowner;             // Victim   trigger flags
         uint32 m_procEx;
-        void   prepareDataForTriggerSystem(constAuraEffectPtr triggeredByAura);
+        void   prepareDataForTriggerSystem(AuraEffect const* triggeredByAura);
 
         // *****************************************
         // Spell target subsystem

@@ -832,12 +832,12 @@ class spell_yorsahj_the_unsleeping_deep_corruption : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yorsahj_the_unsleeping_deep_corruption_AuraScript);
 
-            void HandlePeriodicTick(constAuraEffectPtr aurEff)
+            void HandlePeriodicTick(AuraEffect const* aurEff)
             {
                 if (!GetTarget())
                     return;
 
-                if (AuraPtr aur = GetAura())
+                if (Aura* aur = GetAura())
                 {
                     if (aur->GetStackAmount() >= 5)
                     {

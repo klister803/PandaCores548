@@ -392,7 +392,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         whelpcount++;
                         if (whelpcount == 8)
                         {
-                            if (AuraPtr aura = me->GetAura(SPELL_DRAGON_VENGEANCE))
+                            if (Aura* aura = me->GetAura(SPELL_DRAGON_VENGEANCE))
                                 aura->SetStackAmount(aura->GetStackAmount() + 1);
                             else
                                 me->AddAura(SPELL_DRAGON_VENGEANCE, me);
@@ -776,7 +776,7 @@ class npc_halfus_dragon : public CreatureScript{
 
                 if (Creature* Halfus = Unit::GetCreature(*me, pInstance->GetData64(DATA_HALFUS)))
                 {
-                    if(AuraPtr aura = Halfus->GetAura(SPELL_DRAGON_VENGEANCE))
+                    if(Aura* aura = Halfus->GetAura(SPELL_DRAGON_VENGEANCE))
                         aura->SetStackAmount(aura->GetStackAmount() + 1);
                     else
                         me->AddAura(SPELL_DRAGON_VENGEANCE, Halfus);
@@ -796,7 +796,7 @@ class spell_halfus_stone_grip : public SpellScriptLoader
         {
             PrepareAuraScript(spell_halfus_stone_grip_AuraScript) 
 
-            void OnPereodic(constAuraEffectPtr /*aurEff*/) 
+            void OnPereodic(AuraEffect const* /*aurEff*/) 
             {
                 PreventDefaultAction();
 

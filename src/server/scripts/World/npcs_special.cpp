@@ -215,7 +215,7 @@ class npc_air_force_bots : public CreatureScript
                             if (!who->IsWithinDistInMap(me, RANGE_GUARDS_MARK))
                                 return;
 
-                            AuraPtr markAura = who->GetAura(SPELL_GUARDS_MARK);
+                            Aura* markAura = who->GetAura(SPELL_GUARDS_MARK);
                             if (markAura)
                             {
                                 // the target wasn't able to move out of our range within 25 seconds
@@ -1333,8 +1333,8 @@ class npc_rogue_trainer : public CreatureScript
 
                             // Cast spells that teach dual spec
                             // Both are also ImplicitTarget self and must be cast by player
-                            player->CastSpell(player, 63680, true, NULL, NULLAURA_EFFECT, player->GetGUID());
-                            player->CastSpell(player, 63624, true, NULL, NULLAURA_EFFECT, player->GetGUID());
+                            player->CastSpell(player, 63680, true, NULL, NULL, player->GetGUID());
+                            player->CastSpell(player, 63624, true, NULL, NULL, player->GetGUID());
 
                             // Should show another Gossip text with "Congratulations..."
                             player->PlayerTalkClass->SendCloseGossip();
