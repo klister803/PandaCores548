@@ -181,8 +181,8 @@ class boss_stone_guard_controler : public CreatureScript
                                     if (player->HasAura(SPELL_TOTALY_PETRIFIED))
                                         me->Kill(player);
 
-                            for (uint32 entry: guardiansEntry)
-                                if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(entry)))
+                            for (uint8 i = 0; i < 4; ++i)
+                                if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(uardiansEntry[i])))
                                     pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gardian);
 
                             events.Reset();
