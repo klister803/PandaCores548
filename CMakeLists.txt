@@ -1,5 +1,4 @@
 # Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
-# Copyright (C) 2012-2013 Uwow <http://uwow.biz/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -10,7 +9,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # Set projectname (must be done AFTER setting configurationtypes)
-project(PandaCore)
+project(TrinityCore)
 
 # CMake policies (can not be handled elsewhere)
 cmake_minimum_required(VERSION 2.6)
@@ -28,14 +27,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 # build in Release-mode by default if not explicitly set
 if( NOT CMAKE_BUILD_TYPE )
   set(CMAKE_BUILD_TYPE "Release")
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-  add_definitions(-std=gnu++0x)
-endif(CMAKE_COMPILER_IS_GNUCXX)
-
-if( APPLE )
-    set (CMAKE_CXX_FLAGS "-std=c++0x -stdlib=libc++ -g3 -Wall -O0")
 endif()
 
 include(CheckCXXSourceRuns)

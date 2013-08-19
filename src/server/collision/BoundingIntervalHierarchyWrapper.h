@@ -33,15 +33,11 @@ class BIHWrap
     {
         const T* const* objects;
         RayCallback& _callback;
-        uint32 objects_size;
 
-        MDLCallback(RayCallback& callback, const T* const* objects_array, uint32 objects_size ) : objects(objects_array), _callback(callback), objects_size(objects_size) {}
+        MDLCallback(RayCallback& callback, const T* const* objects_array ) : objects(objects_array), _callback(callback) {}
 
         bool operator() (const Ray& ray, uint32 Idx, float& MaxDist, bool /*stopAtFirst*/)
         {
-            if (Idx >= objects_size)
-                return false;
-
             if (const T* obj = objects[Idx])
                 return _callback(ray, *obj, MaxDist/*, stopAtFirst*/);
             return false;
@@ -49,9 +45,6 @@ class BIHWrap
 
         void operator() (const Vector3& p, uint32 Idx)
         {
-            if (Idx >= objects_size)
-                return false;
-
             if (const T* obj = objects[Idx])
                 _callback(p, *obj);
         }
@@ -94,24 +87,21 @@ public:
         m_objects.fastClear();
         m_obj2Idx.getKeys(m_objects);
         m_objects_to_push.getMembers(m_objects);
-        //assert that m_obj2Idx has all the keys
 
         m_tree.build(m_objects, BoundsFunc::getBounds2);
     }
 
     template<typename RayCallback>
-    void intersectRay(const Ray& ray, RayCallback& intersectCallback, float& maxDist)
+    void intersectRay(const Ray& ray, RayCallback& intersectCallback, float& maxDist) const
     {
-        balance();
-        MDLCallback<RayCallback> temp_cb(intersectCallback, m_objects.getCArray(), m_objects.size());
+        MDLCallback<RayCallback> temp_cb(intersectCallback, m_objects.getCArray());
         m_tree.intersectRay(ray, temp_cb, maxDist, true);
     }
 
     template<typename IsectCallback>
-    void intersectPoint(const Vector3& point, IsectCallback& intersectCallback)
+    void intersectPoint(const Vector3& point, IsectCallback& intersectCallback) const
     {
-        balance();
-        MDLCallback<IsectCallback> callback(intersectCallback, m_objects.getCArray(), m_objects.size());
+        MDLCallback<IsectCallback> callback(intersectCallback, m_objects.getCArray());
         m_tree.intersectPoint(point, callback);
     }
 };

@@ -23,7 +23,6 @@
 #include "Dynamic/UnorderedMap.h"
 #include "Define.h"
 #include <ace/Thread_Mutex.h>
-#include <LockedMap.h>
 
 //===========================================================
 
@@ -64,8 +63,8 @@ namespace VMAP
             int iRefCount;
     };
 
-    typedef ACE_Based::LockedMap<uint32, StaticMapTree*> InstanceTreeMap;
-    typedef ACE_Based::LockedMap<std::string, ManagedModel> ModelFileMap;
+    typedef UNORDERED_MAP<uint32, StaticMapTree*> InstanceTreeMap;
+    typedef UNORDERED_MAP<std::string, ManagedModel> ModelFileMap;
 
     class VMapManager2 : public IVMapManager
     {

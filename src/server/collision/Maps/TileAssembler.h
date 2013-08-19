@@ -23,7 +23,6 @@
 #include <G3D/Matrix3.h>
 #include <map>
 #include <set>
-#include <LockedVector.h>
 
 #include "ModelInstance.h"
 #include "WorldModel.h"
@@ -71,8 +70,8 @@ namespace VMAP
 
         G3D::AABox bounds;
         uint32 liquidflags;
-        ACE_Based::LockedVector<MeshTriangle> triangles;
-        ACE_Based::LockedVector<G3D::Vector3> vertexArray;
+        std::vector<MeshTriangle> triangles;
+        std::vector<G3D::Vector3> vertexArray;
         class WmoLiquid *liquid;
 
         GroupModel_Raw() : liquid(0) {}
@@ -84,7 +83,7 @@ namespace VMAP
     struct WorldModel_Raw
     {
         uint32 RootWMOID;
-        ACE_Based::LockedVector<GroupModel_Raw> groupsArray;
+        std::vector<GroupModel_Raw> groupsArray;
 
         bool Read(const char * path);
     };
