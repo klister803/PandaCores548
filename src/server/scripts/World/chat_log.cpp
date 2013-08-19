@@ -131,16 +131,16 @@ public:
             case CHAT_MSG_GUILD:
                 if (lang != LANG_ADDON && sWorld->getBoolConfig(CONFIG_CHATLOG_GUILD))
                     sLog->outDebug(LOG_FILTER_PLAYER_CHATLOG, "[GUILD] Player %s tells guild %s: %s",
-                        player->GetName(), guild ? guild->GetName() : "<unknown>", msg.c_str());
+                        player->GetName(), guild ? guild->GetName().c_str() : "<unknown>", msg.c_str());
                 else if (lang == LANG_ADDON && sWorld->getBoolConfig(CONFIG_CHATLOG_ADDON))
                     sLog->outDebug(LOG_FILTER_PLAYER_CHATLOG, "[ADDON] Player %s sends to guild %s: %s",
-                        player->GetName(), guild ? guild->GetName() : "<unknown>", msg.c_str());
+                        player->GetName(), guild ? guild->GetName().c_str() : "<unknown>", msg.c_str());
                 break;
 
             case CHAT_MSG_OFFICER:
                 if (sWorld->getBoolConfig(CONFIG_CHATLOG_GUILD))
                     sLog->outDebug(LOG_FILTER_PLAYER_CHATLOG, "[OFFICER] Player %s tells guild %s officers: %s",
-                        player->GetName(), guild ? guild->GetName() : "<unknown>", msg.c_str());
+                        player->GetName(), guild ? guild->GetName().c_str() : "<unknown>", msg.c_str());
                 break;
         }
     }
@@ -155,10 +155,10 @@ public:
 
         if (sWorld->getBoolConfig(CONFIG_CHATLOG_SYSCHAN) && isSystem)
             sLog->outDebug(LOG_FILTER_PLAYER_CHATLOG, "[SYSCHAN] Player %s tells channel %s: %s",
-                player->GetName(), channel->GetName(), msg.c_str());
+                player->GetName(), channel->GetName().c_str(), msg.c_str());
         else if (sWorld->getBoolConfig(CONFIG_CHATLOG_CHANNEL))
             sLog->outDebug(LOG_FILTER_PLAYER_CHATLOG, "[CHANNEL] Player %s tells channel %s: %s",
-                player->GetName(), channel ? channel->GetName() : "<unknown>", msg.c_str());
+                player->GetName(), channel ? channel->GetName().c_str() : "<unknown>", msg.c_str());
     }
 };
 
