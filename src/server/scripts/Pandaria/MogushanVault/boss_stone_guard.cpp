@@ -182,7 +182,7 @@ class boss_stone_guard_controler : public CreatureScript
                                         me->Kill(player);
 
                             for (uint8 i = 0; i < 4; ++i)
-                                if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(uardiansEntry[i])))
+                                if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
                                     pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gardian);
 
                             events.Reset();
