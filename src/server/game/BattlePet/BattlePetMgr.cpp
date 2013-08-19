@@ -49,16 +49,16 @@ BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
 
 void BattlePetMgr::GetBattlePetList(PetBattleDataList &battlePetList) const
 {
-    auto spellMap = m_player->GetSpellMap();
-    for (auto itr : spellMap)
+    PlayerSpellMap spellMap = m_player->GetSpellMap();
+    for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
     {
-        if (itr.second->state == PLAYERSPELL_REMOVED)
+        if ((*itr).second->state == PLAYERSPELL_REMOVED)
             continue;
 
-        if (!itr.second->active || itr.second->disabled)
+        if (!(*itr).second->active || (*itr).second->disabled)
             continue;
 
-        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo((*itr).first);
         if (!spell)
             continue;
 
@@ -92,7 +92,7 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
     data->WriteBits(petList.size(), 19);
 
     // bits part
-    for (auto pet : petList)
+    for (PetBattleDataList::const_iterator pet = petList.begin(); pet != petList.end(); ++pet)
     {
         data->WriteBit(true); // hasBreed, inverse
         data->WriteBit(true); // hasQuality, inverse
@@ -103,19 +103,19 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
     }
 
     // data part
-    for (auto pet : petList)
+    for (PetBattleDataList::const_iterator pet = petList.begin(); pet != petList.end(); ++pet)
     {
-        *data << uint32(pet.m_displayID);
-        *data << uint32(pet.m_summonSpellID); // Pet Entry
+        *data << uint32((*pet).m_displayID);
+        *data << uint32((*pet).m_summonSpellID); // Pet Entry
         *data << uint16(0); // xp
         *data << uint32(1); // health
         *data << uint16(1); // level
         // name
         *data << uint32(1); // speed
         *data << uint32(1); // max health
-        *data << uint32(pet.m_entry); // Creature ID
+        *data << uint32((*pet).m_entry); // Creature ID
         *data << uint32(1); // power
-        *data << uint32(pet.m_speciesID); // species
+        *data << uint32((*pet).m_speciesID); // species
     }
 }
 

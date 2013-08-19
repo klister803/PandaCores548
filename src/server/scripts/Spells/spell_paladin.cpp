@@ -442,9 +442,9 @@ class spell_pal_emancipate : public SpellScriptLoader
                 {
                     std::list<Aura*> auraList;
 
-                    for (auto itr : _player->GetAppliedAuras())
+                    for (Unit::AuraApplicationMap::const_iterator itr = _player->GetAppliedAuras().begin(); itr!= _player->GetAppliedAuras().end(); ++itr)
                     {
-                        Aura* aura = itr.second->GetBase();
+                        Aura* aura = itr->second->GetBase();
                         if (aura && aura->GetSpellInfo()->GetAllEffectsMechanicMask() & ((1<<MECHANIC_SNARE)|(1<<MECHANIC_ROOT)))
                             auraList.push_back(aura);
                     }

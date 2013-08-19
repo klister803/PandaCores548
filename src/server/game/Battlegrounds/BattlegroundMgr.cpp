@@ -1543,8 +1543,8 @@ void BattlegroundMgr::SetHolidayWeekends(std::list<uint32> activeHolidayId)
             bool holidayActivate = false;
 
             if (uint32 holidayId = bg->GetHolidayId())
-                for (auto activeId: activeHolidayId)
-                    if (holidayId == activeId)
+                for (std::list<uint32>::iterator apptItr = activeHolidayId.begin(); apptItr != activeHolidayId.end(); ++apptItr)
+                    if (holidayId == (*apptItr))
                         holidayActivate = true;
 
             bg->SetHoliday(holidayActivate);

@@ -7655,8 +7655,8 @@ bool Spell::IsCritForTarget(Unit* target) const
     if (!target)
         return false;
 
-    for (auto itr : m_UniqueTargetInfo)
-        if (itr.targetGUID == target->GetGUID() && itr.crit)
+    for (std::list<TargetInfo>::const_iterator itr = m_UniqueTargetInfo.begin(); itr != m_UniqueTargetInfo.end(); ++itr)
+        if (itr->targetGUID == target->GetGUID() && itr->crit)
             return true;
 
     return false;

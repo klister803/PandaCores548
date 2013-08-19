@@ -2184,8 +2184,8 @@ bool WorldObject::IsPlayerInPersonnalVisibilityList(uint64 guid) const
     if (!IS_PLAYER_GUID(guid))
         return false;
 
-    for (auto Itr: _visibilityPlayerList)
-        if (Itr == guid)
+    for (std::list<uint64>::const_iterator itr = _visibilityPlayerList.begin(); itr != _visibilityPlayerList.end(); ++itr)
+        if ((*itr) == guid)
             return true;
 
     return false;
@@ -2193,12 +2193,12 @@ bool WorldObject::IsPlayerInPersonnalVisibilityList(uint64 guid) const
 
 void WorldObject::AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerList)
 {
-    for (auto guid: viewerList)
+    for (std::list<uint64>::const_iterator guid = viewerList.begin(); guid != viewerList.end(); ++guid)
     {
-        if (!IS_PLAYER_GUID(guid))
+        if (!IS_PLAYER_GUID(*guid))
             continue;
 
-        _visibilityPlayerList.push_back(guid);
+        _visibilityPlayerList.push_back(*guid);
     }
 }
 

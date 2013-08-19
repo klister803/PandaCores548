@@ -2885,7 +2885,7 @@ void Group::SetBattlefieldGroup(Battlefield *bg)
 
 void Group::setGroupMemberRole(uint64 guid, uint32 role)
 {
-    for (auto member = m_memberSlots.begin(); member != m_memberSlots.end(); ++member)
+    for (MemberSlotList::iterator member = m_memberSlots.begin(); member != m_memberSlots.end(); ++member)
     {
         if (member->guid == guid)
         {

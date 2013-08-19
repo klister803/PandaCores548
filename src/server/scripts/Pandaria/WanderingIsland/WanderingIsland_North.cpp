@@ -60,9 +60,9 @@ class mob_master_shang_xi : public CreatureScript
 
                     bool playerWithQuestNear = false;
 
-                    for (auto player: playerList)
-                        if (player->GetQuestStatus(29408) == QUEST_STATUS_INCOMPLETE)
-                            if (!player->HasItemCount(80212))// Flamme du maitre
+                    for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                        if ((*itr)->GetQuestStatus(29408) == QUEST_STATUS_INCOMPLETE)
+                            if (!(*itr)->HasItemCount(80212))// Flamme du maitre
                                 playerWithQuestNear = true;
 
                     if (playerWithQuestNear && !me->HasAura(114610))
@@ -267,8 +267,8 @@ public:
 
                 std::list<Player*> playerList;
                 GetPlayerListInGrid(playerList, me, 10.0f);
-                for (auto player: playerList)
-                    player->KilledMonsterCredit(me->GetEntry(), 0);
+                for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                    (*itr)->KilledMonsterCredit(me->GetEntry(), 0);
 
                 me->CombatStop();
                 me->setFaction(35);
@@ -446,8 +446,8 @@ public:
                         
                             std::list<Player*> PlayerList;
                             GetPlayerListInGrid(PlayerList, me, 20.0f);
-                            for (auto player: PlayerList)
-                                player->KilledMonsterCredit(54855, 0);
+                            for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+                                (*itr)->KilledMonsterCredit(54855, 0);
                         
                             events.ScheduleEvent(EVENT_RESET, 30000);
                         }
@@ -599,8 +599,8 @@ public:
                 
                 std::list<Creature*> unitlist;
                 GetCreatureListWithEntryInGrid(unitlist, me, 59637, 50.0f);
-                for (auto creature: unitlist)
-                    me->Kill(creature);
+                for (std::list<Creature*>::const_iterator itr = unitlist.begin(); itr != unitlist.end(); ++itr)
+                    me->Kill(*itr);
                 	
                 events.ScheduleEvent(EVENT_START, 20000);
                 events.CancelEvent(EVENT_SPAWN_MOBS);
@@ -616,9 +616,12 @@ public:
             std::list<Player*> PlayerList;
             GetPlayerListInGrid(PlayerList, me, 20.0f);
 
-            for (auto player: PlayerList)
+            for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+            {
+                Player* player = *itr;
                 if(player->GetQuestStatus(29414) == QUEST_STATUS_INCOMPLETE)
                     playersInvolved.push_back(player);
+            }
         }
         
         void UpdateAI(const uint32 diff)
@@ -701,8 +704,9 @@ public:
                         }
                         
                         updatePlayerList();
-                        for (auto player: playersInvolved)
+                        for (std::list<Player*>::const_iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); ++itr)
                         {
+                            Player* player = *itr;
                             if(!player->HasAura(116421))
                                 player->CastSpell(player, 116421);
 
@@ -726,8 +730,9 @@ public:
                         me->MonsterSay("And so our path lays before us. Speak to Master Shang Xi, he will tell you what comes next.", LANG_UNIVERSAL, 0);
                         updatePlayerList();
                         me->SetReactState(REACT_DEFENSIVE);
-                        for(auto player: playersInvolved)
+                        for (std::list<Player*>::const_iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); ++itr)
                         {
+                            Player* player = *itr;
                             player->KilledMonsterCredit(54856, 0);
                             player->RemoveAura(116421);
                         }
@@ -968,10 +973,13 @@ class spell_huo_benediction: public SpellScriptLoader
                 std::list<Creature*> huoList;
                 GetCreatureListWithEntryInGrid(huoList, target, 54958, 20.0f);
 
-                for (auto huo: huoList)
+                for (std::list<Creature*>::const_iterator itr = huoList.begin(); itr != huoList.end(); ++itr)
+                {
+                    Creature* huo = *itr;
                     if (huo->ToTempSummon())
                         if (huo->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
                             return;
+                }
 
                 // A partir d'ici on sait que le joueur n'a pas encore de Huo
                 if (TempSummon* tempHuo = target->SummonCreature(54958, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0, target->GetGUID()))
@@ -991,10 +999,13 @@ class spell_huo_benediction: public SpellScriptLoader
                 std::list<Creature*> huoList;
                 GetCreatureListWithEntryInGrid(huoList, target, 54958, 20.0f);
 
-                for (auto huo: huoList)
+                for (std::list<Creature*>::const_iterator itr = huoList.begin(); itr != huoList.end(); ++itr)
+                {
+                    Creature* huo = *itr;
                     if (huo->ToTempSummon())
                         if (huo->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
                             huo->DespawnOrUnsummon();
+                }
             }
 
             void Register()
@@ -1025,8 +1036,9 @@ class AreaTrigger_at_temple_entrance : public AreaTriggerScript
                 std::list<Creature*> huoList;
                 GetCreatureListWithEntryInGrid(huoList, player, 54958, 20.0f);
 
-                for (auto huo: huoList)
+                for (std::list<Creature*>::const_iterator itr = huoList.begin(); itr != huoList.end(); ++itr)
                 {
+                    Creature* huo = *itr;
                     if (huo->ToTempSummon())
                     {
                         if (huo->ToTempSummon()->GetOwnerGUID() == player->GetGUID())

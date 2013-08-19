@@ -3638,36 +3638,36 @@ void Player::InitTalentForLevel()
 
 void Player::InitSpellForLevel()
 {
-    auto spellList = sSpellMgr->GetSpellClassList(getClass());
+    std::set<uint32> spellList = sSpellMgr->GetSpellClassList(getClass());
     uint8 level = getLevel();
     uint32 specializationId = GetSpecializationId(GetActiveSpec());
 
-    for (auto spellId : spellList)
+    for (std::set<uint32>::const_iterator spellId = spellList.begin(); spellId != spellList.end(); ++spellId)
     {
-        SpellInfo const* spell = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(*spellId);
         if (!spell)
             continue;
 
-        if (HasSpell(spellId))
+        if (HasSpell(*spellId))
             continue;
 
         if (!spell->SpecializationIdList.empty())
         {
             bool find = false;
 
-            for(auto itr : spell->SpecializationIdList)
-                if(itr == specializationId)
+            for (std::list<uint32>::const_iterator itr = spell->SpecializationIdList.begin(); itr != spell->SpecializationIdList.end(); ++itr)
+                if((*itr) == specializationId)
                     find = true;
 
             if(!find)
                 continue;
         }
 
-        if (!IsSpellFitByClassAndRace(spellId))
+        if (!IsSpellFitByClassAndRace(*spellId))
         	continue;
 
         if (spell->SpellLevel <= level)
-            learnSpell(spellId, false);
+            learnSpell(*spellId, false);
     }
 }
 
@@ -3675,15 +3675,16 @@ void Player::RemoveSpecializationSpells()
 {
     std::list<uint32> spellToRemove;
 
-    for (auto itr : GetSpellMap())
+    PlayerSpellMap spellMap = GetSpellMap();
+    for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
     {
-        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
         if (spell && !spell->SpecializationIdList.empty())
-            spellToRemove.push_back(itr.first);
+            spellToRemove.push_back(itr->first);
     }
 
-    for (auto itr : spellToRemove)
-        removeSpell(itr);
+    for (std::list<uint32>::iterator itr = spellToRemove.begin(); itr != spellToRemove.end(); ++itr)
+        removeSpell(*itr);
 }
 
 void Player::InitStatsForLevel(bool reapplyMods)
@@ -5018,19 +5019,20 @@ bool Player::ResetTalents(bool no_cost)
 
     RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
 
-    for (auto itr : *GetTalentMap(GetActiveSpec()))
+    PlayerTalentMap* Talents = GetTalentMap(GetActiveSpec());
+    for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
     {
-        const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(itr.first);
+        const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(itr->first);
         if (!_spellEntry)
             continue;
 
-        removeSpell(itr.first, true);
+        removeSpell(itr->first, true);
         // search for spells that the talent teaches and unlearn them
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
                 removeSpell(_spellEntry->Effects[i].TriggerSpell, true);
         // if this talent rank can be found in the PlayerTalentMap, mark the talent as removed so it gets deleted
-        PlayerTalentMap::iterator plrTalent = GetTalentMap(GetActiveSpec())->find(itr.first);
+        PlayerTalentMap::iterator plrTalent = GetTalentMap(GetActiveSpec())->find(itr->first);
         if (plrTalent != GetTalentMap(GetActiveSpec())->end())
             plrTalent->second->state = PLAYERSPELL_REMOVED;
     }
@@ -22810,9 +22812,9 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
     std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
 
-    for (auto reward: rewards)
+    for (std::vector<GuildReward>::const_iterator reward = rewards.begin(); reward != rewards.end(); ++reward)
     {
-        if (pProto->ItemId != reward.Entry)
+        if (pProto->ItemId != reward->Entry)
             continue;
 
         Guild* guild = sGuildMgr->GetGuildById(this->GetGuildId());
@@ -22823,22 +22825,22 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             return false;
         }
 
-        if (reward.Standing)
-            if (this->GetReputationRank(REP_GUILD) < reward.Standing)
+        if (reward->Standing)
+            if (this->GetReputationRank(REP_GUILD) < reward->Standing)
             {
                 SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
                 return false;
             }
 
-        if (reward.AchievementId)
-            if (!guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+        if (reward->AchievementId)
+            if (!guild->GetAchievementMgr().HasAchieved(reward->AchievementId))
             {
                 SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
                 return false;
             }
 
-        if (reward.Racemask)
-            if (!(this->getRaceMask() & reward.Racemask))
+        if (reward->Racemask)
+            if (!(this->getRaceMask() & reward->Racemask))
             {
                 SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
                 return false;
@@ -26369,9 +26371,10 @@ void Player::BuildPlayerTalentsInfoData(WorldPacket* data)
             *data << uint8(0); // talent count
 
             uint8 count = 0;
-            for (auto itr : *GetTalentMap(specIdx))
+            PlayerTalentMap* Talents = GetTalentMap(specIdx);
+            for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
             {
-                SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+                SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
                 if (spell && spell->talentId)
                 {
                     *data << uint16(spell->talentId);
@@ -26842,10 +26845,11 @@ void Player::ActivateSpec(uint8 spec)
     SendActionButtons(2);
     // m_actionButtons.clear() is called in the next _LoadActionButtons
 
-    for (auto itr : *GetTalentMap(GetActiveSpec()))
+    PlayerTalentMap* Talents = GetTalentMap(GetActiveSpec());
+    for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
     {
-        removeSpell(itr.first, true); // removes the talent, and all dependant, learned, and chained spells..
-        if (const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(itr.first))
+        removeSpell(itr->first, true); // removes the talent, and all dependant, learned, and chained spells..
+        if (const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(itr->first))
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)                  // search through the SpellInfo for valid trigger spells
                 if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
                     removeSpell(_spellEntry->Effects[i].TriggerSpell, true); // and remove any spells that the talent teaches
@@ -26863,9 +26867,10 @@ void Player::ActivateSpec(uint8 spec)
     SetActiveSpec(spec);
 
     uint32 usedTalentPoint = 0;
-    for (auto itr : *GetTalentMap(GetActiveSpec()))
+    Talents = GetTalentMap(GetActiveSpec());
+    for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
     {
-        learnSpell(itr.first, false);
+        learnSpell(itr->first, false);
         usedTalentPoint++;
     }
 

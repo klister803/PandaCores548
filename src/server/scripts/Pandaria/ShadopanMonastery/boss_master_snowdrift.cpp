@@ -231,9 +231,9 @@ class boss_master_snowdrift : public CreatureScript
                     std::list<Creature*> noviceList;
                     GetCreatureListWithEntryInGrid(noviceList, me, NPC_NOVICE, 100.0f);
 
-                    for (auto novice : noviceList)
+                    for (std::list<Creature*>::const_iterator itr = noviceList.begin(); itr != noviceList.end(); ++itr)
                         if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_SECOND_POS)))
-                            novice->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 30.0f, POINT_NOVICE_DEFEATED_SECOND);
+                            (*itr)->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 30.0f, POINT_NOVICE_DEFEATED_SECOND);
 
                     ++eventPhase;
                     events.ScheduleEvent(EVENT_FIRST_EVENT, urand(1000, 2000));
@@ -372,18 +372,18 @@ class boss_master_snowdrift : public CreatureScript
 
                         bool isBoss = true;
 
-                        for (auto index : randomIndex)
+                        for (std::vector<uint8>::const_iterator index = randomIndex.begin(); index != randomIndex.end(); ++index)
                         {
                             // The first random pos is for the boss, the two others are for his clones
                             if (isBoss)
                             {
-                                me->NearTeleportTo(ClonePos[index].GetPositionX(), ClonePos[index].GetPositionY(), ClonePos[index].GetPositionZ(), ClonePos[index].GetOrientation());
+                                me->NearTeleportTo(ClonePos[*index].GetPositionX(), ClonePos[*index].GetPositionY(), ClonePos[*index].GetPositionZ(), ClonePos[*index].GetOrientation());
                                 me->SetVisible(true);
                                 me->CastSpell(me, SPELL_SMOKE_BOMB, true);
                                 isBoss = false;
                             }
                             else
-                                if (Creature* clone = me->SummonCreature(NPC_SNOWDRIFT_CLONE, ClonePos[index].GetPositionX(), ClonePos[index].GetPositionY(), ClonePos[index].GetPositionZ(), ClonePos[index].GetOrientation()))
+                                if (Creature* clone = me->SummonCreature(NPC_SNOWDRIFT_CLONE, ClonePos[*index].GetPositionX(), ClonePos[*index].GetPositionY(), ClonePos[*index].GetPositionZ(), ClonePos[*index].GetOrientation()))
                                     clone->CastSpell(clone, SPELL_SMOKE_BOMB, true);
                         }
 

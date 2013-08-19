@@ -35,12 +35,12 @@ class spell_stormstout_brewery_habanero_beer : public SpellScriptLoader
 
                 GetCaster()->RemoveAurasDueToSpell(SPELL_PROC_EXPLOSION);
 
-                for (auto barrel : creatureList)
+                for (std::list<Creature*>::const_iterator itr = creatureList.begin(); itr != creatureList.end(); ++itr)
                 {
-                    if (barrel->HasAura(SPELL_PROC_EXPLOSION))
+                    if ((*itr)->HasAura(SPELL_PROC_EXPLOSION))
                     {
-                        barrel->RemoveAurasDueToSpell(SPELL_PROC_EXPLOSION);
-                        barrel->CastSpell(barrel, GetSpellInfo()->Id, true);
+                        (*itr)->RemoveAurasDueToSpell(SPELL_PROC_EXPLOSION);
+                        (*itr)->CastSpell(*itr, GetSpellInfo()->Id, true);
                     }
                 }
             }

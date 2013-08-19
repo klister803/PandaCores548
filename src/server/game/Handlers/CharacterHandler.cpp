@@ -926,11 +926,11 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
             }
         }
 
-        for (auto itr : auraModsList)
-            _plr->RemoveAura(itr->GetSpellInfo()->Id, _plr->GetGUID());
+        for (std::list<Aura*>::const_iterator itr = auraModsList.begin(); itr != auraModsList.end(); ++itr)
+            _plr->RemoveAura((*itr)->GetSpellInfo()->Id, _plr->GetGUID());
 
-        for (auto itr : auraModsList)
-            _plr->CastSpell(_plr, itr->GetSpellInfo()->Id, true);
+        for (std::list<Aura*>::const_iterator itr = auraModsList.begin(); itr != auraModsList.end(); ++itr)
+            _plr->CastSpell(_plr, (*itr)->GetSpellInfo()->Id, true);
     }
 }
 

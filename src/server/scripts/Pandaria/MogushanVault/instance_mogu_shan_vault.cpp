@@ -174,15 +174,15 @@ public:
                             if (Creature* stoneGuardControler = instance->GetCreature(stoneGuardControlerGuid))
                                 stoneGuardControler->AI()->DoAction(ACTION_ENTER_COMBAT);
 
-                            for (auto stoneGuardGuid: stoneGuardGUIDs)
-                                if (Creature* stoneGuard = instance->GetCreature(stoneGuardGuid))
+                            for (std::vector<uint64>::const_iterator guid = stoneGuardGUIDs.begin(); guid != stoneGuardGUIDs.end(); ++guid)
+                                if (Creature* stoneGuard = instance->GetCreature(*guid))
                                     stoneGuard->AI()->DoAction(ACTION_ENTER_COMBAT);
                             break;
                         }
                         case FAIL:
                         {
-                            for (auto stoneGuardGuid: stoneGuardGUIDs)
-                                if (Creature* stoneGuard = instance->GetCreature(stoneGuardGuid))
+                            for (std::vector<uint64>::const_iterator guid = stoneGuardGUIDs.begin(); guid != stoneGuardGUIDs.end(); ++guid)
+                                if (Creature* stoneGuard = instance->GetCreature(*guid))
                                     stoneGuard->AI()->DoAction(ACTION_FAIL);
                         }
                         default:
@@ -235,10 +235,10 @@ public:
                 case NPC_AMETHYST:
                 case NPC_COBALT:
                 {
-                    for (auto guid: stoneGuardGUIDs)
-                        if (Creature* stoneGuard = instance->GetCreature(guid))
+                    for (std::vector<uint64>::const_iterator guid = stoneGuardGUIDs.begin(); guid != stoneGuardGUIDs.end(); ++guid)
+                        if (Creature* stoneGuard = instance->GetCreature(*guid))
                             if (stoneGuard->GetEntry() == type)
-                                return guid;
+                                return *guid;
                     break;
                 }
 
@@ -254,10 +254,10 @@ public:
                 case NPC_QIANG:
                 case NPC_SUBETAI:
                 {
-                    for (auto guid: spiritKingsGUIDs)
-                        if (Creature* spiritKing = instance->GetCreature(guid))
+                    for (std::vector<uint64>::const_iterator guid = spiritKingsGUIDs.begin(); guid != spiritKingsGUIDs.end(); ++guid)
+                        if (Creature* spiritKing = instance->GetCreature(*guid))
                             if (spiritKing->GetEntry() == type)
-                                return guid;
+                                return *guid;
                     break;
                 }
 
@@ -273,10 +273,10 @@ public:
                 case GOB_SHIELD_STATUE:
                 case GOB_STAFF_STATUE:
                 {
-                    for (auto guid: fengStatuesGUIDs)
-                        if (GameObject* fengStatue = instance->GetGameObject(guid))
+                    for (std::vector<uint64>::const_iterator guid = fengStatuesGUIDs.begin(); guid != fengStatuesGUIDs.end(); ++guid)
+                        if (GameObject* fengStatue = instance->GetGameObject(*guid))
                             if (fengStatue->GetEntry() == type)
-                                return guid;
+                                return *guid;
                     break;
                 }
                 case GOB_INVERSION: return inversionGobGuid;

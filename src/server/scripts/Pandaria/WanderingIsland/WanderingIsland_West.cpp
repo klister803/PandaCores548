@@ -238,8 +238,8 @@ public:
                     std::list<Creature*> aysaList;
                     GetCreatureListWithEntryInGrid(aysaList, me, 55744, 35.0f);
 
-                    for (auto aysa: aysaList)
-                        aysa->AI()->DoAction(1);
+                    for (std::list<Creature*>::const_iterator itr = aysaList.begin(); itr != aysaList.end(); ++itr)
+                        (*itr)->AI()->DoAction(1);
                 }
                 tornadeTimer = 8 * IN_MILLISECONDS;
             }
@@ -350,10 +350,13 @@ public:
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 80.0f);
 
-            for (auto player : playerList)
+            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                Player* player = *itr;
                 if (player->GetQuestStatus(29786) == QUEST_STATUS_INCOMPLETE)
                     if (player->isAlive())
                         return true;
+            }
 
             return false;
         }
@@ -395,10 +398,13 @@ public:
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 50.0f);
 
-            for (auto player : playerList)
+            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                Player* player = *itr;
                 if (player->GetQuestStatus(29786) == QUEST_STATUS_INCOMPLETE)
                     if (player->isAlive())
                         player->KilledMonsterCredit(me->GetEntry());
+            }
         }
 
         void UpdateAI(const uint32 diff)

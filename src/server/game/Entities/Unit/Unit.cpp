@@ -666,18 +666,18 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         }
 
         // In addition, you also gain Eminence, causing you to heal the lowest health nearby target within 20 yards for an amount equal to 50% of non-autoattack damage you deal
-        for (auto itr : targetList)
+        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
         {
-            CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+            CastCustomSpell(*itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
 
             if (statueList.size() == 1)
             {
-                for (auto itrBis : statueList)
-                    statue = itrBis;
+                for (std::list<Creature*>::const_iterator itrBis = statueList.begin(); itrBis != statueList.end(); ++itrBis)
+                    statue = (*itrBis);
 
                 if (statue && (statue->isPet() || statue->isGuardian()))
                     if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
-                        statue->CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+                        statue->CastCustomSpell(*itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
             }
         }
     }
@@ -720,8 +720,8 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (statueList.size() == 1)
         {
-            for (auto itrBis : statueList)
-                statue = itrBis;
+            for (std::list<Creature*>::const_iterator itrBis = statueList.begin(); itrBis != statueList.end(); ++itrBis)
+                statue = (*itrBis);
 
             if (statue && (statue->isPet() || statue->isGuardian()))
                 if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
@@ -10409,9 +10409,9 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
             {
                 targetList.sort(Trinity::HealthPctOrderPred());
 
-                for (auto itr : targetList)
+                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                 {
-                    unit->CastSpell(itr, 119031, true);
+                    unit->CastSpell(*itr, 119031, true);
                     break;
                 }
             }
@@ -11863,16 +11863,16 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         std::list<Unit*> nearbyAllies;
         ToPlayer()->GetAttackableUnitListInRange(nearbyUnits, 15.0f);
 
-        for (auto itr : nearbyUnits)
-            if (!itr->IsHostileTo(this))
-                nearbyAllies.push_back(itr);
+        for (std::list<Unit*>::const_iterator itr = nearbyUnits.begin(); itr != nearbyUnits.end(); ++itr)
+            if (!(*itr)->IsHostileTo(this))
+                nearbyAllies.push_back(*itr);
 
         // Heal amount distribued for all allies, caster included
         int32 bp = heal / nearbyAllies.size();
 
-        for (auto itr : nearbyAllies)
+        for (std::list<Unit*>::const_iterator itr = nearbyAllies.begin(); itr != nearbyAllies.end(); ++itr)
             if (bp > 0)
-                CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
+                CastCustomSpell(*itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
     }
 
     return uint32(std::max(heal, 0.0f));
@@ -14990,8 +14990,6 @@ int32 Unit::GetCreatePowers(Powers power) const
 
 SpellPowerEntry const* Unit::GetSpellPowerEntryBySpell(SpellInfo const* spell) const
 {
-    auto list = sSpellMgr->GetSpellPowerList(spell->Id);
-
     if (getClass() == CLASS_WARLOCK)
     {
         if (spell->Id == 686)
@@ -15729,11 +15727,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         GetCreatureListWithEntryInGrid(shadowylist, 61966, 1.0f);
 
-        for (auto itr : shadowylist)
+        for (std::list<Creature*>::const_iterator itr = shadowylist.begin(); itr != shadowylist.end(); ++itr)
         {
-            if(UnitAI* ai =  itr->GetAI())
+            if(UnitAI* ai = (*itr)->GetAI())
                 ai->SetGUID(target->GetGUID());
-            itr->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+            (*itr)->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
         }
     }
 

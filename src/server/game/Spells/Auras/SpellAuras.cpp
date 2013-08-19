@@ -2516,11 +2516,11 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!targetList.empty())
                     {
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            if (itr->GetGUID() == dynObjOwnerCaster->GetGUID())
+                            if ((*itr)->GetGUID() == dynObjOwnerCaster->GetGUID())
                             {
-                                dynObjOwnerCaster->CastSpell(itr, 121283, true); // Restore 1 Chi
+                                dynObjOwnerCaster->CastSpell(*itr, 121283, true); // Restore 1 Chi
                                 GetDynobjOwner()->SetDuration(0);
                                 return;
                             }
@@ -2540,11 +2540,11 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!targetList.empty())
                     {
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            if (itr->GetGUID() == dynObjOwnerCaster->GetGUID())
+                            if ((*itr)->GetGUID() == dynObjOwnerCaster->GetGUID())
                             {
-                                dynObjOwnerCaster->CastSpell(itr, 125355, true); // Heal for 15% of life
+                                dynObjOwnerCaster->CastSpell(*itr, 125355, true); // Heal for 15% of life
                                 GetDynobjOwner()->SetDuration(0);
                                 return;
                             }
@@ -2564,9 +2564,9 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!targetList.empty())
                     {
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            dynObjOwnerCaster->CastSpell(itr, 121557, true); // Angelic Feather increase speed
+                            dynObjOwnerCaster->CastSpell(*itr, 121557, true); // Angelic Feather increase speed
                             GetDynobjOwner()->SetDuration(0);
                             return;
                         }
@@ -2585,9 +2585,9 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!targetList.empty())
                     {
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            dynObjOwnerCaster->CastSpell(itr, 115464, true); // Healing Sphere heal
+                            dynObjOwnerCaster->CastSpell(*itr, 115464, true); // Healing Sphere heal
                             GetDynobjOwner()->SetDuration(0);
                             return;
                         }
@@ -2606,9 +2606,9 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!targetList.empty())
                     {
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            dynObjOwnerCaster->CastSpell(itr, 124041, true); // Gift of the Serpent heal
+                            dynObjOwnerCaster->CastSpell(*itr, 124041, true); // Gift of the Serpent heal
                             GetDynobjOwner()->SetDuration(0);
                             return;
                         }
@@ -2627,9 +2627,9 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!targetList.empty())
                     {
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            dynObjOwnerCaster->CastSpell(itr, 122036, true); // Path of Blossom damage
+                            dynObjOwnerCaster->CastSpell(*itr, 122036, true); // Path of Blossom damage
                             GetDynobjOwner()->SetDuration(0);
                             return;
                         }
@@ -2649,11 +2649,11 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     if (!targetList.empty())
                     {
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            if (itr->GetGUID() == dynObjOwnerCaster->GetGUID())
+                            if ((*itr)->GetGUID() == dynObjOwnerCaster->GetGUID())
                             {
-                                dynObjOwnerCaster->CastSpell(itr, 116014, true); // Rune of Power
+                                dynObjOwnerCaster->CastSpell(*itr, 116014, true); // Rune of Power
                                 affected = true;
 
                                 if (dynObjOwnerCaster->ToPlayer())
@@ -2679,8 +2679,8 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
                     GetDynobjOwner()->VisitNearbyObject(radius, searcher);
 
                     if (!targetList.empty())
-                        for (auto itr : targetList)
-                            itr->CastSpell(itr, 115856, true);
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                            (*itr)->CastSpell(*itr, 115856, true);
 
                     break;
                 }

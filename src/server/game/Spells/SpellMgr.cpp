@@ -4775,9 +4775,9 @@ void SpellMgr::LoadSpellPowerInfo()
 
 SpellPowerEntry const* SpellMgr::GetSpellPowerEntryByIdAndPower(uint32 id, Powers power) const
 {
-    for (auto itr : GetSpellPowerList(id))
+    for (std::list<uint32>::iterator itr = GetSpellPowerList(id).begin(); itr != GetSpellPowerList(id).end(); ++itr)
     {
-        SpellPowerEntry const* spellPower = sSpellPowerStore.LookupEntry(itr);
+        SpellPowerEntry const* spellPower = sSpellPowerStore.LookupEntry(*itr);
         if(!spellPower)
             continue;
 

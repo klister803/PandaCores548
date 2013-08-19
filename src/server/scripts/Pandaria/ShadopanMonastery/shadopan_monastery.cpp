@@ -381,9 +381,9 @@ class spell_shadopan_apparitions : public SpellScriptLoader
                     caster->GetCreatureListWithEntryInGridAppend(hatredList, NPC_VESTIGE_OF_HATRED,  20.0f);
                     caster->GetCreatureListWithEntryInGridAppend(hatredList, NPC_FRAGMENT_OF_HATRED, 20.0f);
 
-                    for (auto hatred: hatredList)
-                        if (hatred->isAlive())
-                            hatred->CastSpell(hatred, GetSpellInfo()->Effects[EFFECT_0].TriggerSpell, true);
+                    for (std::list<Creature*>::const_iterator itr = hatredList.begin(); itr != hatredList.end(); ++itr)
+                        if ((*itr)->isAlive())
+                            (*itr)->CastSpell(*itr, GetSpellInfo()->Effects[EFFECT_0].TriggerSpell, true);
                 }
             }
 

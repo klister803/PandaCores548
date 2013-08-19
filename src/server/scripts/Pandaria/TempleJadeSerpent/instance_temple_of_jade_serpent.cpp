@@ -556,9 +556,9 @@ public:
             if (liu)
                 liu->ForcedDespawn();
 
-            for (auto guid : mobs_liu)
+            for (std::list<uint64>::const_iterator guid = mobs_liu.begin(); guid != mobs_liu.end(); ++guid)
             {
-                Creature* crea = instance->GetCreature(guid);
+                Creature* crea = instance->GetCreature(*guid);
                 if (crea == nullptr)
                     continue;
                 crea->Respawn();
@@ -581,9 +581,9 @@ public:
             case TYPE_SET_SUNS_SELECTABLE:
                 if (eventChoosen !=  EVENT_LOREWALKER_STONESTEP_SUNS)
                     return;
-                for (auto guid : suns)
+                for (std::list<uint64>::const_iterator guid = sha_summoned.begin(); guid != sha_summoned.end(); ++guid)
                 {
-                    Creature* creature = instance->GetCreature(guid);
+                    Creature* creature = instance->GetCreature(*guid);
                     if (!creature)
                         continue;
 
@@ -591,9 +591,9 @@ public:
                     if (creature->GetAI())
                         creature->GetAI()->DoAction(TYPE_SET_SUNS_SELECTABLE);
                 }
-                for (auto guid : sun_triggers)
+                for (std::list<uint64>::const_iterator guid = sun_triggers.begin(); guid != sun_triggers.end(); ++guid)
                 {
-                    Creature* creature = instance->GetCreature(guid);
+                    Creature* creature = instance->GetCreature(*guid);
                     if (!creature)
                         continue;
 
@@ -622,9 +622,9 @@ public:
                     if (!zao)
                         return;
 
-                    for (auto guid : sha_summoned)
+                    for (std::list<uint64>::const_iterator guid = sha_summoned.begin(); guid != sha_summoned.end(); ++guid)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(*guid);
                         if (!creature)
                             continue;
                         creature->Respawn(true);
@@ -633,9 +633,9 @@ public:
                         creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     }
                     //Stop the fire tornados.
-                    for (auto guid : sunfires)
+                    for (std::list<uint64>::const_iterator guid = sunfires.begin(); guid != sunfires.end(); ++guid)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(*guid);
                         if (!creature)
                             continue;
 
@@ -839,11 +839,11 @@ public:
                     eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_SPAWN_SUNS;
 
                     //Then draw all the corrupted units and summon the suns.
-                    for (auto guid : creatures_corrupted)
+                    for (std::list<uint64>::const_iterator guid = creatures_corrupted.begin(); guid != creatures_corrupted.end(); ++guid)
                     {
-                        if (guid == lorewalkter_stonestep)
+                        if (*guid == lorewalkter_stonestep)
                             continue;
-                        Creature* c = instance->GetCreature(guid);
+                        Creature* c = instance->GetCreature(*guid);
                         if (c == nullptr)
                             continue;
 
@@ -875,9 +875,9 @@ public:
                         return;
                     sum->SetFacingTo(4.450f);
 
-                    for (auto guid : sunfires)
+                    for (std::list<uint64>::const_iterator guid = sunfires.begin(); guid != sunfires.end(); ++guid)
                     {
-                        Creature* c = instance->GetCreature(guid);
+                        Creature* c = instance->GetCreature(*guid);
                         if (c == nullptr)
                             continue;
                         c->CastSpell(c, 67422, false); //Blustering Vortex, Fire vortex display
@@ -933,9 +933,9 @@ public:
             }
             eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_NONE;
             eventStatus_numberSunDefeated = 0;
-            for (auto guid : creatures_corrupted)
+            for (std::list<uint64>::const_iterator guid = creatures_corrupted.begin(); guid != creatures_corrupted.end(); ++guid)
             {
-                creature = instance->GetCreature(guid);
+                creature = instance->GetCreature(*guid);
                 if (creature)
                 {
                     creature->Respawn();
@@ -943,27 +943,27 @@ public:
                         creature->GetAI()->Reset();
                 }
             }
-            for (auto guid : suns)
+            for (std::list<uint64>::const_iterator guid = suns.begin(); guid != suns.end(); ++guid)
             {
-                creature = instance->GetCreature(guid);
+                creature = instance->GetCreature(*guid);
                 if (creature)
                 {
                     creature->ForcedDespawn();
                 }
             }
             suns.clear();
-            for (auto guid : sha_summoned)
+            for (std::list<uint64>::const_iterator guid = sha_summoned.begin(); guid != sha_summoned.end(); ++guid)
             {
-                creature = instance->GetCreature(guid);
+                creature = instance->GetCreature(*guid);
                 if (creature)
                 {
                     creature->ForcedDespawn();
                 }
             }
             sha_summoned.clear();
-            for (auto guid : sunfires)
+            for (std::list<uint64>::const_iterator guid = sunfires.begin(); guid != sunfires.end(); ++guid)
             {
-                Creature* c = instance->GetCreature(guid);
+                Creature* c = instance->GetCreature(*guid);
                 if (c == nullptr)
                     continue;
                 c->RemoveAura(67422);

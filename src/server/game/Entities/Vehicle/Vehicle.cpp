@@ -205,14 +205,14 @@ void Vehicle::RemoveAllPassengers()
     // Sometime aura do not work, so we iterate to be sure that every passengers have been removed
     // We need a copy because passenger->_ExitVehicle() may modify the Seats list
     SeatMap tempSeatMap = Seats;
-    for (auto itr: tempSeatMap)
+    for (SeatMap::iterator itr = tempSeatMap.begin(); itr != tempSeatMap.end(); ++itr)
     {
-        if (itr.second.Passenger)
+        if (itr->second.Passenger)
         {
-            if (Unit* passenger = ObjectAccessor::FindUnit(itr.second.Passenger))
+            if (Unit* passenger = ObjectAccessor::FindUnit(itr->second.Passenger))
                 passenger->_ExitVehicle();
 
-            itr.second.Passenger = 0;
+            itr->second.Passenger = 0;
         }
     }
 }

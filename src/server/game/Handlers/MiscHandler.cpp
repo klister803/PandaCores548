@@ -1372,9 +1372,10 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         data.WriteByteSeq(guildGuid[0]);
     }
 
-   for (auto itr : *player->GetTalentMap(0))
+    PlayerTalentMap* Talents = player->GetTalentMap(0);
+    for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
     {
-        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
         if (spell && spell->talentId)
         {
             data << uint16(spell->talentId);

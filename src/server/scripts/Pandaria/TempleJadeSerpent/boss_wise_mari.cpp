@@ -125,12 +125,12 @@ class boss_wase_mari : public CreatureScript
 
                 std::list<Creature*> searcher;
                 GetCreatureListWithEntryInGrid(searcher, me, CREATURE_FOUTAIN_TRIGGER, 50.0f);
-                for (auto itr : searcher)
+                for (std::list<Creature*>::const_iterator itr = searcher.begin(); itr != searcher.end(); ++itr)
                 {
-                    if (!itr)
+                    if (!(*itr))
                         continue;
 
-                    itr->RemoveAllAuras();
+                    (*itr)->RemoveAllAuras();
                 }
 
                 hydrolancePhase = 0;
@@ -148,25 +148,25 @@ class boss_wase_mari : public CreatureScript
                 std::list<Creature*> searcher;
                 GetCreatureListWithEntryInGrid(searcher, me, CREATURE_FOUTAIN_TRIGGER, 50.0f);
                 uint8 tab = 0;
-                for (auto itr : searcher)
+                for (std::list<Creature*>::const_iterator itr = searcher.begin(); itr != searcher.end(); ++itr)
                 {
-                    if (!itr)
+                    if (!(*itr))
                         continue;
 
-                    itr->RemoveAllAuras();
+                    (*itr)->RemoveAllAuras();
 
-                    foutainTrigger[++tab] = itr->GetGUID();
+                    foutainTrigger[++tab] = (*itr)->GetGUID();
                 }
 
                 searcher.clear();
                 GetCreatureListWithEntryInGrid(searcher, me, CREATURE_CORRUPT_DROPLET, 50.0f);
-                for (auto itr : searcher)
+                for (std::list<Creature*>::const_iterator itr = searcher.begin(); itr != searcher.end(); ++itr)
                 {
-                    if (!itr)
+                    if (!(*itr))
                         continue;
 
-                    if (itr->isSummon())
-                        itr->ForcedDespawn();
+                    if ((*itr)->isSummon())
+                        (*itr)->ForcedDespawn();
                 }
 
                 me->SetInCombatWithZone();
@@ -274,8 +274,8 @@ class boss_wase_mari : public CreatureScript
                                     {
                                         std::list<Creature*> trigger;
                                         me->GetCreatureListWithEntryInGrid(trigger,CREATURE_HYDROLANCE_BOTTOM_TRIGGER, 50.0f);
-                                        for (auto itr : trigger)
-                                            itr->CastSpell(itr, SPELL_HYDROLANCE_PRECAST, true);
+                                        for (std::list<Creature*>::const_iterator itr = trigger.begin(); itr != trigger.end(); ++itr)
+                                            (*itr)->CastSpell((*itr), SPELL_HYDROLANCE_PRECAST, true);
                                         facing = 1.23f;
                                         break;
                                     }
@@ -306,8 +306,8 @@ class boss_wase_mari : public CreatureScript
                                 {
                                     std::list<Creature*> trigger;
                                     me->GetCreatureListWithEntryInGrid(trigger,CREATURE_HYDROLANCE_BOTTOM_TRIGGER, 50.0f);
-                                    for (auto itr : trigger)
-                                        itr->CastSpell(itr->GetPositionX(), itr->GetPositionY(), itr->GetPositionZ(), SPELL_HYDROLANCE_DMG_BOTTOM, true);
+                                    for (std::list<Creature*>::const_iterator itr = trigger.begin(); itr != trigger.end(); ++itr)
+                                        (*itr)->CastSpell((*itr)->GetPositionX(), (*itr)->GetPositionY(), (*itr)->GetPositionZ(), SPELL_HYDROLANCE_DMG_BOTTOM, true);
                                     break;
                                 }
                                 case HYDROLANCE_RIGHT:

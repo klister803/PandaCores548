@@ -169,9 +169,9 @@ class spell_sha_glyph_of_shamanistic_rage : public SpellScriptLoader
                         _player->GetDispellableAuraList(_player, DISPEL_ALL_MASK, dispelList);
                         if (!dispelList.empty())
                         {
-                            for (auto itr : dispelList)
-                                if (_player->HasAura(itr.first->GetId()))
-                                    _player->RemoveAura(itr.first);
+                            for (DispelChargesList::const_iterator itr = dispelList.begin(); itr != dispelList.end(); ++itr)
+                                if (_player->HasAura(itr->first->GetId()))
+                                    _player->RemoveAura(itr->first);
                         }
                     }
                 }
@@ -292,9 +292,9 @@ class spell_sha_conductivity : public SpellScriptLoader
 
                                 _player->GetPartyMembers(tempList);
 
-                                for (auto itr : tempList)
-                                    if (itr->GetDistance(dynObj) <= 10.0f)
-                                        memberList.push_back(itr);
+                                for (std::list<Unit*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+                                    if ((*itr)->GetDistance(dynObj) <= 10.0f)
+                                        memberList.push_back(*itr);
 
                                 if (memberList.empty())
                                     return;
@@ -308,9 +308,9 @@ class spell_sha_conductivity : public SpellScriptLoader
                                 {
                                     int32 bp = int32(GetHitHeal() * 0.30f) / memberList.size();
 
-                                    for (auto itr : memberList)
+                                    for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastCustomSpell(*itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -320,9 +320,9 @@ class spell_sha_conductivity : public SpellScriptLoader
                                 {
                                     int32 bp = int32(GetHitDamage() * 0.50f) / memberList.size();
 
-                                    for (auto itr : memberList)
+                                    for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
                                     {
-                                        _player->CastCustomSpell(itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastCustomSpell(*itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
                                         break;
                                     }
                                 }
@@ -687,13 +687,13 @@ class spell_sha_spirit_link : public SpellScriptLoader
 
                                 float totalRaidHealthPct = 0;
 
-                                for (auto itr : memberList)
-                                    totalRaidHealthPct += itr->GetHealthPct();
+                                for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
+                                    totalRaidHealthPct += (*itr)->GetHealthPct();
 
                                 totalRaidHealthPct /= memberList.size() * 100.0f;
 
-                                for (auto itr : memberList)
-                                    itr->SetHealth(uint32(totalRaidHealthPct * itr->GetMaxHealth()));
+                                for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
+                                    (*itr)->SetHealth(uint32(totalRaidHealthPct * (*itr)->GetMaxHealth()));
                             }
                         }
                     }
@@ -1661,15 +1661,16 @@ class spell_sha_lava_lash : public SpellScriptLoader
 
                                     int32 hitTargets = 0;
 
-                                    for (auto itr : targetList)
+                                    for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                                     {
-                                        if (!_player->IsValidAttackTarget(itr))
+                                        Unit* unit = *itr;
+                                        if (!_player->IsValidAttackTarget(unit))
                                             continue;
 
-                                        if (itr->GetGUID() == target->GetGUID())
+                                        if (unit->GetGUID() == target->GetGUID())
                                             continue;
 
-                                        if (itr->GetGUID() == _player->GetGUID())
+                                        if (unit->GetGUID() == _player->GetGUID())
                                             continue;
 
                                         if (hitTargets >= 4)
@@ -1679,7 +1680,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                         if (_player->HasSpellCooldown(SPELL_SHA_FLAME_SHOCK))
                                             _player->RemoveSpellCooldown(SPELL_SHA_FLAME_SHOCK, true);
 
-                                        _player->CastSpell(itr, SPELL_SHA_FLAME_SHOCK, true);
+                                        _player->CastSpell(unit, SPELL_SHA_FLAME_SHOCK, true);
                                         _player->AddSpellCooldown(SPELL_SHA_FLAME_SHOCK, 0, time(NULL) + cooldownDelay);
                                         hitTargets++;
                                     }

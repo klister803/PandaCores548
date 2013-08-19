@@ -467,13 +467,13 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
                 if (tempList.empty())
                     return;
 
-                for (auto itr : tempList)
+                for (std::list<Unit*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
                 {
-                    if (itr->GetGUID() == GetCaster()->GetGUID())
+                    if ((*itr)->GetGUID() == GetCaster()->GetGUID())
                         continue;
 
-                    if (itr->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
-                        targetList.push_back(itr);
+                    if ((*itr)->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
+                        targetList.push_back(*itr);
                 }
 
                 if (targetList.empty())
@@ -482,8 +482,8 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
                 if (targetList.size() > 1)
                     return;
 
-                for (auto itr : targetList)
-                    target = itr;
+                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                    target = *itr;
 
                 if (!target)
                     return;

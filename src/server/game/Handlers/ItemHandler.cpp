@@ -861,9 +861,9 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                 std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
                 bool guildRewardCheckPassed = true;
 
-                for (auto reward: rewards)
+                for (std::vector<GuildReward>::const_iterator reward = rewards.begin(); reward != rewards.end(); ++reward)
                 {
-                    if (itemTemplate->ItemId != reward.Entry)
+                    if (itemTemplate->ItemId != reward->Entry)
                         continue;
 
                     Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId());
@@ -874,22 +874,22 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                         break;
                     }
 
-                    if (reward.Standing)
-                        if (_player->GetReputationRank(REP_GUILD) < reward.Standing)
+                    if (reward->Standing)
+                        if (_player->GetReputationRank(REP_GUILD) < (*reward).Standing)
                         {
                             guildRewardCheckPassed = false;
                             break;
                         }
 
-                    if (reward.AchievementId)
-                        if (!guild->GetAchievementMgr().HasAchieved(reward.AchievementId))
+                    if ((*reward).AchievementId)
+                        if (!guild->GetAchievementMgr().HasAchieved((*reward).AchievementId))
                         {
                             guildRewardCheckPassed = false;
                             break;
                         }
 
-                    if (reward.Racemask)
-                        if (!(_player->getRaceMask() & reward.Racemask))
+                    if ((*reward).Racemask)
+                        if (!(_player->getRaceMask() & (*reward).Racemask))
                         {
                             guildRewardCheckPassed = false;
                             break;

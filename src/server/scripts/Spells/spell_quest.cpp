@@ -1625,8 +1625,8 @@ class spell_q27421_rayne_seed : public SpellScriptLoader
                     {
                         caster->GetCreatureListWithEntryInGrid(list, 45485, 20.0f);
                 
-                        for (auto creature: list)
-                            creature->CastSpell(creature, 84961, true);
+                        for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); ++itr)
+                            (*itr)->CastSpell(*itr, 84961, true);
 
                         if (caster->GetPositionX() > 2536) //Necropolis Flower Controller NE
                             caster->KilledMonsterCredit(45487, 0);

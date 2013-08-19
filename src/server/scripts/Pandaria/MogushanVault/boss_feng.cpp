@@ -164,8 +164,8 @@ class boss_feng : public CreatureScript
 
                 //std::random_shuffle(phaseList.begin(), phaseList.end()); Todo : changer chaque semaine
 
-                for (auto visualSpellId: fengVisualId)
-                    me->RemoveAurasDueToSpell(visualSpellId);
+                for (uint8 i = 0; i < 4; ++i)
+                    me->RemoveAurasDueToSpell(fengVisualId[i]);
 
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
@@ -247,8 +247,8 @@ class boss_feng : public CreatureScript
                     newStatue->UseDoorOrButton();
                 }
 
-                for (auto visualSpellId: fengVisualId)
-                    me->RemoveAurasDueToSpell(visualSpellId);
+                for (uint8 i = 0; i < 4; ++i)
+                    me->RemoveAurasDueToSpell(fengVisualId[i]);
 
                 me->AddAura(fengVisualId[newPhase - 1], me);
                 me->CastSpell(me, SPELL_DRAW_ESSENCE, true);

@@ -2139,8 +2139,8 @@ void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, const 
     data.WriteByteSeq(guid[5]);
     data << uint8(13);                              //unk byte, 24, 13, doesn't depend on the player
     data.WriteString(comment);
-    
-    for (auto i = selectedDungeons.begin(); i != selectedDungeons.end(); ++i)
+
+    for (LfgDungeonSet::const_iterator i = selectedDungeons.begin(); i != selectedDungeons.end(); ++i)
         data << uint32(*i);                         //Dungeon entries
 
     data.WriteByteSeq(guid[0]);

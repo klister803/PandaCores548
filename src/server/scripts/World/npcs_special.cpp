@@ -1903,14 +1903,14 @@ class npc_mirror_image : public CreatureScript
                 if (spells.empty())
                     return;
 
-                for (auto itr : spells)
+                for (SpellVct::const_iterator itr = spells.begin(); itr != spells.end(); ++itr)
                 {
-                    if (AISpellInfo[itr].condition == AICOND_AGGRO)
-                        me->CastSpell(who, itr, false);
-                    else if (AISpellInfo[itr].condition == AICOND_COMBAT)
+                    if (AISpellInfo[*itr].condition == AICOND_AGGRO)
+                        me->CastSpell(who, *itr, false);
+                    else if (AISpellInfo[*itr].condition == AICOND_COMBAT)
                     {
-                        uint32 cooldown = GetAISpellInfo(itr)->realCooldown;
-                        events.ScheduleEvent(itr, cooldown);
+                        uint32 cooldown = GetAISpellInfo(*itr)->realCooldown;
+                        events.ScheduleEvent(*itr, cooldown);
                     }
                 }
             }

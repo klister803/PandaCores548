@@ -562,17 +562,17 @@ class spell_warr_mocking_banner : public SpellScriptLoader
                     bannerList = tempList;
 
                     // Remove other players banners
-                    for (auto itr : tempList)
+                    for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
                     {
-                        Unit* owner = itr->GetOwner();
-                        if (owner && owner == player && itr->isSummon())
+                        Unit* owner = (*itr)->GetOwner();
+                        if (owner && owner == player && (*itr)->isSummon())
                             continue;
 
-                        bannerList.remove(itr);
+                        bannerList.remove(*itr);
                     }
 
-                    for (auto itr : bannerList)
-                        player->CastSpell(itr, WARRIOR_SPELL_MOCKING_BANNER_TAUNT, true);
+                    for (std::list<Creature*>::const_iterator itr = bannerList.begin(); itr != bannerList.end(); ++itr)
+                        player->CastSpell(*itr, WARRIOR_SPELL_MOCKING_BANNER_TAUNT, true);
                 }
             }
 
@@ -719,9 +719,9 @@ class spell_warr_rallying_cry : public SpellScriptLoader
                     std::list<Unit*> memberList;
                     _player->GetPartyMembers(memberList);
 
-                    for (auto itr : memberList)
-                        if (itr->IsWithinDistInMap(_player, 30.0f))
-                            _player->CastSpell(itr, WARRIOR_SPELL_RALLYING_CRY, true);
+                    for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
+                        if ((*itr)->IsWithinDistInMap(_player, 30.0f))
+                            _player->CastSpell(*itr, WARRIOR_SPELL_RALLYING_CRY, true);
                 }
             }
 

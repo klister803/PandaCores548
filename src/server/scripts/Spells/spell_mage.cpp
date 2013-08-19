@@ -415,8 +415,8 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
 
                             Trinity::Containers::RandomResizeList(targetList, chargeCount);
 
-                            for (auto itr : targetList)
-                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID());
+                            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                                target->CastCustomSpell(*itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID());
                         }
                     }
                 }
@@ -672,11 +672,11 @@ class spell_mage_nether_tempest : public SpellScriptLoader
 
                         Trinity::Containers::RandomResizeList(targetList, 1);
 
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            GetCaster()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
-                            GetCaster()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_VISUAL, true);
-                            GetTarget()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_MISSILE, true);
+                            GetCaster()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+                            GetCaster()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_VISUAL, true);
+                            GetTarget()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_MISSILE, true);
                         }
 
                         if (GetCaster()->HasAura(SPELL_MAGE_BRAIN_FREEZE))
@@ -883,8 +883,9 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                         if (targetList.size() > 2)
                             Trinity::Containers::RandomResizeList(targetList, 2);
 
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
+                            Unit* unit = *itr;
                             // 1 : Ignite
                             if (target->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
                             {
@@ -892,31 +893,31 @@ class spell_mage_inferno_blast : public SpellScriptLoader
 
                                 int32 igniteBp = 0;
 
-                                if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
-                                    igniteBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+                                if (unit->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
+                                    igniteBp += unit->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
                                 igniteBp += int32(GetHitDamage() * value / 2);
 
-                                _player->CastCustomSpell(itr, SPELL_MAGE_IGNITE, &igniteBp, NULL, NULL, true);
+                                _player->CastCustomSpell(unit, SPELL_MAGE_IGNITE, &igniteBp, NULL, NULL, true);
                             }
 
                             // 2 : Pyroblast
                             if (target->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
-                                _player->AddAura(SPELL_MAGE_PYROBLAST, itr);
+                                _player->AddAura(SPELL_MAGE_PYROBLAST, unit);
 
                             // 3 : Combustion
                             if (target->HasAura(SPELL_MAGE_COMBUSTION_DOT, _player->GetGUID()))
                             {
-                                if (itr->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
+                                if (unit->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
                                 {
                                     combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
                                     combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT);
                                 }
-                                if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
-                                    combustionBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+                                if (unit->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
+                                    combustionBp += unit->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
                                 if (combustionBp)
-                                    _player->CastCustomSpell(itr, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
+                                    _player->CastCustomSpell(unit, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
                             }
                         }
                     }
@@ -954,8 +955,8 @@ class spell_mage_arcane_brilliance : public SpellScriptLoader
                     std::list<Unit*> memberList;
                     _player->GetPartyMembers(memberList);
 
-                    for (auto itr : memberList)
-                        _player->AddAura(SPELL_MAGE_ARCANE_BRILLIANCE, itr);
+                    for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
+                        _player->AddAura(SPELL_MAGE_ARCANE_BRILLIANCE, *itr);
                 }
             }
 
@@ -1207,16 +1208,16 @@ class spell_mage_alter_time : public SpellScriptLoader
             {
                 if (Player* _player = GetTarget()->ToPlayer())
                 {
-                    for (auto itr : auras)
+                    for (std::set<auraData*>::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
                     {
-                        Aura* aura = !_player->HasAura(itr->m_id) ? _player->AddAura(itr->m_id, _player) : _player->GetAura(itr->m_id);
+                        Aura* aura = !_player->HasAura((*itr)->m_id) ? _player->AddAura((*itr)->m_id, _player) : _player->GetAura((*itr)->m_id);
                         if (aura)
                         {
-                            aura->SetDuration(itr->m_duration);
+                            aura->SetDuration((*itr)->m_duration);
                             aura->SetNeedClientUpdateForTargets();
                         }
 
-                        delete itr;
+                        delete *itr;
                     }
 
                     auras.clear();

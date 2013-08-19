@@ -125,8 +125,8 @@ class spell_dk_wild_mushroom_plague : public SpellScriptLoader
                 {
                     _player->GetCreatureListWithEntryInGrid(tempList, DK_NPC_WILD_MUSHROOM, 500.0f);
 
-                    for (auto itr : tempList)
-                        mushroomlist.push_back(itr);
+                    for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+                        mushroomlist.push_back(*itr);
 
                     // Remove other players mushrooms
                     for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
@@ -140,28 +140,28 @@ class spell_dk_wild_mushroom_plague : public SpellScriptLoader
 
                     if (!mushroomlist.empty())
                     {
-                        for (auto itr : mushroomlist)
+                        for (std::list<Creature*>::const_iterator itr = mushroomlist.begin(); itr != mushroomlist.end(); ++itr)
                         {
-                            itr->GetAttackableUnitListInRange(tempUnitList, 10.0f);
+                            (*itr)->GetAttackableUnitListInRange(tempUnitList, 10.0f);
 
-                            for (auto itr2 : tempUnitList)
+                            for (std::list<Unit*>::const_iterator itr2 = tempUnitList.begin(); itr2 != tempUnitList.end(); ++itr2)
                             {
-                                if (itr2->GetGUID() == _player->GetGUID())
+                                if ((*itr2)->GetGUID() == _player->GetGUID())
                                     continue;
 
-                                if (itr2->GetGUID() == itr->GetGUID())
+                                if ((*itr2)->GetGUID() == (*itr)->GetGUID())
                                     continue;
 
-                                if (!_player->IsValidAttackTarget(itr2))
+                                if (!_player->IsValidAttackTarget(*itr2))
                                     continue;
 
-                                targetList.push_back(itr2);
+                                targetList.push_back(*itr2);
                             }
 
-                            for (auto itr2 : targetList)
+                            for (std::list<Unit*>::const_iterator itr2 = targetList.begin(); itr2 != targetList.end(); ++itr2)
                             {
-                                _player->CastSpell(itr2, DK_SPELL_BLOOD_PLAGUE, true);
-                                _player->CastSpell(itr2, DK_SPELL_FROST_FEVER, true);
+                                _player->CastSpell(*itr2, DK_SPELL_BLOOD_PLAGUE, true);
+                                _player->CastSpell(*itr2, DK_SPELL_FROST_FEVER, true);
                             }
                         }
                     }

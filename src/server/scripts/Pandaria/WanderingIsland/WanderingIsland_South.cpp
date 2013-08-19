@@ -413,10 +413,13 @@ public:
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 50.0f);
 
-            for (auto player : playerList)
+            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                Player* player = *itr;
                 if (player->GetQuestStatus(QUEST_ANCIEN_MAL) == QUEST_STATUS_INCOMPLETE)
                     if (player->isAlive())
                         player->KilledMonsterCredit(me->GetEntry());
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -694,10 +697,13 @@ public:
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 100.0f);
 
-            for (auto player : playerList)
+            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                Player* player = *itr;
                 if (player->GetQuestStatus(QUEST_HEALING_SHEN) == QUEST_STATUS_INCOMPLETE)
                     if (player->isAlive())
                         return true;
+            }
 
             return false;
         }
@@ -709,8 +715,9 @@ public:
             std::list<Player*> playerList;
             GetPlayerListInGrid(playerList, me, 100.0f);
 
-            for (auto player : playerList)
+            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
             {
+                Player* player = *itr;
                 if (player->GetQuestStatus(QUEST_HEALING_SHEN) == QUEST_STATUS_INCOMPLETE)
                 {
                     if (player->isAlive())

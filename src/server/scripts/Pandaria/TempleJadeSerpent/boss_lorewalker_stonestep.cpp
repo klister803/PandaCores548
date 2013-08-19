@@ -387,11 +387,11 @@ class mob_zao : public CreatureScript
                 {
                     std::list<Creature*> searcher;
                     GetCreatureListWithEntryInGrid(searcher, me, CREATURE_SUN, 50.0f);
-                    for (auto itr : searcher)
+                    for (std::list<Creature*>::const_iterator itr = searcher.begin(); itr != searcher.end(); ++itr)
                     {
-                        if (!itr)
+                        if (!(*itr))
                             continue;
-                        suns.push_back(itr->GetGUID());
+                        suns.push_back((*itr)->GetGUID());
                     }
                     events.ScheduleEvent(EVENT_ZAO_ATTACK, 15000);
                 }
@@ -427,11 +427,11 @@ class mob_zao : public CreatureScript
                                 uint32 rand = urand(0, suns.size());
                                 uint64 guid_target = 0;
                                 Creature* target = nullptr;
-                                for (auto guid : suns)
+                                for (std::list<uint64>::const_iterator guid = suns.begin(); guid != suns.end(); ++guid)
                                 {
                                     if (rand == 0)
                                     {
-                                        guid_target = guid;
+                                        guid_target = *guid;
                                         break;
                                     }
                                     --rand;

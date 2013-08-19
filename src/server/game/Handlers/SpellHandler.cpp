@@ -379,15 +379,15 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // Override spell Id, client send base spell and not the overrided id
     if (!spellInfo->OverrideSpellList.empty())
     {
-        for (auto itr : spellInfo->OverrideSpellList)
+        for (std::list<uint32>::const_iterator itr = spellInfo->OverrideSpellList.begin(); itr != spellInfo->OverrideSpellList.end(); ++itr)
         {
-            if (_player->HasSpell(itr))
+            if (_player->HasSpell(*itr))
             {
-                SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo(itr);
+                SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo(*itr);
                 if (overrideSpellInfo)
                 {
                     spellInfo = overrideSpellInfo;
-                    spellId = itr;
+                    spellId = *itr;
                 }
                 break;
             }

@@ -275,26 +275,28 @@ class spell_dru_soul_swap : public SpellScriptLoader
 
                         _player->GetAttackableUnitListInRange(tempList, 15.0f);
 
-                        for (auto itr : tempList)
+                        for (std::list<Unit*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
                         {
-                            if (itr->GetGUID() == target->GetGUID())
+                            Unit* unit = *itr;
+
+                            if (unit->GetGUID() == target->GetGUID())
                                 continue;
 
-                            if (itr->GetGUID() == _player->GetGUID())
+                            if (unit->GetGUID() == _player->GetGUID())
                                 continue;
 
-                            if (!_player->IsValidAttackTarget(itr))
+                            if (!_player->IsValidAttackTarget(unit))
                                 continue;
 
-                            if (itr->HasAura(SPELL_DRUID_RIP, _player->GetGUID()) && itr->HasAura(SPELL_DRUID_RAKE, _player->GetGUID()))
-                                targetList.push_back(itr);
+                            if (unit->HasAura(SPELL_DRUID_RIP, _player->GetGUID()) && unit->HasAura(SPELL_DRUID_RAKE, _player->GetGUID()))
+                                targetList.push_back(unit);
                         }
 
                         if (!targetList.empty())
                         {
                             targetList.sort(AuraDurationCompareOrderPred(_player->GetGUID(), SPELL_DRUID_RIP));
 
-                            for (auto itr : targetList)
+                            for (std::list<Unit*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                             {
                                 int32 ripDuration;
                                 int32 ripMaxDuration;
@@ -302,22 +304,23 @@ class spell_dru_soul_swap : public SpellScriptLoader
                                 int32 rakeDuration;
                                 int32 rakeMaxDuration;
                                 int32 rakeAmount;
+                                Unit* unit = *itr;
 
-                                if (Aura* rip = itr->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
+                                if (Aura* rip = unit->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
                                 {
                                     ripDuration = rip->GetDuration();
                                     ripMaxDuration = rip->GetMaxDuration();
                                     ripAmount = rip->GetEffect(0)->GetAmount();
                                 }
-                                if (Aura* rake = itr->GetAura(SPELL_DRUID_RAKE, _player->GetGUID()))
+                                if (Aura* rake = unit->GetAura(SPELL_DRUID_RAKE, _player->GetGUID()))
                                 {
                                     rakeDuration = rake->GetDuration();
                                     rakeMaxDuration = rake->GetMaxDuration();
                                     rakeAmount = rake->GetEffect(1)->GetAmount();
                                 }
 
-                                itr->RemoveAura(SPELL_DRUID_RIP, _player->GetGUID());
-                                itr->RemoveAura(SPELL_DRUID_RAKE, _player->GetGUID());
+                                unit->RemoveAura(SPELL_DRUID_RIP, _player->GetGUID());
+                                unit->RemoveAura(SPELL_DRUID_RAKE, _player->GetGUID());
 
                                 _player->AddAura(SPELL_DRUID_RIP, target);
                                 _player->AddAura(SPELL_DRUID_RAKE, target);
@@ -374,11 +377,11 @@ class spell_dru_demonic_circle_teleport : public SpellScriptLoader
 
                     if (!groupList.empty())
                     {
-                        for (auto itr : groupList)
+                        for (std::list<Unit*>::const_iterator itr = groupList.begin(); itr != groupList.end(); ++itr)
                         {
-                            if (itr->HasAura(SPELL_DRUID_SYMBIOSIS_WARLOCK, _player->GetGUID()))
+                            if ((*itr)->HasAura(SPELL_DRUID_SYMBIOSIS_WARLOCK, _player->GetGUID()))
                             {
-                                if (GameObject* circle = itr->GetGameObject(WARLOCK_DEMONIC_CIRCLE_SUMMON))
+                                if (GameObject* circle = (*itr)->GetGameObject(WARLOCK_DEMONIC_CIRCLE_SUMMON))
                                 {
                                     _player->NearTeleportTo(circle->GetPositionX(), circle->GetPositionY(), circle->GetPositionZ(), circle->GetOrientation());
                                     _player->RemoveMovementImpairingAuras();
@@ -919,12 +922,12 @@ class spell_dru_ursols_vortex : public SpellScriptLoader
             {
                 aurEff->GetTargetList(targetList);
 
-                for (auto itr : targetList)
+                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                 {
                     if (Unit* caster = GetCaster())
                         if (DynamicObject* dynObj = caster->GetDynObject(SPELL_DRUID_URSOLS_VORTEX_AREA_TRIGGER))
-                            if (itr->GetDistance(dynObj) > 10.0f && !itr->HasAura(SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST))
-                                itr->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST, true);
+                            if ((*itr)->GetDistance(dynObj) > 10.0f && !(*itr)->HasAura(SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST))
+                                (*itr)->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST, true);
                 }
 
                 targetList.clear();
@@ -1446,8 +1449,8 @@ class spell_dru_mark_of_the_wild : public SpellScriptLoader
                     Player* plr = caster->ToPlayer();
                     plr->GetPartyMembers(memberList);
 
-                    for (auto itr : memberList)
-                        caster->AddAura(SPELL_DRUID_MARK_OF_THE_WILD, (itr));
+                    for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
+                        caster->AddAura(SPELL_DRUID_MARK_OF_THE_WILD, (*itr));
                 }
             }
 

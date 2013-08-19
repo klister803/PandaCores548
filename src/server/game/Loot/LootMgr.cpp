@@ -441,12 +441,12 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
 
     if((lootId == 90406 || lootId == 90399 || lootId == 90397 || lootId == 90400 ||  lootId == 90398 || lootId == 90395 || lootId == 90401) && lootMode == LOOT_MODE_DEFAULT)
     {
-        for (auto itemCurrent: items)
-            for (auto spellId: sSpellMgr->mSpellCreateItemList)
-                if (const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId))
-                    if (spellInfo->Effects[EFFECT_0].ItemType == itemCurrent.itemid)
-                        if (!lootOwner->HasActiveSpell(spellId))
-                            lootOwner->learnSpell(spellId, false);
+        for (std::vector<LootItem>::iterator itemCurrent = items.begin(); itemCurrent != items.end(); ++itemCurrent)
+            for (std::vector<uint32>::iterator spellId = sSpellMgr->mSpellCreateItemList.begin(); spellId != sSpellMgr->mSpellCreateItemList.end(); ++spellId)
+                if (const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(*spellId))
+                    if (spellInfo->Effects[EFFECT_0].ItemType == itemCurrent->itemid)
+                        if (!lootOwner->HasActiveSpell(*spellId))
+                            lootOwner->learnSpell(*spellId, false);
     }
 
     return true;

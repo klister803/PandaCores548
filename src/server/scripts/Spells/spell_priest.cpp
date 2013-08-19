@@ -318,16 +318,16 @@ class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
             {
                 aurEff->GetTargetList(targetList);
 
-                for (auto itr : targetList)
+                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                 {
                     if (Unit* caster = GetCaster())
                     {
-                        if (Aura* shadowWordPain = itr->GetAura(PRIEST_SHADOW_WORD_PAIN, caster->GetGUID()))
+                        if (Aura* shadowWordPain = (*itr)->GetAura(PRIEST_SHADOW_WORD_PAIN, caster->GetGUID()))
                         {
                             if (shadowWordPain->GetDuration() <= (shadowWordPain->GetEffect(0)->GetAmplitude() * 2))
-                                caster->CastSpell(itr, PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, true);
+                                caster->CastSpell(*itr, PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, true);
                             else
-                                itr->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST);
+                                (*itr)->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST);
                         }
                     }
                 }
@@ -957,12 +957,12 @@ class spell_pri_atonement : public SpellScriptLoader
                                 groupList.resize(1);
                             }
 
-                            for (auto itr : groupList)
+                            for (std::list<Unit*>::const_iterator itr = groupList.begin(); itr != groupList.end(); ++itr)
                             {
-                                if (itr->GetGUID() == _player->GetGUID())
+                                if ((*itr)->GetGUID() == _player->GetGUID())
                                     bp /= 2;
 
-                                _player->CastCustomSpell(itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, true);
+                                _player->CastCustomSpell(*itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, true);
                             }
                         }
                     }
@@ -1296,10 +1296,10 @@ class spell_pri_cascade_second : public SpellScriptLoader
 
                         _player->GetAttackableUnitListInRange(targetList, 40.0f);
 
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
-                            if (itr->HasAura(PRIEST_CASCADE_INVISIBLE_AURA))
-                                if (Unit* caster = itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
+                            if ((*itr)->HasAura(PRIEST_CASCADE_INVISIBLE_AURA))
+                                if (Unit* caster = (*itr)->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
                                     if (caster->GetGUID() == _player->GetGUID())
                                         affectedUnits++;
                         }
@@ -1312,34 +1312,35 @@ class spell_pri_cascade_second : public SpellScriptLoader
                             if (boundNumber->GetCharges() >= 3)
                                 return;
 
-                        for (auto itr : targetList)
-                            checkAuras.push_back(itr);
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                            checkAuras.push_back(*itr);
 
-                        for (auto itr : checkAuras)
+                        for (std::list<Unit*>::const_iterator itr = checkAuras.begin(); itr != checkAuras.end(); ++itr)
                         {
-                            if (itr->HasAura(PRIEST_CASCADE_INVISIBLE_AURA))
-                                if (Unit* caster = itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
+                            Unit* unit = *itr;
+                            if (unit->HasAura(PRIEST_CASCADE_INVISIBLE_AURA))
+                                if (Unit* caster = unit->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
                                     if (caster->GetGUID() == _player->GetGUID())
-                                        targetList.remove(itr);
+                                        targetList.remove(unit);
 
-                            if (!itr->IsWithinLOSInMap(_player))
-                                targetList.remove(itr);
+                            if (!unit->IsWithinLOSInMap(_player))
+                                targetList.remove(unit);
 
-                            if (!itr->isInFront(_player))
-                                targetList.remove(itr);
+                            if (!unit->isInFront(_player))
+                                targetList.remove(unit);
 
-                            if (itr->GetGUID() == _player->GetGUID())
-                                targetList.remove(itr);
+                            if (unit->GetGUID() == _player->GetGUID())
+                                targetList.remove(unit);
 
                             // damage
                             if (GetSpellInfo()->Id == 127630)
-                                if (!_player->IsValidAttackTarget(itr))
-                                    targetList.remove(itr);
+                                if (!_player->IsValidAttackTarget(unit))
+                                    targetList.remove(unit);
 
                             // heal
                             if (GetSpellInfo()->Id == 120786)
-                                if (_player->IsValidAttackTarget(itr))
-                                    targetList.remove(itr);
+                                if (_player->IsValidAttackTarget(unit))
+                                    targetList.remove(unit);
                         }
 
                         // ... or if there are no targets reachable
@@ -1349,7 +1350,7 @@ class spell_pri_cascade_second : public SpellScriptLoader
                         // Each bound hit twice more targets up to 8 for the same bound
                         Trinity::Containers::RandomResizeList(targetList, (affectedUnits * 2));
 
-                        for (auto itr : targetList)
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
                             if (_player->HasAura(PRIEST_SHADOWFORM_STANCE))
                             {
@@ -1357,12 +1358,12 @@ class spell_pri_cascade_second : public SpellScriptLoader
                                 {
                                     // damage
                                     case 127630:
-                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, NULL, _player->GetGUID());
+                                        target->CastSpell(*itr, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, NULL, _player->GetGUID());
                                         break;
                                     // heal
                                     case 120786:
-                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, NULL, _player->GetGUID());
-                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_HEAL, true, 0, NULL, _player->GetGUID());
+                                        target->CastSpell(*itr, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, NULL, _player->GetGUID());
+                                        target->CastSpell(*itr, PRIEST_CASCADE_SHADOW_HEAL, true, 0, NULL, _player->GetGUID());
                                         break;
                                     default:
                                         break;
@@ -1374,19 +1375,19 @@ class spell_pri_cascade_second : public SpellScriptLoader
                                 {
                                     // damage
                                     case 127630:
-                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, NULL, _player->GetGUID());
+                                        target->CastSpell(*itr, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, NULL, _player->GetGUID());
                                         break;
                                     // heal
                                     case 120786:
-                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_MISSILE, true, 0, NULL, _player->GetGUID());
-                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_HEAL, true, 0, NULL, _player->GetGUID());
+                                        target->CastSpell(*itr, PRIEST_CASCADE_HOLY_MISSILE, true, 0, NULL, _player->GetGUID());
+                                        target->CastSpell(*itr, PRIEST_CASCADE_HOLY_HEAL, true, 0, NULL, _player->GetGUID());
                                         break;
                                     default:
                                         break;
                                 }
                             }
 
-                            _player->CastSpell(itr, PRIEST_CASCADE_INVISIBLE_AURA, true);
+                            _player->CastSpell(*itr, PRIEST_CASCADE_INVISIBLE_AURA, true);
                         }
 
                         if (Aura* boundNumber = _player->GetAura(PRIEST_CASCADE_INVISIBLE_AURA_2))
@@ -1625,11 +1626,11 @@ class spell_pri_shadowy_apparition : public SpellScriptLoader
                     player->GetCreatureListWithEntryInGrid(tempList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
 
                     // Remove other players shadowy apparitions
-                    for (auto itr : tempList)
+                    for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
                     {
-                        Unit* owner = itr->GetOwner();
-                        if (owner && owner == player && itr->isSummon())
-                            shadowyList.push_back(itr);
+                        Unit* owner = (*itr)->GetOwner();
+                        if (owner && owner == player && (*itr)->isSummon())
+                            shadowyList.push_back(*itr);
                     }
 
                     if (shadowyList.size() == 3)

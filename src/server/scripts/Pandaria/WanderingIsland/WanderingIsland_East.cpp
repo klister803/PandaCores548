@@ -115,8 +115,8 @@ public:
 
             Trinity::Containers::RandomResizeList(poleList, 1);
 
-            for (auto creature: poleList)
-                me->EnterVehicle(creature);
+            for (std::list<Creature*>::const_iterator itr = poleList.begin(); itr != poleList.end(); ++itr)
+                me->EnterVehicle(*itr);
 
             me->setFaction(2357);
         }
@@ -292,8 +292,8 @@ public:
                         std::list<Player*> playerList;
                         GetPlayerListInGrid(playerList, waterSpout, 1.0f);
 
-                        for (auto player: playerList)
-                            player->CastSpell(player, SPELL_WATER_SPOUT_EJECT, true);
+                        for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                            (*itr)->CastSpell((*itr), SPELL_WATER_SPOUT_EJECT, true);
 
                         waterSpout->CastSpell(waterSpout, SPELL_WATER_SPOUT_VISUAL, true);
                     }
@@ -335,9 +335,9 @@ class spell_shu_benediction: public SpellScriptLoader
                 std::list<Creature*> shuList;
                 GetCreatureListWithEntryInGrid(shuList, target, 55213, 20.0f);
 
-                for (auto shu: shuList)
-                    if (shu->ToTempSummon())
-                        if (shu->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
+                for (std::list<Creature*>::const_iterator itr = shuList.begin(); itr != shuList.end(); ++itr)
+                    if ((*itr)->ToTempSummon())
+                        if ((*itr)->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
                             return;
 
                 // A partir d'ici on sait que le joueur n'a pas encore de Huo
@@ -358,10 +358,10 @@ class spell_shu_benediction: public SpellScriptLoader
                 std::list<Creature*> shuList;
                 GetCreatureListWithEntryInGrid(shuList, target, 55213, 20.0f);
 
-                for (auto shu: shuList)
-                    if (shu->ToTempSummon())
-                        if (shu->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
-                            shu->DespawnOrUnsummon();
+                for (std::list<Creature*>::const_iterator itr = shuList.begin(); itr != shuList.end(); ++itr)
+                    if ((*itr)->ToTempSummon())
+                        if ((*itr)->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
+                            (*itr)->DespawnOrUnsummon();
             }
 
             void Register()

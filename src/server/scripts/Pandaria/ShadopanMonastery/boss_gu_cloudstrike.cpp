@@ -399,8 +399,8 @@ class spell_kill_guardians : public SpellScriptLoader
             {
                 targetList = _targetList;
 
-                for (auto itr: targetList)
-                    if (Creature* target = itr->ToCreature())
+                for (std::list<WorldObject*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                    if (Creature* target = (*itr)->ToCreature())
                         target->DespawnOrUnsummon(2000);
             }
 

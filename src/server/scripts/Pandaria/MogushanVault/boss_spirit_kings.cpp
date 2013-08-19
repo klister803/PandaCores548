@@ -295,9 +295,9 @@ class boss_spirit_kings_controler : public CreatureScript
                             pInstance->SetBossState(DATA_SPIRIT_KINGS, DONE);
                             summons.DespawnEntry(NPC_FLANKING_MOGU);
 
-                            for (auto entry: spiritKingsEntry)
+                            for (uint8 i = 0; i < 4; ++i)
                             {
-                                if (Creature* spirit = pInstance->instance->GetCreature(pInstance->GetData64(entry)))
+                                if (Creature* spirit = pInstance->instance->GetCreature(pInstance->GetData64(spiritKingsEntry[i])))
                                 {
                                     spirit->LowerPlayerDamageReq(spirit->GetMaxHealth());
                                     me->Kill(spirit);

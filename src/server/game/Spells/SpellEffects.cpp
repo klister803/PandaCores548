@@ -933,12 +933,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
             m_caster->VisitNearbyObject(5.0f, searcher);
 
-            for (auto unit : friends)
+            for (UnitList::const_iterator unit = friends.begin(); unit != friends.end(); ++unit)
             {
-                if (m_caster->GetGUID() == unit->GetGUID())
+                if (m_caster->GetGUID() == (*unit)->GetGUID())
                     continue;
-                GetOriginalCaster()->CastSpell(unit, 120160, true);
-                GetOriginalCaster()->CastSpell(unit, 120201, true);
+                GetOriginalCaster()->CastSpell(*unit, 120160, true);
+                GetOriginalCaster()->CastSpell(*unit, 120201, true);
             }
 
             break;
@@ -2567,8 +2567,8 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
             if (!tempList.empty())
             {
-                for (auto itr : tempList)
-                    gatewayList.push_back(itr);
+                for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+                    gatewayList.push_back(*itr);
 
                 // Remove other players mushrooms
                 for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
@@ -2594,8 +2594,8 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
             if (!tempList.empty())
             {
-                for (auto itr : tempList)
-                    gatewayList.push_back(itr);
+                for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+                    gatewayList.push_back(*itr);
 
                 // Remove other players mushrooms
                 for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
@@ -6700,9 +6700,10 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
 
     Player* plr = m_caster->ToPlayer();
 
-    for (auto itr : *plr->GetTalentMap(plr->GetActiveSpec()))
+    PlayerTalentMap* Talents = plr->GetTalentMap(plr->GetActiveSpec());
+    for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
     {
-        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
         if (!spell)
             continue;
 
@@ -6713,13 +6714,13 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
         if (spell->talentId != m_glyphIndex)
             continue;
 
-        plr->removeSpell(itr.first, true);
+        plr->removeSpell(itr->first, true);
         // search for spells that the talent teaches and unlearn them
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (spell->Effects[i].TriggerSpell > 0 && spell->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
                 plr->removeSpell(spell->Effects[i].TriggerSpell, true);
 
-        itr.second->state = PLAYERSPELL_REMOVED;
+        itr->second->state = PLAYERSPELL_REMOVED;
 
         plr->SetUsedTalentCount(plr->GetUsedTalentCount()-1);
         plr->SetFreeTalentPoints(plr->GetFreeTalentPoints()+1);
@@ -6775,9 +6776,9 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
                     {
                         angelicFeatherList.sort(Trinity::DurationPctOrderPred());
 
-                        for (auto itr : angelicFeatherList)
+                        for (std::list<DynamicObject*>::const_iterator itr = angelicFeatherList.begin(); itr != angelicFeatherList.end(); ++itr)
                         {
-                            DynamicObject* angelicFeather = itr;
+                            DynamicObject* angelicFeather = *itr;
                             angelicFeather->SetDuration(0);
                             break;
                         }
@@ -6799,9 +6800,9 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
                     {
                         healingSphereList.sort(Trinity::DurationPctOrderPred());
 
-                        for (auto itr : healingSphereList)
+                        for (std::list<DynamicObject*>::const_iterator itr = healingSphereList.begin(); itr != healingSphereList.end(); ++itr)
                         {
-                            DynamicObject* healingSphere = itr;
+                            DynamicObject* healingSphere = *itr;
                             healingSphere->SetDuration(0);
                             break;
                         }
@@ -6823,9 +6824,9 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
                     {
                         runeOfPowerList.sort(Trinity::DurationPctOrderPred());
 
-                        for (auto itr : runeOfPowerList)
+                        for (std::list<DynamicObject*>::const_iterator itr = runeOfPowerList.begin(); itr != runeOfPowerList.end(); ++itr)
                         {
-                            DynamicObject* runeOfPower = itr;
+                            DynamicObject* runeOfPower = *itr;
                             runeOfPower->SetDuration(0);
                             break;
                         }

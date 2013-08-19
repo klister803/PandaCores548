@@ -180,8 +180,8 @@ class spell_monk_black_ox_statue : public SpellScriptLoader
 
                     player->GetCreatureListWithEntryInGrid(tempList, MONK_NPC_BLACK_OX_STATUE, 500.0f);
 
-                    for (auto itr : tempList)
-                        blackOxList.push_back(itr);
+                    for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+                        blackOxList.push_back(*itr);
 
                     // Remove other players jade statue
                     for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
@@ -268,8 +268,8 @@ class spell_monk_black_ox_statue : public SpellScriptLoader
 
                         if (!statueList.empty() && statueList.size() == 1)
                         {
-                            for (auto itr : statueList)
-                                statue = itr;
+                            for (std::list<Creature*>::const_iterator itr = statueList.begin(); itr != statueList.end(); ++itr)
+                                statue = *itr;
 
                             if (statue && (statue->isPet() || statue->isGuardian()))
                             {
@@ -279,19 +279,19 @@ class spell_monk_black_ox_statue : public SpellScriptLoader
 
                                     _plr->GetPartyMembers(targets);
 
-                                    for (auto itr : targets)
+                                    for (std::list<Unit*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
                                     {
-                                        if (itr->GetGUID() == statue->GetGUID() ||
-                                            itr->GetGUID() == _plr->GetGUID())
+                                        if ((*itr)->GetGUID() == statue->GetGUID() ||
+                                            (*itr)->GetGUID() == _plr->GetGUID())
                                             continue;
 
-                                        targets.push_back(itr);
+                                        targets.push_back(*itr);
                                     }
 
                                     Trinity::Containers::RandomResizeList(targets, 1);
 
-                                    for (auto itr : targets)
-                                        statue->CastSpell(itr, SPELL_MONK_GUARD, true);
+                                    for (std::list<Unit*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                                        statue->CastSpell(*itr, SPELL_MONK_GUARD, true);
                                 }
                             }
                         }
@@ -710,29 +710,29 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
 
                     _player->GetAttackableUnitListInRange(tempList, 50.0f);
 
-                    for (auto itr : tempList)
+                    for (std::list<Unit*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
                     {
-                        if (!_player->IsValidAttackTarget(itr))
+                        if (!_player->IsValidAttackTarget(*itr))
                             continue;
 
-                        if (!_player->isInFront(itr))
+                        if (!_player->isInFront(*itr))
                             continue;
 
-                        if (!itr->IsWithinLOSInMap(_player))
+                        if (!(*itr)->IsWithinLOSInMap(_player))
                             continue;
 
-                        if (itr->GetGUID() == _player->GetGUID())
+                        if ((*itr)->GetGUID() == _player->GetGUID())
                             continue;
 
-                        targetList.push_back(itr);
+                        targetList.push_back(*itr);
                     }
 
                     if (!targetList.empty())
                     {
                         Trinity::Containers::RandomResizeList(targetList, 1);
 
-                        for (auto itr : targetList)
-                            _player->CastSpell(itr, SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE, true);
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                            _player->CastSpell(*itr, SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE, true);
                     }
                     else
                         _player->CastSpell(_player, SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE, true);
@@ -802,8 +802,8 @@ class spell_monk_thunder_focus_tea : public SpellScriptLoader
 
                             _player->GetPartyMembers(groupList);
 
-                            for (auto itr : groupList)
-                                if (Aura* renewingMistGroup = itr->GetAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID()))
+                            for (std::list<Unit*>::const_iterator itr = groupList.begin(); itr != groupList.end(); ++itr)
+                                if (Aura* renewingMistGroup = (*itr)->GetAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID()))
                                     renewingMistGroup->RefreshDuration();
 
                             _player->RemoveAura(SPELL_MONK_THUNDER_FOCUS_TEA);
@@ -1145,19 +1145,19 @@ class spell_monk_renewing_mist : public SpellScriptLoader
                         statueList.remove((*i));
                     }
 
-                    for (auto itr : playerList)
+                    for (std::list<Unit*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                     {
                         if (statueList.size() == 1)
                         {
-                            for (auto itrBis : statueList)
-                                statue = itrBis;
+                            for (std::list<Creature*>::const_iterator itrBis = statueList.begin(); itrBis != statueList.end(); ++itrBis)
+                                statue = *itrBis;
 
                             if (statue && (statue->isPet() || statue->isGuardian()))
                             {
                                 if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _player->GetGUID())
                                 {
-                                    _player->AddAura(SPELL_MONK_RENEWING_MIST_HOT, itr);
-                                    _player->CastSpell(itr, SPELL_MONK_RENEWING_MIST_JUMP_AURA, true);
+                                    _player->AddAura(SPELL_MONK_RENEWING_MIST_HOT, *itr);
+                                    _player->CastSpell(*itr, SPELL_MONK_RENEWING_MIST_JUMP_AURA, true);
                                 }
                             }
                         }
@@ -1433,16 +1433,16 @@ class spell_monk_chi_burst : public SpellScriptLoader
                         else
                             _player->CastSpell(target, SPELL_MONK_CHI_BURST_HEAL, true);
 
-                        for (auto itr : tempUnitMap)
+                        for (std::list<Unit*>::const_iterator itr = tempUnitMap.begin(); itr != tempUnitMap.end(); ++itr)
                         {
-                            if (itr->GetGUID() == _player->GetGUID())
+                            if ((*itr)->GetGUID() == _player->GetGUID())
                                 continue;
 
-                            if (!itr->IsInBetween(_player, target, 1.0f))
+                            if (!(*itr)->IsInBetween(_player, target, 1.0f))
                                 continue;
 
-                            uint32 spell = _player->IsValidAttackTarget(itr) ? SPELL_MONK_CHI_BURST_DAMAGE : SPELL_MONK_CHI_BURST_HEAL;
-                            _player->CastSpell(itr, spell, true);
+                            uint32 spell = _player->IsValidAttackTarget(*itr) ? SPELL_MONK_CHI_BURST_DAMAGE : SPELL_MONK_CHI_BURST_HEAL;
+                            _player->CastSpell(*itr, spell, true);
                         }
                     }
                 }
@@ -1675,13 +1675,13 @@ class spell_monk_chi_torpedo : public SpellScriptLoader
                         std::list<Unit*> tempUnitMap;
                         _player->GetAttackableUnitListInRange(tempUnitMap, 20.0f);
 
-                        for (auto itr : tempUnitMap)
+                        for (std::list<Unit*>::const_iterator itr = tempUnitMap.begin(); itr != tempUnitMap.end(); ++itr)
                         {
-                            if (!itr->isInFront(_player, M_PI / 3) && itr->GetGUID() != _player->GetGUID())
+                            if (!(*itr)->isInFront(_player, M_PI / 3) && (*itr)->GetGUID() != _player->GetGUID())
                                 continue;
 
-                            uint32 spell = _player->IsValidAttackTarget(itr) ? SPELL_MONK_CHI_TORPEDO_DAMAGE : SPELL_MONK_CHI_TORPEDO_HEAL;
-                            _player->CastSpell(itr, spell, true);
+                            uint32 spell = _player->IsValidAttackTarget(*itr) ? SPELL_MONK_CHI_TORPEDO_DAMAGE : SPELL_MONK_CHI_TORPEDO_HEAL;
+                            _player->CastSpell(*itr, spell, true);
                         }
                     }
                 }
@@ -1963,16 +1963,16 @@ class spell_monk_soothing_mist : public SpellScriptLoader
                             statueList.remove((*i));
                         }
 
-                        for (auto itr : playerList)
+                        for (std::list<Unit*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                         {
                             if (statueList.size() == 1)
                             {
-                                for (auto itrBis : statueList)
-                                    statue = itrBis;
+                                for (std::list<Creature*>::const_iterator itrBis = statueList.begin(); itrBis != statueList.end(); ++itrBis)
+                                    statue = *itrBis;
 
                                 if (statue && (statue->isPet() || statue->isGuardian()))
                                     if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _player->GetGUID())
-                                        statue->CastSpell(itr, GetSpellInfo()->Id, true);
+                                        statue->CastSpell(*itr, GetSpellInfo()->Id, true);
                             }
                         }
                     }

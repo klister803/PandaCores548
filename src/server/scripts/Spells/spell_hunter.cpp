@@ -392,8 +392,8 @@ class spell_hun_a_murder_of_crows : public SpellScriptLoader
 
                         _player->GetCreatureListWithEntryInGrid(tempList, HUNTER_NPC_MURDER_OF_CROWS, 100.0f);
 
-                        for (auto itr : tempList)
-                            crowsList.push_back(itr);
+                        for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+                            crowsList.push_back(*itr);
 
                         // Remove other players mushrooms
                         for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
@@ -405,8 +405,8 @@ class spell_hun_a_murder_of_crows : public SpellScriptLoader
                             crowsList.remove((*i));
                         }
 
-                        for (auto itr : crowsList)
-                            itr->AI()->AttackStart(target);
+                        for (std::list<Creature*>::const_iterator itr = crowsList.begin(); itr != crowsList.end(); ++itr)
+                            (*itr)->AI()->AttackStart(target);
                     }
                 }
             }
@@ -583,18 +583,18 @@ class spell_hun_lynx_rush : public SpellScriptLoader
 
                 GetTarget()->GetAttackableUnitListInRange(tempList, 10.0f);
 
-                for (auto itr : tempList)
+                for (std::list<Unit*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
                 {
-                    if (itr->GetGUID() == GetTarget()->GetGUID())
+                    if ((*itr)->GetGUID() == GetTarget()->GetGUID())
                         continue;
 
-                    if (GetTarget()->GetOwner() && GetTarget()->GetOwner()->GetGUID() == itr->GetGUID())
+                    if (GetTarget()->GetOwner() && GetTarget()->GetOwner()->GetGUID() == (*itr)->GetGUID())
                         continue;
 
-                    if (!GetTarget()->IsValidAttackTarget(itr))
+                    if (!GetTarget()->IsValidAttackTarget(*itr))
                         continue;
 
-                    targetList.push_back(itr);
+                    targetList.push_back(*itr);
                 }
 
                 tempList.clear();
@@ -605,8 +605,9 @@ class spell_hun_lynx_rush : public SpellScriptLoader
                 Trinity::Containers::RandomResizeList(targetList, 1);
 
                 for (auto itr : targetList)
+                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                 {
-                    unitTarget = itr;
+                    unitTarget = *itr;
                     break;
                 }
 
@@ -654,18 +655,18 @@ class spell_hun_lynx_rush : public SpellScriptLoader
 
                                 pet->GetAttackableUnitListInRange(tempList, 10.0f);
 
-                                for (auto itr : tempList)
+                                for (std::list<Unit*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
                                 {
-                                    if (itr->GetGUID() == pet->GetGUID())
+                                    if ((*itr)->GetGUID() == pet->GetGUID())
                                         continue;
 
-                                    if (_player->GetGUID() == itr->GetGUID())
+                                    if (_player->GetGUID() == (*itr)->GetGUID())
                                         continue;
 
-                                    if (!pet->IsValidAttackTarget(itr))
+                                    if (!pet->IsValidAttackTarget(*itr))
                                         continue;
 
-                                    targetList.push_back(itr);
+                                    targetList.push_back(*itr);
                                 }
 
                                 tempList.clear();
@@ -675,9 +676,9 @@ class spell_hun_lynx_rush : public SpellScriptLoader
 
                                 Trinity::Containers::RandomResizeList(targetList, 1);
 
-                                for (auto itr : targetList)
+                                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                                 {
-                                    unitTarget = itr;
+                                    unitTarget = *itr;
                                     break;
                                 }
 
@@ -894,9 +895,9 @@ class spell_hun_binding_shot : public SpellScriptLoader
 
                     bindedList.remove_if(Trinity::UnitAuraCheck(false, GetSpellInfo()->Id, caster->GetGUID()));
 
-                    for (auto itr : bindedList)
+                    for (std::list<Unit*>::const_iterator itr = bindedList.begin(); itr != bindedList.end(); ++itr)
                     {
-                        Unit* target = itr->ToUnit();
+                        Unit* target = (*itr)->ToUnit();
                         if (!target)
                             continue;
 
@@ -1018,33 +1019,34 @@ class spell_hun_powershot : public SpellScriptLoader
                         std::list<Unit*> tempUnitMap;
                         _player->GetAttackableUnitListInRange(tempUnitMap, _player->GetDistance(target));
 
-                        for (auto itr : tempUnitMap)
+                        for (std::list<Unit*>::const_iterator itr = tempUnitMap.begin(); itr != tempUnitMap.end(); ++itr)
                         {
-                            if (!itr->IsValidAttackTarget(_player))
+                            Unit* unit = *itr;
+                            if (!unit->IsValidAttackTarget(_player))
                                 continue;
 
-                            if (itr->GetGUID() == _player->GetGUID())
+                            if (unit->GetGUID() == _player->GetGUID())
                                 continue;
 
-                            if (!itr->IsInBetween(_player, target, 1.0f))
+                            if (!unit->IsInBetween(_player, target, 1.0f))
                                 continue;
 
-                            SpellNonMeleeDamage damageInfo(_player, itr, GetSpellInfo()->Id, GetSpellInfo()->SchoolMask);
+                            SpellNonMeleeDamage damageInfo(_player, unit, GetSpellInfo()->Id, GetSpellInfo()->SchoolMask);
                             damageInfo.damage = int32(GetHitDamage() / 2);
                             _player->SendSpellNonMeleeDamageLog(&damageInfo);
                             _player->DealSpellDamage(&damageInfo, true);
 
-                            if (Creature* creatureTarget = itr->ToCreature())
+                            if (Creature* creatureTarget = unit->ToCreature())
                                 if (creatureTarget->isWorldBoss() || creatureTarget->IsDungeonBoss())
                                     continue;
 
-                            if (itr->GetTypeId() == TYPEID_PLAYER)
-                                if (itr->ToPlayer()->GetKnockBackTime())
+                            if (unit->GetTypeId() == TYPEID_PLAYER)
+                                if (unit->ToPlayer()->GetKnockBackTime())
                                     continue;
 
                             // Instantly interrupt non melee spells being casted
-                            if (itr->IsNonMeleeSpellCasted(true))
-                                itr->InterruptNonMeleeSpells(true);
+                            if (unit->IsNonMeleeSpellCasted(true))
+                                unit->InterruptNonMeleeSpells(true);
 
                             float ratio = 0.1f;
                             float speedxy = float(GetSpellInfo()->Effects[EFFECT_1].MiscValue) * ratio;
@@ -1055,10 +1057,10 @@ class spell_hun_powershot : public SpellScriptLoader
                             float x, y;
                             _player->GetPosition(x, y);
 
-                            itr->KnockbackFrom(x, y, speedxy, speedz);
+                            unit->KnockbackFrom(x, y, speedxy, speedz);
 
-                            if (itr->GetTypeId() == TYPEID_PLAYER)
-                                itr->ToPlayer()->SetKnockBackTime(getMSTime());
+                            if (unit->GetTypeId() == TYPEID_PLAYER)
+                                unit->ToPlayer()->SetKnockBackTime(getMSTime());
                         }
                     }
                 }
@@ -1917,12 +1919,12 @@ class spell_hun_disengage : public SpellScriptLoader
 
                         _player->GetAttackableUnitListInRange(unitList, 8.0f);
 
-                        for (auto itr : unitList)
-                            if (_player->IsValidAttackTarget(itr))
-                                retsList.push_back(itr);
+                        for (std::list<Unit*>::const_iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                            if (_player->IsValidAttackTarget(*itr))
+                                retsList.push_back(*itr);
 
-                        for (auto itr : retsList)
-                            _player->CastSpell(itr, HUNTER_SPELL_NARROW_ESCAPE_RETS, true);
+                        for (std::list<Unit*>::const_iterator itr = retsList.begin(); itr != retsList.end(); ++itr)
+                            _player->CastSpell(*itr, HUNTER_SPELL_NARROW_ESCAPE_RETS, true);
                     }
                 }
             }
