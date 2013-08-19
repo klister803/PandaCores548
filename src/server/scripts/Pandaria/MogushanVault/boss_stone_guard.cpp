@@ -125,8 +125,8 @@ class boss_stone_guard_controler : public CreatureScript
                 {
                     case ACTION_ENTER_COMBAT:
                     {
-                        for (uint32 entry: guardiansEntry)
-                            if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(entry)))
+                        for (uint8 i = 0; i < 4; ++i)
+                            if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
                                 pInstance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, gardian);
 
                         events.ScheduleEvent(EVENT_PETRIFICATION, 15000);
@@ -138,8 +138,8 @@ class boss_stone_guard_controler : public CreatureScript
                         if (--totalGuardian) // break if a guardian is still alive
                             break;
 
-                        for (uint32 entry: guardiansEntry)
-                            if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(entry)))
+                        for (uint8 i = 0; i < 4; ++i)
+                            if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
                                 pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gardian);
 
                         pInstance->SetBossState(DATA_STONE_GUARD, DONE);
@@ -151,8 +151,8 @@ class boss_stone_guard_controler : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                for (uint32 entry: guardiansEntry)
-                    if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(entry)))
+                for (uint8 i = 0; i < 4; ++i)
+                    if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
                         me->DealDamage(gardian, damage);
             }
 
@@ -419,9 +419,9 @@ class boss_generic_guardian : public CreatureScript
 
             bool CheckNearGuardians()
             {
-                for (uint32 entry: guardiansEntry)
+                for (uint8 i = 0; i < 4; ++i)
                     if (entry != me->GetEntry())
-                        if (Creature* gardian = GetClosestCreatureWithEntry(me, entry, 12.0f, true))
+                        if (Creature* gardian = GetClosestCreatureWithEntry(me, guardiansEntry[i], 12.0f, true))
                             return true;
 
                 return false;
