@@ -173,6 +173,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , m_vehicleKit(NULL)
     , m_unitTypeMask(UNIT_MASK_NONE)
     , m_HostileRefManager(this)
+    , LastCharmerGUID(0)
 
 
 {
@@ -17849,16 +17850,13 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     if (Creature* creature = ToCreature())
     {
+        // Creature will restore its old AI on next update
         if (creature->AI())
             creature->AI()->OnCharmed(false);
 
-        if (type != CHARM_TYPE_VEHICLE) // Vehicles' AI is never modified
-        {
-            creature->AIM_Initialize();
-
-            if (creature->AI() && charmer && charmer->isAlive())
-                creature->AI()->AttackStart(charmer);
-        }
+        // Vehicle should not attack its passenger after he exists the seat
+        if (type != CHARM_TYPE_VEHICLE)
+            LastCharmerGUID = charmer->GetGUID();
     }
     else
         ToPlayer()->SetClientControl(this, 1);
