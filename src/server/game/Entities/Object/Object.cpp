@@ -516,11 +516,11 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             if (movementFlags & MOVEMENTFLAG_FALLING)
             {
                 *data << float(self->m_movementInfo.j_sinAngle);
-                *data << float(self->m_movementInfo.j_zspeed);
+                *data << float(self->m_movementInfo.j_xyspeed);
                 *data << float(self->m_movementInfo.j_cosAngle);
             }
 
-            *data << float(self->m_movementInfo.j_xyspeed);
+            *data << float(self->m_movementInfo.j_zspeed);
         }
 
         data->WriteByteSeq(guid[7]);
