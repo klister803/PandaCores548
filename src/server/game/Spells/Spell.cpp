@@ -494,7 +494,8 @@ m_spellInfo(sSpellMgr->GetSpellForDifficultyFromSpell(info, caster)),
 m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
 , m_spellValue(new SpellValue(m_spellInfo))
 {
-    m_spellPowerData = caster->GetSpellPowerEntryBySpell(info);
+    //m_spellPowerData = caster->GetSpellPowerEntryBySpell(info);
+    m_spellPowerData = m_spellInfo->spellPower;
     m_customError = SPELL_CUSTOM_ERROR_NONE;
     m_skipCheck = skipCheck;
     m_selfContainer = NULL;
