@@ -105,6 +105,47 @@ void LoadDB2Stores(const std::string& dataPath)
         }
     }
 
+    if (true)
+    {
+        std::ofstream monFlux("sItemExtendedCostStore.sql");
+
+        system("pause");
+        if (monFlux)
+        {
+            for (uint32 i = 0; i < sItemExtendedCostStore.GetNumRows(); ++i)
+            {
+                if (ItemExtendedCostEntry const* sp = sItemExtendedCostStore.LookupEntry(i))
+                {
+                    monFlux << "REPLACE INTO itemextendedcost_db2 SET " <<
+                    "`ID` = '" << sp->ID << "'," <<
+                    "`RequiredArenaSlot` = '" << sp->RequiredArenaSlot << "'," <<
+                    "`RequiredItem0` = '" << sp->RequiredItem[0] << "'," <<
+                    "`RequiredItem1` = '" << sp->RequiredItem[1] << "'," <<
+                    "`RequiredItem2` = '" << sp->RequiredItem[2] << "'," <<
+                    "`RequiredItem3` = '" << sp->RequiredItem[3] << "'," <<
+                    "`RequiredItem4` = '" << sp->RequiredItem[4] << "'," <<
+                    "`RequiredItemCount0` = '" << sp->RequiredItemCount[0] << "'," <<
+                    "`RequiredItemCount1` = '" << sp->RequiredItemCount[1] << "'," <<
+                    "`RequiredItemCount2` = '" << sp->RequiredItemCount[2] << "'," <<
+                    "`RequiredItemCount3` = '" << sp->RequiredItemCount[3] << "'," <<
+                    "`RequiredItemCount4` = '" << sp->RequiredItemCount[4] << "'," <<
+                    "`RequiredPersonalArenaRating` = '" << sp->RequiredPersonalArenaRating << "'," <<
+                    "`RequiredCurrency0` = '" << sp->RequiredCurrency[0] << "'," <<
+                    "`RequiredCurrency1` = '" << sp->RequiredCurrency[1] << "'," <<
+                    "`RequiredCurrency2` = '" << sp->RequiredCurrency[2] << "'," <<
+                    "`RequiredCurrency3` = '" << sp->RequiredCurrency[3] << "'," <<
+                    "`RequiredCurrency4` = '" << sp->RequiredCurrency[4] << "'," <<
+                    "`RequiredCurrencyCount0` = '" << sp->RequiredCurrencyCount[0] << "'," <<
+                    "`RequiredCurrencyCount1` = '" << sp->RequiredCurrencyCount[1] << "'," <<
+                    "`RequiredCurrencyCount2` = '" << sp->RequiredCurrencyCount[2] << "'," <<
+                    "`RequiredCurrencyCount3` = '" << sp->RequiredCurrencyCount[3] << "'," <<
+                    "`RequiredCurrencyCount4` = '" << sp->RequiredCurrencyCount[4] << "'," <<
+                    "`flags` = '" << sp->flags << "';" << std::endl;
+                }
+            }
+        }
+    }
+
     // error checks
     if (bad_db2_files.size() >= DB2FilesCount)
     {
