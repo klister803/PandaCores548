@@ -13,74 +13,80 @@ AnticheatMgr::~AnticheatMgr()
     m_Players.clear();
 }
 
-void AnticheatMgr::JumpHackDetection(Player* player, MovementInfo movementInfo,uint32 opcode)
+bool AnticheatMgr::JumpHackDetection(Player* player, MovementInfo movementInfo,uint32 opcode)
 {
     if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & JUMP_HACK_DETECTION) == 0)
-        return;
+        return false;
 
     uint32 key = player->GetGUIDLow();
 
     if (m_Players[key].GetLastOpcode() == MSG_MOVE_JUMP && opcode == MSG_MOVE_JUMP)
     {
-        BuildReport(player,JUMP_HACK_REPORT);
+        //BuildReport(player,JUMP_HACK_REPORT);
+        return true;
         //sLog->outError("AnticheatMgr:: Jump-Hack detected player GUID (low) %u",player->GetGUIDLow());
     }
+    return false;
 }
 
-void AnticheatMgr::WalkOnWaterHackDetection(Player* player, MovementInfo movementInfo)
+bool AnticheatMgr::WalkOnWaterHackDetection(Player* player, MovementInfo movementInfo)
 {
     if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & WALK_WATER_HACK_DETECTION) == 0)
-        return;
+        return false;
 
     uint32 key = player->GetGUIDLow();
     if (!m_Players[key].GetLastMovementInfo().HasMovementFlag(MOVEMENTFLAG_WATERWALKING))
-        return;
+        return false;
 
     // if we are a ghost we can walk on water
     if (!player->isAlive())
-        return;
+        return false;
 
     if (player->HasAuraType(SPELL_AURA_FEATHER_FALL) ||
         player->HasAuraType(SPELL_AURA_SAFE_FALL) ||
         player->HasAuraType(SPELL_AURA_WATER_WALK))
-        return;
+        return false;
 
     //sLog->outError("AnticheatMgr:: Walk on Water - Hack detected player GUID (low) %u",player->GetGUIDLow());
-    BuildReport(player,WALK_WATER_HACK_REPORT);
+    //BuildReport(player,WALK_WATER_HACK_REPORT);
+    return true;
 
 }
 
-void AnticheatMgr::FlyHackDetection(Player* player, MovementInfo movementInfo)
+bool AnticheatMgr::FlyHackDetection(Player* player, MovementInfo movementInfo)
 {
-    if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & FLY_HACK_DETECTION) == 0)
-        return;
+    //if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & FLY_HACK_DETECTION) == 0)
+        //return false;
 
     uint32 key = player->GetGUIDLow();
-    if (!m_Players[key].GetLastMovementInfo().HasMovementFlag(MOVEMENTFLAG_FLYING))
-        return;
+    if (!m_Players[key].GetLastMovementInfo().HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY))
+        return false;
 
     if (player->HasAuraType(SPELL_AURA_FLY) ||
+        player->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED) ||
+        player->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) ||
         player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ||
         player->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED))
-        return;
+        return false;
 
     //sLog->outError("AnticheatMgr:: Fly-Hack detected player GUID (low) %u",player->GetGUIDLow());
-    BuildReport(player,FLY_HACK_REPORT);
+    //BuildReport(player,FLY_HACK_REPORT);
+    return true;
 }
 
-void AnticheatMgr::TeleportPlaneHackDetection(Player* player, MovementInfo movementInfo)
+bool AnticheatMgr::TeleportPlaneHackDetection(Player* player, MovementInfo movementInfo)
 {
-    if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & TELEPORT_PLANE_HACK_DETECTION) == 0)
-        return;
+    //if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & TELEPORT_PLANE_HACK_DETECTION) == 0)
+        //return false;
 
     uint32 key = player->GetGUIDLow();
 
     if (m_Players[key].GetLastMovementInfo().pos.GetPositionZ() != 0 ||
         movementInfo.pos.GetPositionZ() != 0)
-        return;
+        return false;
 
     if (movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING))
-        return;
+        return false;
 
     //DEAD_FALLING was deprecated
     //if (player->getDeathState() == DEAD_FALLING)
@@ -94,8 +100,10 @@ void AnticheatMgr::TeleportPlaneHackDetection(Player* player, MovementInfo movem
     if (z_diff > 1.0f)
     {
         //sLog->outError("AnticheatMgr:: Teleport To Plane - Hack detected player GUID (low) %u",player->GetGUIDLow());
-        BuildReport(player,TELEPORT_PLANE_HACK_REPORT);
+        //BuildReport(player,TELEPORT_PLANE_HACK_REPORT);
+        return true;
     }
+    return false;
 }
 
 void AnticheatMgr::StartHackDetection(Player* player, MovementInfo movementInfo, uint32 opcode)
@@ -127,22 +135,22 @@ void AnticheatMgr::StartHackDetection(Player* player, MovementInfo movementInfo,
 }
 
 // basic detection
-void AnticheatMgr::ClimbHackDetection(Player *player, MovementInfo movementInfo, uint32 opcode)
+bool AnticheatMgr::ClimbHackDetection(Player *player, MovementInfo movementInfo, uint32 opcode)
 {
     if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & CLIMB_HACK_DETECTION) == 0)
-        return;
+        return false;
 
     uint32 key = player->GetGUIDLow();
 
     if (opcode != MSG_MOVE_HEARTBEAT ||
         m_Players[key].GetLastOpcode() != MSG_MOVE_HEARTBEAT)
-        return;
+        return false;
 
     // in this case we don't care if they are "legal" flags, they are handled in another parts of the Anticheat Manager.
     if (player->IsInWater() ||
         player->IsFlying() ||
         player->IsFalling())
-        return;
+        return false;
 
     Position playerPos;
     player->GetPosition(&playerPos);
@@ -155,14 +163,16 @@ void AnticheatMgr::ClimbHackDetection(Player *player, MovementInfo movementInfo,
     if (angle > CLIMB_ANGLE)
     {
         //sLog->outError("AnticheatMgr:: Climb-Hack detected player GUID (low) %u", player->GetGUIDLow());
-        BuildReport(player,CLIMB_HACK_REPORT);
+        //BuildReport(player,CLIMB_HACK_REPORT);
+        return true;
     }
+    return false;
 }
 
-void AnticheatMgr::SpeedHackDetection(Player* player,MovementInfo movementInfo)
+bool AnticheatMgr::SpeedHackDetection(Player* player,MovementInfo movementInfo)
 {
-    if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & SPEED_HACK_DETECTION) == 0)
-        return;
+    //if ((sWorld->getIntConfig(CONFIG_ANTICHEAT_DETECTIONS_ENABLED) & SPEED_HACK_DETECTION) == 0)
+        //return false;
 
     uint32 key = player->GetGUIDLow();
 
@@ -170,7 +180,7 @@ void AnticheatMgr::SpeedHackDetection(Player* player,MovementInfo movementInfo)
     // If we just check the flag, they could always add that flag and always skip the speed hacking detection.
     // 369 == DEEPRUN TRAM
     if (player->GetMapId() == 369)
-        return;
+        return false;
 
     uint32 distance2D = (uint32)movementInfo.pos.GetExactDist2d(&m_Players[key].GetLastMovementInfo().pos);
     uint8 moveType = 0;
@@ -199,11 +209,13 @@ void AnticheatMgr::SpeedHackDetection(Player* player,MovementInfo movementInfo)
     uint32 clientSpeedRate = distance2D * 1000 / timeDiff;
 
     // we did the (uint32) cast to accept a margin of tolerance
-    if (clientSpeedRate > speedRate)
+    if ((clientSpeedRate * 10) > speedRate)
     {
-        BuildReport(player,SPEED_HACK_REPORT);
+        //BuildReport(player,SPEED_HACK_REPORT);
+        return true;
         //sLog->outError("AnticheatMgr:: Speed-Hack detected player GUID (low) %u",player->GetGUIDLow());
     }
+    return false;
 }
 
 void AnticheatMgr::StartScripts()

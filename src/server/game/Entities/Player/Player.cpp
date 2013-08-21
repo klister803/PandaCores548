@@ -5819,6 +5819,26 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     }
 }
 
+bool Player::FallGroundAnt()
+{
+    float x, y, z, o;
+    GetPosition(x, y, z, o);
+    float ground_Z = GetMap()->GetVmapHeight(x, y, z);
+    float z_diff = 0.0f;
+    if ((z_diff = fabs(ground_Z - z)) < 0.1f)
+        return false;
+
+    UpdatePosition(x, y, ground_Z, o, false);
+
+    // Below formula for falling damage is from Player::HandleFall
+    if (z_diff >= 14.57f)
+    {
+        uint32 damage = std::min(GetMaxHealth(), (uint32)((0.018f*z_diff-0.2426f)*GetMaxHealth()*sWorld->getRate(RATE_DAMAGE_FALL)));
+        if (damage > 0) EnvironmentalDamage(DAMAGE_FALL, damage);
+    }
+    return true;
+}
+
 void Player::KillPlayer()
 {
     if (IsFlying() && !GetTransport())

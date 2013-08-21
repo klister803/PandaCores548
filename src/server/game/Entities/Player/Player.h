@@ -2410,6 +2410,7 @@ class Player : public Unit, public GridObject<Player>
         Corpse* GetCorpse() const;
         void SpawnCorpseBones();
         void CreateCorpse();
+        bool FallGroundAnt();
         void KillPlayer();
         uint32 GetResurrectionSpellId();
         void ResurrectPlayer(float restore_percent, bool applySickness = false);

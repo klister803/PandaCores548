@@ -63,14 +63,14 @@ public:
     void AnticheatDeleteCommand(uint32 guid);
 
     void ResetDailyReportStates();
-private:
-    void SpeedHackDetection(Player* player, MovementInfo movementInfo);
-    void FlyHackDetection(Player* player, MovementInfo movementInfo);
-    void WalkOnWaterHackDetection(Player* player, MovementInfo movementInfo);
-    void JumpHackDetection(Player* player, MovementInfo movementInfo,uint32 opcode);
-    void TeleportPlaneHackDetection(Player* player, MovementInfo);
-    void ClimbHackDetection(Player* player,MovementInfo movementInfo,uint32 opcode);
+    bool SpeedHackDetection(Player* player, MovementInfo movementInfo);
+    bool FlyHackDetection(Player* player, MovementInfo movementInfo);
+    bool WalkOnWaterHackDetection(Player* player, MovementInfo movementInfo);
+    bool JumpHackDetection(Player* player, MovementInfo movementInfo,uint32 opcode);
+    bool TeleportPlaneHackDetection(Player* player, MovementInfo);
+    bool ClimbHackDetection(Player* player,MovementInfo movementInfo,uint32 opcode);
 
+private:
     void BuildReport(Player* player,uint8 reportType);
 
     bool MustCheckTempReports(uint8 type);

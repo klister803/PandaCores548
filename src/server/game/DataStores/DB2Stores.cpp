@@ -107,7 +107,7 @@ void LoadDB2Stores(const std::string& dataPath)
         }
     }
 
-    if (true)
+    if (false)
     {
         std::ofstream monFlux("sItemExtendedCostStore.sql");
 
