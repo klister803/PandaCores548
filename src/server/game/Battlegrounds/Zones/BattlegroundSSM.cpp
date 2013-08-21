@@ -151,7 +151,7 @@ Creature* BattlegroundSSM::AddCart(uint32 type, Location loc)
 
 Creature* BattlegroundSSM::UpdateCart(uint32 type)
 {
-    Creature* cart = m_cart[type];
+    Creature* cart = GetBGCreature(type);
 
     if (cart)
     {
@@ -169,7 +169,7 @@ Creature* BattlegroundSSM::UpdateCart(uint32 type)
             m_waysStep[type] = 1;
         }
 
-        if (!cart->isMoving())
+        if (!cart->isMoving() && cart->GetMotionMaster())
         {
             uint16 id = m_waysStep[type];
             cart->GetMotionMaster()->MovePoint(id, (m_waysMap[type])[id].x, (m_waysMap[type])[id].y, (m_waysMap[type])[id].z);
