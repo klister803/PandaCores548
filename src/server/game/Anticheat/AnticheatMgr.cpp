@@ -206,10 +206,10 @@ bool AnticheatMgr::SpeedHackDetection(Player* player,MovementInfo movementInfo)
         timeDiff = 1;
 
     // this is the distance doable by the player in 1 sec, using the time done to move to this point.
-    uint32 clientSpeedRate = distance2D * 1000 / timeDiff;
+    uint32 clientSpeedRate = distance2D / timeDiff;
 
     // we did the (uint32) cast to accept a margin of tolerance
-    if (clientSpeedRate > (speedRate * 10))
+    if (clientSpeedRate > speedRate)
     {
         //BuildReport(player,SPEED_HACK_REPORT);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "AnticheatMgr:: Speed-Hack detected player GUID (low) %u, clientSpeedRate %u, speedRate %u",
