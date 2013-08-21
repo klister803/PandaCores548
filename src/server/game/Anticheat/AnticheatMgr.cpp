@@ -209,7 +209,7 @@ bool AnticheatMgr::SpeedHackDetection(Player* player,MovementInfo movementInfo)
     uint32 clientSpeedRate = distance2D * 1000 / timeDiff;
 
     // we did the (uint32) cast to accept a margin of tolerance
-    if ((clientSpeedRate * 10) > speedRate)
+    if (clientSpeedRate > (speedRate * 10))
     {
         //BuildReport(player,SPEED_HACK_REPORT);
         return true;
