@@ -151,6 +151,7 @@ Creature* BattlegroundSSM::AddCart(uint32 type, Location loc)
 
 Creature* BattlegroundSSM::UpdateCart(uint32 type)
 {
+    return NULL;
     Creature* cart = GetBGCreature(type);
 
     if (cart)

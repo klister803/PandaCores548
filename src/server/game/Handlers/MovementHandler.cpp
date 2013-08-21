@@ -399,26 +399,29 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     bool check_passed = true;
     if (plrMover && plrMover->GetTypeId() == TYPEID_PLAYER && !plrMover->HasUnitState(UNIT_STATE_LOST_CONTROL) && !plrMover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT) && !(plrMover->m_transport) && (plrMover->GetMapId() != 578 || plrMover->GetMapId() != 603) && !plrMover->GetCharmerOrOwnerPlayerOrPlayerItself()->isGameMaster())
     {
-        if(sAnticheatMgr->FlyHackDetection(plrMover, movementInfo))
+        if (sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
         {
-            check_passed = false;
-            plrMover->SendMovementSetCanFly(true);
-            plrMover->SendMovementSetCanFly(false);
-            plrMover->FallGroundAnt();
-        }
-        if(sAnticheatMgr->TeleportPlaneHackDetection(plrMover, movementInfo))
-        {
-            check_passed = false;
-            plrMover->SendMovementSetCanFly(true);
-            plrMover->SendMovementSetCanFly(false);
-            plrMover->FallGroundAnt();
-        }
-        if(sAnticheatMgr->SpeedHackDetection(plrMover, movementInfo))
-        {
-            check_passed = false;
-            plrMover->SendMovementSetCanFly(true);
-            plrMover->SendMovementSetCanFly(false);
-            plrMover->FallGroundAnt();
+            if(sAnticheatMgr->FlyHackDetection(plrMover, movementInfo))
+            {
+                check_passed = false;
+                plrMover->SendMovementSetCanFly(true);
+                plrMover->SendMovementSetCanFly(false);
+                plrMover->FallGroundAnt();
+            }
+            if(sAnticheatMgr->TeleportPlaneHackDetection(plrMover, movementInfo))
+            {
+                check_passed = false;
+                plrMover->SendMovementSetCanFly(true);
+                plrMover->SendMovementSetCanFly(false);
+                plrMover->FallGroundAnt();
+            }
+            if(sAnticheatMgr->SpeedHackDetection(plrMover, movementInfo))
+            {
+                check_passed = false;
+                plrMover->SendMovementSetCanFly(true);
+                plrMover->SendMovementSetCanFly(false);
+                plrMover->FallGroundAnt();
+            }
         }
     }
 
