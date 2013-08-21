@@ -556,7 +556,6 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
             targetName = recvData.ReadString(targetLen);
             break;
         }
-        case CHAT_MSG_PARTY:
         case CHAT_MSG_RAID:
         case CHAT_MSG_OFFICER:
         {
@@ -566,6 +565,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
             message = recvData.ReadString(msgLen);
             break;
         }
+        case CHAT_MSG_PARTY:
         case CHAT_MSG_GUILD:
         case CHAT_MSG_BATTLEGROUND:
         {
