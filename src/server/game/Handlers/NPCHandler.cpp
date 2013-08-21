@@ -602,30 +602,33 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recv CMSG_SET_PET_SLOT.");
     uint32 pet_number;
-    uint64 npcGUID;
+    ObjectGuid npcGUID;
     uint8 new_slot;
 
-    recv_data >> pet_number >> new_slot >> npcGUID;
+    recv_data >> pet_number >> new_slot;
 
-    // We cannot get tru guid now
-    // So just search for stable master
+    npcGUID[6] = recv_data.ReadBit();
+    npcGUID[7] = recv_data.ReadBit();
+    npcGUID[1] = recv_data.ReadBit();
+    npcGUID[2] = recv_data.ReadBit();
+    npcGUID[5] = recv_data.ReadBit();
+    npcGUID[0] = recv_data.ReadBit();
+    npcGUID[3] = recv_data.ReadBit();
+    npcGUID[4] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(npcGUID[0]);
+    recv_data.ReadByteSeq(npcGUID[7]);
+    recv_data.ReadByteSeq(npcGUID[2]);
+    recv_data.ReadByteSeq(npcGUID[3]);
+    recv_data.ReadByteSeq(npcGUID[6]);
+    recv_data.ReadByteSeq(npcGUID[5]);
+    recv_data.ReadByteSeq(npcGUID[1]);
+    recv_data.ReadByteSeq(npcGUID[4]);
+
     if (!CheckStableMaster(npcGUID))
     {
-        Creature* _master = NULL;
-        //CellCoord p(Trinity::ComputeCellCoord(_player->GetPositionX(), _player->GetPositionY()));
-        //Cell cell(p);
-        Trinity::FriendlyStableMasterCheck check(_player);
-        Trinity::CreatureSearcher<Trinity::FriendlyStableMasterCheck> searcher(_player, _master, check);
-        
-        //TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::FriendlyStableMasterCheck>, GridTypeMapContainer > unit_checker(searcher);
-        //cell.Visit(p, unit_checker, *_player->GetMap(), *_player, _player->GetGridActivationRange());
-        _player->VisitNearbyObject(5.0f, searcher);
-
-        if (!_master)
-        {
-            SendStableResult(STABLE_ERR_STABLE);
-            return;
-        }
+        SendStableResult(STABLE_ERR_STABLE);
+        return;
     }
 
     if (new_slot > MAX_PET_STABLES)
