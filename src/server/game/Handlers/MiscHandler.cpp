@@ -2058,12 +2058,12 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
 
     ObjectGuid* guids = new ObjectGuid[count];
 
-    uint8 order[8] = {5, 6, 1, 2, 4, 7, 3, 0};
+    uint8 order[8] = { 5, 6, 1, 2, 4, 7, 3, 0 };
     for (uint32 i = 0; i < count; ++i)
         recvPacket.ReadBitInOrder(guids[i], order);
 
     uint32 entry;
-    recvPacket.FlushBits();
+    bool needBreak = false;
     for (uint32 i = 0; i < count; ++i)
     {
         recvPacket.ReadByteSeq(guids[i][1]);
@@ -2078,26 +2078,37 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
 
         switch (type)
         {
-        case DB2_REPLY_ITEM:
-            SendItemDb2Reply(entry);
-            break;
-        case DB2_REPLY_SPARSE:
-            SendItemSparseDb2Reply(entry);
-            break;
-            // TODO
-        case DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES:
-        case DB2_REPLY_SCENE_SCRIPT:
-            break;
-        case DB2_REPLY_BROADCAST_TEXT:
-            printf("DB2_REPLY_BROADCAST_TEXT : %u\n", entry);
-            SendBroadcastTextDb2Reply(entry);
-            break;
-        case DB2_REPLY_ITEM_EXTENDED_COST:
-            printf("DB2_REPLY_ITEM_EXTENDED_COST : %u\n", entry);
-            SendItemeExtendedCostDb2Reply(entry);
-            break;
-        default:
-            sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
+            case DB2_REPLY_ITEM:
+                SendItemDb2Reply(entry);
+                break;
+            case DB2_REPLY_SPARSE:
+                SendItemSparseDb2Reply(entry);
+                break;
+            case DB2_REPLY_BROADCAST_TEXT:
+                //printf("DB2_REPLY_BROADCAST_TEXT : %u\n", entry);
+                SendBroadcastTextDb2Reply(entry);
+                break;
+            case DB2_REPLY_ITEM_EXTENDED_COST:
+                //printf("DB2_REPLY_ITEM_EXTENDED_COST : %u\n", entry);
+                SendItemeExtendedCostDb2Reply(entry);
+                break;
+            case DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES:
+            case DB2_REPLY_SCENE_SCRIPT:
+            {
+                sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unhandled hotfix type: %u", type);
+                needBreak = true;
+                break;
+            }
+            default:
+            {
+                sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
+                needBreak = true;
+                break;
+            }
+        }
+
+        if (needBreak)
+        {
             recvPacket.rfinish();
             break;
         }
