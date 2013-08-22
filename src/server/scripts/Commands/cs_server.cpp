@@ -113,7 +113,7 @@ public:
         std::string uptime          = secsToTimeString(sWorld->GetUptime());
         uint32 updateTime           = sWorld->GetUpdateTime();
 
-        handler->PSendSysMessage("Uwow Pandaria 5.0.5");
+        handler->PSendSysMessage(_FULLVERSION);
         handler->PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
         handler->PSendSysMessage(LANG_UPTIME, uptime.c_str());
         handler->PSendSysMessage("Server delay: %u ms", updateTime);
