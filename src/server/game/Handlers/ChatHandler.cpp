@@ -274,9 +274,20 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             break;
     }
 
-    size_t found = -8, found2 = 0;
-    while (found!=std::string::npos)
+    if (!ignoreChecks)
     {
+        if (msg.empty())
+            return;
+
+        if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+            return;
+
+        if (!processChatmessageFurtherAfterSecurityChecks(msg, lang))
+            return;
+
+        if (msg.empty())
+            return;
+
          /// filtering of bad words
         if(sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE))
         {
@@ -307,21 +318,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             if(sender->m_sentMsgCache.size() >= maxSentMsgCacheSize)
                 sender->m_sentMsgCache.erase();
         }
-    }
-
-    if (!ignoreChecks)
-    {
-        if (msg.empty())
-            return;
-
-        if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-            return;
-
-        if (!processChatmessageFurtherAfterSecurityChecks(msg, lang))
-            return;
-
-        if (msg.empty())
-            return;
     }
 
     switch (type)
