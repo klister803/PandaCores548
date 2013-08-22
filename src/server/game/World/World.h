@@ -181,6 +181,7 @@ enum WorldBoolConfigs
     CONFIG_ANNOUNCE_BAN,
     CONFIG_ANNOUNCE_MUTE,
     CONFIG_SPELL_FORBIDDEN,
+    CONFIG_DISABLE_RESTART,
     BOOL_CONFIG_VALUE_COUNT    
 };
 
@@ -353,6 +354,7 @@ enum WorldIntConfigs
     CONFIG_GUILD_UNDELETABLE_LEVEL,
     CONFIG_GUILD_DAILY_XP_CAP,
     CONFIG_GUILD_WEEKLY_REP_CAP,
+    CONFIG_AUTO_SERVER_RESTART_HOUR,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -500,8 +502,9 @@ enum RealmZone
 
 enum WorldStates
 {
-    WS_WEEKLY_QUEST_RESET_TIME = 20002,                      // Next weekly reset time
-    WS_BG_DAILY_RESET_TIME     = 20003                       // Next daily BG reset time
+    WS_WEEKLY_QUEST_RESET_TIME  = 20002,                      // Next weekly reset time
+    WS_BG_DAILY_RESET_TIME      = 20003,                      // Next daily BG reset time
+    WS_AUTO_SERVER_RESTART_TIME = 20005,                      // Next server restart time
 };
 
 // DB scripting commands
@@ -832,6 +835,8 @@ class World
         void ResetWeeklyQuests();
         void ResetRandomBG();
         void ResetCurrencyWeekCap();
+        void InitServerAutoRestartTime();
+        void AutoRestartServer();
     private:
         static ACE_Atomic_Op<ACE_Thread_Mutex, bool> m_stopEvent;
         static uint8 m_ExitCode;
@@ -894,6 +899,7 @@ class World
         time_t m_NextWeeklyQuestReset;
         time_t m_NextRandomBGReset;
         time_t m_NextCurrencyReset;
+        time_t m_NextServerRestart;
 
         //Player Queue
         Queue m_QueuedPlayer;
