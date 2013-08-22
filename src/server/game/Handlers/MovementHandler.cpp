@@ -298,13 +298,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         return;
     }
 
-    // Disable walk mode in charmer
-    if(mover->HasAuraType(SPELL_AURA_MOD_POSSESS) || (plrMover && plrMover->HasAuraType(SPELL_AURA_MOD_POSSESS)))
-    {
-        if (movementInfo.flags & MOVEMENTFLAG_WALKING)
-            movementInfo.flags &= ~MOVEMENTFLAG_WALKING;
-    }
-
     /* handle special cases */
     if (movementInfo.t_guid)
     {
@@ -392,96 +385,52 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         plrMover->SetInWater(!plrMover->IsInWater() || plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ()));
     }
 
-    //if (plrMover)
-        //sAnticheatMgr->StartHackDetection(plrMover, movementInfo, opcode);
+    if (plrMover)
+        sAnticheatMgr->StartHackDetection(plrMover, movementInfo, opcode);
     /*----------------------*/
-    // begin anti cheat
-    bool check_passed = true;
-    if (plrMover && plrMover->GetTypeId() == TYPEID_PLAYER && !plrMover->HasUnitState(UNIT_STATE_LOST_CONTROL) && !plrMover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT) && !(plrMover->m_transport) && (plrMover->GetMapId() != 578 || plrMover->GetMapId() != 603) && !plrMover->GetCharmerOrOwnerPlayerOrPlayerItself()->isGameMaster())
-    {
-        if (sWorld->getBoolConfig(CONFIG_ANTICHEAT_ENABLE))
-        {
-            if(sAnticheatMgr->FlyHackDetection(plrMover, movementInfo))
-            {
-                check_passed = false;
-                plrMover->SendMovementSetCanFly(true);
-                plrMover->SendMovementSetCanFly(false);
-                plrMover->FallGroundAnt();
-            }
-            if(sAnticheatMgr->TeleportPlaneHackDetection(plrMover, movementInfo))
-            {
-                check_passed = false;
-                plrMover->SendMovementSetCanFly(true);
-                plrMover->SendMovementSetCanFly(false);
-                plrMover->FallGroundAnt();
-            }
-            if(sAnticheatMgr->SpeedHackDetection(plrMover, movementInfo))
-            {
-                check_passed = false;
-                plrMover->SendMovementSetCanFly(true);
-                plrMover->SendMovementSetCanFly(false);
-                plrMover->FallGroundAnt();
-            }
-        }
-    }
 
     /* process position-change */
-    if (check_passed)
+    WorldPacket data(SMSG_MOVE_UPDATE, recvPacket.size());
+    movementInfo.time = getMSTime();
+    movementInfo.guid = mover->GetGUID();
+    WorldSession::WriteMovementInfo(data, &movementInfo);
+    mover->SendMessageToSet(&data, _player);
+
+    mover->m_movementInfo = movementInfo;
+
+    // this is almost never true (not sure why it is sometimes, but it is), normally use mover->IsVehicle()
+    if (mover->GetVehicle())
     {
-        WorldPacket data(SMSG_MOVE_UPDATE, recvPacket.size());
-        movementInfo.time = getMSTime();
-        movementInfo.guid = mover->GetGUID();
-        WorldSession::WriteMovementInfo(data, &movementInfo);
-        mover->SendMessageToSet(&data, _player);
+        mover->SetOrientation(movementInfo.pos.GetOrientation());
+        return;
+    }
 
-        mover->m_movementInfo = movementInfo;
+    mover->UpdatePosition(movementInfo.pos);
 
-        // this is almost never true (not sure why it is sometimes, but it is), normally use mover->IsVehicle()
-        if (mover->GetVehicle())
+    if (plrMover)                                            // nothing is charmed, or player charmed
+    {
+        plrMover->UpdateFallInformationIfNeed(movementInfo, opcode);
+
+        AreaTableEntry const* zone = GetAreaEntryByAreaID(plrMover->GetAreaId());
+        float depth = zone ? zone->MaxDepth : -500.0f;
+        if (movementInfo.pos.GetPositionZ() < depth)
         {
-            mover->SetOrientation(movementInfo.pos.GetOrientation());
-            return;
-        }
-
-        mover->UpdatePosition(movementInfo.pos);
-
-        if (plrMover)                                            // nothing is charmed, or player charmed
-        {
-            plrMover->UpdateFallInformationIfNeed(movementInfo, opcode);
-
-            AreaTableEntry const* zone = GetAreaEntryByAreaID(plrMover->GetAreaId());
-            float depth = zone ? zone->MaxDepth : -500.0f;
-            if (movementInfo.pos.GetPositionZ() < depth)
+            if (!(plrMover->GetBattleground() && plrMover->GetBattleground()->HandlePlayerUnderMap(_player)))
             {
-                if (!(plrMover->GetBattleground() && plrMover->GetBattleground()->HandlePlayerUnderMap(_player)))
+                // NOTE: this is actually called many times while falling
+                // even after the player has been teleported away
+                // TODO: discard movement packets after the player is rooted
+                if (plrMover->isAlive())
                 {
-                    // NOTE: this is actually called many times while falling
-                    // even after the player has been teleported away
-                    // TODO: discard movement packets after the player is rooted
-                    if (plrMover->isAlive())
-                    {
-                        plrMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
-                        // player can be alive if GM/etc
-                        // change the death state to CORPSE to prevent the death timer from
-                        // starting in the next player update
-                        if (!plrMover->isAlive())
-                            plrMover->KillPlayer();
-                    }
+                    plrMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
+                    // player can be alive if GM/etc
+                    // change the death state to CORPSE to prevent the death timer from
+                    // starting in the next player update
+                    if (!plrMover->isAlive())
+                        plrMover->KillPlayer();
                 }
             }
         }
-    }
-    else
-    {
-        if (plrMover->m_transport)
-        {
-            plrMover->m_transport->RemovePassenger(plrMover);
-            plrMover->m_transport = NULL;
-        }
-        WorldPacket data;
-        plrMover->SetUnitMovementFlags(0);
-        plrMover->BuildHeartBeatMsg(&data);
-        plrMover->SendMessageToSet(&data, true);
     }
 }
 
