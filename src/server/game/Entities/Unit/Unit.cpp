@@ -1113,6 +1113,8 @@ void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo
             spell->SetSpellValue(itr->first, itr->second);
 
     spell->m_CastItem = castItem;
+    if(triggeredByAura && triggeredByAura->GetBase())
+        spell->m_cast_count = triggeredByAura->GetBase()->GetSpellCastCount();
     spell->prepare(&targets, triggeredByAura);
 }
 
