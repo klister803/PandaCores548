@@ -71,7 +71,7 @@ bool BattlegroundSSM::SetupBattleground()
 {
     m_cart[0] = AddCart(BG_SSM_CART_1, Way1[0]);
     m_cart[1] = AddCart(BG_SSM_CART_2, Way2[0]);
-    m_cart[2] = AddCart(BG_SSM_CART_2, Way3[0]);
+    m_cart[2] = AddCart(BG_SSM_CART_3, Way3[0]);
 
     AddObject(BG_DOOR_1, BG_SSM_DOOR, 640.48f, 209.58f, 328.84f, 0.116671f, 0, 0, 0.058f, 0.99f);
     AddObject(BG_DOOR_2, BG_SSM_DOOR, 657.515f, 230.798f, 328.932f, 0.116671f, 0, 0, 0.058f, 0.99f);
@@ -151,7 +151,6 @@ Creature* BattlegroundSSM::AddCart(uint32 type, Location loc)
 
 Creature* BattlegroundSSM::UpdateCart(uint32 type)
 {
-    return NULL;
     Creature* cart = GetBGCreature(type);
 
     if (cart)
@@ -170,10 +169,10 @@ Creature* BattlegroundSSM::UpdateCart(uint32 type)
             m_waysStep[type] = 1;
         }
 
-        if (!cart->isMoving() && cart->GetMotionMaster())
+        if (!cart->isMoving())
         {
             uint16 id = m_waysStep[type];
-            cart->GetMotionMaster()->MovePoint(id, (m_waysMap[type])[id].x, (m_waysMap[type])[id].y, (m_waysMap[type])[id].z);
+            cart->MonsterMoveWithSpeed((m_waysMap[type])[id].x, (m_waysMap[type])[id].y, (m_waysMap[type])[id].z, 0.4);
             m_waysStep[type]++;
         }
     }
