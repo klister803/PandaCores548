@@ -1392,6 +1392,24 @@ namespace Trinity
             float m_fRange;
     };
 
+    class AllAliveCreaturesOfEntryInRange
+    {
+        public:
+            AllAliveCreaturesOfEntryInRange(const WorldObject* object, uint32 entry, float maxRange) : m_pObject(object), m_uiEntry(entry), m_fRange(maxRange) {}
+            bool operator() (Unit* unit)
+            {
+                if (unit->GetEntry() == m_uiEntry && m_pObject->IsWithinDist(unit, m_fRange, false) && unit->isAlive())
+                    return true;
+
+                return false;
+            }
+
+        private:
+            const WorldObject* m_pObject;
+            uint32 m_uiEntry;
+            float m_fRange;
+    };
+
     class PlayerAtMinimumRangeAway
     {
     public:

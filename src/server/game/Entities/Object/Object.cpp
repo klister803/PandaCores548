@@ -2528,6 +2528,14 @@ void WorldObject::AddObjectToRemoveList()
 
 TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, uint64 viewerGuid /*= 0*/, std::list<uint64>* viewersList /*= NULL*/)
 {
+    if(summoner)
+    {
+        std::list<Creature*> creatures;
+        summoner->GetAliveCreatureListWithEntryInGrid(creatures, entry, 110.0f);
+        if(creatures.size() > 50)
+            return NULL;
+    }
+
     uint32 mask = UNIT_MASK_SUMMON;
     if (properties)
     {
@@ -2911,6 +2919,19 @@ void WorldObject::GetCreatureListWithEntryInGridAppend(std::list<Creature*>& cre
     creatureList.sort();
     tempList.sort();
     creatureList.merge(tempList);
+}
+
+void WorldObject::GetAliveCreatureListWithEntryInGrid(std::list<Creature*>& creatureList, uint32 entry, float maxSearchRange) const
+{
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
+    Cell cell(pair);
+    cell.SetNoCreate();
+
+    Trinity::AllAliveCreaturesOfEntryInRange check(this, entry, maxSearchRange);
+    Trinity::CreatureListSearcher<Trinity::AllAliveCreaturesOfEntryInRange> searcher(this, creatureList, check);
+    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllAliveCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
+
+    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
 }
 
 /*

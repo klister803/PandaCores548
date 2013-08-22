@@ -2654,17 +2654,6 @@ bool AchievementMgr<T>::HasAchieved(uint32 achievementId) const
     return m_completedAchievements.find(achievementId) != m_completedAchievements.end();
 }
 
-template<>
-bool AchievementMgr<Player>::HasAchieved(uint32 achievementId) const
-{
-    CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
-
-    if (itr == m_completedAchievements.end())
-        return false;
-
-    return (*itr).second.completedByThisCharacter;
-}
-
 template<class T>
 bool AchievementMgr<T>::HasAccountAchieved(uint32 achievementId) const
 {
