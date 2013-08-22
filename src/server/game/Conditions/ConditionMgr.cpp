@@ -722,6 +722,7 @@ ConditionList ConditionMgr::GetConditionsForNpcVendorEvent(uint32 creatureId, ui
     CreatureSpellConditionContainer::const_iterator itr = NpcVendorConditionContainerStore.find(creatureId);
     if (itr != NpcVendorConditionContainerStore.end())
     {
+        sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForNpcVendorEvent: not found conditions for creature entry %u item %u", creatureId, itemId);
         ConditionTypeContainer::const_iterator i = (*itr).second.find(itemId);
         if (i != (*itr).second.end())
         {
@@ -729,7 +730,6 @@ ConditionList ConditionMgr::GetConditionsForNpcVendorEvent(uint32 creatureId, ui
             sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForNpcVendorEvent: found conditions for creature entry %u item %u", creatureId, itemId);
         }
     }
-    sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForNpcVendorEvent: not found conditions for creature entry %u item %u", creatureId, itemId);
     return cond;
 }
 
