@@ -719,10 +719,9 @@ ConditionList ConditionMgr::GetConditionsForSmartEvent(int32 entryOrGuid, uint32
 ConditionList ConditionMgr::GetConditionsForNpcVendorEvent(uint32 creatureId, uint32 itemId)
 {
     ConditionList cond;
-    CreatureSpellConditionContainer::const_iterator itr = NpcVendorConditionContainerStore.find(creatureId);
+    NpcVendorConditionContainer::const_iterator itr = NpcVendorConditionContainerStore.find(creatureId);
     if (itr != NpcVendorConditionContainerStore.end())
     {
-        sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForNpcVendorEvent: not found conditions for creature entry %u item %u", creatureId, itemId);
         ConditionTypeContainer::const_iterator i = (*itr).second.find(itemId);
         if (i != (*itr).second.end())
         {
