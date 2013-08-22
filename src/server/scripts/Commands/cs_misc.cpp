@@ -32,6 +32,7 @@
 #include "DB2Structure.h"
 #include "DB2Stores.h"
 #include <fstream>
+#include "WordFilterMgr.h"
 
 class misc_commandscript : public CommandScript
 {
@@ -40,6 +41,19 @@ public:
 
     ChatCommand* GetCommands() const
     {
+        static ChatCommand badWordCommandTable[] =
+        {
+            { "add",                SEC_ADMINISTRATOR,      true,  &HandleBadWordAddCommand,            "", NULL },
+            { "remove",             SEC_ADMINISTRATOR,      true,  &HandleBadWordRemoveCommand,         "", NULL },
+            { "list",               SEC_ADMINISTRATOR,      true,  &HandleBadWordListCommand,           "", NULL },
+            { NULL,                 0,                      false, NULL,                                "", NULL }
+        };
+        static ChatCommand wordFilterCommandTable[] =
+        {
+            { "badword",            SEC_ADMINISTRATOR,      true,  NULL,                                "", badWordCommandTable },
+            { "mod",                SEC_ADMINISTRATOR,      true,  &HandleWordFilterModCommand,         "", NULL },
+            { NULL,                 0,                      false, NULL,                                "", NULL }
+        };
         static ChatCommand groupCommandTable[] =
         {
             { "leader",         SEC_ADMINISTRATOR,          false,  &HandleGroupLeaderCommand,          "", NULL },
@@ -124,9 +138,107 @@ public:
             { "playall",            SEC_GAMEMASTER,         false, &HandlePlayAllCommand,                "", NULL },
             { "selectfaction",      SEC_ADMINISTRATOR,      false, &HandleSelectFactionCommand,          "", NULL },
             { "outItemTemplate",    SEC_ADMINISTRATOR,      false, &HandleOutItemTemplateCommand,        "", NULL },
+            { "wordfilter",     SEC_ADMINISTRATOR,  false,  NULL,                       "", wordFilterCommandTable },
             { NULL,                 0,                      false, NULL,                                "", NULL }
         };
         return commandTable;
+    }
+
+    static bool HandleBadWordAddCommand(ChatHandler* handler, char const* args)
+    {
+        std::string badWord = args;
+
+        const uint8 maxWordSize = 3;
+        if (badWord.size() <= maxWordSize)
+        {
+            handler->PSendSysMessage("The word '%s' is incorrect! The word length must be greater than %u.", badWord.c_str(), maxWordSize);
+            return false;
+        }
+
+        if (!sWordFilterMgr->AddBadWord(badWord, true))
+        {
+            handler->PSendSysMessage("The word '%s' is exist!", badWord.c_str());
+            return false;
+        }
+
+        handler->PSendSysMessage("The word '%s' is added to 'bad_word'.", badWord.c_str());
+        return true;
+    }
+
+    static bool HandleBadWordRemoveCommand(ChatHandler* handler, char const* args)
+    {
+        std::string badWord = args;
+
+        if (!sWordFilterMgr->RemoveBadWord(args, true))
+        {
+            handler->PSendSysMessage("The word '%s' is not exist!", badWord.c_str());
+            return false;
+        }
+
+        handler->PSendSysMessage("The word '%s' is removed from 'bad_word'.", badWord.c_str());
+        return true;
+    }
+
+    static bool HandleBadWordListCommand(ChatHandler* handler, char const* args)
+    {
+        WordFilterMgr::BadWordMap const& badWords = sWordFilterMgr->GetBadWords();
+
+        if (badWords.empty())
+        {
+            handler->PSendSysMessage("empty.");
+            return true;
+        }
+
+        std::string strBadWordList;
+        uint16 addressesSize = 0;
+        const uint16 maxAddressesSize = 255; // !uint8
+
+        for (WordFilterMgr::BadWordMap::const_iterator it = badWords.begin(); it != badWords.end(); ++it)
+        {
+            strBadWordList.append(it->second);
+
+            if ((*it) != (*badWords.rbegin()))
+                strBadWordList.append(", ");
+            else
+                strBadWordList.append(".");
+
+            // send
+            if (addressesSize >= maxAddressesSize)
+            {
+                handler->PSendSysMessage("Bad words: %s", strBadWordList.c_str());
+                strBadWordList.clear();
+                addressesSize = 0;
+            }
+
+            addressesSize += it->second.size();
+        }
+
+        return true;
+    }
+
+    static bool HandleWordFilterModCommand(ChatHandler* handler, char const* args)
+    {
+        std::string argstr = (char*)args;
+        if (argstr == "on")
+        {
+            sWorld->setBoolConfig(CONFIG_WORD_FILTER_ENABLE, true);
+            handler->PSendSysMessage("WordFilter: mod is enabled");
+            return true;
+        }
+        if (argstr == "off")
+        {
+            sWorld->setBoolConfig(CONFIG_WORD_FILTER_ENABLE, false);
+            handler->PSendSysMessage("WordFilter: mod is disabled");
+            return true;
+        }
+
+        std::string strModIs = sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) ? "enabled" : "disabled";
+        handler->PSendSysMessage("WordFilter: mod is now %s.", strModIs.c_str());
+
+        handler->SendSysMessage(LANG_USE_BOL);
+        handler->SetSentErrorMessage(true);
+
+        return true;
     }
 
     static bool HandleDevCommand(ChatHandler* handler, char const* args)
@@ -1844,31 +1956,52 @@ public:
             if (WorldSession* session = sWorld->FindSession(accountId))
                 target = session->GetPlayer();
 
-        uint32 notSpeakTime = uint32(atoi(delayStr));
+        int64 notSpeakTime = (int64) atoi(delayStr);
 
         // must have strong lesser security level
         if (handler->HasLowerSecurity (target, targetGuid, true))
             return false;
 
-        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
-
-        if (target)
+        // If the account is muted add time mute
+        int64 activemute = 0;
+        QueryResult mutresult = LoginDatabase.PQuery("SELECT mutetime FROM account WHERE id = %u", accountId);
+        if (mutresult)
         {
-            // Target is online, mute will be in effect right away.
-            int64 muteTime = time(NULL) + notSpeakTime * MINUTE;
-            target->GetSession()->m_muteTime = muteTime;
-            stmt->setInt64(0, muteTime);
-            ChatHandler(target).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notSpeakTime, muteReasonStr.c_str());
+            do
+            {
+                Field* fields = mutresult->Fetch();
+                activemute = fields[0].GetUInt64();
+            } while (mutresult->NextRow());
+        }
+        int64 muteTime;
+
+        // Target is online, mute will be in effect right away.
+        if (activemute > time(NULL) && notSpeakTime > 0)
+        {
+            if(notSpeakTime < 4294967295)
+            {
+                muteTime = notSpeakTime * MINUTE;
+                LoginDatabase.PQuery("UPDATE account SET mutetime = mutetime + %u WHERE id = %u", muteTime, accountId);
+                if (target)
+                    target->GetSession()->m_muteTime = target->GetSession()->m_muteTime + muteTime;
+            }
         }
         else
         {
-            // Target is offline, mute will be in effect starting from the next login.
-            int32 muteTime = -int32(notSpeakTime * MINUTE);
-            stmt->setInt64(0, muteTime);
+            if(notSpeakTime < 0)
+                muteTime = 4294967295;
+            else
+                muteTime = time(NULL) + notSpeakTime * MINUTE;
+            LoginDatabase.PQuery("UPDATE account SET mutetime = " UI64FMTD " WHERE id = %u", uint64(muteTime), accountId);
+            if (target)
+                target->GetSession()->m_muteTime = muteTime;
         }
 
-        stmt->setUInt32(1, accountId);
-        LoginDatabase.Execute(stmt);
+        if (target)
+            ChatHandler(target).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notSpeakTime, muteReasonStr.c_str());
+
+        LoginDatabase.PQuery("INSERT INTO account_muted VALUES (%u, UNIX_TIMESTAMP(), UNIX_TIMESTAMP() + %u, '%s', '%s', 1)", accountId, notSpeakTime*60, handler->GetSession()->GetPlayer()->GetName(), muteReasonStr.c_str());
+
         std::string nameLink = handler->playerLink(targetName);
 
         handler->PSendSysMessage(target ? LANG_YOU_DISABLE_CHAT : LANG_COMMAND_DISABLE_CHAT_DELAYED, nameLink.c_str(), notSpeakTime, muteReasonStr.c_str());

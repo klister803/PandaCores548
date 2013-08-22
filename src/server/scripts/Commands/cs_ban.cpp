@@ -60,8 +60,8 @@ public:
         static ChatCommand banCommandTable[] =
         {
             { "account",        SEC_ADMINISTRATOR,  true,  &HandleBanAccountCommand,            "", NULL },
-            { "character",      SEC_ADMINISTRATOR,  true,  &HandleBanCharacterCommand,          "", NULL },
-            { "playeraccount",  SEC_ADMINISTRATOR,  true,  &HandleBanAccountByCharCommand,      "", NULL },
+            { "playeraccount",  SEC_ADMINISTRATOR,  true,  &HandleBanCharacterCommand,          "", NULL },
+            { "character",      SEC_ADMINISTRATOR,  true,  &HandleBanAccountByCharCommand,      "", NULL },
             { "ip",             SEC_ADMINISTRATOR,  true,  &HandleBanIPCommand,                 "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };

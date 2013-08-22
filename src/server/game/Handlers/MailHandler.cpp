@@ -25,6 +25,8 @@
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "Language.h"
+#include "WordFilterMgr.h"
+#include "Chat.h"
 #include "DBCStores.h"
 #include "Item.h"
 #include "AccountMgr.h"
@@ -122,6 +124,23 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     {
         SendNotification(GetTrinityString(LANG_MAIL_SENDER_REQ), sWorld->getIntConfig(CONFIG_MAIL_LEVEL_REQ));
         return;
+    }
+
+    // check msg to bad word
+    if (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE))
+    {
+        std::string badWord = sWordFilterMgr->FindBadWord(subject, true);
+
+        if (badWord.empty())
+            badWord = sWordFilterMgr->FindBadWord(body, true);
+
+        if (!badWord.empty())
+        {
+            SendNotification(LANG_WORD_FILTER_FOUND_BAD_WORD_IN_MAIL, badWord.c_str());
+            // send packet
+            player->SendMailResult(0, MAIL_SEND, MAIL_ERR_MAIL_ATTACHMENT_INVALID);
+            return;
+        }
     }
 
     uint64 rc = 0;

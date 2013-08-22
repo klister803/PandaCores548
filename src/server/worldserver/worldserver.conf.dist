@@ -1649,6 +1649,26 @@ PreserveCustomChannelDuration = 7
 ###################################################################################################
 
 ###################################################################################################
+# WORD FILTER SETTINGS
+#
+#    WordFilter.Enable
+#        Description: Filtering players chat for bad words.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+WordFilter.Enable = 1
+
+#    WordFilter.MuteDuration
+#        Description: Mute chat for player.
+#        Default:     10000 - (10 sec)
+#                     0     - (Disabled)
+
+WordFilter.MuteDuration = 10000
+
+#
+###################################################################################################
+
+###################################################################################################
 # GAME MASTER SETTINGS
 #
 #    GM.LoginState

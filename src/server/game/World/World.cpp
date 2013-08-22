@@ -44,6 +44,7 @@
 #include "TicketMgr.h"
 #include "SpellMgr.h"
 #include "GroupMgr.h"
+#include "WordFilterMgr.h"
 #include "Chat.h"
 #include "DBCStores.h"
 #include "DB2Stores.h"
@@ -984,6 +985,9 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_CHATFLOOD_MESSAGE_DELAY] = ConfigMgr::GetIntDefault("ChatFlood.MessageDelay", 1);
     m_int_configs[CONFIG_CHATFLOOD_MUTE_TIME]     = ConfigMgr::GetIntDefault("ChatFlood.MuteTime", 10);
 
+    m_int_configs[CONFIG_WORD_FILTER_MUTE_DURATION] = ConfigMgr::GetIntDefault("WordFilter.MuteDuration", 30000);
+    m_bool_configs[CONFIG_WORD_FILTER_ENABLE]       = ConfigMgr::GetBoolDefault("WordFilter.Enable", true);
+
     m_int_configs[CONFIG_EVENT_ANNOUNCE] = ConfigMgr::GetIntDefault("Event.Announce", 0);
 
     m_float_configs[CONFIG_CREATURE_FAMILY_FLEE_ASSISTANCE_RADIUS] = ConfigMgr::GetFloatDefault("CreatureFamilyFleeAssistanceRadius", 30.0f);
@@ -1399,6 +1403,11 @@ void World::SetInitialWorldSettings()
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Localization strings loaded in %u ms", GetMSTimeDiffToNow(oldMSTime));
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Loading Letter Analogs...");
+    sWordFilterMgr->LoadLetterAnalogs();
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Loading Bad Words...");
+    sWordFilterMgr->LoadBadWords();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Page Texts...");
     sObjectMgr->LoadPageTexts();
@@ -1874,7 +1883,7 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Calculate next currency reset time...");
     InitCurrencyResetTime();
 
-    sLog->outString("Init Auto Restart time..." );
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Init Auto Restart time..." );
     InitServerAutoRestartTime();
 
     LoadCharacterNameData();
@@ -2472,14 +2481,25 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
             // make sure there is only one active ban
             stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_ACCOUNT_NOT_BANNED);
             stmt->setUInt32(0, account);
-            trans->Append(stmt);
             // No SQL injection with prepared statements
-            stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT_BANNED);
-            stmt->setUInt32(0, account);
-            stmt->setUInt32(1, duration_secs);
-            stmt->setString(2, author);
-            stmt->setString(3, reason);
-            trans->Append(stmt);
+            PreparedQueryResult banresult = LoginDatabase.Query(stmt);
+            if (banresult)
+            {
+                stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_ACCOUNT_BANNED);
+                stmt->setUInt32(0, duration_secs);
+                stmt->setUInt32(1, account);
+                trans->Append(stmt);
+            }
+            else
+            {
+                // No SQL injection with prepared statements
+                stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT_BANNED);
+                stmt->setUInt32(0, account);
+                stmt->setUInt32(1, duration_secs);
+                stmt->setString(2, author);
+                stmt->setString(3, reason);
+                trans->Append(stmt);
+            }
         }
 
         if (WorldSession* sess = FindSession(account))
@@ -3358,7 +3378,7 @@ void World::InitServerAutoRestartTime()
 
 void World::AutoRestartServer()
 {
-    sLog->outString("Automatic server restart 60s.");
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Automatic server restart 60s.");
 
     sWorld->ShutdownServ(60, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
 

@@ -18,6 +18,7 @@
 
 #include "Common.h"
 #include "Language.h"
+#include "WordFilterMgr.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "World.h"
@@ -160,7 +161,8 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
             Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_EXISTS_S, name);
             return;
         }
-        if (sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name))
+        if (sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name)  ||
+            (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(name).empty()))
         {
             Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_INVALID, name);
             return;
@@ -173,7 +175,8 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_EXISTS_S);
             return;
         }
-        if (sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name))
+        if (sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name) ||
+            (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(name).empty()))
         {
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_INVALID);
             return;
@@ -426,7 +429,8 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
             Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_EXISTS_S, newName);
             return;
         }
-        if (sObjectMgr->IsReservedName(newName) || !ObjectMgr::IsValidCharterName(newName))
+        if (sObjectMgr->IsReservedName(newName) || !ObjectMgr::IsValidCharterName(newName) ||
+            (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(newName).empty()))
         {
             Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_INVALID, newName);
             return;
@@ -439,7 +443,8 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, newName, "", ERR_ARENA_TEAM_NAME_EXISTS_S);
             return;
         }
-        if (sObjectMgr->IsReservedName(newName) || !ObjectMgr::IsValidCharterName(newName))
+        if (sObjectMgr->IsReservedName(newName) || !ObjectMgr::IsValidCharterName(newName) ||
+            (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(newName).empty()))
         {
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, newName, "", ERR_ARENA_TEAM_NAME_INVALID);
             return;

@@ -1153,6 +1153,10 @@ enum TrinityStrings
     LANG_INVALID_REALMID                = 11001,
     LANG_NPC_LIST_CHAT                  = 11002,
 
+    // Word filter
+    LANG_WORD_FILTER_FOUND_BAD_WORD_IN_CHAT = 21000,
+    LANG_WORD_FILTER_FOUND_BAD_WORD_IN_MAIL = 21001,
+
     // NOT RESERVED IDS                   12000-1999999999
     // `db_script_string` table index     2000000000-2000009999 (MIN_DB_SCRIPT_STRING_ID-MAX_DB_SCRIPT_STRING_ID)
     // For other tables maybe             2000010000-2147483647 (max index)

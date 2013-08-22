@@ -3317,6 +3317,10 @@ class Player : public Unit, public GridObject<Player>
         KillInfoMap m_killsPerPlayer;
         bool m_flushKills;
         bool m_saveKills;
+
+        //WorldFilter
+        std::string m_sentMsgCache;
+
         // Social
         PlayerSocial *m_social;
 

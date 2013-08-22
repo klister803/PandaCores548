@@ -32,6 +32,7 @@
 #include "Language.h"
 #include "GameEventMgr.h"
 #include "Spell.h"
+#include "WordFilterMgr.h"
 #include "Chat.h"
 #include "AccountMgr.h"
 #include "InstanceSaveMgr.h"
@@ -7573,6 +7574,9 @@ uint8 ObjectMgr::CheckPlayerName(const std::string& name, bool create)
 		if (wname[i] == wname[i-1] && wname[i] == wname[i-2])
 			return CHAR_NAME_THREE_CONSECUTIVE;
 
+    if(sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(name).empty())
+        return CHAR_NAME_PROFANE;
+
     return CHAR_NAME_SUCCESS;
 }
 
@@ -7610,6 +7614,9 @@ PetNameInvalidReason ObjectMgr::CheckPetName(const std::string& name)
     uint32 strictMask = sWorld->getIntConfig(CONFIG_STRICT_PET_NAMES);
     if (!isValidString(wname, strictMask, false))
         return PET_NAME_MIXED_LANGUAGES;
+
+    if(sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(name).empty())
+        return PET_NAME_PROFANE;
 
     return PET_NAME_SUCCESS;
 }

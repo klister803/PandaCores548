@@ -18,6 +18,7 @@
 
 #include "ObjectMgr.h"                                      // for normalizePlayerName
 #include "ChannelMgr.h"
+#include "WordFilterMgr.h"
 
 void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
 {
@@ -270,6 +271,15 @@ void WorldSession::HandleChannelInvite(WorldPacket& recvPacket)
 
     if (!normalizePlayerName(otp))
         return;
+
+    // check msg to bad word
+    if (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE))
+    {
+        std::string badWord = sWordFilterMgr->FindBadWord(channelname, true);
+
+        if (!badWord.empty())
+            return;
+    }
 
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
