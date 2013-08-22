@@ -791,7 +791,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     // Rage from Damage made (only from direct weapon damage)
     if (cleanDamage && damagetype == DIRECT_DAMAGE && this != victim && getPowerType() == POWER_RAGE)
     {
-        uint32 rage = /*uint32(GetAttackTime(cleanDamage->attackType) / 1000 * 8.125f)*/6;
+        uint32 rage = uint32(GetAttackTime(cleanDamage->attackType) / 1000 * 8.125f);
         switch (cleanDamage->attackType)
         {
             case OFF_ATTACK:
