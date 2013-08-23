@@ -34,16 +34,11 @@ Log::Log() : worker(NULL)
     SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
     LoadFromConfig();
-    pandashanLog = fopen("pandashan.log", "a");
 }
 
 Log::~Log()
 {
     Close();
-
-    fclose(pandashanLog);
-    delete pandashanLog;
-    pandashanLog = NULL;
 }
 
 uint8 Log::NextAppenderId()
@@ -542,23 +537,6 @@ void Log::outTimestamp(FILE* file)
     //       MM     minutes (2 digits 00-59)
     //       SS     seconds (2 digits 00-59)
     fprintf(file, "%-4d-%02d-%02d %02d:%02d:%02d ", aTm->tm_year+1900, aTm->tm_mon+1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec);
-}
-
-void Log::OutPandashan(const char* str, ...)
-{
-    if (!str)
-        return;
-
-    char result[MAX_QUERY_LEN];
-    va_list ap;
-
-    va_start(ap, str);
-    vsnprintf(result, MAX_QUERY_LEN, str, ap);
-    va_end(ap);
-
-	std::string date = GetTimestampStr();
-	fprintf(pandashanLog, "[%s] Pandashan LOG : %s\n", date.c_str(), result);
-	fflush(pandashanLog);
 }
 
 FILE* Log::openLogFile(char const* configFileName, char const* configTimeStampFlag, char const* mode)
