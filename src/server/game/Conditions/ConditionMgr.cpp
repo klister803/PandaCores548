@@ -962,7 +962,6 @@ void ConditionMgr::LoadConditions(bool isReload)
                 }
                 case CONDITION_SOURCE_TYPE_NPC_VENDOR:
                 {
-                    sLog->outDebug(LOG_FILTER_CONDITIONSYS, "CONDITION_SOURCE_TYPE_NPC_VENDOR: creature entry %u item %u", cond->SourceGroup, cond->SourceEntry);
                     NpcVendorConditionContainerStore[cond->SourceGroup][cond->SourceEntry].push_back(cond);
                     valid =  true;
                     ++count;
@@ -1481,6 +1480,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                     return false;
                 }
             }
+            break;
         case CONDITION_SOURCE_TYPE_PHASE_DEFINITION:
             if (!PhaseMgr::IsConditionTypeSupported(cond->ConditionType))
             {
