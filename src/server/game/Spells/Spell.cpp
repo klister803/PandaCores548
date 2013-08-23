@@ -4118,7 +4118,7 @@ void Spell::SendSpellStart()
     if (m_spellInfo->RuneCostID && m_spellPowerData->powerType == POWER_RUNES)
         castFlags |= CAST_FLAG_UNKNOWN_19;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_START, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
+    //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_START, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
 
     WorldPacket data(SMSG_SPELL_START, (8+8+4+4+2));
     if (m_CastItem)
@@ -4231,7 +4231,7 @@ void Spell::SendSpellGo()
     if (m_targets.HasTraj())
         castFlags |= CAST_FLAG_ADJUST_MISSILE;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_GO, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
+    //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_GO, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
 
     WorldPacket data(SMSG_SPELL_GO, 50);                    // guess size
 
