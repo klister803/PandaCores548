@@ -626,7 +626,7 @@ void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    uint32 unk;
+    uint32 oldRankId;
     uint32 rankId;
     uint32 oldRights;
     uint32 newRights;
@@ -644,12 +644,12 @@ void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
         recvPacket >> bankRights;
         recvPacket >> slots;
 
-        rightsAndSlots[tabId] = GuildBankRightsAndSlots(uint8(bankRights), slots);
+        rightsAndSlots[tabId] = GuildBankRightsAndSlots(tabId, uint8(bankRights), slots);
     }
     
     recvPacket >> newRights;
     recvPacket >> moneyPerDay;
-    recvPacket >> unk;
+    recvPacket >> oldRankId;
     uint32 nameLength = recvPacket.ReadBits(7);
     std::string rankName = recvPacket.ReadString(nameLength);
 

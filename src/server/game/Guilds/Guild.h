@@ -38,7 +38,9 @@ enum GuildMisc
     GUILD_RANK_NONE                     = 0xFF,
     GUILD_WITHDRAW_MONEY_UNLIMITED      = 0xFFFFFFFF,
     GUILD_WITHDRAW_SLOT_UNLIMITED       = 0xFFFFFFFF,
-    GUILD_EVENT_LOG_GUID_UNDEFINED      = 0xFFFFFFFF
+    GUILD_EVENT_LOG_GUID_UNDEFINED      = 0xFFFFFFFF,
+    GUILD_EXPERIENCE_UNCAPPED_LEVEL     = 20,                   ///> Hardcoded in client, starting from this level, guild daily experience gain is unlimited.
+    TAB_UNDEFINED                       = 0xFF,
 };
 
 enum GuildDefaultRanks
@@ -290,8 +292,9 @@ private:
 // Structure for storing guild bank rights and remaining slots together.
 struct GuildBankRightsAndSlots
 {
-    GuildBankRightsAndSlots() : rights(0), slots(0) { }
-    GuildBankRightsAndSlots(uint32 _rights, uint32 _slots) : rights(_rights), slots(_slots) { }
+    GuildBankRightsAndSlots() : tabId(TAB_UNDEFINED), rights(0), slots(0) { }
+    GuildBankRightsAndSlots(uint8 _tabId) : tabId(_tabId), rights(0), slots(0) { }
+    GuildBankRightsAndSlots(uint8 _tabId, uint8 _rights, uint32 _slots) : tabId(_tabId), rights(_rights), slots(_slots) { }
 
     inline bool IsEqual(GuildBankRightsAndSlots const& rhs) const { return rights == rhs.rights && slots == rhs.slots; }
     void SetGuildMasterValues()
@@ -300,6 +303,15 @@ struct GuildBankRightsAndSlots
         slots = uint32(GUILD_WITHDRAW_SLOT_UNLIMITED);
     }
 
+    void SetTabId(uint8 _tabId) { tabId = _tabId; }
+    void SetSlots(uint32 _slots) { slots = _slots; }
+    void SetRights(uint8 _rights) { rights = _rights; }
+
+    int8 GetTabId() const { return tabId; }
+    int32 GetSlots() const { return slots; }
+    int8 GetRights() const { return rights; }
+
+    uint8  tabId;
     uint32 rights;
     uint32 slots;
 };
@@ -546,7 +558,8 @@ private:
                 return m_rankId == GR_GUILDMASTER ? GUILD_WITHDRAW_SLOT_UNLIMITED : m_bankTabRightsAndSlots[tabId].slots;
             return 0;
         }
-        void SetBankTabSlotsAndRights(uint8 tabId, GuildBankRightsAndSlots rightsAndSlots, bool saveToDB);
+        void SetBankTabSlotsAndRights(GuildBankRightsAndSlots rightsAndSlots, bool saveToDB);
+        void CreateMissingTabsIfNeeded(uint8 ranks, SQLTransaction& trans, bool logOnCreate = false);
 
     private:
         uint32 m_guildId;
@@ -875,7 +888,7 @@ private:
     void _SetLeaderGUID(Member* pLeader);
 
     void _SetRankBankMoneyPerDay(uint32 rankId, uint32 moneyPerDay);
-    void _SetRankBankTabRightsAndSlots(uint32 rankId, uint8 tabId, GuildBankRightsAndSlots rightsAndSlots, bool saveToDB = true);
+    void _SetRankBankTabRightsAndSlots(uint8 rankId, GuildBankRightsAndSlots rightsAndSlots, bool saveToDB = true);
     uint32 _GetRankBankTabRights(uint32 rankId, uint8 tabId) const;
     uint32 _GetRankRights(uint32 rankId) const;
     uint32 _GetRankBankMoneyPerDay(uint32 rankId) const;

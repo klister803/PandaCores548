@@ -477,10 +477,11 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     //! Set MOVEMENTFLAG_DISABLE_GRAVITY
     //! The only time I saw Movement Flags: DisableGravity, CanFly, Flying (50332672) on the same unit
     //! it was a vehicle
-    if (cInfo->InhabitType & INHABIT_AIR && cInfo->InhabitType & INHABIT_GROUND)
+    if (cInfo->InhabitType & INHABIT_AIR)
+    {
         SetCanFly(true);
-    else if (cInfo->InhabitType & INHABIT_AIR)
         SetDisableGravity(true);
+    }
     /*! Implemented in LoadCreatureAddon. Suspect there's a rule for UNIT_BYTE_1_FLAG_HOVER
         in relation to DisableGravity also.
 
