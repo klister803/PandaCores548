@@ -38,8 +38,6 @@ enum eEnums
     SAY_DEATH_3                 = -1999918,
 };
 
-bool bRun;
-
 class Loskutik : public CreatureScript
 {
     public:
@@ -59,30 +57,20 @@ class Loskutik : public CreatureScript
                 DoScriptText(SAY_AGGRO2, me);
                 if(me->getVictim())
                     me->AttackerStateUpdate(me->getVictim());
-                bRun = true;
             }
 
             void Reset()
             {
-                bRun = true;
-            }
-
-
-            void KilledUnit(Unit* victim)
-            {
-                bRun = false;
             }
 
             void EnterEvadeMode()
             {
-                bRun = false;
                 me->DespawnOrUnsummon();
             }
 
             void JustDied(Unit* pKiller)
             {
                 DoScriptText(SAY_DEATH_3, me);
-                bRun = false;
                 me->DespawnOrUnsummon();
             }
 
@@ -112,7 +100,6 @@ class Loskutik_Start : public CreatureScript
 
             void Reset()
             {
-                bRun = false;
             }
 
             void JustDied(Unit* /*who*/)
@@ -128,8 +115,10 @@ class Loskutik_Start : public CreatureScript
     {
         player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
         player->PrepareGossipMenu(creature, 0);
-        
-        if( player->getClass() == CLASS_DEATH_KNIGHT && !bRun)
+        if (Creature* e = me->FindNearestCreature(31099, 60.0f))
+            return true;
+
+        if( player->getClass() == CLASS_DEATH_KNIGHT)
         {
             player->ADD_GOSSIP_ITEM(0, "Start event Patchwerk!", GOSSIP_SENDER_MAIN, START);
         }
@@ -149,7 +138,6 @@ class Loskutik_Start : public CreatureScript
             case START:
                 player->CLOSE_GOSSIP_MENU();
                 creature->SummonCreature(31099, 2460.29f, -5593.26f, 414.122f, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 20000);
-                bRun = true;
                 break;
             default:
                 return false;                                   // nothing defined      -> trinity core handling
