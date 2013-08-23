@@ -31,6 +31,7 @@
 
 Log::Log() : worker(NULL)
 {
+    arenaLogFile = NULL;
     SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
     LoadFromConfig();
