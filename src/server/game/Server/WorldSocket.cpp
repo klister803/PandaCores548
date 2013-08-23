@@ -1197,6 +1197,8 @@ int WorldSocket::HandlePing (WorldPacket& recvPacket)
     recvPacket >> latency;
     recvPacket >> ping;
 
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSocket::HandlePing: latency %u ping %u", latency, ping);
+
     if (m_LastPingTime == ACE_Time_Value::zero)
         m_LastPingTime = ACE_OS::gettimeofday(); // for 1st ping
     else

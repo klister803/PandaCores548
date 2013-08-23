@@ -2479,9 +2479,8 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
         if (mode != BAN_IP)
         {
             // make sure there is only one active ban
-            stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_ACCOUNT_NOT_BANNED);
+            stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BANNED);
             stmt->setUInt32(0, account);
-            // No SQL injection with prepared statements
             PreparedQueryResult banresult = LoginDatabase.Query(stmt);
             if (banresult)
             {
