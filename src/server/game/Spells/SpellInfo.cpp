@@ -3099,7 +3099,7 @@ bool SpellInfo::GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry 
             return true;
         }
 
-    if (spellPower[0].Id && spellPower[0].powerType > POWER_RUNIC_POWER)
+    if (spellPower[0].Id && spellPower[0].powerType >= POWER_RUNIC_POWER)
     {
         power.Id = spellPower[0].Id;
         power.manaCost = spellPower[0].manaCost;
