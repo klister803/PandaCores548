@@ -284,6 +284,31 @@ void Guild::RankInfo::SaveToDB(SQLTransaction& trans) const
     CharacterDatabase.ExecuteOrAppend(trans, stmt);
 }
 
+void Guild::RankInfo::CreateMissingTabsIfNeeded(uint8 tabs, SQLTransaction& trans, bool logOnCreate /* = false */)
+{
+    for (uint8 i = 0; i < tabs; ++i)
+    {
+        GuildBankRightsAndSlots& rightsAndSlots = m_bankTabRightsAndSlots[i];
+        if (rightsAndSlots.GetTabId() == i)
+            continue;
+
+        rightsAndSlots.SetTabId(i);
+        if (m_rankId == GR_GUILDMASTER)
+            rightsAndSlots.SetGuildMasterValues();
+
+        if (logOnCreate)
+            sLog->outError(LOG_FILTER_GUILD, "Guild %u has broken Tab %u for rank %u. Created default tab.", m_guildId, i, m_rankId);
+
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GUILD_BANK_RIGHT);
+        stmt->setUInt32(0, m_guildId);
+        stmt->setUInt8(1, i);
+        stmt->setUInt8(2, m_rankId);
+        stmt->setUInt8(3, rightsAndSlots.GetRights());
+        stmt->setUInt32(4, rightsAndSlots.GetSlots());
+        trans->Append(stmt);
+    }
+}
+
 void Guild::RankInfo::UpdateId(uint32 newId)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -365,15 +390,13 @@ void Guild::RankInfo::SetBankMoneyPerDay(uint32 money)
     CharacterDatabase.Execute(stmt);
 }
 
-void Guild::RankInfo::SetBankTabSlotsAndRights(uint8 tabId, GuildBankRightsAndSlots rightsAndSlots, bool saveToDB)
+void Guild::RankInfo::SetBankTabSlotsAndRights(GuildBankRightsAndSlots rightsAndSlots, bool saveToDB)
 {
     if (m_rankId == GR_GUILDMASTER)                     // Prevent loss of leader rights
         rightsAndSlots.SetGuildMasterValues();
 
-    if (m_bankTabRightsAndSlots[tabId].IsEqual(rightsAndSlots))
-        return;
-
-    m_bankTabRightsAndSlots[tabId] = rightsAndSlots;
+    GuildBankRightsAndSlots& guildBR = m_bankTabRightsAndSlots[rightsAndSlots.GetTabId()];
+    guildBR = rightsAndSlots;
 
     if (saveToDB)
     {
@@ -381,19 +404,19 @@ void Guild::RankInfo::SetBankTabSlotsAndRights(uint8 tabId, GuildBankRightsAndSl
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_BANK_RIGHT);
         stmt->setUInt32(0, m_guildId);
-        stmt->setUInt8 (1, tabId);
+        stmt->setUInt8 (1, guildBR.GetTabId());
         stmt->setUInt8 (2, m_rankId);
         CharacterDatabase.Execute(stmt);
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GUILD_BANK_RIGHT);
         stmt->setUInt32(0, m_guildId);
-        stmt->setUInt8 (1, tabId);
+        stmt->setUInt8 (1, guildBR.GetTabId());
         stmt->setUInt8 (2, m_rankId);
-        stmt->setUInt8 (3, m_bankTabRightsAndSlots[tabId].rights);
-        stmt->setUInt32(4, m_bankTabRightsAndSlots[tabId].slots);
+        stmt->setUInt8 (3, guildBR.GetRights());
+        stmt->setUInt32(4, guildBR.GetSlots());
         CharacterDatabase.Execute(stmt);
 
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_RANK_BANK_TIME0 + tabId);
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_RANK_BANK_TIME0 + guildBR.GetTabId());
         stmt->setUInt32(0, m_guildId);
         stmt->setUInt8 (1, m_rankId);
         CharacterDatabase.Execute(stmt);
@@ -1551,9 +1574,8 @@ void Guild::HandleSetRankInfo(WorldSession* session, uint32 rankId, const std::s
         rankInfo->SetRights(rights);
         _SetRankBankMoneyPerDay(rankId, moneyPerDay);
 
-        uint8 tabId = 0;
         for (GuildBankRightsAndSlotsVec::const_iterator itr = rightsAndSlots.begin(); itr != rightsAndSlots.end(); ++itr)
-            _SetRankBankTabRightsAndSlots(rankId, tabId++, *itr);
+            _SetRankBankTabRightsAndSlots(rankId, *itr);
 
         HandleQuery(session);
         HandleRoster();                                     // Broadcast for tab rights update
@@ -1562,6 +1584,14 @@ void Guild::HandleSetRankInfo(WorldSession* session, uint32 rankId, const std::s
 
 void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
 {
+    Player* player = session->GetPlayer();
+    if (!player)
+        return;
+
+    Member const* member = GetMember(player->GetGUID());
+    if (!member)
+        return;
+
     if (tabId != GetPurchasedTabsSize())
         return;
 
@@ -1569,7 +1599,6 @@ void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
     if (!tabCost)
         return;
 
-    Player* player = session->GetPlayer();
     if (!player->HasEnoughMoney(uint64(tabCost)))                   // Should not happen, this is checked by client
         return;
 
@@ -1577,8 +1606,6 @@ void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
         return;
 
     player->ModifyMoney(-int64(tabCost));
-    _SetRankBankMoneyPerDay(player->GetRank(), uint32(GUILD_WITHDRAW_MONEY_UNLIMITED));
-    _SetRankBankTabRightsAndSlots(player->GetRank(), tabId, GuildBankRightsAndSlots(GUILD_BANK_RIGHT_FULL, uint32(GUILD_WITHDRAW_SLOT_UNLIMITED)));
     HandleRoster();                                         // Broadcast for tab rights update
     SendBankList(session, tabId, false, true);
     HandleGuildRanks(session);
@@ -1593,8 +1620,6 @@ void Guild::HandleSpellEffectBuyBankTab(WorldSession* session, uint8 tabId)
     if (!_CreateNewBankTab())
         return;
 
-    _SetRankBankMoneyPerDay(player->GetRank(), uint32(GUILD_WITHDRAW_MONEY_UNLIMITED));
-    _SetRankBankTabRightsAndSlots(player->GetRank(), tabId, GuildBankRightsAndSlots(GUILD_BANK_RIGHT_FULL, uint32(GUILD_WITHDRAW_SLOT_UNLIMITED)));
     HandleRoster();                                         // Broadcast for tab rights update
     SendBankList(session, tabId, false, true);
     HandleGuildRanks(session);
@@ -2244,7 +2269,7 @@ void Guild::SendPermissions(WorldSession* session) const
     data << uint32(GetPurchasedTabsSize());
     data << uint32(rankId);
     /*data << uint32(rankId);
-    data << uint32(_GetPurchasedTabsSize());
+    data << uint32(GetPurchasedTabsSize());
     data << uint32(_GetRankRights(rankId));
     data << uint32(_GetMemberRemainingMoney(guid));*/
     data.WriteBits(GUILD_BANK_MAX_TABS, 23);
@@ -2379,10 +2404,10 @@ bool Guild::LoadMemberFromDB(Field* fields)
 
 void Guild::LoadBankRightFromDB(Field* fields)
 {
-                                           // rights             slots
-    GuildBankRightsAndSlots rightsAndSlots(fields[3].GetUInt8(), fields[4].GetUInt32());
+                                           // tabId              rights                slots
+    GuildBankRightsAndSlots rightsAndSlots(fields[1].GetUInt8(), fields[3].GetUInt8(), fields[4].GetUInt32());
                                   // rankId             tabId
-    _SetRankBankTabRightsAndSlots(fields[2].GetUInt8(), fields[1].GetUInt8(), rightsAndSlots, false);
+    _SetRankBankTabRightsAndSlots(fields[2].GetUInt8(), rightsAndSlots, false);
 }
 
 bool Guild::LoadEventLogFromDB(Field* fields)
@@ -2488,6 +2513,12 @@ bool Guild::Validate()
             {
                 sLog->outError(LOG_FILTER_GUILD, "Guild %u has broken rank id %u, creating default set of ranks...", m_id, rankId);
                 broken_ranks = true;
+            }
+            else
+            {
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                rankInfo->CreateMissingTabsIfNeeded(GetPurchasedTabsSize(), trans, true);
+                CharacterDatabase.CommitTransaction(trans);
             }
         }
     }
@@ -2808,6 +2839,10 @@ bool Guild::_CreateNewBankTab()
     stmt->setUInt8 (1, tabId);
     trans->Append(stmt);
 
+    ++tabId;
+    for (Ranks::iterator itr = m_ranks.begin(); itr != m_ranks.end(); ++itr)
+        (*itr).CreateMissingTabsIfNeeded(tabId, trans, false);
+
     CharacterDatabase.CommitTransaction(trans);
     return true;
 }
@@ -2843,15 +2878,7 @@ void Guild::_CreateRank(const std::string& name, uint32 rights)
     m_ranks.push_back(info);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    for (uint8 i = 0; i < GetPurchasedTabsSize(); ++i)
-    {
-        // Create bank rights with default values
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GUILD_BANK_RIGHT_DEFAULT);
-        stmt->setUInt32(0, m_id);
-        stmt->setUInt8 (1, i);
-        stmt->setUInt8 (2, newRankId);
-        trans->Append(stmt);
-    }
+    info.CreateMissingTabsIfNeeded(GetPurchasedTabsSize(), trans);
     info.SaveToDB(trans);
     CharacterDatabase.CommitTransaction(trans);
 }
@@ -2936,9 +2963,9 @@ void Guild::_SetRankBankMoneyPerDay(uint32 rankId, uint32 moneyPerDay)
     }
 }
 
-void Guild::_SetRankBankTabRightsAndSlots(uint32 rankId, uint8 tabId, GuildBankRightsAndSlots rightsAndSlots, bool saveToDB)
+void Guild::_SetRankBankTabRightsAndSlots(uint8 rankId, GuildBankRightsAndSlots rightsAndSlots, bool saveToDB)
 {
-    if (tabId >= GetPurchasedTabsSize())
+    if (rightsAndSlots.GetTabId() >= GetPurchasedTabsSize())
         return;
 
     if (RankInfo* rankInfo = GetRankInfo(rankId))
@@ -2947,7 +2974,7 @@ void Guild::_SetRankBankTabRightsAndSlots(uint32 rankId, uint8 tabId, GuildBankR
             if (itr->second->IsRank(rankId))
                 itr->second->ResetTabTimes();
 
-        rankInfo->SetBankTabSlotsAndRights(tabId, rightsAndSlots, saveToDB);
+        rankInfo->SetBankTabSlotsAndRights(rightsAndSlots, saveToDB);
     }
 }
 

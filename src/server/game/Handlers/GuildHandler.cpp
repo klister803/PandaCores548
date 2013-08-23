@@ -644,7 +644,7 @@ void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
         recvPacket >> bankRights;
         recvPacket >> slots;
 
-        rightsAndSlots[tabId] = GuildBankRightsAndSlots(uint8(bankRights), slots);
+        rightsAndSlots[tabId] = GuildBankRightsAndSlots(tabId, uint8(bankRights), slots);
     }
     
     recvPacket >> newRights;
