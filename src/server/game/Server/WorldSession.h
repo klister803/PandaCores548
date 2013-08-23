@@ -158,10 +158,11 @@ enum DB2Types
 {
     DB2_REPLY_SPARSE                          = 0x919BE54E,         // hash of item-sparse.db2
     DB2_REPLY_ITEM                            = 0x50238EC2,         // hash of item.db2
-    DB2_REPLY_SCENE_SCRIPT                    = 0xD4B163CC,         // hash of ScreneScript.db2
-    DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES    = 0x63B4C4BA,         // hash of BattlePetEffectProperties.db2
+    DB2_REPLY_SCENE_SCRIPT                    = 0xD4B163CC,         // hash of ScreneScript.db2 unhandler
+    DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES    = 0x63B4C4BA,         // hash of BattlePetEffectProperties.db2 unhandler
     DB2_REPLY_BROADCAST_TEXT                  = 0x21826BB,          // hash of BroadcastText.db2
     DB2_REPLY_ITEM_EXTENDED_COST              = 0xBB858355,         // hash of ItemExtendedCost.db2
+    DB2_REPLY_UNKNOWN                         = 0x6C93F9B1,         // hash of unk
 };
 
 //class to deal with packet processing
