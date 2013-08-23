@@ -401,7 +401,7 @@ public:
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;
-    SpellPowerEntry* spellPower;
+    SpellPowerEntry spellPower[MAX_POWERS_FOR_SPELL];
 
     // SpecializationSpellEntry
     std::list<uint32> SpecializationIdList;
@@ -509,7 +509,7 @@ public:
     uint32 CalcCastTime(Unit* caster = NULL, Spell* spell = NULL) const;
     uint32 GetRecoveryTime() const;
 
-    uint32 CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, SpellPowerEntry const* spellPower) const;
+    uint32 CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) const;
 
     bool IsRanked() const;
     uint8 GetRank() const;
@@ -544,6 +544,13 @@ public:
     // unloading helpers
     void _UnloadImplicitTargetConditionLists();
     bool IsSealSpell() const;
+
+    bool AddPowerData(SpellPowerEntry const * power);
+    bool IsPowerActive(uint8 powerIndex) const;
+    SpellPowerEntry const GetPowerInfo(uint8 powerIndex) const;
+    bool GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry& power) const;
+    bool HasPower(Powers power) const;
+    bool NoPower() const;
 };
 
 #endif // _SPELLINFO_H

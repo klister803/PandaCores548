@@ -2989,14 +2989,10 @@ void SpellMgr::LoadSpellInfoStore()
         }
     }
 
-    std::set<uint32> alreadySet;
     for (uint32 i = 0; i < sSpellPowerStore.GetNumRows(); i++)
     {
         SpellPowerEntry const* spellPower = sSpellPowerStore.LookupEntry(i);
         if (!spellPower)
-            continue;
-
-        if(alreadySet.find(spellPower->SpellId) != alreadySet.end())
             continue;
 
         for (int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
@@ -3010,13 +3006,9 @@ void SpellMgr::LoadSpellInfoStore()
             spell->ManaPerSecond = spellPower->manaPerSecond;
             spell->PowerType = spellPower->powerType;
 
-            spell->spellPower->manaCost = spellPower->manaCost;
-            spell->spellPower->ManaCostPercentage = spellPower->ManaCostPercentage;
-            spell->spellPower->manaPerSecond = spellPower->manaPerSecond;
-            spell->spellPower->powerType = spellPower->powerType;
+            if (!spell->AddPowerData(spellPower))
+                sLog->outInfo(LOG_FILTER_WORLDSERVER, "Spell - %u has more powers than two.", spell->Id);
         }
-
-        alreadySet.insert(spellPower->SpellId);
     }
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)

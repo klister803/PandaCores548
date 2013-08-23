@@ -1823,6 +1823,7 @@ struct SpellEffectScalingEntry
 #define MAX_SPELL_EFFECTS 32
 #define MAX_EFFECT_MASK 4294967295
 #define MAX_SPELL_REAGENTS 8
+#define MAX_POWERS_FOR_SPELL 2
 
 // SpellAuraOptions.dbc
 struct SpellAuraOptionsEntry
