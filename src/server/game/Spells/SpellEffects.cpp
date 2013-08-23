@@ -2103,7 +2103,7 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             return;
         }
 
-        Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
+        Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]);
         if (aura != NULL)
         {
             m_spellAura = aura;
@@ -6613,7 +6613,7 @@ void Spell::EffectCastButtons(SpellEffIndex effIndex)
         if (!(spellInfo->AttributesEx7 & SPELL_ATTR7_SUMMON_TOTEM))
             continue;
 
-        int32 cost = spellInfo->CalcPowerCost(m_caster, spellInfo->GetSchoolMask(), m_spellPowerData);
+        int32 cost = spellInfo->CalcPowerCost(m_caster, spellInfo->GetSchoolMask());
         if (m_caster->GetPower(POWER_MANA) < cost)
             continue;
 
@@ -6783,7 +6783,7 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
             return;
         }
 
-        Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
+        Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]);
         if (aura != NULL)
         {
             m_spellAura = aura;
