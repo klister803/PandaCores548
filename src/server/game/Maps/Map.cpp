@@ -1822,8 +1822,8 @@ void Map::GetZoneAndAreaIdByAreaFlag(uint32& zoneid, uint32& areaid, uint16 area
 
 bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const
 {
-    return VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(GetId(), x1, y1, z1, x2, y2, z2)
-        && _dynamicTree.isInLineOfSight(x1, y1, z1, x2, y2, z2, phasemask);
+    return VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(GetId(), x1, y1, z1, x2, y2, z2);
+        //&& _dynamicTree.isInLineOfSight(x1, y1, z1, x2, y2, z2, phasemask);
 }
 
 bool Map::getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist)
