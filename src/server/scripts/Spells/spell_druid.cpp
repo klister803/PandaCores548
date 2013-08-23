@@ -493,6 +493,34 @@ class spell_dru_shattering_blow : public SpellScriptLoader
         }
 };
 
+class spell_dru_incarnation : public SpellScriptLoader
+{
+    public:
+        spell_dru_incarnation() : SpellScriptLoader("spell_dru_incarnation") { }
+
+        class spell_dru_incarnation_aura_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_incarnation_aura_AuraScript);
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+            {
+                if (Unit* unit = GetUnitOwner())
+                    unit->RemoveAurasDueToSpell(33891);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_incarnation_aura_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_incarnation_aura_AuraScript();
+        }
+};
+
+
 // Symbiosis - 110309
 class spell_dru_symbiosis : public SpellScriptLoader
 {
@@ -2970,4 +2998,5 @@ void AddSC_druid_spell_scripts()
     new spell_dru_savage_roar();
     new spell_dru_survival_instincts();
     new spell_druid_rejuvenation();
+    new spell_dru_incarnation();
 }
