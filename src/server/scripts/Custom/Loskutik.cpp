@@ -115,7 +115,7 @@ class Loskutik_Start : public CreatureScript
     {
         player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
         player->PrepareGossipMenu(creature, 0);
-        if (Creature* e = me->FindNearestCreature(31099, 60.0f))
+        if (Creature* e = creature->FindNearestCreature(31099, 60.0f))
             return true;
 
         if( player->getClass() == CLASS_DEATH_KNIGHT)
