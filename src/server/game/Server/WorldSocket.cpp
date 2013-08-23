@@ -1192,12 +1192,14 @@ int WorldSocket::HandlePing (WorldPacket& recvPacket)
 {
     uint32 ping;
     uint32 latency;
+    uint32 unk;
 
     // Get the ping packet content
     recvPacket >> latency;
     recvPacket >> ping;
+    recvPacket >> unk;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSocket::HandlePing: latency %u ping %u", latency, ping);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSocket::HandlePing: latency %u ping %u, unk %u", latency, ping, );
 
     if (m_LastPingTime == ACE_Time_Value::zero)
         m_LastPingTime = ACE_OS::gettimeofday(); // for 1st ping
