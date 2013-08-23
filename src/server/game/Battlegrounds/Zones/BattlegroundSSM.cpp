@@ -229,7 +229,7 @@ void BattlegroundSSM::CheckSomeoneJoinedPoint()
                 Player* player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[SSM_POINTS_MAX][j]);
                 if (!player)
                 {
-                    sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundSSM:CheckSomeoneJoinedPoint: Player (GUID: %u) not found!", GUID_LOPART(m_PlayersNearPoint[SSM_POINTS_MAX][j]));
+                    //sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundSSM:CheckSomeoneJoinedPoint: Player (GUID: %u) not found!", GUID_LOPART(m_PlayersNearPoint[SSM_POINTS_MAX][j]));
                     ++j;
                     continue;
                 }

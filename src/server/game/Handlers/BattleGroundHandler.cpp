@@ -411,7 +411,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     {
         if (!bgQueue.GetPlayerGroupInfoData(_player->GetGUID(), &ginfo))
         {
-            sLog->outError(LOG_FILTER_NETWORKIO, "BattlegroundHandler: itrplayerstatus not found.");
+            //sLog->outError(LOG_FILTER_NETWORKIO, "BattlegroundHandler: itrplayerstatus not found.");
             return;
         }
     }

@@ -2095,13 +2095,13 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
             case DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES:
             case DB2_REPLY_SCENE_SCRIPT:
             {
-                sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unhandled hotfix type: %u", type);
+                sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unhandled hotfix type: %u, entry %u", type, entry);
                 needBreak = true;
                 break;
             }
             default:
             {
-                sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
+                sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u, entry %u", type, entry);
                 needBreak = true;
                 break;
             }
