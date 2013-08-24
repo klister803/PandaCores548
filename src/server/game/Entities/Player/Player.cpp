@@ -21845,7 +21845,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
                         val += (*itr)->value/100;
 
                 if (mod->value)
-                    val += apply ? float(mod->value)/100 : 1 / (float((mod->value))/100);
+                    val += apply ? float(mod->value)/100 : -(float(mod->value)/100);
 
                 data << uint8(eff);
                 data << float(val);
