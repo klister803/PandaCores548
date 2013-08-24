@@ -254,6 +254,23 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();
+
+    if(Unit* mover = _player->m_mover)
+    {
+        WorldPacket data(SMSG_MOVE_UPDATE);
+        mover->m_movementInfo.time = getMSTime();
+        mover->m_movementInfo.pos.m_positionX = mover->GetPositionX();
+        mover->m_movementInfo.pos.m_positionY = mover->GetPositionY();
+        mover->m_movementInfo.pos.m_positionZ = mover->GetPositionZ();
+        WorldSession::WriteMovementInfo(data, &mover->m_movementInfo);
+        mover->SendMessageToSet(&data, _player);
+        /*mover->DestroyForNearbyPlayers();
+        sLog->outError(LOG_FILTER_NETWORKIO, "Info move %s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] | Player (xyzo): %f, %f, %fo(%f) | mover (xyzo): %f, %f, %fo(%f)",
+        _player->GetName(), _player->m_movementInfo.time, _player->m_movementInfo.fallTime, _player->m_movementInfo.pos.GetPositionX(), _player->m_movementInfo.pos.GetPositionY(), _player->m_movementInfo.pos.GetPositionZ(), _player->m_movementInfo.pos.GetOrientation(),
+        _player->m_movementInfo.flags, _player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(), _player->GetOrientation(),
+        mover->GetPositionX(), mover->GetPositionY(), mover->GetPositionZ(), mover->GetOrientation());
+        mover->UpdateObjectVisibility();*/
+    }
 }
 
 void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
