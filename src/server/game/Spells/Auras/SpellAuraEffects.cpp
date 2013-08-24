@@ -1433,11 +1433,14 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     //uint32 spellId3     = 0;
     uint32 HotWSpellId  = 0;
 
+    std::list<uint32> actionBarReplaceAuras;
+
     switch (GetMiscValue())
     {
         case FORM_CAT:
             spellId = 3025;
             HotWSpellId = 24900;
+            actionBarReplaceAuras.push_back(48629);
             break;
         case FORM_TREE:
             spellId = 106731;
@@ -1450,8 +1453,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             break;
         case FORM_BEAR:
             spellId = 1178;
-            spellId2 = 21178;
             HotWSpellId = 24899;
+            actionBarReplaceAuras.push_back(21178);
+            actionBarReplaceAuras.push_back(106829);
             break;
         case FORM_BATTLESTANCE:
             spellId = 21156;
@@ -1501,6 +1505,13 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 
     if (apply)
     {
+        for (std::list<uint32>::iterator itr = actionBarReplaceAuras.begin(); itr != actionBarReplaceAuras.end(); ++itr)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->RemoveAurasDueToSpell(*itr);
+            target->CastSpell(target, *itr, true, NULL, this);
+        }
+
         // Remove cooldown of spells triggered on stance change - they may share cooldown with stance spell
         if (spellId)
         {
@@ -1626,6 +1637,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     }
     else
     {
+        for (std::list<uint32>::iterator itr = actionBarReplaceAuras.begin(); itr != actionBarReplaceAuras.end(); ++itr)
+            target->RemoveAurasDueToSpell(*itr);
+
         if (spellId)
             target->RemoveAurasDueToSpell(spellId);
         if (spellId2)
