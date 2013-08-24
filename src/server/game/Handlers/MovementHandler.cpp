@@ -128,7 +128,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     _player->m_movementInfo.pos.m_positionY = loc.m_positionY;
     _player->m_movementInfo.pos.m_positionZ = loc.m_positionZ;
     WorldSession::WriteMovementInfo(data, &_player->m_movementInfo);
-    _player->GetSession()->SendPacket(&data);
+    //_player->GetSession()->SendPacket(&data);
+    _player->SendMessageToSet(&data, _player);
 
     // flight fast teleport case
     if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
