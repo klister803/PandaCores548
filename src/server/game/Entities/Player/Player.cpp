@@ -2699,8 +2699,6 @@ void Player::ProcessDelayedOperations()
 
     //we have executed ALL delayed ops, so clear the flag
     m_DelayedOperations = 0;
-    DestroyForNearbyPlayers();
-    UpdateObjectVisibility();
 }
 
 void Player::AddToWorld()
