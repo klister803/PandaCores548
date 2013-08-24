@@ -128,8 +128,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     _player->m_movementInfo.pos.m_positionY = loc.m_positionY;
     _player->m_movementInfo.pos.m_positionZ = loc.m_positionZ;
     WorldSession::WriteMovementInfo(data, &_player->m_movementInfo);
-    //_player->GetSession()->SendPacket(&data);
-    _player->SendMessageToSet(&data, _player);
+    _player->GetSession()->SendPacket(&data);
 
     // flight fast teleport case
     if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
@@ -255,6 +254,13 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();
+
+    if(Unit* mover = _player->m_mover)
+    {
+        WorldPacket data(SMSG_MOVE_UPDATE);
+        WorldSession::WriteMovementInfo(data, &_player->m_movementInfo);
+        mover->SendMessageToSet(&data, _player);
+    }
 }
 
 void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
