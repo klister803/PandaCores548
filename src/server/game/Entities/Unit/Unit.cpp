@@ -19308,6 +19308,7 @@ void Unit::SetCanFly(bool apply)
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
     DisableSpline();
+    DestroyForNearbyPlayers();
     if (GetTypeId() == TYPEID_PLAYER)
         ToPlayer()->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
@@ -19315,6 +19316,7 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         UpdatePosition(x, y, z, orientation, true);
         SendMovementFlagUpdate();
     }
+    UpdateObjectVisibility();
 }
 
 bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)

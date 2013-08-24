@@ -753,13 +753,13 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
     // everything's fine, do it
     roll = urand(minimum, maximum);
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "ROLL: MIN: %u, MAX: %u, ROLL: %u", minimum, maximum, roll);
+    //sLog->outDebug(LOG_FILTER_NETWORKIO, "ROLL: MIN: %u, MAX: %u, ROLL: %u", minimum, maximum, roll);
 
     WorldPacket data(SMSG_RANDOM_ROLL, 4+4+4+8);
     ObjectGuid guid = GetPlayer()->GetGUID();
-    data << uint32(roll);
-    data << uint32(minimum);
     data << uint32(maximum);
+    data << uint32(minimum);
+    data << uint32(roll);
 
     data.WriteBit(guid[0]);
     data.WriteBit(guid[3]);
