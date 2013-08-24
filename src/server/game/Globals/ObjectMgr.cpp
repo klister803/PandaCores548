@@ -5709,8 +5709,7 @@ void ObjectMgr::LoadGraveyardZones()
             continue;
         }
 
-        if (areaEntry->zone != 0 && zoneId != 33 && zoneId != 5287 && zoneId != 6170 && zoneId != 6176 && zoneId != 6450 && zoneId != 6451
-                             && zoneId != 6452 && zoneId != 6453 && zoneId != 6454 && zoneId != 6455 && zoneId != 6456 && zoneId != 6450) 
+        if (areaEntry->zone != 0)
         {
             sLog->outError(LOG_FILTER_SQL, "Table `game_graveyard_zone` has a record for subzone id (%u) instead of zone, skipped.", zoneId);
             continue;
@@ -5773,7 +5772,7 @@ WorldSafeLocsEntry const* ObjectMgr::GetClosestGraveYard(float x, float y, float
     if (graveLow == graveUp && !map->IsBattleArena())
     {
         sLog->outError(LOG_FILTER_SQL, "Table `game_graveyard_zone` incomplete: Zone %u Team %u does not have a linked graveyard.", zoneId, team);
-        return GetDefaultGraveYard(team);
+        return NULL;
     }
 
     // at corpse map
