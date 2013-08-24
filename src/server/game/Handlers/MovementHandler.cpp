@@ -257,6 +257,8 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 
     if(Unit* mover = _player->m_mover)
     {
+        DestroyForNearbyPlayers();
+        UpdateObjectVisibility();
         WorldPacket data(SMSG_MOVE_UPDATE);
         WorldSession::WriteMovementInfo(data, &_player->m_movementInfo);
         mover->SendMessageToSet(&data, _player);
