@@ -6193,8 +6193,8 @@ void Player::RepopAtGraveyard()
             GetSession()->SendPacket(&data);
         }
     }
-    else if (GetPositionZ() < zone->MaxDepth)
-        TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+    //else if (GetPositionZ() < zone->MaxDepth)
+        //TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
 }
 
 bool Player::CanJoinConstantChannelInZone(ChatChannelsEntry const* channel, AreaTableEntry const* zone)
