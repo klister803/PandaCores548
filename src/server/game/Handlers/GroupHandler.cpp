@@ -742,7 +742,7 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
     recvData >> minimum;
     recvData >> unk;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_RANDOM_ROLL min: %u max: %u unk: %u",
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RANDOM_ROLL min: %u max: %u unk: %u",
         minimum, maximum, unk);
 
     /** error handling **/
