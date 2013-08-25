@@ -16864,7 +16864,7 @@ bool Player::SatisfyQuestPrevChain(Quest const* qInfo, bool msg)
     return true;
 }
 
-bool Player::SatisfyQuestDay(Quest const* qInfo, bool /*msg*/)
+bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
 {
     if (!qInfo->IsDaily() && !qInfo->IsDFQuest())
         return true;
@@ -16877,7 +16877,10 @@ bool Player::SatisfyQuestDay(Quest const* qInfo, bool /*msg*/)
         return true;
     }
 
-    return m_dailyquests.find(qInfo->GetQuestId()) == m_dailyquests.end();
+    bool res = m_dailyquests.find(qInfo->GetQuestId()) == m_dailyquests.end();
+    if (!res && msg)
+        SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUEST_COMPLETED_TODAY);
+    return res;
 }
 
 bool Player::SatisfyQuestWeek(Quest const* qInfo, bool /*msg*/)
