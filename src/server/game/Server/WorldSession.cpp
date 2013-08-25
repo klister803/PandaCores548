@@ -534,6 +534,8 @@ void WorldSession::LogoutPlayer(bool Save)
             }
         }
 
+        sRBGQueue->RemovePlayer(_player->GetGUID());
+
         // Repop at GraveYard or other player far teleport will prevent saving player because of not present map
         // Teleport player immediately for correct player save
         while (_player->IsBeingTeleportedFar())

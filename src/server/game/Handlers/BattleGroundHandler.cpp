@@ -415,8 +415,8 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
             return;
         }
     }
-    else
-        sRBGQueue->GetQueueInfoByPlayer(_player->GetGUID(), &ginfo);
+    else if (!sRBGQueue->GetQueueInfoByPlayer(_player->GetGUID(), &ginfo))
+        return;
 
     // if action == 1, then instanceId is required
     if (!ginfo.IsInvitedToBGInstanceGUID && action == 1)
