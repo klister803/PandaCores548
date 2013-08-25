@@ -1241,8 +1241,6 @@ void Guardian::UpdateArmor()
 
 void Guardian::UpdateMaxHealth()
 {
-    if (GetOwner() && GetOwner()->ToPlayer())
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Update max health");
     UnitMods unitMod = UNIT_MOD_HEALTH;
     float stamina = GetStat(STAT_STAMINA) - GetCreateStat(STAT_STAMINA);
 
