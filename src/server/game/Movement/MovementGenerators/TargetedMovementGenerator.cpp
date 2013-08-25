@@ -59,10 +59,29 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     }
     else
     {
-        if (i_target->IsWithinDistInMap(&owner, i_offset + 1.0f))
-            return;
-        // to at i_offset distance from target and i_angle from target facing
-        i_target->GetClosePoint(x, y, z, owner.GetObjectSize(), i_offset, i_angle);
+        bool isPet = false;
+        if (Unit* unit = owner.ToUnit())
+            isPet = unit->isPet();
+
+        if (isPet)
+        {
+            bool targetMoving = false;
+            if (i_target.getTarget() && i_target.getTarget()->ToUnit())
+                targetMoving = i_target.getTarget()->isMoving();
+
+            if (i_target->IsWithinDistInMap(&owner, targetMoving ? i_offset : i_offset + 1.f))
+                return;
+
+            // to at i_offset distance from target and i_angle from target facing
+            i_target->GetClosePoint(x, y, z, owner.GetObjectSize(), targetMoving ? i_offset + 1.f : i_offset, targetMoving ? M_PI/8 : i_angle);
+        }
+        else
+        {
+            if (i_target->IsWithinDistInMap(&owner, i_offset + 1.0f))
+                return;
+            // to at i_offset distance from target and i_angle from target facing
+            i_target->GetClosePoint(x, y, z, owner.GetObjectSize(), i_offset, i_angle);
+        }
     }
 
     /*

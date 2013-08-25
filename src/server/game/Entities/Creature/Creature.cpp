@@ -506,14 +506,22 @@ void Creature::Update(uint32 diff)
 		m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
 	} else m_LOSCheckTimer -= diff;
 
+    bool isPlayersPet = false;
+    if (Unit * unit = ToUnit())
+    {
+        Unit* owner = unit->GetOwner();
+        if (owner && owner->ToPlayer())
+            isPlayersPet = true;
+    }
+
 	// Zone Skip Update
-	if (sObjectMgr->IsSkipZone(GetZoneId()) || (!isInCombat() && !GetMap()->Instanceable()))
+    if (!isPlayersPet && (sObjectMgr->IsSkipZone(GetZoneId()) || (!isInCombat() && !GetMap()->Instanceable())))
 	{
 		_skipCount++;
 		_skipDiff += diff;
 
-		if (_skipCount != sObjectMgr->GetSkipUpdateCount())
-			return;
+        if (_skipCount != sObjectMgr->GetSkipUpdateCount())
+            return;
 
 		diff = _skipDiff;
 		_skipCount = 0;
