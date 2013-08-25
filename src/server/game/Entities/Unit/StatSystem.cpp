@@ -61,13 +61,6 @@ bool Player::UpdateStats(Stats stat)
 
     SetStat(stat, int32(value));
 
-    if (stat == STAT_STAMINA || stat == STAT_INTELLECT || stat == STAT_STRENGTH)
-    {
-        Pet* pet = GetPet();
-        if (pet)
-            pet->UpdateStats(stat);
-    }
-
     switch (stat)
     {
         case STAT_AGILITY:
@@ -111,6 +104,14 @@ bool Player::UpdateStats(Stats stat)
             if (mask & (1 << rating))
                 ApplyRatingMod(CombatRating(rating), 0, true);
     }
+
+    if (stat == STAT_STAMINA || stat == STAT_INTELLECT || stat == STAT_STRENGTH)
+    {
+        Pet* pet = GetPet();
+        if (pet)
+            pet->UpdateStats(stat);
+    }
+
     return true;
 }
 
@@ -1208,11 +1209,17 @@ void Guardian::UpdateResistances(uint32 school)
 {
     if (school > SPELL_SCHOOL_NORMAL)
     {
-        float value  = GetTotalAuraModValue(UnitMods(UNIT_MOD_RESISTANCE_START + school));
+        float value;
+        if (!isHunterPet())
+        {
+            value = GetTotalAuraModValue(UnitMods(UNIT_MOD_RESISTANCE_START + school));
 
-        // hunter and warlock pets gain 40% of owner's resistance
-        if (isPet())
-            value += float(CalculatePct(m_owner->GetResistance(SpellSchools(school)), 40));
+            // hunter and warlock pets gain 40% of owner's resistance
+            if (isPet())
+                value += float(CalculatePct(m_owner->GetResistance(SpellSchools(school)), 40));
+        }
+        else
+            value = m_owner->GetResistance(SpellSchools(school));
 
         SetResistance(SpellSchools(school), int32(value));
     }
@@ -1225,8 +1232,7 @@ void Guardian::UpdateArmor()
     float value = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    // All pets gain 100% of owner's armor value
-    value = m_owner->GetArmor();
+    value = isHunterPet() ? m_owner->GetArmor() * 1.69f : m_owner->GetArmor();
     value *= GetModifierValue(unitMod, BASE_PCT);
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
@@ -1235,6 +1241,8 @@ void Guardian::UpdateArmor()
 
 void Guardian::UpdateMaxHealth()
 {
+    if (GetOwner() && GetOwner()->ToPlayer())
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Update max health");
     UnitMods unitMod = UNIT_MOD_HEALTH;
     float stamina = GetStat(STAT_STAMINA) - GetCreateStat(STAT_STAMINA);
 
@@ -1273,6 +1281,10 @@ void Guardian::UpdateMaxHealth()
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
     value *= GetModifierValue(unitMod, BASE_PCT);
     value += GetModifierValue(unitMod, TOTAL_VALUE) + stamina * multiplicator;
+
+    if (isHunterPet() && GetOwner())
+        value = GetOwner()->GetMaxHealth() * 0.70f;
+
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
     SetMaxHealth((uint32)value);
