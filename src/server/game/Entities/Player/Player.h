@@ -3113,6 +3113,7 @@ class Player : public Unit, public GridObject<Player>
         typedef UNORDERED_MAP<uint32,SeasonalQuestSet> SeasonalEventQuestMap;
         QuestSet m_timedquests;
         QuestSet m_weeklyquests;
+        QuestSet m_dailyquests;
         SeasonalEventQuestMap m_seasonalquests;
 
         uint64 m_divider;
