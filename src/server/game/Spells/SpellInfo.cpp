@@ -882,6 +882,9 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     AuraInterruptFlags = _interrupt ? _interrupt->AuraInterruptFlags : 0;
     ChannelInterruptFlags = _interrupt ? _interrupt->ChannelInterruptFlags : 0;
 
+    if (AuraInterruptFlags & 0x8000000 && !(AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
+        AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
+
     // SpellLevelsEntry
     SpellLevelsEntry const* _levels = GetSpellLevels();
     MaxLevel = _levels ? _levels->maxLevel : 0;
