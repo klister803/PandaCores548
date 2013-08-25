@@ -1189,9 +1189,11 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
                         case 92800:
                         case 92803:
                         case 104262:
+                        case 104269:
                         case 104270:
                         case 105230:
                         case 105232:
+                        case 118358:
                         case 130336:
                             if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
                                 return;
