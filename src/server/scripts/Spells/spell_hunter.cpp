@@ -340,8 +340,7 @@ class spell_hun_dire_beast : public SpellScriptLoader
                                         _player->CastSpell(target, DIRE_BEAST_NORTHREND, true);
                                         break;
                                     default:
-                                        if (_player->GetMap()->IsDungeon())
-                                            _player->CastSpell(target, DIRE_BEAST_DUNGEONS, true);
+                                        _player->CastSpell(target, DIRE_BEAST_DUNGEONS, true);
                                         break;
                                 }
                                 break;
