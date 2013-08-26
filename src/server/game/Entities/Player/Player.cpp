@@ -2301,51 +2301,6 @@ uint8 Player::GetChatTag() const
     return tag;
 }
 
-void Player::SendTeleportPacket(Position &oldPos)
-{
-    ObjectGuid guid = GetGUID();
-    ObjectGuid transGuid = GetTransGUID();
-
-    WorldPacket data(MSG_MOVE_TELEPORT, 38);
-    data.WriteBit(uint64(transGuid));
-    data.WriteBit(guid[5]);
-    if (transGuid)
-    {
-        uint8 bitOrder[8] = {5, 6, 2, 0, 1, 4, 7, 3};
-        data.WriteBitInOrder(transGuid, bitOrder);
-    }
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(0);       // unknown
-    data.WriteBit(guid[2]);
-    data.FlushBits();
-    if (transGuid)
-    {
-        uint8 byteOrder[8] = {2, 7, 1, 5, 6, 0, 4, 3};
-        data.WriteBytesSeq(transGuid, byteOrder);
-    }
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data << float(GetOrientation());
-    data << float(GetPositionX());
-    data << float(GetPositionY());
-    data << uint32(0);  // counter
-    data << float(GetPositionZMinusOffset());
-
-    Relocate(&oldPos);
-    SendDirectMessage(&data);
-}
-
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
 {
     //sAnticheatMgr->DisableAnticheatDetection(this,true);
