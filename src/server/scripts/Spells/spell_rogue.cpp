@@ -665,6 +665,9 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                 {
                     if (Unit* target = GetTarget())
                     {
+                        if (GetSpellInfo()->Id == ROGUE_SPELL_GARROTE_DOT && target->HasAura(ROGUE_SPELL_RUPTURE_DOT))
+                            return;
+
                         if (caster->HasAura(79134))
                         {
                             // Each time your Rupture or Garrote deals damage to an enemy that you have poisoned ...
