@@ -263,6 +263,8 @@ void WorldSession::HandleGuildSetNoteOpcode(WorldPacket& recvPacket)
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleSetMemberNote(this, note, playerGuid, type);
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: end CMSG_GUILD_SET_NOTE");
 }
 
 void WorldSession::HandleGuildQueryRanksOpcode(WorldPacket& recvData)

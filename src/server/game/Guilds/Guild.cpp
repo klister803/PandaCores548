@@ -1542,6 +1542,8 @@ void Guild::HandleSetBankTabInfo(WorldSession* session, uint8 tabId, const std::
 
 void Guild::HandleSetMemberNote(WorldSession* session, std::string const& note, uint64 guid, bool isPublic)
 {
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSetMemberNote guid %u", guid);
+
     // Player must have rights to set public/officer note
     if (!_HasRankRight(session->GetPlayer(), isPublic ? GR_RIGHT_EPNOTE : GR_RIGHT_EOFFNOTE))
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
