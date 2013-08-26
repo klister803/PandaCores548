@@ -57,9 +57,9 @@ enum QuestFailedReasons
     INVALIDREASON_QUEST_ALREADY_ON2             = 18,       // You are already on that quest.
     INVALIDREASON_QUEST_FAILED_MISSING_ITEMS    = 21,       // You don't have the required items with you. Check storage.
     INVALIDREASON_QUEST_FAILED_NOT_ENOUGH_MONEY = 23,       // You don't have enough money for that quest.
-    INVALIDREASON_DAILY_QUESTS_REMAINING        = 26,       // You have already completed 25 daily quests today.
-    INVALIDREASON_QUEST_FAILED_CAIS             = 27,       // You cannot complete quests once you have reached tired time.
-    INVALIDREASON_DAILY_QUEST_COMPLETED_TODAY   = 29        // You have completed that daily quest today.
+    INVALIDREASON_QUEST_FAILED_CAIS             = 26,       // You cannot complete quests once you have reached tired time.
+    INVALIDREASON_DAILY_QUEST_COMPLETED_TODAY   = 28,       // You have completed that daily quest today.
+    INVALIDREASON_QUEST_FAILED_SPELL            = 30,
 };
 
 enum QuestShareMessages

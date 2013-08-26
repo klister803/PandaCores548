@@ -4017,6 +4017,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 16927: // Chilled
             case 20005: // Chilled
                 spellInfo->Mechanic = MECHANIC_SNARE;
+                break;
+            case 128405: // Narrow Escape
+                spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
+                break;
             default:
                 break;
             }

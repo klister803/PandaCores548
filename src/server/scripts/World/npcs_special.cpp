@@ -3720,33 +3720,12 @@ class npc_dire_beast : public CreatureScript
         {
             npc_dire_beastAI(Creature *creature) : ScriptedAI(creature) {}
 
-            void Reset()
+            void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
             {
-                me->SetReactState(REACT_DEFENSIVE);
-
-                if (me->GetOwner())
-                    if (me->GetOwner()->getVictim())
-                        AttackStart(me->GetOwner()->getVictim());
+                if (Unit* owner = me->GetOwner())
+                    owner->ModifyPower(POWER_FOCUS, 5);
             }
 
-            void UpdateAI(const uint32 diff)
-            {
-                if (me->GetReactState() != REACT_DEFENSIVE)
-                    me->SetReactState(REACT_DEFENSIVE);
-
-                if (!UpdateVictim())
-                    return;
-
-                if (me->GetOwner())
-                    if (Unit* newVictim = me->GetOwner()->getVictim())
-                        if (me->getVictim() != newVictim)
-                            AttackStart(newVictim);
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                DoMeleeAttackIfReady();
-            }
         };
 
         CreatureAI* GetAI(Creature* creature) const

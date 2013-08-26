@@ -3456,6 +3456,9 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
         }
     }
 
+    if (GetTypeId() == TYPEID_PLAYER && aura->GetSpellInfo()->Id == 86346)
+        aura->GetEffect(1)->SetAmount(50);
+
     // apply effects of the aura
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {

@@ -6276,7 +6276,10 @@ SpellCastResult Spell::CheckPower()
             return SPELL_FAILED_NO_POWER;
     }
     else if (!GetSpellInfo()->NoPower())
-        return SPELL_FAILED_NO_POWER;
+    {
+        if (m_powerCost)
+            return SPELL_FAILED_NO_POWER;
+    }
 
     return SPELL_CAST_OK;
 }
