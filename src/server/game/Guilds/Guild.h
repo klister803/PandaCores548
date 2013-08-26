@@ -109,7 +109,7 @@ enum GuildCommandError
     ERR_GUILD_RANKS_LOCKED              = 0x11,
     ERR_GUILD_RANK_IN_USE               = 0x12,
     ERR_GUILD_IGNORING_YOU_S            = 0x13,
-    ERR_GUILD_UNK1                      = 0x14,
+    ERR_GUILD_UNK1                      = 0x14, // calls roster update
     ERR_GUILD_WITHDRAW_LIMIT            = 0x19,
     ERR_GUILD_NOT_ENOUGH_MONEY          = 0x1A,
     ERR_GUILD_BANK_FULL                 = 0x1C,
