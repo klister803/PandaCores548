@@ -19319,16 +19319,11 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         ToPlayer()->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
     {
-        DestroyForNearbyPlayers();
-        if(GetEntry() == 200132)
-            sLog->outError(LOG_FILTER_NETWORKIO, "NearTeleportTo %s > time: %d fall-time: %d | xyzo: %f, %f, %f flags[%X] | Player (xyzo): %f, %f, %f",
-            GetName(), m_movementInfo.time, m_movementInfo.fallTime, m_movementInfo.pos.GetPositionX(), m_movementInfo.pos.GetPositionY(), m_movementInfo.pos.GetPositionZ(),
-            m_movementInfo.flags, GetPositionX(), GetPositionY(), GetPositionZ());
-
         Position oldPos;
         GetPosition(&oldPos);
+        SendTeleportPacket(oldPos);
         UpdatePosition(x, y, z, orientation, true);
-        SendTeleportPacket(&oldPos);
+        UpdateObjectVisibility();
     }
 }
 
@@ -19362,11 +19357,6 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
 
     // code block for underwater state update
     UpdateUnderwaterState(GetMap(), x, y, z);
-
-    if(GetEntry() == 200132)
-        sLog->outError(LOG_FILTER_NETWORKIO, "UpdatePosition %s > time: %d fall-time: %d | xyzo: %f, %f, %f flags[%X] | Player (xyzo): %f, %f, %f",
-        GetName(), m_movementInfo.time, m_movementInfo.fallTime, m_movementInfo.pos.GetPositionX(), m_movementInfo.pos.GetPositionY(), m_movementInfo.pos.GetPositionZ(),
-        m_movementInfo.flags, GetPositionX(), GetPositionY(), GetPositionZ());
 
     return (relocated || turn);
 }
@@ -19950,11 +19940,6 @@ uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
 
 void Unit::WriteMovementUpdate(WorldPacket &data) const
 {
-    if(GetEntry() == 200132)
-        sLog->outError(LOG_FILTER_NETWORKIO, "WriteMovementUpdate %s > time: %d fall-time: %d | xyzo: %f, %f, %f flags[%X] | Player (xyzo): %f, %f, %f",
-        GetName(), m_movementInfo.time, m_movementInfo.fallTime, m_movementInfo.pos.GetPositionX(), m_movementInfo.pos.GetPositionY(), m_movementInfo.pos.GetPositionZ(),
-        m_movementInfo.flags, GetPositionX(), GetPositionY(), GetPositionZ());
-
     WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo, (Unit *)this);
 }
 
