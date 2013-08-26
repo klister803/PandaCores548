@@ -109,7 +109,7 @@ enum GuildCommandError
     ERR_GUILD_RANKS_LOCKED              = 0x11,
     ERR_GUILD_RANK_IN_USE               = 0x12,
     ERR_GUILD_IGNORING_YOU_S            = 0x13,
-    ERR_GUILD_UNK1                      = 0x14,
+    ERR_GUILD_UNK1                      = 0x14, // calls roster update
     ERR_GUILD_WITHDRAW_LIMIT            = 0x19,
     ERR_GUILD_NOT_ENOUGH_MONEY          = 0x1A,
     ERR_GUILD_BANK_FULL                 = 0x1C,
@@ -149,9 +149,9 @@ enum GuildEvents
     GE_BANK_MONEY_UPDATED           = 21,
     GE_BANK_MONEY_WITHDRAWN         = 22,
     GE_BANK_TEXT_CHANGED            = 23,
-    // 24 - error 795
+    GE_LEADER_REPLACED              = 24,
     GE_SIGNED_ON_MOBILE             = 25,
-    GE_SIGNED_Off_MOBILE            = 26
+    GE_SIGNED_OFF_MOBILE            = 26
 };
 
 enum PetitionTurns
@@ -169,10 +169,10 @@ enum PetitionSigns
     PETITION_SIGN_ALREADY_SIGNED        = 1,
     PETITION_SIGN_ALREADY_IN_GUILD      = 2,
     PETITION_SIGN_CANT_SIGN_OWN         = 3,
-    PETITION_SIGN_NOT_SERVER            = 4,
-    PETITION_SIGN_FULL                  = 5,
-    PETITION_SIGN_ALREADY_SIGNED_OTHER  = 6,
-    PETITION_SIGN_RESTRICTED_ACCOUNT    = 7
+    PETITION_SIGN_NOT_SERVER            = 5,
+    PETITION_SIGN_FULL                  = 8,
+    PETITION_SIGN_ALREADY_SIGNED_OTHER  = 10,
+    PETITION_SIGN_RESTRICTED_ACCOUNT    = 11,
 };
 
 enum GuildBankRights

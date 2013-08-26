@@ -4129,8 +4129,8 @@ enum BattlegroundTypeId
     // 656 = "Rated Eye of the Storm"
     BATTLEGROUND_KT                 = 699, // Valley of Power
     BATTLEGROUND_CTF3               = 706,
-    BATTLEGROUND_SSM                = 708, // Silver shard Mine
-    BATTLEGROUND_TV                 = 719  // Tol'viron Arena
+    BATTLEGROUND_SSM                = 708, // Silvershard Mines
+    BATTLEGROUND_TV                 = 719  // Tol'vir Arena
 };
 
 #define MAX_BATTLEGROUND_TYPE_ID 720

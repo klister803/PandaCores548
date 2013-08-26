@@ -63,6 +63,7 @@ enum ArenaTeamCommandErrors
 
 enum ArenaTeamEvents
 {
+    ERR_ARENA_TEAM_INTERNAL                 = 0,
     ERR_ARENA_TEAM_JOIN_SS                  = 4,            // player name + arena team name
     ERR_ARENA_TEAM_LEAVE_SS                 = 5,            // player name + arena team name
     ERR_ARENA_TEAM_REMOVE_SSS               = 6,            // player name + arena team name + captain name
