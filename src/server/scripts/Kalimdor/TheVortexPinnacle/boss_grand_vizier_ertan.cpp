@@ -91,7 +91,8 @@ class boss_grand_vizier_ertan : public CreatureScript
                 for (uint8 i = 0; i < 8; i++)
                 {
                     _vortexes[i] = me->SummonCreature(NPC_ERTAN_VORTEX, ertanvortexPos_1[i]);
-                    _vortexes[i]->AI()->DoAction(i);
+                    if(_vortexes[i]->AI())
+                        _vortexes[i]->AI()->DoAction(i);
                 }
 
                 events.ScheduleEvent(EVENT_LIGHTNING_BOLT, 3000);
@@ -132,13 +133,13 @@ class boss_grand_vizier_ertan : public CreatureScript
                             break;
                         case EVENT_CALL_VORTEX:
                             for (uint8 i = 0; i < 8; i++)
-                                if (_vortexes[i])
+                                if (_vortexes[i] && _vortexes[i]->AI())
                                     _vortexes[i]->AI()->DoAction(15);
                             events.ScheduleEvent(EVENT_RESET_VORTEX, urand(14000, 17000));
                             break;
                         case EVENT_RESET_VORTEX:
                             for (uint8 i = 0; i < 8; i++)
-                                if (_vortexes[i])
+                                if (_vortexes[i] && _vortexes[i]->AI())
                                     _vortexes[i]->AI()->DoAction(16);
                             events.ScheduleEvent(EVENT_CALL_VORTEX, urand(20000, 25000));
                             break;
