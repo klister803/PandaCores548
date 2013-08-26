@@ -1223,8 +1223,8 @@ bool Item::CanBeTransmogrified() const
     if (proto->Flags2 & ITEM_FLAGS_EXTRA_CANNOT_BE_TRANSMOG)
         return false;
 
-    if (!HasStats())
-        return false;
+    //if (!HasStats())
+        //return false;
 
     return true;
 }
@@ -1252,8 +1252,8 @@ bool Item::CanTransmogrify() const
     if (proto->Flags2 & ITEM_FLAGS_EXTRA_CAN_TRANSMOG)
         return true;
 
-    if (!HasStats())
-        return false;
+    //if (!HasStats())
+        //return false;
 
     return true;
 }
@@ -1284,7 +1284,7 @@ bool Item::CanTransmogrifyItemWithItem(Item const* transmogrified, Item const* t
     if (proto1->SubClass != proto2->SubClass && (proto1->Class != ITEM_CLASS_WEAPON || !proto2->IsRangedWeapon() || !proto1->IsRangedWeapon()))
         return false;
 
-    if (proto1->InventoryType != proto2->InventoryType &&
+    if ((proto1->InventoryType != proto2->InventoryType && !((proto1->InventoryType == INVTYPE_RANGED && proto2->InventoryType == INVTYPE_RANGEDRIGHT) || (proto1->InventoryType == INVTYPE_RANGEDRIGHT && proto2->InventoryType == INVTYPE_RANGED))) &&
         (proto1->Class != ITEM_CLASS_WEAPON || (proto2->InventoryType != INVTYPE_WEAPONMAINHAND && proto2->InventoryType != INVTYPE_WEAPONOFFHAND)) &&
         (proto1->Class != ITEM_CLASS_ARMOR || (proto1->InventoryType != INVTYPE_CHEST && proto2->InventoryType != INVTYPE_ROBE && proto1->InventoryType != INVTYPE_ROBE && proto2->InventoryType != INVTYPE_CHEST)))
         return false;
