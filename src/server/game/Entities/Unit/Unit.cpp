@@ -17673,8 +17673,12 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     if (GetTypeId() == TYPEID_PLAYER)
         Dismount();
 
-    ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
-    ASSERT((type == CHARM_TYPE_VEHICLE) == IsVehicle());
+    //ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
+    if(type == CHARM_TYPE_POSSESS || charmer->GetTypeId() != TYPEID_PLAYER)
+        return false;
+    //ASSERT((type == CHARM_TYPE_VEHICLE) == IsVehicle());
+    if(!((type == CHARM_TYPE_VEHICLE) == IsVehicle()))
+        return false;
 
     sLog->outDebug(LOG_FILTER_UNITS, "SetCharmedBy: charmer %u (GUID %u), charmed %u (GUID %u), type %u.", charmer->GetEntry(), charmer->GetGUIDLow(), GetEntry(), GetGUIDLow(), uint32(type));
 

@@ -264,12 +264,6 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
         mover->m_movementInfo.pos.m_positionZ = mover->GetPositionZ();
         WorldSession::WriteMovementInfo(data, &mover->m_movementInfo);
         mover->SendMessageToSet(&data, _player);
-        /*mover->DestroyForNearbyPlayers();
-        sLog->outError(LOG_FILTER_NETWORKIO, "Info move %s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] | Player (xyzo): %f, %f, %fo(%f) | mover (xyzo): %f, %f, %fo(%f)",
-        _player->GetName(), _player->m_movementInfo.time, _player->m_movementInfo.fallTime, _player->m_movementInfo.pos.GetPositionX(), _player->m_movementInfo.pos.GetPositionY(), _player->m_movementInfo.pos.GetPositionZ(), _player->m_movementInfo.pos.GetOrientation(),
-        _player->m_movementInfo.flags, _player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(), _player->GetOrientation(),
-        mover->GetPositionX(), mover->GetPositionY(), mover->GetPositionZ(), mover->GetOrientation());
-        mover->UpdateObjectVisibility();*/
     }
 }
 
