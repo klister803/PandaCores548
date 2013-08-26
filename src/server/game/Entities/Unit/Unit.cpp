@@ -19951,7 +19951,7 @@ void Unit::WriteMovementUpdate(WorldPacket &data) const
         GetName(), m_movementInfo.time, m_movementInfo.fallTime, m_movementInfo.pos.GetPositionX(), m_movementInfo.pos.GetPositionY(), m_movementInfo.pos.GetPositionZ(),
         m_movementInfo.flags, GetPositionX(), GetPositionY(), GetPositionZ());
 
-    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo);
+    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo, (Unit *)this);
 }
 
 void Unit::RemoveSoulSwapDOT(Unit* target)

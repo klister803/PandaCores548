@@ -910,7 +910,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
     #undef REMOVE_VIOLATING_FLAGS
 }
 
-void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi)
+void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* unit /* = NULL*/)
 {
     bool hasMovementFlags = mi->GetMovementFlags() != 0;
     bool hasMovementFlags2 = mi->GetExtraMovementFlags() != 0;
@@ -930,6 +930,14 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::WriteMovementInfo: No movement sequence found for opcode 0x%04X", uint32(data.GetOpcode()));
         return;
+    }
+
+    if(unit && unit->GetTypeId() != TYPEID_PLAYER)
+    {
+        mi->time = getMSTime();
+        mi->pos.m_positionX = unit->GetPositionX();
+        mi->pos.m_positionY = unit->GetPositionY();
+        mi->pos.m_positionZ = unit->GetPositionZ();
     }
 
     ObjectGuid guid = mi->guid;
