@@ -20039,5 +20039,5 @@ void Unit::SendTeleportPacket(Position &oldPos)
     data << float(GetPositionZMinusOffset());
 
     Relocate(&oldPos);
-    SendDirectMessage(&data);
+    SendMessageToSet(&data, true);
 }
