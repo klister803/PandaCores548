@@ -4021,6 +4021,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 128405: // Narrow Escape
                 spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
                 break;
+            case 79136: // Venomous Wound
+            case 127802: // Touch of the Grave
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+                break;
             default:
                 break;
             }
