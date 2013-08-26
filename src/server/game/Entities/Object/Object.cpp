@@ -2447,6 +2447,10 @@ void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const*
 
 void Unit::BuildHeartBeatMsg(WorldPacket* data) const
 {
+    if(GetEntry() == 200132)
+        sLog->outError(LOG_FILTER_NETWORKIO, "BuildHeartBeatMsg %s > time: %d fall-time: %d | xyzo: %f, %f, %f flags[%X] | Player (xyzo): %f, %f, %f",
+        GetName(), m_movementInfo.time, m_movementInfo.fallTime, m_movementInfo.pos.GetPositionX(), m_movementInfo.pos.GetPositionY(), m_movementInfo.pos.GetPositionZ(),
+        m_movementInfo.flags, GetPositionX(), GetPositionY(), GetPositionZ());
     data->Initialize(SMSG_MOVE_UPDATE);
     WriteMovementUpdate(*data);
 }
