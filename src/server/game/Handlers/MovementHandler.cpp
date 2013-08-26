@@ -935,9 +935,8 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi)
     ObjectGuid guid = mi->guid;
     ObjectGuid tguid = mi->t_guid;
 
-    if(guid == 6667525)
-        sLog->outError(LOG_FILTER_NETWORKIO, "WriteMovementInfo > time: %d fall-time: %d | xyzo: %f, %f, %f",
-        mi->time, mi->fallTime, mi->pos.GetPositionX(), mi->pos.GetPositionY(), mi->pos.GetPositionZ());
+    sLog->outError(LOG_FILTER_NETWORKIO, "WriteMovementInfo > time: %d fall-time: %d | xyzo: %f, %f, %f",
+    mi->time, mi->fallTime, mi->pos.GetPositionX(), mi->pos.GetPositionY(), mi->pos.GetPositionZ());
 
     for(uint32 i = 0; i < MSE_COUNT; ++i)
     {
