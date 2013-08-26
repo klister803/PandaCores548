@@ -932,19 +932,8 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
         return;
     }
 
-    if(unit && unit->GetTypeId() != TYPEID_PLAYER)
-    {
-        mi->time = getMSTime();
-        mi->pos.m_positionX = unit->GetPositionX();
-        mi->pos.m_positionY = unit->GetPositionY();
-        mi->pos.m_positionZ = unit->GetPositionZ();
-    }
-
     ObjectGuid guid = mi->guid;
     ObjectGuid tguid = mi->t_guid;
-
-    sLog->outError(LOG_FILTER_NETWORKIO, "WriteMovementInfo > time: %d fall-time: %d | xyzo: %f, %f, %f",
-    mi->time, mi->fallTime, mi->pos.GetPositionX(), mi->pos.GetPositionY(), mi->pos.GetPositionZ());
 
     for(uint32 i = 0; i < MSE_COUNT; ++i)
     {

@@ -19320,8 +19320,8 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
     else
     {
         Position pos = {x, y, z, orientation};
-        SendTeleportPacket(pos);
         UpdatePosition(x, y, z, orientation, true);
+        SendTeleportPacket(pos);
         UpdateObjectVisibility();
     }
 }
