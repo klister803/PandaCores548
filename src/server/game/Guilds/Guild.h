@@ -149,9 +149,9 @@ enum GuildEvents
     GE_BANK_MONEY_UPDATED           = 21,
     GE_BANK_MONEY_WITHDRAWN         = 22,
     GE_BANK_TEXT_CHANGED            = 23,
-    // 24 - error 795
+    GE_LEADER_REPLACED              = 24,
     GE_SIGNED_ON_MOBILE             = 25,
-    GE_SIGNED_Off_MOBILE            = 26
+    GE_SIGNED_OFF_MOBILE            = 26
 };
 
 enum PetitionTurns
