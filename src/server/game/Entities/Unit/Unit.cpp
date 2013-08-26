@@ -19319,12 +19319,14 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         ToPlayer()->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
     {
+        DestroyForNearbyPlayers();
         if(GetEntry() == 200132)
             sLog->outError(LOG_FILTER_NETWORKIO, "NearTeleportTo %s > time: %d fall-time: %d | xyzo: %f, %f, %f flags[%X] | Player (xyzo): %f, %f, %f",
             GetName(), m_movementInfo.time, m_movementInfo.fallTime, m_movementInfo.pos.GetPositionX(), m_movementInfo.pos.GetPositionY(), m_movementInfo.pos.GetPositionZ(),
             m_movementInfo.flags, GetPositionX(), GetPositionY(), GetPositionZ());
         UpdatePosition(x, y, z, orientation, true);
         SendMovementFlagUpdate();
+        UpdateObjectVisibility();
     }
 }
 
