@@ -1205,6 +1205,21 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                 finish(false);
             }
             return;
+        case 121414:
+        case 120761:
+        {
+            m_targets.SetUnitTarget(m_caster->ToPlayer()->GetSelectedUnit());
+            for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+            {
+                WorldObject* obj = *itr;
+                if (obj->IsInBetween(m_caster, m_caster->ToPlayer()->GetSelectedUnit(), 5) || m_caster->ToPlayer()->GetSelectedUnit() == obj)
+                    itr++;
+                else
+                    targets.erase(itr++);
+            }
+            break;
+        }
+
         default:
             break;
     }

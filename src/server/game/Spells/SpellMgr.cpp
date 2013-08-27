@@ -4025,6 +4025,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 127802: // Touch of the Grave
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                 break;
+            case 117050:
+                spellInfo->Speed = 25.f;
+                break;
             default:
                 break;
             }

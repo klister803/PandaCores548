@@ -2029,6 +2029,61 @@ class spell_hun_spirit_bond : public SpellScriptLoader
         }
 };
 
+class spell_hun_Toss : public SpellScriptLoader
+{
+    public:
+        spell_hun_Toss() : SpellScriptLoader("spell_hun_Toss") { }
+
+        class spell_hun_Toss_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_Toss_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->CastSpell(GetHitUnit(), GetSpellInfo()->Id == 121414 ? 120761 : 121414, true);
+
+                    if (GetSpellInfo()->Id == 121414 && GetExplTargetUnit() == GetHitUnit())
+                    {
+                        GetHitUnit()->CastSpell(_player, 120755, true);
+                        GetHitUnit()->CastSpell(_player, 120756, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_Toss_SpellScript::HandleOnHit);
+            }
+        };
+
+        class spell_hun_Toss_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_Toss_AuraScript);
+
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            {
+                SetDuration(0, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_Toss_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_Toss_AuraScript();
+        }
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_Toss_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2070,4 +2125,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_disengage();
     new spell_hun_tame_beast();
     new spell_hun_spirit_bond();
+    new spell_hun_Toss();
 }
