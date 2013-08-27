@@ -517,8 +517,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
     // default amount calculation
     amount = m_spellInfo->Effects[m_effIndex].CalcValue(caster, &m_baseAmount, GetBase()->GetOwner()->ToUnit());
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u amount %u, GetAmount %i ", GetId(), amount, m_baseAmount);
-
     // check item enchant aura cast
     if (!amount && caster)
         if (uint64 itemGUID = GetBase()->GetCastItemGUID())

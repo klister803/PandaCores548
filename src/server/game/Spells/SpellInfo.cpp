@@ -435,7 +435,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     int32 basePoints = bp ? *bp : BasePoints;
     float comboDamage = PointsPerComboPoint;
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u basePointsPerLevel %u, basePoints %i ", _spellInfo->Id, basePointsPerLevel, basePoints);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u basePointsPerLevel %f, basePoints %i ", _spellInfo->Id, basePointsPerLevel, basePoints);
 
     // base amount modification based on spell lvl vs caster lvl
     if (ScalingMultiplier != 0.0f)
@@ -502,7 +502,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
 
     float value = float(basePoints);
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u value %u, basePoints %i ", _spellInfo->Id, value, basePoints);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u value %f, basePoints %i", _spellInfo->Id, value, basePoints);
 
     // random damage
     if (caster)
@@ -531,8 +531,6 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
         if (_spellInfo->Id == 50273)
             value = float(basePoints);
     }
-
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u value %u, basePoints %i ", _spellInfo->Id, value, basePoints);
 
     return int32(value);
 }
