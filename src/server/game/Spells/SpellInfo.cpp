@@ -438,7 +438,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     // base amount modification based on spell lvl vs caster lvl
     if (ScalingMultiplier != 0.0f)
     {
-        if (caster && _spellInfo->Id != 113344) // Hack Fix Bloodbath
+        if (caster && _spellInfo->Id != 113344 && ApplyAuraName != SPELL_AURA_MOD_STAT) // Hack Fix
         {
             int32 level = caster->getLevel();
             if (target && _spellInfo->IsPositiveEffect(_effIndex) && (Effect == SPELL_EFFECT_APPLY_AURA) && _spellInfo->Id != 774) // Hack Fix Rejuvenation, doesn't use the target level for basepoints
@@ -503,7 +503,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
 
     float value = float(basePoints);
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u value %f, basePoints %i, ScalingMultiplier %f, comboDamage %f", _spellInfo->Id, value, basePoints, ScalingMultiplier, comboDamage);
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u value %f, basePoints %i, ScalingMultiplier %f, comboDamage %f", _spellInfo->Id, value, basePoints, ScalingMultiplier, comboDamage);
 
     // random damage
     if (caster)
