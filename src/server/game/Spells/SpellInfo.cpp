@@ -438,7 +438,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     // base amount modification based on spell lvl vs caster lvl
     if (ScalingMultiplier != 0.0f)
     {
-        if (caster && _spellInfo->Id != 113344 && ApplyAuraName != SPELL_AURA_MOD_STAT) // Hack Fix
+        if (caster && _spellInfo->Id != 113344) // Hack Fix Bloodbath
         {
             int32 level = caster->getLevel();
             if (target && _spellInfo->IsPositiveEffect(_effIndex) && (Effect == SPELL_EFFECT_APPLY_AURA) && _spellInfo->Id != 774) // Hack Fix Rejuvenation, doesn't use the target level for basepoints
@@ -468,7 +468,6 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     }
     else
     {
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u value %f, basePoints %i", _spellInfo->Id, basePoints);
         if (caster)
         {
             int32 level = int32(caster->getLevel());
@@ -479,7 +478,6 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
             level -= int32(_spellInfo->SpellLevel);
             basePoints += int32(level * basePointsPerLevel);
         }
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u, basePoints %i", _spellInfo->Id, basePoints);
 
         // roll in a range <1;EffectDieSides> as of patch 3.3.3
         int32 randomPoints = int32(DieSides);
@@ -498,12 +496,9 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                 break;
             }
         }
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u, basePoints %i, randomPoints %i, DieSides %i", _spellInfo->Id, basePoints, randomPoints, DieSides);
     }
 
     float value = float(basePoints);
-
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u value %f, basePoints %i, ScalingMultiplier %f, comboDamage %f", _spellInfo->Id, value, basePoints, ScalingMultiplier, comboDamage);
 
     // random damage
     if (caster)
