@@ -356,7 +356,7 @@ class Item : public Object
 
         uint32 GetVisibleEntry() const
         {
-            if (uint32 transmogrification = GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1))
+            if (uint32 transmogrification = GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION))
                 return transmogrification;
             return GetEntry();
         }

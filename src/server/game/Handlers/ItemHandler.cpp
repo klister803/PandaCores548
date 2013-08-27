@@ -1741,7 +1741,8 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
 
         if (!newEntries[i]) // reset look
         {
-            itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, 0);
+            itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION, 0);
+            itemTransmogrified->RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_TRANSMOGRIFICATION);
             player->SetVisibleItemSlot(slots[i], itemTransmogrified);
             itemTransmogrified->SetState(ITEM_CHANGED, player);
         }
@@ -1754,7 +1755,8 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
             }
 
             // All okay, proceed
-            itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, newEntries[i]);
+            itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION, newEntries[i]);
+            itemTransmogrified->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_TRANSMOGRIFICATION);
             player->SetVisibleItemSlot(slots[i], itemTransmogrified);
 
             itemTransmogrified->UpdatePlayedTime(player);
@@ -1834,8 +1836,8 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
         if (item->IsEquipped())
             player->ApplyReforgeEnchantment(item, false);
 
-        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, 0);
-        item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 0);
+        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_REFORGE, 0);
+        item->RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_REFORGE);
         item->SetState(ITEM_CHANGED, player);
         SendReforgeResult(true);
         return;
@@ -1869,8 +1871,8 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
 
     player->ModifyMoney(-int64(item->GetSpecialPrice()));
 
-    item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, reforgeEntry);
-    item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1);
+    item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_REFORGE, reforgeEntry);
+    item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_REFORGE);
     item->SetState(ITEM_CHANGED, player);
 
     SendReforgeResult(true);

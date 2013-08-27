@@ -356,8 +356,8 @@ void Item::SaveToDB(SQLTransaction& trans)
             stmt->setString(++index, ssEnchants.str());
 
             stmt->setInt16 (++index, GetItemRandomPropertyId());
-            stmt->setUInt32(++index, GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0)); // reforge Id
-            stmt->setUInt32(++index, GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1)); // Transmogrification Id
+            stmt->setUInt32(++index, GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_REFORGE)); // reforge Id
+            stmt->setUInt32(++index, GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION)); // Transmogrification Id
             stmt->setUInt16(++index, GetUInt32Value(ITEM_FIELD_DURABILITY));
             stmt->setUInt32(++index, GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME));
             //stmt->setString(++index, m_text);
@@ -456,16 +456,16 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
     std::string enchants = fields[6].GetString();
     _LoadIntoDataField(enchants.c_str(), ITEM_FIELD_ENCHANTMENT_1_1, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
 
-    if(uint32 reforgeEntry = fields[8].GetInt32())
+    if (uint32 reforgeEntry = fields[8].GetInt32())
     {
-        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, reforgeEntry);
-        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_REFORGE, reforgeEntry);
+        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_REFORGE);
     }
 
     if(uint32 transmogId = fields[9].GetInt32())
     {
-        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, transmogId);
-        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION, transmogId);
+        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_TRANSMOGRIFICATION);
     }
 
     SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[7].GetInt16());

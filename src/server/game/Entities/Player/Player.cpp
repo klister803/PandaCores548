@@ -14546,12 +14546,9 @@ void Player::ApplyReforgeEnchantment(Item* item, bool apply)
     if (!item)
         return;
 
-    ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0));
+    ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_REFORGE));
     if (!reforge)
         return;
-
-    item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, apply ? reforge->Id : 0);
-    item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, apply ? 1 : 0);
 
     float removeValue = item->GetReforgableStat(ItemModType(reforge->SourceStat)) * reforge->SourceMultiplier;
     float addValue = removeValue * reforge->FinalMultiplier;
