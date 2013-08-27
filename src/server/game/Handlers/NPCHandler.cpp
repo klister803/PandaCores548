@@ -546,11 +546,20 @@ void WorldSession::SendStablePet(uint64 guid)
 
     stmt->setUInt32(0, _player->GetGUIDLow());
     stmt->setUInt8(1, PET_SLOT_HUNTER_FIRST);
-    stmt->setUInt8(2, PET_SLOT_STABLE_LAST);
+    stmt->setUInt8(2, PET_SLOT_OTHER_PET);
 
     _sendStabledPetCallback.SetParam(guid);
     _sendStabledPetCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
 }
+
+struct PetData
+{
+    uint32 slot;
+    uint32 petnumber;
+    uint32 creature;
+    uint32 lvl;
+    std::string name;
+};
 
 void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid)
 {
@@ -571,26 +580,78 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
 
     if (result)
     {
+        bool stableSlot[PET_SLOT_STABLE_LAST];
+        for (uint8 i = 0; i < PET_SLOT_STABLE_LAST; ++i)
+            stableSlot[i] = 0;
+
+        std::list<PetData> outOfStable;
+
         do
         {
             Field* fields = result->Fetch();
 
-            data << uint32(fields[1].GetUInt8());           // 4.x petSlot
-            data << uint32(fields[2].GetUInt32());          // petnumber
-            data << uint32(fields[3].GetUInt32());          // creature entry
-            data << uint32(fields[4].GetUInt16());          // level
-            data << fields[5].GetString();                  // name
-            data << uint8(fields[1].GetUInt8() < uint8(PET_SLOT_STABLE_FIRST)? 1: 2);                               // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+            uint8 petSlot = fields[1].GetUInt8();
+            if (petSlot < PET_SLOT_STABLE_LAST)
+            {
+                data << uint32(petSlot);                        // 4.x petSlot
+                data << uint32(fields[2].GetUInt32());          // petnumber
+                data << uint32(fields[3].GetUInt32());          // creature entry
+                data << uint32(fields[4].GetUInt16());          // level
+                data << fields[5].GetString();                  // name
+                data << uint8(fields[1].GetUInt8() < uint8(PET_SLOT_STABLE_FIRST)? 1: 2);                               // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
 
-            ++num;
+                ++num;
+
+                stableSlot[petSlot] = true;
+            }
+            else
+            {
+                PetData pData;
+                pData.slot = petSlot;
+                pData.petnumber = fields[2].GetUInt32();
+                pData.creature = fields[3].GetUInt32();
+                pData.lvl = fields[4].GetUInt16();
+                pData.name = fields[5].GetString();
+
+                outOfStable.push_back(pData);
+            }
         }
         while (result->NextRow());
+
+        if (!outOfStable.empty())
+        {
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+            std::list<PetData>::iterator itr = outOfStable.begin();
+            for (uint8 i = 0; i < PET_SLOT_STABLE_LAST && itr != outOfStable.end(); ++i)
+                if (!stableSlot[i])
+                {
+                    PetData pData = *itr;
+                    pData.slot = i;
+
+                    data << uint32(pData.slot);         // 4.x petSlot
+                    data << uint32(pData.petnumber);    // petnumber
+                    data << uint32(pData.creature);     // creature entry
+                    data << uint32(pData.lvl);          // level
+                    data << pData.name;                 // name
+                    data << uint8(pData.slot < uint8(PET_SLOT_STABLE_FIRST) ? 1 : 2); // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+
+                    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UDP_CHAR_PET_SLOT_BY_ID);
+                    stmt->setUInt32(0, pData.slot);
+                    stmt->setUInt32(1, pData.petnumber);
+                    trans->Append(stmt);
+
+                    ++num;
+                    ++itr;
+                }
+
+            CharacterDatabase.CommitTransaction(trans);
+        }
     }
 
     data.put<uint8>(wpos, num);                             // set real data to placeholder
 
     SendPacket(&data);
-
 }
 
 void WorldSession::SendStableResult(uint8 res)
