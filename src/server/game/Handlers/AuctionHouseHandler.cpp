@@ -698,11 +698,11 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
     recvData.read_skip<uint8>();                           // unk
     recvData.read_skip<uint8>();                           // unk
 
-    uint8 count;
-    recvData >> count;
+    uint8 countSkip;
+    recvData >> countSkip;
 
     // this block looks like it uses some lame byte packing or similar...
-    for (uint8 i = 0; i < count; ++i)
+    for (uint8 i = 0; i < countSkip; ++i)
     {
         recvData.read_skip<uint8>();
         recvData.read_skip<uint8>();
