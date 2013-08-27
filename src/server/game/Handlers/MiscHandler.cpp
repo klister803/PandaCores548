@@ -1352,7 +1352,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
         uint32 dynamicMask = 0;
         ByteBuffer buffer;
-        for (uint32 j = 0; j < ITEM_DYN_MOD_END; ++j)
+        for (uint32 j = 0; j < 32; ++j)
             if (uint32 value = item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, j))
             {
                 dynamicMask |= 1 << j;

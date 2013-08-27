@@ -1079,13 +1079,6 @@ enum ItemDynamicFields
     ITEM_DYNAMIC_END                                 = 0x4
 };
 
-enum ItemDynamicModifiersOffset
-{
-    ITEM_DYN_MOD_REFORGE                             = 0x0,
-    ITEM_DYN_MOD_TRANSMOGRIFICATION                  = 0x1,
-    ITEM_DYN_MOD_END                                 = 0x2,
-};
-
 enum EContainerFields
 {
     CONTAINER_FIELD_SLOT_1                           = ITEM_END + 0x0,
