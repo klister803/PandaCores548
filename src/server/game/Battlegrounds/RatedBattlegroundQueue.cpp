@@ -229,6 +229,8 @@ bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg
         // loop through the players
         for (std::map<uint64, PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
+            if(!(*itr))
+                continue;
             // get the player
             Player* player = ObjectAccessor::FindPlayer(itr->first);
             // if offline, skip him, this should not happen - player is removed from queue when he logs out

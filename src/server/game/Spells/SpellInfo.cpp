@@ -468,7 +468,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     }
     else
     {
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u value %f, basePoints %i", _spellInfo->Id, basePoints);
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u value %f, basePoints %i", _spellInfo->Id, basePoints);
         if (caster)
         {
             int32 level = int32(caster->getLevel());
@@ -479,7 +479,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
             level -= int32(_spellInfo->SpellLevel);
             basePoints += int32(level * basePointsPerLevel);
         }
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u, basePoints %i", _spellInfo->Id, basePoints);
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u, basePoints %i", _spellInfo->Id, basePoints);
 
         // roll in a range <1;EffectDieSides> as of patch 3.3.3
         int32 randomPoints = int32(DieSides);
@@ -498,12 +498,12 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                 break;
             }
         }
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u, basePoints %i, randomPoints %i, DieSides %i", _spellInfo->Id, basePoints, randomPoints, DieSides);
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcValue: Spell %u, basePoints %i, randomPoints %i, DieSides %i", _spellInfo->Id, basePoints, randomPoints, DieSides);
     }
 
     float value = float(basePoints);
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u value %f, basePoints %i, ScalingMultiplier %f, comboDamage %f", _spellInfo->Id, value, basePoints, ScalingMultiplier, comboDamage);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u value %f, basePoints %i, ScalingMultiplier %f, comboDamage %f", _spellInfo->Id, value, basePoints, ScalingMultiplier, comboDamage);
 
     // random damage
     if (caster)
