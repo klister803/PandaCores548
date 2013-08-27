@@ -566,6 +566,9 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
     if (!GetPlayer())
         return;
 
+    if (GetPlayer()->getClass() != CLASS_HUNTER)
+        return;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Send MSG_LIST_STABLED_PETS.");
 
     WorldPacket data(MSG_LIST_STABLED_PETS, 200);
