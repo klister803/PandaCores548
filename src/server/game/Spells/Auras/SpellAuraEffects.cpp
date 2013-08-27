@@ -4031,7 +4031,7 @@ void AuraEffect::HandleAuraModStat(AuraApplication const* aurApp, uint8 mode, bo
         return;
     }
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "HandleAuraModStat: Spell %u effect %u has an unsupported misc value (%i) for SPELL_AURA_MOD_STAT ", GetId(), GetEffIndex(), GetMiscValue());
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "HandleAuraModStat: Spell %u effect %u miscvalue (%i), Amount %i ", GetId(), GetEffIndex(), GetMiscValue(), GetAmount());
 
     for (int32 i = STAT_STRENGTH; i < MAX_STATS; i++)
     {
