@@ -212,6 +212,9 @@ GroupQueueInfo* RatedBattlegroundQueue::GetQueueInfoByPlayer(uint64 playerGuid)
 
 bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg, uint32 side)
 {
+    if(!ginfo)
+        return false;
+
     // set side if needed
     if (side)
         ginfo->Team = side;
@@ -229,7 +232,7 @@ bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg
         // loop through the players
         for (std::map<uint64, PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
-            if(!(*itr))
+            if(!itr->first)
                 continue;
             // get the player
             Player* player = ObjectAccessor::FindPlayer(itr->first);
