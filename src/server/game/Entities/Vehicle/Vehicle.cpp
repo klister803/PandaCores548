@@ -401,7 +401,8 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
         && seat->first == 0 && seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
     {
         if (!_me->SetCharmedBy(unit, CHARM_TYPE_VEHICLE))
-            ASSERT(false);
+            return false;
+            //ASSERT(false);
     }
 
     if (_me->IsInWorld())

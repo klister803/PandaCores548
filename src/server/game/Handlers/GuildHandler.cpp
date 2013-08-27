@@ -239,23 +239,11 @@ void WorldSession::HandleGuildSetNoteOpcode(WorldPacket& recvPacket)
     playerGuid[3] = recvPacket.ReadBit();
     bool type = recvPacket.ReadBit();      // 0 == Officer, 1 == Public
     uint32 noteLength = recvPacket.ReadBits(8);
-    recvPacket.ReadBit(); //noteLength & 0x1F
     playerGuid[4] = recvPacket.ReadBit();
     playerGuid[6] = recvPacket.ReadBit();
     playerGuid[5] = recvPacket.ReadBit();
     playerGuid[1] = recvPacket.ReadBit();
-    recvPacket.FlushBits();
-    /*playerGuid[1] = recvPacket.ReadBit();
-    playerGuid[4] = recvPacket.ReadBit();
-    playerGuid[5] = recvPacket.ReadBit();
-    playerGuid[3] = recvPacket.ReadBit();
-    playerGuid[0] = recvPacket.ReadBit();
-    playerGuid[7] = recvPacket.ReadBit();
-    bool type = recvPacket.ReadBit();      // 0 == Officer, 1 == Public
-    playerGuid[6] = recvPacket.ReadBit();
-    uint32 noteLength = recvPacket.ReadBits(8);
-    playerGuid[2] = recvPacket.ReadBit();
-    */
+
     std::string note = recvPacket.ReadString(noteLength);
 
     uint8 byteOrder[8] = {2, 5, 0, 3, 7, 4, 6, 1};

@@ -17684,7 +17684,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
         Dismount();
 
     //ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
-    if(type == CHARM_TYPE_POSSESS || charmer->GetTypeId() != TYPEID_PLAYER)
+    if(!(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER))
         return false;
     //ASSERT((type == CHARM_TYPE_VEHICLE) == IsVehicle());
     if(!((type == CHARM_TYPE_VEHICLE) == IsVehicle()))

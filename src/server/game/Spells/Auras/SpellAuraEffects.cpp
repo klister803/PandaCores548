@@ -517,6 +517,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
     // default amount calculation
     amount = m_spellInfo->Effects[m_effIndex].CalcValue(caster, &m_baseAmount, GetBase()->GetOwner()->ToUnit());
 
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u amount %u, GetAmount %i ", GetId(), amount, GetAmount());
+
     // check item enchant aura cast
     if (!amount && caster)
         if (uint64 itemGUID = GetBase()->GetCastItemGUID())
@@ -845,6 +847,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
 
     GetBase()->CallScriptEffectCalcAmountHandlers(const_cast<AuraEffect const*>(this), amount, m_canBeRecalculated);
     amount *= GetBase()->GetStackAmount();
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateAmount: Spell %u amount %u, GetAmount %i ", GetId(), amount, GetAmount());
+
     return amount;
 }
 
@@ -986,6 +991,8 @@ void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply)
         handleMask |= AURA_EFFECT_HANDLE_CHANGE_AMOUNT;
     if (onStackOrReapply)
         handleMask |= AURA_EFFECT_HANDLE_REAPPLY;
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ChangeAmount: Spell %u newAmount %u, GetAmount %i ", GetId(), newAmount, GetAmount());
 
     if (!handleMask)
         return;
