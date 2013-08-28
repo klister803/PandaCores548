@@ -1332,13 +1332,15 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         
         if (pubNoteLength)
             memberData.WriteString(member->GetPublicNote());
-        memberData << int32(0);                                     // unk
+        memberData << int32(5);                                     // unk
         // for (2 professions)
         for (int i = 0; i < 2; ++i)
         {
             uint32 id = player ? player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i) : 0;
             if (id)
             {
+                sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_GUILD_ROSTER PROFESSION id %u, GetSkillValue %u, guid %u",
+                id, player->GetSkillValue(id), member->GetGUID());
                 memberData << uint32(player->GetSkillValue(id)) << uint32(player->GetSkillStep(id)) << uint32(id);
             }
             else
@@ -1346,9 +1348,6 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
                 memberData << uint32(0) << uint32(0) << uint32(0);
             }
         }
-
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_GUILD_ROSTER GetTotalReputation %u, GetWeekReputation %u, guid %u",
-        member->GetTotalReputation(), member->GetWeekReputation(), member->GetGUID());
 
         memberData << uint32(member->GetTotalReputation());// Remaining guild week Rep
         memberData.WriteByteSeq(guid[0]);

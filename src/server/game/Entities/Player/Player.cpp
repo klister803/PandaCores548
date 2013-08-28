@@ -28208,19 +28208,13 @@ void Player::_SaveArchaelogy(SQLTransaction& trans)
 
 void Player::GenerateResearchDigSites(uint32 max)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites.");
-
     uint32 skill_now = GetSkillValue( SKILL_ARCHAEOLOGY );
     if( skill_now == 0 )
         return;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites skill.");
-
     uint32 _mapId = GetMapId();
     if((_mapId != 0 && _mapId != 1&& _mapId != 530 && _mapId != 571) || (_mapId == 530 && skill_now < 275) || (_mapId == 571 && skill_now < 350))
         return;
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites map.");
 
     if(m_digsite.pointCount[_mapId] == 0)
     {
@@ -28251,8 +28245,6 @@ void Player::GenerateResearchDigSites(uint32 max)
             }
 
             SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid);
-
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
 
             AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
             DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
@@ -28306,8 +28298,6 @@ void Player::GenerateResearchDigSites(uint32 max)
 
             SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid);
 
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
-
             AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
             DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
 
@@ -28334,8 +28324,6 @@ void Player::GenerateResearchDigSites(uint32 max)
 //each research branch can have 1 active project, we should pick rare projects rarely and crap projects more frecvently
 void Player::GenerateResearchProjects(uint32 max, uint32 race)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchProjects.");
-
     uint32 maxcount = 0;
     uint32 skill_now = GetSkillValue( SKILL_ARCHAEOLOGY );
     if( skill_now == 0 )
