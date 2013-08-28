@@ -566,7 +566,10 @@ void Guild::Member::SetStats(Player* player)
     m_level     = player->getLevel();
     m_class     = player->getClass();
     m_zoneId    = player->GetZoneId();
+    m_zoneId_m    = player->GetZoneId();
     m_accountId = player->GetSession()->GetAccountId();
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "uild::Member::SetStats ZoneId %u, member zoneId %u, m_name %s", player->GetZoneId(), m_zoneId, m_name.c_str());
 }
 
 void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId)
@@ -575,6 +578,7 @@ void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class,
     m_level     = level;
     m_class     = _class;
     m_zoneId    = zoneId;
+    m_zoneId_m    = zoneId;
     m_accountId = accountId;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "uild::Member::SetStats ZoneId %u, member zoneId %u, m_name %s", zoneId, m_zoneId, m_name.c_str());
@@ -1348,7 +1352,10 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         memberData.WriteString(member->GetName());
         memberData << uint8(player ? player->getLevel() : member->GetLevel());
         memberData.WriteByteSeq(guid[1]);
-        memberData << uint32(player ? player->GetZoneId() : member->GetZone());                                    
+        memberData << uint32(player ? player->GetZoneId() : member->GetZone());
+
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_GUILD_ROSTER ZoneId %u, member zoneId %u, guid %u", player ? player->GetZoneId() : member->GetZone(), member->GetZone(), member->GetGUID());
+
         memberData << uint8(flags);
         memberData << uint32(0);// player->GetAchievementMgr().GetCompletedAchievementsAmount()
         memberData << uint8(0);                                     // unk 0 or 1
@@ -1544,8 +1551,6 @@ void Guild::HandleSetBankTabInfo(WorldSession* session, uint8 tabId, const std::
 
 void Guild::HandleSetMemberNote(WorldSession* session, std::string const& note, uint64 guid, bool isPublic)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSetMemberNote guid %u", guid);
-
     // Player must have rights to set public/officer note
     if (!_HasRankRight(session->GetPlayer(), isPublic ? GR_RIGHT_EPNOTE : GR_RIGHT_EOFFNOTE))
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
