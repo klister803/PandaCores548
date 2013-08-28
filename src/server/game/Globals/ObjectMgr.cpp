@@ -1572,7 +1572,7 @@ void ObjectMgr::LoadCreatures()
 
     //Load data for spawn from grid data
     //                                               0        1     2       3
-    result = WorldDatabase.Query("SELECT entry, zone, grid_x, grid_y FROM creature_spawn");
+    /*result = WorldDatabase.Query("SELECT entry, zone, grid_x, grid_y FROM creature_spawn");
     if (result)
     {
         do
@@ -1601,7 +1601,7 @@ void ObjectMgr::LoadCreatures()
             //WorldDatabase.PExecute("DELETE FROM creature_spawn WHERE `entry` = '%u' AND `zone` = '%u' AND `grid_x` = '%f' AND `grid_y`='%f';", entry, zoneId, grid_x, grid_y);
 
         } while (result->NextRow());
-    }
+    }*/
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creatures in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 

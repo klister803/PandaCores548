@@ -2053,10 +2053,10 @@ void World::Update(uint32 diff)
     }
 
     if (m_gameTime > m_NextWeeklyQuestReset)
-        {
-            ResetWeeklyQuests();
-            sGuildMgr->ResetReputationCaps();
-        }
+    {
+        ResetWeeklyQuests();
+        sGuildMgr->ResetReputationCaps();
+    }
 
     if (m_gameTime > m_NextRandomBGReset)
         ResetRandomBG();

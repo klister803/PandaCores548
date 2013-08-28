@@ -7619,8 +7619,11 @@ void Player::RewardGuildReputation(Quest const* quest)
     if (GetsRecruitAFriendBonus(false))
         rep = int32(rep * (1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS)));
 
-    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
-        GetReputationMgr().ModifyReputation(factionEntry, rep);
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->RepGainedBy(this, rep);
+
+    //if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+        //GetReputationMgr().ModifyReputation(factionEntry, rep);
 }
 
 void Player::UpdateHonorFields()
@@ -26190,6 +26193,11 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
 void Player::CompletedAchievement(AchievementEntry const* entry)
 {
     GetAchievementMgr().CompletedAchievement(entry, this);
+}
+
+uint32 Player::GetAchievementPoints() const
+{
+    return m_achievementMgr.GetAchievementPoints();
 }
 
 // TODO : Check cheat-hack issue with packet-editing
