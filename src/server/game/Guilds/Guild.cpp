@@ -1347,7 +1347,7 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         memberData << uint8(player ? player->getLevel() : member->GetLevel());
         memberData.WriteByteSeq(guid[1]);
 
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_GUILD_ROSTER ZoneId %u, guid %u", player ? player->GetZoneId() : member->GetZone(), member->GetGUID());
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_GUILD_ROSTER ZoneId %u, member zoneId %u, guid %u", player ? player->GetZoneId() : member->GetZone(), member->GetZone(), member->GetGUID());
 
         memberData << uint32(player ? player->GetZoneId() : member->GetZone());                                    
         memberData << uint8(flags);
