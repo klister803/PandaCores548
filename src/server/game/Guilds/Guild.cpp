@@ -567,8 +567,6 @@ void Guild::Member::SetStats(Player* player)
     m_class     = player->getClass();
     m_zoneId    = player->GetZoneId();
     m_accountId = player->GetSession()->GetAccountId();
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "uild::Member::SetStats ZoneId %u, member zoneId %u, m_name %s", player->GetZoneId(), m_zoneId, m_name.c_str());
 }
 
 void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId)
@@ -578,8 +576,6 @@ void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class,
     m_class     = _class;
     m_zoneId    = zoneId;
     m_accountId = accountId;
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "uild::Member::SetStats ZoneId %u, member zoneId %u, m_name %s", zoneId, m_zoneId, m_name.c_str());
 }
 
 void Guild::Member::SetPublicNote(const std::string& publicNote)
@@ -1351,9 +1347,6 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         memberData << uint8(player ? player->getLevel() : member->GetLevel());
         memberData.WriteByteSeq(guid[1]);
         memberData << uint32(player ? player->GetZoneId() : member->GetZone());
-
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_GUILD_ROSTER ZoneId %u, member zoneId %u, guid %u", player ? player->GetZoneId() : member->GetZone(), member->GetZone(), member->GetGUID());
-
         memberData << uint8(flags);
         memberData << uint32(0);// player->GetAchievementMgr().GetCompletedAchievementsAmount()
         memberData << uint8(0);                                     // unk 0 or 1
