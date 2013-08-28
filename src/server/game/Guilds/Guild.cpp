@@ -567,15 +567,17 @@ void Guild::Member::SetStats(Player* player)
     m_class     = player->getClass();
     m_zoneId    = player->GetZoneId();
     m_accountId = player->GetSession()->GetAccountId();
+    m_achievementPoints = player->GetAchievementPoints();
 }
 
-void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId)
+void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation)
 {
     m_name      = name;
     m_level     = level;
     m_class     = _class;
     m_zoneId    = zoneId;
     m_accountId = accountId;
+    m_totalReputation = reputation;
 }
 
 void Guild::Member::SetPublicNote(const std::string& publicNote)
@@ -648,7 +650,8 @@ bool Guild::Member::LoadFromDB(Field* fields)
              fields[24].GetUInt8(),                         // characters.level
              fields[25].GetUInt8(),                         // characters.class
              fields[26].GetUInt16(),                        // characters.zone
-             fields[27].GetUInt32());                       // characters.account
+             fields[27].GetUInt32(),                        // characters.account
+             fields[29].GetUInt32());                       // character_reputation.standing
     m_logoutTime    = fields[28].GetUInt32();               // characters.logout_time
 
     if (!CheckStats())
@@ -1328,27 +1331,27 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
                 memberData << uint32(0) << uint32(0) << uint32(0);
             }
         }
-        memberData << uint32(member->GetRemainingWeeklyReputation());// Remaining guild week Rep
+        memberData << uint32(member->GetTotalReputation());// Remaining guild week Rep
         memberData.WriteByteSeq(guid[0]);
         memberData.WriteByteSeq(guid[5]);
         memberData.WriteByteSeq(guid[7]);
         memberData << int32(-1);                                     // unk -1
         memberData.WriteByteSeq(guid[3]);
         memberData << uint8(member->GetClass());
-        memberData << uint64(0);                                    
+        memberData << uint64(member->GetWeekActivity());                                    
         memberData.WriteByteSeq(guid[6]);
         memberData.WriteByteSeq(guid[4]);
         memberData << float(player ? 0.0f : float(::time(NULL) - member->GetLogoutTime()) / DAY);
-        memberData << uint64(0);                                    
+        memberData << uint64(member->GetTotalActivity());                                    
         memberData << uint32(member->GetRankId());
         if (offNoteLength)
             memberData.WriteString(member->GetOfficerNote());
         memberData.WriteString(member->GetName());
         memberData << uint8(player ? player->getLevel() : member->GetLevel());
         memberData.WriteByteSeq(guid[1]);
-        memberData << uint32(player ? player->GetZoneId() : member->GetZone());
+        memberData << uint32(player ? player->GetZoneId() : member->GetZoneId());
         memberData << uint8(flags);
-        memberData << uint32(0);// player->GetAchievementMgr().GetCompletedAchievementsAmount()
+        memberData << uint32(member->GetAchievementPoints());// player->GetAchievementMgr().GetCompletedAchievementsAmount()
         memberData << uint8(0);                                     // unk 0 or 1
         memberData.WriteByteSeq(guid[2]);
     }
@@ -2642,7 +2645,8 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
                 fields[1].GetUInt8(),
                 fields[2].GetUInt8(),
                 fields[3].GetUInt16(),
-                fields[4].GetUInt32());
+                fields[4].GetUInt32(),
+                fields[5].GetUInt32());
 
             ok = member->CheckStats();
         }

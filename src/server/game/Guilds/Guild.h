@@ -334,29 +334,65 @@ private:
         };
 
     public:
-        Member(uint32 guildId, uint64 guid, uint32 rankId) : m_guildId(guildId), m_guid(guid), m_logoutTime(::time(NULL)), m_rankId(rankId) { }
-
+        Member(uint32 guildId, uint64 guid, uint32 rankId):
+            m_guildId(guildId),
+            m_guid(guid),
+            m_zoneId(0),
+            m_level(0),
+            m_class(0),
+            m_flags(GUILDMEMBER_STATUS_NONE),
+            m_logoutTime(::time(NULL)),
+            m_accountId(0),
+            m_rankId(rankId),
+            m_achievementPoints(0),
+            m_totalActivity(0),
+            m_weekActivity(0),
+            m_totalReputation(0),
+            m_weekReputation(0)
+        {
+            memset(m_bankWithdraw, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(int32));
+        }
         void SetStats(Player* player);
-        void SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId);
+        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation);
         bool CheckStats() const;
 
-        void SetPublicNote(const std::string& publicNote);
-        void SetOfficerNote(const std::string& officerNote);
+        void SetPublicNote(std::string const& publicNote);
+        void SetOfficerNote(std::string const& officerNote);
 
         std::string GetPublicNote() { return m_publicNote; };
         std::string GetOfficerNote() { return m_officerNote; };
+
+        void SetZoneId(uint32 id) { m_zoneId = id; }
+        void SetAchievementPoints(uint32 val) { m_achievementPoints = val; }
+        void SetLevel(uint8 var) { m_level = var; }
+        void AddReputation(uint32& reputation);
+        void AddActivity(uint64 activity);
+
+        void AddFlag(uint8 var) { m_flags |= var; }
+        void RemFlag(uint8 var) { m_flags &= ~var; }
+        void ResetFlags() { m_flags = GUILDMEMBER_STATUS_NONE; }
 
         bool LoadFromDB(Field* fields);
         void SaveToDB(SQLTransaction& trans) const;
 
         uint64 GetGUID() const { return m_guid; }
-        std::string GetName() const { return m_name; }
+        std::string const& GetName() const { return m_name; }
         uint32 GetAccountId() const { return m_accountId; }
         uint32 GetRankId() const { return m_rankId; }
+        uint64 GetLogoutTime() const { return m_logoutTime; }
+        std::string GetPublicNote() const { return m_publicNote; }
+        std::string GetOfficerNote() const { return m_officerNote; }
         uint8 GetClass() const { return m_class; }
         uint8 GetLevel() const { return m_level; }
-        uint32 GetZone() const { return m_zoneId; }
-        uint64 GetLogoutTime() const { return m_logoutTime; }
+        uint8 GetFlags() const { return m_flags; }
+        uint32 GetZoneId() const { return m_zoneId; }
+        uint32 GetAchievementPoints() const { return m_achievementPoints; }
+        uint64 GetTotalActivity() const { return m_totalActivity; }
+        uint64 GetWeekActivity() const { return m_weekActivity; }
+        uint32 GetTotalReputation() const { return m_totalReputation; }
+        uint32 GetWeekReputation() const { return m_weekReputation; }
+
+        bool IsOnline() { return (m_flags & GUILDMEMBER_STATUS_ONLINE); }
 
         void ChangeRank(uint8 newRank);
 
@@ -364,6 +400,12 @@ private:
         inline bool IsRank(uint8 rankId) const { return m_rankId == rankId; }
         inline bool IsRankNotLower(uint8 rankId) const { return m_rankId <= rankId; }
         inline bool IsSamePlayer(uint64 guid) const { return m_guid == guid; }
+
+        void UpdateBankWithdrawValue(SQLTransaction& trans, uint8 tabId, uint32 amount);
+        int32 GetBankWithdrawValue(uint8 tabId) const;
+        void ResetValues(bool weekly = false);
+        void RepEarned(Player* player, uint32 value);
+        void SendGuildReputationWeeklyCap(WorldSession* session, uint32 reputation) const;
 
         void DecreaseBankRemainingValue(SQLTransaction& trans, uint8 tabId, uint32 amount);
         uint32 GetBankRemainingValue(uint8 tabId, const Guild* guild) const;
@@ -381,8 +423,9 @@ private:
         uint64 m_guid;
         std::string m_name;
         uint32 m_zoneId;
-        uint8  m_level;
-        uint8  m_class;
+        uint8 m_level;
+        uint8 m_class;
+        uint8 m_flags;
         uint64 m_logoutTime;
         uint32 m_accountId;
         // Fields from guild_member table
@@ -391,6 +434,12 @@ private:
         std::string m_officerNote;
 
         RemainingValue m_bankRemaining[GUILD_BANK_MAX_TABS + 1];
+        int32 m_bankWithdraw[GUILD_BANK_MAX_TABS + 1];
+        uint32 m_achievementPoints;
+        uint64 m_totalActivity;
+        uint64 m_weekActivity;
+        uint32 m_totalReputation;
+        uint32 m_weekReputation;
     };
 
     // News Log class

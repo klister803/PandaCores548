@@ -26191,6 +26191,11 @@ void Player::CompletedAchievement(AchievementEntry const* entry)
     GetAchievementMgr().CompletedAchievement(entry, this);
 }
 
+uint32 Player::GetAchievementPoints() const
+{
+    return m_achievementMgr.GetAchievementPoints();
+}
+
 // TODO : Check cheat-hack issue with packet-editing
 bool Player::LearnTalent(uint32 talentId)
 {
