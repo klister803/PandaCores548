@@ -566,7 +566,6 @@ void Guild::Member::SetStats(Player* player)
     m_level     = player->getLevel();
     m_class     = player->getClass();
     m_zoneId    = player->GetZoneId();
-    m_zoneId_m    = player->GetZoneId();
     m_accountId = player->GetSession()->GetAccountId();
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "uild::Member::SetStats ZoneId %u, member zoneId %u, m_name %s", player->GetZoneId(), m_zoneId, m_name.c_str());
@@ -578,7 +577,6 @@ void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class,
     m_level     = level;
     m_class     = _class;
     m_zoneId    = zoneId;
-    m_zoneId_m    = zoneId;
     m_accountId = accountId;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "uild::Member::SetStats ZoneId %u, member zoneId %u, m_name %s", zoneId, m_zoneId, m_name.c_str());
