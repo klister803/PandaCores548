@@ -3397,8 +3397,8 @@ void Guild::GiveXP(uint32 xp, Player* source)
     if (GetLevel() >= sWorld->getIntConfig(CONFIG_GUILD_MAX_LEVEL))
         xp = 0; // SMSG_GUILD_XP_GAIN is always sent, even for no gains
 
-    if (GetLevel() >= GUILD_EXPERIENCE_UNCAPPED_LEVEL)
-        xp = std::min(xp, sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP) - uint32(_todayExperience));
+    //if (GetLevel() >= GUILD_EXPERIENCE_UNCAPPED_LEVEL)
+        //xp = std::min(xp, sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP) - uint32(_todayExperience));
 
     WorldPacket data(SMSG_GUILD_XP_GAIN, 8);
     data << uint64(xp);    // XP missing for next level
@@ -3463,7 +3463,7 @@ uint32 Guild::RepGainedBy(Player* player, uint32 amount)
     if(!member)
         return 0;
 
-    //amount = std::min(amount, uint32(GUILD_WEEKLY_REP_CAP - member->GetWeekReputation()));
+    amount = std::min(amount, uint32(GUILD_WEEKLY_REP_CAP - member->GetWeekReputation()));
 
     if (amount)
         member->RepEarned(player, amount);
@@ -3490,8 +3490,9 @@ void Guild::Member::RepEarned(Player* player, uint32 value)
 
 void Guild::Member::SendGuildReputationWeeklyCap(WorldSession* session, uint32 reputation) const
 {
+    uint32 cap = sWorld->getIntConfig(CONFIG_GUILD_WEEKLY_REP_CAP) - reputation;
     WorldPacket data(SMSG_GUILD_REPUTATION_WEEKLY_CAP, 4);
-    data << uint32(GetWeekReputation());
+    data << uint32(cap);
     session->SendPacket(&data);
 }
 
