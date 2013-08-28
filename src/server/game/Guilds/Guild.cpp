@@ -3463,7 +3463,7 @@ uint32 Guild::RepGainedBy(Player* player, uint32 amount)
     if(!member)
         return 0;
 
-    amount = std::min(amount, uint32(GUILD_WEEKLY_REP_CAP - member->GetWeekReputation()));
+    //amount = std::min(amount, uint32(GUILD_WEEKLY_REP_CAP - member->GetWeekReputation()));
 
     if (amount)
         member->RepEarned(player, amount);
@@ -3490,9 +3490,8 @@ void Guild::Member::RepEarned(Player* player, uint32 value)
 
 void Guild::Member::SendGuildReputationWeeklyCap(WorldSession* session, uint32 reputation) const
 {
-    uint32 cap = sWorld->getIntConfig(CONFIG_GUILD_WEEKLY_REP_CAP) - reputation;
     WorldPacket data(SMSG_GUILD_REPUTATION_WEEKLY_CAP, 4);
-    data << uint32(cap);
+    data << uint32(GetWeekReputation());
     session->SendPacket(&data);
 }
 
