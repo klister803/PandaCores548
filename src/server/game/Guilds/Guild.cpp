@@ -653,6 +653,9 @@ bool Guild::Member::LoadFromDB(Field* fields)
              fields[27].GetUInt32(),                        // characters.account
              fields[29].GetUInt32());                       // character_reputation.standing
     m_logoutTime    = fields[28].GetUInt32();               // characters.logout_time
+    m_totalActivity = fields[30].GetUInt64();
+    m_weekActivity = fields[31].GetUInt64();
+    m_weekReputation = fields[32].GetUInt16();
 
     if (!CheckStats())
         return false;
@@ -1331,18 +1334,18 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
                 memberData << uint32(0) << uint32(0) << uint32(0);
             }
         }
-        memberData << uint32(member->GetTotalReputation());// Remaining guild week Rep
+        memberData << uint32(/*member->GetTotalReputation()*/5);// Remaining guild week Rep
         memberData.WriteByteSeq(guid[0]);
         memberData.WriteByteSeq(guid[5]);
         memberData.WriteByteSeq(guid[7]);
         memberData << int32(-1);                                     // unk -1
         memberData.WriteByteSeq(guid[3]);
         memberData << uint8(member->GetClass());
-        memberData << uint64(member->GetWeekActivity());                                    
+        memberData << uint64(/*member->GetWeekActivity()*/15);
         memberData.WriteByteSeq(guid[6]);
         memberData.WriteByteSeq(guid[4]);
         memberData << float(player ? 0.0f : float(::time(NULL) - member->GetLogoutTime()) / DAY);
-        memberData << uint64(member->GetTotalActivity());                                    
+        memberData << uint64(/*member->GetTotalActivity()*/10);
         memberData << uint32(member->GetRankId());
         if (offNoteLength)
             memberData.WriteString(member->GetOfficerNote());
@@ -1351,7 +1354,7 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         memberData.WriteByteSeq(guid[1]);
         memberData << uint32(player ? player->GetZoneId() : member->GetZoneId());
         memberData << uint8(flags);
-        memberData << uint32(member->GetAchievementPoints());// player->GetAchievementMgr().GetCompletedAchievementsAmount()
+        memberData << uint32(/*member->GetAchievementPoints()*/20);// player->GetAchievementMgr().GetCompletedAchievementsAmount()
         memberData << uint8(0);                                     // unk 0 or 1
         memberData.WriteByteSeq(guid[2]);
     }
