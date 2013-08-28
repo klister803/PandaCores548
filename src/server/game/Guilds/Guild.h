@@ -404,7 +404,6 @@ private:
 
         void UpdateBankWithdrawValue(SQLTransaction& trans, uint8 tabId, uint32 amount);
         int32 GetBankWithdrawValue(uint8 tabId) const;
-        void ResetValues(bool weekly = false);
         void RepEarned(Player* player, uint32 value);
         void SendGuildReputationWeeklyCap(WorldSession* session, uint32 reputation) const;
         void ResetValues();
