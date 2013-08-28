@@ -1426,6 +1426,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     }
 
     damage += CalculateDamage(damageInfo->attackType, false, true);
+
     // Add melee damage bonus
     damage = MeleeDamageBonusDone(damageInfo->target, damage, damageInfo->attackType);
     damage = damageInfo->target->MeleeDamageBonusTaken(this, damage, damageInfo->attackType);
@@ -12341,17 +12342,6 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         }
     }
 
-    // Custom MoP Script
-    // 76657 - Mastery : Master of Beasts
-    if (isPet())
-    {
-        Unit* owner = GetOwner();
-        if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76657))
-        {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
 
     // Custom MoP Script
     // 76856 - Mastery : Unshackled Fury

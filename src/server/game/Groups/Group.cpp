@@ -2448,7 +2448,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
     }
 
     // only check for MinPlayerCount since MinPlayerCount == MaxPlayerCount for arenas...
-    if (bgOrTemplate->isArena() && memberscount != MinPlayerCount)
+    if ((bgOrTemplate->isArena() || isRated) && memberscount != MinPlayerCount)
         return ERR_ARENA_TEAM_PARTY_SIZE;
 
     return ERR_BATTLEGROUND_NONE;
