@@ -262,6 +262,7 @@ uint32 const MinNewsItemLevel[MAX_CONTENT] = { 61, 90, 200, 353 }; /*@todo: upda
 typedef std::map<uint32, GuildNewsEntry> GuildNewsLogMap;
 
 #define GUILD_EXPERIENCE_UNCAPPED_LEVEL 20  ///> Hardcoded in client, starting from this level, guild daily experience 
+#define GUILD_WEEKLY_REP_CAP            4375                        // Amount of personal guild rep members can earn per day.
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Emblem info
@@ -365,8 +366,8 @@ private:
         void SetZoneId(uint32 id) { m_zoneId = id; }
         void SetAchievementPoints(uint32 val) { m_achievementPoints = val; }
         void SetLevel(uint8 var) { m_level = var; }
-        void AddReputation(uint32& reputation);
-        void AddActivity(uint64 activity);
+        void AddReputation(uint32 reputation) { m_weekReputation += reputation; }
+        void AddActivity(uint64 activity) { m_totalActivity += activity; m_weekActivity += activity; }
 
         void AddFlag(uint8 var) { m_flags |= var; }
         void RemFlag(uint8 var) { m_flags &= ~var; }
@@ -414,8 +415,6 @@ private:
         void ResetMoneyTime();
 
         inline Player* FindPlayer() const { return ObjectAccessor::FindPlayer(m_guid); }
-
-        uint32 GetRemainingWeeklyReputation() const { return 0; }
 
     private:
         uint32 m_guildId;
@@ -853,6 +852,7 @@ public:
     uint64 GetTodayExperience() const { return _todayExperience; }
     void ResetDailyExperience();
     GuildNewsLog& GetNewsLog() { return _newsLog; }
+    uint32 RepGainedBy(Player* player, uint32 amount);
 
     EmblemInfo const& GetEmblemInfo() const { return m_emblemInfo; }
 

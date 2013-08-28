@@ -7618,8 +7618,11 @@ void Player::RewardGuildReputation(Quest const* quest)
     if (GetsRecruitAFriendBonus(false))
         rep = int32(rep * (1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS)));
 
-    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
-        GetReputationMgr().ModifyReputation(factionEntry, rep);
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->RepGainedBy(this, rep);
+
+    //if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+        //GetReputationMgr().ModifyReputation(factionEntry, rep);
 }
 
 void Player::UpdateHonorFields()
