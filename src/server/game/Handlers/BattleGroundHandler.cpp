@@ -812,7 +812,7 @@ void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
 
     GroupJoinBattlegroundResult err = ERR_BATTLEGROUND_NONE;
 
-    err = grp->CanJoinBattlegroundQueue(bg, bgQueueTypeId, 0, bg->GetMaxPlayersPerTeam(), false, 0);
+    err = grp->CanJoinBattlegroundQueue(bg, bgQueueTypeId, 0, bg->GetMaxPlayersPerTeam(), bg->GetMaxPlayersPerTeam(), true);
 
     // no group found, error
     if (!grp)
