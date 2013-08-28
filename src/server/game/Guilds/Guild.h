@@ -407,6 +407,7 @@ private:
         void ResetValues(bool weekly = false);
         void RepEarned(Player* player, uint32 value);
         void SendGuildReputationWeeklyCap(WorldSession* session, uint32 reputation) const;
+        void ResetValues();
 
         void DecreaseBankRemainingValue(SQLTransaction& trans, uint8 tabId, uint32 amount);
         uint32 GetBankRemainingValue(uint8 tabId, const Guild* guild) const;
@@ -851,6 +852,7 @@ public:
     uint64 GetExperience() const { return _experience; }
     uint64 GetTodayExperience() const { return _todayExperience; }
     void ResetDailyExperience();
+    void ResetWeek();
     GuildNewsLog& GetNewsLog() { return _newsLog; }
     uint32 RepGainedBy(Player* player, uint32 amount);
 

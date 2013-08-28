@@ -568,6 +568,11 @@ void Guild::Member::SetStats(Player* player)
     m_zoneId    = player->GetZoneId();
     m_accountId = player->GetSession()->GetAccountId();
     m_achievementPoints = player->GetAchievementPoints();
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_MEMBERS_ACHIVPOINTS);
+    stmt->setUInt8 (0, m_achievementPoints);
+    stmt->setUInt32(1, player->GetGUIDLow());
+    CharacterDatabase.Execute(stmt);
 }
 
 void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation)
@@ -656,6 +661,7 @@ bool Guild::Member::LoadFromDB(Field* fields)
     m_totalActivity = fields[30].GetUInt64();
     m_weekActivity = fields[31].GetUInt64();
     m_weekReputation = fields[32].GetUInt32();
+    m_achievementPoints = fields[33].GetUInt32();
 
     if (!CheckStats())
         return false;
@@ -682,6 +688,12 @@ bool Guild::Member::CheckStats() const
         return false;
     }
     return true;
+}
+
+void Guild::Member::ResetValues()
+{
+    m_weekActivity = 0;
+    m_weekReputation = 0;
 }
 
 // Decreases amount of money/slots left for today.
@@ -1334,6 +1346,10 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
                 memberData << uint32(0) << uint32(0) << uint32(0);
             }
         }
+
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_GUILD_ROSTER GetTotalReputation %u, GetWeekReputation %u, guid %u",
+        member->GetTotalReputation(), member->GetWeekReputation(), member->GetGUID());
+
         memberData << uint32(member->GetTotalReputation());// Remaining guild week Rep
         memberData.WriteByteSeq(guid[0]);
         memberData.WriteByteSeq(guid[5]);
@@ -1354,7 +1370,7 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         memberData.WriteByteSeq(guid[1]);
         memberData << uint32(player ? player->GetZoneId() : member->GetZoneId());
         memberData << uint8(flags);
-        memberData << uint32(member->GetAchievementPoints());// player->GetAchievementMgr().GetCompletedAchievementsAmount()
+        memberData << uint32(player ? player->GetAchievementPoints() : member->GetAchievementPoints());// player->GetAchievementMgr().GetCompletedAchievementsAmount()
         memberData << uint8(0);                                     // unk 0 or 1
         memberData.WriteByteSeq(guid[2]);
     }
@@ -3502,6 +3518,12 @@ void Guild::ResetDailyExperience()
     for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
         if (Player* player = itr->second->FindPlayer())
             SendGuildXP(player->GetSession());
+}
+
+void Guild::ResetWeek()
+{
+    for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+        itr->second->ResetValues();
 }
 
 void Guild::GuildNewsLog::AddNewEvent(GuildNews eventType, time_t date, uint64 playerGuid, uint32 flags, uint32 data)
