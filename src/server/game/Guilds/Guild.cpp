@@ -2065,7 +2065,7 @@ void Guild::HandleMemberDepositMoney(WorldSession* session, uint32 amount, bool 
         SendBankList(session, 0, false, false);
 }
 
-bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool repair)
+bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool repair)
 {
     if (m_bankMoney < amount)                               // Not enough money in bank
         return false;
@@ -2074,7 +2074,7 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool
     if (!_HasRankRight(player, repair ? GR_RIGHT_WITHDRAW_REPAIR : GR_RIGHT_WITHDRAW_GOLD))
         return false;
 
-    uint32 remainingMoney = _GetMemberRemainingMoney(player->GetGUID());
+    uint64 remainingMoney = _GetMemberRemainingMoney(player->GetGUID());
     if (!remainingMoney)
         return false;
 
@@ -2086,7 +2086,7 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // Update remaining money amount
-    if (remainingMoney < uint32(GUILD_WITHDRAW_MONEY_UNLIMITED))
+    if (remainingMoney < uint64(GUILD_WITHDRAW_MONEY_UNLIMITED))
         if (Member* member = GetMember(player->GetGUID()))
             member->DecreaseBankRemainingValue(trans, GUILD_BANK_MAX_TABS, amount);
     // Remove money from bank
