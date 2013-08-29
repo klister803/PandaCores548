@@ -2036,7 +2036,7 @@ void Guild::HandleRemoveRank(WorldSession* session, uint32 rankId)
     }
 }
 
-void Guild::HandleMemberDepositMoney(WorldSession* session, uint32 amount, bool cashFlow /*=false*/)
+void Guild::HandleMemberDepositMoney(WorldSession* session, uint64 amount, bool cashFlow /*=false*/)
 {
     Player* player = session->GetPlayer();
 
