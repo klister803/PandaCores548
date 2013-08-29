@@ -308,7 +308,7 @@ bool OPvPCapturePoint::Update(uint32 diff)
 
     for (std::list<Player*>::iterator itr = players.begin(); itr != players.end(); ++itr)
     {
-        if ((*itr)->IsOutdoorPvPActive())
+        if ((*itr)->IsOutdoorPvPActive() && (*itr)->GetTeamId() != TEAM_NEUTRAL)
         {
             if (m_activePlayers[(*itr)->GetTeamId()].insert(*itr).second)
                 HandlePlayerEnter(*itr);
