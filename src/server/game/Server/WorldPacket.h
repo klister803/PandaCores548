@@ -23,7 +23,7 @@
 #include "Opcodes.h"
 #include "ByteBuffer.h"
 
-struct z_stream_s;
+//struct z_stream_s;
 
 class WorldPacket : public ByteBuffer
 {
@@ -50,13 +50,13 @@ class WorldPacket : public ByteBuffer
 
         Opcodes GetOpcode() const { return m_opcode; }
         void SetOpcode(Opcodes opcode) { m_opcode = opcode; }
-        void Compress(z_stream_s* compressionStream);
-        void Compress(z_stream_s* compressionStream, WorldPacket const* source);
+        //void Compress(z_stream_s* compressionStream);
+        //void Compress(z_stream_s* compressionStream, WorldPacket const* source);
 
     protected:
         Opcodes m_opcode;
-        void Compress(void* dst, uint32 *dst_size, const void* src, int src_size);
-        z_stream_s* _compressionStream;
+        //void Compress(void* dst, uint32 *dst_size, const void* src, int src_size);
+        //z_stream_s* _compressionStream;
 };
 #endif
 
