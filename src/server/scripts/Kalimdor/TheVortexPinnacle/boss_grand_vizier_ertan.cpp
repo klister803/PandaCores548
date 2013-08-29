@@ -154,8 +154,8 @@ class boss_grand_vizier_ertan : public CreatureScript
                                     if (me->GetDistance2d(pPlayer) > _distance)
                                     {
                                         uint8 i = urand(0, 7);
-                                        if (_vortexes[i])
-                                            _vortexes[i]->CastSpell(pPlayer, SPELL_STORM_EDGE, true);
+                                        //if (_vortexes[i])
+                                            //_vortexes[i]->CastSpell(pPlayer, SPELL_STORM_EDGE, true);
                                         DoCast(pPlayer, SPELL_STORM_EDGE, true);
                                     }
                                 }
