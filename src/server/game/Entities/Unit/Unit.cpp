@@ -16594,6 +16594,10 @@ void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply
         ApplyPercentModFloatVar(m_modAttackSpeedPct[att], -val, apply);
         ApplyPercentModFloatValue(UNIT_FIELD_BASEATTACKTIME+att, -val, apply);
     }
+
+    if (val && isPet())
+        UpdateDamagePhysical(att);
+
     m_attackTimer[att] = uint32(GetAttackTime(att) * m_modAttackSpeedPct[att] * remainingTimePct);
 }
 

@@ -1395,12 +1395,14 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
     if (attType > BASE_ATTACK)
         return;
 
+    float APCoefficient = 14.f;
     float bonusDamage = 0.0f;
     if (m_owner->GetTypeId() == TYPEID_PLAYER)
     {
         if (isHunterPet() && m_owner->getLevel() > 87)
         {
-            bonusDamage = 311.575f;
+            APCoefficient = 12.02f;
+            bonusDamage = 297.f - GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
         }
         else if (GetEntry() == ENTRY_TREANT) // force of nature
         {
@@ -1418,9 +1420,9 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
 
     UnitMods unitMod = UNIT_MOD_DAMAGE_MAINHAND;
 
-    float att_speed = float(GetAttackTime(BASE_ATTACK))/1000.0f;
+    float att_speed = float(GetAttackTime(BASE_ATTACK))/1000.0f * m_modAttackSpeedPct[BASE_ATTACK];
 
-    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType)/ 14.0f * att_speed  + bonusDamage;
+    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / APCoefficient * att_speed  + bonusDamage;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = GetModifierValue(unitMod, TOTAL_PCT);
@@ -1430,7 +1432,6 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
 
     float mindamage = ((base_value + weapon_mindamage) * base_pct + total_value) * total_pct;
     float maxdamage = ((base_value + weapon_maxdamage) * base_pct + total_value) * total_pct;
-
 
     // Custom MoP Script
     // 76657 - Mastery : Master of Beasts
