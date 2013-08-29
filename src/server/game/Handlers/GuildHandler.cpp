@@ -607,8 +607,6 @@ void WorldSession::HandleGuildQueryXPOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SET_RANK_PERMISSIONS");
-
     Guild* guild = _GetPlayerGuild(this, true);
     if (!guild)
     {
@@ -644,6 +642,9 @@ void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
     std::string rankName = recvPacket.ReadString(nameLength);
 
     guild->HandleSetRankInfo(this, rankId, rankName, newRights, moneyPerDay, rightsAndSlots);
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SET_RANK_PERMISSIONS moneyPerDay %u, rankId %u, newRights %u"
+    , moneyPerDay, rankId, newRights);
 }
 
 void WorldSession::HandleGuildRequestPartyState(WorldPacket& recvData)
