@@ -2029,6 +2029,7 @@ class spell_hun_spirit_bond : public SpellScriptLoader
         }
 };
 
+// Glave Toss - 117050
 class spell_hun_Toss : public SpellScriptLoader
 {
     public:
@@ -2042,10 +2043,13 @@ class spell_hun_Toss : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    _player->CastSpell(GetHitUnit(), GetSpellInfo()->Id == 121414 ? 120761 : 121414, true);
+                    if (GetSpellInfo()->Id == 117050)
+                        _player->CastSpell(GetHitUnit(), 121414, true);
 
                     if (GetSpellInfo()->Id == 121414 && GetExplTargetUnit() == GetHitUnit())
                     {
+                        SetHitDamage(GetHitDamage() * 4);
+
                         GetHitUnit()->CastSpell(_player, 120755, true);
                         GetHitUnit()->CastSpell(_player, 120756, true);
                     }
