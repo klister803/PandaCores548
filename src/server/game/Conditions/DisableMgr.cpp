@@ -128,17 +128,17 @@ void LoadDisables()
                 switch (mapEntry->map_type)
                 {
                     case MAP_COMMON:
-                        if (flags)
-                            isFlagInvalid = true;
+                        //if (flags)
+                            //isFlagInvalid = true;
                         break;
                     case MAP_INSTANCE:
                     case MAP_RAID:
-                        if (flags & DUNGEON_STATUSFLAG_HEROIC && !GetMapDifficultyData(entry, HEROIC_DIFFICULTY))
+                        /*if (flags & DUNGEON_STATUSFLAG_HEROIC && !GetMapDifficultyData(entry, HEROIC_DIFFICULTY))
                             isFlagInvalid = true;
                         else if (flags & RAID_STATUSFLAG_10MAN_HEROIC && !GetMapDifficultyData(entry, MAN10_HEROIC_DIFFICULTY))
                             isFlagInvalid = true;
                         else if (flags & RAID_STATUSFLAG_25MAN_HEROIC && !GetMapDifficultyData(entry, MAN25_HEROIC_DIFFICULTY))
-                            isFlagInvalid = true;
+                            isFlagInvalid = true;*/
                         break;
                     case MAP_BATTLEGROUND:
                     case MAP_ARENA:
@@ -319,7 +319,7 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
                 MapEntry const* mapEntry = sMapStore.LookupEntry(entry);
                 if (mapEntry->IsDungeon())
                 {
-                    uint8 disabledModes = itr->second.flags;
+                    /*uint8 disabledModes = itr->second.flags;
                     Difficulty targetDifficulty = player->GetDifficulty(mapEntry->IsRaid());
                     GetDownscaledMapDifficultyData(entry, targetDifficulty);
                     switch (targetDifficulty)
@@ -332,7 +332,8 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
                             return disabledModes & RAID_STATUSFLAG_10MAN_HEROIC;
                         case MAN25_HEROIC_DIFFICULTY:
                             return disabledModes & RAID_STATUSFLAG_25MAN_HEROIC;
-                    }
+                    }*/
+                    return true;
                 }
                 else if (mapEntry->map_type == MAP_COMMON)
                     return true;
