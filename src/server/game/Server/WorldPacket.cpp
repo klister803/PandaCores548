@@ -20,7 +20,7 @@
 #include "World.h"
 
 //! Compresses packet in place
-/*void WorldPacket::Compress(z_stream* compressionStream)
+void WorldPacket::Compress(z_stream* compressionStream)
 {
     Opcodes uncompressedOpcode = GetOpcode();
     if (uncompressedOpcode & COMPRESSED_OPCODE_MASK)
@@ -104,4 +104,4 @@ void WorldPacket::Compress(void* dst, uint32 *dst_size, const void* src, int src
     }
 
     *dst_size -= _compressionStream->avail_out;
-}*/
+}

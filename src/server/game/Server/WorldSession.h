@@ -416,7 +416,7 @@ class WorldSession
         uint32 GetRecruiterId() const { return recruiterId; }
         bool IsARecruiter() const { return isRecruiter; }
 
-        //z_stream_s* GetCompressionStream() { return _compressionStream; }
+        z_stream_s* GetCompressionStream() { return _compressionStream; }
 
     public:                                                 // opcodes handlers
 
@@ -1094,7 +1094,7 @@ class WorldSession
         time_t timeLastChannelKickCommand;
         time_t timeLastHandleSendMail;
         uint8 playerLoginCounter;
-        //z_stream_s* _compressionStream;
+        z_stream_s* _compressionStream;
 };
 #endif
 /// @}
