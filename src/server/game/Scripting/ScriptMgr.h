@@ -773,10 +773,10 @@ class GuildScript : public ScriptObject
         virtual void OnDisband(Guild* /*guild*/) { }
 
         // Called when a guild member withdraws money from a guild bank.
-        virtual void OnMemberWitdrawMoney(Guild* /*guild*/, Player* /*player*/, uint32& /*amount*/, bool /*isRepair*/) { }
+        virtual void OnMemberWitdrawMoney(Guild* /*guild*/, Player* /*player*/, uint64& /*amount*/, bool /*isRepair*/) { }
 
         // Called when a guild member deposits money in a guild bank.
-        virtual void OnMemberDepositMoney(Guild* /*guild*/, Player* /*player*/, uint32& /*amount*/) { }
+        virtual void OnMemberDepositMoney(Guild* /*guild*/, Player* /*player*/, uint64& /*amount*/) { }
 
         // Called when a guild member moves an item in a guild bank.
         virtual void OnItemMove(Guild* /*guild*/, Player* /*player*/, Item* /*pItem*/, bool /*isSrcBank*/, uint8 /*srcContainer*/, uint8 /*srcSlotId*/,
