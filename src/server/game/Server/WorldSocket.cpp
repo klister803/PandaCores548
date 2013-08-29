@@ -188,6 +188,9 @@ int WorldSocket::SendPacket(WorldPacket const& pct)
     if (pkt->GetOpcode() != SMSG_MONSTER_MOVE)
         sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s", GetOpcodeNameForLogging(pkt->GetOpcode()).c_str());
 
+    SendSize[pkt->GetOpcode()] += pkt->size();
+    SendCount[pkt->GetOpcode()]++;
+
     sScriptMgr->OnPacketSend(this, *pkt);
 
     ServerPktHeader header(pkt->size()+2, pkt->GetOpcode(), m_Crypt.IsInitialized());
