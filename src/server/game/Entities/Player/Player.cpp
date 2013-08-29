@@ -8059,7 +8059,7 @@ bool Player::HasCurrency(uint32 id, uint32 count) const
     return itr != _currencyStorage.end() && itr->second.totalCount >= count;
 }
 
-void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/)
+void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/, bool modifyWeek/* = true*/, bool modifySeason/* = true*/)
 {
     if (!count)
         return;
@@ -8098,7 +8098,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
-    if (weekCap && (count > int32(weekCap)))
+    if (modifyWeek && weekCap && (count > int32(weekCap)))
         count = weekCap;
 
     // count can't be more then totalCap if used (totalCap > 0)
@@ -8115,7 +8115,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         newWeekCount = 0;
 
     // if we get more then weekCap just set to limit
-    if (weekCap && (int32(weekCap) < newWeekCount))
+    if (modifyWeek && weekCap && (int32(weekCap) < newWeekCount))
     {
         newWeekCount = int32(weekCap);
         // weekCap - oldWeekCount always >= 0 as we set limit before!
@@ -8129,7 +8129,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         newWeekCount = weekCap;
     }
 
-    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
+    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (modifySeason && count > 0 ? count : 0);
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
@@ -27134,7 +27134,7 @@ void Player::RefundItem(Item* item)
 
         int32 cost = int32(iece->RequiredCurrencyCount[i]);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::RefundItem  cost %i, id %i)", cost, entry->ID);
-        ModifyCurrency(entry->ID, cost, false, true);
+        ModifyCurrency(entry->ID, cost, false, true, false, false);
     }
 
     SendItemRefundResult(item, iece, 0);
