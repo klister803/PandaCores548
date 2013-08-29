@@ -524,11 +524,11 @@ private:
             return IsMoneyEvent(m_eventType);
         }
 
-        BankEventLogEntry(uint32 guildId, uint32 guid, GuildBankEventLogTypes eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId) :
+        BankEventLogEntry(uint32 guildId, uint32 guid, GuildBankEventLogTypes eventType, uint8 tabId, uint32 playerGuid, uint64 itemOrMoney, uint16 itemStackCount, uint8 destTabId) :
             LogEntry(guildId, guid), m_eventType(eventType), m_bankTabId(tabId), m_playerGuid(playerGuid),
             m_itemOrMoney(itemOrMoney), m_itemStackCount(itemStackCount), m_destTabId(destTabId) { }
 
-        BankEventLogEntry(uint32 guildId, uint32 guid, time_t timestamp, uint8 tabId, GuildBankEventLogTypes eventType, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId) :
+        BankEventLogEntry(uint32 guildId, uint32 guid, time_t timestamp, uint8 tabId, GuildBankEventLogTypes eventType, uint32 playerGuid, uint64 itemOrMoney, uint16 itemStackCount, uint8 destTabId) :
             LogEntry(guildId, guid, timestamp), m_eventType(eventType), m_bankTabId(tabId), m_playerGuid(playerGuid),
             m_itemOrMoney(itemOrMoney), m_itemStackCount(itemStackCount), m_destTabId(destTabId) { }
 
@@ -541,7 +541,7 @@ private:
         GuildBankEventLogTypes m_eventType;
         uint8  m_bankTabId;
         uint32 m_playerGuid;
-        uint32 m_itemOrMoney;
+        uint64 m_itemOrMoney;
         uint16 m_itemStackCount;
         uint8  m_destTabId;
     };
@@ -577,7 +577,7 @@ private:
     {
     public:
         RankInfo(uint32 guildId) : m_guildId(guildId), m_rankId(GUILD_RANK_NONE), m_rights(GR_RIGHT_EMPTY), m_bankMoneyPerDay(0) { }
-        RankInfo(uint32 guildId, uint32 rankId, const std::string& name, uint32 rights, uint32 money) :
+        RankInfo(uint32 guildId, uint32 rankId, const std::string& name, uint32 rights, uint64 money) :
             m_guildId(guildId), m_rankId(rankId), m_name(name), m_rights(rights), m_bankMoneyPerDay(money) { }
 
         void LoadFromDB(Field* fields);
@@ -596,7 +596,7 @@ private:
         bool operator < (const RankInfo& rank) const { return m_rights > rank.GetRights(); }
         bool operator == (const RankInfo& rank) const { return m_rights == rank.GetRights(); }
 
-        uint32 GetBankMoneyPerDay() const { return m_rankId == GR_GUILDMASTER ? GUILD_WITHDRAW_MONEY_UNLIMITED : m_bankMoneyPerDay; }
+        uint64 GetBankMoneyPerDay() const { return m_rankId == GR_GUILDMASTER ? GUILD_WITHDRAW_MONEY_UNLIMITED : m_bankMoneyPerDay; }
         void SetBankMoneyPerDay(uint32 money);
 
         inline uint32 GetBankTabRights(uint8 tabId) const { return tabId < GUILD_BANK_MAX_TABS ? m_bankTabRightsAndSlots[tabId].rights : 0; }
@@ -614,7 +614,7 @@ private:
         uint32 m_rankId;
         std::string m_name;
         uint32 m_rights;
-        uint32 m_bankMoneyPerDay;
+        uint64 m_bankMoneyPerDay;
         GuildBankRightsAndSlots m_bankTabRightsAndSlots[GUILD_BANK_MAX_TABS];
     };
 
@@ -784,8 +784,8 @@ public:
     void HandleRemoveRank(WorldSession* session, uint32 rankId);
     void HandleChangeNameRank(WorldSession* session, uint32 id, std::string const& name);
     void HandleSwapRanks(WorldSession* session, uint32 id, bool up);
-    void HandleMemberDepositMoney(WorldSession* session, uint32 amount, bool cashFlow = false);
-    bool HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool repair = false);
+    void HandleMemberDepositMoney(WorldSession* session, uint64 amount, bool cashFlow = false);
+    bool HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool repair = false);
     void HandleMemberLogout(WorldSession* session);
     void HandleDisband(WorldSession* session);
     void HandleGuildPartyRequest(WorldSession* session);

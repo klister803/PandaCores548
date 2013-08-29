@@ -424,7 +424,7 @@ void WorldSession::HandleGuildBankWithdrawMoney(WorldPacket & recvData)
     uint64 GoGuid;
     recvData >> GoGuid;
 
-    uint32 money;
+    uint64 money;
     recvData >> money;
 
     if (money)
@@ -607,8 +607,6 @@ void WorldSession::HandleGuildQueryXPOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SET_RANK_PERMISSIONS");
-
     Guild* guild = _GetPlayerGuild(this, true);
     if (!guild)
     {
@@ -643,7 +641,10 @@ void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
     uint32 nameLength = recvPacket.ReadBits(7);
     std::string rankName = recvPacket.ReadString(nameLength);
 
-    guild->HandleSetRankInfo(this, rankId, rankName, newRights, moneyPerDay, rightsAndSlots);
+    guild->HandleSetRankInfo(this, rankId, rankName, newRights, moneyPerDay * 10000, rightsAndSlots);
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SET_RANK_PERMISSIONS moneyPerDay %u, rankId %u, newRights %u"
+    , moneyPerDay, rankId, newRights);
 }
 
 void WorldSession::HandleGuildRequestPartyState(WorldPacket& recvData)

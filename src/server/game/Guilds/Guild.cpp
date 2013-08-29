@@ -1339,16 +1339,13 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
             uint32 id = player ? player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i) : 0;
             if (id)
             {
-                memberData << uint32(player->GetSkillValue(id)) << uint32(player->GetSkillStep(id)) << uint32(id);
+                memberData << uint32(player->GetSkillValue(id)) << uint32(id) << uint32(player->GetSkillStep(id));
             }
             else
             {
                 memberData << uint32(0) << uint32(0) << uint32(0);
             }
         }
-
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_GUILD_ROSTER GetTotalReputation %u, GetWeekReputation %u, guid %u",
-        member->GetTotalReputation(), member->GetWeekReputation(), member->GetGUID());
 
         memberData << uint32(member->GetTotalReputation());// Remaining guild week Rep
         memberData.WriteByteSeq(guid[0]);
@@ -2039,7 +2036,7 @@ void Guild::HandleRemoveRank(WorldSession* session, uint32 rankId)
     }
 }
 
-void Guild::HandleMemberDepositMoney(WorldSession* session, uint32 amount, bool cashFlow /*=false*/)
+void Guild::HandleMemberDepositMoney(WorldSession* session, uint64 amount, bool cashFlow /*=false*/)
 {
     Player* player = session->GetPlayer();
 
@@ -2068,7 +2065,7 @@ void Guild::HandleMemberDepositMoney(WorldSession* session, uint32 amount, bool 
         SendBankList(session, 0, false, false);
 }
 
-bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool repair)
+bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool repair)
 {
     if (m_bankMoney < amount)                               // Not enough money in bank
         return false;
@@ -2077,7 +2074,7 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool
     if (!_HasRankRight(player, repair ? GR_RIGHT_WITHDRAW_REPAIR : GR_RIGHT_WITHDRAW_GOLD))
         return false;
 
-    uint32 remainingMoney = _GetMemberRemainingMoney(player->GetGUID());
+    uint64 remainingMoney = _GetMemberRemainingMoney(player->GetGUID());
     if (!remainingMoney)
         return false;
 
@@ -2089,7 +2086,7 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // Update remaining money amount
-    if (remainingMoney < uint32(GUILD_WITHDRAW_MONEY_UNLIMITED))
+    if (remainingMoney < uint64(GUILD_WITHDRAW_MONEY_UNLIMITED))
         if (Member* member = GetMember(player->GetGUID()))
             member->DecreaseBankRemainingValue(trans, GUILD_BANK_MAX_TABS, amount);
     // Remove money from bank
@@ -3400,8 +3397,8 @@ void Guild::GiveXP(uint32 xp, Player* source)
     if (GetLevel() >= sWorld->getIntConfig(CONFIG_GUILD_MAX_LEVEL))
         xp = 0; // SMSG_GUILD_XP_GAIN is always sent, even for no gains
 
-    if (GetLevel() >= GUILD_EXPERIENCE_UNCAPPED_LEVEL)
-        xp = std::min(xp, sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP) - uint32(_todayExperience));
+    //if (GetLevel() >= GUILD_EXPERIENCE_UNCAPPED_LEVEL)
+        //xp = std::min(xp, sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP) - uint32(_todayExperience));
 
     WorldPacket data(SMSG_GUILD_XP_GAIN, 8);
     data << uint64(xp);    // XP missing for next level

@@ -155,7 +155,7 @@ class boss_grand_vizier_ertan : public CreatureScript
                                     {
                                         uint8 i = urand(0, 7);
                                         if (_vortexes[i])
-                                            _vortexes[i]->CastSpell(itr->getSource(), SPELL_STORM_EDGE, true);
+                                            _vortexes[i]->CastSpell(pPlayer, SPELL_STORM_EDGE, true);
                                         DoCast(pPlayer, SPELL_STORM_EDGE, true);
                                     }
                                 }
