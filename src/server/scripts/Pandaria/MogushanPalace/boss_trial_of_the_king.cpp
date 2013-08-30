@@ -219,7 +219,6 @@ class boss_ming_the_cunning : public CreatureScript
                     events.ScheduleEvent(EVENT_BOSS_RETIRE, 4000);
                     if (me->GetInstanceScript())
                         me->GetInstanceScript()->SetData(TYPE_MING_RETIRED, 0);
-                    _EnterEvadeMode();
                 }
             }
 
@@ -607,7 +606,6 @@ class boss_kuai_the_brute : public CreatureScript
                         if (mu_shiba->GetAI())
                             mu_shiba->GetAI()->DoAction(ACTION_ATTACK_STOP);
                     }
-                    _EnterEvadeMode();
                 }
             }
 
@@ -846,7 +844,6 @@ class boss_haiyan_the_unstoppable : public CreatureScript
                     events.ScheduleEvent(EVENT_BOSS_RETIRE, 4000);
                     if (me->GetInstanceScript())
                         me->GetInstanceScript()->SetData(TYPE_HAIYAN_RETIRED, 0);
-                    _EnterEvadeMode();
                 }
             }
 
