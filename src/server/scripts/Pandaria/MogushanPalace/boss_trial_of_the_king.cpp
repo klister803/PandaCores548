@@ -538,8 +538,7 @@ class boss_kuai_the_brute : public CreatureScript
         {
             boss_kuai_the_brute_AI(Creature* creature) : BossAI(creature, BOSS_KUAI_THE_BRUTE)
             {
-                TempSummon* sum = me->SummonCreature(CREATURE_MU_SHIBA, me->GetPositionX() + 3 * cos(M_PI / 4), me->GetPositionY() + 3 * sin(M_PI / 4), me->GetPositionZ(), me->GetOrientation());
-                if (sum)
+                if (Unit* sum = me->FindNearestCreature(61453, 40.0f, true))
                 {
                     pet_guid = sum->GetGUID();
                     sum->setFaction(me->getFaction());
