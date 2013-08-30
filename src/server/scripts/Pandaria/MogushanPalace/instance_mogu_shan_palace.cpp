@@ -562,6 +562,17 @@ public:
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE
+
+                    if (Creature* xin = instance->GetCreature(xin_guid))
+                    {
+                        xin->DespawnOrUnsummon();
+                        HandleGameObject(doorAfterTrialGuid, true);
+                    }
+
+
+
+                    
+                    
                 }
                 break;
             }
