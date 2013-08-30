@@ -91,16 +91,16 @@ public:
             switch (id)
             {
                 case DATA_TRIAL_OF_THE_KING:
-                    HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
+                    /*HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
                     if (GameObject* chest = instance->GetGameObject(trialChestGuid))
-                        chest->SetPhaseMask(state == DONE ? 1: 128, true);
+                        chest->SetPhaseMask(state == DONE ? 1: 128, true);*/
                     break;
                 case DATA_GEKKAN:
                     HandleGameObject(doorAfterTrialGuid, state == DONE);
                     // Todo : mod temp portal phasemask
                     break;
                 case DATA_XIN_THE_WEAPONMASTER:
-                    HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
+                    //HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
                     break;
             }
 
@@ -565,26 +565,20 @@ public:
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE
-
-                    if (Creature* xin = instance->GetCreature(xin_guid))
-                    {
-                        xin->DespawnOrUnsummon();
-                        HandleGameObject(doorAfterTrialGuid, true);
-                    }
-
-                    if (GameObject* chest = instance->GetGameObject(trialChestGuid))
-                        chest->SetPhaseMask(1, true);
-
-                    if (GameObject* go = instance->GetGameObject(secretdoorGuid))
-                        go->SetGoState(GO_STATE_ACTIVE);
-                    
-                    
-
-
-
-                    
-                    
                 }
+                
+                if (Creature* xin = instance->GetCreature(xin_guid))
+                {
+                    xin->DespawnOrUnsummon();
+                    HandleGameObject(doorAfterTrialGuid, true);
+                }
+
+                if (GameObject* chest = instance->GetGameObject(trialChestGuid))
+                    chest->SetPhaseMask(1, true);
+                
+                if (GameObject* go = instance->GetGameObject(secretdoorGuid))
+                    go->SetGoState(GO_STATE_ACTIVE);
+
                 break;
             }
         }
