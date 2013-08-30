@@ -14547,7 +14547,7 @@ void Player::AddEnchantmentDuration(Item* item, EnchantmentSlot slot, uint32 dur
 
 void Player::ApplyReforgeEnchantment(Item* item, bool apply)
 {
-    if (!item)
+    if (!item || item->IsBroken())
         return;
 
     ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0));
