@@ -75,7 +75,7 @@ class boss_grand_vizier_ertan : public CreatureScript
                 me->setActive(true);
             }
 
-            Creature* _vortexes[8];
+            uint64 _vortexes[8];
             float _distance;
     
             void Reset()
@@ -90,9 +90,12 @@ class boss_grand_vizier_ertan : public CreatureScript
             {
                 for (uint8 i = 0; i < 8; i++)
                 {
-                    _vortexes[i] = me->SummonCreature(NPC_ERTAN_VORTEX, ertanvortexPos_1[i]);
-                    if(_vortexes[i]->AI())
-                        _vortexes[i]->AI()->DoAction(i);
+                    if(Creature* creature = me->SummonCreature(NPC_ERTAN_VORTEX, ertanvortexPos_1[i]))
+                    {
+                        _vortexes[i] = creature->GetGUID();
+                        if(creature->AI())
+                            creature->AI()->DoAction(i);
+                    }
                 }
 
                 events.ScheduleEvent(EVENT_LIGHTNING_BOLT, 3000);
@@ -132,19 +135,24 @@ class boss_grand_vizier_ertan : public CreatureScript
                             events.ScheduleEvent(EVENT_LIGHTNING_BOLT, 2000);
                             break;
                         case EVENT_CALL_VORTEX:
-                            //for (uint8 i = 0; i < 8; i++)
-                                //if (_vortexes[i] && _vortexes[i]->AI())
-                                    //_vortexes[i]->AI()->DoAction(15);
+                            for (uint8 i = 0; i < 8; i++)
+                                if (_vortexes[i])
+                                    if (Creature* creature = ObjectAccessor::GetCreature(*me, _vortexes[i]))
+                                        if(creature->AI())
+                                            creature->AI()->DoAction(15);
                             events.ScheduleEvent(EVENT_RESET_VORTEX, urand(14000, 17000));
                             break;
                         case EVENT_RESET_VORTEX:
                             for (uint8 i = 0; i < 8; i++)
-                                if (_vortexes[i] && _vortexes[i]->AI())
-                                    _vortexes[i]->AI()->DoAction(16);
+                                if (_vortexes[i])
+                                    if (Creature* creature = ObjectAccessor::GetCreature(*me, _vortexes[i]))
+                                        if(creature->AI())
+                                            creature->AI()->DoAction(16);
                             events.ScheduleEvent(EVENT_CALL_VORTEX, urand(20000, 25000));
                             break;
                         case EVENT_STORM_EDGE:
-                            _distance = me->GetDistance2d(_vortexes[1]);
+                            if (Creature* creature = ObjectAccessor::GetCreature(*me, _vortexes[1]))
+                                _distance = me->GetDistance2d(creature);
                             if (me->GetMap()->GetPlayers().isEmpty())
                                 return;
                             for (Map::PlayerList::const_iterator itr = me->GetMap()->GetPlayers().begin(); itr != me->GetMap()->GetPlayers().end(); ++itr)
@@ -154,8 +162,8 @@ class boss_grand_vizier_ertan : public CreatureScript
                                     if (me->GetDistance2d(pPlayer) > _distance)
                                     {
                                         uint8 i = urand(0, 7);
-                                        //if (_vortexes[i])
-                                            //_vortexes[i]->CastSpell(pPlayer, SPELL_STORM_EDGE, true);
+                                        if (Creature* creature = ObjectAccessor::GetCreature(*me, _vortexes[i]))
+                                            creature->CastSpell(pPlayer, SPELL_STORM_EDGE, true);
                                         DoCast(pPlayer, SPELL_STORM_EDGE, true);
                                     }
                                 }
