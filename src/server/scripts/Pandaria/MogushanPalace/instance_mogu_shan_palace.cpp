@@ -283,6 +283,7 @@ public:
             {
                 case 59481:
                     creature->SetReactState(REACT_PASSIVE);
+                    creature->SetDisplayId(11686);
                     break;
                 case CREATURE_ANIMATED_STAFF:
                     animated_staffs.push_back(creature->GetGUID());
@@ -574,7 +575,10 @@ public:
                 }
 
                 if (GameObject* chest = instance->GetGameObject(trialChestGuid))
+                {
                     chest->SetPhaseMask(1, true);
+                    chest->SetRespawnTime(604800);
+                }
                 
                 if (GameObject* go = instance->GetGameObject(secretdoorGuid))
                     go->SetGoState(GO_STATE_ACTIVE);
