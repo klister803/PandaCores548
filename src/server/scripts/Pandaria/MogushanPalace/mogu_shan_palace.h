@@ -126,6 +126,7 @@ enum eGameObjects
     GO_TRIAL_CHEST          = 214520,
     GO_DOOR_AFTER_TRIAL     = 213593,
     GO_DOOR_BEFORE_KING     = 213596,
+    GO_SECRET_DOOR          = 213810,
 };
 
 #endif // MOGUSHAN_PALACE_H_

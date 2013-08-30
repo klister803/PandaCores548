@@ -59,6 +59,7 @@ public:
         uint64 trialChestGuid;
         uint64 doorAfterTrialGuid;
         uint64 doorBeforeKingGuid;
+        uint64 secretdoorGuid;
 
         instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
@@ -73,6 +74,7 @@ public:
             trialChestGuid = 0;
             doorAfterTrialGuid = 0;
             doorBeforeKingGuid = 0;
+            secretdoorGuid     = 0;
 
             gekkan = 0;
             glintrok_ironhide = 0;
@@ -113,6 +115,7 @@ public:
                 case GO_TRIAL_CHEST:        trialChestGuid = go->GetGUID();         go->SetPhaseMask(128, true);    break;
                 case GO_DOOR_AFTER_TRIAL:   doorAfterTrialGuid = go->GetGUID();     break;
                 case GO_DOOR_BEFORE_KING:   doorBeforeKingGuid = go->GetGUID();     break;
+                case GO_SECRET_DOOR:        secretdoorGuid = go->GetGUID();         break;
             }
         }
 
@@ -568,6 +571,14 @@ public:
                         xin->DespawnOrUnsummon();
                         HandleGameObject(doorAfterTrialGuid, true);
                     }
+
+                    if (GameObject* chest = instance->GetGameObject(trialChestGuid))
+                        chest->SetPhaseMask(1, true);
+
+                    if (GameObject* go = instance->GetGameObject(secretdoorGuid))
+                        go->SetGoState(GO_STATE_ACTIVE);
+                    
+                    
 
 
 
