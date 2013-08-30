@@ -1051,6 +1051,29 @@ const std::vector<SpellLinked>* SpellMgr::GetSpellLinked(int32 spell_id) const
     return itr != mSpellLinkedMap.end() ? &(itr->second) : NULL;
 }
 
+const uint32 SpellMgr::GetMountListId(uint32 spell_id, uint32 teamid) const
+{
+    uint32 faction = 0; //both
+    if(teamid == TEAM_ALLIANCE)
+        faction = 1;
+    if(teamid == TEAM_HORDE)
+        faction = 2;
+
+    SpellMountListMap::const_iterator itr = mSpellMountListMap.find(spell_id);
+    if (itr != mSpellMountListMap.end())
+    {
+        SpellMountList* _mountList =  itr->second;
+        if(_mountList->side == 0 || _mountList->side == faction)
+            return spell_id;
+        if(_mountList->side != faction)
+            return _mountList->spellIdS;
+    }
+    else
+        return spell_id;
+
+    return 0;
+}
+
 const std::vector<SpellPrcoCheck>* SpellMgr::GetSpellPrcoCheck(int32 spell_id) const
 {
     SpellPrcoCheckMap::const_iterator itr = mSpellPrcoCheckMap.find(spell_id);
@@ -2317,6 +2340,56 @@ void SpellMgr::LoadSpellLinked()
     } while (result->NextRow());
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u linked spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::LoadmSpellMountList()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellMountListMap.clear();    // need for reload case
+
+    //                                                0      1      2       3
+    QueryResult result = WorldDatabase.Query("SELECT spell, side, spellS, sideS FROM mount_list");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked spells. DB table `mount_list` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 spell = fields[0].GetInt32();
+        int32 side = fields[1].GetInt32();
+        int32 spellS = fields[2].GetUInt32();
+        int32 sideS = fields[3].GetInt32();
+
+        SpellInfo const* spellInfo = GetSpellInfo(spell);
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `mount_list` does not exist", spell);
+            continue;
+        }
+        spellInfo = GetSpellInfo(spellS);
+        if (spellS != 0 && !spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `mount_list` does not exist", spellS);
+            continue;
+        }
+
+        SpellMountList* templist = new SpellMountList;
+        templist->spellId = spell;
+        templist->side = side;
+        templist->spellIdS = spellS;
+        templist->sideS = sideS;
+        mSpellMountListMap[spell] = templist;
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u mount list in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SpellMgr::LoadSpellPrcoCheck()

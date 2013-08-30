@@ -3835,7 +3835,13 @@ void Player::SendKnownSpells()
         if (!itr->second->active || itr->second->disabled)
             continue;
 
-        dataBuffer << uint32(itr->first);
+        if(itr->second->mount && itr->second->mountReplace == 0)
+            continue;
+
+        if(itr->second->mountReplace)
+            dataBuffer << uint32(itr->second->mountReplace);
+        else
+            dataBuffer << uint32(itr->first);
 
         ++spellCount;
     }                          // spell count placeholder
@@ -3871,7 +3877,13 @@ void Player::SendInitialSpells()
         if (!itr->second->active || itr->second->disabled)
             continue;
 
-        data << uint32(itr->first);
+        if(itr->second->mount && itr->second->mountReplace == 0)
+            continue;
+
+        if(itr->second->mountReplace)
+            data << uint32(itr->second->mountReplace);
+        else
+            data << uint32(itr->first);
         data << uint16(0);                                  // it's not slot id
 
         ++spellCount;
@@ -4104,6 +4116,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     bool disabled_case = false;
     bool superceded_old = false;
     bool mount = false;
+    uint32 mountReplace = 0;
 
     PlayerSpellMap::iterator itr = m_spells.find(spellId);
 
@@ -4229,7 +4242,14 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         }
 
         if(spellInfo->IsMountOrCompanions())
+        {
             mount = true;
+            mountReplace = sSpellMgr->GetMountListId(spellId, GetTeamId());
+            if(mountReplace != 0)
+                AddSpellMountReplacelist(spellId, mountReplace);
+        }
+        else
+            mountReplace = 0;
 
         PlayerSpell* newspell = new PlayerSpell;
         newspell->state     = state;
@@ -4237,6 +4257,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         newspell->dependent = dependent;
         newspell->disabled  = disabled;
         newspell->mount     = mount;
+        newspell->mountReplace = mountReplace;
 
         // replace spells in action bars and spellbook to bigger rank if only one spell rank must be accessible
         if (newspell->active && !newspell->disabled && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked() != 0)
@@ -4449,6 +4470,7 @@ void Player::AddTemporarySpell(uint32 spellId)
     newspell->dependent = false;
     newspell->disabled  = false;
     newspell->mount     = false;
+    newspell->mountReplace = 0;
     m_spells[spellId]   = newspell;
 }
 
@@ -5184,8 +5206,11 @@ bool Player::HasTalent(uint32 spell, uint8 spec) const
     return (itr != GetTalentMap(spec)->end() && itr->second->state != PLAYERSPELL_REMOVED);
 }
 
-bool Player::HasActiveSpell(uint32 spell) const
+bool Player::HasActiveSpell(uint32 spell)
 {
+    uint32 tempSpell = GetSpellIdbyReplace(spell);
+    if(tempSpell != 0 && tempSpell != spell)
+        spell = tempSpell;
     PlayerSpellMap::const_iterator itr = m_spells.find(spell);
     return (itr != m_spells.end() && itr->second->state != PLAYERSPELL_REMOVED &&
         itr->second->active && !itr->second->disabled);

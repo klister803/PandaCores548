@@ -628,9 +628,18 @@ struct SpellTriggered
     int32 aura;
 };
 
+struct SpellMountList
+{
+    int32 spellId;
+    int32 side;
+    int32 spellIdS;
+    int32 sideS;
+};
+
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
 typedef std::map<int32, std::vector<SpellLinked> > SpellLinkedMap;
 typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
+typedef std::map<int32, SpellMountList* > SpellMountListMap;
 
 bool IsPrimaryProfessionSkill(uint32 skill);
 
@@ -738,6 +747,7 @@ class SpellMgr
         bool IsArenaAllowedEnchancment(uint32 ench_id) const;
 
         const std::vector<SpellLinked> *GetSpellLinked(int32 spell_id) const;
+        const uint32 GetMountListId(uint32 spell_id, uint32 teamid) const;
         const std::vector<SpellPrcoCheck> *GetSpellPrcoCheck(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggered(int32 spell_id) const;
 
@@ -781,6 +791,7 @@ class SpellMgr
         void LoadEnchantCustomAttr();
         void LoadSpellEnchantProcData();
         void LoadSpellLinked();
+        void LoadmSpellMountList();
         void LoadSpellPrcoCheck();
         void LoadSpellTriggered();
         void LoadPetLevelupSpellMap();
@@ -833,6 +844,7 @@ class SpellMgr
         SpellOverrideInfo          mSpellOverrideInfo;
         TalentSpellSet             mTalentSpellInfo;
         SpellPowerVector           mSpellPowerInfo;
+        SpellMountListMap          mSpellMountListMap;
         std::list<uint32>          mForbiddenSpells;
 };
 

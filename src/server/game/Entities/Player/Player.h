@@ -109,7 +109,8 @@ struct PlayerSpell
     bool active            : 1;                             // show in spellbook
     bool dependent         : 1;                             // learned as result another spell learn, skill grow, quest reward, etc
     bool disabled          : 1;                             // first rank has been learned in result talent learn but currently talent unlearned, save max learned ranks
-    bool mount             : 1;                             // first rank has been learned in result talent learn but currently talent unlearned, save max learned ranks
+    bool mount             : 1;                             // spell summon mount or Companions
+    uint32 mountReplace;                                    // if mount for horde replace if exist aliace
 };
 
 struct PlayerTalent
@@ -2053,7 +2054,7 @@ class Player : public Unit, public GridObject<Player>
         void SendRemoveControlBar();
         void SendKnownSpells();
         bool HasSpell(uint32 spell) const;
-        bool HasActiveSpell(uint32 spell) const;            // show in spellbook
+        bool HasActiveSpell(uint32 spell);            // show in spellbook
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;
         bool IsSpellFitByClassAndRace(uint32 spell_id) const;
         bool IsNeedCastPassiveSpellAtLearn(SpellInfo const* spellInfo) const;
@@ -2140,6 +2141,16 @@ class Player : public Unit, public GridObject<Player>
 
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
         PlayerSpellMap      & GetSpellMap()       { return m_spells; }
+
+        void AddSpellMountReplacelist(uint32 spellId, uint32 replaseId)
+        {
+            spellMountReplacelist[replaseId] = spellId;
+        }
+        uint32 GetSpellIdbyReplace(uint32 replace)
+        {
+            std::map<uint32, uint32>::const_iterator itr = spellMountReplacelist.find(replace);
+            return itr != spellMountReplacelist.end() ? itr->second : NULL;
+        }
 
         SpellCooldowns const& GetSpellCooldownMap() const { return m_spellCooldowns; }
 
@@ -3247,6 +3258,7 @@ class Player : public Unit, public GridObject<Player>
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
+        std::map<uint32, uint32> spellMountReplacelist;
 
         GlobalCooldownMgr m_GlobalCooldownMgr;
 
