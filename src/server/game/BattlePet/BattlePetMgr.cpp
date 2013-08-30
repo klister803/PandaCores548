@@ -124,7 +124,7 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
     uint32 spellID = 0;
     recvData >> spellID;
 
-    if (!_player->HasSpell(spellID))
+    if (!_player->HasActiveSpell(spellID))
         return;
 
     _player->CastSpell(_player, spellID, true);
