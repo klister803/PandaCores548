@@ -1013,6 +1013,19 @@ bool SpellInfo::HasAreaAuraEffect() const
     return false;
 }
 
+bool SpellInfo::IsMountOrCompanions() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].IsAura(SPELL_AURA_MOUNTED))
+            return true;
+        if (Effects[i].Effect == SPELL_EFFECT_SUMMON)
+            if (Effects[i].MiscValueB == 3221)
+                return true;
+    }
+    return false;
+}
+
 bool SpellInfo::IsExplicitDiscovery() const
 {
     return ((Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM

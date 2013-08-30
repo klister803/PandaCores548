@@ -4103,6 +4103,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     bool dependent_set = false;
     bool disabled_case = false;
     bool superceded_old = false;
+    bool mount = false;
 
     PlayerSpellMap::iterator itr = m_spells.find(spellId);
 
@@ -4227,11 +4228,15 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                 learnSpell(prev_spell, true);
         }
 
+        if(spellInfo->IsMountOrCompanions())
+            mount = true;
+
         PlayerSpell* newspell = new PlayerSpell;
         newspell->state     = state;
         newspell->active    = active;
         newspell->dependent = dependent;
         newspell->disabled  = disabled;
+        newspell->mount     = mount;
 
         // replace spells in action bars and spellbook to bigger rank if only one spell rank must be accessible
         if (newspell->active && !newspell->disabled && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked() != 0)
@@ -4443,6 +4448,7 @@ void Player::AddTemporarySpell(uint32 spellId)
     newspell->active    = true;
     newspell->dependent = false;
     newspell->disabled  = false;
+    newspell->mount     = false;
     m_spells[spellId]   = newspell;
 }
 
@@ -18467,6 +18473,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadTalents(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADTALENTS));
     _LoadSpells(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
+    _LoadAccountSpells(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTMOUNTS));
 
     _LoadGlyphs(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGLYPHS));
     _LoadAuras(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADAURAS), holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADAURAS_EFFECTS), time_diff);
@@ -19510,6 +19517,18 @@ void Player::_LoadSpells(PreparedQueryResult result)
     {
         do
             addSpell((*result)[0].GetUInt32(), (*result)[1].GetBool(), false, false, (*result)[2].GetBool(), true);
+        while (result->NextRow());
+    }
+}
+
+void Player::_LoadAccountSpells(PreparedQueryResult result)
+{
+    //QueryResult* result = CharacterDatabase.PQuery("SELECT spell, active, disabled FROM character_spell WHERE guid = '%u'", GetGUIDLow());
+
+    if (result)
+    {
+        do
+            addSpell((*result)[0].GetUInt32(), (*result)[1].GetBool(), false, false, false, true);
         while (result->NextRow());
     }
 }
@@ -20904,12 +20923,23 @@ void Player::_SaveSpells(SQLTransaction& trans)
         // add only changed/new not dependent spells
         if (!itr->second->dependent && (itr->second->state == PLAYERSPELL_NEW || itr->second->state == PLAYERSPELL_CHANGED))
         {
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SPELL);
-            stmt->setUInt32(0, GetGUIDLow());
-            stmt->setUInt32(1, itr->first);
-            stmt->setBool(2, itr->second->active);
-            stmt->setBool(3, itr->second->disabled);
-            trans->Append(stmt);
+            if(itr->second->mount)
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ACC_MOUNT);
+                stmt->setUInt32(0, GetSession()->GetAccountId());
+                stmt->setUInt32(1, itr->first);
+                stmt->setBool(2, itr->second->active);
+                trans->Append(stmt);
+            }
+            else
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SPELL);
+                stmt->setUInt32(0, GetGUIDLow());
+                stmt->setUInt32(1, itr->first);
+                stmt->setBool(2, itr->second->active);
+                stmt->setBool(3, itr->second->disabled);
+                trans->Append(stmt);
+            }
         }
 
         if (itr->second->state == PLAYERSPELL_REMOVED)

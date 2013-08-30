@@ -109,6 +109,7 @@ struct PlayerSpell
     bool active            : 1;                             // show in spellbook
     bool dependent         : 1;                             // learned as result another spell learn, skill grow, quest reward, etc
     bool disabled          : 1;                             // first rank has been learned in result talent learn but currently talent unlearned, save max learned ranks
+    bool mount             : 1;                             // first rank has been learned in result talent learn but currently talent unlearned, save max learned ranks
 };
 
 struct PlayerTalent
@@ -899,6 +900,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
     //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 37, //id on TC.
     PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 38,
+    PLAYER_LOGIN_QUERY_LOADACCOUNTMOUNTS            = 39,
     MAX_PLAYER_LOGIN_QUERY
 };
 
@@ -3141,6 +3143,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadGroup(PreparedQueryResult result);
         void _LoadSkills(PreparedQueryResult result);
         void _LoadSpells(PreparedQueryResult result);
+        void _LoadAccountSpells(PreparedQueryResult result);
         void _LoadFriendList(PreparedQueryResult result);
         bool _LoadHomeBind(PreparedQueryResult result);
         void _LoadDeclinedNames(PreparedQueryResult result);

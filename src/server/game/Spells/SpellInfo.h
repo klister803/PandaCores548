@@ -435,6 +435,7 @@ public:
     bool HasEffect(SpellEffects effect) const;
     bool HasAura(AuraType aura) const;
     bool HasAreaAuraEffect() const;
+    bool IsMountOrCompanions() const;
 
     bool IsExplicitDiscovery() const;
     bool IsLootCrafting() const;
