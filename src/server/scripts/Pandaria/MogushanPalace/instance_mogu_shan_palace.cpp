@@ -59,6 +59,7 @@ public:
         uint64 trialChestGuid;
         uint64 doorAfterTrialGuid;
         uint64 doorBeforeKingGuid;
+        uint64 secretdoorGuid;
 
         instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
@@ -73,6 +74,7 @@ public:
             trialChestGuid = 0;
             doorAfterTrialGuid = 0;
             doorBeforeKingGuid = 0;
+            secretdoorGuid     = 0;
 
             gekkan = 0;
             glintrok_ironhide = 0;
@@ -89,16 +91,16 @@ public:
             switch (id)
             {
                 case DATA_TRIAL_OF_THE_KING:
-                    HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
+                    /*HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
                     if (GameObject* chest = instance->GetGameObject(trialChestGuid))
-                        chest->SetPhaseMask(state == DONE ? 1: 128, true);
+                        chest->SetPhaseMask(state == DONE ? 1: 128, true);*/
                     break;
                 case DATA_GEKKAN:
                     HandleGameObject(doorAfterTrialGuid, state == DONE);
                     // Todo : mod temp portal phasemask
                     break;
                 case DATA_XIN_THE_WEAPONMASTER:
-                    HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
+                    //HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
                     break;
             }
 
@@ -113,6 +115,7 @@ public:
                 case GO_TRIAL_CHEST:        trialChestGuid = go->GetGUID();         go->SetPhaseMask(128, true);    break;
                 case GO_DOOR_AFTER_TRIAL:   doorAfterTrialGuid = go->GetGUID();     break;
                 case GO_DOOR_BEFORE_KING:   doorBeforeKingGuid = go->GetGUID();     break;
+                case GO_SECRET_DOOR:        secretdoorGuid = go->GetGUID();         break;
             }
         }
 
@@ -280,6 +283,7 @@ public:
             {
                 case 59481:
                     creature->SetReactState(REACT_PASSIVE);
+                    creature->SetDisplayId(11686);
                     break;
                 case CREATURE_ANIMATED_STAFF:
                     animated_staffs.push_back(creature->GetGUID());
@@ -562,18 +566,23 @@ public:
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE
-
-                    if (Creature* xin = instance->GetCreature(xin_guid))
-                    {
-                        xin->DespawnOrUnsummon();
-                        HandleGameObject(doorAfterTrialGuid, true);
-                    }
-
-
-
-                    
-                    
                 }
+                
+                if (Creature* xin = instance->GetCreature(xin_guid))
+                {
+                    xin->DespawnOrUnsummon();
+                    HandleGameObject(doorAfterTrialGuid, true);
+                }
+
+                if (GameObject* chest = instance->GetGameObject(trialChestGuid))
+                {
+                    chest->SetPhaseMask(1, true);
+                    chest->SetRespawnTime(604800);
+                }
+                
+                if (GameObject* go = instance->GetGameObject(secretdoorGuid))
+                    go->SetGoState(GO_STATE_ACTIVE);
+
                 break;
             }
         }
