@@ -36,7 +36,7 @@
 void WorldSession::HandleSendMail(WorldPacket& recvData)
 {
     time_t now = time(NULL);
-    if (now - timeLastHandleSendMail < 60)
+    if (now - timeLastHandleSendMail < 15)
         return;
     else
        timeLastHandleSendMail = now;

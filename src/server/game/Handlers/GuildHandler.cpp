@@ -239,23 +239,11 @@ void WorldSession::HandleGuildSetNoteOpcode(WorldPacket& recvPacket)
     playerGuid[3] = recvPacket.ReadBit();
     bool type = recvPacket.ReadBit();      // 0 == Officer, 1 == Public
     uint32 noteLength = recvPacket.ReadBits(8);
-    recvPacket.ReadBit(); //noteLength & 0x1F
     playerGuid[4] = recvPacket.ReadBit();
     playerGuid[6] = recvPacket.ReadBit();
     playerGuid[5] = recvPacket.ReadBit();
     playerGuid[1] = recvPacket.ReadBit();
-    recvPacket.FlushBits();
-    /*playerGuid[1] = recvPacket.ReadBit();
-    playerGuid[4] = recvPacket.ReadBit();
-    playerGuid[5] = recvPacket.ReadBit();
-    playerGuid[3] = recvPacket.ReadBit();
-    playerGuid[0] = recvPacket.ReadBit();
-    playerGuid[7] = recvPacket.ReadBit();
-    bool type = recvPacket.ReadBit();      // 0 == Officer, 1 == Public
-    playerGuid[6] = recvPacket.ReadBit();
-    uint32 noteLength = recvPacket.ReadBits(8);
-    playerGuid[2] = recvPacket.ReadBit();
-    */
+
     std::string note = recvPacket.ReadString(noteLength);
 
     uint8 byteOrder[8] = {2, 5, 0, 3, 7, 4, 6, 1};
@@ -263,6 +251,8 @@ void WorldSession::HandleGuildSetNoteOpcode(WorldPacket& recvPacket)
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleSetMemberNote(this, note, playerGuid, type);
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: end CMSG_GUILD_SET_NOTE");
 }
 
 void WorldSession::HandleGuildQueryRanksOpcode(WorldPacket& recvData)
@@ -434,7 +424,7 @@ void WorldSession::HandleGuildBankWithdrawMoney(WorldPacket & recvData)
     uint64 GoGuid;
     recvData >> GoGuid;
 
-    uint32 money;
+    uint64 money;
     recvData >> money;
 
     if (money)
@@ -617,8 +607,6 @@ void WorldSession::HandleGuildQueryXPOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SET_RANK_PERMISSIONS");
-
     Guild* guild = _GetPlayerGuild(this, true);
     if (!guild)
     {
@@ -653,7 +641,10 @@ void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
     uint32 nameLength = recvPacket.ReadBits(7);
     std::string rankName = recvPacket.ReadString(nameLength);
 
-    guild->HandleSetRankInfo(this, rankId, rankName, newRights, moneyPerDay, rightsAndSlots);
+    guild->HandleSetRankInfo(this, rankId, rankName, newRights, moneyPerDay * 10000, rightsAndSlots);
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SET_RANK_PERMISSIONS moneyPerDay %u, rankId %u, newRights %u"
+    , moneyPerDay, rankId, newRights);
 }
 
 void WorldSession::HandleGuildRequestPartyState(WorldPacket& recvData)

@@ -1165,6 +1165,8 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
     }
     std::list<WorldObject*> targets;
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster) * m_spellValue->RadiusMod;
+    if(radius <= 0)
+        return;
     SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->Effects[effIndex].ImplicitTargetConditions);
 
     // Custom entries
@@ -1205,6 +1207,21 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                 finish(false);
             }
             return;
+        case 121414:
+        case 120761:
+        {
+            m_targets.SetUnitTarget(m_caster->ToPlayer()->GetSelectedUnit());
+            for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+            {
+                WorldObject* obj = *itr;
+                if (obj->IsInBetween(m_caster, m_caster->ToPlayer()->GetSelectedUnit(), 5) || m_caster->ToPlayer()->GetSelectedUnit() == obj)
+                    itr++;
+                else
+                    targets.erase(itr++);
+            }
+            break;
+        }
+
         default:
             break;
     }
@@ -1215,6 +1232,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
     std::list<GameObject*> gObjTargets;
     // for compability with older code - add only unit and go targets
     // TODO: remove this
+    if (!targets.empty())
     for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
     {
         if (Unit* unitTarget = (*itr)->ToUnit())
@@ -2751,7 +2769,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         {
             bool refresh = false;
             m_spellAura = Aura::TryRefreshStackOrCreate(aurSpellInfo, effectMask, unit,
-                m_originalCaster, (aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem, 0, &refresh, m_cast_count);
+                m_originalCaster, (aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem, 0, &refresh);
             if (m_spellAura)
             {
                 // Set aura stack amount to desired value

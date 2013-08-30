@@ -1113,8 +1113,6 @@ void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo
             spell->SetSpellValue(itr->first, itr->second);
 
     spell->m_CastItem = castItem;
-    if(triggeredByAura && triggeredByAura->GetBase())
-        spell->m_cast_count = triggeredByAura->GetBase()->GetSpellCastCount();
     spell->prepare(&targets, triggeredByAura);
 }
 
@@ -1426,6 +1424,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     }
 
     damage += CalculateDamage(damageInfo->attackType, false, true);
+
     // Add melee damage bonus
     damage = MeleeDamageBonusDone(damageInfo->target, damage, damageInfo->attackType);
     damage = damageInfo->target->MeleeDamageBonusTaken(this, damage, damageInfo->attackType);
@@ -1779,8 +1778,14 @@ uint32 Unit::CalcArmorReducedDamage(Unit* victim, const uint32 damage, SpellInfo
     if (levelModifier > 59)
         levelModifier = levelModifier + (4.5f * (levelModifier - 59));
 
-    float tmpvalue = 0.1f * armor / (8.5f * levelModifier + 40);
-    tmpvalue = tmpvalue / (1.0f + tmpvalue);
+    float tmpvalue;
+    if (getLevel() < 90)
+    {
+        tmpvalue = 0.1f * armor / (8.5f * levelModifier + 40);
+        tmpvalue = tmpvalue / (1.0f + tmpvalue);
+    }
+    else
+        tmpvalue = armor / (armor + 46257.5);
 
     if (tmpvalue < 0.0f)
         tmpvalue = 0.0f;
@@ -12335,17 +12340,6 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         }
     }
 
-    // Custom MoP Script
-    // 76657 - Mastery : Master of Beasts
-    if (isPet())
-    {
-        Unit* owner = GetOwner();
-        if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76657))
-        {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
 
     // Custom MoP Script
     // 76856 - Mastery : Unshackled Fury
@@ -15781,14 +15775,15 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (procSpell && procSpell->Id == 123725 && itr->first == 123393)
             continue;
 
-        // time for hardcode! Some spells can proc on absorb
-        if (triggerData.aura && triggerData.aura->GetSpellInfo() && (triggerData.aura->GetSpellInfo()->Id == 33757 ||
-            triggerData.aura->GetSpellInfo()->Id == 28305 || triggerData.aura->GetSpellInfo()->Id == 2823 ||
-            triggerData.aura->GetSpellInfo()->Id == 3408 || triggerData.aura->GetSpellInfo()->Id == 5761 ||
-            triggerData.aura->GetSpellInfo()->Id == 8679 || triggerData.aura->GetSpellInfo()->Id == 108211 ||
-            triggerData.aura->GetSpellInfo()->Id == 108215 || triggerData.aura->GetSpellInfo()->GetSpellSpecific() == SPELL_SPECIFIC_SEAL ||
-            triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH) || triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_INVISIBILITY)))
-            active = true;
+        if (procSpell && !(procSpell->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
+            // time for hardcode! Some spells can proc on absorb
+            if (triggerData.aura && triggerData.aura->GetSpellInfo() && (triggerData.aura->GetSpellInfo()->Id == 33757 ||
+                triggerData.aura->GetSpellInfo()->Id == 28305 || triggerData.aura->GetSpellInfo()->Id == 2823 ||
+                triggerData.aura->GetSpellInfo()->Id == 3408 || triggerData.aura->GetSpellInfo()->Id == 5761 ||
+                triggerData.aura->GetSpellInfo()->Id == 8679 || triggerData.aura->GetSpellInfo()->Id == 108211 ||
+                triggerData.aura->GetSpellInfo()->Id == 108215 || triggerData.aura->GetSpellInfo()->GetSpellSpecific() == SPELL_SPECIFIC_SEAL ||
+                triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH) || triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_INVISIBILITY)))
+                active = true;
 
         // do checks using conditions table
         ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_PROC, spellProto->Id);
@@ -16599,6 +16594,10 @@ void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply
         ApplyPercentModFloatVar(m_modAttackSpeedPct[att], -val, apply);
         ApplyPercentModFloatValue(UNIT_FIELD_BASEATTACKTIME+att, -val, apply);
     }
+
+    if (val && isPet())
+        UpdateDamagePhysical(att);
+
     m_attackTimer[att] = uint32(GetAttackTime(att) * m_modAttackSpeedPct[att] * remainingTimePct);
 }
 
@@ -17676,8 +17675,12 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     if (GetTypeId() == TYPEID_PLAYER)
         Dismount();
 
-    ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
-    ASSERT((type == CHARM_TYPE_VEHICLE) == IsVehicle());
+    //ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
+    if(!(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER))
+        return false;
+    //ASSERT((type == CHARM_TYPE_VEHICLE) == IsVehicle());
+    if(!((type == CHARM_TYPE_VEHICLE) == IsVehicle()))
+        return false;
 
     sLog->outDebug(LOG_FILTER_UNITS, "SetCharmedBy: charmer %u (GUID %u), charmed %u (GUID %u), type %u.", charmer->GetEntry(), charmer->GetGUIDLow(), GetEntry(), GetGUIDLow(), uint32(type));
 
@@ -19315,8 +19318,10 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         ToPlayer()->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
     {
+        Position pos = {x, y, z, orientation};
         UpdatePosition(x, y, z, orientation, true);
-        SendMovementFlagUpdate();
+        SendTeleportPacket(pos);
+        UpdateObjectVisibility();
     }
 }
 
@@ -19933,7 +19938,7 @@ uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
 
 void Unit::WriteMovementUpdate(WorldPacket &data) const
 {
-    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo);
+    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo, (Unit *)this);
 }
 
 void Unit::RemoveSoulSwapDOT(Unit* target)
@@ -19964,4 +19969,58 @@ void Unit::ApplySoulSwapDOT(Unit* target)
         AddAura((*iter), target);
 
     _SoulSwapDOTList.clear();
+}
+
+void Unit::SendTeleportPacket(Position &oldPos)
+{
+    ObjectGuid guid = GetGUID();
+    ObjectGuid transGuid = GetTransGUID();
+
+    WorldPacket data(SMSG_MOVE_TELEPORT, 38);
+    data.WriteBit(uint64(transGuid));
+    data.WriteBit(guid[5]);
+    if (transGuid)
+    {
+        uint8 bitOrder[8] = {5, 6, 2, 0, 1, 4, 7, 3};
+        data.WriteBitInOrder(transGuid, bitOrder);
+    }
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(0);       // unknown
+    //if (unk bit)
+    //{
+    //    data.WriteBit(unk1);
+    //    data.WriteBit(unk2);
+    //}
+    data.WriteBit(guid[2]);
+    data.FlushBits();
+
+    //if (unk bit)
+    //    data << uint8(unk);
+
+    if (transGuid)
+    {
+        uint8 byteOrder[8] = {2, 7, 1, 5, 6, 0, 4, 3};
+        data.WriteBytesSeq(transGuid, byteOrder);
+    }
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[5]);
+    data << float(GetOrientation());
+    data << float(GetPositionX());
+    data << float(GetPositionY());
+    data << uint32(0);  // counter
+    data << float(GetPositionZMinusOffset());
+
+    Relocate(&oldPos);
+    SendMessageToSet(&data, true);
 }

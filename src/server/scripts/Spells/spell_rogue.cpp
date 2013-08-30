@@ -665,6 +665,9 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                 {
                     if (Unit* target = GetTarget())
                     {
+                        if (GetSpellInfo()->Id == ROGUE_SPELL_GARROTE_DOT && target->HasAura(ROGUE_SPELL_RUPTURE_DOT))
+                            return;
+
                         if (caster->HasAura(79134))
                         {
                             // Each time your Rupture or Garrote deals damage to an enemy that you have poisoned ...
@@ -1213,7 +1216,7 @@ class spell_rog_preparation : public SpellScriptLoader
                 {
                     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
 
-                    if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
+                    if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
                     {
                         if (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT ||   // Vanish, Evasion, Sprint
                             spellInfo->Id == 31224 ||

@@ -595,21 +595,31 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_HUNTER:
             {
-                // Claw, Bite
-                if (m_spellInfo->Id == 16827 || m_spellInfo->Id == 17253)
+                switch (m_spellInfo->Id)
                 {
-                    if (m_caster->GetOwner())
-                    {
-                        damage += int32(m_caster->GetOwner()->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2544f);
-
-                        // Deals 100% more damage and costs 100% more Focus when your pet has 50 or more Focus.
-                        if (m_caster->GetPower(POWER_FOCUS) + 25 > 50)
+                    // Claw, Bite
+                    case 16827:
+                    case 17253:
+                        if (m_caster->GetOwner())
                         {
-                            damage *= 2;
-                            m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, -25, POWER_FOCUS);
+                            damage += int32(m_caster->GetOwner()->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2544f);
+
+                            // Deals 100% more damage and costs 100% more Focus when your pet has 50 or more Focus.
+                            if (m_caster->GetPower(POWER_FOCUS) + 25 > 50)
+                            {
+                                damage *= 2;
+                                m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, -25, POWER_FOCUS);
+                            }
                         }
-                    }
+                        break;
+                    // Glaive Toss
+                    case 121414:
+                        damage += m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2f;
+                        break;
+                    default:
+                        break;
                 }
+
                 // Gore
                 if (m_spellInfo->SpellIconID == 1578)
                 {

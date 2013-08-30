@@ -1572,7 +1572,7 @@ void ObjectMgr::LoadCreatures()
 
     //Load data for spawn from grid data
     //                                               0        1     2       3
-    result = WorldDatabase.Query("SELECT entry, zone, grid_x, grid_y FROM creature_spawn");
+    /*result = WorldDatabase.Query("SELECT entry, zone, grid_x, grid_y FROM creature_spawn");
     if (result)
     {
         do
@@ -1601,7 +1601,7 @@ void ObjectMgr::LoadCreatures()
             //WorldDatabase.PExecute("DELETE FROM creature_spawn WHERE `entry` = '%u' AND `zone` = '%u' AND `grid_x` = '%f' AND `grid_y`='%f';", entry, zoneId, grid_x, grid_y);
 
         } while (result->NextRow());
-    }
+    }*/
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creatures in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
@@ -5709,11 +5709,11 @@ void ObjectMgr::LoadGraveyardZones()
             continue;
         }
 
-        if (areaEntry->zone != 0)
+        /*if (areaEntry->zone != 0)
         {
             sLog->outError(LOG_FILTER_SQL, "Table `game_graveyard_zone` has a record for subzone id (%u) instead of zone, skipped.", zoneId);
             continue;
-        }
+        }*/
 
         if (team != 0 && team != HORDE && team != ALLIANCE)
         {

@@ -201,7 +201,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "MSG_MOVE_TELEPORT_ACK");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_TELEPORT_ACK");
 
     ObjectGuid guid;
     uint32 flags, time;
@@ -264,12 +264,6 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
         mover->m_movementInfo.pos.m_positionZ = mover->GetPositionZ();
         WorldSession::WriteMovementInfo(data, &mover->m_movementInfo);
         mover->SendMessageToSet(&data, _player);
-        /*mover->DestroyForNearbyPlayers();
-        sLog->outError(LOG_FILTER_NETWORKIO, "Info move %s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] | Player (xyzo): %f, %f, %fo(%f) | mover (xyzo): %f, %f, %fo(%f)",
-        _player->GetName(), _player->m_movementInfo.time, _player->m_movementInfo.fallTime, _player->m_movementInfo.pos.GetPositionX(), _player->m_movementInfo.pos.GetPositionY(), _player->m_movementInfo.pos.GetPositionZ(), _player->m_movementInfo.pos.GetOrientation(),
-        _player->m_movementInfo.flags, _player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(), _player->GetOrientation(),
-        mover->GetPositionX(), mover->GetPositionY(), mover->GetPositionZ(), mover->GetOrientation());
-        mover->UpdateObjectVisibility();*/
     }
 }
 
@@ -916,7 +910,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
     #undef REMOVE_VIOLATING_FLAGS
 }
 
-void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi)
+void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* unit /* = NULL*/)
 {
     bool hasMovementFlags = mi->GetMovementFlags() != 0;
     bool hasMovementFlags2 = mi->GetExtraMovementFlags() != 0;

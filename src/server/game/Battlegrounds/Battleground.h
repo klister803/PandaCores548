@@ -608,7 +608,7 @@ class Battleground
 
         virtual uint64 GetFlagPickerGUID(int32 /*team*/ = -1) const { return 0; }
 
-        bool IsRBG() { return m_rbgFlag; }
+        bool IsRBG() const { return m_rbgFlag; }
         void SetRBG(bool enable) { m_rbgFlag = enable; }
 
     protected:

@@ -892,8 +892,8 @@ public:
 
                         if (itr != pet->ToPet()->m_spells.end()) // If pet has Wild Hunt
                         {
-                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first); // Then get the SpellProto and add the dummy effect value
-                            AddPct(mod, spellInfo->Effects[EFFECT_0].CalcValue());
+                            if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first)) // Then get the SpellProto and add the dummy effect value
+                                AddPct(mod, spellInfo->Effects[EFFECT_0].CalcValue());
                         }
 
                         ownerBonus = owner->GetStat(STAT_STAMINA)*mod;
@@ -935,8 +935,8 @@ public:
 
                 if (itr != pet->ToPet()->m_spells.end()) // If pet has Wild Hunt
                 {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first); // Then get the SpellProto and add the dummy effect value
-                    mod += CalculatePct(1.0f, spellInfo->Effects[EFFECT_1].CalcValue());
+                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first)) // Then get the SpellProto and add the dummy effect value
+                        mod += CalculatePct(1.0f, spellInfo->Effects[EFFECT_1].CalcValue());
                 }
 
                 bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f * mod;
@@ -965,8 +965,8 @@ public:
 
                 if (itr != pet->ToPet()->m_spells.end()) // If pet has Wild Hunt
                 {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first); // Then get the SpellProto and add the dummy effect value
-                    mod += CalculatePct(1.0f, spellInfo->Effects[EFFECT_1].CalcValue());
+                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first)) // Then get the SpellProto and add the dummy effect value
+                        mod += CalculatePct(1.0f, spellInfo->Effects[EFFECT_1].CalcValue());
                 }
 
                 bonusDamage = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1287f * mod;

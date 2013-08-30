@@ -2301,51 +2301,6 @@ uint8 Player::GetChatTag() const
     return tag;
 }
 
-void Player::SendTeleportPacket(Position &oldPos)
-{
-    ObjectGuid guid = GetGUID();
-    ObjectGuid transGuid = GetTransGUID();
-
-    WorldPacket data(MSG_MOVE_TELEPORT, 38);
-    data.WriteBit(uint64(transGuid));
-    data.WriteBit(guid[5]);
-    if (transGuid)
-    {
-        uint8 bitOrder[8] = {5, 6, 2, 0, 1, 4, 7, 3};
-        data.WriteBitInOrder(transGuid, bitOrder);
-    }
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(0);       // unknown
-    data.WriteBit(guid[2]);
-    data.FlushBits();
-    if (transGuid)
-    {
-        uint8 byteOrder[8] = {2, 7, 1, 5, 6, 0, 4, 3};
-        data.WriteBytesSeq(transGuid, byteOrder);
-    }
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data << float(GetOrientation());
-    data << float(GetPositionX());
-    data << float(GetPositionY());
-    data << uint32(0);  // counter
-    data << float(GetPositionZMinusOffset());
-
-    Relocate(&oldPos);
-    SendDirectMessage(&data);
-}
-
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
 {
     //sAnticheatMgr->DisableAnticheatDetection(this,true);
@@ -6557,6 +6512,7 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
 void Player::UpdateRating(CombatRating cr)
 {
     int32 amount = m_baseRatingValue[cr];
+
     // Apply bonus from SPELL_AURA_MOD_RATING_FROM_STAT
     // stat used stored in miscValueB for this aura
     AuraEffectList const& modRatingFromStat = GetAuraEffectsByType(SPELL_AURA_MOD_RATING_FROM_STAT);
@@ -7663,8 +7619,11 @@ void Player::RewardGuildReputation(Quest const* quest)
     if (GetsRecruitAFriendBonus(false))
         rep = int32(rep * (1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS)));
 
-    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
-        GetReputationMgr().ModifyReputation(factionEntry, rep);
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->RepGainedBy(this, rep);
+
+    //if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+        //GetReputationMgr().ModifyReputation(factionEntry, rep);
 }
 
 void Player::UpdateHonorFields()
@@ -8100,7 +8059,7 @@ bool Player::HasCurrency(uint32 id, uint32 count) const
     return itr != _currencyStorage.end() && itr->second.totalCount >= count;
 }
 
-void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/)
+void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/, bool modifyWeek/* = true*/, bool modifySeason/* = true*/)
 {
     if (!count)
         return;
@@ -8139,7 +8098,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
-    if (weekCap && (count > int32(weekCap)))
+    if (modifyWeek && weekCap && (count > int32(weekCap)))
         count = weekCap;
 
     // count can't be more then totalCap if used (totalCap > 0)
@@ -8156,7 +8115,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         newWeekCount = 0;
 
     // if we get more then weekCap just set to limit
-    if (weekCap && (int32(weekCap) < newWeekCount))
+    if (modifyWeek && weekCap && (int32(weekCap) < newWeekCount))
     {
         newWeekCount = int32(weekCap);
         // weekCap - oldWeekCount always >= 0 as we set limit before!
@@ -8170,7 +8129,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         newWeekCount = weekCap;
     }
 
-    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (count > 0 ? count : 0);
+    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (modifySeason && count > 0 ? count : 0);
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
@@ -14588,7 +14547,7 @@ void Player::AddEnchantmentDuration(Item* item, EnchantmentSlot slot, uint32 dur
 
 void Player::ApplyReforgeEnchantment(Item* item, bool apply)
 {
-    if (!item)
+    if (!item || item->IsBroken())
         return;
 
     ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0));
@@ -23622,7 +23581,7 @@ template<>
 inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
 {
     if (p->GetPetGUID() == t->GetGUID() && t->ToCreature()->isPet())
-        ((Pet*)t)->Remove(PET_SLOT_OTHER_PET, true);
+        ((Pet*)t)->Remove(PET_SLOT_ACTUAL_PET_SLOT, true);
 }
 
 void Player::UpdateVisibilityOf(WorldObject* target)
@@ -26236,6 +26195,11 @@ void Player::CompletedAchievement(AchievementEntry const* entry)
     GetAchievementMgr().CompletedAchievement(entry, this);
 }
 
+uint32 Player::GetAchievementPoints() const
+{
+    return m_achievementMgr.GetAchievementPoints();
+}
+
 // TODO : Check cheat-hack issue with packet-editing
 bool Player::LearnTalent(uint32 talentId)
 {
@@ -27170,7 +27134,7 @@ void Player::RefundItem(Item* item)
 
         int32 cost = int32(iece->RequiredCurrencyCount[i]);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::RefundItem  cost %i, id %i)", cost, entry->ID);
-        ModifyCurrency(entry->ID, cost, false, true);
+        ModifyCurrency(entry->ID, cost, false, true, false, false);
     }
 
     SendItemRefundResult(item, iece, 0);
@@ -28245,19 +28209,13 @@ void Player::_SaveArchaelogy(SQLTransaction& trans)
 
 void Player::GenerateResearchDigSites(uint32 max)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites.");
-
     uint32 skill_now = GetSkillValue( SKILL_ARCHAEOLOGY );
     if( skill_now == 0 )
         return;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites skill.");
-
     uint32 _mapId = GetMapId();
     if((_mapId != 0 && _mapId != 1&& _mapId != 530 && _mapId != 571) || (_mapId == 530 && skill_now < 275) || (_mapId == 571 && skill_now < 350))
         return;
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchDigSites map.");
 
     if(m_digsite.pointCount[_mapId] == 0)
     {
@@ -28288,8 +28246,6 @@ void Player::GenerateResearchDigSites(uint32 max)
             }
 
             SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid);
-
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
 
             AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
             DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
@@ -28343,8 +28299,6 @@ void Player::GenerateResearchDigSites(uint32 max)
 
             SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid);
 
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "PLAYER_DYNAMIC_RESEARCH_SITES free_spot %u sRSid %u", free_spot, sRSid);
-
             AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
             DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
 
@@ -28371,8 +28325,6 @@ void Player::GenerateResearchDigSites(uint32 max)
 //each research branch can have 1 active project, we should pick rare projects rarely and crap projects more frecvently
 void Player::GenerateResearchProjects(uint32 max, uint32 race)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "GenerateResearchProjects.");
-
     uint32 maxcount = 0;
     uint32 skill_now = GetSkillValue( SKILL_ARCHAEOLOGY );
     if( skill_now == 0 )

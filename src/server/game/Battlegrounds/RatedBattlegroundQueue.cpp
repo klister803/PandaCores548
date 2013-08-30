@@ -41,6 +41,8 @@ void RatedBattlegroundQueue::Update()
 
     uint16 maxMMVDiff = 500;
 
+    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+
     for (QueueStore::iterator itr1 = m_queueStore.begin(); itr1 != m_queueStore.end(); ++itr1)
         for (QueueStore::iterator itr2 = m_queueStore.begin(); itr2 != m_queueStore.end(); ++itr2)
         {
@@ -160,6 +162,8 @@ void RatedBattlegroundQueue::RemovePlayer(uint64 playerGuid)
 
     if (!gInfo->IsInvitedToBGInstanceGUID)
     {
+        TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+
         for (std::map<uint64, PlayerQueueInfo*>::iterator itr = gInfo->Players.begin(); itr != gInfo->Players.end(); ++itr)
         {
             // get the player
@@ -184,6 +188,8 @@ void RatedBattlegroundQueue::RemovePlayer(uint64 playerGuid)
     }
     else
     {
+        TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+
         m_playersQueueStore.erase(playerGuid);
         gInfo->Players.erase(playerGuid);
         if (gInfo->Players.empty())
@@ -212,6 +218,10 @@ GroupQueueInfo* RatedBattlegroundQueue::GetQueueInfoByPlayer(uint64 playerGuid)
 
 bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg, uint32 side)
 {
+    if(!ginfo)
+        return false;
+
+
     // set side if needed
     if (side)
         ginfo->Team = side;
@@ -229,6 +239,10 @@ bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg
         // loop through the players
         for (std::map<uint64, PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
+            if(itr == ginfo->Players.end())
+                continue;
+            if(!itr->first)
+                continue;
             // get the player
             Player* player = ObjectAccessor::FindPlayer(itr->first);
             // if offline, skip him, this should not happen - player is removed from queue when he logs out

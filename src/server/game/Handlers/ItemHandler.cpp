@@ -1743,6 +1743,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
         {
             itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, 0);
             player->SetVisibleItemSlot(slots[i], itemTransmogrified);
+            itemTransmogrified->SetState(ITEM_CHANGED, player);
         }
         else
         {
@@ -1768,6 +1769,9 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
             itemTransmogrifier->SetOwnerGUID(player->GetGUID());
             itemTransmogrifier->SetNotRefundable(player);
             itemTransmogrifier->ClearSoulboundTradeable(player);
+
+            itemTransmogrified->SetState(ITEM_CHANGED, player);
+            itemTransmogrifier->SetState(ITEM_CHANGED, player);
 
             cost += itemTransmogrified->GetSpecialPrice();
         }

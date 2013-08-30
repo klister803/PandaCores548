@@ -475,7 +475,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
 
     float att_speed = GetAPMultiplier(attType, normalized);
 
-    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / 14.0f * att_speed;
+    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + (GetTotalAttackPowerValue(attType) / 14.0f * (GetShapeshiftForm() == FORM_CAT ? 2.f : 1.f)) * att_speed;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = addTotalPct ? GetModifierValue(unitMod, TOTAL_PCT) : 1.0f;
@@ -738,7 +738,7 @@ void Player::UpdateMasteryPercentage()
         value += GetTotalAuraModifier(SPELL_AURA_MASTERY);
         // Mastery from rating
         value += GetRatingBonusValue(CR_MASTERY);
-        value = value < 0.0f ? 0.0f : value;
+        value = value < 0.0f ? 0.0f : value;        
     }
     SetFloatValue(PLAYER_MASTERY, value);
     // Custom MoP Script
@@ -749,6 +749,9 @@ void Player::UpdateMasteryPercentage()
     // 77494 - Mastery : Nature's Guardian - Update Armor
     if (HasAura(77494))
         UpdateArmor();
+
+    if (HasAura(76657) && GetPet())
+        GetPet()->UpdateAttackPowerAndDamage();
 }
 
 void Player::UpdateMeleeHitChances()
@@ -1392,10 +1395,16 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
     if (attType > BASE_ATTACK)
         return;
 
+    float APCoefficient = 14.f;
     float bonusDamage = 0.0f;
     if (m_owner->GetTypeId() == TYPEID_PLAYER)
     {
-        if (GetEntry() == ENTRY_TREANT) // force of nature
+        if (isHunterPet() && m_owner->getLevel() > 87)
+        {
+            APCoefficient = 12.02f;
+            bonusDamage = 297.f - GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
+        }
+        else if (GetEntry() == ENTRY_TREANT) // force of nature
         {
             int32 spellDmg = int32(m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_NATURE)) - m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_NATURE);
             if (spellDmg > 0)
@@ -1411,9 +1420,9 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
 
     UnitMods unitMod = UNIT_MOD_DAMAGE_MAINHAND;
 
-    float att_speed = float(GetAttackTime(BASE_ATTACK))/1000.0f;
+    float att_speed = float(GetAttackTime(BASE_ATTACK))/1000.0f * m_modAttackSpeedPct[BASE_ATTACK];
 
-    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType)/ 14.0f * att_speed  + bonusDamage;
+    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / APCoefficient * att_speed  + bonusDamage;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = GetModifierValue(unitMod, TOTAL_PCT);
@@ -1423,6 +1432,15 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
 
     float mindamage = ((base_value + weapon_mindamage) * base_pct + total_value) * total_pct;
     float maxdamage = ((base_value + weapon_maxdamage) * base_pct + total_value) * total_pct;
+
+    // Custom MoP Script
+    // 76657 - Mastery : Master of Beasts
+    if (m_owner->HasAura(76657))
+    {
+        float Mastery = m_owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
+        AddPct(mindamage, Mastery);
+        AddPct(maxdamage, Mastery);
+    }
 
     SetStatFloatValue(UNIT_FIELD_MINDAMAGE, mindamage);
     SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, maxdamage);

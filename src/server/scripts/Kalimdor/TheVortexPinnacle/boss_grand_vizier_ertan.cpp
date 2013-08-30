@@ -91,7 +91,8 @@ class boss_grand_vizier_ertan : public CreatureScript
                 for (uint8 i = 0; i < 8; i++)
                 {
                     _vortexes[i] = me->SummonCreature(NPC_ERTAN_VORTEX, ertanvortexPos_1[i]);
-                    _vortexes[i]->AI()->DoAction(i);
+                    if(_vortexes[i]->AI())
+                        _vortexes[i]->AI()->DoAction(i);
                 }
 
                 events.ScheduleEvent(EVENT_LIGHTNING_BOLT, 3000);
@@ -131,14 +132,14 @@ class boss_grand_vizier_ertan : public CreatureScript
                             events.ScheduleEvent(EVENT_LIGHTNING_BOLT, 2000);
                             break;
                         case EVENT_CALL_VORTEX:
-                            for (uint8 i = 0; i < 8; i++)
-                                if (_vortexes[i])
-                                    _vortexes[i]->AI()->DoAction(15);
+                            //for (uint8 i = 0; i < 8; i++)
+                                //if (_vortexes[i] && _vortexes[i]->AI())
+                                    //_vortexes[i]->AI()->DoAction(15);
                             events.ScheduleEvent(EVENT_RESET_VORTEX, urand(14000, 17000));
                             break;
                         case EVENT_RESET_VORTEX:
                             for (uint8 i = 0; i < 8; i++)
-                                if (_vortexes[i])
+                                if (_vortexes[i] && _vortexes[i]->AI())
                                     _vortexes[i]->AI()->DoAction(16);
                             events.ScheduleEvent(EVENT_CALL_VORTEX, urand(20000, 25000));
                             break;
@@ -153,8 +154,8 @@ class boss_grand_vizier_ertan : public CreatureScript
                                     if (me->GetDistance2d(pPlayer) > _distance)
                                     {
                                         uint8 i = urand(0, 7);
-                                        if (_vortexes[i])
-                                            _vortexes[i]->CastSpell(itr->getSource(), SPELL_STORM_EDGE, true);
+                                        //if (_vortexes[i])
+                                            //_vortexes[i]->CastSpell(pPlayer, SPELL_STORM_EDGE, true);
                                         DoCast(pPlayer, SPELL_STORM_EDGE, true);
                                     }
                                 }

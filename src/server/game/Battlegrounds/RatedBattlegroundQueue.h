@@ -20,11 +20,14 @@
 #ifndef __RATEDBATTLEGROUNDQUEUE_H
 #define __RATEDBATTLEGROUNDQUEUE_H
 
+#include <ace/Thread_Mutex.h>
+#include <ace/Singleton.h>
+
 struct GroupQueueInfo;
 
 class RatedBattlegroundQueue
 {
-    friend class ACE_Singleton<RatedBattlegroundQueue, ACE_Null_Mutex>;
+    friend class ACE_Singleton<RatedBattlegroundQueue, ACE_Thread_Mutex>;
 
 private:
     RatedBattlegroundQueue();
@@ -44,9 +47,11 @@ private:
     typedef std::set<GroupQueueInfo*> QueueStore;
     typedef UNORDERED_MAP<uint64, GroupQueueInfo*> PlayersQueueStore;
 
+    ACE_Thread_Mutex Lock;
+
     QueueStore m_queueStore;
     PlayersQueueStore m_playersQueueStore;
 };
 
-#define sRBGQueue ACE_Singleton<RatedBattlegroundQueue, ACE_Null_Mutex>::instance()
+#define sRBGQueue ACE_Singleton<RatedBattlegroundQueue, ACE_Thread_Mutex>::instance()
 #endif

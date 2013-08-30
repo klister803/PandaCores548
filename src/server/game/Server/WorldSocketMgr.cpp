@@ -46,6 +46,9 @@
 #include "WorldSocketAcceptor.h"
 #include "ScriptMgr.h"
 
+uint64 SendSize[0x7FFF+1] = {};
+uint64 SendCount[0x7FFF+1] = {};
+
 /**
 * This is a helper class to WorldSocketMgr, that manages
 * network threads, and assigning connections from acceptor thread
@@ -219,6 +222,11 @@ WorldSocketMgr::WorldSocketMgr() :
     m_UseNoDelay(true),
     m_Acceptor (0)
 {
+    for (uint32 i = 0; i < NUM_OPCODE_HANDLERS; ++i)
+    {
+        SendCount[i] = 0;
+        SendSize[i]  = 0;
+    }
 }
 
 WorldSocketMgr::~WorldSocketMgr()

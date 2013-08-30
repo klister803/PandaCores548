@@ -15,6 +15,7 @@ set(scripts_STAT_SRCS
 	Custom/midsummer_fire_festival.cpp
 	Custom/multi_vendor.cpp
 	Custom/rbg.cpp
+	Custom/traffic_log.cpp
 )
 
 message("  -> Prepared: Custom")
