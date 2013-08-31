@@ -4243,23 +4243,35 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
 
         if(spellInfo->IsMountOrCompanions())
         {
+            if(charload)
+            {
+                PlayerSpellMap::iterator itr = m_spells.find(GetSpellIdbyReplace(spellId));
+                if (itr == m_spells.end())
+                {
+                    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ACC_MOUNT);
+                    stmt->setUInt32(0, GetSession()->GetAccountId());
+                    stmt->setUInt32(1, spellId);
+                    stmt->setBool(2, true);
+                    CharacterDatabase.Execute(stmt);
+
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
+                    stmt->setUInt32(0, spellId);
+                    stmt->setUInt32(1, GetGUIDLow());
+                    CharacterDatabase.Execute(stmt);
+                }
+                else
+                {
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
+                    stmt->setUInt32(0, spellId);
+                    stmt->setUInt32(1, GetGUIDLow());
+                    CharacterDatabase.Execute(stmt);
+                    return false;
+                }
+            }
             mount = true;
             mountReplace = sSpellMgr->GetMountListId(spellId, GetTeamId());
             if(mountReplace != 0)
                 AddSpellMountReplacelist(spellId, mountReplace);
-            if(charload)
-            {
-                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ACC_MOUNT);
-                stmt->setUInt32(0, GetSession()->GetAccountId());
-                stmt->setUInt32(1, spellId);
-                stmt->setBool(2, true);
-                CharacterDatabase.Execute(stmt);
-
-                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
-                stmt->setUInt32(0, spellId);
-                stmt->setUInt32(1, GetGUIDLow());
-                CharacterDatabase.Execute(stmt);
-            }
         }
         else
             mountReplace = 0;
