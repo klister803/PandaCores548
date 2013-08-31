@@ -239,10 +239,10 @@ class spell_sha_call_of_the_elements : public SpellScriptLoader
                     {
                         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
 
-                        if (spellInfo && spellInfo->Id == 51485 || spellInfo->Id == 108273 || spellInfo->Id == 108270
+                        if (spellInfo && (spellInfo->Id == 51485 || spellInfo->Id == 108273 || spellInfo->Id == 108270
                             || spellInfo->Id == 108269 || spellInfo->Id == 8143 || spellInfo->Id == 8177
                             || spellInfo->Id == 5394 || spellInfo->Id == 2484 || spellInfo->Id == 108273
-                            && spellInfo->GetRecoveryTime() > 0)
+                            && spellInfo->GetRecoveryTime() > 0))
                             _player->RemoveSpellCooldown((itr++)->first, true);
                         else
                             ++itr;
