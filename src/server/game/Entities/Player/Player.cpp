@@ -4243,9 +4243,10 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
 
         if(spellInfo->IsMountOrCompanions())
         {
+            mountReplace = sSpellMgr->GetMountListId(spellId, GetTeamId());
             if(charload)
             {
-                PlayerSpellMap::iterator itr = m_spells.find(GetSpellIdbyReplace(spellId));
+                PlayerSpellMap::iterator itr = m_spells.find(GetSpellIdbyReplace(mountReplace));
                 if (itr == m_spells.end())
                 {
                     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ACC_MOUNT);
@@ -4268,8 +4269,17 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                     return false;
                 }
             }
+            else if(uint32 exits_spell = GetSpellIdbyReplace(mountReplace))
+            {
+                PlayerSpellMap::iterator itr = m_spells.find(exits_spell);
+                if (itr != m_spells.end())
+                {
+                    active = false;
+                    state = PLAYERSPELL_REMOVED;
+                }
+            }
+
             mount = true;
-            mountReplace = sSpellMgr->GetMountListId(spellId, GetTeamId());
             if(mountReplace != 0)
                 AddSpellMountReplacelist(spellId, mountReplace);
         }
