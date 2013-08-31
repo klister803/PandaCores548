@@ -2451,7 +2451,7 @@ void AchievementMgr<Player>::SendAchievementInfo(Player* receiver, uint32 /*achi
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
         counter = itr->second.counter;
-        
+
         data.WriteBit(counter[3]);
         data.WriteBit(counter[6]);
         data.WriteBit(guid[7]);
@@ -2464,19 +2464,20 @@ void AchievementMgr<Player>::SendAchievementInfo(Player* receiver, uint32 /*achi
         data.WriteBit(counter[5]);
         data.WriteBit(guid[2]);
         data.WriteBit(counter[4]);
-        data.WriteBits(1, 4);           // criteria progress flags
+        data.WriteBits(0, 4);           // criteria progress flags
         data.WriteBit(counter[7]);
         data.WriteBit(guid[6]);
         data.WriteBit(guid[1]);
         data.WriteBit(guid[0]);
     }
+
     data.WriteBit(guid[2]);
     data.WriteBit(guid[7]);
     data.WriteBit(guid[0]);
     data.WriteBit(guid[6]);
     data.WriteBit(guid[3]);
     data.WriteBit(guid[4]);
-    
+
     data.WriteBits(numAchievements, 22);
 
     for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
@@ -2491,44 +2492,48 @@ void AchievementMgr<Player>::SendAchievementInfo(Player* receiver, uint32 /*achi
         data.WriteBit(0);
         data.WriteBit(0);
         data.WriteBit(0);
-        /*data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[5]);*/
+        /*data.WriteBit(guid3[6]);
+        data.WriteBit(guid3[0]);
+        data.WriteBit(guid3[7]);
+        data.WriteBit(guid3[3]);
+        data.WriteBit(guid3[2]);
+        data.WriteBit(guid3[4]);
+        data.WriteBit(guid3[1]);
+        data.WriteBit(guid3[5]);*/
     }
+
     data.FlushBits();
+
     for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
     {
         if (!isVisible(*itr))
             continue;
-        //data.WriteByteSeq(guid[3]);
-        //data.WriteByteSeq(guid[6]);
+        //data.WriteByteSeq(guid3[3]);
+        //data.WriteByteSeq(guid3[6]);
         data << uint32(secsToTimeBitFields(itr->second.date));
-        //data.WriteByteSeq(guid[2]);
-        //data.WriteByteSeq(guid[4]);
+        //data.WriteByteSeq(guid3[2]);
+        //data.WriteByteSeq(guid3[4]);
         data << uint32(0); //unk
-        //data.WriteByteSeq(guid[1]);
-        //data.WriteByteSeq(guid[7]);
-        //data.WriteByteSeq(guid[5]);
+        //data.WriteByteSeq(guid3[1]);
+        //data.WriteByteSeq(guid3[7]);
+        //data.WriteByteSeq(guid3[5]);
         data << uint32(itr->first);
-        //data.WriteByteSeq(guid[0]);
+        //data.WriteByteSeq(guid3[0]);
     }
+
+    time_t now = time(NULL);
 
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
         counter = itr->second.counter;
-        
+
         data.WriteByteSeq(counter[2]);
         data << uint32(secsToTimeBitFields(itr->second.date));
-        data << uint32(46);      // timer 1 unk from 505 16048
+        data << uint32(now - itr->second.date); // timer 1 unk from 505 16048
         data.WriteByteSeq(counter[1]);
         data.WriteByteSeq(counter[6]);
         data.WriteByteSeq(guid[6]);
-        data << uint32(1006698504);      // timer 2 unk from 505 16048
+        data << uint32(now - itr->second.date); // timer 2 unk from 505 16048
         data.WriteByteSeq(guid[4]);
         data.WriteByteSeq(counter[5]);
         data.WriteByteSeq(guid[1]);
@@ -2540,6 +2545,7 @@ void AchievementMgr<Player>::SendAchievementInfo(Player* receiver, uint32 /*achi
         data.WriteByteSeq(counter[4]);
         data << uint32(itr->first); //unk
         data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(counter[0]);
     }
     data.WriteByteSeq(guid[5]);
