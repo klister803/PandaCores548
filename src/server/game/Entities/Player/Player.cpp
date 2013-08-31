@@ -4254,7 +4254,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
             if(mountReplace != 0)
                 AddSpellMountReplacelist(spellId, mountReplace);
 
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::addSpell mountReplace %u, spellId %u", mountReplace, spellId, );
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::addSpell mountReplace %u, spellId %u, GetSpellIdbyReplace %u", mountReplace, spellId, GetSpellIdbyReplace(spellId));
         }
         else
             mountReplace = 0;
