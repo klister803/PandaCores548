@@ -20974,10 +20974,20 @@ void Player::_SaveSpells(SQLTransaction& trans)
     {
         if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->state == PLAYERSPELL_CHANGED)
         {
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
-            stmt->setUInt32(0, itr->first);
-            stmt->setUInt32(1, GetGUIDLow());
-            trans->Append(stmt);
+            if(itr->second->mount)
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACC_SPELL_BY_SPELL);
+                stmt->setUInt32(0, itr->first);
+                stmt->setUInt32(1, GetSession()->GetAccountId());
+                trans->Append(stmt);
+            }
+            else
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
+                stmt->setUInt32(0, itr->first);
+                stmt->setUInt32(1, GetGUIDLow());
+                trans->Append(stmt);
+            }
         }
 
         // add only changed/new not dependent spells
