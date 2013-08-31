@@ -3835,7 +3835,7 @@ void Player::SendKnownSpells()
         if (!itr->second->active || itr->second->disabled)
             continue;
 
-        if(itr->second->mount && itr->second->mountReplace == 0)
+        if(itr->second->mount)
             sLog->outDebug(LOG_FILTER_NETWORKIO, "SendKnownSpells mountReplace %u, spellId %u", itr->second->mountReplace, itr->first);
 
         if(itr->second->mount && itr->second->mountReplace == 0)
@@ -3880,7 +3880,7 @@ void Player::SendInitialSpells()
         if (!itr->second->active || itr->second->disabled)
             continue;
 
-        if(itr->second->mount && itr->second->mountReplace == 0)
+        if(itr->second->mount)
             sLog->outDebug(LOG_FILTER_NETWORKIO, "SendInitialSpells mountReplace %u, spellId %u", itr->second->mountReplace, itr->first);
 
         if(itr->second->mount && itr->second->mountReplace == 0)
