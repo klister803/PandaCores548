@@ -1741,8 +1741,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
 
         if (!newEntries[i]) // reset look
         {
-            itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, 0);
-            player->SetVisibleItemSlot(slots[i], itemTransmogrified);
+            itemTransmogrified->SetTransmogrification(0);
             itemTransmogrified->SetState(ITEM_CHANGED, player);
         }
         else
@@ -1754,7 +1753,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
             }
 
             // All okay, proceed
-            itemTransmogrified->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, newEntries[i]);
+            itemTransmogrified->SetTransmogrification(newEntries[i]);
             player->SetVisibleItemSlot(slots[i], itemTransmogrified);
 
             itemTransmogrified->UpdatePlayedTime(player);
@@ -1834,8 +1833,7 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
         if (item->IsEquipped())
             player->ApplyReforgeEnchantment(item, false);
 
-        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, 0);
-        item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 0);
+        item->SetReforge(0);
         item->SetState(ITEM_CHANGED, player);
         SendReforgeResult(true);
         return;
@@ -1869,8 +1867,7 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
 
     player->ModifyMoney(-int64(item->GetSpecialPrice()));
 
-    item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, reforgeEntry);
-    item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1);
+    item->SetReforge(reforgeEntry);
     item->SetState(ITEM_CHANGED, player);
 
     SendReforgeResult(true);

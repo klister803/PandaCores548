@@ -356,7 +356,7 @@ class Item : public Object
 
         uint32 GetVisibleEntry() const
         {
-            if (uint32 transmogrification = GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1))
+            if (uint32 transmogrification = GetTransmogrification())
                 return transmogrification;
             return GetEntry();
         }
@@ -364,6 +364,11 @@ class Item : public Object
         static uint32 GetSellPrice(ItemTemplate const* proto, bool& success);
 
         int32 GetReforgableStat(ItemModType statType) const;
+
+        void SetReforge(uint32 value);
+        uint32 Item::GetReforge() const;
+        void Item::SetTransmogrification(uint32 value);
+        uint32 Item::GetTransmogrification() const;
 
     private:
         std::string m_text;

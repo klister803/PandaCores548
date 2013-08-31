@@ -353,6 +353,7 @@ class Object
         void _SetCreateBits(UpdateMask* updateMask, Player* target) const;
         void _BuildMovementUpdate(ByteBuffer * data, uint16 flags) const;
         void _BuildValuesUpdate(uint8 updatetype, ByteBuffer *data, UpdateMask* updateMask, Player* target) const;
+        void _BuildDynamicValuesUpdate(ByteBuffer *data, Player* target) const;
 
         uint16 m_objectType;
 
