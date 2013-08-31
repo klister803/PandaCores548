@@ -3836,6 +3836,9 @@ void Player::SendKnownSpells()
             continue;
 
         if(itr->second->mount && itr->second->mountReplace == 0)
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "SendKnownSpells mountReplace %u, spellId %u", itr->second->mountReplace, itr->first);
+
+        if(itr->second->mount && itr->second->mountReplace == 0)
             continue;
 
         if(itr->second->mountReplace)
@@ -3876,6 +3879,9 @@ void Player::SendInitialSpells()
 
         if (!itr->second->active || itr->second->disabled)
             continue;
+
+        if(itr->second->mount && itr->second->mountReplace == 0)
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "SendInitialSpells mountReplace %u, spellId %u", itr->second->mountReplace, itr->first);
 
         if(itr->second->mount && itr->second->mountReplace == 0)
             continue;
@@ -4247,6 +4253,8 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
             mountReplace = sSpellMgr->GetMountListId(spellId, GetTeamId());
             if(mountReplace != 0)
                 AddSpellMountReplacelist(spellId, mountReplace);
+
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::addSpell mountReplace %u, spellId %u", mountReplace, spellId, );
         }
         else
             mountReplace = 0;
@@ -5210,7 +5218,10 @@ bool Player::HasActiveSpell(uint32 spell)
 {
     uint32 tempSpell = GetSpellIdbyReplace(spell);
     if(tempSpell != 0 && tempSpell != spell)
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "HasActiveSpell mountReplace %u, spellId %u", tempSpell, spell);
         spell = tempSpell;
+    }
     PlayerSpellMap::const_iterator itr = m_spells.find(spell);
     return (itr != m_spells.end() && itr->second->state != PLAYERSPELL_REMOVED &&
         itr->second->active && !itr->second->disabled);
