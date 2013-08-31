@@ -212,8 +212,8 @@ public:
                             secondDefeatedNovicePositionsGuid   = secondDefeatedNovicePositionsGuidSave;
                             
                             HandleGameObject(snowdriftEntranceGuid, true);
-                            HandleGameObject(snowdriftFirewallGuid, false);
-                            HandleGameObject(snowdriftDojoDoorGuid, false);
+                            HandleGameObject(snowdriftFirewallGuid, true);
+                            HandleGameObject(snowdriftDojoDoorGuid, true);
                             HandleGameObject(snowdriftExitGuid,     false);
                             break;
                         case IN_PROGRESS:
