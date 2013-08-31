@@ -1601,6 +1601,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading linked spells...");
     sSpellMgr->LoadSpellLinked();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading mount replace list...");
+    sSpellMgr->LoadmSpellMountList();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Player Create Data...");
     sObjectMgr->LoadPlayerInfo();
 
