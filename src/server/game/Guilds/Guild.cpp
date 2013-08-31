@@ -1275,15 +1275,14 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
     ByteBuffer memberData(100);
     // Guess size
     WorldPacket data(SMSG_GUILD_ROSTER);
-    
+
     data << uint32(0);
     data << uint32(secsToTimeBitFields(m_createdDate));
     data << uint32(sWorld->getIntConfig(CONFIG_GUILD_WEEKLY_REP_CAP));
     data << uint32(m_accountsNumber);
 
-
     data.WriteBits(m_members.size(), 18);
-    
+
     for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
         Member* member = itr->second;
@@ -1306,12 +1305,15 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         data.WriteBit(guid[1]);
         data.WriteBit(guid[2]);
     }
-    data.WriteBits(m_motd.length(), 11);
-    
+
+    size_t motdLen = m_motd.length();
+    data.WriteBits(motdLen, 11);
+
     size_t infoLength = m_info.length();
     data.WriteBits(infoLength, 12);
-    
+
     data.FlushBits();
+
     for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
         Member* member = itr->second;
@@ -1329,29 +1331,25 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
             if (player->isDND())
                 flags |= GUILDMEMBER_STATUS_DND;
         }
-        
+
         if (pubNoteLength)
             memberData.WriteString(member->GetPublicNote());
+
         memberData << int32(0);                                     // unk
         // for (2 professions)
         for (int i = 0; i < 2; ++i)
         {
-            uint32 id = player ? player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i) : 0;
-            if (id)
-            {
-                memberData << uint32(player->GetSkillValue(id)) << uint32(id) << uint32(player->GetSkillStep(id));
-            }
+            if (uint32 id = (player ? player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i) : 0))
+                memberData << uint32(id) << uint32(player->GetSkillStep(id)) << uint32(player->GetSkillValue(id));
             else
-            {
                 memberData << uint32(0) << uint32(0) << uint32(0);
-            }
         }
 
-        memberData << uint32(member->GetTotalReputation());// Remaining guild week Rep
+        memberData << uint32(std::max(int32(GUILD_WEEKLY_REP_CAP - member->GetWeekReputation()), 0));   // Remaining guild week Rep
         memberData.WriteByteSeq(guid[0]);
         memberData.WriteByteSeq(guid[5]);
         memberData.WriteByteSeq(guid[7]);
-        memberData << int32(-1);                                     // unk -1
+        memberData << int32(member->GetTotalReputation());                                              // Guild rep
         memberData.WriteByteSeq(guid[3]);
         memberData << uint8(member->GetClass());
         memberData << uint64(member->GetWeekActivity());
@@ -1373,8 +1371,9 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
     }
 
     data.append(memberData);
-    
-    data.WriteString(m_motd);
+
+    if (motdLen)
+        data.WriteString(m_motd);
     if (infoLength)
         data.WriteString(m_info);
 
