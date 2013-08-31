@@ -3835,9 +3835,6 @@ void Player::SendKnownSpells()
         if (!itr->second->active || itr->second->disabled)
             continue;
 
-        if(itr->second->mount)
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "SendKnownSpells mountReplace %u, spellId %u", itr->second->mountReplace, itr->first);
-
         if(itr->second->mount && itr->second->mountReplace == 0)
             continue;
 
@@ -3879,9 +3876,6 @@ void Player::SendInitialSpells()
 
         if (!itr->second->active || itr->second->disabled)
             continue;
-
-        if(itr->second->mount)
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "SendInitialSpells mountReplace %u, spellId %u", itr->second->mountReplace, itr->first);
 
         if(itr->second->mount && itr->second->mountReplace == 0)
             continue;
@@ -4063,7 +4057,7 @@ bool Player::AddTalent(uint32 spellId, uint8 spec, bool learning)
     return false;
 }
 
-bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading /*= false*/)
+bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading /*= false*/, bool charload /*= false*/)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -4253,8 +4247,19 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
             mountReplace = sSpellMgr->GetMountListId(spellId, GetTeamId());
             if(mountReplace != 0)
                 AddSpellMountReplacelist(spellId, mountReplace);
+            if(charload)
+            {
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ACC_MOUNT);
+                stmt->setUInt32(0, GetSession()->GetAccountId());
+                stmt->setUInt32(1, spellId);
+                stmt->setBool(2, true);
+                CharacterDatabase.Execute(stmt);
 
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::addSpell mountReplace %u, spellId %u, GetSpellIdbyReplace %u", mountReplace, spellId, GetSpellIdbyReplace(spellId));
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
+                stmt->setUInt32(0, spellId);
+                stmt->setUInt32(1, GetGUIDLow());
+                CharacterDatabase.Execute(stmt);
+            }
         }
         else
             mountReplace = 0;
@@ -5218,10 +5223,7 @@ bool Player::HasActiveSpell(uint32 spell)
 {
     uint32 tempSpell = GetSpellIdbyReplace(spell);
     if(tempSpell != 0 && tempSpell != spell)
-    {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "HasActiveSpell mountReplace %u, spellId %u", tempSpell, spell);
         spell = tempSpell;
-    }
     PlayerSpellMap::const_iterator itr = m_spells.find(spell);
     return (itr != m_spells.end() && itr->second->state != PLAYERSPELL_REMOVED &&
         itr->second->active && !itr->second->disabled);
@@ -19552,7 +19554,7 @@ void Player::_LoadSpells(PreparedQueryResult result)
     if (result)
     {
         do
-            addSpell((*result)[0].GetUInt32(), (*result)[1].GetBool(), false, false, (*result)[2].GetBool(), true);
+            addSpell((*result)[0].GetUInt32(), (*result)[1].GetBool(), false, false, (*result)[2].GetBool(), true, true);
         while (result->NextRow());
     }
 }

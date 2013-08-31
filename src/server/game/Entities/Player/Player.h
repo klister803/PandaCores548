@@ -2061,7 +2061,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SendProficiency(ItemClass itemClass, uint32 itemSubclassMask);
         void SendInitialSpells();
-        bool addSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading = false);
+        bool addSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading = false, bool charload = false);
         void learnSpell(uint32 spell_id, bool dependent);
         void removeSpell(uint32 spell_id, bool disabled = false, bool learn_low_rank = true);
         void resetSpells(bool myClassOnly = false);
