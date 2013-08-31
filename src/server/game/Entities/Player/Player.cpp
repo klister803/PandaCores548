@@ -4261,7 +4261,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                 }
                 else
                 {
-                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
+                    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
                     stmt->setUInt32(0, spellId);
                     stmt->setUInt32(1, GetGUIDLow());
                     CharacterDatabase.Execute(stmt);
