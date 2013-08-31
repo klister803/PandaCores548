@@ -22562,9 +22562,13 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         {
             if (iece->RequiredItem[i])
             {
-                DestroyItemCount(iece->RequiredItem[i], iece->RequiredItemCount[i], true);
                 if(iece->RequiredItem[i] == 38186)
+                {
                     uicount = iece->RequiredItemCount[i] * sWorld->getRate(RATE_DONATE);
+                    DestroyItemCount(iece->RequiredItem[i], uicount, true);
+                }
+                else
+                    DestroyItemCount(iece->RequiredItem[i], iece->RequiredItemCount[i], true);
             }
         }
 
