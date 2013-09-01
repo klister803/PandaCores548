@@ -124,6 +124,7 @@ enum eGameObjects
 {
     GO_DOOR_BEFORE_TRIAL    = 213594,
     GO_TRIAL_CHEST          = 214520,
+    GO_TRIAL_CHEST2         = 214521,
     GO_DOOR_AFTER_TRIAL     = 213593,
     GO_DOOR_BEFORE_KING     = 213596,
     GO_SECRET_DOOR          = 213810,
