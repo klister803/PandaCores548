@@ -1506,9 +1506,9 @@ void Item::SetReforge(uint32 value)
     SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_REFORGE, value);
 
     if (value)
-        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_REFORGE);
-    else
-        RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_REFORGE);
+        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYNAMIC_MODIFIERS);
+    else if (!GetTransmogrification())
+        RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYNAMIC_MODIFIERS);
 }
 
 uint32 Item::GetReforge() const
@@ -1521,9 +1521,9 @@ void Item::SetTransmogrification(uint32 value)
     SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION, value);
 
     if (value)
-        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_TRANSMOGRIFICATION);
-    else
-        RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYN_MOD_TRANSMOGRIFICATION);
+        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYNAMIC_MODIFIERS);
+    else if (!GetReforge())
+        RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYNAMIC_MODIFIERS);
 }
 
 uint32 Item::GetTransmogrification() const
