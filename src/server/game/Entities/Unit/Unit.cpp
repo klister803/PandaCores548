@@ -9255,6 +9255,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
             break;
     }
 
+
     // Custom basepoints/target for exist spell
     // dummy basepoints or other customs
     switch (trigger_spell_id)
@@ -9404,6 +9405,12 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                 return false;
             break;
         }
+        // Primal Fury
+        case 16959:
+            if (GetShapeshiftForm() == FORM_CAT && ToPlayer() &&  procSpell)
+                if (procSpell->Id == 33876 || procSpell->Id == 5221 || procSpell->Id == 62078)
+                    ToPlayer()->AddComboPoints(victim, 1);
+            break;
     }
 
     if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(trigger_spell_id))
