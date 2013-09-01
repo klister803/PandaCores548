@@ -62,7 +62,7 @@ enum ShamanSpells
     SPELL_SHA_UNLEASH_ELEMENTS              = 73680,
     SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661,
     SPELL_SHA_FIRE_NOVA                     = 1535,
-    SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786,
+    SPELL_SHA_FIRE_NOVA_TRIGGERED           = 8349,
     SPELL_SHA_TIDAL_WAVES                   = 51564,
     SPELL_SHA_TIDAL_WAVES_PROC              = 53390,
     SPELL_SHA_MANA_TIDE                     = 16191,
