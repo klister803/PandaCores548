@@ -366,9 +366,9 @@ class Item : public Object
         int32 GetReforgableStat(ItemModType statType) const;
 
         void SetReforge(uint32 value);
-        uint32 Item::GetReforge() const;
-        void Item::SetTransmogrification(uint32 value);
-        uint32 Item::GetTransmogrification() const;
+        uint32 GetReforge() const;
+        void SetTransmogrification(uint32 value);
+        uint32 GetTransmogrification() const;
 
     private:
         std::string m_text;
