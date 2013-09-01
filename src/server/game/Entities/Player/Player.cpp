@@ -9768,6 +9768,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
                 loot->objEntry = go->GetGOInfo()->entry;
                 loot->objType = 3;
+                loot->countItem = 1;
                 loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode());
 
                 // get next RR player (for next loot)
@@ -9861,6 +9862,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     loot->generateMoneyLoot(item->GetTemplate()->MinMoneyLoot, item->GetTemplate()->MaxMoneyLoot);
                     loot->objEntry = item->GetEntry();
                     loot->objType = 2;
+                    loot->countItem = item->GetCount();
                     loot->FillLoot(item->GetEntry(), LootTemplates_Item, this, true, loot->gold != 0);
                     break;
             }

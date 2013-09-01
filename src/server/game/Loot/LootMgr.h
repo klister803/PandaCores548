@@ -303,6 +303,7 @@ struct Loot
 
     uint32 objEntry;
     uint8 objType;
+    uint32 countItem;
 
     Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE) {}
     ~Loot() { clear(); }

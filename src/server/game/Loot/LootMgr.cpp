@@ -478,7 +478,7 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
     std::list<CurrencyLoot> temp = sObjectMgr->GetCurrencyLoot(objEntry, objType);
     for (std::list<CurrencyLoot>::iterator i = temp.begin(); i != temp.end(); ++i)
         if(CurrencyTypesEntry const* proto = sCurrencyTypesStore.LookupEntry(i->CurrencyId))
-            player->ModifyCurrency(i->CurrencyId, urand(i->CurrencyAmount, i->currencyMaxAmount) * proto->GetPrecision());
+            player->ModifyCurrency(i->CurrencyId, urand(i->CurrencyAmount, i->currencyMaxAmount) * proto->GetPrecision() * countItem);
 }
 
 QuestItemList* Loot::FillFFALoot(Player* player)
