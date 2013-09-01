@@ -934,7 +934,11 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
             _plr->RemoveAura((*itr)->GetSpellInfo()->Id, _plr->GetGUID());
 
         for (std::list<Aura*>::const_iterator itr = auraModsList.begin(); itr != auraModsList.end(); ++itr)
-            _plr->CastSpell(_plr, (*itr)->GetSpellInfo()->Id, true);
+        {
+            Aura* aura = (*itr);
+            Item* item = _player->GetItemByGuid(aura->GetCastItemGUID());
+            _plr->CastSpell(_plr, (*itr)->GetSpellInfo()->Id, true, item);
+        }
     }
 }
 
