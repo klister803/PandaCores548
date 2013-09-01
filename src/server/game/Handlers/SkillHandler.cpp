@@ -90,6 +90,10 @@ void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
 
     uint8 specializationReset = recvData.read<uint8>();
 
+    //Hack
+    if (GetPlayer()->HasAura(33786))
+        return;
+
     recvData.rfinish();
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
