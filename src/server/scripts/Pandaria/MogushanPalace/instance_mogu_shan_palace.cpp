@@ -112,7 +112,10 @@ public:
             switch (go->GetEntry())
             {
                 case GO_DOOR_BEFORE_TRIAL:  doorBeforeTrialGuid = go->GetGUID();    break;
-                case GO_TRIAL_CHEST:        trialChestGuid = go->GetGUID();         go->SetPhaseMask(128, true);    break;
+                case GO_TRIAL_CHEST:
+                case GO_TRIAL_CHEST2:
+                    trialChestGuid = go->GetGUID();
+                    break;
                 case GO_DOOR_AFTER_TRIAL:   doorAfterTrialGuid = go->GetGUID();     break;
                 case GO_DOOR_BEFORE_KING:   doorBeforeKingGuid = go->GetGUID();     break;
                 case GO_SECRET_DOOR:        secretdoorGuid = go->GetGUID();         break;
