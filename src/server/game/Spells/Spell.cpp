@@ -2924,6 +2924,11 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         }
     }
 
+    // Predatory Swiftness
+    if (Aura* aura = m_caster->GetAura(69369))
+        if (aura->GetEffect(EFFECT_0)->IsAffectingSpell(GetSpellInfo()))
+            aura->Remove();
+
     // trigger linked auras remove/apply
     // TODO: remove/cleanup this, as this table is not documented and people are doing stupid things with it
     if (std::vector<SpellLinked> const* spellTriggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT))
