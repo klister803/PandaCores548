@@ -1076,6 +1076,11 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster) * m_spellValue->RadiusMod;
 
+    // Fists of Fury
+    // it`s bugged, dont know how, temp fix
+    if (GetSpellInfo()->Id == 120086 || GetSpellInfo()->Id == 117418)
+        radius = m_caster->HasAura(131562) ? 10.f : 5.f;
+
     if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))
     {
         Trinity::WorldObjectSpellConeTargetCheck check(coneAngle, radius, m_caster, m_spellInfo, selectionType, condList);
