@@ -17193,7 +17193,11 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
 
             loot->clear();
             if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
+            {
+                loot->objEntry = creature->GetCreatureTemplate()->Entry;
+                loot->objType = 1;
                 loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false, creature->GetLootMode());
+            }
 
             loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
         }
