@@ -955,7 +955,7 @@ void Object::_BuildDynamicValuesUpdate(ByteBuffer *data, Player* target) const
         {
             if (dynamicTabMask & (1 << i))
             {
-                *data << uint8(1);
+                *data << uint8(1);          // count of dynamic field masks
                 *data << uint32(dynamicFieldsMask[i]);
 
                 for (int index = 0; index < 32; ++index)
