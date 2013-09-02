@@ -37,6 +37,23 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     if (owner.HasUnitState(UNIT_STATE_NOT_MOVE))
         return;
 
+    // Hack for Beth'tilac
+    switch((&owner)->GetEntry())
+    {
+        case 52498: // Beth'tilac
+            if ((&owner)->GetMapId() == 720)
+                if ((&owner)->GetAI()->GetData(2) == 0 && i_target->GetPositionZ() < 100.0f)
+                    return;
+            break;
+        case 52581: // Cinderweb Drone
+        case 52447: // Cinderweb Spiderling
+        case 53745: // Engorged Broodling
+            if ((&owner)->GetMapId() == 720)
+                if (i_target->GetPositionZ() > 100.0f)
+                    return;
+            break;
+    }
+
     float x, y, z;
     //! Following block of code deleted by MrSmite in issue 4891
     //! Code kept for learning and diagnostical purposes
