@@ -212,8 +212,8 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
     stmt->setBool  (index++, !m_items.empty());
     stmt->setUInt64(index++, uint64(expire_time));
     stmt->setUInt64(index++, uint64(deliver_time));
-    stmt->setUInt32(index++, m_money);
-    stmt->setUInt32(index++, m_COD);
+    stmt->setUInt64(index++, m_money);
+    stmt->setUInt64(index++, m_COD);
     stmt->setUInt8 (index, uint8(checked));
     trans->Append(stmt);
 
@@ -231,8 +231,8 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
     stmt_log->setBool  (index++, !m_items.empty());
     stmt_log->setUInt64(index++, uint64(expire_time));
     stmt_log->setUInt64(index++, uint64(deliver_time));
-    stmt_log->setUInt32(index++, m_money);
-    stmt_log->setUInt32(index++, m_COD);
+    stmt_log->setUInt64(index++, m_money);
+    stmt_log->setUInt64(index++, m_COD);
     stmt_log->setUInt8 (index, uint8(checked));
     trans->Append(stmt_log);
 
