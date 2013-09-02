@@ -31,7 +31,7 @@ enum Opcodes
     NUM_OPCODE_HANDLERS                               = (0x7FFF+1),
     UNKNOWN_OPCODE                                    = (0xFFFF+1),
     NULL_OPCODE                                       = 0,
-    COMPRESSED_OPCODE_MASK                            = 0x8000,
+    SMSG_COMPRESSED_OPCODE                            = 0x467,  // 5.0.5 16048
 
     CMSG_ACCEPT_LEVEL_GRANT                           = 0x902,  // 5.0.5 16048
     CMSG_ACCEPT_TRADE                                 = 0x194,  // 5.0.5 16048
@@ -1413,11 +1413,7 @@ inline std::string GetOpcodeNameForLogging(Opcodes id)
     if (id < UNKNOWN_OPCODE)
     {
         if (OpcodeHandler* handler = opcodeTable[uint32(id) & 0x7FFF])
-        {
             ss << handler->name;
-            if (opcode & COMPRESSED_OPCODE_MASK)
-                ss << "_COMPRESSED";
-        }
         else
             ss << "UNKNOWN OPCODE";
     }

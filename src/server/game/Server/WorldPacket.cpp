@@ -23,19 +23,22 @@
 void WorldPacket::Compress(z_stream* compressionStream)
 {
     Opcodes uncompressedOpcode = GetOpcode();
-    if (uncompressedOpcode & COMPRESSED_OPCODE_MASK)
+    if (uncompressedOpcode == SMSG_COMPRESSED_OPCODE)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Packet with opcode 0x%04X is already compressed!", uncompressedOpcode);
+        sLog->outError(LOG_FILTER_NETWORKIO, "Tried to compress already compressed opcode!", uncompressedOpcode);
         return;
     }
 
-    Opcodes opcode = Opcodes(uncompressedOpcode | COMPRESSED_OPCODE_MASK);
-    uint32 size = wpos();
+    uint32 size = wpos() + sizeof(uint32);
     uint32 destsize = compressBound(size);
 
     std::vector<uint8> storage(destsize);
 
     _compressionStream = compressionStream;
+    _storage.insert(_storage.begin(), uncompressedOpcode & 0xFF);
+    _storage.insert(_storage.begin(), (uncompressedOpcode >> 8) & 0xFF);
+    _storage.insert(_storage.begin(), (uncompressedOpcode >> 16) & 0xFF);
+    _storage.insert(_storage.begin(), (uncompressedOpcode >> 24) & 0xFF);
     Compress(static_cast<void*>(&storage[0]), &destsize, static_cast<const void*>(contents()), size);
     if (destsize == 0)
         return;
@@ -44,9 +47,9 @@ void WorldPacket::Compress(z_stream* compressionStream)
     reserve(destsize + sizeof(uint32));
     *this << uint32(size);
     append(&storage[0], destsize);
-    SetOpcode(opcode);
+    SetOpcode(SMSG_COMPRESSED_OPCODE);
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Successfully compressed opcode %u (len %u) to %u (len %u)", uncompressedOpcode, size, opcode, destsize);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "Successfully compressed opcode %u (len %u) to %u (len %u)", uncompressedOpcode, size, SMSG_COMPRESSED_OPCODE, destsize);
 }
 
 //! Compresses another packet and stores it in self (source left intact)
@@ -55,30 +58,34 @@ void WorldPacket::Compress(z_stream* compressionStream, WorldPacket const* sourc
     ASSERT(source != this);
 
     Opcodes uncompressedOpcode = source->GetOpcode();
-    if (uncompressedOpcode & COMPRESSED_OPCODE_MASK)
+    if (uncompressedOpcode == SMSG_COMPRESSED_OPCODE)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Packet with opcode 0x%04X is already compressed!", uncompressedOpcode);
+        sLog->outError(LOG_FILTER_NETWORKIO, "Tried to compress already compressed opcode!", uncompressedOpcode);
         return;
     }
 
-    Opcodes opcode = Opcodes(uncompressedOpcode | COMPRESSED_OPCODE_MASK);
-    uint32 size = source->size();
+    uint32 size = source->size() + sizeof(uint32);
     uint32 destsize = compressBound(size);
 
     size_t sizePos = 0;
     resize(destsize + sizeof(uint32));
 
     _compressionStream = compressionStream;
-    Compress(static_cast<void*>(&_storage[0] + sizeof(uint32)), &destsize, static_cast<const void*>(source->contents()), size);
+    WorldPacket buf(*source);
+    buf._GetStorage().insert(buf._GetStorage().begin(), uncompressedOpcode & 0xFF);
+    buf._GetStorage().insert(buf._GetStorage().begin(), (uncompressedOpcode >> 8) & 0xFF);
+    buf._GetStorage().insert(buf._GetStorage().begin(), (uncompressedOpcode >> 16) & 0xFF);
+    buf._GetStorage().insert(buf._GetStorage().begin(), (uncompressedOpcode >> 24) & 0xFF);
+    Compress(static_cast<void*>(&_storage[0] + sizeof(uint32)), &destsize, static_cast<const void*>(buf.contents()), size);
     if (destsize == 0)
         return;
 
     put<uint32>(sizePos, size);
     resize(destsize + sizeof(uint32));
 
-    SetOpcode(opcode);
+    SetOpcode(SMSG_COMPRESSED_OPCODE);
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Successfully compressed opcode %u (len %u) to %u (len %u)", uncompressedOpcode, size, opcode, destsize);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "Successfully compressed opcode %u (len %u) to %u (len %u)", uncompressedOpcode, size, SMSG_COMPRESSED_OPCODE, destsize);
 }
 
 void WorldPacket::Compress(void* dst, uint32 *dst_size, const void* src, int src_size)

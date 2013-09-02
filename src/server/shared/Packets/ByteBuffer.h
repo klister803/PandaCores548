@@ -747,6 +747,8 @@ class ByteBuffer
             return _bitpos;
         }
 
+        std::vector<uint8>& _GetStorage() { return _storage; }
+
     protected:
         size_t _rpos, _wpos, _bitpos;
         uint8 _curbitval;
