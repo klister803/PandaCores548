@@ -1039,7 +1039,7 @@ class spell_pri_purify : public SpellScriptLoader
                     if (Unit* target = GetExplTargetUnit())
                     {
                         // Create dispel mask by dispel type
-                        for (int8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+                        for (int8 i = 0; i < EFFECT_2; i++)
                         {
                             uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
                             uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
@@ -1047,13 +1047,14 @@ class spell_pri_purify : public SpellScriptLoader
                             target->GetDispellableAuraList(caster, dispelMask, dispelList);
 
                             if (dispelList.empty())
-                                return SPELL_FAILED_NOTHING_TO_DISPEL;
+                                continue;
 
                             return SPELL_CAST_OK;
                         }
+
+                        return SPELL_FAILED_NOTHING_TO_DISPEL;
                     }
                 }
-
                 return SPELL_CAST_OK;
             }
 
