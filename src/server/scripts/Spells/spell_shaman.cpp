@@ -821,10 +821,10 @@ class spell_sha_fire_nova : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                /*if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (target->HasAura(SPELL_SHA_FLAME_SHOCK))
-                            _player->CastSpell(target, SPELL_SHA_FIRE_NOVA_TRIGGERED, true);
+                            _player->CastSpell(target, SPELL_SHA_FIRE_NOVA_TRIGGERED, true);*/
             }
 
             void Register()
