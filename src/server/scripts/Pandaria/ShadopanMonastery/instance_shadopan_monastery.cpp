@@ -244,6 +244,7 @@ public:
                             break;
                         case IN_PROGRESS:
                             HandleGameObject(shaEntranceGuid,   false);
+                            break;
                         case DONE:
                             HandleGameObject(shaEntranceGuid,   true);
                             HandleGameObject(shaExitGuid,       true);
