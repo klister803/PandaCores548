@@ -26340,7 +26340,12 @@ bool Player::LearnTalent(uint32 talentId)
                 talentInfo->rank == tmpTalent->rank)
             {
                 if (HasSpell(tmpTalent->spellId))
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LearnTalent talentInfo  classId %u, TalentTab %u, rank %u, spellId %u,  tmpTalent  classId %u, TalentTab %u, rank %u, spellId %u",
+                    talentInfo->classId, talentInfo->TalentTab, talentInfo->rank, talentInfo->spellId,
+                    tmpTalent->classId, tmpTalent->TalentTab, tmpTalent->rank, tmpTalent->spellId);
                     return false;
+                }
             }
         }
     }
