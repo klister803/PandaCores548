@@ -387,17 +387,17 @@ struct TrinityStringLocale
 };
 
 typedef std::map<uint64, uint64> LinkedRespawnContainer;
-typedef ACE_Based::LockedMap<uint32, CreatureData> CreatureDataContainer;
-typedef ACE_Based::LockedMap<uint32, GameObjectData> GameObjectDataContainer;
-typedef ACE_Based::LockedMap<uint32, CreatureLocale> CreatureLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, GameObjectLocale> GameObjectLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, ItemLocale> ItemLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, QuestLocale> QuestLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, NpcTextLocale> NpcTextLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, PageTextLocale> PageTextLocaleContainer;
-typedef ACE_Based::LockedMap<int32, TrinityStringLocale> TrinityStringLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
+typedef UNORDERED_MAP<uint32, CreatureData> CreatureDataContainer;
+typedef UNORDERED_MAP<uint32, GameObjectData> GameObjectDataContainer;
+typedef UNORDERED_MAP<uint32, CreatureLocale> CreatureLocaleContainer;
+typedef UNORDERED_MAP<uint32, GameObjectLocale> GameObjectLocaleContainer;
+typedef UNORDERED_MAP<uint32, ItemLocale> ItemLocaleContainer;
+typedef UNORDERED_MAP<uint32, QuestLocale> QuestLocaleContainer;
+typedef UNORDERED_MAP<uint32, NpcTextLocale> NpcTextLocaleContainer;
+typedef UNORDERED_MAP<uint32, PageTextLocale> PageTextLocaleContainer;
+typedef UNORDERED_MAP<int32, TrinityStringLocale> TrinityStringLocaleContainer;
+typedef UNORDERED_MAP<uint32, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
+typedef UNORDERED_MAP<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
 
 typedef std::multiset<uint32> QuestObject;
 typedef std::map<uint32, QuestObject> QuestStarter;
