@@ -2224,17 +2224,17 @@ struct SummonPropertiesEntry
 
 struct TalentEntry
 {
-    uint32  Id;             // 0
-    //uint32  unk;          // 1
-    uint32  rank;           // 2
-    //uint32  unk;          // 3
-    uint32  spellId;        // 4
-    //uint32  unk;          // 5
-    //uint32  unk;          // 6
-    //uint32  unk;          // 7
-    uint32  classId;        // 8
-    uint32  spellOverride;  // 9
-    char*   description;    // 10
+    uint32  Id;                                     // 0
+    //uint32  petTab;                               // 1
+    uint32  rank;                                   // 2
+    uint32  TalentTab;                              // 3
+    uint32  spellId;                                // 4
+    //uint32  needAddInSpellBook;                   // 5
+    //uint32  unk2;                                 // 6
+    //uint32  allowForPet;                          // 7
+    uint32  classId;                                // 8
+    uint32  spellOverride;                          // 9
+    char*   description;                            // 10
 
 };
 

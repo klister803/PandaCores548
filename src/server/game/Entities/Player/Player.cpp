@@ -26330,6 +26330,22 @@ bool Player::LearnTalent(uint32 talentId)
     if (HasSpell(spellid))
         return false;
 
+    // Fix bug WPE talent
+    uint32 tTab = talentInfo->TalentTab;
+    uint32 tRank = talentInfo->rank;
+
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)              // Loop through all talents.
+    {
+        if (TalentEntry const* tmpTalent = sTalentStore.LookupEntry(i)) // Someday, someone needs to revamp the way talents are tracked
+        {
+            if (tmpTalent->classId == getClass() && tTab != tmpTalent->TalentTab && tRank == talentInfo->rank)
+            {
+                if (HasSpell(tmpTalent->spellId))
+                    return false;
+            }
+        }
+    }
+
     // learn! (other talent ranks will unlearned at learning)
     learnSpell(spellid, false);
     AddTalent(spellid, GetActiveSpec(), true);
