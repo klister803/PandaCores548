@@ -2556,7 +2556,11 @@ void ObjectMgr::LoadItemTemplates()
             Field* fields = result->Fetch();
             uint32 itemId = fields[0].GetUInt32();
             if (_itemTemplateStore.find(itemId) != _itemTemplateStore.end())
-                --sparseCount;
+            {
+                QueryResult result = WorldDatabase.Query("DELETE FROM item_template WHERE entry IN (%u);", itemId);
+                //--sparseCount;
+                continue;
+            }
 
             ItemTemplate& itemTemplate = _itemTemplateStore[itemId];
 
