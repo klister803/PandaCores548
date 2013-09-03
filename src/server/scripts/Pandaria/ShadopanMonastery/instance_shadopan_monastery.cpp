@@ -141,7 +141,7 @@ public:
                     HandleGameObject(0, true, go);
                     break;
                 case GO_SNOWDRIFT_POSSESSIONS:
-                    go->SetPhaseMask(2, true);
+                case GO_SNOWDRIFT_POSSESSIONS2:
                     snowdriftPossessionsGuid = go->GetGUID();
                     break;
                 case GO_SNOWDRIFT_FIRE_WALL:
@@ -212,8 +212,8 @@ public:
                             secondDefeatedNovicePositionsGuid   = secondDefeatedNovicePositionsGuidSave;
                             
                             HandleGameObject(snowdriftEntranceGuid, true);
-                            HandleGameObject(snowdriftFirewallGuid, true);
-                            HandleGameObject(snowdriftDojoDoorGuid, true);
+                            HandleGameObject(snowdriftFirewallGuid, false);
+                            HandleGameObject(snowdriftDojoDoorGuid, false);
                             HandleGameObject(snowdriftExitGuid,     false);
                             break;
                         case IN_PROGRESS:
@@ -222,7 +222,7 @@ public:
                             break;
                         case DONE:
                             if (GameObject* possessions = instance->GetGameObject(snowdriftPossessionsGuid))
-                                possessions->SetPhaseMask(1, true);
+                                possessions->SetRespawnTime(604800);
                             
                             HandleGameObject(snowdriftEntranceGuid, true);
                             HandleGameObject(snowdriftFirewallGuid, true);
