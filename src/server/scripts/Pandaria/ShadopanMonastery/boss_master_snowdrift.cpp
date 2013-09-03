@@ -100,12 +100,6 @@ enum ePoints
     POINT_MINIBOSS_DEFEATED         = 7
 };
 
-Position SnowdriftPos[2] =
-{
-    {3680.56f, 3045.27f, 816.20f},
-    {3713.60f, 3091.87f, 817.31f}
-};
-
 Position InitiateSpawnPos[5] =
 {
     {3708.56f, 3039.60f, 816.28f},
@@ -151,16 +145,11 @@ class boss_master_snowdrift : public CreatureScript
             void Reset()
             {
                 _Reset();
-
                 introStarted = false;
                 phase = PHASE_FIRST_EVENT;
                 eventPhase = 0;
-
-                Position pos;
-                SnowdriftPos[POINT_BEGIN_EVENT - 1].GetPosition(&pos);
                 me->GetMotionMaster()->Clear();
-                me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, pos);
-
+                me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, 3680.56f, 3045.27f, 816.20f);
                 me->setFaction(35);
                 me->SetReactState(REACT_PASSIVE);
                 SetCanSeeEvenInPassiveMode(true);
@@ -198,31 +187,45 @@ class boss_master_snowdrift : public CreatureScript
 
             void MoveInLineOfSight(Unit* who)
             {
-                if (who->ToPlayer())
+                if (who->ToPlayer() && !introStarted)
                 {
                     if (who->ToPlayer()->isGameMaster())
                         return;
 
-                    if (me->GetDistance(who) < 45.0f && !introStarted)
+                    if (me->GetDistance(who) < 45.0f)
                     {
                         introStarted = true;
                         pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, SPECIAL);
                         events.ScheduleEvent(EVENT_FIRST_EVENT, 1000);
                         events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
+                        if (GameObject* endoor = me->FindNearestGameObject(213194, 80.0f))
+                            endoor->SetGoState(GO_STATE_READY);
                     }
                 }
             }
 
-            void JustReachedHome()
+            void JustDied(Unit* killer)
             {
-                Position pos;
-                SnowdriftPos[POINT_BEGIN_EVENT - 1].GetPosition(&pos);
-                me->GetMotionMaster()->Clear();
-                me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, pos);
+                _JustDied();
+            }
 
-                pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, FAIL);
+            void EnterEvadeMode()
+            {
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, 3680.56f, 3045.27f, 816.20f);//Events pos
+                if (pInstance)
+                    pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, FAIL);
                 summons.DespawnAll();
             }
+
+           /* void JustReachedHome()
+            {
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, 3680.56f, 3045.27f, 816.20f);//Events pos
+                if (pInstance)
+                    pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, FAIL);
+                summons.DespawnAll();
+            }*/
 
             void DoAction(const int32 action)
             {
@@ -304,7 +307,7 @@ class boss_master_snowdrift : public CreatureScript
                     }
                     case 9:
                     {
-                        me->GetMotionMaster()->MovePoint(POINT_PHASE_FIGHT, SnowdriftPos[POINT_PHASE_FIGHT - 1].GetPositionX(), SnowdriftPos[POINT_PHASE_FIGHT - 1].GetPositionY(), SnowdriftPos[POINT_PHASE_FIGHT - 1].GetPositionZ());
+                        me->GetMotionMaster()->MovePoint(POINT_PHASE_FIGHT, 3713.60f, 3091.87f, 817.31f);//Pos in DoJo
                         phase = PHASE_FIGHT_1;
                         break;
                     }
@@ -313,7 +316,7 @@ class boss_master_snowdrift : public CreatureScript
                 }
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+           /* void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (phase == PHASE_FIGHT_1)
                 {
@@ -330,7 +333,7 @@ class boss_master_snowdrift : public CreatureScript
                         events.ScheduleEvent(EVENT_DISAPPEAR, 2000);
                     }
                 }
-            }
+            }*/
 
             void UpdateAI(const uint32 diff)
             {
@@ -340,7 +343,7 @@ class boss_master_snowdrift : public CreatureScript
                 {
                     // Event Script
                     case EVENT_FIRST_EVENT:
-                        DoEvent();
+                        DoEvent(); 
                         break;
                     case EVENT_CHECK_WIPE:
                         if (pInstance->IsWipe())
@@ -415,9 +418,8 @@ class boss_master_snowdrift : public CreatureScript
                     default:
                         break;
                 }
-
-                if (phase == PHASE_FIGHT_1 || phase == PHASE_FIGHT_3)
-                    DoMeleeAttackIfReady();
+                
+                DoMeleeAttackIfReady();
             }
         };
 
@@ -470,8 +472,6 @@ class npc_snowdrift_novice : public CreatureScript
                             AttackStart(target);
                         break;
                     case POINT_NOVICE_DEFEATED:
-                        if (pInstance)
-                            pInstance->SetData(DATA_DEFEATED_NOVICE, 1);
                         break;
                     case POINT_NOVICE_DEFEATED_SECOND:
                         me->SetFacingTo(me->GetAngle(3659.08f, 3015.38f));
@@ -489,17 +489,20 @@ class npc_snowdrift_novice : public CreatureScript
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
+                    EnterEvadeMode();
                     me->SetReactState(REACT_PASSIVE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     me->setFaction(35);
                     stillInFight = false;
-                    events.Reset();
+                    if (pInstance)
+                        pInstance->SetData(DATA_DEFEATED_NOVICE, 1);
 
                     if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_FIRST_POS)))
                     {
                         me->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 10.0f, POINT_NOVICE_DEFEATED);
                         me->SetHomePosition(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), position->GetOrientation());
                     }
+                    me->DespawnOrUnsummon();
                 }
             }
 
@@ -587,21 +590,21 @@ class npc_snowdrift_miniboss : public CreatureScript
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
+                    EnterEvadeMode();
                     me->setFaction(35);
                     me->SetReactState(REACT_PASSIVE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
-                    me->CombatStop();
-                    events.Reset();
                     stillInFight = false;
+                    if (pInstance)
+                        pInstance->SetData(DATA_DEFEATED_MINIBOSS, 1);
 
                     if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_MINIBOSS_POS)))
                     {
                         me->GetMotionMaster()->MovePoint(POINT_MINIBOSS_DEFEATED, position->GetPositionX(), position->GetPositionY(), position->GetPositionZ());
                         me->SetHomePosition(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), position->GetOrientation());
                     }
+                    me->DespawnOrUnsummon();
 
-                    if (pInstance)
-                        pInstance->SetData(DATA_DEFEATED_MINIBOSS, 1);
                 }
             }
 
