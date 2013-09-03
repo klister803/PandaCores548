@@ -120,6 +120,9 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
 
     Object* object = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT|TYPEMASK_ITEM|TYPEMASK_PLAYER);
 
+    if (!object || object == _player)
+        return;
+
     // no or incorrect quest giver
     if (!object || (object->GetTypeId() != TYPEID_PLAYER && !object->hasQuest(questId)) ||
         (object->GetTypeId() == TYPEID_PLAYER && object != _player && !object->ToPlayer()->CanShareQuest(questId)))
@@ -157,7 +160,6 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
                 _player->SetDivider(0);
                 return;
             }
-
             if (player)
             {
                 if (!player->CanShareQuest(questId))
@@ -272,17 +274,24 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
         if (!_player->CanTakeQuest(quest, true))
             return;
 
-        if (quest->IsAutoAccept() && _player->CanAddQuest(quest, true))
-        {
-            _player->AddQuest(quest, object);
-            if (_player->CanCompleteQuest(questId))
-                _player->CompleteQuest(questId);
-        }
-
-        if (quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE))
+        if ( _player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
+            _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, object->GetGUID(), true);
+        else if (_player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
             _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, object->GetGUID(), _player->CanCompleteQuest(quest->GetQuestId()), true);
         else
+        {
+            if (quest->IsAutoAccept() && _player->CanAddQuest(quest, true))
+            {
+                if (Creature* pQuestGiver = ObjectAccessor::GetCreature(*_player, guid))
+                    if (pQuestGiver->IsAIEnabled)
+                        sScriptMgr->OnQuestAccept(_player, pQuestGiver, quest);
+
+                _player->AddQuest(quest, object);
+                if (_player->CanCompleteQuest(questId))
+                    _player->CompleteQuest(questId);
+            }
             _player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, object->GetGUID(), true);
+        }
     }
 }
 
