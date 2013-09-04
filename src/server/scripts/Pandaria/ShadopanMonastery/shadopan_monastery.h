@@ -83,6 +83,9 @@ enum ObjectsIds
     GO_SNOWDRIFT_POSSESSIONS    = 214518,
     GO_SNOWDRIFT_POSSESSIONS2   = 214519,
 
+    GO_ZHU_CHEST                = 213888,
+    GO_ZHU_CHEST2               = 213889,
+
     GO_SHA_ENTRANCE             = 210867,
     GO_SHA_EXIT                 = 210866,
 
