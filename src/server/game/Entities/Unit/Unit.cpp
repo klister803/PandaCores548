@@ -15285,6 +15285,16 @@ void CharmInfo::InitCharmCreateSpells()
 
 bool CharmInfo::AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate)
 {
+    // pet cannot suumon mob
+    for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
+    {
+        switch (spellInfo->Effects[j].Effect)
+        {
+            case SPELL_EFFECT_SUMMON:
+                return false;
+        }
+    }
+
     uint32 spell_id = spellInfo->Id;
     uint32 first_id = spellInfo->GetFirstRankSpell()->Id;
 
