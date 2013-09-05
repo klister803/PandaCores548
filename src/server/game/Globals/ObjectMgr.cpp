@@ -518,6 +518,41 @@ void ObjectMgr::LoadCreatureTemplates()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void ObjectMgr::LoadCreatureDifficultyStat()
+{
+    uint32 oldMSTime = getMSTime();
+
+    //                                                 0        1             2             3
+    QueryResult result = WorldDatabase.Query("SELECT entry, difficulty, dmg_multiplier, Health_mod FROM creature_difficulty_stat;");
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 creature difficulty stat definitions. DB table `creature_difficulty_stat` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 entry = fields[0].GetUInt32();
+
+        CreatureDifficultyStat creatureDiffStat;
+        creatureDiffStat.Entry           = entry;
+        creatureDiffStat.Difficulty      = fields[1].GetUInt8();
+        creatureDiffStat.dmg_multiplier  = fields[2].GetFloat();
+        creatureDiffStat.ModHealth       = fields[3].GetFloat();
+
+        _creatureDifficultyStatStore[entry].push_back(creatureDiffStat);
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature difficulty stat  definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::LoadCreatureTemplateAddons()
 {
     uint32 oldMSTime = getMSTime();
@@ -9048,6 +9083,22 @@ GameObjectTemplate const* ObjectMgr::GetGameObjectTemplate(uint32 entry)
     GameObjectTemplateContainer::const_iterator itr = _gameObjectTemplateStore.find(entry);
     if (itr != _gameObjectTemplateStore.end())
         return &(itr->second);
+
+    return NULL;
+}
+
+const std::vector<CreatureDifficultyStat>* ObjectMgr::GetDifficultyStat(uint32 entry) const
+{
+    CreatureDifficultyStatContainer::const_iterator itr = _creatureDifficultyStatStore.find(entry);
+    return itr != _creatureDifficultyStatStore.end() ? &(itr->second) : NULL;
+}
+
+CreatureDifficultyStat const* ObjectMgr::GetCreatureDifficultyStat(uint32 entry, uint8 diff) const
+{
+    if (std::vector<CreatureDifficultyStat> const* diffStat = GetDifficultyStat(entry))
+        for (std::vector<CreatureDifficultyStat>::const_iterator itr = diffStat->begin(); itr != diffStat->end(); ++itr)
+            if(itr->Difficulty == diff)
+                return &(*itr);
 
     return NULL;
 }

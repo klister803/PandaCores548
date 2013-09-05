@@ -193,8 +193,18 @@ struct CreatureTemplate
     }
 };
 
+// from `creature_difficulty_stat` table
+struct CreatureDifficultyStat
+{
+    uint32  Entry;
+    uint8   Difficulty;
+    float   dmg_multiplier;
+    float   ModHealth;
+};
+
 // Benchmarked: Faster than std::map (insert/find)
 typedef UNORDERED_MAP<uint32, CreatureTemplate> CreatureTemplateContainer;
+typedef UNORDERED_MAP<uint32, std::vector<CreatureDifficultyStat> > CreatureDifficultyStatContainer;
 
 // Defines base stats for creatures (used to calculate HP/mana/armor).
 struct CreatureBaseStats
@@ -205,9 +215,12 @@ struct CreatureBaseStats
 
     // Helpers
 
-    uint32 GenerateHealth(CreatureTemplate const* info) const
+    uint32 GenerateHealth(CreatureTemplate const* info, CreatureDifficultyStat const* diffStats = NULL) const
     {
-        return uint32((BaseHealth[info->expansion] * info->ModHealth) + 0.5f);
+        if(diffStats)
+            return uint32((BaseHealth[info->expansion] * diffStats->ModHealth) + 0.5f);
+        else
+            return uint32((BaseHealth[info->expansion] * info->ModHealth) + 0.5f);
     }
 
     uint32 GenerateMana(CreatureTemplate const* info) const
@@ -636,6 +649,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         CreatureTemplate const* GetCreatureTemplate() const { return m_creatureInfo; }
         CreatureData const* GetCreatureData() const { return m_creatureData; }
+        CreatureDifficultyStat const* GetCreatureDiffStat() const { return m_creatureDiffData; }
         CreatureAddon const* GetCreatureAddon() const;
 
         std::string GetAIName() const;
@@ -798,6 +812,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool m_isTempWorldObject; //true when possessed
         uint32 GetBossId() const { return bossid; }
+        uint8 GetMobDifficulty() const { return difficulty; }
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
@@ -847,10 +862,12 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         CreatureTemplate const* m_creatureInfo;                 // in difficulty mode > 0 can different from sObjectMgr->GetCreatureTemplate(GetEntry())
         CreatureData const* m_creatureData;
+        CreatureDifficultyStat const* m_creatureDiffData;
 
         uint16 m_LootMode;                                  // bitmask, default LOOT_MODE_DEFAULT, determines what loot will be lootable
         uint32 guid_transport;
         uint32 bossid;
+        uint8 difficulty;
 
         bool IsInvisibleDueToDespawn() const;
         bool CanAlwaysSee(WorldObject const* obj) const;

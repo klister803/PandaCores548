@@ -1086,6 +1086,8 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = GetModifierValue(unitMod, TOTAL_PCT);
     float dmg_multiplier = GetCreatureTemplate()->dmg_multiplier;
+    if(CreatureDifficultyStat const* diffStats = GetCreatureDiffStat())
+        dmg_multiplier = diffStats->dmg_multiplier;
 
     if (!CanUseAttackType(attType))
     {

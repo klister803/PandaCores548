@@ -37,18 +37,18 @@ static Rates const qualityToRate[MAX_ITEM_QUALITY] =
     RATE_DROP_ITEM_ARTIFACT,                                // ITEM_QUALITY_ARTIFACT
 };
 
-LootStore LootTemplates_Creature("creature_loot_template",           "creature entry",                  true);
-LootStore LootTemplates_Disenchant("disenchant_loot_template",       "item disenchant id",              true);
-LootStore LootTemplates_Fishing("fishing_loot_template",             "area id",                         true);
-LootStore LootTemplates_Gameobject("gameobject_loot_template",       "gameobject entry",                true);
-LootStore LootTemplates_Item("item_loot_template",                   "item entry",                      true);
-LootStore LootTemplates_Mail("mail_loot_template",                   "mail template id",                false);
-LootStore LootTemplates_Milling("milling_loot_template",             "item entry (herb)",               true);
-LootStore LootTemplates_Pickpocketing("pickpocketing_loot_template", "creature pickpocket lootid",      true);
-LootStore LootTemplates_Prospecting("prospecting_loot_template",     "item entry (ore)",                true);
-LootStore LootTemplates_Reference("reference_loot_template",         "reference id",                    false);
-LootStore LootTemplates_Skinning("skinning_loot_template",           "creature skinning id",            true);
-LootStore LootTemplates_Spell("spell_loot_template",                 "spell id (random item creating)", false);
+LootStore LootTemplates_Creature("creature_loot_template",           "creature entry",                  true, ", difficulty");
+LootStore LootTemplates_Disenchant("disenchant_loot_template",       "item disenchant id",              true, NULL);
+LootStore LootTemplates_Fishing("fishing_loot_template",             "area id",                         true, NULL);
+LootStore LootTemplates_Gameobject("gameobject_loot_template",       "gameobject entry",                true, NULL);
+LootStore LootTemplates_Item("item_loot_template",                   "item entry",                      true, NULL);
+LootStore LootTemplates_Mail("mail_loot_template",                   "mail template id",                false, NULL);
+LootStore LootTemplates_Milling("milling_loot_template",             "item entry (herb)",               true, NULL);
+LootStore LootTemplates_Pickpocketing("pickpocketing_loot_template", "creature pickpocket lootid",      true, NULL);
+LootStore LootTemplates_Prospecting("prospecting_loot_template",     "item entry (ore)",                true, NULL);
+LootStore LootTemplates_Reference("reference_loot_template",         "reference id",                    false, NULL);
+LootStore LootTemplates_Skinning("skinning_loot_template",           "creature skinning id",            true, NULL);
+LootStore LootTemplates_Spell("spell_loot_template",                 "spell id (random item creating)", false, NULL);
 
 class LootTemplate::LootGroup                               // A set of loot definitions for items (refs are not allowed)
 {
@@ -99,8 +99,8 @@ uint32 LootStore::LoadLootTable()
     // Clearing store (for reloading case)
     Clear();
 
-    //                                                  0     1            2               3         4         5             6
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, lootmode, groupid, mincountOrRef, maxcount FROM %s", GetName());
+    //                                                  0     1            2               3         4         5             6     7
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, lootmode, groupid, mincountOrRef, maxcount%s FROM %s", GetAddFilds(), GetName());
 
     if (!result)
         return 0;
@@ -118,6 +118,9 @@ uint32 LootStore::LoadLootTable()
         uint8  group               = fields[4].GetUInt8();
         int32  mincountOrRef       = fields[5].GetInt32();
         int32  maxcount            = fields[6].GetUInt8();
+        uint8 difficulty = 0;
+        if(GetAddFilds())
+            difficulty = fields[7].GetUInt8();
 
         if (maxcount > std::numeric_limits<uint8>::max())
         {
@@ -125,7 +128,7 @@ uint32 LootStore::LoadLootTable()
             continue;                                   // error already printed to log/console.
         }
 
-        LootStoreItem storeitem = LootStoreItem(item, chanceOrQuestChance, lootmode, group, mincountOrRef, maxcount);
+        LootStoreItem storeitem = LootStoreItem(item, chanceOrQuestChance, lootmode, group, mincountOrRef, maxcount, difficulty);
 
         if (!storeitem.IsValid(*this, entry))            // Validity checks
             continue;
@@ -1370,6 +1373,9 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
     for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
     {
         if (i->lootmode &~ lootMode)                          // Do not add if mode mismatch
+            continue;
+
+        if (i->difficulty != loot.diffiCulty)                          // Do not add if mode mismatch
             continue;
 
         if (!i->Roll(rate))

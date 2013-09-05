@@ -647,6 +647,9 @@ class ObjectMgr
         void LoadGameObjectTemplate();
         void AddGameobjectInfo(GameObjectTemplate* goinfo);
 
+        const std::vector<CreatureDifficultyStat>* GetDifficultyStat(uint32 entry) const;
+        CreatureDifficultyStat const* GetCreatureDifficultyStat(uint32 entry, uint8 diff) const;
+
         CreatureTemplate const* GetCreatureTemplate(uint32 entry);
         CreatureTemplateContainer const* GetCreatureTemplates() const { return &_creatureTemplateStore; }
         CreatureModelInfo const* GetCreatureModelInfo(uint32 modelId);
@@ -878,6 +881,7 @@ class ObjectMgr
         void LoadDbScriptStrings();
         void LoadCreatureClassLevelStats();
         void LoadCreatureLocales();
+        void LoadCreatureDifficultyStat();
         void LoadCreatureTemplates();
         void LoadCreatureTemplateAddons();
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
@@ -1353,6 +1357,7 @@ class ObjectMgr
         MapObjectGuids _mapObjectGuidsStore;
         CreatureDataContainer _creatureDataStore;
         CreatureTemplateContainer _creatureTemplateStore;
+        CreatureDifficultyStatContainer _creatureDifficultyStatStore;
         CreatureModelContainer _creatureModelStore;
         CreatureAddonContainer _creatureAddonStore;
         CreatureAddonContainer _creatureTemplateAddonStore;

@@ -1484,6 +1484,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature template addons...");
     sObjectMgr->LoadCreatureTemplateAddons();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature difficulty stat...");
+    sObjectMgr->LoadCreatureDifficultyStat();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Reputation Reward Rates...");
     sObjectMgr->LoadReputationRewardRate();
 

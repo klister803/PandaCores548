@@ -176,6 +176,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL)
     TriggerJustRespawned = false;
     m_isTempWorldObject = false;
     bossid = 0;
+    difficulty = 0;
 }
 
 Creature::~Creature()
@@ -333,10 +334,12 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
             if(!cinfo)
                 cinfo = normalInfo;
         }*/
+        difficulty = diff;
     }
 
     SetEntry(Entry);                                        // normal entry always
     m_creatureInfo = cinfo;                                 // map mode related always
+    m_creatureDiffData = sObjectMgr->GetCreatureDifficultyStat(cinfo->Entry, difficulty);                                 // map mode related always
 
     // equal to player Race field, but creature does not have race
     SetByteValue(UNIT_FIELD_BYTES_0, 0, 0);
@@ -410,7 +413,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     if (!GetCreatureAddon())
         SetSheath(SHEATH_STATE_MELEE);
 
-    SelectLevel(GetCreatureTemplate());
+    SelectLevel(cInfo);
     if (team == HORDE)
         setFaction(cInfo->faction_H);
     else
@@ -1235,10 +1238,23 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
 {
     uint32 rank = isPet()? 0 : cinfo->rank;
 
+    CreatureDifficultyStat const* diffStats = GetCreatureDiffStat();
+
     // level
-    uint8 minlevel = std::min(cinfo->maxlevel, cinfo->minlevel);
-    uint8 maxlevel = std::max(cinfo->maxlevel, cinfo->minlevel);
-    uint8 level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
+    uint8 level = 0;
+    if(!diffStats)
+    {
+        uint8 minlevel = std::min(cinfo->maxlevel, cinfo->minlevel);
+        uint8 maxlevel = std::max(cinfo->maxlevel, cinfo->minlevel);
+        level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
+    }
+    else
+    {
+        if(diffStats->Difficulty == 1 || diffStats->Difficulty == 2)
+            level = cinfo->maxlevel;
+        else
+            level = cinfo->minlevel;
+    }
     SetLevel(level);
 
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cinfo->unit_class);
@@ -1246,7 +1262,7 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     // health
     float healthmod = _GetHealthMod(rank);
 
-    uint32 basehp = stats->GenerateHealth(cinfo);
+    uint32 basehp = stats->GenerateHealth(cinfo, diffStats);
 
     // Harcode Ghoul HP (Guardian)
     if (GetEntry() == 26125)
