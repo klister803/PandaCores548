@@ -38,17 +38,17 @@ static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 };
 
 LootStore LootTemplates_Creature("creature_loot_template",           "creature entry",                  true, ", difficulty");
-LootStore LootTemplates_Disenchant("disenchant_loot_template",       "item disenchant id",              true, NULL);
-LootStore LootTemplates_Fishing("fishing_loot_template",             "area id",                         true, NULL);
-LootStore LootTemplates_Gameobject("gameobject_loot_template",       "gameobject entry",                true, NULL);
-LootStore LootTemplates_Item("item_loot_template",                   "item entry",                      true, NULL);
-LootStore LootTemplates_Mail("mail_loot_template",                   "mail template id",                false, NULL);
-LootStore LootTemplates_Milling("milling_loot_template",             "item entry (herb)",               true, NULL);
-LootStore LootTemplates_Pickpocketing("pickpocketing_loot_template", "creature pickpocket lootid",      true, NULL);
-LootStore LootTemplates_Prospecting("prospecting_loot_template",     "item entry (ore)",                true, NULL);
-LootStore LootTemplates_Reference("reference_loot_template",         "reference id",                    false, NULL);
-LootStore LootTemplates_Skinning("skinning_loot_template",           "creature skinning id",            true, NULL);
-LootStore LootTemplates_Spell("spell_loot_template",                 "spell id (random item creating)", false, NULL);
+LootStore LootTemplates_Disenchant("disenchant_loot_template",       "item disenchant id",              true, "");
+LootStore LootTemplates_Fishing("fishing_loot_template",             "area id",                         true, "");
+LootStore LootTemplates_Gameobject("gameobject_loot_template",       "gameobject entry",                true, "");
+LootStore LootTemplates_Item("item_loot_template",                   "item entry",                      true, "");
+LootStore LootTemplates_Mail("mail_loot_template",                   "mail template id",                false, "");
+LootStore LootTemplates_Milling("milling_loot_template",             "item entry (herb)",               true, "");
+LootStore LootTemplates_Pickpocketing("pickpocketing_loot_template", "creature pickpocket lootid",      true, "");
+LootStore LootTemplates_Prospecting("prospecting_loot_template",     "item entry (ore)",                true, "");
+LootStore LootTemplates_Reference("reference_loot_template",         "reference id",                    false, "");
+LootStore LootTemplates_Skinning("skinning_loot_template",           "creature skinning id",            true, "");
+LootStore LootTemplates_Spell("spell_loot_template",                 "spell id (random item creating)", false, "");
 
 class LootTemplate::LootGroup                               // A set of loot definitions for items (refs are not allowed)
 {
@@ -119,7 +119,7 @@ uint32 LootStore::LoadLootTable()
         int32  mincountOrRef       = fields[5].GetInt32();
         int32  maxcount            = fields[6].GetUInt8();
         uint8 difficulty = 0;
-        if(GetAddFilds())
+        if(GetAddFilds() != "")
             difficulty = fields[7].GetUInt8();
 
         if (maxcount > std::numeric_limits<uint8>::max())
