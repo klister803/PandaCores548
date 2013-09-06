@@ -538,7 +538,10 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
 {
     time_t now = time(NULL);
     if (now - timeLastHandleSellItem < 1)
+    {
+        recvData.rfinish();
         return;
+    }
     else
        timeLastHandleSellItem = now;
 

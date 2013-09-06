@@ -281,7 +281,10 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
 {
     /*time_t now = time(NULL);
     if (now - timeCharEnumOpcode < 5)
+    {
+        recvData.rfinish();
         return;
+    }
     else
         timeCharEnumOpcode = now;*/
     

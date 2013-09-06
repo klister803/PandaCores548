@@ -37,7 +37,10 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 {
     time_t now = time(NULL);
     if (now - timeLastHandleSendMail < 15)
+    {
+        recvData.rfinish();
         return;
+    }
     else
        timeLastHandleSendMail = now;
 
