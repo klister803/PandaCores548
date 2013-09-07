@@ -154,11 +154,14 @@ class boss_sha_of_doubt : public CreatureScript
                             {
                                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                                 {
-                                    Player* plr = i->getSource();
-                                    if( !plr)
-                                        continue;
-                                    plr->CastSpell(plr, SPELL_FIGMENT_OF_DOUBT_3, false);
-                                    plr->CastSpell(plr, SPELL_DRAW_DOUBT, false);
+                                    if (Player* plr = i->getSource())
+                                    {
+                                        if (plr->isAlive())
+                                        {
+                                            plr->CastSpell(plr, SPELL_FIGMENT_OF_DOUBT_3, false);
+                                            plr->CastSpell(plr, SPELL_DRAW_DOUBT, false);
+                                        }
+                                    }
                                 }
                             }
                             events.ScheduleEvent(EVENT_BOUNDS_OF_REALITY, 60000);
