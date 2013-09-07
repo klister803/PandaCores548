@@ -58,6 +58,7 @@ class LootTemplate::LootGroup                               // A set of loot def
         bool HasQuestDropForPlayer(Player const* player) const;
                                                             // The same for active quests of the player
         void Process(Loot& loot, uint16 lootMode) const;    // Rolls an item from the group (if any) and adds the item to the loot
+        void ProcessInst(Loot& loot, uint16 lootMode) const;// Rolls an item from the inst group (if any) and adds the item to the loot
         float RawTotalChance() const;                       // Overall chance for the group (without equal chanced items)
         float TotalChance() const;                          // Overall chance for the group
 
@@ -1269,6 +1270,95 @@ void LootTemplate::LootGroup::Process(Loot& loot, uint16 lootMode) const
     }
 }
 
+// Rolls an item from the group (if any takes its chance) and adds the item to the loot
+void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
+{
+    // build up list of possible drops
+    LootStoreItemList EqualPossibleDrops = EqualChanced;
+    LootStoreItemList ExplicitPossibleDrops = ExplicitlyChanced;
+
+    uint8 uiAttemptCount = 0;
+    uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode);
+    const uint8 uiMaxAttempts = ExplicitlyChanced.size() + EqualChanced.size();
+
+    while (!ExplicitPossibleDrops.empty() || !EqualPossibleDrops.empty())
+    {
+        if (uiAttemptCount == uiMaxAttempts)             // already tried rolling too many times, just abort
+            return;
+
+        LootStoreItem* item = NULL;
+
+        // begin rolling (normally called via Roll())
+        LootStoreItemList::iterator itr;
+        uint8 itemSource = 0;
+        if (!ExplicitPossibleDrops.empty())              // First explicitly chanced entries are checked
+        {
+            itemSource = 1;
+            float Roll = (float)rand_chance();
+            // check each explicitly chanced entry in the template and modify its chance based on quality
+            for (itr = ExplicitPossibleDrops.begin(); itr != ExplicitPossibleDrops.end(); itr = ExplicitPossibleDrops.erase(itr))
+            {
+                if (itr->chance >= 100.0f)
+                {
+                    item = &*itr;
+                    break;
+                }
+
+                Roll -= itr->chance;
+                if (Roll < 0)
+                {
+                    item = &*itr;
+                    break;
+                }
+            }
+        }
+        if (item == NULL && !EqualPossibleDrops.empty()) // If nothing selected yet - an item is taken from equal-chanced part
+        {
+            itemSource = 2;
+            itr = EqualPossibleDrops.begin();
+            std::advance(itr, irand(0, EqualPossibleDrops.size()-1));
+            item = &*itr;
+        }
+        // finish rolling
+
+        ++uiAttemptCount;
+
+        if (item != NULL && item->lootmode & lootMode)   // only add this item if roll succeeds and the mode matches
+        {
+            bool duplicate = false;
+            if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
+            {
+                uint8 _item_counter = 0;
+                for (LootItemList::const_iterator _item = loot.items.begin(); _item != loot.items.end(); ++_item)
+                    if (_item->itemid == item->itemid)                             // search through the items that have already dropped
+                    {
+                        ++_item_counter;
+                        if (_proto->InventoryType == 0 && _item_counter == 3)      // Non-equippable items are limited to 3 drops
+                            duplicate = true;
+                        else if (_proto->InventoryType != 0 && _item_counter == 1) // Equippable item are limited to 1 drop
+                            duplicate = true;
+                    }
+            }
+            if (duplicate) // if item->itemid is a duplicate, remove it
+                switch (itemSource)
+                {
+                    case 1: // item came from ExplicitPossibleDrops
+                        ExplicitPossibleDrops.erase(itr);
+                        break;
+                    case 2: // item came from EqualPossibleDrops
+                        EqualPossibleDrops.erase(itr);
+                        break;
+                }
+            else           // otherwise, add the item and exit the function
+            {
+                loot.AddItem(*item);
+                if(uiDropCount <= uiAttemptCount)
+                    return;
+            }
+        }
+    }
+}
+
 // Overall chance for the group without equal chanced items
 float LootTemplate::LootGroup::RawTotalChance() const
 {
@@ -1344,6 +1434,13 @@ void LootTemplate::AddEntry(LootStoreItem& item)
             Groups.resize(item.group);                      // Adds new group the the loot template if needed
         Groups[item.group-1].AddEntry(item);                // Adds new entry to the group
     }
+    else if (item.group == 0 && item.mincountOrRef > 0 && item.difficulty > 0)           // Extra Group for auto loot
+    {
+        uint32 group = 1;
+        if (group >= ExtraGroups.size())
+            ExtraGroups.resize(group);                      // Adds new group the the loot template if needed
+        ExtraGroups[group-1].AddEntry(item);                // Adds new entry to the group
+    }
     else                                                    // Non-grouped entries and references are stored together
         Entries.push_back(item);
 }
@@ -1375,7 +1472,7 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         if (i->lootmode &~ lootMode)                          // Do not add if mode mismatch
             continue;
 
-        if (i->difficulty != loot.diffiCulty)                          // Do not add if mode mismatch
+        if (i->difficulty > 0 && i->difficulty &~ (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode))))                          // Do not add if instance mode mismatch
             continue;
 
         if (!i->Roll(rate))
@@ -1412,6 +1509,10 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         else                                                  // Plain entries (not a reference, not grouped)
             loot.AddItem(*i);                                 // Chance is already checked, just add
     }
+
+    // Now processing groups
+    for (LootGroups::const_iterator i = ExtraGroups.begin(); i != ExtraGroups.end(); ++i)
+        i->ProcessInst(loot, lootMode);
 
     // Now processing groups
     for (LootGroups::const_iterator i = Groups.begin(); i != Groups.end(); ++i)

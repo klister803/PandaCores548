@@ -1242,6 +1242,66 @@ class ObjectMgr
         ///Temporaire pour la création des Z, a remettre en private après
         GameObjectDataContainer _gameObjectDataStore;
 
+        //Get difficulty from spawnmode
+        uint8 GetDiffFromSpawn(uint8 spawnmode)
+        {
+            uint8 diff = 0;
+            switch (spawnmode)
+            {
+                case NONE_DIFFICULTY:
+                case REGULAR_DIFFICULTY:
+                case MAN10_DIFFICULTY:
+                    diff = 0;
+                    break;
+                case HEROIC_DIFFICULTY:
+                case MAN25_DIFFICULTY:
+                    diff = 1;
+                    break;
+                case MAN10_HEROIC_DIFFICULTY:
+                    diff = 2;
+                    break;
+                case MAN25_HEROIC_DIFFICULTY:
+                    diff = 3;
+                    break;
+                case RAID_TOOL_DIFFICULTY:
+                case CHALLENGE_MODE_DIFFICULTY:
+                case MAN40_DIFFICULTY:
+                    diff = 4;
+                    break;
+            }
+
+            return diff;
+        }
+
+        //Get item count from spawnmode
+        uint8 GetCountFromSpawn(uint8 spawnmode)
+        {
+            uint8 count = 0;
+            switch (spawnmode)
+            {
+                case NONE_DIFFICULTY:
+                case REGULAR_DIFFICULTY:
+                case HEROIC_DIFFICULTY:
+                    count = 1;
+                    break;
+                case MAN10_DIFFICULTY:
+                case MAN10_HEROIC_DIFFICULTY:
+                    count = 2;
+                    break;
+                case MAN25_DIFFICULTY:
+                case MAN25_HEROIC_DIFFICULTY:
+                    count = 5;
+                    break;
+                case RAID_TOOL_DIFFICULTY:
+                case CHALLENGE_MODE_DIFFICULTY:
+                case MAN40_DIFFICULTY:
+                    count = 3;
+                    break;
+            }
+
+            return count;
+        }
+
     private:
         // first free id for selected id type
         uint32 _auctionId;

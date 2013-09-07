@@ -111,7 +111,7 @@ struct LootStoreItem
     uint8   group       :7;
     bool    needs_quest :1;                                 // quest drop (negative ChanceOrQuestChance in DB)
     uint8   maxcount    :8;                                 // max drop count for the item (mincountOrRef positive) or Ref multiplicator (mincountOrRef negative)
-    uint8   difficulty  :8;                                 // instance difficulty
+    uint16  difficulty;                                     // instance difficulty mask
     std::list<Condition*>  conditions;                               // additional loot condition
 
     // Constructor, converting ChanceOrQuestChance -> (chance, needs_quest)
@@ -255,6 +255,7 @@ class LootTemplate
     private:
         LootStoreItemList Entries;                          // not grouped only
         LootGroups        Groups;                           // groups have own (optimised) processing, grouped entries go there
+        LootGroups        ExtraGroups;                      // auto groups have own (optimised) processing, grouped entries go there
 };
 
 //=====================================================
@@ -306,10 +307,10 @@ struct Loot
 
     uint32 objEntry;
     uint8 objType;
-    uint8 diffiCulty;
+    uint8 spawnMode;
     uint32 countItem;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), diffiCulty(0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener

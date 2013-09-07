@@ -285,29 +285,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     uint8 diff = uint8(GetMap()->GetSpawnMode());
     if(diff)
     {
-        switch (diff)
-        {
-            case NONE_DIFFICULTY:
-            case REGULAR_DIFFICULTY:
-            case MAN10_DIFFICULTY:
-                diff = 0;
-                break;
-            case HEROIC_DIFFICULTY:
-            case MAN25_DIFFICULTY:
-                diff = 1;
-                break;
-            case MAN10_HEROIC_DIFFICULTY:
-                diff = 2;
-                break;
-            case MAN25_HEROIC_DIFFICULTY:
-                diff = 3;
-                break;
-            case RAID_TOOL_DIFFICULTY:
-            case CHALLENGE_MODE_DIFFICULTY:
-            case MAN40_DIFFICULTY:
-                diff = 4;
-                break;
-        }
+        diff = sObjectMgr->GetDiffFromSpawn(diff);
         if (normalInfo->DifficultyEntry[diff - 1])
         {
             cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->DifficultyEntry[diff - 1]);
