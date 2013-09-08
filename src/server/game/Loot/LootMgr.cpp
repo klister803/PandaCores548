@@ -1278,7 +1278,7 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
     LootStoreItemList ExplicitPossibleDrops = ExplicitlyChanced;
 
     uint8 uiAttemptCount = 0;
-    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode));
+    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
     uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode, EqualChanced.size());
     const uint8 uiMaxAttempts = ExplicitlyChanced.size() + EqualChanced.size();
 
@@ -1470,7 +1470,7 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         return;
     }
 
-    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode));
+    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
     // Rolling non-grouped items
     for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
     {
