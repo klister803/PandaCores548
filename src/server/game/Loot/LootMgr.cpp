@@ -1322,9 +1322,6 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
         }
         // finish rolling
 
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process itemid %u, difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u, match %u",
-        item->itemid, item->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), diffMask, item->difficulty & diffMask);
-
         if (item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
             continue;
 
