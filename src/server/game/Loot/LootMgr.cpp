@@ -1304,8 +1304,8 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
 
         if (item != NULL)   // only add this item if roll succeeds and the mode matches
         {
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process itemid %u, difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u, match %u",
-            item->itemid, item->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), diffMask, item->difficulty & diffMask);
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process itemid %u, difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u, match %u, uiCountAdd %u",
+            item->itemid, item->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), diffMask, item->difficulty & diffMask, uiCountAdd);
 
             if (item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
             {
@@ -1328,11 +1328,15 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
                     }
             }
             if (duplicate) // if item->itemid is a duplicate, remove it
+            {
+                sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process duplicate %u, uiCountAdd %u", item->itemid, uiCountAdd);
                 EqualPossibleDrops.erase(itr);
+            }
             else           // otherwise, add the item and exit the function
             {
                 loot.AddItem(*item);
                 uiCountAdd++;
+                sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process AddItem %u, uiCountAdd %u", item->itemid, uiCountAdd);
                 if(uiDropCount <= uiCountAdd)
                     return;
             }
