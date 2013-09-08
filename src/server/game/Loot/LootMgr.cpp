@@ -1275,14 +1275,14 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
 {
     // build up list of possible drops
     LootStoreItemList EqualPossibleDrops = EqualChanced;
-    LootStoreItemList ExplicitPossibleDrops = ExplicitlyChanced;
 
     uint8 uiAttemptCount = 0;
+    uint8 uiCountAdd = 0;
     uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
     uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode, EqualChanced.size());
-    const uint8 uiMaxAttempts = ExplicitlyChanced.size() + EqualChanced.size();
+    const uint8 uiMaxAttempts = EqualChanced.size();
 
-    while (!ExplicitPossibleDrops.empty() || !EqualPossibleDrops.empty())
+    while (!EqualPossibleDrops.empty())
     {
         if (uiAttemptCount == uiMaxAttempts)             // already tried rolling too many times, just abort
             return;
@@ -1291,44 +1291,25 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
 
         // begin rolling (normally called via Roll())
         LootStoreItemList::iterator itr;
-        uint8 itemSource = 0;
-        if (!ExplicitPossibleDrops.empty())              // First explicitly chanced entries are checked
-        {
-            itemSource = 1;
-            float Roll = (float)rand_chance();
-            // check each explicitly chanced entry in the template and modify its chance based on quality
-            for (itr = ExplicitPossibleDrops.begin(); itr != ExplicitPossibleDrops.end(); itr = ExplicitPossibleDrops.erase(itr))
-            {
-                if (itr->chance >= 100.0f)
-                {
-                    item = &*itr;
-                    break;
-                }
 
-                Roll -= itr->chance;
-                if (Roll < 0)
-                {
-                    item = &*itr;
-                    break;
-                }
-            }
-        }
-        if (item == NULL && !EqualPossibleDrops.empty()) // If nothing selected yet - an item is taken from equal-chanced part
+        if (!EqualPossibleDrops.empty()) // If nothing selected yet - an item is taken from equal-chanced part
         {
-            itemSource = 2;
             itr = EqualPossibleDrops.begin();
             std::advance(itr, irand(0, EqualPossibleDrops.size()-1));
             item = &*itr;
         }
         // finish rolling
 
-        if (item != NULL && item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
-            continue;
-
         ++uiAttemptCount;
 
         if (item != NULL && item->lootmode & lootMode)   // only add this item if roll succeeds and the mode matches
         {
+            if (item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
+            {
+                EqualPossibleDrops.erase(itr);
+                continue;
+            }
+
             bool duplicate = false;
             if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
             {
@@ -1344,19 +1325,12 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
                     }
             }
             if (duplicate) // if item->itemid is a duplicate, remove it
-                switch (itemSource)
-                {
-                    case 1: // item came from ExplicitPossibleDrops
-                        ExplicitPossibleDrops.erase(itr);
-                        break;
-                    case 2: // item came from EqualPossibleDrops
-                        EqualPossibleDrops.erase(itr);
-                        break;
-                }
+                EqualPossibleDrops.erase(itr);
             else           // otherwise, add the item and exit the function
             {
                 loot.AddItem(*item);
-                if(uiDropCount <= uiAttemptCount)
+                uiCountAdd++;
+                if(uiDropCount <= uiCountAdd)
                     return;
             }
         }
