@@ -1326,6 +1326,8 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
 
         if (item != NULL && item->lootmode & lootMode)   // only add this item if roll succeeds and the mode matches
         {
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u", item->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), diffMask);
+
             if (item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
                 continue;
 
