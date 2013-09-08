@@ -1274,7 +1274,7 @@ class ObjectMgr
         }
 
         //Get item count from spawnmode
-        uint8 GetCountFromSpawn(uint8 spawnmode)
+        uint8 GetCountFromSpawn(uint8 spawnmode, uint32 size)
         {
             uint8 count = 0;
             switch (spawnmode)
@@ -1282,7 +1282,10 @@ class ObjectMgr
                 case NONE_DIFFICULTY:
                 case REGULAR_DIFFICULTY:
                 case HEROIC_DIFFICULTY:
-                    count = 1;
+                    if(size > 5)
+                        count = 2;
+                    else
+                        count = 1;
                     break;
                 case MAN10_DIFFICULTY:
                 case MAN10_HEROIC_DIFFICULTY:

@@ -1278,7 +1278,7 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
     LootStoreItemList ExplicitPossibleDrops = ExplicitlyChanced;
 
     uint8 uiAttemptCount = 0;
-    uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode);
+    uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode, EqualChanced.size());
     const uint8 uiMaxAttempts = ExplicitlyChanced.size() + EqualChanced.size();
 
     while (!ExplicitPossibleDrops.empty() || !EqualPossibleDrops.empty())
