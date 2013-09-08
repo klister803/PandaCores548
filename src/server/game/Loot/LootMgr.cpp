@@ -1322,15 +1322,16 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
         }
         // finish rolling
 
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process itemid %u, difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u, match %u",
+        item->itemid, item->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), diffMask, item->difficulty & diffMask);
+
+        if (item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
+            continue;
+
         ++uiAttemptCount;
 
         if (item != NULL && item->lootmode & lootMode)   // only add this item if roll succeeds and the mode matches
         {
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u", item->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), diffMask);
-
-            if (item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
-                continue;
-
             bool duplicate = false;
             if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
             {
