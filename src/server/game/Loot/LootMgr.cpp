@@ -282,7 +282,7 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
             return false;
         }
 
-        if (chance == 0 && group == 0)                      // Zero chance is allowed for grouped entries only
+        if (chance == 0 && group == 0 && difficulty == 0)                      // Zero chance is allowed for grouped entries only
         {
             sLog->outError(LOG_FILTER_SQL, "Table '%s' entry %d item %d: equal-chanced grouped entry, but group not defined - skipped", store.GetName(), entry, itemid);
             return false;
