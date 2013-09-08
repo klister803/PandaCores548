@@ -1307,8 +1307,9 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
             sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process itemid %u, difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u, match %u, uiCountAdd %u",
             item->itemid, item->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), diffMask, item->difficulty & diffMask, uiCountAdd);
 
-            if (item->difficulty > 0 && (item->difficulty &~ diffMask))                          // Do not add if instance mode mismatch
+            if (item->difficulty > 0 && !(item->difficulty & diffMask))                          // Do not add if instance mode mismatch
             {
+                sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process erase %u", item->itemid);
                 EqualPossibleDrops.erase(itr);
                 continue;
             }
