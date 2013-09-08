@@ -1278,6 +1278,7 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
     LootStoreItemList ExplicitPossibleDrops = ExplicitlyChanced;
 
     uint8 uiAttemptCount = 0;
+    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode));
     uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode, EqualChanced.size());
     const uint8 uiMaxAttempts = ExplicitlyChanced.size() + EqualChanced.size();
 
@@ -1325,6 +1326,9 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
 
         if (item != NULL && item->lootmode & lootMode)   // only add this item if roll succeeds and the mode matches
         {
+            if (item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
+                continue;
+
             bool duplicate = false;
             if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
             {
@@ -1466,15 +1470,14 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         return;
     }
 
+    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode));
     // Rolling non-grouped items
     for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
     {
         if (i->lootmode &~ lootMode)                          // Do not add if mode mismatch
             continue;
 
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u", i->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode))));
-
-        if (i->difficulty > 0 && i->difficulty &~ (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode))))                          // Do not add if instance mode mismatch
+        if (i->difficulty > 0 && i->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
             continue;
 
         if (!i->Roll(rate))
