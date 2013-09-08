@@ -1281,8 +1281,6 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
     uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode, EqualChanced.size());
     const uint8 uiMaxAttempts = ExplicitlyChanced.size() + EqualChanced.size();
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: LootTemplate::LootGroup::ProcessInst uiMaxAttempts %u, uiDropCount %u", uiMaxAttempts, uiDropCount);
-
     while (!ExplicitPossibleDrops.empty() || !EqualPossibleDrops.empty())
     {
         if (uiAttemptCount == uiMaxAttempts)             // already tried rolling too many times, just abort
@@ -1353,7 +1351,6 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
                 }
             else           // otherwise, add the item and exit the function
             {
-                sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: LootTemplate::LootGroup::ProcessInst loot.AddItem %u", item->itemid);
                 loot.AddItem(*item);
                 if(uiDropCount <= uiAttemptCount)
                     return;
@@ -1475,6 +1472,8 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         if (i->lootmode &~ lootMode)                          // Do not add if mode mismatch
             continue;
 
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Process difficulty %u, spawnMode %u, GetDiffFromSpawn %u, mask %u", i->difficulty, loot.spawnMode, sObjectMgr->GetDiffFromSpawn(loot.spawnMode), (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode))));
+
         if (i->difficulty > 0 && i->difficulty &~ (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode))))                          // Do not add if instance mode mismatch
             continue;
 
@@ -1512,8 +1511,6 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         else                                                  // Plain entries (not a reference, not grouped)
             loot.AddItem(*i);                                 // Chance is already checked, just add
     }
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: void LootTemplate::Process size %u, loot size %u", ExtraGroups.size(), loot.items.size());
 
     // Now processing groups
     for (LootGroups::const_iterator i = ExtraGroups.begin(); i != ExtraGroups.end(); ++i)
