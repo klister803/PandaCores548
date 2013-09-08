@@ -1322,7 +1322,7 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
         }
         // finish rolling
 
-        if (item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
+        if (item != NULL && item->difficulty > 0 && item->difficulty &~ diffMask)                          // Do not add if instance mode mismatch
             continue;
 
         ++uiAttemptCount;
