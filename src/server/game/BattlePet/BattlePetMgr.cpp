@@ -83,7 +83,7 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
 {
     PetBattleDataList petList;
 
-    data->Initialize(SMSG_BATTLEPET_JOURNAL);
+    data->Initialize(SMSG_BATTLE_PET_JOURNAL);
     *data << uint16(0); // unk
     data->WriteBit(1); // unk
     data->WriteBits(0, 20); // unk counter, may be related to battle pet slot
