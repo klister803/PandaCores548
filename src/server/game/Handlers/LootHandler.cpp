@@ -251,7 +251,10 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
     for (std::list<Creature*>::const_iterator itr = corpesList.begin(); itr != corpesList.end(); ++itr)
     {
         if(Creature* creature = (*itr))
+        {
             GetPlayer()->SendLoot(creature->GetGUID(), LOOT_CORPSE);
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleLootOpcode GetGUID %u, GetEntry %u", creature->GetGUID(), creature->GetEntry());
+        }
     }
 
     // interrupt cast
