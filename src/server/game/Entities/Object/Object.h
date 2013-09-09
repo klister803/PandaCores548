@@ -907,6 +907,7 @@ class WorldObject : public Object, public WorldLocation
         void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
         void GetPlayerListInGrid(std::list<Player*>& lList, float fMaxSearchRange) const;
         void GetAliveCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
+        void GetCorpseCreatureInGrid(std::list<Creature*>& lList, float fMaxSearchRange) const;
 
         void GetGameObjectListWithEntryInGridAppend(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
         void GetCreatureListWithEntryInGridAppend(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;

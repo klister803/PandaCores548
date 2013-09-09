@@ -243,7 +243,16 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
     if (!_player->isAlive())
         return;
 
-    GetPlayer()->SendLoot(guid, LOOT_CORPSE);
+    //GetPlayer()->SendLoot(guid, LOOT_CORPSE);
+
+    std::list<Creature*> corpesList;
+    _player->GetCorpseCreatureInGrid(corpesList, 25.0f);
+    // Remove other players jade statue
+    for (std::list<Creature*>::const_iterator itr = corpesList.begin(); itr != corpesList.end(); ++itr)
+    {
+        if(Creature* creature = (*itr))
+            GetPlayer()->SendLoot(creature->GetGUID(), LOOT_CORPSE);
+    }
 
     // interrupt cast
     if (GetPlayer()->IsNonMeleeSpellCasted(false))
