@@ -84,20 +84,12 @@ class boss_saboteur_kiptilak : public CreatureScript
                 summons.DespawnAll();
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                switch (attacker->GetEntry())
+                if (attacker->GetTypeId() != TYPEID_PLAYER)
                 {
-                    case NPC_EXPLOSION_BUNNY_N_M:
-                    case NPC_EXPLOSION_BUNNY_S_M:
-                    case NPC_EXPLOSION_BUNNY_E_M:
-                    case NPC_EXPLOSION_BUNNY_W_M:
-                    case NPC_EXPLOSION_BUNNY_N_P:
-                    case NPC_EXPLOSION_BUNNY_S_P:
-                    case NPC_EXPLOSION_BUNNY_E_P:
-                    case NPC_EXPLOSION_BUNNY_W_P:
-                        damage = 0;
-                        return;
+                    damage = 0; 
+                    return;
                 }
 
                 float nextHealthPct = ((float(me->GetHealth()) - damage)  / float(me->GetMaxHealth())) * 100;
@@ -130,7 +122,10 @@ class boss_saboteur_kiptilak : public CreatureScript
             void JustSummoned(Creature* summoned)
             {
                 if (summoned->GetEntry() == NPC_STABLE_MUNITION)
+                {
                     summoned->AddAura(SPELL_MUNITION_STABLE, summoned);
+                    summoned->SetReactState(REACT_PASSIVE);
+                }
 
                 summons.Summon(summoned);
             }
