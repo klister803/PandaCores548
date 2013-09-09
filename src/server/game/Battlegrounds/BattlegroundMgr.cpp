@@ -292,7 +292,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
 
             data->WriteBit(guidBytes2[5]);
             data->FlushBits();
-            
+
             data->WriteByteSeq(guidBytes2[4]);
             data->WriteByteSeq(guidBytes1[6]);
             data->WriteByteSeq(guidBytes2[3]);
@@ -375,58 +375,63 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
         }
         case STATUS_WAIT_LEAVE:
         {
-          /*  data->Initialize(SMSG_BATTLEFIELD_STATUS_WAITFORGROUPS, 48);
+            data->Initialize(SMSG_BATTLEFIELD_STATUS_WAITFORGROUPS, 48);
 
-            *data << uint8(0);                          // unk
-            *data << uint32(bg->GetStatus());           // Status
-            *data << uint32(QueueSlot);                 // Queue slot
-            *data << uint32(Time1);                     // Time until closed
-            *data << uint32(0);                         // unk
-            *data << uint8(0);                          // unk
-            *data << uint8(0);                          // unk
-            *data << uint8(bg->GetMinLevel());          // Min Level
-            *data << uint8(0);                          // unk
-            *data << uint8(0);                          // unk
-            *data << uint32(bg->GetMapId());            // Map Id
-            *data << uint32(Time2);                     // Time
-            *data << uint8(0);                          // unk
+            /*
+            *data << uint32(QueueSlot);
+            *data << uint8(0);          // byte4E
+            *data << uint32(?);         // mapId or Time1
+            *data << uint8(0);          // byte4E
+            *data << uint32(bg->GetStatus());
+            *data << uint32(?);         // mapId or Time1
+            *data << uint32(0);         // dword3C
+            *data << uint32(Time2);
+            *data << uint8(0);          // byte4F
+            *data << uint8(0);          // byte4C
+            *data << uint8(bg->GetMinLevel());
+            *data << uint8(0);          // byte3A
+            *data << uint8(0);          // byte38
 
-            data->WriteBit(guidBytes2[0]);
-            data->WriteBit(guidBytes2[1]);
-            data->WriteBit(guidBytes2[7]);
-            data->WriteBit(guidBytes1[7]);
-            data->WriteBit(guidBytes1[0]);
+            data->WriteBit(guidBytes2[5]);
+            data->WriteBit(guidBytes1[4]);
             data->WriteBit(guidBytes2[4]);
+            data->WriteBit(guidBytes1[5]);
+            data->WriteBit(guidBytes2[7]);
+            data->WriteBit(guidBytes2[6]);
+            data->WriteBit(bg->isRated());
+            data->WriteBit(guidBytes1[7]);
+
+            data->WriteBit(guidBytes2[3]);
+            data->WriteBit(guidBytes1[3]);
+            data->WriteBit(guidBytes2[0]);
+            data->WriteBit(guidBytes1[1]);
+            data->WriteBit(guidBytes1[0]);
+            data->WriteBit(guidBytes2[2]);
             data->WriteBit(guidBytes1[6]);
             data->WriteBit(guidBytes1[2]);
-            data->WriteBit(guidBytes1[3]);
-            data->WriteBit(guidBytes2[3]);
-            data->WriteBit(guidBytes1[4]);
-            data->WriteBit(guidBytes2[5]);
-            data->WriteBit(guidBytes1[5]);
-            data->WriteBit(guidBytes2[2]);
-            data->WriteBit(bg->isRated());              // Is Rated
-            data->WriteBit(guidBytes1[1]);
-            data->WriteBit(guidBytes2[6]);
+
+            data->WriteBit(guidBytes2[1]);
 
             data->FlushBits();
 
-            data->WriteByteSeq(guidBytes1[0]);
-            data->WriteByteSeq(guidBytes2[4]);
-            data->WriteByteSeq(guidBytes1[3]);
-            data->WriteByteSeq(guidBytes2[1]);
-            data->WriteByteSeq(guidBytes2[0]);
-            data->WriteByteSeq(guidBytes2[2]);
-            data->WriteByteSeq(guidBytes1[2]);
-            data->WriteByteSeq(guidBytes2[7]);
-            data->WriteByteSeq(guidBytes1[1]);
-            data->WriteByteSeq(guidBytes1[6]);
-            data->WriteByteSeq(guidBytes2[6]);
-            data->WriteByteSeq(guidBytes2[5]);
             data->WriteByteSeq(guidBytes1[5]);
+            data->WriteByteSeq(guidBytes2[5]);
+            data->WriteByteSeq(guidBytes1[1]);
+            data->WriteByteSeq(guidBytes2[6]);
+            data->WriteByteSeq(guidBytes1[2]);
+            data->WriteByteSeq(guidBytes1[0]);
+
+            data->WriteByteSeq(guidBytes2[2]);
             data->WriteByteSeq(guidBytes1[4]);
+            data->WriteByteSeq(guidBytes1[6]);
+            data->WriteByteSeq(guidBytes2[1]);
+            data->WriteByteSeq(guidBytes2[3]);
+            data->WriteByteSeq(guidBytes2[7]);
+            data->WriteByteSeq(guidBytes2[0]);
+            data->WriteByteSeq(guidBytes1[3]);
+            data->WriteByteSeq(guidBytes2[4]);
             data->WriteByteSeq(guidBytes1[7]);
-            data->WriteByteSeq(guidBytes2[3]);*/
+            */
             break;
         }
     }
