@@ -215,6 +215,7 @@ DBCStorage <SpellAuraRestrictionsEntry> sSpellAuraRestrictionsStore(SpellAuraRes
 DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore(SpellCastingRequirementsEntryfmt);
 
 SpellEffectMap sSpellEffectMap;
+SpellEffectDiffMap sSpellEffectDiffMap;
 SpellReagentMap sSpellReagentMap;
 SpellTotemMap sSpellTotemMap;
 
@@ -656,14 +657,20 @@ void LoadDBCStores(const std::string& dataPath)
     {
         if(SpellEffectEntry const *spellEffect = sSpellEffectStore.LookupEntry(i))
         {
-            sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectDifficulty][spellEffect->EffectIndex] = spellEffect;
+            if(spellEffect->EffectIndex > MAX_SPELL_EFFECTS)
+                continue;
+
+            if(spellEffect->EffectDifficulty)
+                sSpellEffectDiffMap[MAKE_PAIR64(spellEffect->EffectSpellId, spellEffect->EffectDifficulty)].effects[spellEffect->EffectIndex] = spellEffect;
+            else
+                sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectIndex] = spellEffect;
         }
     }
 
     for (uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
     {
         if (SpellEntry const * spell = sSpellStore.LookupEntry(i))
-            if (const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1, 0))
+            if (const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1))
                 if (spellEffect->Effect == SPELL_EFFECT_SKILL && IsProfessionSkill(spellEffect->EffectMiscValue))
                     sSpellSkillingList.push_back(spell);
     }
@@ -878,16 +885,14 @@ char const* GetPetName(uint32 petfamily, uint32 /*dbclang*/)
     return pet_family->Name ? pet_family->Name : NULL;
 }
 
-SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint32 difficulty)
+SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect)
 {
     SpellEffectMap::const_iterator itr = sSpellEffectMap.find(spellId);
-    if(itr == sSpellEffectMap.end())
-        return NULL;
+    if(itr != sSpellEffectMap.end())
+        if(itr->second.effects[effect])
+            return itr->second.effects[effect];
 
-    if(itr->second.effects[difficulty][effect])
-        return itr->second.effects[difficulty][effect];
-
-    return itr->second.effects[NONE_DIFFICULTY][effect];
+    return NULL;
 }
 
 SpellEffectScalingEntry const* GetSpellEffectScalingEntry(uint32 effectId)

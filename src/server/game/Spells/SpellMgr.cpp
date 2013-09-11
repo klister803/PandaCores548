@@ -1247,11 +1247,7 @@ void SpellMgr::LoadSpellRanks()
     // cleanup core data before reload - remove reference to ChainNode from SpellInfo
     for (SpellChainMap::iterator itr = mSpellChains.begin(); itr != mSpellChains.end(); ++itr)
     {
-        for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
-        {
-            if(mSpellInfoMap[difficulty][itr->first])
-                mSpellInfoMap[difficulty][itr->first]->ChainEntry = NULL;
-        }
+        mSpellInfoMap[itr->first]->ChainEntry = NULL;
     }
     mSpellChains.clear();
     //                                                     0             1      2
@@ -1341,9 +1337,7 @@ void SpellMgr::LoadSpellRanks()
             mSpellChains[addedSpell].last = GetSpellInfo(rankChain.back().first);
             mSpellChains[addedSpell].rank = itr->second;
             mSpellChains[addedSpell].prev = GetSpellInfo(prevRank);
-            for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
-                if(mSpellInfoMap[difficulty][addedSpell])
-                    mSpellInfoMap[difficulty][addedSpell]->ChainEntry = &mSpellChains[addedSpell];
+            mSpellInfoMap[addedSpell]->ChainEntry = &mSpellChains[addedSpell];
             prevRank = addedSpell;
             ++itr;
             if (itr == rankChain.end())
@@ -3041,26 +3035,12 @@ void SpellMgr::LoadSpellInfoStore()
 {
     uint32 oldMSTime = getMSTime();
 
-    std::map<uint32, std::set<uint32> > spellDifficultyList;
-
-    for (uint32 i = 0; i < sSpellEffectStore.GetNumRows(); ++i)
-        if(SpellEffectEntry const* spellEffect = sSpellEffectStore.LookupEntry(i))
-            spellDifficultyList[spellEffect->EffectSpellId].insert(spellEffect->EffectDifficulty);
-
-
     UnloadSpellInfoStore();
-    for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
-        mSpellInfoMap[difficulty].resize(sSpellStore.GetNumRows(), NULL);
+    mSpellInfoMap.resize(sSpellStore.GetNumRows(), NULL);
 
     for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
-    {
         if (SpellEntry const* spellEntry = sSpellStore.LookupEntry(i))
-        {
-            std::set<uint32> difficultyInfo = spellDifficultyList[i];
-            for(std::set<uint32>::iterator itr = difficultyInfo.begin(); itr != difficultyInfo.end(); itr++)
-                mSpellInfoMap[(*itr)][i] = new SpellInfo(spellEntry, (*itr));
-        }
-    }
+            mSpellInfoMap[i] = new SpellInfo(spellEntry);
 
     for (uint32 i = 0; i < sSpellPowerStore.GetNumRows(); i++)
     {
@@ -3068,20 +3048,17 @@ void SpellMgr::LoadSpellInfoStore()
         if (!spellPower)
             continue;
 
-        for (int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
-        {
-            SpellInfo* spell = mSpellInfoMap[difficulty][spellPower->SpellId];
-            if (!spell)
-                continue;
+        SpellInfo* spell = mSpellInfoMap[spellPower->SpellId];
+        if (!spell)
+            continue;
 
-            spell->ManaCost = spellPower->manaCost;
-            spell->ManaCostPercentage = spellPower->ManaCostPercentage;
-            spell->ManaPerSecond = spellPower->manaPerSecond;
-            spell->PowerType = spellPower->powerType;
+        spell->ManaCost = spellPower->manaCost;
+        spell->ManaCostPercentage = spellPower->ManaCostPercentage;
+        spell->ManaPerSecond = spellPower->manaPerSecond;
+        spell->PowerType = spellPower->powerType;
 
-            if (!spell->AddPowerData(spellPower))
-                sLog->outInfo(LOG_FILTER_WORLDSERVER, "Spell - %u has more powers than two.", spell->Id);
-        }
+        if (!spell->AddPowerData(spellPower))
+            sLog->outInfo(LOG_FILTER_WORLDSERVER, "Spell - %u has more powers than two.", spell->Id);
     }
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)
@@ -3090,7 +3067,7 @@ void SpellMgr::LoadSpellInfoStore()
         if (!talentInfo)
             continue;
 
-        SpellInfo * spellEntry = mSpellInfoMap[NONE_DIFFICULTY][talentInfo->spellId];
+        SpellInfo * spellEntry = mSpellInfoMap[talentInfo->spellId];
         if(spellEntry)
             spellEntry->talentId = talentInfo->Id;
     }
@@ -3100,26 +3077,20 @@ void SpellMgr::LoadSpellInfoStore()
 
 void SpellMgr::UnloadSpellInfoStore()
 {
-    for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
+    for (uint32 i = 0; i < mSpellInfoMap.size(); ++i)
     {
-        for (uint32 i = 0; i < mSpellInfoMap[difficulty].size(); ++i)
-        {
-            if (mSpellInfoMap[difficulty][i])
-                delete mSpellInfoMap[difficulty][i];
-        }
-        mSpellInfoMap[difficulty].clear();
+        if (mSpellInfoMap[i])
+            delete mSpellInfoMap[i];
     }
+    mSpellInfoMap.clear();
 }
 
 void SpellMgr::UnloadSpellInfoImplicitTargetConditionLists()
 {
-    for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
+    for (uint32 i = 0; i < mSpellInfoMap.size(); ++i)
     {
-        for (uint32 i = 0; i < mSpellInfoMap[difficulty].size(); ++i)
-        {
-            if (mSpellInfoMap[difficulty][i])
-                mSpellInfoMap[difficulty][i]->_UnloadImplicitTargetConditionLists();
-        }
+        if (mSpellInfoMap[i])
+            mSpellInfoMap[i]->_UnloadImplicitTargetConditionLists();
     }
 }
 
@@ -3130,9 +3101,8 @@ void SpellMgr::LoadSpellCustomAttr()
     SpellInfo* spellInfo = NULL;
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
-        for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
         {
-            spellInfo = mSpellInfoMap[difficulty][i];
+            spellInfo = mSpellInfoMap[i];
             if (!spellInfo)
                 continue;
 
@@ -4062,9 +4032,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 88869:
             case 110412:
             {
-                SpellInfo* fishingDummy = new SpellInfo(sSpellStore.LookupEntry(131474), difficulty);
+                SpellInfo* fishingDummy = new SpellInfo(sSpellStore.LookupEntry(131474));
                 fishingDummy->Id = spellInfo->Effects[0].TriggerSpell;
-                mSpellInfoMap[difficulty][spellInfo->Effects[0].TriggerSpell] = fishingDummy;
+                mSpellInfoMap[spellInfo->Effects[0].TriggerSpell] = fishingDummy;
                 break;
             }
             // Mogu'shan Vault
@@ -4827,10 +4797,14 @@ const SpellInfo* SpellMgr::GetSpellInfo(uint32 spellId, Difficulty difficulty) c
 {
     if(spellId < GetSpellInfoStoreSize())
     {
-        if(mSpellInfoMap[difficulty][spellId])
-            return mSpellInfoMap[difficulty][spellId];
+        /*if(difficulty)
+        {
+            uint64 idx = MAKE_PAIR64(spellId, difficulty);
+            if(SpellEffectDiffMap[idx])
+                return SpellEffectDiffMap[idx];
+        }*/
 
-        return mSpellInfoMap[NONE_DIFFICULTY][spellId];
+        return mSpellInfoMap[spellId];
     }
 
     return NULL;

@@ -27964,7 +27964,7 @@ void Player::_LoadStore()
             {
                 SpellEntry const* spell = (*itr);
 
-                const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1, 0);
+                const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1);
 
                 if (!spellEffect)
                     continue;

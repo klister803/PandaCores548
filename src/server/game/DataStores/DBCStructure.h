@@ -1820,7 +1820,8 @@ struct SpellEffectScalingEntry
     uint32    SpellEffectId;                                // 4
 };
 
-#define MAX_SPELL_EFFECTS 32
+#define MAX_SPELL_EFFECTS 14
+#define MAX_SPELL_EFFECTS_DIFF 5
 #define MAX_EFFECT_MASK 4294967295
 #define MAX_SPELL_REAGENTS 8
 #define MAX_POWERS_FOR_SPELL 2
@@ -1913,7 +1914,7 @@ struct SpellEntry
     uint32 SpellMiscId;                                     // 24       SpellMisc.dbc
 
     // struct access functions
-    SpellEffectEntry const* GetSpellEffect(uint32 eff, uint32 difficulty) const;
+    SpellEffectEntry const* GetSpellEffect(uint32 eff) const;
 };
 
 // SpellCategories.dbc
@@ -2527,18 +2528,28 @@ struct SpellEffect
 {
     SpellEffect()
     {
-        for(int i = 0; i < MAX_DIFFICULTY; i++)
+        for(int i = 0; i < MAX_SPELL_EFFECTS; i++)
         {
-            for(int y = 0; y < MAX_SPELL_EFFECTS; y++)
-            {
-                effects[i][y] = 0;
-            }
+            effects[i] = NULL;
         }
     }
-    SpellEffectEntry const* effects[MAX_DIFFICULTY][32];
+    SpellEffectEntry const* effects[21];
+};
+
+struct SpellEffectDiff
+{
+    SpellEffectDiff()
+    {
+        for(int i = 0; i < MAX_SPELL_EFFECTS_DIFF; i++)
+        {
+            effects[i] = NULL;
+        }
+    }
+    SpellEffectEntry const* effects[5];
 };
 
 typedef std::map<uint32, SpellEffect> SpellEffectMap;
+typedef std::map<uint64, SpellEffectDiff> SpellEffectDiffMap;
 
 struct TaxiPathBySourceAndDestination
 {

@@ -336,12 +336,11 @@ SpellImplicitTargetInfo::StaticData  SpellImplicitTargetInfo::_data[TOTAL_SPELL_
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_CONE,    TARGET_CHECK_ENEMY,    TARGET_DIR_FRONT},       // 129 TARGET_UNIT_CONE_ENEMY_129
 };
 
-SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* spellInfo, uint8 effIndex, uint32 difficulty)
+SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* spellInfo, uint8 effIndex)
 {
-    SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(effIndex, difficulty);
+    SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(effIndex);
     SpellEffectScalingEntry const* _effectScaling = GetSpellEffectScalingEntry(_effect ? _effect->Id : 0);
     SpellScalingEntry const* scaling = spellInfo->GetSpellScaling();
-
 
     _spellInfo = spellInfo;
     _effIndex = effIndex;
@@ -781,7 +780,7 @@ SpellEffectInfo::StaticData  SpellEffectInfo::_data[TOTAL_SPELL_EFFECTS] =
     {EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT}, // 164 SPELL_EFFECT_REMOVE_AURA
 };
 
-SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
+SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 {
     Id = spellEntry->Id;
     AttributesCu = 0;
@@ -810,7 +809,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
 
     // SpellDifficultyEntry
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        Effects[i] = SpellEffectInfo(spellEntry, this, i, difficulty);
+        Effects[i] = SpellEffectInfo(spellEntry, this, i);
 
     // SpellScalingEntry
     SpellScalingEntry const* _scaling = GetSpellScaling();
@@ -2843,9 +2842,9 @@ void SpellInfo::SetCastTimeIndex(uint32 index)
     CastTimeEntry = castTimeIndex;
 }
 
-SpellEffectEntry const* SpellEntry::GetSpellEffect(uint32 eff, uint32 difficulty) const
+SpellEffectEntry const* SpellEntry::GetSpellEffect(uint32 eff) const
 {
-    return GetSpellEffectEntry(Id, eff, difficulty);
+    return GetSpellEffectEntry(Id, eff);
 }
 
 void SpellInfo::_UnloadImplicitTargetConditionLists()
