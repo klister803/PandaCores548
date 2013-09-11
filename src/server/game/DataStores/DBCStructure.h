@@ -1820,7 +1820,7 @@ struct SpellEffectScalingEntry
     uint32    SpellEffectId;                                // 4
 };
 
-#define MAX_SPELL_EFFECTS 32
+#define MAX_SPELL_EFFECTS 14
 #define MAX_SPELL_EFFECTS_DIFF 5
 #define MAX_EFFECT_MASK 4294967295
 #define MAX_SPELL_REAGENTS 8

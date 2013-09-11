@@ -4247,7 +4247,7 @@ std::list<AuraEffect*> Unit::GetAuraEffectsByMechanic(uint32 mechanic_mask) cons
     for (AuraApplicationMap::const_iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end(); ++iter)
     {
         Aura const* aura = iter->second->GetBase();
-        for (uint8 i = 0; i < MAX_EFFECTS; ++i)
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if (aura->GetSpellInfo()->GetEffectMechanicMask(i) & mechanic_mask)
             {
