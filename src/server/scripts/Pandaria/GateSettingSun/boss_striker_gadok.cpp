@@ -125,9 +125,7 @@ class boss_striker_gadok : public CreatureScript
             InstanceScript* instance;
 
             bool isStrafing;
-
             uint32 strafingTimer;
-
             uint8 strafingEventCount;
             uint8 strafingEventProgress;
             uint8 move;
@@ -136,25 +134,14 @@ class boss_striker_gadok : public CreatureScript
             {
                 _Reset();
                 isStrafing = false;
-
                 strafingTimer = 0;
-
                 strafingEventCount = 0;
                 strafingEventProgress = 0;
                 move = 0;
-                me->GetMotionMaster()->Clear();
-
-                summons.DespawnAll();
-                DoSpawnKrikThik();
-
-                if (instance)
-                    instance->SetData(DATA_GADOK, PHASE_MAIN);
-
-                events.ScheduleEvent(EVENT_PREY_TIME, 10000, PHASE_MAIN);
-                events.ScheduleEvent(EVENT_IMPALING_STRIKE, 19000, PHASE_MAIN);
+                //DoSpawnKrikThik();
             }
 
-            void DoSpawnKrikThik()
+           /* void DoSpawnKrikThik()
             {
                 for (uint8 i = 0; i < MAX_DISRUPTOR; ++i)
                     SummonKrikThik(NPC_KRIKTHIK_DISRUPTOR);
@@ -170,22 +157,16 @@ class boss_striker_gadok : public CreatureScript
                 float y = CenterPos.GetPositionY() + (RADIUS_CIRCLE * std::sin(angle));
 
                 return me->SummonCreature(creatureId, x, y, CenterPos.GetPositionZ());
-            }
+            }*/
 
             void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
+                events.ScheduleEvent(EVENT_PREY_TIME, 10000);
+                events.ScheduleEvent(EVENT_IMPALING_STRIKE, 19000);
             }
 
-            void JustReachedHome()
-            {
-                if (instance)
-                    instance->SetBossState(DATA_GADOK, FAIL);
-
-                summons.DespawnAll();
-            }
-
-            void MovementInform(uint32 type, uint32 id)
+            /*void MovementInform(uint32 type, uint32 id)
             {
                 if (type != POINT_MOTION_TYPE)
                     return;
@@ -358,7 +339,7 @@ class boss_striker_gadok : public CreatureScript
                     default:
                         break;
                 }
-            }
+            }*/
 
             void UpdateAI(const uint32 diff)
             {
@@ -367,7 +348,7 @@ class boss_striker_gadok : public CreatureScript
 
                 events.Update(diff);
 
-                if (strafingTimer)
+               /* if (strafingTimer)
                 {
                     if (strafingTimer <= diff)
                     {
@@ -375,21 +356,19 @@ class boss_striker_gadok : public CreatureScript
                         DoStrafingEvent();
                     }
                     else strafingTimer -= diff;
-                }
+                }*/
 
                 switch (events.ExecuteEvent())
                 {
                     case EVENT_PREY_TIME:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                            me->CastSpell(target, SPELL_PREY_TIME, false);
-
-                        events.ScheduleEvent(EVENT_PREY_TIME, 10000, PHASE_MAIN);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST, 1, 5.0f, true))
+                            DoCast(target, SPELL_PREY_TIME, false);
+                        events.ScheduleEvent(EVENT_PREY_TIME, 10000);
                         break;
                     case EVENT_IMPALING_STRIKE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                            me->CastSpell(target, SPELL_IMPALING_STRIKE, false);
-
-                        events.ScheduleEvent(EVENT_IMPALING_STRIKE, 19000, PHASE_MAIN);
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_IMPALING_STRIKE, false);
+                        events.ScheduleEvent(EVENT_IMPALING_STRIKE, 19000);
                         break;
                 }
 
@@ -398,12 +377,7 @@ class boss_striker_gadok : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
-                events.Reset();
-                if (instance)
-                {
-                    instance->SetBossState(DATA_GADOK, DONE);
-                    instance->SaveToDB();
-                }
+                _JustDied();
             }
         };
 
@@ -706,8 +680,11 @@ class spell_prey_time : public SpellScriptLoader
 
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (GetCaster())
-                    GetCaster()->RemoveAurasDueToSpell(SPELL_RIDE_VEHICLE);
+                if (GetCaster() && GetTarget())
+                {
+                    GetCaster()->RemoveAura(SPELL_RIDE_VEHICLE);
+                    GetTarget()->RemoveAura(SPELL_RIDE_VEHICLE);
+                }
             }
 
             void Register()
