@@ -412,7 +412,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
 
     if (!tab)
     {
-        FillNotNormalLootFor(lootOwner, true);
+        if(objType == 2)
+            FillNotNormalLootFor(lootOwner, true);
 
         if (!noEmptyError)
             sLog->outError(LOG_FILTER_SQL, "Table '%s' loot id #%u used but it doesn't have records.", store.GetName(), lootId);

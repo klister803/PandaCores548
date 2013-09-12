@@ -2087,12 +2087,10 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
             if (!player->HasItemCount(item_id))
                 return;
 
-            // remove reagent
-            uint32 count = 1;
-            player->DestroyItemCount(item_id, count, true);
-
             // create some random items
-            player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);
+            if(player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell))
+            // remove reagent
+                player->DestroyItemCount(item_id, 1, true);
         }
         else
             player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);    // create some random items
