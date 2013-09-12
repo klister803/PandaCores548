@@ -194,8 +194,8 @@ typedef std::set<uint32> LootIdSet;
 class LootStore
 {
     public:
-        explicit LootStore(char const* name, char const* entryName, bool ratesAllowed, char const* addfilds)
-            : m_name(name), m_entryName(entryName), m_ratesAllowed(ratesAllowed), m_addfilds(addfilds) {}
+        explicit LootStore(char const* name, char const* entryName, bool ratesAllowed, std::string addfields)
+            : m_name(name), m_entryName(entryName), m_ratesAllowed(ratesAllowed), m_addfields(addfields) {}
 
         virtual ~LootStore() { Clear(); }
 
@@ -217,7 +217,7 @@ class LootStore
         char const* GetName() const { return m_name; }
         char const* GetEntryName() const { return m_entryName; }
         bool IsRatesAllowed() const { return m_ratesAllowed; }
-        char const* GetAddFilds() const { return m_addfilds; }
+        std::string GetAddFields() const { return m_addfields; }
     protected:
         uint32 LoadLootTable();
         void Clear();
@@ -226,7 +226,7 @@ class LootStore
         char const* m_name;
         char const* m_entryName;
         bool m_ratesAllowed;
-        char const* m_addfilds;
+        std::string m_addfields;
 };
 
 class LootTemplate

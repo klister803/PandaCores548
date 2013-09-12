@@ -101,7 +101,7 @@ uint32 LootStore::LoadLootTable()
     Clear();
 
     //                                                  0     1            2               3         4         5             6     7
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, lootmode, groupid, mincountOrRef, maxcount%s FROM %s", GetAddFilds(), GetName());
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, lootmode, groupid, mincountOrRef, maxcount%s FROM %s", GetAddFields().c_str(), GetName());
 
     if (!result)
         return 0;
@@ -120,7 +120,7 @@ uint32 LootStore::LoadLootTable()
         int32  mincountOrRef       = fields[5].GetInt32();
         int32  maxcount            = fields[6].GetUInt8();
         uint8 difficulty = 0;
-        if(GetAddFilds() != "")
+        if (GetAddFields() != "")
             difficulty = fields[7].GetUInt8();
 
         if (maxcount > std::numeric_limits<uint8>::max())
