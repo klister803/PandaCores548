@@ -45,6 +45,7 @@
 #include "PacketLog.h"
 #include "ScriptMgr.h"
 #include "AccountMgr.h"
+#include "zlib.h"
 
 #if defined(__GNUC__)
 #pragma pack(1)
@@ -120,6 +121,13 @@ WorldSocket::WorldSocket (void): WorldHandler(),
 
     msg_queue()->high_water_mark(8 * 1024 * 1024);
     msg_queue()->low_water_mark(8 * 1024 * 1024);
+
+    m_zstream = new z_stream_s();
+    m_zstream->zalloc = (alloc_func)0;
+    m_zstream->zfree = (free_func)0;
+    m_zstream->opaque = (voidpf)0;
+
+    deflateInit(m_zstream, sWorld->getIntConfig(CONFIG_COMPRESSION));
 }
 
 WorldSocket::~WorldSocket (void)
@@ -163,7 +171,7 @@ const std::string& WorldSocket::GetRemoteAddress (void) const
     return m_Address;
 }
 
-int WorldSocket::SendPacket(WorldPacket const& pct)
+int WorldSocket::SendPacket(WorldPacket const* pct)
 {
     ACE_GUARD_RETURN (LockType, Guard, m_OutBufferLock, -1);
 
@@ -172,38 +180,100 @@ int WorldSocket::SendPacket(WorldPacket const& pct)
 
     // Dump outgoing packet
     if (sPacketLog->CanLogPacket())
-        sPacketLog->LogPacket(pct, SERVER_TO_CLIENT);
+        sPacketLog->LogPacket(*pct, SERVER_TO_CLIENT);
 
-    WorldPacket const* pkt = &pct;
-
-    // TODO : Find the compress flag
-    // Empty buffer used in case packet should be compressed
-    /*WorldPacket buff;
-    if (m_Session && pkt->size() > 0x400)
+    /*
+    Opcodes uncompressedOpcode = pct->GetOpcode();
+    if (pct->compressed)
+        pct = pct->compressed;
+    else if (uncompressedOpcode != SMSG_COMPRESSED_OPCODE)
     {
-    buff.Compress(m_Session->GetCompressionStream(), pkt);
-    pkt = &buff;
-    }*/
+        size_t size = pct->wpos();
+        if (size >= 45 &&
+            uncompressedOpcode != MSG_VERIFY_CONNECTIVITY &&
+            (uncompressedOpcode & 0xCBA) != 1058 &&     // not auth opcode
+            uncompressedOpcode != 0x467 &&
+            uncompressedOpcode != 0x522 &&
+            uncompressedOpcode != 0x666 &&
+            uncompressedOpcode != 0x726)
+        {
+            ByteBuffer buf(*pct);
+            //#define hsize uint32
+            //#define buf (*pct)
+            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 24) & 0xFF);
+            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 16) & 0xFF);
+            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 8) & 0xFF);
+            buf._GetStorage().insert(buf._GetStorage().begin(), uint32(uncompressedOpcode) & 0xFF);
 
-    if (pkt->GetOpcode() != SMSG_MONSTER_MOVE)
-        sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s", GetOpcodeNameForLogging(pkt->GetOpcode()).c_str());
+            WorldPacket* compressed = new WorldPacket(SMSG_COMPRESSED_OPCODE);
+            size = buf.size();
+            size_t reserved_size = deflateBound(m_zstream, size) + sizeof(uint32);
+            compressed->resize(reserved_size);
+            compressed->put<uint32>(0, size);
 
-    SendSize[pkt->GetOpcode()] += pkt->size();
-    SendCount[pkt->GetOpcode()]++;
+            m_zstream->next_in = (Bytef*)buf.contents();
+            m_zstream->avail_in = size;
 
-    sScriptMgr->OnPacketSend(this, *pkt);
+            m_zstream->next_out = (Bytef*)(compressed->contents() + sizeof(uint32));
+            m_zstream->avail_out = reserved_size - sizeof(uint32);
 
-    ServerPktHeader header(pkt->size()+2, pkt->GetOpcode(), m_Crypt.IsInitialized());
+            int32 z_res = deflate(m_zstream, Z_SYNC_FLUSH);
+            size_t totalOut = m_zstream->next_out - compressed->contents() - sizeof(uint32);
+            ASSERT(totalOut == reserved_size - sizeof(uint32) - m_zstream->avail_out);
+
+            if (z_res != Z_OK)
+            {
+                sLog->outError(LOG_FILTER_NETWORKIO, "Can't compress packet (zlib: deflate) Error code: %i (%s)",z_res,zError(z_res));
+                delete compressed;
+            }
+            else if (m_zstream->avail_in != 0)
+            {
+                sLog->outError(LOG_FILTER_NETWORKIO, "Can't compress packet (zlib: deflate not greedy)");
+                delete compressed;
+            }
+            else
+            {
+                //if (totalOut > size)
+                {
+                    sLog->outError(LOG_FILTER_NETWORKIO, "Compressed Packet %s %u bytes -> %u bytes (%f%%, %f%%)",
+                        GetOpcodeNameForLogging(pct->GetOpcode()).c_str(),
+                        uint32(size), uint32(totalOut), (double)totalOut / (double)size * 100.0,
+                        (double)m_zstream->total_out / (double)m_zstream->total_in * 100.0);
+                }
+
+                compressed->resize(totalOut + sizeof(uint32));
+                //compressed->put<uint32>(0, totalOut);
+                const_cast<WorldPacket*>(pct)->compressed = compressed;
+                pct = compressed;
+            }
+
+            m_zstream->next_in = NULL;
+            m_zstream->next_out = NULL;
+            m_zstream->avail_in = 0;
+            m_zstream->avail_out = 0;
+        }
+    }
+    */
+
+    if (pct->GetOpcode() != SMSG_MONSTER_MOVE)
+        sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s", GetOpcodeNameForLogging(pct->GetOpcode()).c_str());
+
+    SendSize[pct->GetOpcode()] += pct->size();
+    ++SendCount[pct->GetOpcode()];
+
+    sScriptMgr->OnPacketSend(this, *pct);
+
+    ServerPktHeader header(pct->size()+2, pct->GetOpcode(), m_Crypt.IsInitialized());
     m_Crypt.EncryptSend ((uint8*)header.header, header.getHeaderLength());
 
-    if (m_OutBuffer->space() >= pkt->size() + header.getHeaderLength() && msg_queue()->is_empty())
+    if (m_OutBuffer->space() >= pct->size() + header.getHeaderLength() && msg_queue()->is_empty())
     {
         // Put the packet on the buffer.
         if (m_OutBuffer->copy((char*) header.header, header.getHeaderLength()) == -1)
             ACE_ASSERT (false);
 
-        if (!pkt->empty())
-            if (m_OutBuffer->copy((char*) pkt->contents(), pkt->size()) == -1)
+        if (!pct->empty())
+            if (m_OutBuffer->copy((char*) pct->contents(), pct->size()) == -1)
                 ACE_ASSERT (false);
     }
     else
@@ -211,12 +281,12 @@ int WorldSocket::SendPacket(WorldPacket const& pct)
         // Enqueue the packet.
         ACE_Message_Block* mb;
 
-        ACE_NEW_RETURN(mb, ACE_Message_Block(pkt->size() + header.getHeaderLength()), -1);
+        ACE_NEW_RETURN(mb, ACE_Message_Block(pct->size() + header.getHeaderLength()), -1);
 
         mb->copy((char*) header.header, header.getHeaderLength());
 
-        if (!pkt->empty())
-            mb->copy((const char*)pkt->contents(), pkt->size());
+        if (!pct->empty())
+            mb->copy((const char*)pct->contents(), pct->size());
 
         if (msg_queue()->enqueue_tail(mb, (ACE_Time_Value*)&ACE_Time_Value::zero) == -1)
         {
@@ -274,7 +344,7 @@ int WorldSocket::open (void *a)
     WorldPacket packet(MSG_VERIFY_CONNECTIVITY);
     packet << "RLD OF WARCRAFT CONNECTION - SERVER TO CLIENT";
 
-    if (SendPacket(packet) == -1)
+    if (SendPacket(&packet) == -1)
         return -1;
 
     // Register with ACE Reactor
@@ -827,7 +897,7 @@ int WorldSocket::HandleSendAuthSession()
     packet.append(seed2.AsByteArray(16), 16);               // new encryption seeds
 
     packet << uint8(1);
-    return SendPacket(packet);
+    return SendPacket(&packet);
 }
 
 void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
@@ -837,14 +907,14 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
     uint32 realmRaceCount = 15;
     uint32 realmClassCount = 11;
 
-    packet.WriteBit(1);                                    // has account info
-    packet.WriteBit(0);                                    // Unk
-    packet.WriteBits(realmClassCount, 25);                  // Read realmRaceResult.count // 11 (class ?)
-    packet.WriteBits(0, 22);                               // Unk
-    packet.WriteBits(realmRaceCount, 25);                 // Read realmClassResult.count // 15 (race ?)
+    packet.WriteBit(1);                             // has account info
+    packet.WriteBit(0);                             // Unk
+    packet.WriteBits(realmClassCount, 25);          // Read realmRaceResult.count // 11 (class ?)
+    packet.WriteBits(0, 22);                        // character templates count
+    packet.WriteBits(realmRaceCount, 25);           // Read realmClassResult.count // 15 (race ?)
 
     packet.WriteBit(queued);
-    if(queued)
+    if (queued)
     {
         packet.WriteBit(0);
         packet << uint32(queuePos);
@@ -860,47 +930,47 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
         {
             case 0:
                 packet << uint8(CLASS_WARRIOR);
-                packet << uint8(0); // Prebc       
+                packet << uint8(0); // Prebc
                 break;
             case 1:
                 packet << uint8(CLASS_PALADIN);
-                packet << uint8(0); // Prebc              
+                packet << uint8(0); // Prebc
                 break;
-            case 2:               
+            case 2:
                 packet << uint8(CLASS_HUNTER);
                 packet << uint8(0); // Prebc
                 break;
             case 3:
                 packet << uint8(CLASS_ROGUE);
-                packet << uint8(0); // Prebc            
+                packet << uint8(0); // Prebc
                 break;
             case 4:
                 packet << uint8(CLASS_PRIEST);
-                packet << uint8(0); // Prebc              
+                packet << uint8(0); // Prebc
                 break;
-            case 5:                
+            case 5:
                 packet << uint8(CLASS_DEATH_KNIGHT);
                 packet << uint8(2); // Wotlk
                 break;
-            case 6:               
+            case 6:
                 packet << uint8(CLASS_SHAMAN);
                 packet << uint8(0); // Prebc
                 break;
-            case 7:               
+            case 7:
                 packet << uint8(CLASS_MAGE);
                 packet << uint8(0); // Prebc
                 break;
-            case 8:                
+            case 8:
                 packet << uint8(CLASS_WARLOCK);
                 packet << uint8(0); // Prebc
                 break;
             case 9:
                 packet << uint8(CLASS_DRUID);
-                packet << uint8(0); // Prebc               
+                packet << uint8(0); // Prebc
                 break;
             case 10:
                 packet << uint8(CLASS_MONK);
-                packet << uint8(4); // MoP            
+                packet << uint8(4); // MoP
                 break;
         }
     }
@@ -939,7 +1009,7 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
     packet << uint8(4);
     packet << uint8(RACE_PANDAREN_HORDE);
     packet << uint8(4);
-    
+
     /*for(uint32 i = 0; i < realmRaceCount; i++)
     {
         packet << uint8(0);                                // class
@@ -947,9 +1017,9 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
     }*/
 
     packet << uint8(4);                                    // BillingPlanFlags
-    packet << uint8(code);   
+    packet << uint8(code);
 
-    SendPacket(packet);
+    SendPacket(&packet);
 }
 
 int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
@@ -1252,5 +1322,5 @@ int WorldSocket::HandlePing (WorldPacket& recvPacket)
 
     WorldPacket packet(SMSG_PONG, 4);
     packet << ping;
-    return SendPacket(packet);
+    return SendPacket(&packet);
 }
