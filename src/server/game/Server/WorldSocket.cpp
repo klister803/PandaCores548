@@ -121,13 +121,6 @@ WorldSocket::WorldSocket (void): WorldHandler(),
 
     msg_queue()->high_water_mark(8 * 1024 * 1024);
     msg_queue()->low_water_mark(8 * 1024 * 1024);
-
-    m_zstream = new z_stream_s();
-    m_zstream->zalloc = (alloc_func)0;
-    m_zstream->zfree = (free_func)0;
-    m_zstream->opaque = (voidpf)0;
-
-    deflateInit(m_zstream, sWorld->getIntConfig(CONFIG_COMPRESSION));
 }
 
 WorldSocket::~WorldSocket (void)
@@ -182,8 +175,7 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
     if (sPacketLog->CanLogPacket())
         sPacketLog->LogPacket(*pct, SERVER_TO_CLIENT);
 
-    /*
-    Opcodes uncompressedOpcode = pct->GetOpcode();
+    /*Opcodes uncompressedOpcode = pct->GetOpcode();
     if (pct->compressed)
         pct = pct->compressed;
     else if (uncompressedOpcode != SMSG_COMPRESSED_OPCODE)
@@ -197,63 +189,36 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
             uncompressedOpcode != 0x666 &&
             uncompressedOpcode != 0x726)
         {
+            size += sizeof(uint32);  // + opcode
             ByteBuffer buf(*pct);
-            //#define hsize uint32
-            //#define buf (*pct)
-            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 24) & 0xFF);
-            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 16) & 0xFF);
-            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 8) & 0xFF);
             buf._GetStorage().insert(buf._GetStorage().begin(), uint32(uncompressedOpcode) & 0xFF);
+            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 8) & 0xFF);
+            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 16) & 0xFF);
+            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 24) & 0xFF);
+
+            uint32 destsize = compressBound(size);
 
             WorldPacket* compressed = new WorldPacket(SMSG_COMPRESSED_OPCODE);
-            size = buf.size();
-            size_t reserved_size = deflateBound(m_zstream, size) + sizeof(uint32);
-            compressed->resize(reserved_size);
+            compressed->resize(destsize + sizeof(uint32));
             compressed->put<uint32>(0, size);
-
-            m_zstream->next_in = (Bytef*)buf.contents();
-            m_zstream->avail_in = size;
-
-            m_zstream->next_out = (Bytef*)(compressed->contents() + sizeof(uint32));
-            m_zstream->avail_out = reserved_size - sizeof(uint32);
-
-            int32 z_res = deflate(m_zstream, Z_SYNC_FLUSH);
-            size_t totalOut = m_zstream->next_out - compressed->contents() - sizeof(uint32);
-            ASSERT(totalOut == reserved_size - sizeof(uint32) - m_zstream->avail_out);
-
-            if (z_res != Z_OK)
-            {
-                sLog->outError(LOG_FILTER_NETWORKIO, "Can't compress packet (zlib: deflate) Error code: %i (%s)",z_res,zError(z_res));
+            WorldPacket::Compress(const_cast<uint8*>(compressed->contents()) + sizeof(uint32), &destsize, (void*)buf.contents(), size);
+            if (destsize == 0)
                 delete compressed;
-            }
-            else if (m_zstream->avail_in != 0)
-            {
-                sLog->outError(LOG_FILTER_NETWORKIO, "Can't compress packet (zlib: deflate not greedy)");
-                delete compressed;
-            }
             else
             {
-                //if (totalOut > size)
+                sLog->outError(LOG_FILTER_NETWORKIO, "Compressed Packet %s %u bytes -> %u bytes (%f%%)",
+                    GetOpcodeNameForLogging(pct->GetOpcode()).c_str(),
+                    uint32(size), uint32(destsize), (float)destsize / (double)size * 100.0);
+
+                if (size > destsize)
                 {
-                    sLog->outError(LOG_FILTER_NETWORKIO, "Compressed Packet %s %u bytes -> %u bytes (%f%%, %f%%)",
-                        GetOpcodeNameForLogging(pct->GetOpcode()).c_str(),
-                        uint32(size), uint32(totalOut), (double)totalOut / (double)size * 100.0,
-                        (double)m_zstream->total_out / (double)m_zstream->total_in * 100.0);
+                    compressed->resize(destsize + sizeof(uint32));
+                    const_cast<WorldPacket*>(pct)->compressed = compressed;
+                    pct = compressed;
                 }
-
-                compressed->resize(totalOut + sizeof(uint32));
-                //compressed->put<uint32>(0, totalOut);
-                const_cast<WorldPacket*>(pct)->compressed = compressed;
-                pct = compressed;
             }
-
-            m_zstream->next_in = NULL;
-            m_zstream->next_out = NULL;
-            m_zstream->avail_in = 0;
-            m_zstream->avail_out = 0;
         }
-    }
-    */
+    }*/
 
     if (pct->GetOpcode() != SMSG_MONSTER_MOVE)
         sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s", GetOpcodeNameForLogging(pct->GetOpcode()).c_str());

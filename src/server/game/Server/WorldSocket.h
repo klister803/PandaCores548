@@ -45,8 +45,6 @@ class ACE_Message_Block;
 class WorldPacket;
 class WorldSession;
 
-struct z_stream_s;
-
 /// Handler that can communicate over stream sockets.
 typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> WorldHandler;
 
@@ -211,8 +209,6 @@ class WorldSocket : public WorldHandler
         bool m_OutActive;
 
         uint32 m_Seed;
-
-        z_stream_s* m_zstream;
 
 };
 
