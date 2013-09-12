@@ -45,6 +45,8 @@ class ACE_Message_Block;
 class WorldPacket;
 class WorldSession;
 
+struct z_stream_s;
+
 /// Handler that can communicate over stream sockets.
 typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> WorldHandler;
 
@@ -108,7 +110,7 @@ class WorldSocket : public WorldHandler
         /// Send A packet on the socket, this function is reentrant.
         /// @param pct packet to send
         /// @return -1 of failure
-        int SendPacket(const WorldPacket& pct);
+        int SendPacket(WorldPacket const* pct);
 
         /// Add reference to this object.
         long AddReference (void);
@@ -209,6 +211,8 @@ class WorldSocket : public WorldHandler
         bool m_OutActive;
 
         uint32 m_Seed;
+
+        z_stream_s* m_zstream;
 
 };
 
