@@ -507,15 +507,6 @@ uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) con
     return uint32(difficultyEntry->SpellID[mode]);*/
 }
 
-SpellInfo const* SpellMgr::GetSpellForDifficultyFromSpell(SpellInfo const* spell, Unit const* caster) const
-{
-    if (!caster || !caster->GetMap() || !caster->GetMap()->IsDungeon())
-        return spell;
-
-    uint32 mode = uint32(caster->GetMap()->GetSpawnMode());
-    return GetSpellInfo(spell->Id, (Difficulty)mode);
-}
-
 SpellChainNode const* SpellMgr::GetSpellChainNode(uint32 spell_id) const
 {
     SpellChainMap::const_iterator itr = mSpellChains.find(spell_id);
@@ -4791,23 +4782,6 @@ void SpellMgr::LoadDbcDataCorrections()
     properties->Type = SUMMON_TYPE_TOTEM;
     */
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loading spell dbc data corrections  in %u ms", GetMSTimeDiffToNow(oldMSTime));
-}
-
-const SpellInfo* SpellMgr::GetSpellInfo(uint32 spellId, Difficulty difficulty) const
-{
-    if(spellId < GetSpellInfoStoreSize())
-    {
-        /*if(difficulty)
-        {
-            uint64 idx = MAKE_PAIR64(spellId, difficulty);
-            if(SpellEffectDiffMap[idx])
-                return SpellEffectDiffMap[idx];
-        }*/
-
-        return mSpellInfoMap[spellId];
-    }
-
-    return NULL;
 }
 
 void SpellMgr::LoadSpellPowerInfo()

@@ -336,9 +336,8 @@ SpellImplicitTargetInfo::StaticData  SpellImplicitTargetInfo::_data[TOTAL_SPELL_
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_CONE,    TARGET_CHECK_ENEMY,    TARGET_DIR_FRONT},       // 129 TARGET_UNIT_CONE_ENEMY_129
 };
 
-SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* spellInfo, uint8 effIndex)
+SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* spellInfo, uint8 effIndex, SpellEffectEntry const* _effect)
 {
-    SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(effIndex);
     SpellEffectScalingEntry const* _effectScaling = GetSpellEffectScalingEntry(_effect ? _effect->Id : 0);
     SpellScalingEntry const* scaling = spellInfo->GetSpellScaling();
 
@@ -809,7 +808,15 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 
     // SpellDifficultyEntry
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        Effects[i] = SpellEffectInfo(spellEntry, this, i);
+    {
+        SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(i, 0);
+        Effects[i] = SpellEffectInfo(spellEntry, this, i, _effect);
+    }
+
+    for(int difficulty = 1; difficulty < MAX_DIFFICULTY; difficulty++)
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS_DIFF; ++i)
+            if(SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(i, difficulty))
+                EffectsMap[MAKE_PAIR16(i, difficulty)] = SpellEffectInfo(spellEntry, this, i, _effect);
 
     // SpellScalingEntry
     SpellScalingEntry const* _scaling = GetSpellScaling();
@@ -986,6 +993,18 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 SpellInfo::~SpellInfo()
 {
     _UnloadImplicitTargetConditionLists();
+}
+
+SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) const
+{
+    if(difficulty)
+    {
+        SpellEffectInfoMap::const_iterator itr = EffectsMap.find(MAKE_PAIR16(effect, difficulty));
+        if(itr != EffectsMap.end())
+            return itr->second;
+    }
+
+    return Effects[effect];
 }
 
 bool SpellInfo::HasEffect(SpellEffects effect) const
@@ -2842,9 +2861,9 @@ void SpellInfo::SetCastTimeIndex(uint32 index)
     CastTimeEntry = castTimeIndex;
 }
 
-SpellEffectEntry const* SpellEntry::GetSpellEffect(uint32 eff) const
+SpellEffectEntry const* SpellEntry::GetSpellEffect(uint32 eff, uint8 diff) const
 {
-    return GetSpellEffectEntry(Id, eff);
+    return GetSpellEffectEntry(Id, eff, diff);
 }
 
 void SpellInfo::_UnloadImplicitTargetConditionLists()

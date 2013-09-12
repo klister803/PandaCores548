@@ -174,8 +174,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , m_unitTypeMask(UNIT_MASK_NONE)
     , m_HostileRefManager(this)
     , LastCharmerGUID(0)
-
-
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -282,6 +280,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     m_IsInKillingProcess = false;
     m_VisibilityUpdScheduled = false;
+    m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -1010,7 +1009,7 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
 
         int32 bp = damage - (damage * stagger);
         int32 spellId;
-        int32 ticks = sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->GetDuration() / sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->Effects[0].Amplitude;
+        int32 ticks = sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->GetDuration() / sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->GetEffect(0, GetSpawnMode()).Amplitude;
 
         AuraEffect* aurEff = victim->GetAuraEffect(LIGHT_STAGGER, 0, victim->GetGUID());
         if (!aurEff)
@@ -1975,7 +1974,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
         int32 manaReduction = currentAbsorb;
 
         // lower absorb amount by talents
-        if (float manaMultiplier = absorbAurEff->GetSpellInfo()->Effects[absorbAurEff->GetEffIndex()].CalcValueMultiplier(absorbAurEff->GetCaster()))
+        if (float manaMultiplier = absorbAurEff->GetSpellInfo()->GetEffect(absorbAurEff->GetEffIndex(), GetSpawnMode()).CalcValueMultiplier(absorbAurEff->GetCaster()))
             manaReduction = int32(float(manaReduction) * manaMultiplier);
 
         int32 manaTaken = -victim->ModifyPower(POWER_MANA, -manaReduction);
@@ -2466,7 +2465,7 @@ int32 Unit::GetMechanicResistChance(const SpellInfo* spell)
     int32 resist_mech = 0;
     for (uint8 eff = 0; eff < MAX_SPELL_EFFECTS; ++eff)
     {
-        if (!spell->Effects[eff].IsEffect())
+        if (!spell->GetEffect(eff, GetSpawnMode()).IsEffect())
            break;
         int32 effect_mech = spell->GetEffectMechanic(eff);
         if (effect_mech)
@@ -3301,7 +3300,7 @@ Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint3
                 if (baseAmount)
                     bp = *(baseAmount + i);
                 else
-                    bp = foundAura->GetSpellInfo()->Effects[i].BasePoints;
+                    bp = foundAura->GetSpellInfo()->GetEffect(i, GetSpawnMode()).BasePoints;
 
                 int32* oldBP = const_cast<int32*>(&(foundAura->GetEffect(i)->m_baseAmount));
                 *oldBP = bp;
@@ -3457,7 +3456,7 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
         {
             for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 if (aura->GetEffect(i))
-                    aura->GetEffect(i)->SetAmount(aura->GetSpellInfo()->Effects[i].BasePoints * 2);
+                    aura->GetEffect(i)->SetAmount(aura->GetSpellInfo()->GetEffect(i, GetSpawnMode()).BasePoints * 2);
         }
     }
 
@@ -4487,8 +4486,8 @@ bool Unit::HasAuraWithMechanic(uint32 mechanicMask)
             return true;
 
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (iter->second->HasEffect(i) && spellInfo->Effects[i].Effect && spellInfo->Effects[i].Mechanic)
-                if (mechanicMask & (1 << spellInfo->Effects[i].Mechanic))
+            if (iter->second->HasEffect(i) && spellInfo->GetEffect(i, GetSpawnMode()).Effect && spellInfo->GetEffect(i, GetSpawnMode()).Mechanic)
+                if (mechanicMask & (1 << spellInfo->GetEffect(i, GetSpawnMode()).Mechanic))
                     return true;
     }
 
@@ -5312,10 +5311,10 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, uint32 /*damage*/, AuraEffe
     // Power amount required to proc the spell
     int32 powerAmountRequired = triggeredByAura->GetAmount();
     // Power type required to proc
-    Powers powerRequired = Powers(auraSpellInfo->Effects[triggeredByAura->GetEffIndex()].MiscValue);
+    Powers powerRequired = Powers(auraSpellInfo->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).MiscValue);
 
     // Set trigger spell id, target, custom basepoints
-    uint32 trigger_spell_id = auraSpellInfo->Effects[triggeredByAura->GetEffIndex()].TriggerSpell;
+    uint32 trigger_spell_id = auraSpellInfo->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).TriggerSpell;
 
     Unit*  target = NULL;
     int32  basepoints0 = 0;
@@ -5635,7 +5634,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         return false;
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                     {
-                        switch(procSpell->Effects[i].ApplyAuraName)
+                        switch(procSpell->GetEffect(i, GetSpawnMode()).ApplyAuraName)
                         {
                             case SPELL_AURA_MOD_FEAR:
                             case SPELL_AURA_MOD_STUN:
@@ -6610,7 +6609,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if (!GoPoH)
                         return false;
 
-                    int32 tickcount = GoPoH->GetMaxDuration() / GoPoH->Effects[EFFECT_0].Amplitude;
+                    int32 tickcount = GoPoH->GetMaxDuration() / GoPoH->GetEffect(EFFECT_0, GetSpawnMode()).Amplitude;
                     basepoints0 = CalculatePct(int32(damage), triggerAmount) / tickcount;
                     break;
                 }
@@ -6670,7 +6669,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         SpellInfo const* blessHealing = sSpellMgr->GetSpellInfo(triggered_spell_id);
                         if (!blessHealing)
                             return false;
-                        basepoints0 = int32(CalculatePct(damage, triggerAmount) / (blessHealing->GetMaxDuration() / blessHealing->Effects[0].Amplitude));
+                        basepoints0 = int32(CalculatePct(damage, triggerAmount) / (blessHealing->GetMaxDuration() / blessHealing->GetEffect(0, GetSpawnMode()).Amplitude));
                     }
                     break;
             }
@@ -6856,7 +6855,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         SpellInfo const* triggeredSpell = sSpellMgr->GetSpellInfo(triggered_spell_id);
                         if (!triggeredSpell)
                             return false;
-                        basepoints0 = CalculatePct(int32(damage), triggerAmount) / (triggeredSpell->GetMaxDuration() / triggeredSpell->Effects[0].Amplitude);
+                        basepoints0 = CalculatePct(int32(damage), triggerAmount) / (triggeredSpell->GetMaxDuration() / triggeredSpell->GetEffect(0, GetSpawnMode()).Amplitude);
                         // Add remaining ticks to damage done
                         basepoints0 += victim->GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_DAMAGE);
                     }
@@ -7090,8 +7089,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     }
 
                     // check for single target spell (TARGET_SINGLE_FRIEND, NO_TARGET)
-                    if (!(procSpell->Effects[triggeredByAura->GetEffIndex()].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) &&
-                        (procSpell->Effects[triggeredByAura->GetEffIndex()].TargetB.GetTarget() == 0))
+                    if (!(procSpell->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) &&
+                        (procSpell->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).TargetB.GetTarget() == 0))
                         return false;
 
                     std::list<Creature*> petlist;
@@ -7522,7 +7521,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         SpellInfo const* triggeredSpell = sSpellMgr->GetSpellInfo(triggered_spell_id);
                         if (!triggeredSpell)
                             return false;
-                        basepoints0 = CalculatePct(int32(damage), triggerAmount) / (triggeredSpell->GetMaxDuration() / triggeredSpell->Effects[0].Amplitude);
+                        basepoints0 = CalculatePct(int32(damage), triggerAmount) / (triggeredSpell->GetMaxDuration() / triggeredSpell->GetEffect(0, GetSpawnMode()).Amplitude);
                     }
                     break;
                 }
@@ -7536,7 +7535,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         SpellInfo const* triggeredSpell = sSpellMgr->GetSpellInfo(triggered_spell_id);
                         if (!triggeredSpell)
                             return false;
-                        basepoints0 = CalculatePct(int32(damage), triggerAmount) / (triggeredSpell->GetMaxDuration() / triggeredSpell->Effects[0].Amplitude);
+                        basepoints0 = CalculatePct(int32(damage), triggerAmount) / (triggeredSpell->GetMaxDuration() / triggeredSpell->GetEffect(0, GetSpawnMode()).Amplitude);
                         // Add remaining ticks to healing done
                         basepoints0 += GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_HEAL);
                     }
@@ -7639,7 +7638,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     || (attType == OFF_ATTACK && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK))
                     return false;
 
-                float fire_onhit = float(CalculatePct(dummySpell->Effects[EFFECT_0]. CalcValue(), 1.0f));
+                float fire_onhit = float(CalculatePct(dummySpell->GetEffect(EFFECT_0, GetSpawnMode()). CalcValue(), 1.0f));
 
                 float add_spellpower = (float)(SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FIRE)
                                      + victim->SpellBaseDamageBonusTaken(SPELL_SCHOOL_MASK_FIRE));
@@ -7682,7 +7681,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 if (!target || !target->isAlive())
                     return false;
 
-                triggered_spell_id = dummySpell->Effects[effIndex].TriggerSpell;
+                triggered_spell_id = dummySpell->GetEffect(effIndex, GetSpawnMode()).TriggerSpell;
                 break;
             }
             // Butchery
@@ -7806,11 +7805,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 {
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
                     {
-                        if (procSpell->Effects[i].Effect == SPELL_EFFECT_HEAL)
+                        if (procSpell->GetEffect(i, GetSpawnMode()).Effect == SPELL_EFFECT_HEAL)
                         {
                             triggered_spell_id = 21399;
                         }
-                        else if (procSpell->Effects[i].Effect == SPELL_EFFECT_ENERGIZE)
+                        else if (procSpell->GetEffect(i, GetSpawnMode()).Effect == SPELL_EFFECT_ENERGIZE)
                         {
                             triggered_spell_id = 21400;
                         }
@@ -7837,7 +7836,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
                     triggered_spell_id = 54445;
                     target = this;
-                    float addThreat = float(CalculatePct(procSpell->Effects[0].CalcValue(this), triggerAmount));
+                    float addThreat = float(CalculatePct(procSpell->GetEffect(0, GetSpawnMode()).CalcValue(this), triggerAmount));
                     victim->AddThreat(this, addThreat);
                     break;
                 }
@@ -7905,7 +7904,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if (ToPlayer()->HasSpellCooldown(116092))
                         return false;
 
-                    int32 chance = dummySpell->Effects[1].BasePoints;
+                    int32 chance = dummySpell->GetEffect(1, GetSpawnMode()).BasePoints;
 
                     if (!roll_chance_i(chance))
                         return false;
@@ -7989,7 +7988,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
     // if not handled by custom case, get triggered spell from dummySpell proto
     if (!triggered_spell_id)
-        triggered_spell_id = dummySpell->Effects[triggeredByAura->GetEffIndex()].TriggerSpell;
+        triggered_spell_id = dummySpell->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).TriggerSpell;
 
     // processed charge only counting case
     if (!triggered_spell_id)
@@ -8158,7 +8157,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, Aura* triggeredByAura
                 // Swift Hand of Justice
                 case 59906:
                 {
-                    int32 bp0 = CalculatePct(GetMaxHealth(), dummySpell->Effects[EFFECT_0]. CalcValue());
+                    int32 bp0 = CalculatePct(GetMaxHealth(), dummySpell->GetEffect(EFFECT_0, GetSpawnMode()). CalcValue());
                     CastCustomSpell(this, 59913, &bp0, NULL, NULL, true);
                     *handled = true;
                     break;
@@ -8185,10 +8184,10 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, Aura* triggeredByAura
                 // Lookup base amount mana restore
                 for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
                 {
-                    if (procSpell->Effects[i].Effect == SPELL_EFFECT_ENERGIZE)
+                    if (procSpell->GetEffect(i, GetSpawnMode()).Effect == SPELL_EFFECT_ENERGIZE)
                     {
                         // value multiplied by 2 because you should get twice amount
-                        int32 mana = procSpell->Effects[i].CalcValue() * 2;
+                        int32 mana = procSpell->GetEffect(i, GetSpawnMode()).CalcValue() * 2;
                         CastCustomSpell(this, 54986, 0, &mana, NULL, true);
                     }
                 }
@@ -8211,7 +8210,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, Aura* triggeredByAura
                     if (!spInfo)
                         return false;
 
-                    int32 bp0 = int32(CalculatePct(GetCreateMana(), spInfo->Effects[0].CalcValue()));
+                    int32 bp0 = int32(CalculatePct(GetCreateMana(), spInfo->GetEffect(0, GetSpawnMode()).CalcValue()));
                     CastCustomSpell(this, 67545, &bp0, NULL, NULL, true, NULL, triggeredByAura->GetEffect(EFFECT_0), GetGUID());
                     return true;
                 }
@@ -8333,7 +8332,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, Aura* triggeredByAura
                 // Item - Warrior T10 Protection 4P Bonus
                 case 70844:
                 {
-                    int32 basepoints0 = CalculatePct(GetMaxHealth(), dummySpell->Effects[EFFECT_1]. CalcValue());
+                    int32 basepoints0 = CalculatePct(GetMaxHealth(), dummySpell->GetEffect(EFFECT_1, GetSpawnMode()). CalcValue());
                     CastCustomSpell(this, 70845, &basepoints0, NULL, NULL, true);
                     break;
                 }
@@ -8365,7 +8364,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
     int32 triggerAmount = triggeredByAura->GetAmount();
 
     // Set trigger spell id, target, custom basepoints
-    uint32 trigger_spell_id = auraSpellInfo->Effects[triggeredByAura->GetEffIndex()].TriggerSpell;
+    uint32 trigger_spell_id = auraSpellInfo->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).TriggerSpell;
 
     Unit*  target = NULL;
     int32  basepoints0 = 0;
@@ -8392,7 +8391,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                         break;
                     case 43820:             // Charm of the Witch Doctor (Amani Charm of the Witch Doctor trinket)
                         // Pct value stored in dummy
-                        basepoints0 = victim->GetCreateHealth() * auraSpellInfo->Effects[1].CalcValue() / 100;
+                        basepoints0 = victim->GetCreateHealth() * auraSpellInfo->GetEffect(1, GetSpawnMode()).CalcValue() / 100;
                         target = victim;
                         break;
                     case 57345:             // Darkmoon Card: Greatness
@@ -8519,7 +8518,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                     if (!TriggerPS)
                         return false;
 
-                    basepoints0 = CalculatePct(int32(damage), triggerAmount) / (TriggerPS->GetMaxDuration() / TriggerPS->Effects[0].Amplitude);
+                    basepoints0 = CalculatePct(int32(damage), triggerAmount) / (TriggerPS->GetMaxDuration() / TriggerPS->GetEffect(0, GetSpawnMode()).Amplitude);
                     basepoints0 += victim->GetRemainingPeriodicAmount(GetGUID(), trigger_spell_id, SPELL_AURA_PERIODIC_DAMAGE);
                     break;
                 }
@@ -9228,7 +9227,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         case 63156:
         case 63158:
             // Can proc only if target has hp below 25%
-            if (!victim || !victim->HealthBelowPct(auraSpellInfo->Effects[EFFECT_1].CalcValue()))
+            if (!victim || !victim->HealthBelowPct(auraSpellInfo->GetEffect(EFFECT_1, GetSpawnMode()).CalcValue()))
                 return false;
             break;
         // Deathbringer Saurfang - Blood Beast's Blood Link
@@ -10218,10 +10217,10 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
             {
                 for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 {
-                    if (spInfo->Effects[i].Effect != SPELL_EFFECT_SUMMON)
+                    if (spInfo->GetEffect(i, GetSpawnMode()).Effect != SPELL_EFFECT_SUMMON)
                         continue;
 
-                    RemoveAllMinionsByEntry(spInfo->Effects[i].MiscValue);
+                    RemoveAllMinionsByEntry(spInfo->GetEffect(i, GetSpawnMode()).MiscValue);
                 }
             }
 
@@ -11823,7 +11822,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        switch (spellProto->Effects[i].ApplyAuraName)
+        switch (spellProto->GetEffect(i, GetSpawnMode()).ApplyAuraName)
         {
             // Bonus healing does not apply to these spells
             case SPELL_AURA_PERIODIC_LEECH:
@@ -11831,7 +11830,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                 DoneTotal = 0;
                 break;
         }
-        if (spellProto->Effects[i].Effect == SPELL_EFFECT_HEALTH_LEECH)
+        if (spellProto->GetEffect(i, GetSpawnMode()).Effect == SPELL_EFFECT_HEALTH_LEECH)
             DoneTotal = 0;
     }
 
@@ -11953,7 +11952,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     {
         bool singleTarget = false;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY && spellProto->Effects[i].TargetB.GetTarget() == 0)
+            if (spellProto->GetEffect(i, GetSpawnMode()).TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY && spellProto->GetEffect(i, GetSpawnMode()).TargetB.GetTarget() == 0)
                 singleTarget = true;
 
         if (singleTarget)
@@ -12009,7 +12008,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        switch (spellProto->Effects[i].ApplyAuraName)
+        switch (spellProto->GetEffect(i, GetSpawnMode()).ApplyAuraName)
         {
             // Bonus healing does not apply to these spells
             case SPELL_AURA_PERIODIC_LEECH:
@@ -12017,7 +12016,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
                 TakenTotal = 0;
                 break;
         }
-        if (spellProto->Effects[i].Effect == SPELL_EFFECT_HEALTH_LEECH)
+        if (spellProto->GetEffect(i, GetSpawnMode()).Effect == SPELL_EFFECT_HEALTH_LEECH)
             TakenTotal = 0;
     }
 
@@ -12059,7 +12058,7 @@ int32 Unit::SpellBaseHealingBonusDone(SpellSchoolMask schoolMask)
         for (AuraEffectList::const_iterator i = mHealingDoneOfStatPercent.begin(); i != mHealingDoneOfStatPercent.end(); ++i)
         {
             // stat used dependent from misc value (stat index)
-            Stats usedStat = Stats((*i)->GetSpellInfo()->Effects[(*i)->GetEffIndex()].MiscValue);
+            Stats usedStat = Stats((*i)->GetSpellInfo()->GetEffect((*i)->GetEffIndex(), GetSpawnMode()).MiscValue);
             AdvertisedBenefit += int32(CalculatePct(GetStat(usedStat), (*i)->GetAmount()));
         }
 
@@ -12161,7 +12160,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo)
     {
         // State/effect immunities applied by aura expect full spell immunity
         // Ignore effects with mechanic, they are supposed to be checked separately
-        if (!spellInfo->Effects[i].IsEffect())
+        if (!spellInfo->GetEffect(i, GetSpawnMode()).IsEffect())
             continue;
         if (!IsImmunedToSpellEffect(spellInfo, i))
         {
@@ -12191,17 +12190,17 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo)
 
 bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const
 {
-    if (!spellInfo || !spellInfo->Effects[index].IsEffect())
+    if (!spellInfo || !spellInfo->GetEffect(index, GetSpawnMode()).IsEffect())
         return false;
 
     // If m_immuneToEffect type contain this effect type, IMMUNE effect.
-    uint32 effect = spellInfo->Effects[index].Effect;
+    uint32 effect = spellInfo->GetEffect(index, GetSpawnMode()).Effect;
     SpellImmuneList const& effectList = m_spellImmune[IMMUNITY_EFFECT];
     for (SpellImmuneList::const_iterator itr = effectList.begin(); itr != effectList.end(); ++itr)
         if (itr->type == effect)
             return true;
 
-    if (uint32 mechanic = spellInfo->Effects[index].Mechanic)
+    if (uint32 mechanic = spellInfo->GetEffect(index, GetSpawnMode()).Mechanic)
     {
         SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
         for (SpellImmuneList::const_iterator itr = mechanicList.begin(); itr != mechanicList.end(); ++itr)
@@ -12209,7 +12208,7 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
                 return true;
     }
 
-    if (uint32 aura = spellInfo->Effects[index].ApplyAuraName)
+    if (uint32 aura = spellInfo->GetEffect(index, GetSpawnMode()).ApplyAuraName)
     {
         SpellImmuneList const& list = m_spellImmune[IMMUNITY_STATE];
         for (SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
@@ -12276,7 +12275,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         bool normalized = false;
         if (spellProto)
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                if (spellProto->Effects[i].Effect == SPELL_EFFECT_NORMALIZED_WEAPON_DMG)
+                if (spellProto->GetEffect(i, GetSpawnMode()).Effect == SPELL_EFFECT_NORMALIZED_WEAPON_DMG)
                 {
                     normalized = true;
                     break;
@@ -14235,7 +14234,7 @@ float Unit::ApplyEffectModifiers(SpellInfo const* spellProto, uint8 effect_index
 // function uses real base points (typically value - 1)
 int32 Unit::CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto, uint8 effect_index, int32 const* basePoints) const
 {
-    return spellProto->Effects[effect_index].CalcValue(this, basePoints, target);
+    return spellProto->GetEffect(effect_index, GetSpawnMode()).CalcValue(this, basePoints, target);
 }
 
 int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
@@ -14319,7 +14318,7 @@ int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, in
                 sSpellMgr->IsSpellMemberOfSpellGroup(spellProto->Id, SPELL_GROUP_ELIXIR_BATTLE) ||
                 sSpellMgr->IsSpellMemberOfSpellGroup(spellProto->Id, SPELL_GROUP_ELIXIR_GUARDIAN)))
             {
-                if (target->HasAura(53042) && target->HasSpell(spellProto->Effects[0].TriggerSpell))
+                if (target->HasAura(53042) && target->HasSpell(spellProto->GetEffect(0, GetSpawnMode()).TriggerSpell))
                     duration *= 2;
             }
         }
@@ -15780,7 +15779,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         {
             bool triggerSpell = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                if (spellProto->Effects[i].TriggerSpell)
+                if (spellProto->GetEffect(i, GetSpawnMode()).TriggerSpell)
                     triggerSpell = true;
 
             if (damage || triggerSpell)
@@ -16645,7 +16644,7 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
 
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
-        switch (spellProto->Effects[i].Effect)
+        switch (spellProto->GetEffect(i, GetSpawnMode()).Effect)
         {
             case SPELL_EFFECT_SCHOOL_DAMAGE:
             case SPELL_EFFECT_POWER_DRAIN:
@@ -16656,7 +16655,7 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
                 DirectDamage = true;
                 break;
             case SPELL_EFFECT_APPLY_AURA:
-                switch (spellProto->Effects[i].ApplyAuraName)
+                switch (spellProto->GetEffect(i, GetSpawnMode()).ApplyAuraName)
                 {
                     case SPELL_AURA_PERIODIC_DAMAGE:
                     case SPELL_AURA_PERIODIC_HEAL:
@@ -16673,7 +16672,7 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
                 break;
         }
 
-        if (spellProto->Effects[i].IsTargetingArea())
+        if (spellProto->GetEffect(i, GetSpawnMode()).IsTargetingArea())
             AreaEffect = true;
     }
 
@@ -16702,8 +16701,8 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
     // 50% for damage and healing spells for leech spells from damage bonus and 0% from healing
     for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
     {
-        if (spellProto->Effects[j].Effect == SPELL_EFFECT_HEALTH_LEECH ||
-            (spellProto->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA && spellProto->Effects[j].ApplyAuraName == SPELL_AURA_PERIODIC_LEECH))
+        if (spellProto->GetEffect(j, GetSpawnMode()).Effect == SPELL_EFFECT_HEALTH_LEECH ||
+            (spellProto->GetEffect(j, GetSpawnMode()).Effect == SPELL_EFFECT_APPLY_AURA && spellProto->GetEffect(j, GetSpawnMode()).ApplyAuraName == SPELL_AURA_PERIODIC_LEECH))
         {
             CastingTime /= 2;
             break;
@@ -17046,7 +17045,7 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura)
     {
         if (Unit* caster = triggeredByAura->GetCaster())
         {
-            float radius = triggeredByAura->GetSpellInfo()->Effects[triggeredByAura->GetEffIndex()].CalcRadius(caster);
+            float radius = triggeredByAura->GetSpellInfo()->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).CalcRadius(caster);
 
             if (Unit* target = GetNextRandomRaidMemberOrPet(radius))
             {
@@ -17099,7 +17098,7 @@ bool Unit::HandleAuraRaidProcFromCharge(AuraEffect* triggeredByAura)
     {
         if (Unit* caster = triggeredByAura->GetCaster())
         {
-            float radius = triggeredByAura->GetSpellInfo()->Effects[triggeredByAura->GetEffIndex()].CalcRadius(caster);
+            float radius = triggeredByAura->GetSpellInfo()->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).CalcRadius(caster);
             if (Unit* target= GetNextRandomRaidMemberOrPet(radius))
             {
                 CastSpell(target, spellProto, true, NULL, triggeredByAura, caster_guid);
@@ -19030,7 +19029,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
             bool valid = false;
             while (i < MAX_SPELL_EFFECTS && !valid)
             {
-                if (spellEntry->Effects[i].ApplyAuraName == SPELL_AURA_CONTROL_VEHICLE)
+                if (spellEntry->GetEffect(i, GetSpawnMode()).ApplyAuraName == SPELL_AURA_CONTROL_VEHICLE)
                 {
                     valid = true;
                     break;

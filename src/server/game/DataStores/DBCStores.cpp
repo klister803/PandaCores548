@@ -661,7 +661,7 @@ void LoadDBCStores(const std::string& dataPath)
                 continue;
 
             if(spellEffect->EffectDifficulty)
-                sSpellEffectDiffMap[MAKE_PAIR64(spellEffect->EffectSpellId, spellEffect->EffectDifficulty)].effects[spellEffect->EffectIndex] = spellEffect;
+                sSpellEffectDiffMap[spellEffect->EffectSpellId].effects[MAKE_PAIR16(spellEffect->EffectIndex, spellEffect->EffectDifficulty)] = spellEffect;
             else
                 sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectIndex] = spellEffect;
         }
@@ -885,12 +885,27 @@ char const* GetPetName(uint32 petfamily, uint32 /*dbclang*/)
     return pet_family->Name ? pet_family->Name : NULL;
 }
 
-SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect)
+SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint8 difficulty)
 {
-    SpellEffectMap::const_iterator itr = sSpellEffectMap.find(spellId);
-    if(itr != sSpellEffectMap.end())
-        if(itr->second.effects[effect])
-            return itr->second.effects[effect];
+    if(difficulty)
+    {
+        uint16 index = MAKE_PAIR16(effect, difficulty);
+        SpellEffectDiffMap::const_iterator itr = sSpellEffectDiffMap.find(spellId);
+        if(itr != sSpellEffectDiffMap.end())
+        {
+            SpellEffectsMap const* effects = &itr->second.effects;
+            SpellEffectsMap::const_iterator itrsecond = effects->find(index);
+            if(itrsecond != effects->end())
+                return itrsecond->second;
+        }
+    }
+    else
+    {
+        SpellEffectMap::const_iterator itr = sSpellEffectMap.find(spellId);
+        if(itr != sSpellEffectMap.end())
+            if(itr->second.effects[effect])
+                return itr->second.effects[effect];
+    }
 
     return NULL;
 }

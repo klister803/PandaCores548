@@ -1914,7 +1914,7 @@ struct SpellEntry
     uint32 SpellMiscId;                                     // 24       SpellMisc.dbc
 
     // struct access functions
-    SpellEffectEntry const* GetSpellEffect(uint32 eff) const;
+    SpellEffectEntry const* GetSpellEffect(uint32 eff, uint8 diff = 0) const;
 };
 
 // SpellCategories.dbc
@@ -2533,23 +2533,18 @@ struct SpellEffect
             effects[i] = NULL;
         }
     }
-    SpellEffectEntry const* effects[21];
+    SpellEffectEntry const* effects[MAX_SPELL_EFFECTS];
 };
+
+typedef UNORDERED_MAP<uint16, SpellEffectEntry const*> SpellEffectsMap;
 
 struct SpellEffectDiff
 {
-    SpellEffectDiff()
-    {
-        for(int i = 0; i < MAX_SPELL_EFFECTS_DIFF; i++)
-        {
-            effects[i] = NULL;
-        }
-    }
-    SpellEffectEntry const* effects[5];
+    SpellEffectsMap effects;
 };
 
-typedef std::map<uint32, SpellEffect> SpellEffectMap;
-typedef std::map<uint64, SpellEffectDiff> SpellEffectDiffMap;
+typedef UNORDERED_MAP<uint32, SpellEffectDiff> SpellEffectDiffMap;
+typedef UNORDERED_MAP<uint32, SpellEffect> SpellEffectMap;
 
 struct TaxiPathBySourceAndDestination
 {

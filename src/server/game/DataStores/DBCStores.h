@@ -53,7 +53,7 @@ static ProjectRaseMap sRaseProjectMap;
 ProjectRaseList const* GetProjectRaseList(uint32 RaceID);
 
 char const* GetPetName(uint32 petfamily, uint32 dbclang);
-SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect);
+SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint8 difficulty);
 SpellEffectScalingEntry const* GetSpellEffectScalingEntry(uint32 effectId);
 SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent);
 SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem);
