@@ -955,7 +955,6 @@ enum Opcodes
     SMSG_HOTFIX_INFO                                  = 0xF86,  // 5.0.5 16048
     SMSG_HOTFIX_NOTIFY                                = 0xEE0,  // 5.0.5 16048
     SMSG_INITIALIZE_FACTIONS                          = 0x824,  // 5.0.5 16048
-    SMSG_INITIAL_SPELLS                               = 0x000,  // 5.0.5 16048 Deprecated    
     SMSG_INIT_CURRENCY                                = 0xAE5,  // 5.0.5 16048
     SMSG_INIT_WORLD_STATES                            = 0x919,  // 5.0.5 16048
     SMSG_INSPECT                                      = 0,      // Not found in 4.3.4

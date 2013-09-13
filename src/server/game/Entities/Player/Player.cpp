@@ -3856,82 +3856,6 @@ void Player::SendKnownSpells()
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CHARACTER: Sent Send Known Spells");
 }
 
-void Player::SendInitialSpells()
-{
-    time_t curTime = time(NULL);
-    time_t infTime = curTime + infinityCooldownDelayCheck;
-
-    uint16 spellCount = 0;
-
-    WorldPacket data(SMSG_INITIAL_SPELLS, (1+2+4*m_spells.size()+2+m_spellCooldowns.size()*(2+2+2+4+4)));
-    data << uint8(0);
-
-    size_t countPos = data.wpos();
-    data << uint16(spellCount);                             // spell count placeholder
-
-    for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
-    {
-        if (itr->second->state == PLAYERSPELL_REMOVED)
-            continue;
-
-        if (!itr->second->active || itr->second->disabled)
-            continue;
-
-        if(itr->second->mount && itr->second->mountReplace == 0)
-            continue;
-
-        if(itr->second->mountReplace)
-            data << uint32(itr->second->mountReplace);
-        else
-            data << uint32(itr->first);
-        data << uint16(0);                                  // it's not slot id
-
-        ++spellCount;
-    }
-
-    data.put<uint16>(countPos, spellCount);                  // write real count value
-
-    uint16 spellCooldowns = m_spellCooldowns.size();
-
-    data << uint16(spellCooldowns);
-    for (SpellCooldowns::const_iterator itr = m_spellCooldowns.begin(); itr != m_spellCooldowns.end(); ++itr)
-    {
-        SpellInfo const* sEntry = sSpellMgr->GetSpellInfo(itr->first);
-        if (!sEntry)
-            continue;
-
-        data << uint32(itr->first);
-
-        data << uint32(itr->second.itemid);                 // cast item id
-        data << uint16(sEntry->Category);                   // spell category
-
-        // send infinity cooldown in special format
-        if (itr->second.end >= infTime)
-        {
-            data << uint32(1);                              // cooldown
-            data << uint32(0x80000000);                     // category cooldown
-            continue;
-        }
-
-        time_t cooldown = itr->second.end > curTime ? (itr->second.end-curTime)*IN_MILLISECONDS : 0;
-
-        if (sEntry->Category)                                // may be wrong, but anyway better than nothing...
-        {
-            data << uint32(0);                              // cooldown
-            data << uint32(cooldown);                       // category cooldown
-        }
-        else
-        {
-            data << uint32(cooldown);                       // cooldown
-            data << uint32(0);                              // category cooldown
-        }
-    }
-
-    GetSession()->SendPacket(&data);
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CHARACTER: Sent Initial Spells");
-}
-
 void Player::RemoveMail(uint32 id)
 {
     for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
@@ -23990,6 +23914,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     data.Initialize(SMSG_SEND_UNLEARN_SPELLS);
     data.WriteBits(0, 24);                         // count, read uint32 spells id
+    data.FlushBits();
     GetSession()->SendPacket(&data);
 
     SendInitialActionButtons();
@@ -24018,15 +23943,20 @@ void Player::SendInitialPacketsBeforeAddToMap()
 void Player::SendCooldownAtLogin()
 {
     time_t curTime = time(NULL);
+    WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
+    data << uint64(GetGUID());
+    data << uint8(1);
+
     for (SpellCooldowns::const_iterator itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
     {
-        WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
-        data << uint64(GetGUID());
-        data << uint8(1);
+        if (itr->second.end <= curTime)
+            continue;
+
         data << uint32(itr->first);
         data << uint32(uint32(itr->second.end - curTime)*IN_MILLISECONDS);
-        GetSession()->SendPacket(&data);
     }
+
+    GetSession()->SendPacket(&data);
 }
 
 void Player::SendInitialPacketsAfterAddToMap()
