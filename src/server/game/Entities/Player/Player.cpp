@@ -10707,6 +10707,11 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
             data << uint32(0x1958) << uint32(0x1);
             data << uint32(0x1959) << uint32(0x4);
             break;
+        // Arena TolVir
+        case 6296:
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_TV)
+                bg->FillInitialWorldStates(data);
+            break;
         default:
             data << uint32(0x914) << uint32(0x0);           // 7
             data << uint32(0x913) << uint32(0x0);           // 8
