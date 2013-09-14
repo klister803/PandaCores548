@@ -4062,6 +4062,20 @@ void SpellMgr::LoadSpellCustomAttr()
             case 117050:
                 spellInfo->Speed = 25.f;
                 break;
+            // Dalaran arena knockback
+            case 61698:
+                spellInfo->Attributes = 536871296;
+                spellInfo->AttributesEx = 269058048;
+                spellInfo->AttributesEx2 = 67108868;
+                spellInfo->AttributesEx3 = 268894272;
+                spellInfo->AttributesEx4 = 2048;
+                spellInfo->AttributesEx6 = 1024;
+                spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
+                spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(1);
+                spellInfo->EquippedItemClass = -1;
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                spellInfo->Effects[0].TargetA = SpellImplicitTargetInfo(25);
+                break;
             default:
                 break;
             }

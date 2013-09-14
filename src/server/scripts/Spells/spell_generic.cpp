@@ -1538,6 +1538,46 @@ class spell_gen_luck_of_the_draw : public SpellScriptLoader
         }
 };
 
+class spell_gen_ds_flush_knockback : public SpellScriptLoader
+{
+    public:
+        spell_gen_ds_flush_knockback() : SpellScriptLoader("spell_gen_ds_flush_knockback") { }
+
+        class spell_gen_ds_flush_knockback_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_ds_flush_knockback_SpellScript);
+
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                // Here the target is the water spout and determines the position where the player is knocked from
+                if (Unit* target = GetHitUnit())
+                {
+                    if (Player* player = GetCaster()->ToPlayer())
+                    {
+                        if (player->GetDistance2d(target) > 35.f)
+                            return;
+
+                        float horizontalSpeed = 20.0f + (40.0f - GetCaster()->GetDistance(target));
+                        float verticalSpeed = 8.0f;
+                        // This method relies on the Dalaran Sewer map disposition and Water Spout position
+                        // What we do is knock the player from a position exactly behind him and at the end of the pipe
+                        player->KnockbackFrom(target->GetPositionX(), player->GetPositionY(), horizontalSpeed, verticalSpeed);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_gen_ds_flush_knockback_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_ds_flush_knockback_SpellScript();
+        }
+};
+
 enum DummyTrigger
 {
     SPELL_PERSISTANT_SHIELD_TRIGGERED       = 26470,
@@ -3530,4 +3570,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_darkflight();
     new spell_gen_blood_fury();
     new spell_gen_gobelin_gumbo();
+    new spell_gen_ds_flush_knockback();
 }
