@@ -2585,10 +2585,10 @@ class Player : public Unit, public GridObject<Player>
         PlayerMenu* PlayerTalkClass;
         std::vector<ItemSetEffect*> ItemSetEff;
 
-        void SendLoot(uint64 guid, LootType loot_type);
+        void SendLoot(uint64 guid, LootType loot_type, uint8 pool = 0);
         void SendLootRelease(uint64 guid);
-        void SendNotifyLootItemRemoved(uint8 lootSlot);
-        void SendNotifyLootMoneyRemoved(uint64 gold);
+        void SendNotifyLootItemRemoved(uint8 lootSlot, uint64 guid);
+        void SendNotifyLootMoneyRemoved(uint64 gold, uint64 guid);
 
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/

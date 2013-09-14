@@ -40,7 +40,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
     uint8 lootSlot = 0;
 
     uint32 count = recvData.ReadBits(25);
-    ObjectGuid guids[8];
+    ObjectGuid guids[count];
 
     uint8 bitOrder[8] = {4, 0, 2, 1, 5, 6, 7, 3};
     for (uint32 i = 0; i < count; i++)
@@ -49,11 +49,13 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
     recvData.FlushBits();
 
     uint8 byteOrder[8] = {2, 0, 5, 4, 6, 1, 3, 7};
+
     for (uint32 i = 0; i < count; i++)
     {
         recvData >> lootSlot;
 
         recvData.ReadBytesSeq(guids[i], byteOrder);
+        lguid = guids[i];
 
         if (IS_GAMEOBJECT_GUID(lguid))
         {
@@ -97,7 +99,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
 
             bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
 
-            if (!lootAllowed || !creature->IsWithinDistInMap(_player, INTERACTION_DISTANCE))
+            if (!lootAllowed || !creature->IsWithinDistInMap(_player, LOOT_DISTANCE))
             {
                 player->SendLootRelease(lguid);
                 return;
@@ -138,7 +140,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
         {
             Corpse* bones = ObjectAccessor::GetCorpse(*player, guid);
 
-            if (bones && bones->IsWithinDistInMap(player, INTERACTION_DISTANCE))
+            if (bones && bones->IsWithinDistInMap(player, LOOT_DISTANCE))
             {
                 loot = &bones->loot;
                 shareMoney = false;
@@ -160,7 +162,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
         {
             Creature* creature = player->GetMap()->GetCreature(guid);
             bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
-            if (lootAllowed && creature->IsWithinDistInMap(player, INTERACTION_DISTANCE))
+            if (lootAllowed && creature->IsWithinDistInMap(player, LOOT_DISTANCE))
             {
                 loot = &creature->loot;
                 if (creature->isAlive())
@@ -245,6 +247,18 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
 
     GetPlayer()->SendLoot(guid, LOOT_CORPSE);
 
+    std::list<Creature*> corpesList;
+    _player->GetCorpseCreatureInGrid(corpesList, LOOT_DISTANCE);
+    // Remove other players jade statue
+    for (std::list<Creature*>::const_iterator itr = corpesList.begin(); itr != corpesList.end(); ++itr)
+    {
+        if(Creature* creature = (*itr))
+        {
+            if(creature->GetGUID() != guid)
+                GetPlayer()->SendLoot(creature->GetGUID(), LOOT_CORPSE, 1);
+        }
+    }
+
     // interrupt cast
     if (GetPlayer()->IsNonMeleeSpellCasted(false))
         GetPlayer()->InterruptNonMeleeSpells(false);
@@ -264,9 +278,7 @@ void WorldSession::HandleLootReleaseOpcode(WorldPacket& recvData)
     uint8 byteOrder[8] = {3, 5, 4, 2, 6, 1, 0, 7};
     recvData.ReadBytesSeq(guid, byteOrder);
 
-    if (uint64 lguid = GetPlayer()->GetLootGUID())
-        if (lguid == guid)
-            DoLootRelease(lguid);
+    DoLootRelease(guid);
 }
 
 void WorldSession::DoLootRelease(uint64 lguid)
@@ -381,7 +393,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
     else if (IS_CORPSE_GUID(lguid))        // ONLY remove insignia at BG
     {
         Corpse* corpse = ObjectAccessor::GetCorpse(*player, lguid);
-        if (!corpse || !corpse->IsWithinDistInMap(_player, INTERACTION_DISTANCE))
+        if (!corpse || !corpse->IsWithinDistInMap(_player, LOOT_DISTANCE))
             return;
 
         loot = &corpse->loot;
@@ -424,7 +436,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
         Creature* creature = GetPlayer()->GetMap()->GetCreature(lguid);
 
         bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
-        if (!lootAllowed || !creature->IsWithinDistInMap(_player, INTERACTION_DISTANCE))
+        if (!lootAllowed || !creature->IsWithinDistInMap(_player, LOOT_DISTANCE))
             return;
 
         loot = &creature->loot;
@@ -478,13 +490,13 @@ void WorldSession::HandleLootMasterAskForRoll(WorldPacket& recvData)
 
     if (!_player->GetGroup() || _player->GetGroup()->GetLooterGuid() != _player->GetGUID())
     {
-        _player->SendLootRelease(GetPlayer()->GetLootGUID());
+        _player->SendLootRelease(guid);
         return;
     }
 
     Loot* loot = NULL;
 
-    if (IS_CRE_OR_VEH_GUID(GetPlayer()->GetLootGUID()))
+    if (IS_CRE_OR_VEH_GUID(guid))
     {
         Creature* creature = GetPlayer()->GetMap()->GetCreature(guid);
         if (!creature)
@@ -492,7 +504,7 @@ void WorldSession::HandleLootMasterAskForRoll(WorldPacket& recvData)
 
         loot = &creature->loot;
     }
-    else if (IS_GAMEOBJECT_GUID(GetPlayer()->GetLootGUID()))
+    else if (IS_GAMEOBJECT_GUID(guid))
     {
         GameObject* pGO = GetPlayer()->GetMap()->GetGameObject(guid);
         if (!pGO)
@@ -527,8 +539,8 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
     target_playerguid[5] = recvData.ReadBit();
 
     uint32 count = recvData.ReadBits(25);
-    if (count > 40)
-        return;
+    //if (count > 40)
+        //return;
 
     std::vector<ObjectGuid> guids(count);
     std::vector<uint8> types(count);
@@ -570,7 +582,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
         uint8 slotid = types[i];
         Loot* loot = NULL;
 
-        if (IS_CRE_OR_VEH_GUID(GetPlayer()->GetLootGUID()))
+        if (IS_CRE_OR_VEH_GUID(lootguid))
         {
             Creature* creature = GetPlayer()->GetMap()->GetCreature(lootguid);
             if (!creature)
@@ -578,7 +590,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
 
             loot = &creature->loot;
         }
-        else if (IS_GAMEOBJECT_GUID(GetPlayer()->GetLootGUID()))
+        else if (IS_GAMEOBJECT_GUID(lootguid))
         {
             GameObject* pGO = GetPlayer()->GetMap()->GetGameObject(lootguid);
             if (!pGO)

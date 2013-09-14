@@ -306,11 +306,13 @@ struct Loot
     LootType loot_type;                                     // required for achievement system
 
     uint32 objEntry;
+    uint64 objGuid;
     uint8 objType;
     uint8 spawnMode;
     uint32 countItem;
+    uint8 pool;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0), pool(0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -384,9 +386,10 @@ struct LootView
     Player* viewer;
     PermissionTypes permission;
     uint8 _loot_type;
+    uint8 _pool;
     ObjectGuid _guid;
-    LootView(Loot &_loot, Player* _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION)
-        : loot(_loot), viewer(_viewer), _loot_type(loot_type), _guid(ObjectGuid(guid)), permission(_permission) {}
+    LootView(Loot &_loot, Player* _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION, uint8 pool = 0)
+        : loot(_loot), viewer(_viewer), _loot_type(loot_type), _guid(ObjectGuid(guid)), permission(_permission), _pool(pool) {}
 };
 
 extern LootStore LootTemplates_Creature;
