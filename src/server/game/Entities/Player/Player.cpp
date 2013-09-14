@@ -9641,9 +9641,10 @@ void Player::SendLootRelease(uint64 guid)
     SendDirectMessage(&data);
 }
 
-void Player::SendLoot(uint64 guid, LootType loot_type)
+void Player::SendLoot(uint64 guid, LootType loot_type, uint8 pool)
 {
-    if (uint64 lguid = GetLootGUID())
+    uint64 lguid = GetLootGUID();
+    if ((IS_CORPSE_GUID(guid) || IS_ITEM_GUID(guid) || IS_GAMEOBJECT_GUID(guid)) && lguid)
         m_session->DoLootRelease(lguid);
 
     Loot* loot = 0;
@@ -9652,7 +9653,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     sLog->outDebug(LOG_FILTER_LOOT, "Player::SendLoot");
     if (IS_GAMEOBJECT_GUID(guid))
     {
-        sLog->outDebug(LOG_FILTER_LOOT, "IS_GAMEOBJECT_GUID(guid)");
         GameObject* go = GetMap()->GetGameObject(guid);
 
         // not check distance for GO in case owned GO (fishing bobber case, for example)
@@ -9691,6 +9691,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     group->UpdateLooterGuid(go, true);
 
                 loot->objEntry = go->GetGOInfo()->entry;
+                loot->objGuid = go->GetGUID();
                 loot->objType = 3;
                 loot->countItem = 1;
                 loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode());
@@ -9785,6 +9786,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 default:
                     loot->generateMoneyLoot(item->GetTemplate()->MinMoneyLoot, item->GetTemplate()->MaxMoneyLoot);
                     loot->objEntry = item->GetEntry();
+                    loot->objGuid = item->GetGUID();
                     loot->objType = 2;
                     loot->countItem = item->GetCount();
                     loot->FillLoot(item->GetEntry(), LootTemplates_Item, this, true, loot->gold != 0);
@@ -9827,7 +9829,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         Creature* creature = GetMap()->GetCreature(guid);
 
         // must be in range and creature must be alive for pickpocket and must be dead for another loot
-        if (!creature || creature->isAlive() != (loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+        if (!creature || creature->isAlive() != (loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this, LOOT_DISTANCE))
         {
             SendLootRelease(guid);
             return;
@@ -9944,9 +9946,10 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
     // need know merged fishing/corpse loot type for achievements
     loot->loot_type = loot_type;
+    loot->pool = pool;
 
     WorldPacket data(SMSG_LOOT_RESPONSE);           // we guess size
-    data << LootView(*loot, this, loot_type, guid, permission);
+    data << LootView(*loot, this, loot_type, guid, permission, pool);
 
     SendDirectMessage(&data);
 
@@ -9958,14 +9961,18 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
 }
 
-void Player::SendNotifyLootMoneyRemoved(uint64 gold)
+void Player::SendNotifyLootMoneyRemoved(uint64 gold, uint64 lguid)
 {
     WorldPacket data(SMSG_LOOT_CLEAR_MONEY);
     data << uint64(gold);
     GetSession()->SendPacket(&data);
 
     data.Initialize(SMSG_COIN_REMOVED);
-    ObjectGuid guid = GetLootGUID();
+    ObjectGuid guid;
+    if(lguid)
+        guid = lguid;
+    else
+        guid = GetLootGUID();
 
     uint8 bitOrder[8] = {5, 4, 6, 3, 1, 0, 2, 7};
     data.WriteBitInOrder(guid, bitOrder);
@@ -9976,10 +9983,15 @@ void Player::SendNotifyLootMoneyRemoved(uint64 gold)
     GetSession()->SendPacket(&data);
 }
 
-void Player::SendNotifyLootItemRemoved(uint8 lootSlot)
+void Player::SendNotifyLootItemRemoved(uint8 lootSlot, uint64 lguid)
 {
     WorldPacket data(SMSG_LOOT_REMOVED);
-    ObjectGuid guid = GetLootGUID();
+    ObjectGuid guid;
+    if(lguid)
+        guid = lguid;
+    else
+        guid = GetLootGUID();
+
     data.WriteBit(guid[1]);
     data.WriteBit(guid[3]);
     data.WriteBit(guid[4]);
@@ -25914,7 +25926,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
             qitem->is_looted = true;
             //freeforall is 1 if everyone's supposed to get the quest item.
             if (item->freeforall || loot->GetPlayerQuestItems().size() == 1)
-                SendNotifyLootItemRemoved(lootSlot);
+                SendNotifyLootItemRemoved(lootSlot, loot->objGuid);
             else
                 loot->NotifyQuestItemRemoved(qitem->index);
         }
@@ -25924,7 +25936,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
             {
                 //freeforall case, notify only one player of the removal
                 ffaitem->is_looted = true;
-                SendNotifyLootItemRemoved(lootSlot);
+                SendNotifyLootItemRemoved(lootSlot, loot->objGuid);
             }
             else
             {

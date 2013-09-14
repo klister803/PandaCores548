@@ -591,7 +591,7 @@ void Loot::NotifyItemRemoved(uint8 lootIndex)
         i_next = i;
         ++i_next;
         if (Player* player = ObjectAccessor::FindPlayer(*i))
-            player->SendNotifyLootItemRemoved(lootIndex);
+            player->SendNotifyLootItemRemoved(lootIndex, objGuid);
         else
             PlayersLooting.erase(i);
     }
@@ -606,7 +606,7 @@ void Loot::NotifyMoneyRemoved(uint64 gold)
         i_next = i;
         ++i_next;
         if (Player* player = ObjectAccessor::FindPlayer(*i))
-            player->SendNotifyLootMoneyRemoved(gold);
+            player->SendNotifyLootMoneyRemoved(gold, objGuid);
         else
             PlayersLooting.erase(i);
     }
@@ -638,7 +638,7 @@ void Loot::NotifyQuestItemRemoved(uint8 questIndex)
                         break;
 
                 if (j < pql.size())
-                    player->SendNotifyLootItemRemoved(items.size()+j);
+                    player->SendNotifyLootItemRemoved(items.size()+j, objGuid);
             }
         }
         else
@@ -1047,7 +1047,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     bool hasUnk2 = true;
     bool hasUnk3 = true;
 
-    b.WriteBit(1); //unk
+    b.WriteBit(lv._pool); //AOE pool
     b.WriteBit(!hasUnk1); //unk
     b.WriteBit(lv._guid[4]);
 
