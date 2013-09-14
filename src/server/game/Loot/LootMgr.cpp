@@ -37,18 +37,18 @@ static Rates const qualityToRate[MAX_ITEM_QUALITY] =
     RATE_DROP_ITEM_ARTIFACT,                                // ITEM_QUALITY_ARTIFACT
 };
 
-LootStore LootTemplates_Creature("creature_loot_template",           "creature entry",                  true);
-LootStore LootTemplates_Disenchant("disenchant_loot_template",       "item disenchant id",              true);
-LootStore LootTemplates_Fishing("fishing_loot_template",             "area id",                         true);
-LootStore LootTemplates_Gameobject("gameobject_loot_template",       "gameobject entry",                true);
-LootStore LootTemplates_Item("item_loot_template",                   "item entry",                      true);
-LootStore LootTemplates_Mail("mail_loot_template",                   "mail template id",                false);
-LootStore LootTemplates_Milling("milling_loot_template",             "item entry (herb)",               true);
-LootStore LootTemplates_Pickpocketing("pickpocketing_loot_template", "creature pickpocket lootid",      true);
-LootStore LootTemplates_Prospecting("prospecting_loot_template",     "item entry (ore)",                true);
-LootStore LootTemplates_Reference("reference_loot_template",         "reference id",                    false);
-LootStore LootTemplates_Skinning("skinning_loot_template",           "creature skinning id",            true);
-LootStore LootTemplates_Spell("spell_loot_template",                 "spell id (random item creating)", false);
+LootStore LootTemplates_Creature("creature_loot_template",           "creature entry",                  true, ", difficulty");
+LootStore LootTemplates_Disenchant("disenchant_loot_template",       "item disenchant id",              true, "");
+LootStore LootTemplates_Fishing("fishing_loot_template",             "area id",                         true, "");
+LootStore LootTemplates_Gameobject("gameobject_loot_template",       "gameobject entry",                true, "");
+LootStore LootTemplates_Item("item_loot_template",                   "item entry",                      true, "");
+LootStore LootTemplates_Mail("mail_loot_template",                   "mail template id",                false, "");
+LootStore LootTemplates_Milling("milling_loot_template",             "item entry (herb)",               true, "");
+LootStore LootTemplates_Pickpocketing("pickpocketing_loot_template", "creature pickpocket lootid",      true, "");
+LootStore LootTemplates_Prospecting("prospecting_loot_template",     "item entry (ore)",                true, "");
+LootStore LootTemplates_Reference("reference_loot_template",         "reference id",                    false, "");
+LootStore LootTemplates_Skinning("skinning_loot_template",           "creature skinning id",            true, "");
+LootStore LootTemplates_Spell("spell_loot_template",                 "spell id (random item creating)", false, "");
 
 class LootTemplate::LootGroup                               // A set of loot definitions for items (refs are not allowed)
 {
@@ -58,6 +58,7 @@ class LootTemplate::LootGroup                               // A set of loot def
         bool HasQuestDropForPlayer(Player const* player) const;
                                                             // The same for active quests of the player
         void Process(Loot& loot, uint16 lootMode) const;    // Rolls an item from the group (if any) and adds the item to the loot
+        void ProcessInst(Loot& loot, uint16 lootMode) const;// Rolls an item from the inst group (if any) and adds the item to the loot
         float RawTotalChance() const;                       // Overall chance for the group (without equal chanced items)
         float TotalChance() const;                          // Overall chance for the group
 
@@ -99,8 +100,8 @@ uint32 LootStore::LoadLootTable()
     // Clearing store (for reloading case)
     Clear();
 
-    //                                                  0     1            2               3         4         5             6
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, lootmode, groupid, mincountOrRef, maxcount FROM %s", GetName());
+    //                                                  0     1            2               3         4         5             6     7
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, lootmode, groupid, mincountOrRef, maxcount%s FROM %s", GetAddFields().c_str(), GetName());
 
     if (!result)
         return 0;
@@ -118,6 +119,9 @@ uint32 LootStore::LoadLootTable()
         uint8  group               = fields[4].GetUInt8();
         int32  mincountOrRef       = fields[5].GetInt32();
         int32  maxcount            = fields[6].GetUInt8();
+        uint8 difficulty = 0;
+        if (GetAddFields() != "")
+            difficulty = fields[7].GetUInt8();
 
         if (maxcount > std::numeric_limits<uint8>::max())
         {
@@ -125,7 +129,7 @@ uint32 LootStore::LoadLootTable()
             continue;                                   // error already printed to log/console.
         }
 
-        LootStoreItem storeitem = LootStoreItem(item, chanceOrQuestChance, lootmode, group, mincountOrRef, maxcount);
+        LootStoreItem storeitem = LootStoreItem(item, chanceOrQuestChance, lootmode, group, mincountOrRef, maxcount, difficulty);
 
         if (!storeitem.IsValid(*this, entry))            // Validity checks
             continue;
@@ -278,7 +282,7 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
             return false;
         }
 
-        if (chance == 0 && group == 0)                      // Zero chance is allowed for grouped entries only
+        if (chance == 0 && group == 0 && difficulty == 0)                      // Zero chance is allowed for grouped entries only
         {
             sLog->outError(LOG_FILTER_SQL, "Table '%s' entry %d item %d: equal-chanced grouped entry, but group not defined - skipped", store.GetName(), entry, itemid);
             return false;
@@ -408,7 +412,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
 
     if (!tab)
     {
-        FillNotNormalLootFor(lootOwner, true);
+        if(objType == 2)
+            FillNotNormalLootFor(lootOwner, true);
 
         if (!noEmptyError)
             sLog->outError(LOG_FILTER_SQL, "Table '%s' loot id #%u used but it doesn't have records.", store.GetName(), lootId);
@@ -1266,6 +1271,73 @@ void LootTemplate::LootGroup::Process(Loot& loot, uint16 lootMode) const
     }
 }
 
+// Rolls an item from the group (if any takes its chance) and adds the item to the loot
+void LootTemplate::LootGroup::ProcessInst(Loot& loot, uint16 lootMode) const
+{
+    // build up list of possible drops
+    LootStoreItemList EqualPossibleDrops = EqualChanced;
+
+    uint8 uiAttemptCount = 0;
+    uint8 uiCountAdd = 0;
+    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
+    uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode, EqualChanced.size());
+    const uint8 uiMaxAttempts = EqualChanced.size();
+
+    while (!EqualPossibleDrops.empty())
+    {
+        if (uiAttemptCount == uiMaxAttempts)             // already tried rolling too many times, just abort
+            return;
+
+        LootStoreItem* item = NULL;
+
+        // begin rolling (normally called via Roll())
+        LootStoreItemList::iterator itr;
+
+        if (!EqualPossibleDrops.empty()) // If nothing selected yet - an item is taken from equal-chanced part
+        {
+            itr = EqualPossibleDrops.begin();
+            std::advance(itr, irand(0, EqualPossibleDrops.size()-1));
+            item = &*itr;
+        }
+        // finish rolling
+
+        ++uiAttemptCount;
+
+        if (item != NULL)   // only add this item if roll succeeds and the mode matches
+        {
+            if (item->difficulty > 0 && !(item->difficulty & diffMask))                          // Do not add if instance mode mismatch
+            {
+                EqualPossibleDrops.erase(itr);
+                continue;
+            }
+
+            bool duplicate = false;
+            if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
+            {
+                uint8 _item_counter = 0;
+                for (LootItemList::const_iterator _item = loot.items.begin(); _item != loot.items.end(); ++_item)
+                    if (_item->itemid == item->itemid)                             // search through the items that have already dropped
+                    {
+                        ++_item_counter;
+                        if (_proto->InventoryType == 0 && _item_counter == 3)      // Non-equippable items are limited to 3 drops
+                            duplicate = true;
+                        else if (_proto->InventoryType != 0 && _item_counter == 1) // Equippable item are limited to 1 drop
+                            duplicate = true;
+                    }
+            }
+            if (duplicate) // if item->itemid is a duplicate, remove it
+                EqualPossibleDrops.erase(itr);
+            else           // otherwise, add the item and exit the function
+            {
+                loot.AddItem(*item);
+                uiCountAdd++;
+                if(uiDropCount <= uiCountAdd)
+                    return;
+            }
+        }
+    }
+}
+
 // Overall chance for the group without equal chanced items
 float LootTemplate::LootGroup::RawTotalChance() const
 {
@@ -1341,6 +1413,13 @@ void LootTemplate::AddEntry(LootStoreItem& item)
             Groups.resize(item.group);                      // Adds new group the the loot template if needed
         Groups[item.group-1].AddEntry(item);                // Adds new entry to the group
     }
+    else if (item.group == 0 && item.mincountOrRef > 0 && item.difficulty > 0)           // Extra Group for auto loot
+    {
+        uint32 group = 1;
+        if (group >= ExtraGroups.size())
+            ExtraGroups.resize(group);                      // Adds new group the the loot template if needed
+        ExtraGroups[group-1].AddEntry(item);                // Adds new entry to the group
+    }
     else                                                    // Non-grouped entries and references are stored together
         Entries.push_back(item);
 }
@@ -1366,10 +1445,14 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         return;
     }
 
+    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
     // Rolling non-grouped items
     for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
     {
         if (i->lootmode &~ lootMode)                          // Do not add if mode mismatch
+            continue;
+
+        if (i->difficulty > 0 && !(i->difficulty & diffMask))                          // Do not add if instance mode mismatch
             continue;
 
         if (!i->Roll(rate))
@@ -1406,6 +1489,10 @@ void LootTemplate::Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId
         else                                                  // Plain entries (not a reference, not grouped)
             loot.AddItem(*i);                                 // Chance is already checked, just add
     }
+
+    // Now processing groups
+    for (LootGroups::const_iterator i = ExtraGroups.begin(); i != ExtraGroups.end(); ++i)
+        i->ProcessInst(loot, lootMode);
 
     // Now processing groups
     for (LootGroups::const_iterator i = Groups.begin(); i != Groups.end(); ++i)

@@ -120,6 +120,9 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
 
     Object* object = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT|TYPEMASK_ITEM|TYPEMASK_PLAYER);
 
+    if (!object || object == _player)
+        return;
+
     // no or incorrect quest giver
     if (!object || (object->GetTypeId() != TYPEID_PLAYER && !object->hasQuest(questId)) ||
         (object->GetTypeId() == TYPEID_PLAYER && object != _player && !object->ToPlayer()->CanShareQuest(questId)))
@@ -152,8 +155,19 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
         if (_player->GetDivider() != 0)
         {
             Player* player = ObjectAccessor::FindPlayer(_player->GetDivider());
+            if (!player)
+            {
+                _player->SetDivider(0);
+                return;
+            }
             if (player)
             {
+                if (!player->CanShareQuest(questId))
+                {
+                    player->SendPushToPartyResponse(_player, QUEST_PARTY_MSG_CANT_TAKE_QUEST);
+                    _player->SetDivider(0);
+                    return;
+                }
                 player->SendPushToPartyResponse(_player, QUEST_PARTY_MSG_ACCEPT_QUEST);
                 _player->SetDivider(0);
             }
@@ -257,7 +271,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
         // not sure here what should happen to quests with QUEST_FLAGS_AUTOCOMPLETE
         // if this breaks them, add && object->GetTypeId() == TYPEID_ITEM to this check
         // item-started quests never have that flag
-        if (_player->GetQuestStatus(questId) == QUEST_STATUS_NONE && !_player->CanTakeQuest(quest, true))
+        if (!_player->CanTakeQuest(quest, true))
             return;
 
         if ( _player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
@@ -266,7 +280,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
             _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, object->GetGUID(), _player->CanCompleteQuest(quest->GetQuestId()), true);
         else
         {
-            if (quest->IsAutoAccept())
+            if (quest->IsAutoAccept() && _player->CanAddQuest(quest, true))
             {
                 if (Creature* pQuestGiver = ObjectAccessor::GetCreature(*_player, guid))
                     if (pQuestGiver->IsAIEnabled)

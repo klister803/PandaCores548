@@ -63,17 +63,17 @@ class boss_taran_zhu : public CreatureScript
             void Reset()
             {
                 _Reset();
-                
+                summons.DespawnAll();
+            }
+
+            void EnterCombat(Unit*who)
+            {
+                if (instance)
+                    instance->SetBossState(DATA_TARAN_ZHU, IN_PROGRESS);
                 events.ScheduleEvent(EVENT_RISING_HATE,             urand(25000, 35000));
                 events.ScheduleEvent(EVENT_RING_OF_MALICE,          urand(7500,  12500));
                 events.ScheduleEvent(EVENT_SHA_BLAST,               urand(2500,  5000));
                 events.ScheduleEvent(EVENT_SUMMON_GRIPPING_HATRED,  urand(10000, 15000));
-            }
-
-            void JustReachedHome()
-            {
-                pInstance->SetBossState(DATA_TARAN_ZHU, FAIL);
-                summons.DespawnAll();
             }
 
             void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
@@ -89,6 +89,8 @@ class boss_taran_zhu : public CreatureScript
             {
                 if (damage >= me->GetHealth())
                 {
+                    if (instance)
+                        instance->SetBossState(DATA_TARAN_ZHU, DONE);
                     me->setFaction(35);
                     me->SetFullHealth();
                     me->RemoveAurasDueToSpell(SPELL_CORRUPTED);
@@ -98,6 +100,9 @@ class boss_taran_zhu : public CreatureScript
             void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);

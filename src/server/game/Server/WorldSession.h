@@ -416,8 +416,6 @@ class WorldSession
         uint32 GetRecruiterId() const { return recruiterId; }
         bool IsARecruiter() const { return isRecruiter; }
 
-        z_stream_s* GetCompressionStream() { return _compressionStream; }
-
     public:                                                 // opcodes handlers
 
         void Handle_NULL(WorldPacket& recvPacket);          // not used
@@ -792,7 +790,7 @@ class WorldSession
         //Pet
         void HandlePetAction(WorldPacket& recvData);
         void HandlePetStopAttack(WorldPacket& recvData);
-        void HandlePetActionHelper(Unit* pet, uint64 guid1, uint16 spellid, uint16 flag, uint64 guid2, float x, float y, float z);
+        void HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid, uint16 flag, uint64 guid2, float x, float y, float z);
         void HandlePetNameQuery(WorldPacket& recvData);
         void HandlePetSetAction(WorldPacket& recvData);
         void HandlePetAbandon(WorldPacket& recvData);
@@ -1093,8 +1091,8 @@ class WorldSession
         time_t timeLastChannelUnmuteCommand;
         time_t timeLastChannelKickCommand;
         time_t timeLastHandleSendMail;
+        time_t timeLastHandleSellItem;
         uint8 playerLoginCounter;
-        z_stream_s* _compressionStream;
 };
 #endif
 /// @}

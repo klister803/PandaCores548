@@ -31,7 +31,7 @@ enum Opcodes
     NUM_OPCODE_HANDLERS                               = (0x7FFF+1),
     UNKNOWN_OPCODE                                    = (0xFFFF+1),
     NULL_OPCODE                                       = 0,
-    COMPRESSED_OPCODE_MASK                            = 0x8000,
+    SMSG_COMPRESSED_OPCODE                            = 0x467,  // 5.0.5 16048
 
     CMSG_ACCEPT_LEVEL_GRANT                           = 0x902,  // 5.0.5 16048
     CMSG_ACCEPT_TRADE                                 = 0x194,  // 5.0.5 16048
@@ -681,6 +681,29 @@ enum Opcodes
     SMSG_AVAILABLE_VOICE_CHANNEL                      = 0x941,  // 5.0.5 16048
     SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,  // 5.0.5 16048
     SMSG_BARBER_SHOP_RESULT                           = 0x835,  // 5.0.5 16048
+    SMSG_BATTLE_PET_BATTLE_FINISHED                   = 0xBC8,  // 5.0.5 16048
+    SMSG_BATTLE_PET_CHAT_RESTRICTED                   = 0xB68,  // 5.0.5 16048
+    SMSG_BATTLE_PET_DELETED                           = 0xF49,  // 5.0.5 16048
+    SMSG_BATTLE_PET_ERROR                             = 0xBA0,  // 5.0.5 16048
+    SMSG_BATTLE_PET_FINALIZE_LOCATION                 = 0xB81,  // 5.0.5 16048
+    SMSG_BATTLE_PET_FINAL_ROUND                       = 0xFA9,  // 5.0.5 16048
+    SMSG_BATTLE_PET_FIRST_ROUND                       = 0xF31,  // 5.0.5 16048
+    SMSG_BATTLE_PET_FULL_UPDATE                       = 0xB08,  // 5.0.5 16048
+    SMSG_BATTLE_PET_HEALED                            = 0xADC,  // 5.0.5 16048
+    SMSG_BATTLE_PET_JOURNAL                           = 0xB2E,  // 5.0.5 16048
+    SMSG_BATTLE_PET_JOURNAL_LOCK_ACQUIRED             = 0xE1E,  // 5.0.5 16048
+    SMSG_BATTLE_PET_JOURNAL_LOCK_DENIED               = 0xFE6,  // 5.0.5 16048
+    SMSG_BATTLE_PET_LICENSE_CHANGED                   = 0xFC4,  // 5.0.5 16048
+    SMSG_BATTLE_PET_MAX_GAME_LENGTH_WARNING           = 0xB13,  // 5.0.5 16048
+    SMSG_BATTLE_PET_PVP_CHALLENGE                     = 0xE65,  // 5.0.5 16048
+    SMSG_BATTLE_PET_QUEUE_PROPOSE_MATCH               = 0xE58,  // 5.0.5 16048
+    SMSG_BATTLE_PET_QUEUE_STATUS                      = 0xB51,  // 5.0.5 16048
+    SMSG_BATTLE_PET_REPLACEMENTS_MADE                 = 0xE89,  // 5.0.5 16048
+    SMSG_BATTLE_PET_REQUEST_FAILED                    = 0xB04,  // 5.0.5 16048
+    SMSG_BATTLE_PET_ROUND_RESULT                      = 0xB0A,  // 5.0.5 16048
+    SMSG_BATTLE_PET_SLOT_UPDATE                       = 0xF16,  // 5.0.5 16048
+    SMSG_BATTLE_PET_TRAP_LEVEL                        = 0xAE1,  // 5.0.5 16048
+    SMSG_BATTLE_PET_UPDATES                           = 0xF1E,  // 5.0.5 16048
     SMSG_BATTLEFIELD_LIST                             = 0xFE5,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_EJECTED                      = 0xA89,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_EJECT_PENDING                = 0xB36,  // 5.0.5 16048
@@ -703,7 +726,6 @@ enum Opcodes
     SMSG_BATTLEGROUND_PLAYER_JOINED                   = 0xAB5,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0xAD3,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0x000,  // 5.0.5 16048 Deprecated
-    SMSG_BATTLEPET_JOURNAL                            = 0xB2E,  // 5.0.5 16048
     SMSG_BINDER_CONFIRM                               = 0x8CC,  // 5.0.5 16048
     SMSG_BINDPOINTUPDATE                              = 0xC0B,  // 5.0.5 16048
     SMSG_BINDZONEREPLY                                = 0x000,  // Not found in 4.3.4
@@ -933,7 +955,6 @@ enum Opcodes
     SMSG_HOTFIX_INFO                                  = 0xF86,  // 5.0.5 16048
     SMSG_HOTFIX_NOTIFY                                = 0xEE0,  // 5.0.5 16048
     SMSG_INITIALIZE_FACTIONS                          = 0x824,  // 5.0.5 16048
-    SMSG_INITIAL_SPELLS                               = 0x000,  // 5.0.5 16048 Deprecated    
     SMSG_INIT_CURRENCY                                = 0xAE5,  // 5.0.5 16048
     SMSG_INIT_WORLD_STATES                            = 0x919,  // 5.0.5 16048
     SMSG_INSPECT                                      = 0,      // Not found in 4.3.4
@@ -1413,11 +1434,7 @@ inline std::string GetOpcodeNameForLogging(Opcodes id)
     if (id < UNKNOWN_OPCODE)
     {
         if (OpcodeHandler* handler = opcodeTable[uint32(id) & 0x7FFF])
-        {
             ss << handler->name;
-            if (opcode & COMPRESSED_OPCODE_MASK)
-                ss << "_COMPRESSED";
-        }
         else
             ss << "UNKNOWN OPCODE";
     }

@@ -1410,6 +1410,24 @@ namespace Trinity
             float m_fRange;
     };
 
+    class SearchCorpseCreatureCheck
+    {
+        public:
+            SearchCorpseCreatureCheck(const WorldObject* object, float range) : m_pObject(object), i_range(range) {}
+            bool operator()(Creature* u)
+            {
+                if (u->getDeathState() != CORPSE || u->isInFlight() ||
+                    (u->GetDisplayId() != u->GetNativeDisplayId()) ||
+                    (u->GetCreatureTypeMask() & CREATURE_TYPEMASK_MECHANICAL_OR_ELEMENTAL) != 0)
+                    return false;
+
+                return m_pObject->IsWithinDistInMap(u, i_range);
+            }
+        private:
+            const WorldObject* m_pObject;
+            float i_range;
+    };
+
     class PlayerAtMinimumRangeAway
     {
     public:

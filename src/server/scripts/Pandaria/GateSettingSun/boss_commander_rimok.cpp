@@ -59,24 +59,14 @@ class boss_commander_rimok : public CreatureScript
             void Reset()
             {
                 _Reset();
-
-                events.ScheduleEvent(EVENT_FRENZIED_ASSAULT, urand(5000, 10000));
-                events.ScheduleEvent(EVENT_VISCOUS_FLUID,    urand(10000, 15000));
             }
 
             void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
+                events.ScheduleEvent(EVENT_FRENZIED_ASSAULT, urand(5000, 10000));
+                events.ScheduleEvent(EVENT_VISCOUS_FLUID,    urand(10000, 15000));
             }
-
-            void JustReachedHome()
-            {
-                instance->SetBossState(DATA_RIMOK, FAIL);
-                summons.DespawnAll();
-            }
-
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {}
 
             void JustSummoned(Creature* summoned)
             {
@@ -98,11 +88,12 @@ class boss_commander_rimok : public CreatureScript
                     case EVENT_FRENZIED_ASSAULT:
                         if (me->getVictim())
                             me->CastSpell(me->getVictim(), SPELL_FRENZIED_ASSAULT, false);
-
                         events.ScheduleEvent(EVENT_FRENZIED_ASSAULT, urand(10000, 15000));
                         break;
                     case EVENT_VISCOUS_FLUID:
-                        me->CastSpell(me, 107077, true);
+                        Position pos;
+                        me->GetPosition(&pos);
+                        me->SummonCreature(56883, pos, TEMPSUMMON_TIMED_DESPAWN, 30000);
                         events.ScheduleEvent(EVENT_VISCOUS_FLUID, urand(5000, 10000));
                         break;
                 }
@@ -285,37 +276,25 @@ class npc_viscous_fluid : public CreatureScript
             npc_viscous_fluidAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+                me->SetDisplayId(11686);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             }
 
             InstanceScript* pInstance;
-            uint32 checkTimer;
 
             void Reset()
             {
-                me->SetReactState(REACT_PASSIVE);
-                checkTimer = 1000;
+                DoCast(me, 107092); //Dummy
+                DoCast(me, 107088); 
             }
 
-            void UpdateAI(const uint32 diff)
-            {
-                if (checkTimer <= diff)
-                {
-                    if (Player* player = me->SelectNearestPlayer())
-                    {
-                        if (me->GetDistance(player) < 5.0f)
-                        {
-                            if (Creature* rimok = pInstance->instance->GetCreature(pInstance->GetData64(NPC_RIMOK)))
-                            {
-                                me->AddAura(SPELL_VISCOUS_FLUID_DMG_UP, rimok);
-                                me->AddAura(SPELL_VISCOUS_FLUID_DMG_DOWN, player);
-                            }
-                        }
-                    }
+            void EnterCombat(Unit* who){}
 
-                    checkTimer = 1000;
-                }
-                else checkTimer -= diff;
-            }
+            void EnterEvadeMode(){}
+
+            void UpdateAI(const uint32 diff){}
+            
         };
 
         CreatureAI* GetAI(Creature* creature) const

@@ -102,7 +102,10 @@ void WorldSession::HandleChannelPassword(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelPassCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
         timeLastChannelPassCommand = now;
 
@@ -122,7 +125,10 @@ void WorldSession::HandleChannelSetOwner(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelSetownerCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelSetownerCommand = now;
 
@@ -146,7 +152,10 @@ void WorldSession::HandleChannelOwner(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelOwnerCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelOwnerCommand = now;
 
@@ -163,7 +172,10 @@ void WorldSession::HandleChannelModerator(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelModerCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelModerCommand = now;
 
@@ -187,7 +199,10 @@ void WorldSession::HandleChannelUnmoderator(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelUnmoderCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelUnmoderCommand = now;
 
@@ -211,7 +226,10 @@ void WorldSession::HandleChannelMute(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelMuteCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
         timeLastChannelMuteCommand = now;
 
@@ -234,7 +252,10 @@ void WorldSession::HandleChannelUnmute(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelUnmuteCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelUnmuteCommand = now;
 
@@ -258,7 +279,10 @@ void WorldSession::HandleChannelInvite(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelInviteCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelInviteCommand = now;
 
@@ -290,7 +314,10 @@ void WorldSession::HandleChannelKick(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelKickCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelKickCommand = now;
 
@@ -313,7 +340,10 @@ void WorldSession::HandleChannelBan(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelBanCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelBanCommand = now;
 
@@ -339,7 +369,10 @@ void WorldSession::HandleChannelUnban(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelUnbanCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelUnbanCommand = now;
 
@@ -363,7 +396,10 @@ void WorldSession::HandleChannelAnnouncements(WorldPacket& recvPacket)
 {
     time_t now = time(NULL);
     if (now - timeLastChannelAnnounceCommand < 5)
+    {
+        recvPacket.rfinish();
         return;
+    }
     else
        timeLastChannelAnnounceCommand = now;
 

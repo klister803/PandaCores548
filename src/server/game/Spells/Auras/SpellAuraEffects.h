@@ -49,9 +49,9 @@ class AuraEffect
         int32 GetBaseAmount() const { return m_baseAmount; }
         int32 GetAmplitude() const { return m_amplitude; }
 
-        int32 GetMiscValueB() const { return m_spellInfo->Effects[m_effIndex].MiscValueB; }
-        int32 GetMiscValue() const { return m_spellInfo->Effects[m_effIndex].MiscValue; }
-        AuraType GetAuraType() const { return (AuraType)m_spellInfo->Effects[m_effIndex].ApplyAuraName; }
+        int32 GetMiscValueB() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).MiscValueB; }
+        int32 GetMiscValue() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).MiscValue; }
+        AuraType GetAuraType() const { return (AuraType)m_spellInfo->GetEffect(m_effIndex, m_diffMode).ApplyAuraName; }
         int32 GetAmount() const { return m_amount; }
         void SetAmount(int32 amount) { m_amount = amount; m_canBeRecalculated = false;}
 
@@ -80,7 +80,7 @@ class AuraEffect
         bool IsPeriodic() const { return m_isPeriodic; }
         void SetPeriodic(bool isPeriodic) { m_isPeriodic = isPeriodic; }
         bool IsAffectingSpell(SpellInfo const* spell) const;
-        bool HasSpellClassMask() const { return m_spellInfo->Effects[m_effIndex].SpellClassMask; }
+        bool HasSpellClassMask() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).SpellClassMask; }
 
         void SendTickImmune(Unit* target, Unit* caster) const;
         void PeriodicTick(AuraApplication * aurApp, Unit* caster) const;
@@ -108,6 +108,7 @@ class AuraEffect
         uint8 const m_effIndex;
         bool m_canBeRecalculated;
         bool m_isPeriodic;
+        uint8 m_diffMode;
     private:
         bool IsPeriodicTickCrit(Unit* target, Unit const* caster) const;
 

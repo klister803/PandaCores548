@@ -336,7 +336,7 @@ public:
         void SetData(uint32 type, uint32 data)
         {
             SetData_lorewalker_stonestep(type, data);
-            SetData_liu_flameheart(type, data);
+            //SetData_liu_flameheart(type, data);
             SetData_sha_of_doubt(type, data);
         }
 
@@ -504,6 +504,7 @@ public:
                 break;
             }
         }
+
         void OnUnitDeath_liu_flameheat(Unit* unit)
         {
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_MINION_OF_DOUBTS)
@@ -517,6 +518,7 @@ public:
                         unit->SummonCreature(CREATURE_LIU_FLAMEHEART, 929.787f, -2561.016f, 180.070f + 5);
                 }
             }
+
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_YU_LON)
             {
                 Creature* creature = instance->GetCreature(liuGuid);
@@ -528,42 +530,16 @@ public:
                 creature->RemoveAura(SPELL_POSSESSED_BY_SHA);
                 creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-                if (creature->GetAI())
-                    creature->GetAI()->DoAction(0);
+                if (Creature* liu = instance->GetCreature(liuGuid))
+                    liu->Kill(liu, true);               
 
                 //Open the door!
-                GameObject* go = instance->GetGameObject(doorLiu);
-                if (go != NULL)
+                if (GameObject* go = instance->GetGameObject(doorLiu))
                     go->SetGoState(GO_STATE_ACTIVE);
-                go = instance->GetGameObject(doorLiu_2);
-                if (go != NULL)
-                    go->SetGoState(GO_STATE_ACTIVE);
-            }
-        }
-        void SetData_liu_flameheart(uint32 type, uint32 data)
-        {
-            switch (type)
-            {
-            case TYPE_IS_WIPE:
-                if (data == 1)
-                    IsWipe_liu_flameheart();
-                break;
-            }
-        }
-        void IsWipe_liu_flameheart()
-        {
-            Creature* liu = instance->GetCreature(liuGuid);
-            if (liu)
-                liu->ForcedDespawn();
 
-            for (std::list<uint64>::const_iterator guid = mobs_liu.begin(); guid != mobs_liu.end(); ++guid)
-            {
-                Creature* crea = instance->GetCreature(*guid);
-                if (crea == NULL)
-                    continue;
-                crea->Respawn();
+                if (GameObject* go2 = instance->GetGameObject(doorLiu_2))
+                    go2->SetGoState(GO_STATE_ACTIVE);
             }
-            countMinionDeads = 0;
         }
 
         void SetData_lorewalker_stonestep(uint32 type, uint32 data)

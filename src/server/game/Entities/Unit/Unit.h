@@ -1482,6 +1482,7 @@ class Unit : public WorldObject
         bool IsSitState() const;
         bool IsStandState() const;
         void SetStandState(uint8 state);
+        uint8 GetSpawnMode() const { return m_diffMode; }
 
         void  SetStandFlags(uint8 flags) { SetByteFlag(UNIT_FIELD_BYTES_1, 2, flags); }
         void  RemoveStandFlags(uint8 flags) { RemoveByteFlag(UNIT_FIELD_BYTES_1, 2, flags); }
@@ -2386,6 +2387,7 @@ class Unit : public WorldObject
         // Zone Skip Update
         uint32 _skipCount;
         uint32 _skipDiff;
+        uint8 m_diffMode;
 
         bool m_IsInKillingProcess;
 

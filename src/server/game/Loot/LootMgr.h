@@ -111,13 +111,14 @@ struct LootStoreItem
     uint8   group       :7;
     bool    needs_quest :1;                                 // quest drop (negative ChanceOrQuestChance in DB)
     uint8   maxcount    :8;                                 // max drop count for the item (mincountOrRef positive) or Ref multiplicator (mincountOrRef negative)
+    uint16  difficulty;                                     // instance difficulty mask
     std::list<Condition*>  conditions;                               // additional loot condition
 
     // Constructor, converting ChanceOrQuestChance -> (chance, needs_quest)
     // displayid is filled in IsValid() which must be called after
-    LootStoreItem(uint32 _itemid, float _chanceOrQuestChance, uint16 _lootmode, uint8 _group, int32 _mincountOrRef, uint8 _maxcount)
+    LootStoreItem(uint32 _itemid, float _chanceOrQuestChance, uint16 _lootmode, uint8 _group, int32 _mincountOrRef, uint8 _maxcount, uint8 _difficulty)
         : itemid(_itemid), chance(fabs(_chanceOrQuestChance)), mincountOrRef(_mincountOrRef), lootmode(_lootmode),
-        group(_group), needs_quest(_chanceOrQuestChance < 0), maxcount(_maxcount)
+        group(_group), needs_quest(_chanceOrQuestChance < 0), maxcount(_maxcount), difficulty(_difficulty)
          {}
 
     bool Roll(bool rate) const;                             // Checks if the entry takes it's chance (at loot generation)
@@ -193,8 +194,8 @@ typedef std::set<uint32> LootIdSet;
 class LootStore
 {
     public:
-        explicit LootStore(char const* name, char const* entryName, bool ratesAllowed)
-            : m_name(name), m_entryName(entryName), m_ratesAllowed(ratesAllowed) {}
+        explicit LootStore(char const* name, char const* entryName, bool ratesAllowed, std::string addfields)
+            : m_name(name), m_entryName(entryName), m_ratesAllowed(ratesAllowed), m_addfields(addfields) {}
 
         virtual ~LootStore() { Clear(); }
 
@@ -216,6 +217,7 @@ class LootStore
         char const* GetName() const { return m_name; }
         char const* GetEntryName() const { return m_entryName; }
         bool IsRatesAllowed() const { return m_ratesAllowed; }
+        std::string GetAddFields() const { return m_addfields; }
     protected:
         uint32 LoadLootTable();
         void Clear();
@@ -224,6 +226,7 @@ class LootStore
         char const* m_name;
         char const* m_entryName;
         bool m_ratesAllowed;
+        std::string m_addfields;
 };
 
 class LootTemplate
@@ -252,6 +255,7 @@ class LootTemplate
     private:
         LootStoreItemList Entries;                          // not grouped only
         LootGroups        Groups;                           // groups have own (optimised) processing, grouped entries go there
+        LootGroups        ExtraGroups;                      // auto groups have own (optimised) processing, grouped entries go there
 };
 
 //=====================================================
@@ -303,9 +307,10 @@ struct Loot
 
     uint32 objEntry;
     uint8 objType;
+    uint8 spawnMode;
     uint32 countItem;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener

@@ -59,16 +59,16 @@ class boss_sha_of_violence : public CreatureScript
             {
                 _Reset();
                 enrageDone = false;
-                
+                summons.DespawnAll();
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                if (instance)
+                    instance->SetBossState(DATA_SHA_VIOLENCE, IN_PROGRESS);
                 events.ScheduleEvent(EVENT_SMOKE_BLADES,        urand(25000, 35000));
                 events.ScheduleEvent(EVENT_SHA_SPIKE,           urand(10000, 20000));
                 events.ScheduleEvent(EVENT_DISORIENTING_SMASH,  urand(20000, 30000));
-            }
-
-            void JustReachedHome()
-            {
-                pInstance->SetBossState(DATA_SHA_VIOLENCE, FAIL);
-                summons.DespawnAll();
             }
 
             void JustSummoned(Creature* summon)
@@ -80,7 +80,16 @@ class boss_sha_of_violence : public CreatureScript
             void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (!enrageDone && me->HealthBelowPctDamaged(20, damage))
+                {
                     me->CastSpell(me, SPELL_ENRAGE, true);
+                    enrageDone = true;
+                }
+            }
+
+            void JustDied(Unit* killer)
+            {
+                summons.DespawnAll();
+                _JustDied();
             }
 
             void UpdateAI(const uint32 diff)
@@ -99,13 +108,11 @@ class boss_sha_of_violence : public CreatureScript
                     case EVENT_SHA_SPIKE:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
                             me->CastSpell(target, SPELL_SHA_SPIKE, false);
-                        
                         events.ScheduleEvent(EVENT_SHA_SPIKE,           urand(10000, 20000));
                         break;
                     case EVENT_DISORIENTING_SMASH:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
                             me->CastSpell(target, SPELL_DISORIENTING_SMASH, false);
-                        
                         events.ScheduleEvent(EVENT_DISORIENTING_SMASH,  urand(20000, 30000));
                         break;
                     default:

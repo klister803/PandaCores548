@@ -83,23 +83,14 @@ class boss_gu_cloudstrike : public CreatureScript
             }
 
             InstanceScript* pInstance;
-            bool introDone;
-
             uint8 phase;
 
             void Reset()
             {
                 _Reset();
+                phase = 1;
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveAurasDueToSpell(SPELL_CHARGING_SOUL);
-                introDone = false;
-
-                if (Creature* azureSerpent = GetAzureSerpent())
-                    if (azureSerpent->AI())
-                        azureSerpent->AI()->DoAction(ACTION_AZURE_SERPENT_RESET);
-
-                phase = 1;
-                //events.ScheduleEvent(EVENT_INVOKE_LIGHTNING, urand(5000, 10000), PHASE_ONE);
             }
 
             Creature* GetAzureSerpent()
@@ -107,44 +98,34 @@ class boss_gu_cloudstrike : public CreatureScript
                 return pInstance->instance->GetCreature(pInstance->GetData64(NPC_AZURE_SERPENT));
             }
 
-            void JustReachedHome()
-            {
-                pInstance->SetBossState(DATA_GU_CLOUDSTRIKE, FAIL);
-                summons.DespawnAll();
-            }
-
-           /* void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (phase == 1 && me->HealthBelowPctDamaged(50, damage))
                 {
                     phase = 2;
                     events.CancelEventGroup(PHASE_ONE);
-
                     events.ScheduleEvent(EVENT_OVERCHARGED_SOUL, 2500, PHASE_TWO);
-                    
-                    me->SetReactState(REACT_PASSIVE);
                     me->CastSpell(me, SPELL_CHARGING_SOUL, false);
-
                     if (Creature* azureSerpent = GetAzureSerpent())
-                        if (azureSerpent->AI())
+                        if (azureSerpent && azureSerpent->isAlive())
                             azureSerpent->AI()->DoAction(ACTION_AZURE_SERPENT_P_2);
                 }
             }
 
+            void JustDied(Unit* killer)
+            {
+                _JustDied();
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_SHROUD);
+            }
+
             void DoAction(const int32 action)
             {
-                if (action == ACTION_INTRO)
+                if (action == ACTION_GU_P_3)
                 {
-                    // Say machin
-                    me->CastSpell(me, SPELL_KILL_GUARDIANS);                    
-                }
-                else if (action == ACTION_GU_P_3)
-                {
-                    me->SetReactState(REACT_AGGRESSIVE);
                     me->CastSpell(me, SPELL_OVERCHARGED_SOUL, true);
                     me->RemoveAurasDueToSpell(SPELL_CHARGING_SOUL);
                 }
-            }*/
+            }
 
             void JustSummoned(Creature* summoned)
             {
@@ -154,14 +135,19 @@ class boss_gu_cloudstrike : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 events.ScheduleEvent(EVENT_INVOKE_LIGHTNING, urand(5000, 10000));
-                /*if (Creature* azureSerpent = GetAzureSerpent())
-                    if (azureSerpent->AI())
-                        azureSerpent->AI()->DoAction(ACTION_AZURE_SERPENT_P_1);*/
+                if (Creature* azureSerpent = me->SummonCreature(56754, 3726.13f, 2677.06f, 773.01f, 0, TEMPSUMMON_CORPSE_DESPAWN))
+                {
+                    azureSerpent->SetInCombatWithZone();
+                    azureSerpent->SetFacingTo(3.625f);
+                }
             }
 
             void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -171,13 +157,12 @@ class boss_gu_cloudstrike : public CreatureScript
                     case EVENT_INVOKE_LIGHTNING:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
                             me->CastSpell(target, SPELL_INVOKE_LIGHTNING, false);
-
                         events.ScheduleEvent(EVENT_INVOKE_LIGHTNING, urand(5000, 10000));
                         break;
-                   /* case EVENT_OVERCHARGED_SOUL:
+                    case EVENT_OVERCHARGED_SOUL:
                         me->CastSpell(me, SPELL_OVERCHARGED_SOUL_DAMAGE, false);
                         events.ScheduleEvent(EVENT_OVERCHARGED_SOUL, 2500);
-                        break;*/
+                        break;
                     default:
                         break;
                 }
@@ -210,41 +195,30 @@ class npc_azure_serpent : public CreatureScript
             npc_azure_serpentAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
+                me->SetCanFly(true);
+                me->SetDisableGravity(true);
             }
 
             InstanceScript* pInstance;
             EventMap events;
             uint8 phase;
 
-            uint32 movementTimer;
-            uint8 lastMovementId;
-
             void Reset()
             {
-                phase = 0;
-
+                phase = 1;
                 me->setActive(true);
                 me->SetReactState(REACT_PASSIVE);
-
                 events.Reset();
-
                 me->AddAura(SPELL_LIGHTNING_SHIELD, me);
-
-                movementTimer = 0;
-                lastMovementId = 0;
-
                 me->SetSpeed(MOVE_FLIGHT, 5.0f);
-            }
-
-            Creature* GetGu()
-            {
-                return pInstance->instance->GetCreature(pInstance->GetData64(NPC_GU_CLOUDSTRIKE));
+                DoZoneInCombat();
+                events.ScheduleEvent(EVENT_STATIC_FIELD, 5000);
             }
 
             void JustDied(Unit* /*killer*/)
             {
-                if (Creature* gu = GetGu())
-                    if (gu->AI())
+                if (me->ToTempSummon())
+                    if (Creature* gu = me->ToTempSummon()->GetSummoner()->ToCreature())
                         gu->AI()->DoAction(ACTION_GU_P_3);
             }
 
@@ -252,63 +226,21 @@ class npc_azure_serpent : public CreatureScript
             {
                 switch (action)
                 {
-                    case ACTION_AZURE_SERPENT_P_1:
-                        movementTimer = 100;
-                        break;
                     case ACTION_AZURE_SERPENT_P_2:
                         events.CancelEventGroup(PHASE_ONE);
                         events.ScheduleEvent(EVENT_MAGNETIC_SHROUD, urand(10000, 15000), PHASE_TWO);
                         events.ScheduleEvent(EVENT_LIGHTNING_BREATH, urand (2500, 7500), PHASE_TWO);
-                        
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->GetMotionMaster()->MovePoint(4, azureSerpentPositions[3].GetPositionX(), azureSerpentPositions[3].GetPositionY(), azureSerpentPositions[3].GetPositionZ());
                         me->RemoveAurasDueToSpell(SPELL_LIGHTNING_SHIELD);
-
-                        DoZoneInCombat();
                         break;
-                    case ACTION_AZURE_SERPENT_RESET:
-                        if (!me->isAlive())
-                            me->Respawn();
-
-                        me->CombatStop();
-                        Reset();
-                        me->NearTeleportTo(3829.19f, 2927.29f, 705.71f, 0.0f);
-                        break;
-                }
-            }
-
-            void MovementInform(uint32 uiType, uint32 id)
-            {
-                if (!id || uiType != POINT_MOTION_TYPE)
-                    return;
-
-                if (id < 3)
-                {
-                    lastMovementId = id;
-                    movementTimer = 500;
-                }
-                else if (id == 3)
-                {
-                    // Movement Finished, stop move start event
-                    phase = 1;
-                    events.ScheduleEvent(EVENT_STATIC_FIELD, 10000, PHASE_ONE);
-                    DoZoneInCombat();
                 }
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (movementTimer != 0)
-                {
-                    if (movementTimer <= diff)
-                    {
-                        me->GetMotionMaster()->MovePoint(lastMovementId + 1, azureSerpentPositions[lastMovementId].GetPositionX(), azureSerpentPositions[lastMovementId].GetPositionY(), azureSerpentPositions[lastMovementId].GetPositionZ());
-                        movementTimer = 0;
-                    }
-                    else movementTimer -= diff;
-                }
-
                 if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);

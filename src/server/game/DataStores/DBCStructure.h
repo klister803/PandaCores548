@@ -1820,7 +1820,8 @@ struct SpellEffectScalingEntry
     uint32    SpellEffectId;                                // 4
 };
 
-#define MAX_SPELL_EFFECTS 32
+#define MAX_SPELL_EFFECTS 14
+#define MAX_SPELL_EFFECTS_DIFF 5
 #define MAX_EFFECT_MASK 4294967295
 #define MAX_SPELL_REAGENTS 8
 #define MAX_POWERS_FOR_SPELL 2
@@ -1913,7 +1914,7 @@ struct SpellEntry
     uint32 SpellMiscId;                                     // 24       SpellMisc.dbc
 
     // struct access functions
-    SpellEffectEntry const* GetSpellEffect(uint32 eff, uint32 difficulty) const;
+    SpellEffectEntry const* GetSpellEffect(uint32 eff, uint8 diff = 0) const;
 };
 
 // SpellCategories.dbc
@@ -2224,17 +2225,17 @@ struct SummonPropertiesEntry
 
 struct TalentEntry
 {
-    uint32  Id;             // 0
-    //uint32  unk;          // 1
-    uint32  rank;           // 2
-    //uint32  unk;          // 3
-    uint32  spellId;        // 4
-    //uint32  unk;          // 5
-    //uint32  unk;          // 6
-    //uint32  unk;          // 7
-    uint32  classId;        // 8
-    uint32  spellOverride;  // 9
-    char*   description;    // 10
+    uint32  Id;                                     // 0
+    //uint32  petTab;                               // 1
+    uint32  rank;                                   // 2
+    uint32  TalentTab;                              // 3
+    uint32  spellId;                                // 4
+    //uint32  needAddInSpellBook;                   // 5
+    //uint32  unk2;                                 // 6
+    //uint32  allowForPet;                          // 7
+    uint32  classId;                                // 8
+    uint32  spellOverride;                          // 9
+    char*   description;                            // 10
 
 };
 
@@ -2527,18 +2528,23 @@ struct SpellEffect
 {
     SpellEffect()
     {
-        for(int i = 0; i < MAX_DIFFICULTY; i++)
+        for(int i = 0; i < MAX_SPELL_EFFECTS; i++)
         {
-            for(int y = 0; y < MAX_SPELL_EFFECTS; y++)
-            {
-                effects[i][y] = 0;
-            }
+            effects[i] = NULL;
         }
     }
-    SpellEffectEntry const* effects[MAX_DIFFICULTY][32];
+    SpellEffectEntry const* effects[MAX_SPELL_EFFECTS];
 };
 
-typedef std::map<uint32, SpellEffect> SpellEffectMap;
+typedef UNORDERED_MAP<uint16, SpellEffectEntry const*> SpellEffectsMap;
+
+struct SpellEffectDiff
+{
+    SpellEffectsMap effects;
+};
+
+typedef UNORDERED_MAP<uint32, SpellEffectDiff> SpellEffectDiffMap;
+typedef UNORDERED_MAP<uint32, SpellEffect> SpellEffectMap;
 
 struct TaxiPathBySourceAndDestination
 {

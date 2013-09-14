@@ -1155,7 +1155,6 @@ void Object::UpdateUInt32Value(uint16 index, uint32 value)
     ASSERT(index < m_valuesCount || PrintIndexError(index, true));
 
     m_uint32Values[index] = value;
-    _changedFields[index] = true;
 }
 
 void Object::SetUInt64Value(uint16 index, uint64 value)
@@ -2934,6 +2933,19 @@ void WorldObject::GetAliveCreatureListWithEntryInGrid(std::list<Creature*>& crea
     Trinity::AllAliveCreaturesOfEntryInRange check(this, entry, maxSearchRange);
     Trinity::CreatureListSearcher<Trinity::AllAliveCreaturesOfEntryInRange> searcher(this, creatureList, check);
     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllAliveCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
+
+    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
+}
+
+void WorldObject::GetCorpseCreatureInGrid(std::list<Creature*>& creatureList, float maxSearchRange) const
+{
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
+    Cell cell(pair);
+    cell.SetNoCreate();
+
+    Trinity::SearchCorpseCreatureCheck check(this, maxSearchRange);
+    Trinity::CreatureListSearcher<Trinity::SearchCorpseCreatureCheck> searcher(this, creatureList, check);
+    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::SearchCorpseCreatureCheck>, GridTypeMapContainer> visitor(searcher);
 
     cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
 }

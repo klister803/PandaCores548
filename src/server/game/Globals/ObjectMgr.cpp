@@ -411,7 +411,7 @@ void ObjectMgr::LoadCreatureTemplates()
         return;
     }
 
-    //_creatureTemplateStore.rehash(result->GetRowCount());
+    _creatureTemplateStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
@@ -516,6 +516,41 @@ void ObjectMgr::LoadCreatureTemplates()
         CheckCreatureTemplate(&itr->second);
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::LoadCreatureDifficultyStat()
+{
+    uint32 oldMSTime = getMSTime();
+
+    //                                                 0        1             2             3
+    QueryResult result = WorldDatabase.Query("SELECT entry, difficulty, dmg_multiplier, Health_mod FROM creature_difficulty_stat;");
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 creature difficulty stat definitions. DB table `creature_difficulty_stat` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 entry = fields[0].GetUInt32();
+
+        CreatureDifficultyStat creatureDiffStat;
+        creatureDiffStat.Entry           = entry;
+        creatureDiffStat.Difficulty      = fields[1].GetUInt8();
+        creatureDiffStat.dmg_multiplier  = fields[2].GetFloat();
+        creatureDiffStat.ModHealth       = fields[3].GetFloat();
+
+        _creatureDifficultyStatStore[entry].push_back(creatureDiffStat);
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature difficulty stat  definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ObjectMgr::LoadCreatureTemplateAddons()
@@ -1145,7 +1180,7 @@ void ObjectMgr::LoadCreatureModelInfo()
         return;
     }
 
-    //_creatureModelStore.rehash(result->GetRowCount());
+    _creatureModelStore.rehash(result->GetRowCount());
     uint32 count = 0;
 
     do
@@ -1442,7 +1477,7 @@ void ObjectMgr::LoadCreatures()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    //_creatureDataStore.rehash(result->GetRowCount());
+    _creatureDataStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
@@ -1617,7 +1652,7 @@ void ObjectMgr::LoadCreatureAIInstance()
         return;
     }
 
-    //_creatureAIInstance.rehash(result->GetRowCount());
+    _creatureAIInstance.rehash(result->GetRowCount());
     uint32 count = 0;
 
     do
@@ -1875,7 +1910,7 @@ void ObjectMgr::LoadGameobjects()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    //_gameObjectDataStore.rehash(result->GetRowCount());
+    _gameObjectDataStore.rehash(result->GetRowCount());
     do
     {
         Field* fields = result->Fetch();
@@ -2556,7 +2591,11 @@ void ObjectMgr::LoadItemTemplates()
             Field* fields = result->Fetch();
             uint32 itemId = fields[0].GetUInt32();
             if (_itemTemplateStore.find(itemId) != _itemTemplateStore.end())
+            {
+                //QueryResult result = WorldDatabase.PQuery("DELETE FROM item_template WHERE entry IN (%u);", itemId);
                 --sparseCount;
+                //continue;
+            }
 
             ItemTemplate& itemTemplate = _itemTemplateStore[itemId];
 
@@ -5223,7 +5262,7 @@ void ObjectMgr::LoadGossipText()
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u npc texts", count);
         return;
     }
-    //_gossipTextStore.rehash(result->GetRowCount());
+    _gossipTextStore.rehash(result->GetRowCount());
 
     int cic;
 
@@ -6416,7 +6455,7 @@ void ObjectMgr::LoadGameObjectTemplate()
         return;
     }
 
-    //_gameObjectTemplateStore.rehash(result->GetRowCount());
+    _gameObjectTemplateStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
@@ -9044,6 +9083,22 @@ GameObjectTemplate const* ObjectMgr::GetGameObjectTemplate(uint32 entry)
     GameObjectTemplateContainer::const_iterator itr = _gameObjectTemplateStore.find(entry);
     if (itr != _gameObjectTemplateStore.end())
         return &(itr->second);
+
+    return NULL;
+}
+
+const std::vector<CreatureDifficultyStat>* ObjectMgr::GetDifficultyStat(uint32 entry) const
+{
+    CreatureDifficultyStatContainer::const_iterator itr = _creatureDifficultyStatStore.find(entry);
+    return itr != _creatureDifficultyStatStore.end() ? &(itr->second) : NULL;
+}
+
+CreatureDifficultyStat const* ObjectMgr::GetCreatureDifficultyStat(uint32 entry, uint8 diff) const
+{
+    if (std::vector<CreatureDifficultyStat> const* diffStat = GetDifficultyStat(entry))
+        for (std::vector<CreatureDifficultyStat>::const_iterator itr = diffStat->begin(); itr != diffStat->end(); ++itr)
+            if(itr->Difficulty == diff)
+                return &(*itr);
 
     return NULL;
 }

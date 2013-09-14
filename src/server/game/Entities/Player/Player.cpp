@@ -2996,10 +2996,10 @@ void Player::Regenerate(Powers power)
         else
             m_powerFraction[powerIndex] = addvalue - integerValue;
     }
-    //if (m_regenTimerCount >= 2000)
+    if (m_regenTimerCount >= 2000)
         SetPower(power, curValue);
-    /*else
-        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);*/
+    else
+        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
 }
 
 void Player::RegenerateHealth()
@@ -3854,82 +3854,6 @@ void Player::SendKnownSpells()
     GetSession()->SendPacket(&data);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CHARACTER: Sent Send Known Spells");
-}
-
-void Player::SendInitialSpells()
-{
-    time_t curTime = time(NULL);
-    time_t infTime = curTime + infinityCooldownDelayCheck;
-
-    uint16 spellCount = 0;
-
-    WorldPacket data(SMSG_INITIAL_SPELLS, (1+2+4*m_spells.size()+2+m_spellCooldowns.size()*(2+2+2+4+4)));
-    data << uint8(0);
-
-    size_t countPos = data.wpos();
-    data << uint16(spellCount);                             // spell count placeholder
-
-    for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
-    {
-        if (itr->second->state == PLAYERSPELL_REMOVED)
-            continue;
-
-        if (!itr->second->active || itr->second->disabled)
-            continue;
-
-        if(itr->second->mount && itr->second->mountReplace == 0)
-            continue;
-
-        if(itr->second->mountReplace)
-            data << uint32(itr->second->mountReplace);
-        else
-            data << uint32(itr->first);
-        data << uint16(0);                                  // it's not slot id
-
-        ++spellCount;
-    }
-
-    data.put<uint16>(countPos, spellCount);                  // write real count value
-
-    uint16 spellCooldowns = m_spellCooldowns.size();
-
-    data << uint16(spellCooldowns);
-    for (SpellCooldowns::const_iterator itr = m_spellCooldowns.begin(); itr != m_spellCooldowns.end(); ++itr)
-    {
-        SpellInfo const* sEntry = sSpellMgr->GetSpellInfo(itr->first);
-        if (!sEntry)
-            continue;
-
-        data << uint32(itr->first);
-
-        data << uint32(itr->second.itemid);                 // cast item id
-        data << uint16(sEntry->Category);                   // spell category
-
-        // send infinity cooldown in special format
-        if (itr->second.end >= infTime)
-        {
-            data << uint32(1);                              // cooldown
-            data << uint32(0x80000000);                     // category cooldown
-            continue;
-        }
-
-        time_t cooldown = itr->second.end > curTime ? (itr->second.end-curTime)*IN_MILLISECONDS : 0;
-
-        if (sEntry->Category)                                // may be wrong, but anyway better than nothing...
-        {
-            data << uint32(0);                              // cooldown
-            data << uint32(cooldown);                       // category cooldown
-        }
-        else
-        {
-            data << uint32(cooldown);                       // cooldown
-            data << uint32(0);                              // category cooldown
-        }
-    }
-
-    GetSession()->SendPacket(&data);
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CHARACTER: Sent Initial Spells");
 }
 
 void Player::RemoveMail(uint32 id)
@@ -23995,6 +23919,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     data.Initialize(SMSG_SEND_UNLEARN_SPELLS);
     data.WriteBits(0, 24);                         // count, read uint32 spells id
+    data.FlushBits();
     GetSession()->SendPacket(&data);
 
     SendInitialActionButtons();
@@ -24023,15 +23948,20 @@ void Player::SendInitialPacketsBeforeAddToMap()
 void Player::SendCooldownAtLogin()
 {
     time_t curTime = time(NULL);
+    WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
+    data << uint64(GetGUID());
+    data << uint8(1);
+
     for (SpellCooldowns::const_iterator itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
     {
-        WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
-        data << uint64(GetGUID());
-        data << uint8(1);
+        if (itr->second.end <= curTime)
+            continue;
+
         data << uint32(itr->first);
         data << uint32(uint32(itr->second.end - curTime)*IN_MILLISECONDS);
-        GetSession()->SendPacket(&data);
     }
+
+    GetSession()->SendPacket(&data);
 }
 
 void Player::SendInitialPacketsAfterAddToMap()
@@ -25922,7 +25852,7 @@ bool Player::IsBaseRuneSlotsOnCooldown(RuneType runeType) const
     return true;
 }
 
-void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast)
+bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast)
 {
     Loot loot;
     loot.FillLoot (loot_id, store, this, true);
@@ -25947,6 +25877,8 @@ void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore cons
         Item* pItem = StoreNewItem(dest, lootItem->itemid, true, lootItem->randomPropertyId);
         SendNewItem(pItem, lootItem->count, false, false, broadcast);
     }
+    if(max_slot > 0)
+        return true;
 }
 
 void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
@@ -26334,6 +26266,21 @@ bool Player::LearnTalent(uint32 talentId)
     // already known
     if (HasSpell(spellid))
         return false;
+
+    // Fix bug WPE talent
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)              // Loop through all talents.
+    {
+        if (TalentEntry const* tmpTalent = sTalentStore.LookupEntry(i)) // Someday, someone needs to revamp the way talents are tracked
+        {
+            if (talentInfo->classId == tmpTalent->classId &&
+                talentInfo->TalentTab != tmpTalent->TalentTab &&
+                talentInfo->rank == tmpTalent->rank)
+            {
+                if (HasSpell(tmpTalent->spellId))
+                    return false;
+            }
+        }
+    }
 
     // learn! (other talent ranks will unlearned at learning)
     learnSpell(spellid, false);
@@ -26968,11 +26915,11 @@ void Player::ActivateSpec(uint8 spec)
 
     SendActionButtons(1);
 
-    Powers pw = getPowerType();
-    if (pw != POWER_MANA)
-        SetPower(POWER_MANA, 0); // Mana must be 0 even if it isn't the active power type.
+    //Powers pw = getPowerType();
+    //if (pw != POWER_MANA)
+    //    SetPower(POWER_MANA, 0); // Mana must be 0 even if it isn't the active power type.
 
-    SetPower(pw, 0);
+    //SetPower(pw, 0);
 }
 
 void Player::ResetTimeSync()
@@ -27954,7 +27901,7 @@ void Player::_LoadStore()
             {
                 SpellEntry const* spell = (*itr);
 
-                const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1, 0);
+                const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1);
 
                 if (!spellEffect)
                     continue;

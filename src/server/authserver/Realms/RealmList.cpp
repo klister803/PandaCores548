@@ -88,7 +88,7 @@ void RealmList::UpdateRealms(bool init)
             uint8 icon                 = fields[4].GetUInt8();
             RealmFlags flag            = RealmFlags(fields[5].GetUInt8());
             uint8 timezone             = fields[6].GetUInt8();
-            uint8 allowedSecurityLevel = fields[7].GetUInt8();
+            uint8 allowedSecurityLevel = uint8(fields[7].GetFloat());
             float pop                  = fields[8].GetFloat();
             uint32 build               = fields[9].GetUInt32();
 

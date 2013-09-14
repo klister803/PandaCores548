@@ -260,7 +260,7 @@ public:
     float     ComboScalingMultiplier;
 
     SpellEffectInfo() {}
-    SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* spellInfo, uint8 effIndex, uint32 difficulty);
+    SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* spellInfo, uint8 effIndex, SpellEffectEntry const* _effect);
 
     bool IsEffect() const;
     bool IsEffect(SpellEffects effectName) const;
@@ -294,6 +294,8 @@ private:
     };
     static StaticData _data[TOTAL_SPELL_EFFECTS];
 };
+
+typedef UNORDERED_MAP<uint16, SpellEffectInfo> SpellEffectInfoMap;
 
 class SpellInfo
 {
@@ -399,6 +401,7 @@ public:
     float  CoefBase;
     int32  CoefLevelBase;
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
+    SpellEffectInfoMap EffectsMap;
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;
     SpellPowerEntry spellPower[MAX_POWERS_FOR_SPELL];
@@ -429,9 +432,10 @@ public:
     SpellTotemsEntry const* GetSpellTotems() const;
     ResearchProjectEntry const* GetSpellResearchProjects() const;
 
-    SpellInfo(SpellEntry const* spellEntry, uint32 difficulty);
+    SpellInfo(SpellEntry const* spellEntry);
     ~SpellInfo();
 
+    SpellEffectInfo const& GetEffect(uint8 effect, uint8 difficulty = 0) const;
     bool HasEffect(SpellEffects effect) const;
     bool HasAura(AuraType aura) const;
     bool HasAreaAuraEffect() const;

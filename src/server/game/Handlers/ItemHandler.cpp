@@ -448,7 +448,12 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     buff << uint32(proto->Bonding);
 
     // item name
+    int loc_idx = GetSessionDbLocaleIndex();
     std::string name = proto->Name1;
+    if (loc_idx >= 0)
+        if (ItemLocale const* il = sObjectMgr->GetItemLocale(entry))
+            ObjectMgr::GetLocaleString(il->Name, loc_idx, name);
+
     buff << uint16(name.length());
     if (name.length())
         buff << name;
@@ -536,6 +541,15 @@ void WorldSession::HandleReadItem(WorldPacket& recvData)
 
 void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeLastHandleSellItem < 1)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeLastHandleSellItem = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SELL_ITEM");
     uint64 vendorguid, itemguid;
     uint32 count;
@@ -905,7 +919,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             }
 
             // reputation discount
-            int32 price = vendorItem->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice * discountMod)) : 0;
+            int32 price = vendorItem->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice/* * discountMod*/)) : 0;
 
             //if (int32 priceMod = _player->GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
                  //price -= CalculatePct(price, priceMod);

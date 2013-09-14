@@ -1484,6 +1484,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature template addons...");
     sObjectMgr->LoadCreatureTemplateAddons();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature difficulty stat...");
+    sObjectMgr->LoadCreatureDifficultyStat();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Reputation Reward Rates...");
     sObjectMgr->LoadReputationRewardRate();
 
@@ -1600,6 +1603,12 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading linked spells...");
     sSpellMgr->LoadSpellLinked();
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Prco Check spells...");
+    sSpellMgr->LoadSpellPrcoCheck();
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading triggered spells...");
+    sSpellMgr->LoadSpellTriggered();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading mount replace list...");
     sSpellMgr->LoadmSpellMountList();
@@ -2975,7 +2984,7 @@ void World::LoadDBAllowedSecurityLevel()
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
     if (result)
-        SetPlayerSecurityLimit(AccountTypes(result->Fetch()->GetUInt8()));
+        SetPlayerSecurityLimit(AccountTypes(uint8(result->Fetch()->GetFloat())));
 }
 
 void World::SetPlayerSecurityLimit(AccountTypes _sec)

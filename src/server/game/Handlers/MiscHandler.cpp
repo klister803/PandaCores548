@@ -176,7 +176,10 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
 
     time_t now = time(NULL);
     if (now - timeLastWhoCommand < 5)
+    {
+        recvData.rfinish();
         return;
+    }
     else timeLastWhoCommand = now;
 
     uint32 matchcount = 0;

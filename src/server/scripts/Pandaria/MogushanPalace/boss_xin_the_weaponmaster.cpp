@@ -321,7 +321,7 @@ class spell_dart : public SpellScriptLoader
 						for (std::list<WorldObject*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                             if ((*object)->IsInBetween(GetCaster(), *itr, 2.0f))
                             {
-                                const SpellInfo* damageSpell = sSpellMgr->GetSpellInfo(SPELL_THROW_DAMAGE, GetCaster()->GetMap()->GetDifficulty());
+                                const SpellInfo* damageSpell = sSpellMgr->GetSpellInfo(SPELL_THROW_DAMAGE);
                                 GetCaster()->DealDamage((*object)->ToPlayer(), damageSpell->Effects[0].BasePoints, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, damageSpell);
                             }
             }

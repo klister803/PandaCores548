@@ -145,7 +145,7 @@ public:
                             {
                                 if (target->GetAuraCount(SPELL_SEETHE_AURA) < 3)
                                 {
-                                    target->CastSpell(target,SPELL_SEETHE,false);
+                                    //target->CastSpell(target,SPELL_SEETHE,false);
                                     target->AddAura(SPELL_SEETHE_AURA,target);
                                 }
                             }
@@ -223,8 +223,8 @@ public:
                     {
                        if (Unit* target = me->getVictim())
                         {
-                            target->CastSpell(target,SPELL_SEETHE,false);
-                            target->CastSpell(target,SPELL_SEETHE,false);
+                            //target->CastSpell(target,SPELL_SEETHE,false);
+                            //target->CastSpell(target,SPELL_SEETHE,false);
                         }
                        range = false;
                        break;

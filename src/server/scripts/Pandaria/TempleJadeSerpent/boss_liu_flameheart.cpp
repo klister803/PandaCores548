@@ -160,17 +160,6 @@ class boss_liu_flameheart : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (wipe_timer <= diff)
-                {
-                    if (me->GetInstanceScript() && me->GetInstanceScript()->GetData(TYPE_IS_WIPE))
-                    {
-                        me->GetInstanceScript()->SetData(TYPE_IS_WIPE, 1);
-                        wipe_timer = 2000;
-                    }
-                }
-                else
-                    wipe_timer -= diff;
-
                 if (!UpdateVictim())
                     return;
 
@@ -339,7 +328,6 @@ class boss_liu_flameheart : public CreatureScript
                         me->AddUnitState(UNIT_STATE_ROOT);
                         events.ScheduleEvent(EVENT_AURA_JADE, 3000);
                         break;
-
                     case EVENT_AURA_JADE:
                         me->CastSpell(me, SPELL_JADE_SOUL, false);
                         events.ScheduleEvent(EVENT_AURA_JADE, 2500);

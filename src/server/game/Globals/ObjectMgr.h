@@ -387,17 +387,17 @@ struct TrinityStringLocale
 };
 
 typedef std::map<uint64, uint64> LinkedRespawnContainer;
-typedef ACE_Based::LockedMap<uint32, CreatureData> CreatureDataContainer;
-typedef ACE_Based::LockedMap<uint32, GameObjectData> GameObjectDataContainer;
-typedef ACE_Based::LockedMap<uint32, CreatureLocale> CreatureLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, GameObjectLocale> GameObjectLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, ItemLocale> ItemLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, QuestLocale> QuestLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, NpcTextLocale> NpcTextLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, PageTextLocale> PageTextLocaleContainer;
-typedef ACE_Based::LockedMap<int32, TrinityStringLocale> TrinityStringLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
-typedef ACE_Based::LockedMap<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
+typedef UNORDERED_MAP<uint32, CreatureData> CreatureDataContainer;
+typedef UNORDERED_MAP<uint32, GameObjectData> GameObjectDataContainer;
+typedef UNORDERED_MAP<uint32, CreatureLocale> CreatureLocaleContainer;
+typedef UNORDERED_MAP<uint32, GameObjectLocale> GameObjectLocaleContainer;
+typedef UNORDERED_MAP<uint32, ItemLocale> ItemLocaleContainer;
+typedef UNORDERED_MAP<uint32, QuestLocale> QuestLocaleContainer;
+typedef UNORDERED_MAP<uint32, NpcTextLocale> NpcTextLocaleContainer;
+typedef UNORDERED_MAP<uint32, PageTextLocale> PageTextLocaleContainer;
+typedef UNORDERED_MAP<int32, TrinityStringLocale> TrinityStringLocaleContainer;
+typedef UNORDERED_MAP<uint32, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
+typedef UNORDERED_MAP<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
 
 typedef std::multiset<uint32> QuestObject;
 typedef std::map<uint32, QuestObject> QuestStarter;
@@ -647,6 +647,9 @@ class ObjectMgr
         void LoadGameObjectTemplate();
         void AddGameobjectInfo(GameObjectTemplate* goinfo);
 
+        const std::vector<CreatureDifficultyStat>* GetDifficultyStat(uint32 entry) const;
+        CreatureDifficultyStat const* GetCreatureDifficultyStat(uint32 entry, uint8 diff) const;
+
         CreatureTemplate const* GetCreatureTemplate(uint32 entry);
         CreatureTemplateContainer const* GetCreatureTemplates() const { return &_creatureTemplateStore; }
         CreatureModelInfo const* GetCreatureModelInfo(uint32 modelId);
@@ -878,6 +881,7 @@ class ObjectMgr
         void LoadDbScriptStrings();
         void LoadCreatureClassLevelStats();
         void LoadCreatureLocales();
+        void LoadCreatureDifficultyStat();
         void LoadCreatureTemplates();
         void LoadCreatureTemplateAddons();
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
@@ -1238,6 +1242,69 @@ class ObjectMgr
         ///Temporaire pour la création des Z, a remettre en private après
         GameObjectDataContainer _gameObjectDataStore;
 
+        //Get difficulty from spawnmode
+        uint8 GetDiffFromSpawn(uint8 spawnmode)
+        {
+            uint8 diff = 0;
+            switch (spawnmode)
+            {
+                case NONE_DIFFICULTY:
+                case REGULAR_DIFFICULTY:
+                case MAN10_DIFFICULTY:
+                    diff = 0;
+                    break;
+                case HEROIC_DIFFICULTY:
+                case MAN25_DIFFICULTY:
+                    diff = 1;
+                    break;
+                case MAN10_HEROIC_DIFFICULTY:
+                    diff = 2;
+                    break;
+                case MAN25_HEROIC_DIFFICULTY:
+                    diff = 3;
+                    break;
+                case RAID_TOOL_DIFFICULTY:
+                case CHALLENGE_MODE_DIFFICULTY:
+                case MAN40_DIFFICULTY:
+                    diff = 4;
+                    break;
+            }
+
+            return diff;
+        }
+
+        //Get item count from spawnmode
+        uint8 GetCountFromSpawn(uint8 spawnmode, uint32 size)
+        {
+            uint8 count = 0;
+            switch (spawnmode)
+            {
+                case NONE_DIFFICULTY:
+                case REGULAR_DIFFICULTY:
+                case HEROIC_DIFFICULTY:
+                    if(size > 5)
+                        count = 2;
+                    else
+                        count = 1;
+                    break;
+                case MAN10_DIFFICULTY:
+                case MAN10_HEROIC_DIFFICULTY:
+                    count = 2;
+                    break;
+                case MAN25_DIFFICULTY:
+                case MAN25_HEROIC_DIFFICULTY:
+                    count = 5;
+                    break;
+                case RAID_TOOL_DIFFICULTY:
+                case CHALLENGE_MODE_DIFFICULTY:
+                case MAN40_DIFFICULTY:
+                    count = 3;
+                    break;
+            }
+
+            return count;
+        }
+
     private:
         // first free id for selected id type
         uint32 _auctionId;
@@ -1353,6 +1420,7 @@ class ObjectMgr
         MapObjectGuids _mapObjectGuidsStore;
         CreatureDataContainer _creatureDataStore;
         CreatureTemplateContainer _creatureTemplateStore;
+        CreatureDifficultyStatContainer _creatureDifficultyStatStore;
         CreatureModelContainer _creatureModelStore;
         CreatureAddonContainer _creatureAddonStore;
         CreatureAddonContainer _creatureTemplateAddonStore;

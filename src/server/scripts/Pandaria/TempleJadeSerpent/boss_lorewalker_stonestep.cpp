@@ -129,7 +129,6 @@ class boss_lorewalker_stonestep : public CreatureScript
 
             void Reset()
             {
-                event_go = false;
                 me->GetMotionMaster()->MoveTargetedHome();
                 _Reset();
             }
@@ -201,6 +200,11 @@ class boss_lorewalker_stonestep : public CreatureScript
                             break;
                         case EVENT_INTRO_3:
                             Talk(EVENT_TALK_INTRO_3); //419655481
+                            if (Creature* add = me->SummonCreature(58826, 847.19f, -2448.75f, 174.96f, TEMPSUMMON_MANUAL_DESPAWN))
+                            {
+                                add->setFaction(16);
+                                add->SetReactState(REACT_AGGRESSIVE);
+                            }
                             break;
                         // End of the first speech.
 

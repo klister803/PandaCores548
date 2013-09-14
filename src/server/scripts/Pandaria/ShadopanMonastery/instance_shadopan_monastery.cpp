@@ -34,6 +34,7 @@ public:
         uint64 cloudstikeExitGuid;
         uint64 snowdriftEntranceGuid;
         uint64 snowdriftPossessionsGuid;
+        uint64 zhuchestGuid;
         uint64 snowdriftFirewallGuid;
         uint64 snowdriftDojoDoorGuid;
         uint64 snowdriftExitGuid;
@@ -78,6 +79,7 @@ public:
             snowdriftEntranceGuid       = 0;
             snowdriftEntranceGuid       = 0;
             snowdriftPossessionsGuid    = 0;
+            zhuchestGuid                = 0,
             snowdriftFirewallGuid       = 0;
             snowdriftDojoDoorGuid       = 0;
             snowdriftExitGuid           = 0;
@@ -141,9 +143,12 @@ public:
                     HandleGameObject(0, true, go);
                     break;
                 case GO_SNOWDRIFT_POSSESSIONS:
-                    go->SetPhaseMask(2, true);
+                case GO_SNOWDRIFT_POSSESSIONS2:
                     snowdriftPossessionsGuid = go->GetGUID();
                     break;
+                case GO_ZHU_CHEST:
+                case GO_ZHU_CHEST2:
+                    zhuchestGuid = go->GetGUID();
                 case GO_SNOWDRIFT_FIRE_WALL:
                     snowdriftFirewallGuid = go->GetGUID();
                     break;
@@ -212,8 +217,8 @@ public:
                             secondDefeatedNovicePositionsGuid   = secondDefeatedNovicePositionsGuidSave;
                             
                             HandleGameObject(snowdriftEntranceGuid, true);
-                            HandleGameObject(snowdriftFirewallGuid, true);
-                            HandleGameObject(snowdriftDojoDoorGuid, true);
+                            HandleGameObject(snowdriftFirewallGuid, false);
+                            HandleGameObject(snowdriftDojoDoorGuid, false);
                             HandleGameObject(snowdriftExitGuid,     false);
                             break;
                         case IN_PROGRESS:
@@ -222,7 +227,7 @@ public:
                             break;
                         case DONE:
                             if (GameObject* possessions = instance->GetGameObject(snowdriftPossessionsGuid))
-                                possessions->SetPhaseMask(1, true);
+                                possessions->SetRespawnTime(604800);
                             
                             HandleGameObject(snowdriftEntranceGuid, true);
                             HandleGameObject(snowdriftFirewallGuid, true);
@@ -244,6 +249,7 @@ public:
                             break;
                         case IN_PROGRESS:
                             HandleGameObject(shaEntranceGuid,   false);
+                            break;
                         case DONE:
                             HandleGameObject(shaEntranceGuid,   true);
                             HandleGameObject(shaExitGuid,       true);
@@ -253,13 +259,34 @@ public:
                 }
                 case DATA_TARAN_ZHU:
                 {
-                    if (state == IN_PROGRESS)
-                        DoAddAuraOnPlayers(SPELL_HATE);
-                    else
+                    switch (state)
                     {
+                    case IN_PROGRESS:
+                        DoAddAuraOnPlayers(SPELL_HATE);
+                        break;
+                    case NOT_STARTED:
+                    case FAIL:
+                        {
+                            Map::PlayerList const &PlayerList = instance->GetPlayers();
+                            
+                            if (!PlayerList.isEmpty())
+                                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                    if (Player* player = i->getSource())
+                                    {
+                                        player->RemoveAurasDueToSpell(SPELL_HATE);
+                                        player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE);
+                                        player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE_VISUAL);
+                                    }
+                        }
+                        break;
+                    case DONE:
+                        if (GameObject* chest = instance->GetGameObject(zhuchestGuid))
+                            chest->SetRespawnTime(604800);
+                        
                         Map::PlayerList const &PlayerList = instance->GetPlayers();
 
                         if (!PlayerList.isEmpty())
+                        {
                             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                                 if (Player* player = i->getSource())
                                 {
@@ -267,13 +294,12 @@ public:
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE);
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE_VISUAL);
                                 }
+                        }
+                        break;
                     }
                     break;
                 }
-                default:
-                    break;
             }
-
             return true;
         }
 
