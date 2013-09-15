@@ -17215,7 +17215,7 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
                 loot->objType = 1;
                 loot->countItem = 1;
                 loot->spawnMode = creature->GetMap()->GetSpawnMode();
-                loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false, creature->GetLootMode());
+                loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false);
             }
 
             loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);

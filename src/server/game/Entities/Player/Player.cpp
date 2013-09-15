@@ -9641,7 +9641,7 @@ void Player::SendLootRelease(uint64 guid)
     SendDirectMessage(&data);
 }
 
-void Player::SendLoot(uint64 guid, LootType loot_type, uint8 pool)
+void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 {
     uint64 lguid = GetLootGUID();
     if ((IS_CORPSE_GUID(guid) || IS_ITEM_GUID(guid) || IS_GAMEOBJECT_GUID(guid)) && lguid)
@@ -9650,7 +9650,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, uint8 pool)
     Loot* loot = 0;
     PermissionTypes permission = ALL_PERMISSION;
 
-    sLog->outDebug(LOG_FILTER_LOOT, "Player::SendLoot");
+    sLog->outDebug(LOG_FILTER_LOOT, "Player::SendLoot guid %u, loot_type %u", guid, loot_type);
     if (IS_GAMEOBJECT_GUID(guid))
     {
         GameObject* go = GetMap()->GetGameObject(guid);
@@ -9694,7 +9694,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type, uint8 pool)
                 loot->objGuid = go->GetGUID();
                 loot->objType = 3;
                 loot->countItem = 1;
-                loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go->GetLootMode());
+                loot->spawnMode = go->GetMap()->GetSpawnMode();
+                loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false);
 
                 // get next RR player (for next loot)
                 if (groupRules)
@@ -9934,7 +9935,10 @@ void Player::SendLoot(uint64 guid, LootType loot_type, uint8 pool)
         }
     }
 
-    SetLootGUID(guid);
+    if(AoeLoot)
+        AddAoeLootList(guid);
+    else
+        SetLootGUID(guid);
 
     // LOOT_INSIGNIA and LOOT_FISHINGHOLE unsupported by client
     switch (loot_type)
@@ -9946,7 +9950,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type, uint8 pool)
 
     // need know merged fishing/corpse loot type for achievements
     loot->loot_type = loot_type;
-    loot->pool = pool;
 
     WorldPacket data(SMSG_LOOT_RESPONSE);           // we guess size
     data << LootView(*loot, this, loot_type, guid, permission, pool);
@@ -25891,6 +25894,8 @@ bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore cons
     }
     if(max_slot > 0)
         return true;
+
+    return false;
 }
 
 void Player::StoreLootItem(uint8 lootSlot, Loot* loot)

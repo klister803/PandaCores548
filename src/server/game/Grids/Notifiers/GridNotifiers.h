@@ -1416,9 +1416,11 @@ namespace Trinity
             SearchCorpseCreatureCheck(const WorldObject* object, float range) : m_pObject(object), i_range(range) {}
             bool operator()(Creature* u)
             {
-                if (u->getDeathState() != CORPSE || u->isInFlight() ||
-                    (u->GetDisplayId() != u->GetNativeDisplayId()) ||
-                    (u->GetCreatureTypeMask() & CREATURE_TYPEMASK_MECHANICAL_OR_ELEMENTAL) != 0)
+                Player* plr = const_cast<Player*>(m_pObject->ToPlayer());
+                if(!plr)
+                    return false;
+
+                if (u->getDeathState() != CORPSE || !plr->isAllowedToLoot(u))
                     return false;
 
                 return m_pObject->IsWithinDistInMap(u, i_range);

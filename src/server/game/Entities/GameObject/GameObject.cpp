@@ -60,8 +60,6 @@ GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new Game
     m_lootRecipientGroup = 0;
     m_groupLootTimer = 0;
     lootingGroupLowGUID = 0;
-
-    ResetLootMode(); // restore default loot mode
 }
 
 GameObject::~GameObject()

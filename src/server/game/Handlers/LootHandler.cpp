@@ -40,7 +40,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
     uint8 lootSlot = 0;
 
     uint32 count = recvData.ReadBits(25);
-    ObjectGuid guids[count];
+    std::vector<ObjectGuid> guids(count);
 
     uint8 bitOrder[8] = {4, 0, 2, 1, 5, 6, 7, 3};
     for (uint32 i = 0; i < count; i++)
@@ -118,114 +118,129 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
 
     Player* player = GetPlayer();
     uint64 guid = player->GetLootGUID();
-    if (!guid)
+    std::list<uint64>* listloot = player->GetAoeLootList();
+    std::list<uint64>* temploot;
+    std::list<uint64> templootguid;
+    if (!guid && listloot->empty())
         return;
 
-    Loot* loot = NULL;
-    bool shareMoney = true;
-
-    switch (GUID_HIPART(guid))
+    if(!listloot->empty())
+        temploot = listloot;
+    else
     {
-        case HIGHGUID_GAMEOBJECT:
-        {
-            GameObject* go = GetPlayer()->GetMap()->GetGameObject(guid);
-
-            // do not check distance for GO if player is the owner of it (ex. fishing bobber)
-            if (go && ((go->GetOwnerGUID() == player->GetGUID() || go->IsWithinDistInMap(player, INTERACTION_DISTANCE))))
-                loot = &go->loot;
-
-            break;
-        }
-        case HIGHGUID_CORPSE:                               // remove insignia ONLY in BG
-        {
-            Corpse* bones = ObjectAccessor::GetCorpse(*player, guid);
-
-            if (bones && bones->IsWithinDistInMap(player, LOOT_DISTANCE))
-            {
-                loot = &bones->loot;
-                shareMoney = false;
-            }
-
-            break;
-        }
-        case HIGHGUID_ITEM:
-        {
-            if (Item* item = player->GetItemByGuid(guid))
-            {
-                loot = &item->loot;
-                shareMoney = false;
-            }
-            break;
-        }
-        case HIGHGUID_UNIT:
-        case HIGHGUID_VEHICLE:
-        {
-            Creature* creature = player->GetMap()->GetCreature(guid);
-            bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
-            if (lootAllowed && creature->IsWithinDistInMap(player, LOOT_DISTANCE))
-            {
-                loot = &creature->loot;
-                if (creature->isAlive())
-                    shareMoney = false;
-            }
-            break;
-        }
-        default:
-            return;                                         // unlootable type
+        templootguid.push_back(guid);
+        temploot = &templootguid;
     }
 
-    if (loot)
+    for (std::list<uint64>::const_iterator itr = temploot->begin(); itr != temploot->end(); ++itr)
     {
-        if (shareMoney && player->GetGroup())      //item, pickpocket and players can be looted only single player
+        Loot* loot = NULL;
+        bool shareMoney = true;
+        uint64 lootguid = *itr;
+
+        switch (GUID_HIPART(lootguid))
         {
-            Group* group = player->GetGroup();
-
-            std::vector<Player*> playersNear;
-            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            case HIGHGUID_GAMEOBJECT:
             {
-                Player* member = itr->getSource();
-                if (!member)
-                    continue;
+                GameObject* go = GetPlayer()->GetMap()->GetGameObject(lootguid);
 
-                if (player->IsWithinDistInMap(member, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
-                    playersNear.push_back(member);
+                // do not check distance for GO if player is the owner of it (ex. fishing bobber)
+                if (go && ((go->GetOwnerGUID() == player->GetGUID() || go->IsWithinDistInMap(player, INTERACTION_DISTANCE))))
+                    loot = &go->loot;
+
+                break;
             }
-             /*@todo: check me for 5.0.5*/
-            uint32 goldPerPlayer = uint32((loot->gold) / (playersNear.size()));
-            
-            loot->NotifyMoneyRemoved(goldPerPlayer);
-            for (std::vector<Player*>::const_iterator i = playersNear.begin(); i != playersNear.end(); ++i)
+            case HIGHGUID_CORPSE:                               // remove insignia ONLY in BG
             {
-                (*i)->ModifyMoney(goldPerPlayer);
-                (*i)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, goldPerPlayer);
+                Corpse* bones = ObjectAccessor::GetCorpse(*player, lootguid);
 
-                if (Guild* guild = sGuildMgr->GetGuildById((*i)->GetGuildId()))
-                    if (uint32 guildGold = CalculatePct(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
+                if (bones && bones->IsWithinDistInMap(player, LOOT_DISTANCE))
+                {
+                    loot = &bones->loot;
+                    shareMoney = false;
+                }
+
+                break;
+            }
+            case HIGHGUID_ITEM:
+            {
+                if (Item* item = player->GetItemByGuid(lootguid))
+                {
+                    loot = &item->loot;
+                    shareMoney = false;
+                }
+                break;
+            }
+            case HIGHGUID_UNIT:
+            case HIGHGUID_VEHICLE:
+            {
+                Creature* creature = player->GetMap()->GetCreature(lootguid);
+                bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
+                if (lootAllowed && creature->IsWithinDistInMap(player, LOOT_DISTANCE))
+                {
+                    loot = &creature->loot;
+                    if (creature->isAlive())
+                        shareMoney = false;
+                }
+                break;
+            }
+            default:
+                return;                                         // unlootable type
+        }
+
+        if (loot)
+        {
+            if (shareMoney && player->GetGroup())      //item, pickpocket and players can be looted only single player
+            {
+                Group* group = player->GetGroup();
+
+                std::vector<Player*> playersNear;
+                for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+                {
+                    Player* member = itr->getSource();
+                    if (!member)
+                        continue;
+
+                    if (player->IsWithinDistInMap(member, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
+                        playersNear.push_back(member);
+                }
+                 /*@todo: check me for 5.0.5*/
+                uint32 goldPerPlayer = uint32((loot->gold) / (playersNear.size()));
+                
+                loot->NotifyMoneyRemoved(goldPerPlayer);
+                for (std::vector<Player*>::const_iterator i = playersNear.begin(); i != playersNear.end(); ++i)
+                {
+                    (*i)->ModifyMoney(goldPerPlayer);
+                    (*i)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, goldPerPlayer);
+
+                    if (Guild* guild = sGuildMgr->GetGuildById((*i)->GetGuildId()))
+                        if (uint32 guildGold = CalculatePct(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
+                            guild->HandleMemberDepositMoney(this, guildGold, true);
+
+                    WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
+                    data.WriteBit(playersNear.size() <= 1); // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
+                    data << uint32(goldPerPlayer);
+                    (*i)->GetSession()->SendPacket(&data);
+                }
+            }
+            else
+            {
+                player->ModifyMoney(loot->gold);
+                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
+
+                if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
+                    if (uint32 guildGold = CalculatePct(loot->gold, player->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
                         guild->HandleMemberDepositMoney(this, guildGold, true);
 
+                loot->NotifyMoneyRemoved(loot->gold);
                 WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
-                data.WriteBit(playersNear.size() <= 1); // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
-                data << uint32(goldPerPlayer);
-                (*i)->GetSession()->SendPacket(&data);
+                data.WriteBit(1);   // "You loot..."
+                data << uint32(loot->gold);
+                SendPacket(&data);
             }
+
+            loot->gold = 0;
         }
-        else
-        {
-            player->ModifyMoney(loot->gold);
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
-
-            if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
-                if (uint32 guildGold = CalculatePct(loot->gold, player->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
-                    guild->HandleMemberDepositMoney(this, guildGold, true);
-
-            loot->NotifyMoneyRemoved(loot->gold);
-            WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
-            data.WriteBit(1);   // "You loot..."
-            data << uint32(loot->gold);
-            SendPacket(&data);
-        }
-
-        loot->gold = 0;
     }
 }
 
@@ -245,18 +260,15 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
     if (!_player->isAlive())
         return;
 
-    GetPlayer()->SendLoot(guid, LOOT_CORPSE);
+    GetPlayer()->SendLoot(guid, LOOT_CORPSE, true);
 
     std::list<Creature*> corpesList;
     _player->GetCorpseCreatureInGrid(corpesList, LOOT_DISTANCE);
-    // Remove other players jade statue
     for (std::list<Creature*>::const_iterator itr = corpesList.begin(); itr != corpesList.end(); ++itr)
     {
         if(Creature* creature = (*itr))
-        {
-            if(creature->GetGUID() != guid)
-                GetPlayer()->SendLoot(creature->GetGUID(), LOOT_CORPSE, 1);
-        }
+            if(guid != creature->GetGUID())
+                GetPlayer()->SendLoot(creature->GetGUID(), LOOT_CORPSE, true, 1);
     }
 
     // interrupt cast
@@ -286,6 +298,9 @@ void WorldSession::DoLootRelease(uint64 lguid)
     Player  *player = GetPlayer();
     Loot    *loot;
 
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: DoLootRelease lguid %u", lguid);
+
+    player->DelAoeLootList(lguid);
     player->SetLootGUID(0);
     player->SendLootRelease(lguid);
 

@@ -392,18 +392,6 @@ public:
             DoScriptText(RAND(SAY_SARTHARION_SLAY_1, SAY_SARTHARION_SLAY_2, SAY_SARTHARION_SLAY_3), me);
         }
 
-        // me->ResetLootMode() is called from Reset()
-        // AddDrakeLootMode() should only ever be called from FetchDragons(), which is called from Aggro()
-        void AddDrakeLootMode()
-        {
-            if (me->HasLootMode(LOOT_MODE_HARD_MODE_2))      // Has two Drake loot modes
-                me->AddLootMode(LOOT_MODE_HARD_MODE_3);      // Add 3rd Drake loot mode
-            else if (me->HasLootMode(LOOT_MODE_HARD_MODE_1)) // Has one Drake loot mode
-                me->AddLootMode(LOOT_MODE_HARD_MODE_2);      // Add 2nd Drake loot mode
-            else                                             // Has no Drake loot modes
-                me->AddLootMode(LOOT_MODE_HARD_MODE_1);      // Add 1st Drake loot mode
-        }
-
         uint32 GetData(uint32 type)
         {
             if (type == TWILIGHT_ACHIEVEMENTS)
@@ -417,7 +405,6 @@ public:
             if (!instance)
                 return;
 
-            me->ResetLootMode();
             drakeCount = 0;
 
             Creature* pFetchTene = Unit::GetCreature(*me, instance->GetData64(DATA_TENEBRON));
@@ -433,7 +420,6 @@ public:
                 if (!pFetchTene->isInCombat())
                 {
                     DoCast(me, SPELL_POWER_OF_TENEBRON);
-                    AddDrakeLootMode();
                     ++drakeCount;
                 }
                 pFetchTene->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aTene[0].m_fX, m_aTene[0].m_fY, m_aTene[0].m_fZ);
@@ -448,7 +434,6 @@ public:
                 if (!pFetchShad->isInCombat())
                 {
                     DoCast(me, SPELL_POWER_OF_SHADRON);
-                    AddDrakeLootMode();
                     ++drakeCount;
                 }
                 pFetchShad->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aShad[0].m_fX, m_aShad[0].m_fY, m_aShad[0].m_fZ);
@@ -463,7 +448,6 @@ public:
                 if (!pFetchVesp->isInCombat())
                 {
                     DoCast(me, SPELL_POWER_OF_VESPERON);
-                    AddDrakeLootMode();
                     ++drakeCount;
                 }
                 pFetchVesp->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aVesp[0].m_fX, m_aVesp[0].m_fY, m_aVesp[0].m_fZ);

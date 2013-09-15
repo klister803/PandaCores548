@@ -386,6 +386,14 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket& /*recvData*/)
 
     if (uint64 lguid = GetPlayer()->GetLootGUID())
         DoLootRelease(lguid);
+    if(std::list<uint64>* listloot = GetPlayer()->GetAoeLootList())
+    {
+        if(!listloot->empty())
+        {
+            for (std::list<uint64>::const_iterator itr = listloot->begin(); itr != listloot->end(); ++itr)
+                DoLootRelease(*itr);
+        }
+    }
 
     uint32 reason = 0;
 

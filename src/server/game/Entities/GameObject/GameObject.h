@@ -724,13 +724,6 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         // Note: unit is only used when s = GO_ACTIVATED
         void SetLootState(LootState s, Unit* unit = NULL);
 
-        uint16 GetLootMode() { return m_LootMode; }
-        bool HasLootMode(uint16 lootMode) { return m_LootMode & lootMode; }
-        void SetLootMode(uint16 lootMode) { m_LootMode = lootMode; }
-        void AddLootMode(uint16 lootMode) { m_LootMode |= lootMode; }
-        void RemoveLootMode(uint16 lootMode) { m_LootMode &= ~lootMode; }
-        void ResetLootMode() { m_LootMode = LOOT_MODE_DEFAULT; }
-
         void AddToSkillupList(uint32 PlayerGuidLow) { m_SkillupList.push_back(PlayerGuidLow); }
         bool IsInSkillupList(uint32 PlayerGuidLow) const
         {
@@ -836,7 +829,6 @@ class GameObject : public WorldObject, public GridObject<GameObject>
 
         uint64 m_lootRecipient;
         uint32 m_lootRecipientGroup;
-        uint16 m_LootMode;                                  // bitmask, default LOOT_MODE_DEFAULT, determines what loot will be lootable
     private:
         void RemoveFromOwner();
         void SwitchDoorOrButton(bool activate, bool alternative = false);

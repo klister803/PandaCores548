@@ -2385,6 +2385,19 @@ class Player : public Unit, public GridObject<Player>
 
         uint64 GetLootGUID() const { return m_lootGuid; }
         void SetLootGUID(uint64 guid) { m_lootGuid = guid; }
+        void ClearAoeLootList() { m_AoelootGuidList.clear(); }
+        void AddAoeLootList(uint64 guid) { m_AoelootGuidList.push_back(guid); }
+        std::list<uint64>* GetAoeLootList() { return &m_AoelootGuidList; }
+        void DelAoeLootList(uint64 guid) { m_AoelootGuidList.remove(guid); }
+        bool IsInAoeLootList(uint64 guid)
+        {
+            for (std::list<uint64>::const_iterator itr = m_AoelootGuidList.begin(); itr != m_AoelootGuidList.end(); ++itr)
+            {
+                if (*itr == guid)
+                    return true;
+            }
+            return false;
+        }
 
         void RemovedInsignia(Player* looterPlr);
 
@@ -2585,7 +2598,7 @@ class Player : public Unit, public GridObject<Player>
         PlayerMenu* PlayerTalkClass;
         std::vector<ItemSetEffect*> ItemSetEff;
 
-        void SendLoot(uint64 guid, LootType loot_type, uint8 pool = 0);
+        void SendLoot(uint64 guid, LootType loot_type, bool AoeLoot = false, uint8 pool = 0);
         void SendLootRelease(uint64 guid);
         void SendNotifyLootItemRemoved(uint8 lootSlot, uint64 guid);
         void SendNotifyLootMoneyRemoved(uint64 gold, uint64 guid);
@@ -3209,6 +3222,7 @@ class Player : public Unit, public GridObject<Player>
 
         void outDebugValues() const;
         uint64 m_lootGuid;
+        std::list<uint64> m_AoelootGuidList;
 
         uint32 m_team;
         uint32 m_nextSave;

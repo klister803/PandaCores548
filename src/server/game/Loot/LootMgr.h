@@ -111,14 +111,13 @@ struct LootStoreItem
     uint8   group       :7;
     bool    needs_quest :1;                                 // quest drop (negative ChanceOrQuestChance in DB)
     uint8   maxcount    :8;                                 // max drop count for the item (mincountOrRef positive) or Ref multiplicator (mincountOrRef negative)
-    uint16  difficulty;                                     // instance difficulty mask
     std::list<Condition*>  conditions;                               // additional loot condition
 
     // Constructor, converting ChanceOrQuestChance -> (chance, needs_quest)
     // displayid is filled in IsValid() which must be called after
-    LootStoreItem(uint32 _itemid, float _chanceOrQuestChance, uint16 _lootmode, uint8 _group, int32 _mincountOrRef, uint8 _maxcount, uint8 _difficulty)
+    LootStoreItem(uint32 _itemid, float _chanceOrQuestChance, uint16 _lootmode, uint8 _group, int32 _mincountOrRef, uint8 _maxcount)
         : itemid(_itemid), chance(fabs(_chanceOrQuestChance)), mincountOrRef(_mincountOrRef), lootmode(_lootmode),
-        group(_group), needs_quest(_chanceOrQuestChance < 0), maxcount(_maxcount), difficulty(_difficulty)
+        group(_group), needs_quest(_chanceOrQuestChance < 0), maxcount(_maxcount)
          {}
 
     bool Roll(bool rate) const;                             // Checks if the entry takes it's chance (at loot generation)
@@ -194,8 +193,8 @@ typedef std::set<uint32> LootIdSet;
 class LootStore
 {
     public:
-        explicit LootStore(char const* name, char const* entryName, bool ratesAllowed, std::string addfields)
-            : m_name(name), m_entryName(entryName), m_ratesAllowed(ratesAllowed), m_addfields(addfields) {}
+        explicit LootStore(char const* name, char const* entryName, bool ratesAllowed)
+            : m_name(name), m_entryName(entryName), m_ratesAllowed(ratesAllowed) {}
 
         virtual ~LootStore() { Clear(); }
 
@@ -217,7 +216,6 @@ class LootStore
         char const* GetName() const { return m_name; }
         char const* GetEntryName() const { return m_entryName; }
         bool IsRatesAllowed() const { return m_ratesAllowed; }
-        std::string GetAddFields() const { return m_addfields; }
     protected:
         uint32 LoadLootTable();
         void Clear();
@@ -226,7 +224,6 @@ class LootStore
         char const* m_name;
         char const* m_entryName;
         bool m_ratesAllowed;
-        std::string m_addfields;
 };
 
 class LootTemplate
@@ -238,7 +235,7 @@ class LootTemplate
         // Adds an entry to the group (at loading stage)
         void AddEntry(LootStoreItem& item);
         // Rolls for every item in the template and adds the rolled items the the loot
-        void Process(Loot& loot, bool rate, uint16 lootMode, uint8 groupId = 0) const;
+        void Process(Loot& loot, bool rate, uint8 groupId = 0) const;
         void CopyConditions(std::list<Condition*>  conditions);
 
         // True if template includes at least 1 quest drop entry
@@ -310,9 +307,8 @@ struct Loot
     uint8 objType;
     uint8 spawnMode;
     uint32 countItem;
-    uint8 pool;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0), pool(0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -355,7 +351,7 @@ struct Loot
     void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
-    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false, uint16 lootMode = LOOT_MODE_DEFAULT);
+    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false);
 
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);
@@ -386,10 +382,10 @@ struct LootView
     Player* viewer;
     PermissionTypes permission;
     uint8 _loot_type;
-    uint8 _pool;
+    uint8 pool;
     ObjectGuid _guid;
-    LootView(Loot &_loot, Player* _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION, uint8 pool = 0)
-        : loot(_loot), viewer(_viewer), _loot_type(loot_type), _guid(ObjectGuid(guid)), permission(_permission), _pool(pool) {}
+    LootView(Loot &_loot, Player* _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION, uint8 _pool = 1)
+        : loot(_loot), viewer(_viewer), _loot_type(loot_type), _guid(ObjectGuid(guid)), permission(_permission), pool(_pool) {}
 };
 
 extern LootStore LootTemplates_Creature;

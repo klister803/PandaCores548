@@ -187,7 +187,6 @@ class boss_general_vezax : public CreatureScript
                                 summons.DespawnAll();
                                 DoCast(me, SPELL_SARONITE_BARRIER);
                                 DoCast(SPELL_SUMMON_SARONITE_ANIMUS);
-                                me->AddLootMode(LOOT_MODE_HARD_MODE_1);
                                 events.CancelEvent(EVENT_SARONITE_VAPORS);
                                 events.CancelEvent(EVENT_SEARING_FLAMES);
                             }

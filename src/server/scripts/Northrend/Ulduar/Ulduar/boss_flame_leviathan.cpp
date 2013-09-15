@@ -482,26 +482,7 @@ class boss_flame_leviathan : public CreatureScript
             {
                 if (action && action <= 4) // Tower destruction, debuff leviathan loot and reduce active tower count
                 {
-                    if (me->HasLootMode(LOOT_MODE_DEFAULT | LOOT_MODE_HARD_MODE_1 | LOOT_MODE_HARD_MODE_2 | LOOT_MODE_HARD_MODE_3 | LOOT_MODE_HARD_MODE_4) && ActiveTowersCount == 4)
-                    {
-                        me->RemoveLootMode(LOOT_MODE_HARD_MODE_4);
-                        --ActiveTowersCount;
-                    }
-                    if (me->HasLootMode(LOOT_MODE_DEFAULT | LOOT_MODE_HARD_MODE_1 | LOOT_MODE_HARD_MODE_2 | LOOT_MODE_HARD_MODE_3) && ActiveTowersCount == 3)
-                    {
-                        me->RemoveLootMode(LOOT_MODE_HARD_MODE_3);
-                        --ActiveTowersCount;
-                    }
-                    if (me->HasLootMode(LOOT_MODE_DEFAULT | LOOT_MODE_HARD_MODE_1 | LOOT_MODE_HARD_MODE_2) && ActiveTowersCount == 2)
-                    {
-                        me->RemoveLootMode(LOOT_MODE_HARD_MODE_2);
-                        --ActiveTowersCount;
-                    }
-                    if (me->HasLootMode(LOOT_MODE_DEFAULT | LOOT_MODE_HARD_MODE_1) && ActiveTowersCount == 1)
-                    {
-                        me->RemoveLootMode(LOOT_MODE_HARD_MODE_1);
-                        --ActiveTowersCount;
-                    }
+                    --ActiveTowersCount;
                 }
 
                 switch (action)
@@ -524,7 +505,6 @@ class boss_flame_leviathan : public CreatureScript
                         towerOfLife = true;
                         towerOfFlames = true;
                         towerOfFrost = true;
-                        me->SetLootMode(LOOT_MODE_DEFAULT | LOOT_MODE_HARD_MODE_1 | LOOT_MODE_HARD_MODE_2 | LOOT_MODE_HARD_MODE_3 | LOOT_MODE_HARD_MODE_4);
                         break;
                     case ACTION_MOVE_TO_CENTER_POSITION: // Triggered by 2 Collossus near door
                         if (!me->isDead())

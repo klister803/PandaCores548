@@ -303,7 +303,6 @@ class boss_xt002 : public CreatureScript
                         case EVENT_ENTER_HARD_MODE:
                             me->SetFullHealth();
                             DoCast(me, RAID_MODE(SPELL_HEARTBREAK_10, SPELL_HEARTBREAK_25), true);
-                            me->AddLootMode(LOOT_MODE_HARD_MODE_1);
                             _hardMode = true;
                             SetPhaseOne();
                             break;

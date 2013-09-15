@@ -172,7 +172,6 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL)
     m_LOSCheck_player = false;
     m_LOSCheck_creature = false;
 
-    ResetLootMode(); // restore default loot mode
     TriggerJustRespawned = false;
     m_isTempWorldObject = false;
     bossid = 0;

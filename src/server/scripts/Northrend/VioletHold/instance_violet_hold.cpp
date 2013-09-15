@@ -269,7 +269,6 @@ public:
             if (creature->GetGUID() == uiFirstBoss || creature->GetGUID() == uiSecondBoss)
             {
                 creature->AllLootRemovedFromCorpse();
-                creature->RemoveLootMode(1);
             }
         }
 
@@ -554,7 +553,6 @@ public:
                     {
                         // respawn but avoid to be looted again
                         pBoss->Respawn();
-                        pBoss->RemoveLootMode(1);
                     }
                     pBoss->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC|UNIT_FLAG_NON_ATTACKABLE);
                     uiWaveCount = 0;

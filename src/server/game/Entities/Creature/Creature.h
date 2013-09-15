@@ -685,13 +685,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void SetLootRecipient (Unit* unit);
         void AllLootRemovedFromCorpse();
 
-        uint16 GetLootMode() { return m_LootMode; }
-        bool HasLootMode(uint16 lootMode) { return m_LootMode & lootMode; }
-        void SetLootMode(uint16 lootMode) { m_LootMode = lootMode; }
-        void AddLootMode(uint16 lootMode) { m_LootMode |= lootMode; }
-        void RemoveLootMode(uint16 lootMode) { m_LootMode &= ~lootMode; }
-        void ResetLootMode() { m_LootMode = LOOT_MODE_DEFAULT; }
-
         SpellInfo const* reachWithSpellAttack(Unit* victim);
         SpellInfo const* reachWithSpellCure(Unit* victim);
 
@@ -864,7 +857,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         CreatureData const* m_creatureData;
         CreatureDifficultyStat const* m_creatureDiffData;
 
-        uint16 m_LootMode;                                  // bitmask, default LOOT_MODE_DEFAULT, determines what loot will be lootable
         uint32 guid_transport;
         uint32 bossid;
         uint8 difficulty;
