@@ -11744,6 +11744,13 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     for (AuraEffectList::const_iterator i = mHealingDonePct.begin(); i != mHealingDonePct.end(); ++i)
         AddPct(DoneTotalMod, (*i)->GetAmount());
 
+    // Apply Power JcJ healing bonus
+    if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && HasAura(74411))
+    {
+        float PowerJcJ = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+        AddPct(DoneTotalMod, PowerJcJ);
+    }
+
     // done scripted mod (take it from owner)
     Unit* owner = GetOwner() ? GetOwner() : this;
     AuraEffectList const& mOverrideClassScript= owner->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
