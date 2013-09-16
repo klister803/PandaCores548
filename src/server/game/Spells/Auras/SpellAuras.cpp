@@ -1371,6 +1371,12 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             target->ToPlayer()->RemoveSpellCooldown(20252, true);
                         break;
                 }
+
+                // Recently Bandaged
+                if (m_spellInfo->Mechanic == MECHANIC_BANDAGE)
+                    if (target && target->IsInWorld())
+                        target->CastSpell(target, 11196, true);
+
                 break;
             case SPELLFAMILY_DRUID:
                 if (!caster)
