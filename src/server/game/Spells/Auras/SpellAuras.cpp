@@ -1373,7 +1373,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 }
 
                 // Recently Bandaged
-                if (m_spellInfo->Mechanic == MECHANIC_BANDAGE || (m_spellInfo->SpellIconID == 104 && m_spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_PERIODIC_HEAL))
+                if (m_spellInfo->Mechanic == MECHANIC_BANDAGE || (m_spellInfo->SpellIconID == 104 && m_spellInfo->Effects[EFFECT_0].ApplyAuraName == SPELL_AURA_PERIODIC_HEAL))
                     if (target && target->IsInWorld())
                         target->CastSpell(target, 11196, true);
 
