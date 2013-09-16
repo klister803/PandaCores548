@@ -449,14 +449,7 @@ void WorldSession::LogoutPlayer(bool Save)
     {
         if (uint64 lguid = _player->GetLootGUID())
             DoLootRelease(lguid);
-        if(std::list<uint64>* listloot = _player->GetAoeLootList())
-        {
-            if(!listloot->empty())
-            {
-                for (std::list<uint64>::const_iterator itr = listloot->begin(); itr != listloot->end(); ++itr)
-                    DoLootRelease(*itr);
-            }
-        }
+        _player->ClearAoeLootList();
 
         ///- If the player just died before logging out, make him appear as a ghost
         //FIXME: logout must be delayed in case lost connection with client in time of combat
