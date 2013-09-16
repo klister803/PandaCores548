@@ -1234,7 +1234,7 @@ void LootTemplate::LootGroup::Process(Loot& loot) const
 
         ++uiAttemptCount;
 
-        if (item != NULL && item->lootmode & diffMask)   // only add this item if roll succeeds and the mode matches
+        if (item != NULL)   // only add this item if roll succeeds and the mode matches
         {
             bool duplicate = false;
             if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))

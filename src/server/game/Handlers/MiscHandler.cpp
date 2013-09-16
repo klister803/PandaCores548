@@ -1853,6 +1853,7 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket& recvData)
             group->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, true, _player);
             group->SetRaidDifficulty(Difficulty(mode));
             _player->SendRaidDifficulty(true);
+            group->SendUpdate();
         }
     }
     else
