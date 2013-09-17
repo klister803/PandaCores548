@@ -1163,39 +1163,36 @@ void WorldSession::HandleRaidConfirmReadyCheck(WorldPacket& recvData)
     }
 }
 
-void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data, bool full /*= false*/)
+void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data)
 {
     uint32 mask = player->GetGroupUpdateFlag();
 
-    if (full)
-    {
-        mask = GROUP_UPDATE_FULL;
-        data->Initialize(SMSG_PARTY_MEMBER_STATS_FULL, 80);          // average value
-        *data << uint8(0);
-    }
-    else
-    {
-        if (mask == GROUP_UPDATE_FLAG_NONE)
-            return;
+    if (mask == GROUP_UPDATE_FLAG_NONE)
+        return;
 
-        if (mask & GROUP_UPDATE_FLAG_POWER_TYPE)                // if update power type, update current/max power also
-            mask |= (GROUP_UPDATE_FLAG_CUR_POWER | GROUP_UPDATE_FLAG_MAX_POWER);
+    mask = mask &~ (GROUP_UPDATE_FLAG_AURAS | GROUP_UPDATE_FLAG_PET_AURAS);
 
-        if (mask & GROUP_UPDATE_FLAG_PET_POWER_TYPE)            // same for pets
-            mask |= (GROUP_UPDATE_FLAG_PET_CUR_POWER | GROUP_UPDATE_FLAG_PET_MAX_POWER);
+    if (mask & GROUP_UPDATE_FLAG_POWER_TYPE)                // if update power type, update current/max power also
+        mask |= (GROUP_UPDATE_FLAG_CUR_POWER | GROUP_UPDATE_FLAG_MAX_POWER);
 
-        data->Initialize(SMSG_PARTY_MEMBER_STATS, 80);          // average value
-    }
+    if (mask & GROUP_UPDATE_FLAG_PET_POWER_TYPE)            // same for pets
+        mask |= (GROUP_UPDATE_FLAG_PET_CUR_POWER | GROUP_UPDATE_FLAG_PET_MAX_POWER);
 
+    data->Initialize(SMSG_PARTY_MEMBER_STATS, 80);          // average value
     data->append(player->GetPackGUID());
     *data << uint32(mask);
 
     if (mask & GROUP_UPDATE_FLAG_STATUS)
     {
-        if (player->IsPvP())
-            *data << uint16(MEMBER_STATUS_ONLINE | MEMBER_STATUS_PVP);
+        if (player)
+        {
+            if (player->IsPvP())
+                *data << uint16(MEMBER_STATUS_ONLINE | MEMBER_STATUS_PVP);
+            else
+                *data << uint16(MEMBER_STATUS_ONLINE);
+        }
         else
-            *data << uint16(MEMBER_STATUS_ONLINE);
+            *data << uint16(MEMBER_STATUS_OFFLINE);
     }
 
     if (mask & GROUP_UPDATE_FLAG_CUR_HP)
@@ -1241,13 +1238,11 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                 {
                     *data << uint32(0);
                     *data << uint16(0);
-                    *data << uint32(0);
                     continue;
                 }
 
                 *data << uint32(aurApp->GetBase()->GetId());
                 *data << uint16(aurApp->GetFlags());
-                *data << uint32(0);
 
                 if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
                 {
@@ -1260,7 +1255,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                         if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
                         {
                             *data << float(eff->GetAmount());
-                            ++count;
+                            count++;
                         }
                     }
                     data->put(pos, count);
@@ -1334,6 +1329,14 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
             *data << uint16(0);
     }
 
+    if (mask & GROUP_UPDATE_FLAG_VEHICLE_SEAT)
+    {
+        if (Vehicle* veh = player->GetVehicle())
+            *data << uint32(veh->GetVehicleInfo()->m_seatID[player->m_movementInfo.t_seat]);
+        else
+            *data << uint32(0);
+    }
+
     if (mask & GROUP_UPDATE_FLAG_PET_AURAS)
     {
         if (pet)
@@ -1351,13 +1354,11 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                     {
                         *data << uint32(0);
                         *data << uint16(0);
-                        *data << uint32(0);
                         continue;
                     }
 
                     *data << uint32(aurApp->GetBase()->GetId());
                     *data << uint16(aurApp->GetFlags());
-                    *data << uint32(0);
 
                     if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
                     {
@@ -1382,16 +1383,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
         {
             *data << uint8(0);
             *data << uint64(0);
-            *data << uint32(0);
         }
-    }
-
-    if (mask & GROUP_UPDATE_FLAG_VEHICLE_SEAT)
-    {
-        if (Vehicle* veh = player->GetVehicle())
-            *data << uint32(veh->GetVehicleInfo()->m_seatID[player->m_movementInfo.t_seat]);
-        else
-            *data << uint32(0);
     }
 
     if (mask & GROUP_UPDATE_FLAG_PHASE)
@@ -1405,6 +1397,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
 /*this procedure handles clients CMSG_REQUEST_PARTY_MEMBER_STATS request*/
 void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
 {
+    return;
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_REQUEST_PARTY_MEMBER_STATS");
     ObjectGuid Guid;
     recvData.read_skip<uint8>();
@@ -1428,7 +1421,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
     }
 
     WorldPacket data;
-    player->GetSession()->BuildPartyMemberStatsChangedPacket(player, &data, true);
+    player->GetSession()->BuildPartyMemberStatsChangedPacket(player, &data);
     SendPacket(&data);
 
     /*Pet* pet = player->GetPet();

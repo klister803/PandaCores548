@@ -125,15 +125,7 @@ enum PartyResult
     ERR_VOTE_KICK_REASON_NEEDED         = 27,
     ERR_PARTY_LFG_BOOT_DUNGEON_COMPLETE = 28,
     ERR_PARTY_LFG_BOOT_LOOT_ROLLS       = 29,
-    ERR_PARTY_LFG_TELEPORT_IN_COMBAT    = 30,
-    ERR_PARTY_ALREADY_IN_BATTLEGROUND_QUEUE = 31,
-    ERR_PARTY_CONFIRMING_BATTLEGROUND_QUEUE = 32,
-    ERR_CROSS_REALM_RAID_INVITE         = 33,
-    ERR_RAID_DISALLOWED_BY_CROSS_REALM  = 34,
-    ERR_PARTY_ROLE_NOT_AVAILABLE        = 35,
-    ERR_PARTY_LFG_BOOT_VOTE_REGISTERED  = 36,
-    ERR_PARTY_PRIVATE_GROUP_ONLY        = 37,
-
+    ERR_PARTY_LFG_TELEPORT_IN_COMBAT    = 30
 };
 
 
@@ -393,7 +385,7 @@ class WorldSession
         void SendNotInArenaTeamPacket(uint8 type);
         void SendPetitionShowList(uint64 guid);
 
-        void BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data, bool full = false);
+        void BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data);
 
         void DoLootRelease(uint64 lguid);
 
