@@ -1251,6 +1251,7 @@ class ObjectMgr
                 case NONE_DIFFICULTY:
                 case REGULAR_DIFFICULTY:
                 case MAN10_DIFFICULTY:
+                case MAN40_DIFFICULTY:
                     diff = 0;
                     break;
                 case HEROIC_DIFFICULTY:
@@ -1265,7 +1266,6 @@ class ObjectMgr
                     break;
                 case RAID_TOOL_DIFFICULTY:
                 case CHALLENGE_MODE_DIFFICULTY:
-                case MAN40_DIFFICULTY:
                     diff = 4;
                     break;
             }
