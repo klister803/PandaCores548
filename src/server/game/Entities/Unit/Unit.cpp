@@ -11745,7 +11745,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         AddPct(DoneTotalMod, (*i)->GetAmount());
 
     // Apply Power JcJ healing bonus
-    if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && HasAura(74411))
+    if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && (HasAura(74411) || HasAura(74410)))
     {
         float PowerJcJ = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
         AddPct(DoneTotalMod, PowerJcJ);
