@@ -72,10 +72,10 @@ class icecrown_citadel_teleport : public GameObjectScript
             if (sender == GOSSIP_SENDER_ICC_PORT)
             {
                 player->CastSpell(player, 12438, true);
-                player->CastSpell(player, spell, true);
+                //player->CastSpell(player, spell, true);
             }
                 
-            /*switch(action)
+            switch(action)
             {
                 case LIGHT_S_HAMMER_TELEPORT:
                     player->TeleportTo(631, -17.192f, 2211.440f, 30.1158f, 3.121f);
@@ -107,7 +107,7 @@ class icecrown_citadel_teleport : public GameObjectScript
                 case FROSTWING_HALLS_TELEPORT:
                     player->TeleportTo(631, 4357.062f, 2674.460f, 349.344f, 1.603f);
                     break;
-            }*/
+            }
 
             return true;
         }
