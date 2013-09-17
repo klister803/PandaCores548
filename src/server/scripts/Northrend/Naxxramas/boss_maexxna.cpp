@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,11 +15,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "PassiveAI.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
+enum Emotes
+{
+    EMOTE_SPIN_WEB          = -1533146,
+    EMOTE_SPIDERLING        = -1533147,
+    EMOTE_SPRAY             = -1533148
+};
 enum Spells
 {
     SPELL_WEB_WRAP              = 28622,
@@ -27,8 +31,8 @@ enum Spells
     SPELL_WEB_SPRAY_25          = 54125,
     SPELL_POISON_SHOCK_10       = 28741,
     SPELL_POISON_SHOCK_25       = 54122,
-    SPELL_NECROTIC_POISON_10    = 28776,
-    SPELL_NECROTIC_POISON_25    = 54121,
+    SPELL_NECROTIC_POISON_10    = 54121,
+    SPELL_NECROTIC_POISON_25    = 28776,
     SPELL_FRENZY_10             = 54123,
     SPELL_FRENZY_25             = 54124,
 };
@@ -63,14 +67,14 @@ class boss_maexxna : public CreatureScript
 public:
     boss_maexxna() : CreatureScript("boss_maexxna") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new boss_maexxnaAI (creature);
+        return new boss_maexxnaAI (pCreature);
     }
 
     struct boss_maexxnaAI : public BossAI
     {
-        boss_maexxnaAI(Creature* creature) : BossAI(creature, BOSS_MAEXXNA) {}
+        boss_maexxnaAI(Creature *c) : BossAI(c, BOSS_MAEXXNA) {}
 
         bool enraged;
 
@@ -80,8 +84,8 @@ public:
             enraged = false;
             events.ScheduleEvent(EVENT_WRAP, 20000);
             events.ScheduleEvent(EVENT_SPRAY, 40000);
-            events.ScheduleEvent(EVENT_SHOCK, urand(5000, 10000));
-            events.ScheduleEvent(EVENT_POISON, urand(10000, 15000));
+            events.ScheduleEvent(EVENT_SHOCK, urand(5000,10000));
+            events.ScheduleEvent(EVENT_POISON, urand(10000,15000));
             events.ScheduleEvent(EVENT_SUMMON, 30000);
         }
 
@@ -96,6 +100,11 @@ public:
                 events.ScheduleEvent(EVENT_FRENZY, 0); // will be cast immediately
             }
 
+            _DoAggroPulse(diff);
+
+            if (me->IsNonMeleeSpellCasted(false))
+                return;
+
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
@@ -103,39 +112,40 @@ public:
                 switch (eventId)
                 {
                     case EVENT_WRAP:
-                        // TODO : Add missing text
-                        for (uint8 i = 0; i < RAID_MODE(1, 2); ++i)
+                        DoScriptText(EMOTE_SPIN_WEB, me);
+                        for (uint8 i = 0; i < RAID_MODE(1,2); ++i)
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true, -SPELL_WEB_WRAP))
+                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true, -SPELL_WEB_WRAP))
                             {
-                                target->RemoveAura(RAID_MODE(SPELL_WEB_SPRAY_10, SPELL_WEB_SPRAY_25));
+                                pTarget->RemoveAura(RAID_MODE(SPELL_WEB_SPRAY_10,SPELL_WEB_SPRAY_25));
                                 uint8 pos = rand()%MAX_POS_WRAP;
-                                target->GetMotionMaster()->MoveJump(PosWrap[pos].GetPositionX(), PosWrap[pos].GetPositionY(), PosWrap[pos].GetPositionZ(), 20, 20);
-                                if (Creature* wrap = DoSummon(MOB_WEB_WRAP, PosWrap[pos], 0, TEMPSUMMON_CORPSE_DESPAWN))
-                                    wrap->AI()->SetGUID(target->GetGUID());
+                                pTarget->GetMotionMaster()->MoveJump(PosWrap[pos].GetPositionX(), PosWrap[pos].GetPositionY(), PosWrap[pos].GetPositionZ(), 20, 20);
+                                if (Creature *wrap = DoSummon(MOB_WEB_WRAP, PosWrap[pos], 0, TEMPSUMMON_CORPSE_DESPAWN))
+                                    wrap->AI()->SetGUID(pTarget->GetGUID());
                             }
                         }
                         events.ScheduleEvent(EVENT_WRAP, 40000);
                         break;
                     case EVENT_SPRAY:
-                        DoCastAOE(RAID_MODE(SPELL_WEB_SPRAY_10, SPELL_WEB_SPRAY_25));
+                        DoScriptText(EMOTE_SPRAY, me);
+                        DoCastAOE(RAID_MODE(SPELL_WEB_SPRAY_10,SPELL_WEB_SPRAY_25));
                         events.ScheduleEvent(EVENT_SPRAY, 40000);
                         break;
                     case EVENT_SHOCK:
-                        DoCastAOE(RAID_MODE(SPELL_POISON_SHOCK_10, SPELL_POISON_SHOCK_25));
-                        events.ScheduleEvent(EVENT_SHOCK, urand(10000, 20000));
+                        DoCastAOE(RAID_MODE(SPELL_POISON_SHOCK_10,SPELL_POISON_SHOCK_25));
+                        events.ScheduleEvent(EVENT_SHOCK, urand(10000,20000));
                         break;
                     case EVENT_POISON:
-                        DoCast(me->getVictim(), RAID_MODE(SPELL_NECROTIC_POISON_10, SPELL_NECROTIC_POISON_25));
+                        DoCast(me->getVictim(), RAID_MODE(SPELL_NECROTIC_POISON_10,SPELL_NECROTIC_POISON_25));
                         events.ScheduleEvent(EVENT_POISON, urand(10000, 20000));
                         break;
                     case EVENT_FRENZY:
-                        DoCast(me, RAID_MODE(SPELL_FRENZY_10, SPELL_FRENZY_25), true);
+                        DoCast(me, RAID_MODE(SPELL_FRENZY_10,SPELL_FRENZY_25), true);
                         events.ScheduleEvent(EVENT_FRENZY, 600000);
                         break;
                     case EVENT_SUMMON:
-                        // TODO : Add missing text
-                        uint8 amount = urand(8, 10);
+                        DoScriptText(EMOTE_SPIDERLING, me);
+                        uint8 amount = urand(8,10);
                         for (uint8 i = 0; i < amount; ++i)
                             DoSummon(MOB_SPIDERLING, me, 0, TEMPSUMMON_CORPSE_DESPAWN);
                         events.ScheduleEvent(EVENT_SUMMON, 40000);
@@ -154,18 +164,18 @@ class mob_webwrap : public CreatureScript
 public:
     mob_webwrap() : CreatureScript("mob_webwrap") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new mob_webwrapAI (creature);
+        return new mob_webwrapAI (pCreature);
     }
 
     struct mob_webwrapAI : public NullCreatureAI
     {
-        mob_webwrapAI(Creature* creature) : NullCreatureAI(creature), victimGUID(0) {}
+        mob_webwrapAI(Creature *c) : NullCreatureAI(c), victimGUID(0) {}
 
         uint64 victimGUID;
 
-        void SetGUID(uint64 guid, int32 /*param*/)
+        void SetGUID(uint64 &guid, int32 /*param*/)
         {
             victimGUID = guid;
             if (me->m_spells[0] && victimGUID)

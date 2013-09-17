@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,8 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
 enum Spells
@@ -63,7 +62,7 @@ public:
 
     struct boss_patchwerkAI : public BossAI
     {
-        boss_patchwerkAI(Creature* creature) : BossAI(creature, BOSS_PATCHWERK) {}
+        boss_patchwerkAI(Creature* c) : BossAI(c, BOSS_PATCHWERK) {}
 
         bool Enraged;
 
@@ -81,7 +80,7 @@ public:
                 DoScriptText(SAY_SLAY, me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(Unit* /*Killer*/)
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);
@@ -92,7 +91,7 @@ public:
             _EnterCombat();
             Enraged = false;
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2), me);
-            events.ScheduleEvent(EVENT_HATEFUL, 1000);
+            events.ScheduleEvent(EVENT_HATEFUL, 1200);
             events.ScheduleEvent(EVENT_BERSERK, 360000);
 
             if (instance)
@@ -132,7 +131,7 @@ public:
 
                         DoCast(pMostHPTarget, RAID_MODE(SPELL_HATEFUL_STRIKE, H_SPELL_HATEFUL_STRIKE), true);
 
-                        events.ScheduleEvent(EVENT_HATEFUL, 1000);
+                        events.ScheduleEvent(EVENT_HATEFUL, 1200);
                         break;
                     }
                     case EVENT_BERSERK:
@@ -141,7 +140,7 @@ public:
                         events.ScheduleEvent(EVENT_SLIME, 2000);
                         break;
                     case EVENT_SLIME:
-                        DoCast(me->getVictim(), SPELL_SLIME_BOLT, true);
+                        DoCast(me->getVictim(), SPELL_SLIME_BOLT);
                         events.ScheduleEvent(EVENT_SLIME, 2000);
                         break;
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,12 +15,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
 #define EMOTE_BREATH            -1533082
 #define EMOTE_ENRAGE            -1533083
+#define EMOTE_FLY               -1533160
+#define EMOTE_GROUND            -1533161
 
 #define SPELL_FROST_AURA        RAID_MODE(28531, 55799)
 #define SPELL_CLEAVE            19983
@@ -82,7 +83,7 @@ public:
 
     struct boss_sapphironAI : public BossAI
     {
-        boss_sapphironAI(Creature* creature) : BossAI(creature, BOSS_SAPPHIRON)
+        boss_sapphironAI(Creature* c) : BossAI(c, BOSS_SAPPHIRON)
             , phase(PHASE_NULL)
         {
             map = me->GetMap();
@@ -133,7 +134,7 @@ public:
             CheckPlayersFrostResist();
         }
 
-        void SpellHitTarget(Unit* target, const SpellInfo* spell)
+        void SpellHitTarget(Unit* target, const SpellEntry* spell)
         {
             if (spell->Id == SPELL_ICEBOLT)
             {
@@ -146,7 +147,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(Unit* /*who*/)
         {
             _JustDied();
             me->CastSpell(me, SPELL_DIES, true);
@@ -154,7 +155,7 @@ public:
             CheckPlayersFrostResist();
             if (CanTheHundredClub)
             {
-                AchievementEntry const* AchievTheHundredClub = sAchievementStore.LookupEntry(ACHIEVEMENT_THE_HUNDRED_CLUB);
+                AchievementEntry const* AchievTheHundredClub = sAchievementMgr->GetAchievement(ACHIEVEMENT_THE_HUNDRED_CLUB);
                 if (AchievTheHundredClub)
                 {
                     if (map && map->IsDungeon())
@@ -266,24 +267,25 @@ public:
                         case EVENT_BLIZZARD:
                         {
                             //DoCastAOE(SPELL_SUMMON_BLIZZARD);
-                            if (Creature* summon = DoSummon(MOB_BLIZZARD, me, 0.0f, urand(25000, 30000), TEMPSUMMON_TIMED_DESPAWN))
-                                summon->GetMotionMaster()->MoveRandom(40);
+                            Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true);
+                            if (!target)
+                                target = me->getVictim();
+                            if (Creature* Summon = DoSummon(MOB_BLIZZARD, target, 0.0f, 20000, TEMPSUMMON_TIMED_DESPAWN))
+                                Summon->GetMotionMaster()->MoveRandom(10);
                             events.ScheduleEvent(EVENT_BLIZZARD, RAID_MODE(20000, 7000), 0, PHASE_GROUND);
                             break;
                         }
                         case EVENT_FLIGHT:
-                            if (HealthAbovePct(10))
-                            {
-                                phase = PHASE_FLIGHT;
-                                events.SetPhase(PHASE_FLIGHT);
-                                me->SetReactState(REACT_PASSIVE);
-                                me->AttackStop();
-                                float x, y, z, o;
-                                me->GetHomePosition(x, y, z, o);
-                                me->GetMotionMaster()->MovePoint(1, x, y, z);
-                                return;
-                            }
-                            break;
+                            if (HealthBelowPct(10))
+                                break;
+                            phase = PHASE_FLIGHT;
+                            events.SetPhase(PHASE_FLIGHT);
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();
+                            float x, y, z, o;
+                            me->GetHomePosition(x, y, z, o);
+                            me->GetMotionMaster()->MovePoint(1, x, y, z);
+                            return;
                     }
                 }
 
@@ -296,6 +298,7 @@ public:
                     switch (eventId)
                     {
                         case EVENT_LIFTOFF:
+                            DoScriptText(EMOTE_FLY, me);
                             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
                             me->SetDisableGravity(true);
                             me->SendMovementFlagUpdate();
@@ -346,6 +349,7 @@ public:
                             events.ScheduleEvent(EVENT_GROUND, 1500);
                             return;
                         case EVENT_GROUND:
+                            DoScriptText(EMOTE_GROUND, me);
                             EnterPhaseGround();
                             return;
                         case EVENT_BIRTH:

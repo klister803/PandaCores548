@@ -15,10 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "SpellScript.h"
-#include "SpellAuraEffects.h"
+#include "ScriptPCH.h"
 #include "oculus.h"
 #include "MapManager.h"
 
@@ -300,7 +297,7 @@ class spell_varos_energize_core_area_enemy : public SpellScriptLoader
         {
             PrepareSpellScript(spell_varos_energize_core_area_enemySpellScript)
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObject*>& targetList)
             {
                 Creature* varos = GetCaster()->ToCreature();
                 if (!varos)
@@ -311,7 +308,7 @@ class spell_varos_energize_core_area_enemy : public SpellScriptLoader
 
                 float orientation = CAST_AI(boss_varos::boss_varosAI, varos->AI())->GetCoreEnergizeOrientation();
 
-                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                for (std::list<WorldObject*>::iterator itr = targetList.begin(); itr != targetList.end();)
                 {
                     Position pos;
                     (*itr)->GetPosition(&pos);
@@ -320,7 +317,7 @@ class spell_varos_energize_core_area_enemy : public SpellScriptLoader
                     float diff = fabs(orientation - angle);
 
                     if (diff > 1.0f)
-                        itr = targets.erase(itr);
+                        itr = targetList.erase(itr);
                     else
                         ++itr;
                 }
@@ -347,7 +344,7 @@ class spell_varos_energize_core_area_entry : public SpellScriptLoader
         {
             PrepareSpellScript(spell_varos_energize_core_area_entrySpellScript)
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObject*>& targetList)
             {
                 Creature* varos = GetCaster()->ToCreature();
                 if (!varos)
@@ -358,7 +355,7 @@ class spell_varos_energize_core_area_entry : public SpellScriptLoader
 
                 float orientation = CAST_AI(boss_varos::boss_varosAI, varos->AI())->GetCoreEnergizeOrientation();
 
-                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                for (std::list<WorldObject*>::iterator itr = targetList.begin(); itr != targetList.end();)
                 {
                     Position pos;
                     (*itr)->GetPosition(&pos);
@@ -367,7 +364,7 @@ class spell_varos_energize_core_area_entry : public SpellScriptLoader
                     float diff = fabs(orientation - angle);
 
                     if (diff > 1.0f)
-                        itr = targets.erase(itr);
+                        itr = targetList.erase(itr);
                     else
                         ++itr;
                 }

@@ -116,14 +116,6 @@ class boss_vanessa_vancleef : public CreatureScript
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
-                
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                    
-                    }
-                }
 
                 DoMeleeAttackIfReady();
             }

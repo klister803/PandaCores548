@@ -108,12 +108,6 @@ class boss_jin_qin_xi : public CreatureScript
 
                 events.Update(diff);
 
-                switch(events.ExecuteEvent())
-                {
-                    default:
-                        break;
-                }
-
                 DoMeleeAttackIfReady();
             }
         };

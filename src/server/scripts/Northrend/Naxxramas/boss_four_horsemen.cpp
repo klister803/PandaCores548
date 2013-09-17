@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,10 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "SpellScript.h"
-#include "SpellAuraEffects.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
 enum Horsemen
@@ -27,11 +24,6 @@ enum Horsemen
     HORSEMEN_LADY,
     HORSEMEN_BARON,
     HORSEMEN_SIR,
-};
-
-enum Spells
-{
-    SPELL_MARK_DAMAGE   = 28836
 };
 
 enum Events
@@ -97,14 +89,13 @@ public:
 
     struct boss_four_horsemenAI : public BossAI
     {
-        boss_four_horsemenAI(Creature* creature) : BossAI(creature, BOSS_HORSEMEN)
+        boss_four_horsemenAI(Creature* c) : BossAI(c, BOSS_HORSEMEN)
         {
             id = Horsemen(0);
             for (uint8 i = 0; i < 4; ++i)
                 if (me->GetEntry() == MOB_HORSEMEN[i])
                     id = Horsemen(i);
             caster = (id == HORSEMEN_LADY || id == HORSEMEN_SIR);
-            encounterActionReset = false;
         }
 
         Horsemen id;
@@ -122,7 +113,7 @@ public:
         void Reset()
         {
             if (!encounterActionReset)
-                DoEncounteraction(NULL, false, true, false);
+                DoEncounterAction(NULL, false, true, false);
 
             if (instance)
                 instance->SetData(DATA_HORSEMEN0 + id, NOT_STARTED);
@@ -130,7 +121,7 @@ public:
             me->SetReactState(REACT_AGGRESSIVE);
             uiEventStarterGUID = 0;
             nextWP = 0;
-            punishTimer = 2000;
+            punishTimer = 10000;
             nextMovementStarted = false;
             movementCompleted = false;
             movementStarted = false;
@@ -140,15 +131,15 @@ public:
             _Reset();
         }
 
-        bool DoEncounteraction(Unit* who, bool attack, bool reset, bool checkAllDead)
+        bool DoEncounterAction(Unit* who, bool attack, bool reset, bool checkAllDead)
         {
             if (!instance)
                 return false;
 
-            Creature* Thane = Unit::GetCreature(*me, instance->GetData64(DATA_THANE));
-            Creature* Lady = Unit::GetCreature(*me, instance->GetData64(DATA_LADY));
-            Creature* Baron = Unit::GetCreature(*me, instance->GetData64(DATA_BARON));
-            Creature* Sir = Unit::GetCreature(*me, instance->GetData64(DATA_SIR));
+            Creature* Thane = CAST_CRE(Unit::GetUnit(*me, instance->GetData64(DATA_THANE)));
+            Creature* Lady = CAST_CRE(Unit::GetUnit(*me, instance->GetData64(DATA_LADY)));
+            Creature* Baron = CAST_CRE(Unit::GetUnit(*me, instance->GetData64(DATA_BARON)));
+            Creature* Sir = CAST_CRE(Unit::GetUnit(*me, instance->GetData64(DATA_SIR)));
 
             if (Thane && Lady && Baron && Sir)
             {
@@ -203,7 +194,7 @@ public:
         {
             movementStarted = true;
             me->SetReactState(REACT_PASSIVE);
-            me->SetWalk(false);
+            me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
             me->SetSpeed(MOVE_RUN, me->GetSpeedRate(MOVE_RUN), true);
 
             switch (id)
@@ -235,7 +226,7 @@ public:
 
                 Unit* eventStarter = Unit::GetUnit(*me, uiEventStarterGUID);
 
-                if (eventStarter && me->IsValidAttackTarget(eventStarter))
+                if (eventStarter)
                     AttackStart(eventStarter);
                 else if (!UpdateVictim())
                 {
@@ -259,7 +250,7 @@ public:
         // switch to "who" if nearer than current target.
         void SelectNearestTarget(Unit* who)
         {
-            if (me->getVictim() && me->GetDistanceOrder(who, me->getVictim()) && me->IsValidAttackTarget(who))
+            if (me->getVictim() && me->GetDistanceOrder(who, me->getVictim()))
             {
                 me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
                 me->AddThreat(who, 1000000.0f);
@@ -281,7 +272,7 @@ public:
                 BeginFourHorsemenMovement();
 
                 if (!encounterActionAttack)
-                    DoEncounteraction(who, true, false, false);
+                    DoEncounterAction(who, true, false, false);
             }
             else if (movementCompleted && movementStarted)
             {
@@ -311,7 +302,7 @@ public:
             if (instance)
                 instance->SetData(DATA_HORSEMEN0 + id, DONE);
 
-            if (instance && DoEncounteraction(NULL, false, false, true))
+            if (instance && DoEncounterAction(NULL, false, false, true))
             {
                 instance->SetBossState(BOSS_HORSEMEN, DONE);
                 instance->SaveToDB();
@@ -338,7 +329,7 @@ public:
             events.ScheduleEvent(EVENT_BERSERK, 15*100*1000);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (nextWP && movementStarted && !movementCompleted && !nextMovementStarted)
             {
@@ -349,6 +340,7 @@ public:
             if (!UpdateVictim() || !CheckInRoom() || !movementCompleted)
                 return;
 
+            _DoAggroPulse(diff);
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -380,7 +372,7 @@ public:
                         break;
                     case EVENT_BERSERK:
                         DoScriptText(SAY_SPECIAL[id], me);
-                        DoCast(me, EVENT_BERSERK);
+                        DoCast(me, SPELL_BERSERK);
                         break;
                 }
             }
@@ -389,7 +381,25 @@ public:
             {
                 if (doDelayPunish)
                 {
-                    DoCastAOE(SPELL_PUNISH[id], true);
+                    // try to find a new target
+                    Unit *pTemp = NULL;
+
+                    std::list<Unit *> playerList;
+                    SelectTargetList(playerList, 10, SELECT_TARGET_NEAREST, 45);
+                    for (std::list<Unit*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                    {
+                        pTemp = (*itr);
+                        if (me->IsWithinLOSInMap(pTemp) && !pTemp->IsImmunedToDamage(SPELL_SCHOOL_MASK_ALL))
+                        {
+                            SelectNearestTarget(pTemp);
+                            break;
+                        }
+                        pTemp = NULL;
+                    }
+
+                    if (!pTemp)
+                        DoCastAOE(SPELL_PUNISH[id], true);
+
                     doDelayPunish = false;
                 }
                 punishTimer = 2000;
@@ -404,63 +414,7 @@ public:
 
 };
 
-class spell_four_horsemen_mark : public SpellScriptLoader
-{
-    public:
-        spell_four_horsemen_mark() : SpellScriptLoader("spell_four_horsemen_mark") { }
-
-        class spell_four_horsemen_mark_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_four_horsemen_mark_AuraScript);
-
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    int32 damage;
-                    switch (GetStackAmount())
-                    {
-                        case 1:
-                            damage = 0;
-                            break;
-                        case 2:
-                            damage = 500;
-                            break;
-                        case 3:
-                            damage = 1000;
-                            break;
-                        case 4:
-                            damage = 1500;
-                            break;
-                        case 5:
-                            damage = 4000;
-                            break;
-                        case 6:
-                            damage = 12000;
-                            break;
-                        default:
-                            damage = 20000 + 1000 * (GetStackAmount() - 7);
-                            break;
-                    }
-                    if (damage)
-                        caster->CastCustomSpell(SPELL_MARK_DAMAGE, SPELLVALUE_BASE_POINT0, damage, GetTarget());
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_four_horsemen_mark_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_four_horsemen_mark_AuraScript();
-        }
-};
-
 void AddSC_boss_four_horsemen()
 {
     new boss_four_horsemen();
-    new spell_four_horsemen_mark();
 }

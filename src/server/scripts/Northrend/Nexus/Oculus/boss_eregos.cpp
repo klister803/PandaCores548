@@ -15,10 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "SpellScript.h"
-#include "SpellAuraEffects.h"
+#include "ScriptPCH.h"
 #include "oculus.h"
 
 //Types of drake mounts: Ruby(Tank),  Amber(DPS),  Emerald(Healer)
@@ -53,7 +50,10 @@ enum Spells
 
 enum Npcs
 {
-    NPC_PLANAR_ANOMALY = 30879
+    NPC_PLANAR_ANOMALY = 30879,
+    NPC_EMERALD_DRAKE  = 27692,
+    NPC_AMBER_DRAKE    = 27755,
+    NPC_RUBY_DRAKE     = 27756,
 };
 
 enum Phases
@@ -113,13 +113,6 @@ enum EmeraldDrake
     SPELL_EMERALD_DREAM_FUNNEL                    = 50344         //(60 yds) - Channeled - Transfers 5% of the caster's max health to a friendly drake every second for 10 seconds as long as the caster channels.
 };
 
-enum EregosData
-{
-    DATA_RUBY_VOID          = 0,      // http://www.wowhead.com/achievement=2044
-    DATA_EMERALD_VOID       = 1,      // http://www.wowhead.com/achievement=2045
-    DATA_AMBER_VOID         = 2       // http://www.wowhead.com/achievement=2046
-};
-
 class boss_eregos : public CreatureScript
 {
 public:
@@ -134,48 +127,27 @@ public:
     {
         boss_eregosAI(Creature* creature) : BossAI(creature, DATA_EREGOS_EVENT) { }
 
+        uint32 CheckDrake;
+        bool emeralddrake;
+        bool amberdrake;
+        bool rubydrake;
+
         void Reset()
         {
             _Reset();
-            _phase = PHASE_NORMAL;
-
-            _rubyVoid = true;
-            _emeraldVoid = true;
-            _amberVoid = true;
-
+            phase = PHASE_NORMAL;
             DoAction(ACTION_SET_NORMAL_EVENTS);
+            CheckDrake = 0;
+            emeralddrake = true;
+            amberdrake = true;
+            rubydrake = true;
         }
 
         void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
-
             Talk(SAY_AGGRO);
-
-            /* Checks for present drakes vehicles from each type and deactivate achievement that corresponds to each found
-            The checks are so big in case some party try weird things like pulling boss down or hiding out of check range, the only thing player need is to get the boss kill credit after the check /even if he or his drake die/
-            Drakes mechanic would despawn all after unmount and also drakes should be auto mounted after item use, item use after Eregos is engaged leads to his despawn - based on retail data. */
-            if (me->FindNearestCreature(NPC_RUBY_DRAKE_VEHICLE, 500.0f, true))
-                _rubyVoid = false;
-            if (me->FindNearestCreature(NPC_EMERALD_DRAKE_VEHICLE, 500.0f, true))
-                _emeraldVoid = false;
-            if (me->FindNearestCreature(NPC_AMBER_DRAKE_VEHICLE, 500.0f, true))
-                _amberVoid = false;
-        }
-        uint32 GetData(uint32 type)
-        {
-            switch (type)
-            {
-            case DATA_RUBY_VOID:
-                return _rubyVoid;
-            case DATA_EMERALD_VOID:
-                return _emeraldVoid;
-            case DATA_AMBER_VOID:
-                return _amberVoid;
-            default:
-                break;
-            }
-            return 0;
+            CheckDrake = 20000;
         }
 
         void DoAction(const int32 action)
@@ -210,16 +182,31 @@ public:
             summon->CastSpell(summon, SPELL_PLANAR_BLAST, true);
         }
 
+        bool GetEmerald()
+        {
+            return emeralddrake;
+        }
+
+        bool GetAmber()
+        {
+            return amberdrake;
+        }
+
+        bool GetRuby()
+        {
+            return rubydrake;
+        }
+
         void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
         {
             if (!me->GetMap()->IsHeroic())
                 return;
-
-            if ( (me->GetHealthPct() < 60.0f  && me->GetHealthPct() > 20.0f && _phase < PHASE_FIRST_PLANAR)
-                || (me->GetHealthPct() < 20.0f && _phase < PHASE_SECOND_PLANAR) )
+            
+            if ( (me->GetHealthPct() < 60.0f  && me->GetHealthPct() > 20.0f && phase < PHASE_FIRST_PLANAR)
+                || (me->GetHealthPct() < 20.0f && phase < PHASE_SECOND_PLANAR) )
             {
                 events.Reset();
-                _phase = (me->GetHealthPct() < 60.0f  && me->GetHealthPct() > 20.0f) ? PHASE_FIRST_PLANAR : PHASE_SECOND_PLANAR;
+                phase = (me->GetHealthPct() < 60.0f  && me->GetHealthPct() > 20.0f) ? PHASE_FIRST_PLANAR : PHASE_SECOND_PLANAR;
 
                 DoCast(SPELL_PLANAR_SHIFT);
 
@@ -235,6 +222,48 @@ public:
             //Return since we have no target
             if (!UpdateVictim())
                 return;
+
+            if (CheckDrake)// Check Player Drake
+            {
+                if (CheckDrake <= diff)
+                {
+                    if (me->GetMap()->IsHeroic())
+                    {
+                          std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+                          for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+                          {
+                              Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                              if (pTarget && pTarget->GetVehicle() && pTarget->GetVehicleBase()->GetEntry() == NPC_EMERALD_DRAKE)
+                              {
+                                  emeralddrake = false;
+                                  break;
+                              }
+                          }
+
+                          for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+                          {
+                              Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                              if (pTarget && pTarget->GetVehicle() && pTarget->GetVehicleBase()->GetEntry() == NPC_AMBER_DRAKE)
+                              {
+                                  amberdrake = false;
+                                  break;
+                              }
+                          }
+                          
+                          for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+                          {
+                              Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                              if (pTarget && pTarget->GetVehicle() && pTarget->GetVehicleBase()->GetEntry() == NPC_RUBY_DRAKE)
+                              {
+                                  rubydrake = false;
+                                  break;
+                              }
+                          }
+                          CheckDrake = 20000;
+                    }
+                }
+                else CheckDrake -= diff;
+            }
 
             events.Update(diff);
 
@@ -277,10 +306,7 @@ public:
         }
 
     private:
-        uint8 _phase;
-        bool _rubyVoid;
-        bool _emeraldVoid;
-        bool _amberVoid;
+        uint8 phase;
     };
 };
 
@@ -312,25 +338,78 @@ class spell_eregos_planar_shift : public SpellScriptLoader
         }
 };
 
-class achievement_gen_eregos_void : public AchievementCriteriaScript
+class achievement_emerald_void : public AchievementCriteriaScript
 {
-public:
-    achievement_gen_eregos_void(char const* name, uint32 data) : AchievementCriteriaScript(name), _data(data) { }
+    public:
+        achievement_emerald_void() : AchievementCriteriaScript("achievement_emerald_void")
+        {
+        }
 
-    bool OnCheck(Player* /*player*/, Unit* target)
-    {
-        return target && target->GetAI()->GetData(_data);
-    }
+        bool OnCheck(Player* player, Unit* target)
+        {
+            if (!target)
+                return false;
+             
+            if (Creature * Er = target->ToCreature())
+                if (boss_eregos::boss_eregosAI * ErAI = CAST_AI(boss_eregos::boss_eregosAI, Er->AI()))
+                    if (ErAI->GetEmerald())
+                        return true;
+            
+            return false;
+        }
 
-private:
-    uint32 _data;
 };
+
+class achievement_amber_void : public AchievementCriteriaScript
+{
+    public:
+        achievement_amber_void() : AchievementCriteriaScript("achievement_amber_void")
+        {
+        }
+
+        bool OnCheck(Player* player, Unit* target)
+        {
+            if (!target)
+                return false;
+             
+            if (Creature * Er = target->ToCreature())
+                if (boss_eregos::boss_eregosAI * ErAI = CAST_AI(boss_eregos::boss_eregosAI, Er->AI()))
+                    if (ErAI->GetAmber())
+                        return true;
+            
+            return false;
+        }
+
+};
+
+class achievement_ruby_void : public AchievementCriteriaScript
+{
+    public:
+        achievement_ruby_void() : AchievementCriteriaScript("achievement_ruby_void")
+        {
+        }
+
+        bool OnCheck(Player* player, Unit* target)
+        {
+            if (!target)
+                return false;
+             
+            if (Creature * Er = target->ToCreature())
+                if (boss_eregos::boss_eregosAI * ErAI = CAST_AI(boss_eregos::boss_eregosAI, Er->AI()))
+                    if (ErAI->GetRuby())
+                        return true;
+            
+            return false;
+        }
+
+};
+
+
 void AddSC_boss_eregos()
 {
     new boss_eregos();
     new spell_eregos_planar_shift();
-    new achievement_gen_eregos_void("achievement_ruby_void", DATA_RUBY_VOID);
-    new achievement_gen_eregos_void("achievement_emerald_void", DATA_EMERALD_VOID);
-    new achievement_gen_eregos_void("achievement_amber_void", DATA_AMBER_VOID);
+    new achievement_emerald_void();
+    new achievement_amber_void();
+    new achievement_ruby_void();
 }
-

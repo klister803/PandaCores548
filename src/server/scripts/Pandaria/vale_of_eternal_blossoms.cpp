@@ -134,14 +134,6 @@ class npc_lao_softfoot : public CreatureScript
 
             void WaypointReached(uint32 waypointId)
             {
-                if (Player* player = GetPlayerForEscort())
-                {
-                    switch (waypointId)
-                    {
-                        default:
-                            break;
-                    }
-                }
             }
 
             void JustDied(Unit* /*killer*/)

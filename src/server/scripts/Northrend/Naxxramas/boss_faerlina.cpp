@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,8 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
 enum Yells
@@ -40,16 +39,23 @@ enum Spells
     SPELL_FRENZY                = 28798,
     H_SPELL_FRENZY              = 54100,
     SPELL_WIDOWS_EMBRACE        = 28732,
-    H_SPELL_WIDOWS_EMBRACE      = 54097
+    H_SPELL_WIDOWS_EMBRACE      = 54097,
+
+    // add spell
+    SPELL_FIREBALL              = 54095,
+    H_SPELL_FIREBALL            = 54096
 };
 
 #define SPELL_WIDOWS_EMBRACE_HELPER RAID_MODE(SPELL_WIDOWS_EMBRACE, H_SPELL_WIDOWS_EMBRACE)
+#define SPELL_FIREBALL_HELPER RAID_MODE(SPELL_FIREBALL, H_SPELL_FIREBALL)
 
 enum Events
 {
     EVENT_POISON    = 1,
     EVENT_FIRE      = 2,
-    EVENT_FRENZY    = 3
+    EVENT_FRENZY    = 3,
+    // adds
+    EVENT_FIREBALL  = 1
 };
 
 #define DATA_FRENZY_DISPELS 1
@@ -63,8 +69,7 @@ class boss_faerlina : public CreatureScript
         {
             boss_faerlinaAI(Creature* creature) : BossAI(creature, BOSS_FAERLINA),
                 _frenzyDispels(0), _introDone(false), _delayFrenzy(false)
-            {
-            }
+            {}
 
 
             void EnterCombat(Unit* /*who*/)
@@ -106,7 +111,7 @@ class boss_faerlina : public CreatureScript
                 DoScriptText(SAY_DEATH, me);
             }
 
-            void SpellHit(Unit* caster, SpellInfo const* spell)
+            void SpellHit(Unit* caster, const SpellEntry* spell)
             {
                 if (spell->Id == SPELL_WIDOWS_EMBRACE || spell->Id == H_SPELL_WIDOWS_EMBRACE)
                 {
@@ -130,6 +135,9 @@ class boss_faerlina : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
+                if (me->IsNonMeleeSpellCasted(false))
+                    return;
+
                 if (_delayFrenzy && !me->HasAura(SPELL_WIDOWS_EMBRACE_HELPER))
                 {
                     _delayFrenzy = false;
@@ -137,9 +145,6 @@ class boss_faerlina : public CreatureScript
                 }
 
                 events.Update(diff);
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -191,15 +196,21 @@ class mob_faerlina_add : public CreatureScript
         {
             mob_faerlina_addAI(Creature* creature) : ScriptedAI(creature),
                 _instance(creature->GetInstanceScript())
-            {
-            }
+            {}
 
             void Reset()
             {
-                if (GetDifficulty() == MAN10_DIFFICULTY) {
+                events.Reset();
+                if (GetDifficulty() == MAN10_DIFFICULTY)
+                {
                     me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_BIND, true);
                     me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
                 }
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_FIREBALL, 3000);
             }
 
             void JustDied(Unit* /*killer*/)
@@ -209,8 +220,28 @@ class mob_faerlina_add : public CreatureScript
                         DoCast(faerlina, SPELL_WIDOWS_EMBRACE);
             }
 
+            void UpdateAI(uint32 const diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_FIREBALL:
+                        DoCast(SPELL_FIREBALL_HELPER);
+                        events.ScheduleEvent(EVENT_FIREBALL, urand (3000, 5000));
+                        break;
+                    }
+                }
+            }
+
         private:
             InstanceScript* const _instance;
+            EventMap events;
         };
 
         CreatureAI* GetAI(Creature* creature) const

@@ -15,11 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "ScriptedGossip.h"
-#include "SpellScript.h"
-#include "SpellAuraEffects.h"
+#include "ScriptPCH.h"
 #include "oculus.h"
 
 #define GOSSIP_ITEM_DRAKES         "So where do we go from here?"
@@ -30,7 +26,7 @@
 #define GOSSIP_ITEM_ETERNOS1       "I want to fly on the wings of the Bronze Flight"
 #define GOSSIP_ITEM_ETERNOS2       "What abilities do Amber Drakes have?"
 
-#define HAS_ESSENCE(a) ((a)->HasItemCount(ITEM_EMERALD_ESSENCE) || (a)->HasItemCount(ITEM_AMBER_ESSENCE) || (a)->HasItemCount(ITEM_RUBY_ESSENCE))
+#define HAS_ESSENCE(a) ((a)->HasItemCount(ITEM_EMERALD_ESSENCE, 1) || (a)->HasItemCount(ITEM_AMBER_ESSENCE, 1) || (a)->HasItemCount(ITEM_RUBY_ESSENCE, 1))
 
 enum Drakes
 {

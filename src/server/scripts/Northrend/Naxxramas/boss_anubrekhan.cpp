@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,13 +15,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
-#define SAY_GREET           RAND(-1533000, -1533004, -1533005, -1533006, -1533007)
-#define SAY_AGGRO           RAND(-1533001, -1533002, -1533003)
-#define SAY_SLAY            -1533008
+#define SAY_GREET           RAND(-1533000,-1533004,-1533005,-1533006,-1533007)
+#define SAY_AGGRO           RAND(-1533001,-1533002,-1533003)
+#define SAY_SLAY                -1533008
+#define EMOTE_INSECT_SWARM      -1533154
+#define EMOTE_CORPSE_SCARABS    -1533155
+#define EMOTE_CRYPT_GUARD       -1533153
 
 #define MOB_CRYPT_GUARD     16573
 
@@ -57,14 +59,14 @@ class boss_anubrekhan : public CreatureScript
 public:
     boss_anubrekhan() : CreatureScript("boss_anubrekhan") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new boss_anubrekhanAI (creature);
+        return new boss_anubrekhanAI (pCreature);
     }
 
     struct boss_anubrekhanAI : public BossAI
     {
-        boss_anubrekhanAI(Creature* creature) : BossAI(creature, BOSS_ANUBREKHAN) {}
+        boss_anubrekhanAI(Creature *c) : BossAI(c, BOSS_ANUBREKHAN) {}
 
         bool hasTaunted;
 
@@ -100,7 +102,7 @@ public:
             DoScriptText(SAY_SLAY, me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(Unit *)
         {
             _JustDied();
 
@@ -112,15 +114,15 @@ public:
         {
             _EnterCombat();
             DoScriptText(SAY_AGGRO, me);
-            events.ScheduleEvent(EVENT_IMPALE, urand(10000, 20000));
+            events.ScheduleEvent(EVENT_IMPALE, 10000 + rand()%10000);
             events.ScheduleEvent(EVENT_LOCUST, 90000);
             events.ScheduleEvent(EVENT_BERSERK, 600000);
 
             if (GetDifficulty() == MAN10_DIFFICULTY)
-                events.ScheduleEvent(EVENT_SPAWN_GUARDIAN_NORMAL, urand(15000, 20000));
+                events.ScheduleEvent(EVENT_SPAWN_GUARDIAN_NORMAL, urand(15000,20000));
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(Unit *who)
         {
             if (!hasTaunted && me->IsWithinDistInMap(who, 60.0f) && who->GetTypeId() == TYPEID_PLAYER)
             {
@@ -130,7 +132,14 @@ public:
             ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void SummonedCreatureDespawn(Creature* summon)
+        void JustSummoned(Creature* summon)
+        {
+            BossAI::JustSummoned(summon);
+            if (summon && instance && instance->GetBossState(BOSS_ANUBREKHAN) == IN_PROGRESS)
+                DoScriptText(EMOTE_CRYPT_GUARD, summon);
+        }
+
+        void SummonedCreatureDespawn(Creature *summon)
         {
             BossAI::SummonedCreatureDespawn(summon);
 
@@ -139,6 +148,7 @@ public:
                 return;
 
             summon->CastSpell(summon, SPELL_SUMMON_CORPSE_SCARABS_MOB, true, NULL, NULL, me->GetGUID());
+            DoScriptText(EMOTE_CORPSE_SCARABS, me);
         }
 
         void UpdateAI(const uint32 diff)
@@ -146,28 +156,30 @@ public:
             if (!UpdateVictim() || !CheckInRoom())
                 return;
 
+            if (me->IsNonMeleeSpellCasted(false))
+                return;
+
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                switch (eventId)
+                switch(eventId)
                 {
                     case EVENT_IMPALE:
                         //Cast Impale on a random target
                         //Do NOT cast it when we are afflicted by locust swarm
-                        if (!me->HasAura(RAID_MODE(SPELL_LOCUST_SWARM_10, SPELL_LOCUST_SWARM_25)))
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                                DoCast(target, RAID_MODE(SPELL_IMPALE_10, SPELL_IMPALE_25));
-                        events.ScheduleEvent(EVENT_IMPALE, urand(10000, 20000));
+                        if (!me->HasAura(RAID_MODE(SPELL_LOCUST_SWARM_10,SPELL_LOCUST_SWARM_25)))
+                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                                DoCast(pTarget, RAID_MODE(SPELL_IMPALE_10,SPELL_IMPALE_25));
+                        events.ScheduleEvent(EVENT_IMPALE, urand(10000,20000));
                         break;
                     case EVENT_LOCUST:
-                        // TODO : Add Text
-                        DoCast(me, RAID_MODE(SPELL_LOCUST_SWARM_10, SPELL_LOCUST_SWARM_25));
+                        DoScriptText(EMOTE_INSECT_SWARM, me);
+                        DoCast(me, RAID_MODE(SPELL_LOCUST_SWARM_10,SPELL_LOCUST_SWARM_25));
                         DoSummon(MOB_CRYPT_GUARD, GuardSummonPos, 0, TEMPSUMMON_CORPSE_DESPAWN);
                         events.ScheduleEvent(EVENT_LOCUST, 90000);
                         break;
                     case EVENT_SPAWN_GUARDIAN_NORMAL:
-                        // TODO : Add Text
                         DoSummon(MOB_CRYPT_GUARD, GuardSummonPos, 0, TEMPSUMMON_CORPSE_DESPAWN);
                         break;
                     case EVENT_BERSERK:

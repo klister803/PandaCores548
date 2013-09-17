@@ -77,12 +77,6 @@ class boss_elegon : public CreatureScript
 
                 events.Update(diff);
 
-                switch(events.ExecuteEvent())
-                {
-                    default:
-                        break;
-                }
-
                 DoMeleeAttackIfReady();
             }
         };

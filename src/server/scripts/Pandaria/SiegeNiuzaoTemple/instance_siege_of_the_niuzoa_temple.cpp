@@ -54,15 +54,6 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
-        {
-            switch (go->GetEntry())
-            {
-                default:
-                    break;
-            }
-        }
-
         void SetData(uint32 type, uint32 data)
         {}
 

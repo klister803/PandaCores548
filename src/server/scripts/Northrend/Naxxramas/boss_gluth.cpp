@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,15 +15,20 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
+enum Yells
+{
+    EMOTE_ZOMBIE                = -1533119,
+    EMOTE_DECIMATE              = -1533152
+};
 #define SPELL_MORTAL_WOUND      25646
 #define SPELL_ENRAGE            RAID_MODE(28371, 54427)
 #define SPELL_DECIMATE          RAID_MODE(28374, 54426)
 #define SPELL_BERSERK           26662
 #define SPELL_INFECTED_WOUND    29306
+#define SPELL_INFECTED_WOUND_AURA 29307
 
 #define MOB_ZOMBIE  16360
 
@@ -44,8 +49,6 @@ enum Events
     EVENT_SUMMON,
 };
 
-#define EMOTE_NEARBY    " spots a nearby zombie to devour!"
-
 class boss_gluth : public CreatureScript
 {
 public:
@@ -58,7 +61,7 @@ public:
 
     struct boss_gluthAI : public BossAI
     {
-        boss_gluthAI(Creature* creature) : BossAI(creature, BOSS_GLUTH)
+        boss_gluthAI(Creature* c) : BossAI(c, BOSS_GLUTH)
         {
             // Do not let Gluth be affected by zombies' debuff
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_INFECTED_WOUND, true);
@@ -66,11 +69,12 @@ public:
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (who->GetEntry() == MOB_ZOMBIE && me->IsWithinDistInMap(who, 7))
+            if (who->GetEntry() == MOB_ZOMBIE && me->IsWithinMeleeRange(who))
             {
-                SetGazeOn(who);
-                // TODO: use a script text
-                me->MonsterTextEmote(EMOTE_NEARBY, 0, true);
+                DoScriptText(EMOTE_ZOMBIE, me);
+                if (Creature* creature = who->ToCreature())
+                    creature->DisappearAndDie();
+                me->ModifyHealth(me->CountPctFromMaxHealth(5));
             }
             else
                 BossAI::MoveInLineOfSight(who);
@@ -89,7 +93,10 @@ public:
         void JustSummoned(Creature* summon)
         {
             if (summon->GetEntry() == MOB_ZOMBIE)
+            {
+                summon->AddAura(SPELL_INFECTED_WOUND_AURA, summon);
                 summon->AI()->AttackStart(me);
+            }
             summons.Summon(summon);
         }
 
@@ -114,9 +121,11 @@ public:
                         events.ScheduleEvent(EVENT_ENRAGE, 15000);
                         break;
                     case EVENT_DECIMATE:
-                        // TODO : Add missing text
-                        DoCastAOE(SPELL_DECIMATE);
-                        events.ScheduleEvent(EVENT_DECIMATE, 105000);
+                        {
+                            DoScriptText(EMOTE_DECIMATE, me);
+                            DoCastAOE(SPELL_DECIMATE);
+                            events.ScheduleEvent(EVENT_DECIMATE, 105000);
+                        }
                         break;
                     case EVENT_BERSERK:
                         DoCast(me, SPELL_BERSERK);
@@ -130,16 +139,9 @@ public:
                 }
             }
 
-            if (me->getVictim() && me->getVictim()->GetEntry() == MOB_ZOMBIE)
-            {
-                if (me->IsWithinMeleeRange(me->getVictim()))
-                {
-                    me->Kill(me->getVictim());
-                    me->ModifyHealth(int32(me->CountPctFromMaxHealth(5)));
-                }
-            }
-            else
-                DoMeleeAttackIfReady();
+            DoMeleeAttackIfReady();
+
+            EnterEvadeIfOutOfCombatArea(diff);
         }
     };
 

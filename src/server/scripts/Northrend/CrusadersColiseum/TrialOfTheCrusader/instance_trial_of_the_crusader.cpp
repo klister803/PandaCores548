@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -23,8 +23,7 @@ SDComment: by /dev/rsa
 SDCategory: Trial of the Crusader
 EndScriptData */
 
-#include "ScriptMgr.h"
-#include "InstanceScript.h"
+#include "ScriptPCH.h"
 #include "trial_of_the_crusader.h"
 
 class instance_trial_of_the_crusader : public InstanceMapScript
@@ -34,7 +33,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
         struct instance_trial_of_the_crusader_InstanceMapScript : public InstanceScript
         {
-            instance_trial_of_the_crusader_InstanceMapScript(Map* map) : InstanceScript(map) {}
+            instance_trial_of_the_crusader_InstanceMapScript(Map* pMap) : InstanceScript(pMap) {}
 
             uint32 EncounterStatus[MAX_ENCOUNTERS];
             uint32 TrialCounter;
@@ -45,9 +44,12 @@ class instance_trial_of_the_crusader : public InstanceMapScript
             std::string SaveDataBuffer;
             bool   NeedSave;
 
+            uint32 DataDamageTwin;
+            uint32 FjolaCasting;
+            uint32 EydisCasting;
+
             uint64 BarrentGUID;
             uint64 TirionGUID;
-            uint64 TirionFordringGUID;
             uint64 FizzlebangGUID;
             uint64 GarroshGUID;
             uint64 VarianGUID;
@@ -86,9 +88,8 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 TrialCounter = 50;
                 EventStage = 0;
 
-                TirionFordringGUID = 0;
-
                 TributeChestGUID = 0;
+                DataDamageTwin = 0;
 
                 MainGateDoorGUID = 0;
                 EastPortcullisGUID = 0;
@@ -109,7 +110,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
             bool IsEncounterInProgress() const
             {
-                for (uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
+                for (uint8 i = 0; i < MAX_ENCOUNTERS ; ++i)
                     if (EncounterStatus[i] == IN_PROGRESS)
                         return true;
                 return false;
@@ -149,9 +150,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         break;
                     case NPC_TIRION:
                         TirionGUID = creature->GetGUID();
-                        break;
-                    case NPC_TIRION_FORDRING:
-                        TirionFordringGUID = creature->GetGUID();
                         break;
                     case NPC_FIZZLEBANG:
                         FizzlebangGUID = creature->GetGUID();
@@ -244,18 +242,10 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 switch (type)
                 {
                     case TYPE_JARAXXUS:
-                        // Cleanup Icehowl
-                        if (Creature* icehowl = instance->GetCreature(IcehowlGUID))
-                            icehowl->DespawnOrUnsummon();
                         if (data == DONE)
                             EventStage = 2000;
                         break;
                     case TYPE_CRUSADERS:
-                        // Cleanup Jaraxxus
-                        if (Creature* jaraxxus = instance->GetCreature(JaraxxusGUID))
-                            jaraxxus->DespawnOrUnsummon();
-                        if (Creature* fizzlebang = instance->GetCreature(FizzlebangGUID))
-                            fizzlebang->DespawnOrUnsummon();
                         switch (data)
                         {
                             case IN_PROGRESS:
@@ -275,9 +265,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         }
                         break;
                     case TYPE_VALKIRIES:
-                        // Cleanup chest
-                        if (GameObject* cache = instance->GetGameObject(CrusadersCacheGUID))
-                            cache->Delete();
                         switch (data)
                         {
                             case FAIL:
@@ -332,8 +319,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                                 }
                                 if (tributeChest)
                                     if (Creature* tirion =  instance->GetCreature(TirionGUID))
-                                        // need proper location.this one is guessed based on videos
-                                            if (GameObject* chest = tirion->SummonGameObject(tributeChest, 643.814f, 136.027f, 141.295f, 0, 0, 0, 0, 0, 90000000))
+                                        if (GameObject* chest = tirion->SummonGameObject(tributeChest, 805.62f, 134.87f, 142.16f, 3.27f, 0, 0, 0, 0, 90000000))
                                             chest->SetRespawnTime(chest->GetRespawnDelay());
                                 break;
                         }
@@ -382,6 +368,11 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                                 break;
                         }
                         break;
+                    case DATA_HEALTH_TWIN_SHARED:
+                        DataDamageTwin = data;
+                        data = NOT_STARTED;
+                        break;
+
                     //Achievements
                     case DATA_SNOBOLD_COUNT:
                         if (data == INCREASE)
@@ -412,7 +403,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
                 if (type < MAX_ENCOUNTERS)
                 {
-                    sLog->outInfo(LOG_FILTER_TSCR, "[ToCr] EncounterStatus[type %u] %u = data %u;", type, EncounterStatus[type], data);
                     if (data == FAIL)
                     {
                         --TrialCounter;
@@ -427,7 +417,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                     {
                         if (Unit* announcer = instance->GetCreature(GetData64(NPC_BARRENT)))
                             announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                        Save();
                     }
                 }
             }
@@ -440,8 +429,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         return BarrentGUID;
                     case NPC_TIRION:
                         return TirionGUID;
-                    case NPC_TIRION_FORDRING:
-                        return TirionFordringGUID;
                     case NPC_FIZZLEBANG:
                         return FizzlebangGUID;
                     case NPC_GARROSH:
@@ -595,6 +582,8 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                                 break;
                         };
                         return EventNPCId;
+                    case DATA_HEALTH_TWIN_SHARED:
+                        return DataDamageTwin;
                     default:
                         break;
                 }
@@ -621,26 +610,20 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 }
             }
 
-            void Save()
+            std::string GetSaveData()
             {
                 OUT_SAVE_INST_DATA;
 
                 std::ostringstream saveStream;
 
+                saveStream << "C T";
                 for (uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
-                    saveStream << EncounterStatus[i] << ' ';
+                    saveStream << EncounterStatus[i] << " ";
 
                 saveStream << TrialCounter;
-                SaveDataBuffer = saveStream.str();
 
-                SaveToDB();
                 OUT_SAVE_INST_DATA_COMPLETE;
-                NeedSave = false;
-            }
-
-            std::string GetSaveData()
-            {
-                return SaveDataBuffer;
+                return saveStream.str();
             }
 
             void Load(const char* strIn)
@@ -653,18 +636,23 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
                 OUT_LOAD_INST_DATA(strIn);
 
+                char dataHead1, dataHead2;
                 std::istringstream loadStream(strIn);
 
-                for (uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
+                loadStream >> dataHead1 >> dataHead2;
+                if (dataHead1 == 'C' && dataHead2 == 'T')
                 {
-                    loadStream >> EncounterStatus[i];
+                    for (uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
+                    {
+                        loadStream >> EncounterStatus[i];
 
-                    if (EncounterStatus[i] == IN_PROGRESS)
-                        EncounterStatus[i] = NOT_STARTED;
-                }
+                        if (EncounterStatus[i] == IN_PROGRESS)
+                            EncounterStatus[i] = NOT_STARTED;
+                    }
 
-                loadStream >> TrialCounter;
-                EventStage = 0;
+                    loadStream >> TrialCounter;
+                    EventStage = 0;
+                } else OUT_LOAD_INST_DATA_FAIL;
 
                 OUT_LOAD_INST_DATA_COMPLETE;
             }

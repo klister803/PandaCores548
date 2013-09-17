@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,23 +15,27 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "SpellScript.h"
-#include "SpellAuras.h"
+#include "ScriptPCH.h"
 #include "pit_of_saron.h"
 
 enum Yells
 {
-    SAY_AGGRO             = 0,
-    SAY_PHASE2            = 1,
-    SAY_PHASE3            = 2,
-    SAY_DEATH             = 3,
-    SAY_SLAY              = 4,
-    SAY_THROW_SARONITE    = 5,
-    SAY_CAST_DEEP_FREEZE  = 6,
+    SAY_AGGRO           = -1658001,
+    SAY_SLAY_1          = -1658002,
+    SAY_SLAY_2          = -1658003,
+    SAY_DEATH           = -1658004,
+    SAY_PHASE2          = -1658005,
+    SAY_PHASE3          = -1658006,
+    SAY_FREE_SLAVE                          = -1658023,
 
-    SAY_TYRANNUS_DEATH  = -1658007, // todo
+    SAY_TYRANNUS_DEATH  = -1659007,
+    NPC_SLAVE_HORDE_1               = 37578,
+    NPC_SLAVE_HORDE_2               = 37577,
+    NPC_SLAVE_HORDE_3               = 37579,
+    NPC_SLAVE_ALY_1                 = 37572,
+    NPC_SLAVE_ALY_2                 = 37575,
+    NPC_SLAVE_ALY_3                 = 37576,
+    NPC_TYRANNUS_INTRO              = 36794,
 };
 
 enum Spells
@@ -53,7 +57,7 @@ enum Events
     EVENT_THROW_SARONITE    = 1,
     EVENT_CHILLING_WAVE     = 2,
     EVENT_DEEP_FREEZE       = 3,
-    EVENT_JUMP_FORGEMASTER  = 4,
+    //EVENT_JUMP              = 4,
     EVENT_FORGING           = 5,
     EVENT_RESUME_ATTACK     = 6,
 };
@@ -76,6 +80,26 @@ enum MiscData
     ACHIEV_DOESNT_GO_TO_ELEVEN  = 0,
     POINT_FORGE                 = 0,
 };
+//Positional defines 
+struct LocationsXY
+{
+    float x, y, z, o;
+    uint32 id;
+};
+
+static LocationsXY MoveLoc[]=
+{
+    {677.445f, -186.521f, 526.702f},
+    {708.190f, -194.619f, 526.805f},
+    {687.257f, -193.644f, 526.717f}, 
+};
+
+static LocationsXY SummonLoc[]=
+{
+    {719.812f, -167.183f, 526.721f,},
+    {698.703f, -165.497f, 527.464f,},
+    {671.455f, -167.968f, 526.741f,},
+};
 
 Position const northForgePos = {722.5643f, -234.1615f, 527.182f, 2.16421f};
 Position const southForgePos = {639.257f, -210.1198f, 529.015f, 0.523599f};
@@ -87,7 +111,7 @@ class boss_garfrost : public CreatureScript
 
         struct boss_garfrostAI : public BossAI
         {
-            boss_garfrostAI(Creature* creature) : BossAI(creature, DATA_GARFROST)
+            boss_garfrostAI(Creature *creature) : BossAI(creature, DATA_GARFROST)
             {
             }
 
@@ -105,15 +129,13 @@ class boss_garfrost : public CreatureScript
                 events.SetPhase(PHASE_ONE);
                 SetEquipmentSlots(true);
                 _permafrostStack = 0;
-
                 instance->SetBossState(DATA_GARFROST, NOT_STARTED);
             }
 
             void EnterCombat(Unit* /*who*/)
             {
-                Talk(SAY_AGGRO);
+                DoScriptText(SAY_AGGRO, me);
                 DoCast(me, SPELL_PERMAFROST);
-                me->CallForHelp(70.0f);
                 events.ScheduleEvent(EVENT_THROW_SARONITE, 7000);
 
                 instance->SetBossState(DATA_GARFROST, IN_PROGRESS);
@@ -122,16 +144,12 @@ class boss_garfrost : public CreatureScript
             void KilledUnit(Unit* victim)
             {
                 if (victim->GetTypeId() == TYPEID_PLAYER)
-                    Talk(SAY_SLAY);
+                    DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
             void JustDied(Unit* /*killer*/)
             {
-                Talk(SAY_DEATH);
-
-                if (Creature* tyrannus = me->GetCreature(*me, instance->GetData64(DATA_TYRANNUS)))
-                    DoScriptText(SAY_TYRANNUS_DEATH, tyrannus);
-
+                DoScriptText(SAY_DEATH, me);            
                 instance->SetBossState(DATA_GARFROST, DONE);
             }
 
@@ -140,51 +158,48 @@ class boss_garfrost : public CreatureScript
                 if (events.GetPhaseMask() & PHASE_ONE_MASK && !HealthAbovePct(66))
                 {
                     events.SetPhase(PHASE_TWO);
-                    Talk(SAY_PHASE2);
                     events.DelayEvents(8000);
                     DoCast(me, SPELL_THUNDERING_STOMP);
-                    events.ScheduleEvent(EVENT_JUMP_FORGEMASTER, 1500);
+                    events.ScheduleEvent(EVENT_JUMP, 1500);
                     return;
                 }
 
                 if (events.GetPhaseMask() & PHASE_TWO_MASK && !HealthAbovePct(33))
                 {
                     events.SetPhase(PHASE_THREE);
-                    Talk(SAY_PHASE3);
                     events.DelayEvents(8000);
                     DoCast(me, SPELL_THUNDERING_STOMP);
-                    events.ScheduleEvent(EVENT_JUMP_FORGEMASTER, 1500);
+                    events.ScheduleEvent(EVENT_JUMP, 1500);
                     return;
                 }
             }
 
             void MovementInform(uint32 type, uint32 id)
             {
-                if (type != EFFECT_MOTION_TYPE || id != POINT_FORGE)
+                if ((type != POINT_MOTION_TYPE && type != EFFECT_MOTION_TYPE) || id != POINT_FORGE)
                     return;
 
                 if (events.GetPhaseMask() & PHASE_TWO_MASK)
-                {
                     DoCast(me, SPELL_FORGE_BLADE);
-                    SetEquipmentSlots(false, EQUIP_ID_SWORD);
-                }
                 if (events.GetPhaseMask() & PHASE_THREE_MASK)
                 {
                     me->RemoveAurasDueToSpell(SPELL_FORGE_BLADE_HELPER);
                     DoCast(me, SPELL_FORGE_MACE);
-                    SetEquipmentSlots(false, EQUIP_ID_MACE);
                 }
                 events.ScheduleEvent(EVENT_RESUME_ATTACK, 5000);
             }
 
-            void SpellHitTarget(Unit* target, const SpellInfo* spell)
+            void SpellHitTarget(Unit* target, const SpellEntry* spell)
             {
                 if (spell->Id == SPELL_PERMAFROST_HELPER)
                 {
-                    Aura* aura = target->GetAura(SPELL_PERMAFROST_HELPER);
-                    if (aura != NULL)
+                    if (Aura *aura = target->GetAura(SPELL_PERMAFROST_HELPER))
                         _permafrostStack = std::max<uint32>(_permafrostStack, aura->GetStackAmount());
                 }
+                else if (spell->Id == SPELL_FORGE_BLADE)
+                    SetEquipmentSlots(false, EQUIP_ID_SWORD);
+                else if (spell->Id == SPELL_FORGE_MACE)
+                    SetEquipmentSlots(false, EQUIP_ID_MACE);
             }
 
             uint32 GetData(uint32 /*type*/)
@@ -208,10 +223,7 @@ class boss_garfrost : public CreatureScript
                     {
                         case EVENT_THROW_SARONITE:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                            {
-                                Talk(SAY_THROW_SARONITE, target->GetGUID());
                                 DoCast(target, SPELL_THROW_SARONITE);
-                            }
                             events.ScheduleEvent(EVENT_THROW_SARONITE, urand(12500, 20000));
                             break;
                         case EVENT_CHILLING_WAVE:
@@ -220,20 +232,21 @@ class boss_garfrost : public CreatureScript
                             break;
                         case EVENT_DEEP_FREEZE:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                            {
-                                Talk(SAY_CAST_DEEP_FREEZE, target->GetGUID());
                                 DoCast(target, SPELL_DEEP_FREEZE);
-                            }
                             events.ScheduleEvent(EVENT_DEEP_FREEZE, 35000, 0, PHASE_THREE);
                             break;
-                        case EVENT_JUMP_FORGEMASTER:
+                        case EVENT_JUMP:
                             me->AttackStop();
+                            me->SetReactState(REACT_PASSIVE);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
                             if (events.GetPhaseMask() & PHASE_TWO_MASK)
-                                me->GetMotionMaster()->MoveJump(northForgePos.GetPositionX(), northForgePos.GetPositionY(), northForgePos.GetPositionZ(), 25.0f, 15.0f);
+                                me->GetMotionMaster()->MoveJump(northForgePos.GetPositionX(), northForgePos.GetPositionY(), northForgePos.GetPositionZ(), 25.0f, 15.0f, POINT_FORGE);
                             else if (events.GetPhaseMask() & PHASE_THREE_MASK)
-                                me->GetMotionMaster()->MoveJump(southForgePos.GetPositionX(), southForgePos.GetPositionY(), southForgePos.GetPositionZ(), 25.0f, 15.0f);
+                                me->GetMotionMaster()->MoveJump(southForgePos.GetPositionX(), southForgePos.GetPositionY(), southForgePos.GetPositionZ(), 25.0f, 15.0f, POINT_FORGE);
                             break;
                         case EVENT_RESUME_ATTACK:
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
                             if (events.GetPhaseMask() & PHASE_TWO_MASK)
                                 events.ScheduleEvent(EVENT_CHILLING_WAVE, 5000, 0, PHASE_TWO);
                             else if (events.GetPhaseMask() & PHASE_THREE_MASK)
@@ -330,23 +343,163 @@ class spell_garfrost_permafrost : public SpellScriptLoader
 
 class achievement_doesnt_go_to_eleven : public AchievementCriteriaScript
 {
-    public:
-        achievement_doesnt_go_to_eleven() : AchievementCriteriaScript("achievement_doesnt_go_to_eleven") { }
+public:
+    achievement_doesnt_go_to_eleven() : AchievementCriteriaScript("achievement_doesnt_go_to_eleven") { }
 
-        bool OnCheck(Player* /*source*/, Unit* target)
-        {
-            if (target)
-                if (Creature* garfrost = target->ToCreature())
-                    if (garfrost->AI()->GetData(ACHIEV_DOESNT_GO_TO_ELEVEN) <= 10)
-                        return true;
+    bool OnCheck(Player* /*source*/, Unit* target)
+    {
+        if (target)
+            if (Creature* garfrost = target->ToCreature())
+                if (garfrost->AI()->GetData(ACHIEV_DOESNT_GO_TO_ELEVEN) <= 10)
+                    return true;
 
-            return false;
-        }
+        return false;
+    }
 };
+
+
+class npc_martin_gorkun : public CreatureScript
+{
+public:
+    npc_martin_gorkun() : CreatureScript("npc_martin_gorkun") { }
+
+    struct npc_martin_gorkunAI: public ScriptedAI
+    {
+        npc_martin_gorkunAI(Creature* creature) : ScriptedAI(creature)
+        {
+        }
+    uint32 m_uiSpeech_Timer;
+    uint8 m_uiOutro_Phase;
+    uint8 m_uiTyr_Phase;
+    bool m_bIsOutro;
+    uint32 creatureEntry;
+        
+        void Reset()
+    {
+        m_uiOutro_Phase     = 0;
+        m_uiTyr_Phase        = 0;
+        m_uiSpeech_Timer    = 1000;
+        m_bIsOutro          = true;
+        creatureEntry = me->GetEntry();
+    }
+    
+    void SummonHordeSlaves()
+    {
+        for (uint8 i = 0; i < 5; i++)
+        {
+            Creature *pTemp = me->SummonCreature(NPC_SLAVE_HORDE_1, SummonLoc[0].x + urand(0, 20), SummonLoc[0].y + urand(0, 20), SummonLoc[0].z, SummonLoc[0].o, TEMPSUMMON_DEAD_DESPAWN, 0);
+            if (pTemp)
+               pTemp->GetMotionMaster()->MovePoint(0, MoveLoc[0].x + urand(0, 20), MoveLoc[0].y + urand(0, 20), MoveLoc[0].z);
+        }
+
+        for (uint8 i = 5; i < 10; i++)
+        {
+            Creature *pTemp = me->SummonCreature(NPC_SLAVE_HORDE_2, SummonLoc[1].x + urand(0, 10), SummonLoc[1].y - urand(0, 10), SummonLoc[1].z, SummonLoc[1].o, TEMPSUMMON_DEAD_DESPAWN, 0);
+            if (pTemp)
+                pTemp->GetMotionMaster()->MovePoint(0, MoveLoc[2].x + urand(0, 20), MoveLoc[2].y - urand(0, 20), MoveLoc[2].z);
+        }
+
+        for (uint8 i = 10; i < 15; i++)
+        {
+            Creature *pTemp = me->SummonCreature(NPC_SLAVE_HORDE_3, SummonLoc[2].x - urand(0, 20), SummonLoc[2].y - urand(0, 20), SummonLoc[2].z, SummonLoc[2].o, TEMPSUMMON_DEAD_DESPAWN, 0);
+            if (pTemp)
+                pTemp->GetMotionMaster()->MovePoint(0, MoveLoc[1].x - urand(0, 20), MoveLoc[1].y - urand(0, 20), MoveLoc[1].z);
+        }
+    }
+
+    void SummonAlySlaves()
+    {
+        for (uint8 i = 0; i < 5; i++)
+        {
+            Creature *pTemp = me->SummonCreature(NPC_SLAVE_ALY_1, SummonLoc[0].x + urand(0, 20), SummonLoc[0].y + urand(0, 20), SummonLoc[0].z, SummonLoc[0].o, TEMPSUMMON_DEAD_DESPAWN, 0);
+            if (pTemp)
+                pTemp->GetMotionMaster()->MovePoint(0, MoveLoc[0].x + urand(0, 20), MoveLoc[0].y + urand(0, 20), MoveLoc[0].z);
+        }
+
+        for (uint8 i = 5; i < 10; i++)
+        {
+            Creature *pTemp = me->SummonCreature(NPC_SLAVE_ALY_2, SummonLoc[1].x + urand(0, 10), SummonLoc[1].y - urand(0, 10), SummonLoc[1].z, SummonLoc[1].o, TEMPSUMMON_DEAD_DESPAWN, 0);
+            if (pTemp)
+                pTemp->GetMotionMaster()->MovePoint(0, MoveLoc[2].x + urand(0, 20), MoveLoc[2].y - urand(0, 20), MoveLoc[2].z);
+        }
+
+        for (uint8 i = 10; i < 15; i++)
+        {
+            Creature *pTemp = me->SummonCreature(NPC_SLAVE_ALY_3, SummonLoc[2].x - urand(0, 20), SummonLoc[2].y - urand(0, 20), SummonLoc[2].z, SummonLoc[2].o, TEMPSUMMON_DEAD_DESPAWN, 0);
+            if (pTemp)
+                pTemp->GetMotionMaster()->MovePoint(0, MoveLoc[1].x - urand(0, 20), MoveLoc[1].y - urand(0, 20), MoveLoc[1].z);
+        }
+    }
+    
+            
+    void UpdateAI(const uint32 uiDiff)
+    {
+        InstanceScript* pInstance = me->GetInstanceScript();
+        if (m_bIsOutro && pInstance->GetBossState(DATA_TYRANNUS) == NOT_STARTED)
+        {
+            if(m_uiSpeech_Timer < uiDiff)
+            {
+                switch(m_uiOutro_Phase)
+                {
+                case 0:
+                    switch (creatureEntry)
+                    {
+                    case NPC_MARTIN_VICTUS_1:
+                        SummonAlySlaves();
+                        break;
+                    case NPC_GORKUN_IRONSKULL_1:
+                        SummonHordeSlaves();
+                        break;
+                    }
+                    ++m_uiOutro_Phase;
+                    m_uiSpeech_Timer = 2000;
+                    break;
+                case 1:
+                    switch (creatureEntry)
+                    {
+                    case NPC_MARTIN_VICTUS_1:
+                        DoScriptText(SAY_FREE_SLAVE,me);
+                        break;
+                    case NPC_GORKUN_IRONSKULL_1:
+                        DoScriptText(SAY_FREE_SLAVE,me);
+                        break;
+                    }
+                    ++m_uiOutro_Phase;
+                    m_uiSpeech_Timer = 3000;
+                    break;
+                case 2:
+                    ++m_uiOutro_Phase;
+                    m_uiSpeech_Timer = 3000;
+                    break;
+                case 3:
+                    m_bIsOutro = false;
+                    ++m_uiOutro_Phase;
+                    m_uiSpeech_Timer = 10000;
+                    break;
+
+                default:
+                    m_uiSpeech_Timer = 100000;
+                }
+            }else m_uiSpeech_Timer -= uiDiff;
+        }
+        
+        
+    }
+
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_martin_gorkunAI(creature);
+    }    
+    
+    };
+
 
 void AddSC_boss_garfrost()
 {
     new boss_garfrost();
     new spell_garfrost_permafrost();
     new achievement_doesnt_go_to_eleven();
+    new npc_martin_gorkun();
 }

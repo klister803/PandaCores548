@@ -47,15 +47,16 @@ set(scripts_STAT_SRCS
   Northrend/ChamberOfAspects/ObsidianSanctum/boss_sartharion.cpp
   Northrend/ChamberOfAspects/RubySanctum/instance_ruby_sanctum.cpp
   Northrend/ChamberOfAspects/RubySanctum/ruby_sanctum.h
-  Northrend/ChamberOfAspects/RubySanctum/ruby_sanctum.cpp
   Northrend/ChamberOfAspects/RubySanctum/boss_baltharus_the_warborn.cpp
   Northrend/ChamberOfAspects/RubySanctum/boss_saviana_ragefire.cpp
   Northrend/ChamberOfAspects/RubySanctum/boss_general_zarithrian.cpp
+  Northrend/ChamberOfAspects/RubySanctum/boss_halion.cpp
   Northrend/FrozenHalls/HallsOfReflection/halls_of_reflection.h
   Northrend/FrozenHalls/HallsOfReflection/boss_falric.cpp
   Northrend/FrozenHalls/HallsOfReflection/instance_halls_of_reflection.cpp
   Northrend/FrozenHalls/HallsOfReflection/halls_of_reflection.cpp
   Northrend/FrozenHalls/HallsOfReflection/boss_marwyn.cpp
+  Northrend/FrozenHalls/HallsOfReflection/boss_the_lich_king_hor.cpp
   Northrend/FrozenHalls/PitOfSaron/boss_forgemaster_garfrost.cpp
   Northrend/FrozenHalls/PitOfSaron/boss_krickandick.cpp
   Northrend/FrozenHalls/PitOfSaron/pit_of_saron.cpp
@@ -164,7 +165,6 @@ set(scripts_STAT_SRCS
   Northrend/IcecrownCitadel/icecrown_citadel.cpp
   Northrend/IcecrownCitadel/icecrown_citadel.h
   Northrend/IcecrownCitadel/icecrown_citadel_teleport.cpp
-  
   Northrend/IcecrownCitadel/instance_icecrown_citadel.cpp
   Northrend/IcecrownCitadel/icecrown_citadel.cpp
   Northrend/IcecrownCitadel/icecrown_citadel.h
@@ -180,7 +180,7 @@ set(scripts_STAT_SRCS
   Northrend/IcecrownCitadel/boss_blood_queen_lana_thel.cpp
   Northrend/IcecrownCitadel/boss_valithria_dreamwalker.cpp
   Northrend/IcecrownCitadel/boss_sindragosa.cpp
-  Northrend/IcecrownCitadel/boss_lich_king.cpp
+  Northrend/IcecrownCitadel/boss_the_lich_king.cpp
 
   Northrend/zuldrak.cpp
   Northrend/icecrown.cpp

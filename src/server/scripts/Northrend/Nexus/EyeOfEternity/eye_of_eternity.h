@@ -18,6 +18,11 @@
 #ifndef DEF_EYE_OF_ETERNITY_H
 #define DEF_EYE_OF_ETERNITY_H
 
+enum Encounter
+{
+    BOSS_MALYGOS,
+};
+
 enum InstanceData
 {
     DATA_MALYGOS_EVENT,
@@ -53,7 +58,9 @@ enum InstanceGameObjects
     GO_EXIT_PORTAL              = 193908,
     GO_FOCUSING_IRIS            = 193958,
     GO_ALEXSTRASZA_S_GIFT       = 193905,
-    GO_ALEXSTRASZA_S_GIFT_2     = 193967
+    GO_ALEXSTRASZA_S_GIFT_2     = 193967,
+    GO_HEART_OF_MAGIC           = 194158,
+    GO_HEART_OF_MAGIC_2         = 194159,
 };
 
 enum InstanceEvents
@@ -66,7 +73,15 @@ enum InstanceSpells
     SPELL_VORTEX_4          = 55853, // damage | used to enter to the vehicle
     SPELL_VORTEX_5          = 56263, // damage | used to enter to the vehicle
     SPELL_PORTAL_OPENED     = 61236,
-    SPELL_RIDE_RED_DRAGON   = 56071
+    SPELL_RIDE_RED_DRAGON   = 56071,
+};
+
+enum Action
+{
+    ACTION_START_MALYGOS     = 5,
+    ACTION_START_PHASE_TWO   = 6,
+    ACTION_START_PHASE_THREE = 7,
+    ACTION_DEATH_SCION       = 8,
 };
 
 #endif

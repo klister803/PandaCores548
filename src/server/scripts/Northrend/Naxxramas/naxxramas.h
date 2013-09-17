@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -48,16 +48,17 @@ enum Data
     DATA_HORSEMEN1,
     DATA_HORSEMEN2,
     DATA_HORSEMEN3,
-    DATA_ABOMINATION_KILLED
 };
 
 enum Data64
 {
     DATA_FAERLINA,
+    DATA_MAEXXNA,
     DATA_THANE,
     DATA_LADY,
     DATA_BARON,
     DATA_SIR,
+    DATA_LOATHEB,
     DATA_THADDIUS,
     DATA_HEIGAN,
     DATA_FEUGEN,
@@ -67,10 +68,11 @@ enum Data64
     DATA_KELTHUZAD_PORTAL02,
     DATA_KELTHUZAD_PORTAL03,
     DATA_KELTHUZAD_PORTAL04,
-    DATA_KELTHUZAD_TRIGGER
+    DATA_KELTHUZAD_TRIGGER,
+    DATA_THADDIUS_TESLA05,
+    DATA_THADDIUS_TESLA06,
 };
 
 #define GO_BIRTH                181356
 
 #endif
-

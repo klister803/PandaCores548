@@ -600,7 +600,7 @@ void AddSC_boss_falric();
 void AddSC_boss_marwyn();
 void AddSC_boss_lord_marrowgar();       // Icecrown Citadel
 void AddSC_boss_lady_deathwhisper();
-void AddSC_event_gunship_battle();
+void AddSC_boss_gunship_battle();
 void AddSC_boss_deathbringer_saurfang();
 void AddSC_boss_festergut();
 void AddSC_boss_rotface();
@@ -614,10 +614,10 @@ void AddSC_icecrown_citadel_teleport();
 void AddSC_instance_icecrown_citadel();
 void AddSC_icecrown_citadel();
 void AddSC_instance_ruby_sanctum();      // Ruby Sanctum
-void AddSC_ruby_sanctum();
 void AddSC_boss_baltharus_the_warborn();
 void AddSC_boss_saviana_ragefire();
 void AddSC_boss_general_zarithrian();
+void AddSC_boss_halion();
 
 void AddSC_dalaran();
 void AddSC_borean_tundra();
@@ -1480,7 +1480,7 @@ void AddNorthrendScripts()
     AddSC_boss_marwyn();
     AddSC_boss_lord_marrowgar();        // Icecrown Citadel
     AddSC_boss_lady_deathwhisper();
-    AddSC_event_gunship_battle();
+    AddSC_boss_gunship_battle();
     AddSC_boss_deathbringer_saurfang();
     AddSC_boss_festergut();
     AddSC_boss_rotface();
@@ -1494,10 +1494,10 @@ void AddNorthrendScripts()
     AddSC_instance_icecrown_citadel();
     AddSC_icecrown_citadel();
     AddSC_instance_ruby_sanctum();      // Ruby Sanctum
-    AddSC_ruby_sanctum();
     AddSC_boss_baltharus_the_warborn();
     AddSC_boss_saviana_ragefire();
     AddSC_boss_general_zarithrian();
+    AddSC_boss_halion();
 
     AddSC_dalaran();
     AddSC_borean_tundra();

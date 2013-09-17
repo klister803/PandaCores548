@@ -287,6 +287,7 @@ class BossAI : public ScriptedAI
         BossAI(Creature* creature, uint32 bossId);
         virtual ~BossAI() {}
 
+        uint32 inFightAggroCheck_Timer;
         InstanceScript* const instance;
         BossBoundaryMap const* GetBoundary() const { return _boundary; }
 
@@ -312,6 +313,7 @@ class BossAI : public ScriptedAI
         void _EnterCombat();
         void _JustDied();
         void _JustReachedHome() { me->setActive(false); }
+        void _DoAggroPulse(const uint32 diff);
 
         bool CheckInRoom()
         {

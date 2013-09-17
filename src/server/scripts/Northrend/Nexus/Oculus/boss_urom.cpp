@@ -22,8 +22,7 @@ SDComment: Is not working SPELL_ARCANE_SHIELD. SPELL_FROSTBOMB has some issues, 
 SDCategory: Instance Script
 EndScriptData */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "oculus.h"
 
 enum Spells

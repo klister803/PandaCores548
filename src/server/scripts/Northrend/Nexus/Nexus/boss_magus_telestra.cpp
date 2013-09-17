@@ -16,8 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "nexus.h"
 
 enum Spells
@@ -79,11 +78,13 @@ public:
         uint64 uiFrostMagusGUID;
         uint64 uiArcaneMagusGUID;
 
+        bool Split;
         bool bFireMagusDead;
         bool bFrostMagusDead;
         bool bArcaneMagusDead;
         bool bIsWaitingToAppear;
 
+        uint32 CheckPersonal;
         uint32 uiIsWaitingToAppearTimer;
         uint32 uiIceNovaTimer;
         uint32 uiFireBombTimer;
@@ -102,6 +103,7 @@ public:
             uiFireBombTimer =  0;
             uiGravityWellTimer = 15*IN_MILLISECONDS;
             uiCooldown = 0;
+            CheckPersonal = 0;
 
             uiFireMagusGUID = 0;
             uiFrostMagusGUID = 0;
@@ -111,6 +113,7 @@ public:
                 time[n] = 0;
 
             splitPersonality = 0;
+            Split = false;
             bIsWaitingToAppear = false;
 
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -143,25 +146,30 @@ public:
 
         void DoAction(int32 const action)
         {
-            if (action == ACTION_MAGUS_DEAD)
+            switch (action)
             {
-                uint8 i = 0;
-                while (time[i] != 0)
-                    ++i;
-
-                time[i] = sWorld->GetGameTime();
-                if (i == 2 && (time[2] - time[1] < 5) && (time[1] - time[0] < 5))
-                    ++splitPersonality;
+            case ACTION_MAGUS_DEAD:
+                splitPersonality++;
+                if (!CheckPersonal)
+                    CheckPersonal = 5000;
+                else
+                {
+                    CheckPersonal = 0;
+                    CheckPersonal = 5000;
+                }
+                break;
             }
         }
+        
+       bool GetSplit()
+       {
+           return Split;
+       }
 
-        uint32 GetData(uint32 type)
-        {
-            if (type == DATA_SPLIT_PERSONALITY)
-                return splitPersonality;
-
-            return 0;
-        }
+       uint32 GetCheckPersonal()
+       {
+           return CheckPersonal;
+       }
 
         uint64 SplitPersonality(uint32 entry)
         {
@@ -219,6 +227,26 @@ public:
             //Return since we have no target
             if (!UpdateVictim())
                 return;
+
+            if (CheckPersonal)
+            {
+                if (CheckPersonal <= diff)
+                {
+                    if (splitPersonality == 3 && !Split)
+                    {
+                        Split = true;
+                        CheckPersonal = 0;
+                        splitPersonality = 0;
+                    }
+                    else
+                    {
+                        splitPersonality = 0;
+                        CheckPersonal = 0;
+
+                    }
+                }
+                else CheckPersonal -= diff;
+            }
 
             if (bIsWaitingToAppear)
             {
@@ -280,6 +308,7 @@ public:
                 me->CastStop();
                 me->RemoveAllAuras();
                 me->SetVisible(false);
+                Split = false;
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 uiFireMagusGUID = SplitPersonality(MOB_FIRE_MAGUS);
                 uiFrostMagusGUID = SplitPersonality(MOB_FROST_MAGUS);
@@ -350,9 +379,10 @@ class achievement_split_personality : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (Creature* Telestra = target->ToCreature())
-                if (Telestra->AI()->GetData(DATA_SPLIT_PERSONALITY) == 2)
-                    return true;
+            if (Creature* Tel = target->ToCreature())
+                if (boss_magus_telestra::boss_magus_telestraAI * TelAI = CAST_AI(boss_magus_telestra::boss_magus_telestraAI, Tel->AI()))
+                    if (TelAI->GetSplit())
+                        return true;
 
             return false;
         }

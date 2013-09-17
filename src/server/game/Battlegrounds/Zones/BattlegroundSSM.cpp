@@ -108,7 +108,7 @@ void BattlegroundSSM::PostUpdateImpl(uint32 diff)
         //check if player left point
         this->CheckSomeoneLeftPoint();
 
-        if (m_timerCartsUpdate <= diff)
+        if (m_timerCartsUpdate <= int32(diff))
         {
             UpdatePoints();
             m_timerCartsUpdate = SSM_CARTS_UPDATE_TIMER;
@@ -116,7 +116,7 @@ void BattlegroundSSM::PostUpdateImpl(uint32 diff)
         else
             m_timerCartsUpdate -= diff;
 
-        if (m_timerPointsUpdate <= diff)
+        if (m_timerPointsUpdate <= int32(diff))
         {
             UpdateScore();
             m_timerPointsUpdate = SSM_SCORE_UPDATE_TIMER;
@@ -172,7 +172,7 @@ Creature* BattlegroundSSM::UpdateCart(uint32 type)
         if (!cart->isMoving())
         {
             uint16 id = m_waysStep[type];
-            cart->MonsterMoveWithSpeed((m_waysMap[type])[id].x, (m_waysMap[type])[id].y, (m_waysMap[type])[id].z, 0.4);
+            cart->MonsterMoveWithSpeed((m_waysMap[type])[id].x, (m_waysMap[type])[id].y, (m_waysMap[type])[id].z, 0.4f);
             m_waysStep[type]++;
         }
     }

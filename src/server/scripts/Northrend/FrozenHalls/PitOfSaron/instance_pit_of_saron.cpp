@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,22 +15,16 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "InstanceScript.h"
+#include "ScriptPCH.h"
 #include "pit_of_saron.h"
 
 // positions for Martin Victus (37591) and Gorkun Ironskull (37592)
 Position const SlaveLeaderPos  = {689.7158f, -104.8736f, 513.7360f, 0.0f};
 // position for Jaina and Sylvanas
-Position const EventLeaderPos2 = {1054.368f, 107.14620f, 628.4467f, 0.0f};
-
-DoorData const Doors[] =
-{
-    {GO_ICE_WALL,   DATA_GARFROST,  DOOR_TYPE_PASSAGE,  BOUNDARY_NONE},
-    {GO_ICE_WALL,   DATA_ICK,       DOOR_TYPE_PASSAGE,  BOUNDARY_NONE},
-    {GO_HALLS_OF_REFLECTION_PORTCULLIS,   DATA_TYRANNUS,       DOOR_TYPE_PASSAGE,  BOUNDARY_NONE},
+Position const EventLeaderPos2 = {1065.983f, 94.954f, 630.997f, 2.247f};
+enum {
+NPC_TYRANNUS_INTRO              = 36794,
 };
-
 class instance_pit_of_saron : public InstanceMapScript
 {
     public:
@@ -41,7 +35,6 @@ class instance_pit_of_saron : public InstanceMapScript
             instance_pit_of_saron_InstanceScript(Map* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
-                LoadDoorData(Doors);
                 _garfrostGUID = 0;
                 _krickGUID = 0;
                 _ickGUID = 0;
@@ -58,6 +51,18 @@ class instance_pit_of_saron : public InstanceMapScript
                     _teamInInstance = player->GetTeam();
             }
 
+        void OnGameObjectCreate(GameObject* go)
+        {
+            switch (go->GetEntry())
+            {
+            case GO_ICE_WALL:
+                uiIceWall = go->GetGUID();
+                if(GetBossState(DATA_GARFROST) == DONE && GetBossState(DATA_ICK) == DONE)
+                    HandleGameObject(NULL,true,go);
+                break;
+            }
+        }
+        
             void OnCreatureCreate(Creature* creature)
             {
                 if (!_teamInInstance)
@@ -154,33 +159,11 @@ class instance_pit_of_saron : public InstanceMapScript
                         if (_teamInInstance == ALLIANCE)
                             creature->UpdateEntry(NPC_MARTIN_VICTUS_1, ALLIANCE);
                         break;
-                    case NPC_MARTIN_VICTUS_2:
+                    case NPC_MARTIN_VICTUS_END:
                         if (_teamInInstance == ALLIANCE)
-                            creature->UpdateEntry(NPC_MARTIN_VICTUS_2, ALLIANCE);
+                            creature->UpdateEntry(NPC_MARTIN_VICTUS_END, ALLIANCE);
                         break;
                     default:
-                        break;
-                }
-            }
-
-            void OnGameObjectCreate(GameObject* go)
-            {
-                switch (go->GetEntry())
-                {
-                    case GO_ICE_WALL:
-                    case GO_HALLS_OF_REFLECTION_PORTCULLIS:
-                        AddDoor(go, true);
-                        break;
-                }
-            }
-
-            void OnGameObjectRemove(GameObject* go)
-            {
-                switch (go->GetEntry())
-                {
-                    case GO_ICE_WALL:
-                    case GO_HALLS_OF_REFLECTION_PORTCULLIS:
-                        AddDoor(go, false);
                         break;
                 }
             }
@@ -192,15 +175,30 @@ class instance_pit_of_saron : public InstanceMapScript
 
                 switch (type)
                 {
+                case DATA_ICK:
+                switch(state)
+                {
+                case DONE:
+                    if(GetBossState(DATA_GARFROST)==DONE)
+                        HandleGameObject(uiIceWall,true,NULL);
+                }
+                break;
                     case DATA_GARFROST:
-                        if (state == DONE)
+                        
+                        if(state == DONE)
                         {
                             if (Creature* summoner = instance->GetCreature(_garfrostGUID))
                             {
                                 if (_teamInInstance == ALLIANCE)
-                                    summoner->SummonCreature(NPC_MARTIN_VICTUS_1, SlaveLeaderPos, TEMPSUMMON_MANUAL_DESPAWN);
+                                {
+                                   Creature *pMartin =  summoner->SummonCreature(NPC_MARTIN_VICTUS_1, 695.46f, -156.31f, 528.061f, 4.77f, TEMPSUMMON_DEAD_DESPAWN, 0);
+                                   pMartin->GetMotionMaster()->MovePoint(0, pMartin->GetPositionX() + 15, pMartin->GetPositionY() - 5, pMartin->GetPositionZ());
+                                }
                                 else
-                                    summoner->SummonCreature(NPC_GORKUN_IRONSKULL_2, SlaveLeaderPos, TEMPSUMMON_MANUAL_DESPAWN);
+                                {
+                                    Creature *pGorkun = summoner->SummonCreature(NPC_GORKUN_IRONSKULL_1, 695.46f, -156.31f, 528.061f, 4.77f, TEMPSUMMON_DEAD_DESPAWN, 0);
+                                    pGorkun->GetMotionMaster()->MovePoint(0, pGorkun->GetPositionX() + 15, pGorkun->GetPositionY() - 5, pGorkun->GetPositionZ());
+                                }    
                             }
                         }
                         break;
@@ -213,6 +211,19 @@ class instance_pit_of_saron : public InstanceMapScript
                                     summoner->SummonCreature(NPC_JAINA_PART2, EventLeaderPos2, TEMPSUMMON_MANUAL_DESPAWN);
                                 else
                                     summoner->SummonCreature(NPC_SYLVANAS_PART2, EventLeaderPos2, TEMPSUMMON_MANUAL_DESPAWN);
+                            }
+                        }
+                        
+                        if (state == IN_PROGRESS)
+                        {
+                            if (Creature* summoner = instance->GetCreature(_tyrannusGUID))
+                            {
+                                if (_teamInInstance == ALLIANCE) {
+                                    summoner->SummonCreature(NPC_MARTIN_VICTUS_END, 1060.955f, 107.274f, 629.424f, 2.084f, TEMPSUMMON_DEAD_DESPAWN, 0);
+                               }
+                               else {
+                                    summoner->SummonCreature(NPC_GORKUN_IRONSKULL_END, 1060.955f, 107.274f, 629.424f, 2.084f, TEMPSUMMON_DEAD_DESPAWN, 0);
+                                }
                             }
                         }
                         break;
@@ -317,7 +328,7 @@ class instance_pit_of_saron : public InstanceMapScript
             uint64 _tyrannusEventGUID;
             uint64 _jainaOrSylvanas1GUID;
             uint64 _jainaOrSylvanas2GUID;
-
+            uint64 uiIceWall;
             uint32 _teamInInstance;
         };
 

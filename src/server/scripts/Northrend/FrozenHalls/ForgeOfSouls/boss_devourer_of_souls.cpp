@@ -15,8 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "forge_of_souls.h"
 
 /*
@@ -269,7 +268,10 @@ class boss_devourer_of_souls : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_PHANTOM_BLAST:
-                            DoCastVictim(SPELL_PHANTOM_BLAST);
+                            if (IsHeroic())
+                                DoCastVictim(H_SPELL_PHANTOM_BLAST);
+                            else
+                                DoCastVictim(SPELL_PHANTOM_BLAST);
                             events.ScheduleEvent(EVENT_PHANTOM_BLAST, 5000);
                             break;
                         case EVENT_MIRRORED_SOUL:
