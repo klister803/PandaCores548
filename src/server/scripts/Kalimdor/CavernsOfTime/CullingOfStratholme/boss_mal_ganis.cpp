@@ -224,8 +224,11 @@ public:
                                 uiOutroTimer = 500;
                                 break;
                             case 5:
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                                    target->Kill(me);
+                                else
+                                    me->Kill(me);
                                 me->SetVisible(false);
-                                me->Kill(me);
                                 break;
 
                         }
