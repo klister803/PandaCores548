@@ -2947,7 +2947,7 @@ void SpellMgr::LoadSpellClassInfo()
             mSpellClassInfo[ClassID].insert(8737);
 
         // Dual Wield
-        if (ClassID == CLASS_WARRIOR || ClassID == CLASS_HUNTER || ClassID == CLASS_ROGUE || ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MONK)
+        if (ClassID == CLASS_HUNTER || ClassID == CLASS_ROGUE || ClassID == CLASS_DEATH_KNIGHT)
             mSpellClassInfo[ClassID].insert(674);
 
         // Natural Insight druid
