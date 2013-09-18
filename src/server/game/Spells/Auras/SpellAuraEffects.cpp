@@ -4363,7 +4363,7 @@ void AuraEffect::HandleAuraModIncreaseHealthPercent(AuraApplication const* aurAp
 
     Unit* target = aurApp->GetTarget();
 
-    if (GetId() == 108503 && target->ToPlayer() && !target->ToPlayer()->HasSpell(108415))
+    if (GetId() == 108503 && target->ToPlayer() && !target->ToPlayer()->HasSpell(108415) && apply)
         return;
 
     // Unit will keep hp% after MaxHealth being modified if unit is alive.
