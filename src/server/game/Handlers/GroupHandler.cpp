@@ -1247,7 +1247,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
 
                 *data << uint32(aurApp->GetBase()->GetId());
                 *data << uint8(aurApp->GetFlags());
-                *data << uint32(0);
+                *data << uint32(aurApp->GetEffectMask());
 
                 if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
                 {
@@ -1357,7 +1357,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
 
                     *data << uint32(aurApp->GetBase()->GetId());
                     *data << uint8(aurApp->GetFlags());
-                    *data << uint32(0);
+                    *data << uint32(aurApp->GetEffectMask());
 
                     if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
                     {
@@ -1370,7 +1370,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                             if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
                             {
                                 *data << float(eff->GetAmount());
-                                count++;
+                                ++count;
                             }
                         }
                         data->put(pos, count);
