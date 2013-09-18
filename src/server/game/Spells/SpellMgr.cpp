@@ -4028,6 +4028,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 mSpellInfoMap[spellInfo->Effects[0].TriggerSpell] = fishingDummy;
                 break;
             }
+
+            // Siege of the Niuzoa temple
+            case 119941: //Puddle Void Zone
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(22);
+                break;
+
             // Mogu'shan Vault
             case 116000:
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
