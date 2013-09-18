@@ -124,7 +124,14 @@ public:
         void DamageTaken(Unit* done_by, uint32 &damage)
         {
             if (damage >= me->GetHealth() && done_by != me)
+            {
                 damage = me->GetHealth()-1;
+                if (instance)
+                {
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 26533, 0, me);
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 58630, 0, me);
+                }
+            }
         }
 
         void UpdateAI(const uint32 diff)
