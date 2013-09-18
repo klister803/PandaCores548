@@ -36,6 +36,14 @@ enum eEvents
     EVENT_GROW              = 1,
 };
 
+enum Actions
+{
+    ACTION_COMBAT  = 0,
+    ACTION_EVADE   = 1,
+    ACTION_EXPLOSE = 2,
+    ACTION_DONE    = 3,
+};
+
 class boss_jinbak : public CreatureScript
 {
     public:
@@ -45,43 +53,51 @@ class boss_jinbak : public CreatureScript
         {
             boss_jinbakAI(Creature* creature) : BossAI(creature, DATA_JINBAK)
             {
+                me->ApplySpellImmune(119941, 0, 0, true);
                 instance = creature->GetInstanceScript();
             }
 
             InstanceScript* instance;
+            uint32 ExploseTimer;
 
             void Reset()
             {
                 _Reset();
+                me->GetMotionMaster()->MovePoint(0, 1536.54f, 5170.002f, 158.89f);
+                if (Creature* puddle = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE)))
+                    puddle->AI()->DoAction(ACTION_EVADE);
             }
 
             void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
-            }
-
-            void JustReachedHome()
-            {
-                instance->SetBossState(DATA_JINBAK, FAIL);
-                summons.DespawnAll();
-            }
-
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {}
-
-            void JustSummoned(Creature* summoned)
-            {
-                summons.Summon(summoned);
+                if (Creature* puddle = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE)))
+                    puddle->AI()->DoAction(ACTION_COMBAT);
+                ExploseTimer = 60000;
             }
 
             void UpdateAI(const uint32 diff)
             {
+                if (!UpdateVictim())
+                    return;
+
+                if (ExploseTimer <= diff)
+                {
+                    if (Creature* puddle = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE)))
+                        puddle->AI()->DoAction(ACTION_EXPLOSE);
+                    ExploseTimer = 60000;
+                }
+                else
+                    ExploseTimer -= diff;
+
                 DoMeleeAttackIfReady();
             }
 
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+                if (Creature* puddle = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE)))
+                    puddle->AI()->DoAction(ACTION_DONE);
             }
         };
 
@@ -91,49 +107,143 @@ class boss_jinbak : public CreatureScript
         }
 };
 
-class npc_sap_puddle : public CreatureScript
+class npc_puddle : public CreatureScript
 {
     public:
-        npc_sap_puddle() : CreatureScript("npc_sap_puddle") {}
+        npc_puddle() : CreatureScript("npc_puddle") {}
 
-        struct npc_sap_puddleAI : public Scripted_NoMovementAI
+        struct npc_puddleAI : public ScriptedAI
         {
-            npc_sap_puddleAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            npc_puddleAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             }
 
             InstanceScript* instance;
-            EventMap _events;
+            uint32 modradius;
 
             void Reset()
             {
-                me->SetReactState(REACT_PASSIVE);
-                me->CastSpell(me, SPELL_SAP_PUDDLE, true);
-
-                _events.ScheduleEvent(EVENT_GROW, 1000);
+                me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.4f); //Base Scale 0.4f
+                me->AddAura(119939, me);
+                modradius = 0;
             }
+
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
+            {
+                if (spell->Id == 119941 && target->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (me->GetFloatValue(OBJECT_FIELD_SCALE_X) >= 0.7f)
+                        me->SetFloatValue(OBJECT_FIELD_SCALE_X, me->GetFloatValue(OBJECT_FIELD_SCALE_X) - 0.3f);
+                    else
+                        me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.4f);
+
+                    me->CastSpell(target, 120593);
+                }
+            }
+
+            void DoAction(const int32 action)
+            {
+                switch(action)
+                {
+                case ACTION_COMBAT:
+                    modradius = 5000;
+                    break;
+                case ACTION_EVADE:
+                    modradius = 0;
+                    me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.4f);
+                    break;
+                case ACTION_EXPLOSE:
+                    {
+                        int32 dmg = 0; 
+                        if (me->GetFloatValue(OBJECT_FIELD_SCALE_X) == 0.4f)
+                            dmg = 40000;
+                        else if (me->GetFloatValue(OBJECT_FIELD_SCALE_X) > 0.4f)
+                            dmg = (me->GetFloatValue(OBJECT_FIELD_SCALE_X) - 0.4f)*10*40000;
+                        
+                        if (dmg)
+                            me->CastCustomSpell(120002, SPELLVALUE_BASE_POINT0, dmg);
+                    }
+                    break;
+                case ACTION_DONE:
+                    me->RemoveAura(119939);
+                    me->DespawnOrUnsummon(1000);
+                    break;
+                }
+            }
+
+            void EnterEvadeMode(){}
+
+            void EnterCombat(Unit* who){}
 
             void UpdateAI(const uint32 diff)
             {
-                switch(_events.ExecuteEvent())
+                if (modradius)
                 {
-                    case EVENT_GROW:
-                        me->AddAura(SPELL_GROW, me);
-                        _events.ScheduleEvent(EVENT_GROW, 1000);
-                        break;
+                    if (modradius <= diff)
+                    { 
+                        me->SetFloatValue(OBJECT_FIELD_SCALE_X, me->GetFloatValue(OBJECT_FIELD_SCALE_X) + 0.1f);
+                        modradius = 5000;
+                    }
+                    else 
+                        modradius -= diff;
                 }
             }
         };
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_sap_puddleAI(creature);
+            return new npc_puddleAI(creature);
         }
 };
+
+class ExactDistanceCheck
+{
+    public:
+        ExactDistanceCheck(WorldObject* source, float dist) : _source(source), _dist(dist) {}
+
+        bool operator()(WorldObject* unit)
+        {
+            return _source->GetExactDist2d(unit) > _dist;
+        }
+
+    private:
+        WorldObject* _source;
+        float _dist;
+};
+
+class spell_sap_puddle : public SpellScriptLoader
+{
+    public:
+        spell_sap_puddle() : SpellScriptLoader("spell_sap_puddle") { }
+
+        class spell_sap_puddle_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sap_puddle_SpellScript);
+
+            void ScaleRange(std::list<WorldObject*>&targets)
+            {
+                targets.remove_if(ExactDistanceCheck(GetCaster(), 16.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sap_puddle_SpellScript::ScaleRange, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sap_puddle_SpellScript();
+        }
+};
+
 
 void AddSC_boss_jinbak()
 {
     new boss_jinbak();
-    new npc_sap_puddle();
+    new npc_puddle();
+    new spell_sap_puddle();
 }

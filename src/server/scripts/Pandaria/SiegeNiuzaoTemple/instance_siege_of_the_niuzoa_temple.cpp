@@ -23,6 +23,7 @@ public:
         uint64 vojakGuid;
         uint64 pavalakGuid;
         uint64 neronokGuid;
+        uint64 puddleGuid;
 
         instance_siege_of_the_niuzoa_temple_InstanceMapScript(Map* map) : InstanceScript(map)
         {}
@@ -33,6 +34,7 @@ public:
             vojakGuid   = 0;
             pavalakGuid = 0;
             neronokGuid = 0;
+            puddleGuid  = 0;
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -50,6 +52,9 @@ public:
                     break;
                 case NPC_NERONOK:
                     neronokGuid = creature->GetGUID();
+                    break;
+                case NPC_PUDDLE:
+                    puddleGuid = creature->GetGUID();
                     break;
             }
         }
@@ -70,6 +75,7 @@ public:
                 case NPC_VOJAK:     return vojakGuid;
                 case NPC_PAVALAK:   return pavalakGuid;
                 case NPC_NERONOK:   return neronokGuid;
+                case NPC_PUDDLE:    return puddleGuid;
             }
 
             return 0;

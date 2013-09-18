@@ -26,7 +26,8 @@ enum CreaturesIds
     NPC_PAVALAK     = 61485,
     NPC_NERONOK     = 62205,
 
-    NPC_SAP_PUDDLE  = 61613
+    NPC_SAP_PUDDLE  = 61613,
+    NPC_PUDDLE      = 90747
 };
 
 #endif // SIEGE_NIUZOA_TEMPLE_H_
