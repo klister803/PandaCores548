@@ -1240,13 +1240,13 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                 if (!aurApp)
                 {
                     *data << uint32(0);
-                    *data << uint16(0);
+                    *data << uint8(0);
                     *data << uint32(0);
                     continue;
                 }
 
                 *data << uint32(aurApp->GetBase()->GetId());
-                *data << uint16(aurApp->GetFlags());
+                *data << uint8(aurApp->GetFlags());
                 *data << uint32(0);
 
                 if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
@@ -1350,13 +1350,13 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                     if (!aurApp)
                     {
                         *data << uint32(0);
-                        *data << uint16(0);
+                        *data << uint8(0);
                         *data << uint32(0);
                         continue;
                     }
 
                     *data << uint32(aurApp->GetBase()->GetId());
-                    *data << uint16(aurApp->GetFlags());
+                    *data << uint8(aurApp->GetFlags());
                     *data << uint32(0);
 
                     if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
