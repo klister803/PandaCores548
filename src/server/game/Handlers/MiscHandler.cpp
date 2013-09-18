@@ -1783,17 +1783,17 @@ void WorldSession::HandleSetDungeonDifficultyOpcode(WorldPacket & recvData)
                 }
             }
             // the difficulty is set even if the instances can't be reset
-            //_player->SendDungeonDifficulty(true);
+            //_player->SendDungeonDifficulty();
             group->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false, _player);
             group->SetDungeonDifficulty(Difficulty(mode));
-            _player->SendDungeonDifficulty(true);
+            _player->SendDungeonDifficulty();
         }
     }
     else
     {
         _player->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false);
         _player->SetDungeonDifficulty(Difficulty(mode));
-        _player->SendDungeonDifficulty(false);
+        _player->SendDungeonDifficulty();
     }
 }
 
@@ -1842,10 +1842,10 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket& recvData)
                 }
             }
             // the difficulty is set even if the instances can't be reset
-            //_player->SendDungeonDifficulty(true);
+            //_player->SendDungeonDifficulty();
             group->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, true, _player);
             group->SetRaidDifficulty(Difficulty(mode));
-            _player->SendRaidDifficulty(true);
+            _player->SendRaidDifficulty();
             group->SendUpdate();
         }
     }
@@ -1853,7 +1853,7 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket& recvData)
     {
         _player->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, true);
         _player->SetRaidDifficulty(Difficulty(mode));
-        _player->SendRaidDifficulty(false);
+        _player->SendRaidDifficulty();
     }
 }
 
