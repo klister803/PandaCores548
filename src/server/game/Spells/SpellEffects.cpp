@@ -941,7 +941,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     bp *= 1.1f;
 
                 // Glyph of Dark Succor
-                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(96279, 0))
+                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(101568, 0))
                     if (bp < int32(m_caster->CountPctFromMaxHealth(aurEff->GetAmount())))
                         if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
                             bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
