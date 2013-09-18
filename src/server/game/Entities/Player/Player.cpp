@@ -23928,6 +23928,24 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_FLAT_SPELL_MODIFIER
     // SMSG_UPDATE_AURA_DURATION
 
+    data.Initialize(SMSG_WORLD_SERVER_INFO, 4 + 4 + 1 + 1);
+    data.WriteBit(false);                                   // has trial money
+    data.WriteBit(false);                                   // ineligible for loot
+    data.WriteBit(false);                                   // has trial level
+    data.FlushBits();
+
+    //if (inegibleForLoot)
+    //    data << uint32(0);                                  // ineligible encounter mask
+    data << uint32(GetMap()->GetDifficulty());
+    data << uint32(sWorld->GetNextWeeklyQuestsResetTime() -  WEEK);
+    //if (hasTrialMoney)
+    //    data << uint32(0);                                // trial money amount
+    data << uint8(0);                                       // is on tournament realm
+    //if (hasTrialLevel)
+    //    data << uint32(0);                                // trial level
+
+    GetSession()->SendPacket(&data);
+
     SendTalentsInfoData(false);
 
     SendKnownSpells();
