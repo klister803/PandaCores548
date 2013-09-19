@@ -1447,8 +1447,8 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
     // Rolling non-grouped items
     for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
     {
-        //if (!(i->lootmode & diffMask))                          // Do not add if instance mode mismatch
-            //continue;
+        if (i->lootmode != 0 && !(i->lootmode & diffMask))                          // Do not add if instance mode mismatch
+            continue;
 
         if (!i->Roll(rate))
             continue;                                         // Bad luck for the entry
