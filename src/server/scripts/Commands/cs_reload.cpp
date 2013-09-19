@@ -882,6 +882,8 @@ public:
     {
         sLog->outInfo(LOG_FILTER_GENERAL, "Re-Loading Spell Proc Event conditions...");
         sSpellMgr->LoadSpellProcEvents();
+        sSpellMgr->LoadSpellPrcoCheck();
+        sSpellMgr->LoadSpellTriggered();
         handler->SendGlobalGMSysMessage("DB table `spell_proc_event` (spell proc trigger requirements) reloaded.");
         return true;
     }
