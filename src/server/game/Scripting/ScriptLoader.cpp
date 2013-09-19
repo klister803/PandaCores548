@@ -745,6 +745,7 @@ void AddSC_boss_taran_zhu();
 void AddSC_instance_siege_of_the_niuzoa_temple();   // Siege of the Niuzoa Temple
 void AddSC_siege_of_the_niuzoa_temple();
 void AddSC_boss_jinbak();
+void AddSC_boss_commander_vojak();
 void AddSC_instance_mogu_shan_vault();              // Mogu'Shan Vault
 void AddSC_mogu_shan_vault();
 void AddSC_boss_stone_guard();
@@ -1546,6 +1547,7 @@ void AddPandarieScripts()
     AddSC_instance_siege_of_the_niuzoa_temple();    // Siege of the Niuzoa Temple
     AddSC_siege_of_the_niuzoa_temple();
     AddSC_boss_jinbak();
+    AddSC_boss_commander_vojak();
     AddSC_instance_mogu_shan_vault();               // Mogu'Shan Vault
     AddSC_mogu_shan_vault();
     AddSC_boss_stone_guard();
