@@ -4082,6 +4082,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
                 spellInfo->Effects[0].TargetA = SpellImplicitTargetInfo(25);
                 break;
+            case 130649: // Life Spirit
+                spellInfo->Effects[0]. BasePoints = 10000;
+                break;
+            case 130650: // Water Spirit
+                spellInfo->Effects[0]. BasePoints = 5000;
+                break;
+            case 105709: // Master Mana Potion
+                spellInfo->Effects[0]. BasePoints = 30000;             
+                break;                    
             default:
                 break;
             }
