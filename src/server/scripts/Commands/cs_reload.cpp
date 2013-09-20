@@ -430,9 +430,6 @@ public:
 
             Field* fields = result->Fetch();
 
-            cInfo->DifficultyEntry[0] = fields[0].GetUInt32();
-            cInfo->DifficultyEntry[1] = fields[1].GetUInt32();
-            cInfo->DifficultyEntry[2] = fields[2].GetUInt32();
             cInfo->KillCredit[0]      = fields[3].GetUInt32();
             cInfo->KillCredit[1]      = fields[4].GetUInt32();
             cInfo->Modelid1           = fields[5].GetUInt32();
