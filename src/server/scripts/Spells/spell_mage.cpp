@@ -174,6 +174,9 @@ class spell_mage_incanters_ward : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
+                    if(absorbTotal > absorbtionAmount)
+                        absorbTotal = absorbtionAmount;      
+                        
                     int32 damageGain = CalculatePct(sSpellMgr->GetSpellInfo(SPELL_MAGE_INCANTERS_ABSORBTION)->Effects[0].BasePoints, ((absorbTotal / absorbtionAmount) * 100.0f));
                     if (!damageGain)
                         return;

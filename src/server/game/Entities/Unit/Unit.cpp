@@ -8842,6 +8842,20 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             break;
         }
+        // Glyph of Blessed Life
+        case 54943:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+            
+            if (!(procSpell->GetAllEffectsMechanicMask() & ((1 << MECHANIC_DISARM) | (1 << MECHANIC_STUN) | (1 << MECHANIC_FEAR))))
+                return false;
+                
+            break;
+        }
         // Infusion of Light
         case 53576:
         {
