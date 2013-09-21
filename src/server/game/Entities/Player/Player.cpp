@@ -8109,7 +8109,10 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     {
         newWeekCount = int32(weekCap);
         // weekCap - oldWeekCount always >= 0 as we set limit before!
-        newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
+        if(newTotalCount > oldTotalCount)
+            newTotalCount = oldTotalCount;
+        else
+            newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
     }
 
     // if we get more then totalCap set to maximum;
