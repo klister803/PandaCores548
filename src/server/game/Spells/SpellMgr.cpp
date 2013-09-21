@@ -4033,6 +4033,19 @@ void SpellMgr::LoadSpellCustomAttr()
             case 119941: //Puddle Void Zone
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(22);
                 break;
+            case 124290: //Blade Rush Dmg trigger(sword)
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);
+                spellInfo->Effects[0].TargetA = 22;
+                spellInfo->Effects[0].TargetB = 15;
+                break;
+            case 124312: //Blade Rush Charge
+                spellInfo->Effects[0].TargetA = 25;
+                spellInfo->Effects[0].TargetB = 0;
+                break;
+            case 119875: //Templest
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                break;
 
             // Mogu'shan Vault
             case 116000:
