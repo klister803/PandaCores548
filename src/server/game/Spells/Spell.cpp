@@ -2158,6 +2158,8 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     if(!target || !m_spellInfo)
         return;
 
+    volatile uint32 spellid = m_spellInfo->Id;
+
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         if (!m_spellInfo->GetEffect(effIndex, m_diffMode).IsEffect() || !CheckEffectTarget(target, effIndex))
             effectMask &= ~(1 << effIndex);
@@ -3293,6 +3295,7 @@ void Spell::cancel()
 
 void Spell::cast(bool skipCheck)
 {
+    volatile uint32 spellid = m_spellInfo->Id;
     // update pointers base at GUIDs to prevent access to non-existed already object
     UpdatePointers();
 
