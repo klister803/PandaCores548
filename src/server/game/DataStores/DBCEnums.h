@@ -86,7 +86,7 @@ enum AchievementFlags
 
 enum
 {
-    MAX_CRITERIA_REQUIREMENTS          = 2,
+    MAX_CRITERIA_REQUIREMENTS          = 1,
     MAX_ADDITIONAL_CRITERIA_CONDITIONS = 3
 };
 enum AchievementCriteriaCondition
@@ -145,7 +145,35 @@ enum AchievementCriteriaAdditionalCondition
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_GUILD_REPUTATION            = 62, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_RATED_BATTLEGROUND          = 63, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RARITY              = 65,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE                = 66
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE                = 66,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK67                       = 67,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY          = 68,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK69                       = 69, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_LEVLE                = 70,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK71                       = 71, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK72                       = 72, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_AREA                        = 73, // ?
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK74                       = 74, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK75                       = 75, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ACHIEV_POINTS               = 76,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK77                       = 77, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_FEMALY            = 78,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_HP_LOW_THAT                 = 79,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK80                       = 80, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MASTER_PET_TAMER            = 81,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK82                       = 82, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE              = 83,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLE_PET_ID               = 84,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK85                       = 85, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK86                       = 86, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK87                       = 87, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK88                       = 88, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_TYPE              = 89,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_WIN_IN_PVP        = 90,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK91                       = 91,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK92                       = 92, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK93                       = 93, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK94                       = 94, // NYI
 };
 
 enum AchievementCriteriaFlags
@@ -167,6 +195,10 @@ enum AchievementCriteriaTimedTypes
     ACHIEVEMENT_TIMED_TYPE_CREATURE         = 7,    // Timer is started by killing creature with entry in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_ITEM             = 9,    // Timer is started by using item with entry in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_UNK              = 10,   // Unknown
+    ACHIEVEMENT_TIMED_TYPE_UNK11            = 11,   // Unknown
+    ACHIEVEMENT_TIMED_TYPE_UNK12            = 12,   // Unknown
+    ACHIEVEMENT_TIMED_TYPE_UNK13            = 13,   // Unknown
+    ACHIEVEMENT_TIMED_TYPE_UNK14            = 14,   // Unknown
 
     ACHIEVEMENT_TIMED_TYPE_MAX,
 };
@@ -236,6 +268,7 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT                = 68,
     ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2              = 69,
     ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL              = 70,
+    ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID               = 71,
     ACHIEVEMENT_CRITERIA_TYPE_FISH_IN_GAMEOBJECT            = 72,
     ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE              = 74, // TODO: title id is not mentioned in dbc
     ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILLLINE_SPELLS        = 75,
@@ -269,12 +302,12 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL           = 113,
     ACHIEVEMENT_CRITERIA_TYPE_ACCEPTED_SUMMONINGS           = 114,
     ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS       = 115,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK118                        = 118,
+    ACHIEVEMENT_CRITERIA_TYPE_UNK118                        = 118, //criteria found but achive not found
     ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS = 119,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK120                        = 120,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK121                        = 121,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK122                        = 122,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK123                        = 123,
+    ACHIEVEMENT_CRITERIA_TYPE_UNK120                        = 120, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK121                        = 121, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK122                        = 122, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK123                        = 123, //criteria found but achive not found
     ACHIEVEMENT_CRITERIA_TYPE_SPENT_GOLD_GUILD_REPAIRS      = 124,
     ACHIEVEMENT_CRITERIA_TYPE_REACH_GUILD_LEVEL             = 125,
     ACHIEVEMENT_CRITERIA_TYPE_CRAFT_ITEMS_GUILD             = 126,
@@ -288,21 +321,33 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILLS_GUILD         = 135,
     ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD      = 136,
     ACHIEVEMENT_CRITERIA_TYPE_UNK137                        = 137,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK138                        = 138, //struct { Flag flag; uint32 count; } 1: Guild Dungeon, 2:Guild Challenge, 3:Guild battlefield
-    ACHIEVEMENT_CRITERIA_TYPE_UNK139                        = 139, //struct { uint32 count; } Guild Challenge
-    ACHIEVEMENT_CRITERIA_TYPE_UNK140                        = 140,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK141                        = 141,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK142                        = 142,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK143                        = 143,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK144                        = 144,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK145                        = 145,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK146                        = 146,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK147                        = 147,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK148                        = 148,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK149                        = 149,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK150                        = 150,
+    ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_GUILD_DUNGEON_CHALLENGES = 138, //struct { Flag flag; uint32 count; } 1: Guild Dungeon, 2:Guild Challenge, 3:Guild battlefield
+    ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_GUILD_CHALLENGES     = 139, //struct { uint32 count; } Guild Challenge
+    ACHIEVEMENT_CRITERIA_TYPE_UNK140                        = 140, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK141                        = 141, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK142                        = 142, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK143                        = 143, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK144                        = 144, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK145                        = 145, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK146                        = 146, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK147                        = 147, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK148                        = 148, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK149                        = 149, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_UNK150                        = 150, //criteria found but achive not found
+    ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS            = 151,
+    ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS_SATURDAY   = 152,
+    ACHIEVEMENT_CRITERIA_TYPE_UNK153                        = 153, //not found in dbc tree
+    ACHIEVEMENT_CRITERIA_TYPE_UNK154                        = 154, //not found in dbc tree
+    ACHIEVEMENT_CRITERIA_TYPE_UNK155                        = 155, //not found in dbc tree
+    ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET              = 156,
+    ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE         = 157,
+    ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN                 = 158,
+    ACHIEVEMENT_CRITERIA_TYPE_UNK159                        = 159, //not found in dbc tree
+    ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVLE_UP            = 160,
+    ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET            = 161,
+    ACHIEVEMENT_CRITERIA_TYPE_UNK162                        = 162, //not found in dbc tree
     // 0..144 => 145 criteria types total
-    ACHIEVEMENT_CRITERIA_TYPE_TOTAL                         = 151
+    ACHIEVEMENT_CRITERIA_TYPE_TOTAL                         = 163
 };
 
 enum AreaFlags
