@@ -428,7 +428,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     // if action == 1, then instanceId is required
     if (!ginfo.IsInvitedToBGInstanceGUID && action == 1)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "BattlegroundHandler: instance not found.");
+        //sLog->outError(LOG_FILTER_NETWORKIO, "BattlegroundHandler: instance not found.");
         return;
     }
 
