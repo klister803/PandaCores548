@@ -3493,6 +3493,145 @@ class spell_gen_gobelin_gumbo : public SpellScriptLoader
         }
 };
 
+enum eBrewfestSpeedSpells
+{
+    SPELL_BREWFEST_RAM          = 43880,
+    SPELL_RAM_FATIGUE           = 43052,
+    SPELL_SPEED_RAM_GALLOP      = 42994,
+    SPELL_SPEED_RAM_CANTER      = 42993,
+    SPELL_SPEED_RAM_TROT        = 42992,
+    SPELL_SPEED_RAM_NORMAL      = 43310,
+    SPELL_SPEED_RAM_EXHAUSED    = 43332
+};
+
+class spell_brewfest_speed : public SpellScriptLoader
+{
+public:
+    spell_brewfest_speed() : SpellScriptLoader("spell_brewfest_speed") {}
+
+    class spell_brewfest_speed_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_brewfest_speed_AuraScript)
+        bool Validate(SpellInfo const * /*spellEntry*/)
+        {
+            if (!sSpellMgr->GetSpellInfo(SPELL_RAM_FATIGUE))
+                return false;
+            if (!sSpellMgr->GetSpellInfo(SPELL_BREWFEST_RAM))
+                return false;
+            if (!sSpellMgr->GetSpellInfo(SPELL_SPEED_RAM_GALLOP))
+                return false;
+            if (!sSpellMgr->GetSpellInfo(SPELL_SPEED_RAM_CANTER))
+                return false;
+            if (!sSpellMgr->GetSpellInfo(SPELL_SPEED_RAM_TROT))
+                return false;
+            if (!sSpellMgr->GetSpellInfo(SPELL_SPEED_RAM_NORMAL))
+                return false;
+            if (!sSpellMgr->GetSpellInfo(SPELL_SPEED_RAM_GALLOP))
+                return false;
+            if (!sSpellMgr->GetSpellInfo(SPELL_SPEED_RAM_EXHAUSED))
+                return false;
+            return true;
+        }
+
+        void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+        {
+            if (GetId() == SPELL_SPEED_RAM_EXHAUSED)
+                return;
+            Player* pCaster = GetCaster()->ToPlayer();
+            if (!pCaster)
+                return;
+            int i;
+            switch (GetId())
+            {
+                case SPELL_SPEED_RAM_GALLOP:
+                    for (i = 0; i < 5; i++)
+                       pCaster->AddAura(SPELL_RAM_FATIGUE,pCaster);
+                    break;
+                case SPELL_SPEED_RAM_CANTER:
+                    pCaster->AddAura(SPELL_RAM_FATIGUE,pCaster);
+                    break;
+                case SPELL_SPEED_RAM_TROT:
+                    if (pCaster->HasAura(SPELL_RAM_FATIGUE))
+                        if (pCaster->GetAura(SPELL_RAM_FATIGUE)->GetStackAmount() <= 2)
+                            pCaster->RemoveAura(SPELL_RAM_FATIGUE);
+                        else
+                            pCaster->GetAura(SPELL_RAM_FATIGUE)->ModStackAmount(-2);
+                    break;
+                case SPELL_SPEED_RAM_NORMAL:
+                    if (pCaster->HasAura(SPELL_RAM_FATIGUE))
+                        if (pCaster->GetAura(SPELL_RAM_FATIGUE)->GetStackAmount() <= 4)
+                            pCaster->RemoveAura(SPELL_RAM_FATIGUE);
+                        else
+                            pCaster->GetAura(SPELL_RAM_FATIGUE)->ModStackAmount(-4);
+                    break;
+            }
+            if (pCaster->HasAura(SPELL_RAM_FATIGUE))
+                if (pCaster->GetAura(SPELL_RAM_FATIGUE)->GetStackAmount() >= 100)
+                    pCaster->CastSpell(pCaster,SPELL_SPEED_RAM_EXHAUSED, false);
+        }
+
+        void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Player* pCaster = GetCaster()->ToPlayer();
+            if (!pCaster)
+                return;
+            if (!pCaster->HasAura(SPELL_BREWFEST_RAM))
+                return;
+            if (GetId() == SPELL_SPEED_RAM_EXHAUSED) 
+            {
+                if (pCaster->HasAura(SPELL_RAM_FATIGUE))
+                    pCaster->GetAura(SPELL_RAM_FATIGUE)->ModStackAmount(-15);
+            } else if (!pCaster->HasAura(SPELL_RAM_FATIGUE) || pCaster->GetAura(SPELL_RAM_FATIGUE)->GetStackAmount() < 100)
+                switch (GetId())
+                {
+                    case SPELL_SPEED_RAM_GALLOP:
+                        if (!pCaster->HasAura(SPELL_SPEED_RAM_EXHAUSED))
+                            pCaster->CastSpell(pCaster,SPELL_SPEED_RAM_CANTER, false);
+                        break;
+                    case SPELL_SPEED_RAM_CANTER:
+                        if (!pCaster->HasAura(SPELL_SPEED_RAM_GALLOP))
+                            pCaster->CastSpell(pCaster,SPELL_SPEED_RAM_TROT, false);
+                        break;
+                    case SPELL_SPEED_RAM_TROT:
+                        if (!pCaster->HasAura(SPELL_SPEED_RAM_CANTER))
+                            pCaster->CastSpell(pCaster,SPELL_SPEED_RAM_NORMAL, false);
+                        break;
+                }
+        }
+
+        void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Player* pCaster = GetCaster()->ToPlayer();
+            if (!pCaster)
+                return;
+            switch (GetId())
+            {
+                case SPELL_SPEED_RAM_GALLOP:
+                    pCaster->GetAura(SPELL_SPEED_RAM_GALLOP)->SetDuration(4000);
+                    break;
+                case SPELL_SPEED_RAM_CANTER:
+                    pCaster->GetAura(SPELL_SPEED_RAM_CANTER)->SetDuration(4000);
+                    break;
+                case SPELL_SPEED_RAM_TROT:
+                    pCaster->GetAura(SPELL_SPEED_RAM_TROT)->SetDuration(4000);
+                    break;
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_brewfest_speed_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_brewfest_speed_AuraScript::HandleEffectPeriodic,EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            OnEffectRemove += AuraEffectRemoveFn(spell_brewfest_speed_AuraScript::HandleEffectRemove, EFFECT_2, SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_brewfest_speed_AuraScript();
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3571,4 +3710,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_blood_fury();
     new spell_gen_gobelin_gumbo();
     new spell_gen_ds_flush_knockback();
+    new spell_brewfest_speed();
 }

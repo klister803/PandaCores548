@@ -1611,6 +1611,232 @@ class npc_brewfest_reveler : public CreatureScript
 };
 
 /*####
+## npc_brewfest_trigger
+####*/
+enum eBrewfestBarkQuests
+{
+    BARK_FOR_THE_THUNDERBREWS       = 11294,
+    BARK_FOR_TCHALIS_VOODOO_BREWERY = 11408,
+    BARK_FOR_THE_BARLEYBREWS        = 11293,
+    BARK_FOR_DROHNS_DISTILLERY      = 11407
+};
+
+class npc_brewfest_trigger : public CreatureScript
+{
+public:
+    npc_brewfest_trigger() : CreatureScript("npc_brewfest_trigger") { }
+
+    struct npc_brewfest_triggerAI : public ScriptedAI
+    {
+        npc_brewfest_triggerAI(Creature* c) : ScriptedAI(c) {}
+        void MoveInLineOfSight(Unit *who)
+        {
+            Player *pPlayer = who->ToPlayer();
+            if (!pPlayer)
+                return;
+            if (pPlayer->GetQuestStatus(BARK_FOR_THE_THUNDERBREWS) == QUEST_STATUS_INCOMPLETE
+                || pPlayer->GetQuestStatus(BARK_FOR_TCHALIS_VOODOO_BREWERY) == QUEST_STATUS_INCOMPLETE
+                || pPlayer->GetQuestStatus(BARK_FOR_THE_BARLEYBREWS) == QUEST_STATUS_INCOMPLETE
+                || pPlayer->GetQuestStatus(BARK_FOR_DROHNS_DISTILLERY) == QUEST_STATUS_INCOMPLETE)
+                pPlayer->KilledMonsterCredit(me->GetEntry(),0);
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_brewfest_triggerAI(creature);
+    }
+};
+
+/*####
+## npc_brewfest_apple_trigger
+####*/
+
+#define SPELL_RAM_FATIGUE    43052
+
+class npc_brewfest_apple_trigger : public CreatureScript
+{
+public:
+    npc_brewfest_apple_trigger() : CreatureScript("npc_brewfest_apple_trigger") { }
+
+    struct npc_brewfest_apple_triggerAI : public ScriptedAI
+    {
+        npc_brewfest_apple_triggerAI(Creature* c) : ScriptedAI(c) {}
+        void MoveInLineOfSight(Unit *who)
+        {
+            Player *pPlayer = who->ToPlayer();
+            if (!pPlayer)
+                return;
+            if (pPlayer->HasAura(SPELL_RAM_FATIGUE) && me->GetDistance(pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ()) <= 7.5f)
+                pPlayer->RemoveAura(SPELL_RAM_FATIGUE);
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_brewfest_apple_triggerAI(creature);
+    }
+};
+
+/*####
+## npc_brewfest_keg_thrower
+####*/
+
+enum eBrewfestKegThrower
+{
+    SPELL_BREWFEST_RAM   = 43880,
+    SPELL_THROW_KEG      = 43660,
+    ITEM_BREWFEST_KEG    = 33797
+};
+
+class npc_brewfest_keg_thrower : public CreatureScript
+{
+public:
+    npc_brewfest_keg_thrower() : CreatureScript("npc_brewfest_keg_thrower") { }
+
+    struct npc_brewfest_keg_throwerAI : public ScriptedAI
+    {
+        npc_brewfest_keg_throwerAI(Creature* c) : ScriptedAI(c) {}
+        void MoveInLineOfSight(Unit *who)
+        {
+            Player *pPlayer = who->ToPlayer();
+            if (!pPlayer)
+                return;
+            if (pPlayer->HasAura(SPELL_BREWFEST_RAM) 
+                && me->GetDistance(pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ()) <= 25.0f
+                && !pPlayer->HasItemCount(ITEM_BREWFEST_KEG,1))
+            {
+                me->CastSpell(pPlayer,SPELL_THROW_KEG,false);
+                me->CastSpell(pPlayer,42414,false);
+            }
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_brewfest_keg_throwerAI(creature);
+    }
+};
+
+/*####
+## npc_brewfest_keg_receiver
+####*/
+
+enum eBrewfestKegReceiver
+{
+    SPELL_CREATE_TICKETS            = 44501,
+    QUEST_THERE_AND_BACK_AGAIN_A    = 11122,
+    QUEST_THERE_AND_BACK_AGAIN_H    = 11412,
+    NPC_BREWFEST_DELIVERY_BUNNY     = 24337   
+};
+
+class npc_brewfest_keg_receiver : public CreatureScript
+{
+public:
+    npc_brewfest_keg_receiver() : CreatureScript("npc_brewfest_keg_receiver") { }
+
+    struct npc_brewfest_keg_receiverAI : public ScriptedAI
+    {
+        npc_brewfest_keg_receiverAI(Creature* c) : ScriptedAI(c) {}
+        void MoveInLineOfSight(Unit *who)
+        {
+            Player *pPlayer = who->ToPlayer();
+            if (!pPlayer)
+                return;
+            if (pPlayer->HasAura(SPELL_BREWFEST_RAM) 
+                && me->GetDistance(pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ()) <= 5.0f
+                && pPlayer->HasItemCount(ITEM_BREWFEST_KEG,1)) 
+            {
+                pPlayer->CastSpell(me,SPELL_THROW_KEG,true);
+                pPlayer->DestroyItemCount(ITEM_BREWFEST_KEG,1,true);
+                pPlayer->GetAura(SPELL_BREWFEST_RAM)->SetDuration(pPlayer->GetAura(SPELL_BREWFEST_RAM)->GetDuration() + 30000);
+                if (pPlayer->GetQuestRewardStatus(QUEST_THERE_AND_BACK_AGAIN_A) 
+                    || pPlayer->GetQuestRewardStatus(QUEST_THERE_AND_BACK_AGAIN_H))
+                {
+                    pPlayer->CastSpell(pPlayer,SPELL_CREATE_TICKETS,true);
+                }
+                else
+                {
+                    pPlayer->KilledMonsterCredit(NPC_BREWFEST_DELIVERY_BUNNY,0);
+                    if (pPlayer->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_A) == QUEST_STATUS_INCOMPLETE) 
+                        pPlayer->AreaExploredOrEventHappens(QUEST_THERE_AND_BACK_AGAIN_A);
+                    if (pPlayer->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_H) == QUEST_STATUS_INCOMPLETE) 
+                        pPlayer->AreaExploredOrEventHappens(QUEST_THERE_AND_BACK_AGAIN_H);
+                    if (pPlayer->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_A) == QUEST_STATUS_COMPLETE
+                        || pPlayer->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_H) == QUEST_STATUS_COMPLETE)
+                        pPlayer->RemoveAura(SPELL_BREWFEST_RAM);
+                }
+            }
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_brewfest_keg_receiverAI(creature);
+    }
+};
+
+/*####
+## npc_brewfest_ram_master
+####*/
+#define GOSSIP_ITEM_RAM             "Do you have additional work?"
+#define GOSSIP_ITEM_RAM_REINS       "Give me another Ram Racing Reins"
+#define SPELL_BREWFEST_SUMMON_RAM   43720
+
+class npc_brewfest_ram_master : public CreatureScript
+{
+public:
+    npc_brewfest_ram_master() : CreatureScript("npc_brewfest_ram_master") { }
+
+    bool OnGossipHello(Player *pPlayer, Creature *pCreature)
+    {
+        if (pCreature->isQuestGiver())
+            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
+            if (pPlayer->HasSpellCooldown(SPELL_BREWFEST_SUMMON_RAM) 
+                && !pPlayer->GetQuestRewardStatus(QUEST_THERE_AND_BACK_AGAIN_A) 
+                && !pPlayer->GetQuestRewardStatus(QUEST_THERE_AND_BACK_AGAIN_H)
+                && (pPlayer->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_A) == QUEST_STATUS_INCOMPLETE
+                || pPlayer->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_H) == QUEST_STATUS_INCOMPLETE))
+                pPlayer->RemoveSpellCooldown(SPELL_BREWFEST_SUMMON_RAM);
+
+            if (!pPlayer->HasAura(SPELL_BREWFEST_RAM) && ((pPlayer->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_A) == QUEST_STATUS_INCOMPLETE 
+            || pPlayer->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_H) == QUEST_STATUS_INCOMPLETE 
+            || (!pPlayer->HasSpellCooldown(SPELL_BREWFEST_SUMMON_RAM) && 
+                (pPlayer->GetQuestRewardStatus(QUEST_THERE_AND_BACK_AGAIN_A) 
+                || pPlayer->GetQuestRewardStatus(QUEST_THERE_AND_BACK_AGAIN_H))))))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_RAM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+            if ((pPlayer->GetQuestRewardStatus(QUEST_THERE_AND_BACK_AGAIN_A) 
+                || pPlayer->GetQuestRewardStatus(QUEST_THERE_AND_BACK_AGAIN_H))
+                && !pPlayer->HasItemCount(33306,1,true))
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_RAM_REINS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+
+
+
+        pPlayer->SEND_GOSSIP_MENU(384, pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->SendCloseGossip();
+        if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
+        {
+            if (pPlayer->HasItemCount(ITEM_BREWFEST_KEG,1)) 
+                pPlayer->DestroyItemCount(ITEM_BREWFEST_KEG,1,true);
+            pPlayer->CastSpell(pPlayer,SPELL_BREWFEST_SUMMON_RAM,true);
+            pPlayer->AddSpellCooldown(SPELL_BREWFEST_SUMMON_RAM,0,time(NULL) + 18*60*60);
+        }
+        if (uiAction == GOSSIP_ACTION_INFO_DEF+2)
+        {
+            pPlayer->CastSpell(pPlayer,44371,false);
+        }
+        return true;
+    }
+};
+
+/*####
 ## npc_winter_reveler
 ####*/
 
@@ -4173,4 +4399,9 @@ void AddSC_npcs_special()
     new npc_ring_of_frost();
     new npc_wild_mushroom();
     new npc_fungal_growth();
+    new npc_brewfest_trigger;
+    new npc_brewfest_apple_trigger;
+    new npc_brewfest_keg_thrower;
+    new npc_brewfest_keg_receiver;
+    new npc_brewfest_ram_master;    
 }
