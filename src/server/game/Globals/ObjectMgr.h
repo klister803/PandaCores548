@@ -1293,7 +1293,7 @@ class ObjectMgr
                     break;
                 case MAN25_DIFFICULTY:
                 case MAN25_HEROIC_DIFFICULTY:
-                    count = 5;
+                    count = 4;
                     break;
                 case RAID_TOOL_DIFFICULTY:
                 case CHALLENGE_MODE_DIFFICULTY:
@@ -1445,9 +1445,6 @@ class ObjectMgr
 
         CacheVendorItemContainer _cacheVendorItemStore;
         CacheTrainerSpellContainer _cacheTrainerSpellStore;
-
-        std::set<uint32> _difficultyEntries[MAX_DIFFICULTY - 1]; // already loaded difficulty 1 value in creatures, used in CheckCreatureTemplate
-        std::set<uint32> _hasDifficultyEntries[MAX_DIFFICULTY - 1]; // already loaded creatures with difficulty 1 values, used in CheckCreatureTemplate
 
         enum CreatureLinkedRespawnType
         {

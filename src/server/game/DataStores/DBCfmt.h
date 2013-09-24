@@ -22,12 +22,15 @@
 // x - skip<uint32>, X - skip<uint8>, s - char*, f - float, i - uint32, b - uint8, d - index (not included)
 // n - index (included), l - bool, p - field present in sql dbc, a - field absent in sql dbc
 
-const char Achievementfmt[]="niixsxiixixxiix";
+const char Achievementfmt[]="niixsxiixixxiii";
 const std::string CustomAchievementfmt="pppaaaapapaappa";
 const std::string CustomAchievementIndex = "ID";
-const char AchievementCriteriafmt[]="niiiiiiiisiiiiixxiiiiii";
-const std::string CustomAchievementCriteriafmt="pppppppppapppppaapppppp";
-const std::string CustomAchievementCriteriaIndex = "ID";
+//const char AchievementCriteriafmt[]="niiiiiiiisiiiiixxiiiiii";
+const char AchievementCriteriafmt[]="niiiiiiiixxx";
+const char CriteriaTreefmt[]="niixiiis";
+const char ModifierTreefmt[]="niiii";
+//const std::string CustomAchievementCriteriafmt="pppppppppapppppaapppppp";
+//const std::string CustomAchievementCriteriaIndex = "ID";
 const char AreaTableEntryfmt[]="iiinixxxxxxxisiiiiifxxxxxxxx";
 const char AreaGroupEntryfmt[]="niiiiiii";
 const char AreaPOIEntryfmt[]="niiiiiiiiiiiffixixxixxx";

@@ -291,6 +291,8 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
 
             void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
+                if(!GetCaster())
+                    return;
                 amount = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
 
                 if (Unit* target = aurEff->GetBase()->GetUnitOwner())

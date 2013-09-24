@@ -25,7 +25,6 @@ enum CreaturesIds
     NPC_VOJAK       = 61634,
     NPC_PAVALAK     = 61485,
     NPC_NERONOK     = 62205,
-
     NPC_SAP_PUDDLE  = 61613,
     NPC_PUDDLE      = 90747
 };

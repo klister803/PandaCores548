@@ -8109,7 +8109,10 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     {
         newWeekCount = int32(weekCap);
         // weekCap - oldWeekCount always >= 0 as we set limit before!
-        newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
+        if(newTotalCount > oldTotalCount)
+            newTotalCount = oldTotalCount;
+        else
+            newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
     }
 
     // if we get more then totalCap set to maximum;
@@ -22475,6 +22478,38 @@ void Player::InitDisplayIds()
     }
 }
 
+void Player::TakeExtendedCost(uint32 extendedCostId, uint32 count)
+{
+    ItemExtendedCostEntry const* extendedCost = sItemExtendedCostStore.LookupEntry(extendedCostId);
+
+    for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)
+    {
+        if(extendedCost->RequiredItem[i] == 38186)
+        {
+            uint32 uicount = extendedCost->RequiredItemCount[i] * count * sWorld->getRate(RATE_DONATE);
+            DestroyItemCount(extendedCost->RequiredItem[i], uicount, true);
+        }
+        else if (extendedCost->RequiredItem[i])
+            DestroyItemCount(extendedCost->RequiredItem[i], (extendedCost->RequiredItemCount[i] * count), true);
+    }
+
+    for (int i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
+    {
+        if (extendedCost->RequiredCurrency[i] == CURRENCY_NONE)
+            continue;
+
+        if (extendedCost->IsSeasonCurrencyRequirement(i))
+            continue;
+
+        CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(extendedCost->RequiredCurrency[i]);
+        if (!entry)
+            continue;
+
+        int32 cost = int32(extendedCost->RequiredCurrencyCount[i] * count);
+        ModifyCurrency(entry->ID, -cost);
+    }
+}
+
 inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, int32 price, ItemTemplate const *pProto, Creature *pVendor, VendorItem const* crItem, bool bStore)
 {
     ItemPosCountVec vDest;
@@ -22566,10 +22601,8 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
 
 bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uint32 currency, uint32 count)
 {
-    vendorSlot += 1;
-
     // cheating attempt
-    if (count < 1) count = 1;
+    if (count < 1 || count > 1) count = 1;
 
     if (!isAlive())
         return false;
@@ -22663,7 +22696,29 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
         return false;
     }
 
-    ModifyCurrency(currency, crItem->maxcount, true, true);
+    if (uint32 totalCap = GetCurrencyTotalCap(proto))
+    {
+        if (GetCurrency(currency, true) >= totalCap)
+        {
+
+            SendBuyError(BUY_ERR_CANT_CARRY_MORE, 0, 0, 0);
+            return false;
+        }
+    }
+
+    if (uint32 weekCap = GetCurrencyWeekCap(proto))
+    {
+        if (GetCurrencyOnWeek(currency, true) >= weekCap)
+        {
+            SendBuyError(BUY_ERR_CANT_CARRY_MORE, 0, 0, 0);
+            return false;
+        }
+    }
+
+    if (crItem->ExtendedCost)
+        TakeExtendedCost(crItem->ExtendedCost, count);
+
+    ModifyCurrency(currency, crItem->maxcount * proto->GetPrecision(), true, true);
 
     return true;
 }
@@ -28341,14 +28396,14 @@ void Player::GenerateResearchDigSites(uint32 max)
 
     if (m_digsite.pointCount[_mapId] < MAX_RESEARCH_SITES / 2)
     {
-        std::list<uint32> templist = m_notactivedigestzones[_mapId];
+        std::list<uint16> templist = m_notactivedigestzones[_mapId];
         while (max > 0)
         {
             uint32 sRSid = 0;
             if(!templist.empty())
             {
                 uint32 index = urand(0, templist.size() - 1);
-                std::list<uint32>::iterator selectiter = templist.begin();
+                std::list<uint16>::iterator selectiter = templist.begin();
                 std::advance(selectiter,index);
                 sRSid = *selectiter;
                 templist.erase(selectiter);
@@ -28493,7 +28548,7 @@ void Player::GenerateResearchProjects(uint32 max, uint32 race)
         if(!m_activeresearchprojects[race].empty())
             return;
 
-        std::list<uint32> templist = m_notactiveresearchprojects[race];
+        std::list<uint16> templist = m_notactiveresearchprojects[race];
         while (max > 0)
         {
             uint32 sRSid = 0;
@@ -28501,7 +28556,7 @@ void Player::GenerateResearchProjects(uint32 max, uint32 race)
             if(templist.empty())
             {
                 uint32 index = urand(0, m_notactiveresearchprojects[race].size() - 1);
-                std::list<uint32>::iterator selectiter = m_notactiveresearchprojects[race].begin();
+                std::list<uint16>::iterator selectiter = m_notactiveresearchprojects[race].begin();
                 std::advance(selectiter,index);
                 sRSid = *selectiter;
                 lastcheck = true;
@@ -28509,7 +28564,7 @@ void Player::GenerateResearchProjects(uint32 max, uint32 race)
             else
             {
                 uint32 index = urand(0, templist.size() - 1);
-                std::list<uint32>::iterator selectiter = templist.begin();
+                std::list<uint16>::iterator selectiter = templist.begin();
                 std::advance(selectiter, index);
                 sRSid = *selectiter;
                 templist.erase(selectiter);

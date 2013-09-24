@@ -473,9 +473,16 @@ class boss_deathbringer_saurfang : public CreatureScript
                                 events.ScheduleEvent(EVENT_SCENT_OF_BLOOD, 10000, 0, PHASE_COMBAT);
                             break;
                         case EVENT_BLOOD_NOVA:
-                            DoCastAOE(SPELL_BLOOD_NOVA_TRIGGER);
+                        {
+                            // select at range only
+                            Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, -10.0f, true);
+                            if (!target)
+                                target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true);    // noone? select melee
+                            if (target)
+                                DoCast(target, SPELL_BLOOD_NOVA_TRIGGER);
                             events.ScheduleEvent(EVENT_BLOOD_NOVA, urand(20000, 25000), 0, PHASE_COMBAT);
                             break;
+                        }
                         case EVENT_RUNE_OF_BLOOD:
                             DoCastVictim(SPELL_RUNE_OF_BLOOD);
                             events.ScheduleEvent(EVENT_RUNE_OF_BLOOD, urand(20000, 25000), 0, PHASE_COMBAT);

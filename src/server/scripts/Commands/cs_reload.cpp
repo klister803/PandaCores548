@@ -430,9 +430,6 @@ public:
 
             Field* fields = result->Fetch();
 
-            cInfo->DifficultyEntry[0] = fields[0].GetUInt32();
-            cInfo->DifficultyEntry[1] = fields[1].GetUInt32();
-            cInfo->DifficultyEntry[2] = fields[2].GetUInt32();
             cInfo->KillCredit[0]      = fields[3].GetUInt32();
             cInfo->KillCredit[1]      = fields[4].GetUInt32();
             cInfo->Modelid1           = fields[5].GetUInt32();
@@ -882,6 +879,8 @@ public:
     {
         sLog->outInfo(LOG_FILTER_GENERAL, "Re-Loading Spell Proc Event conditions...");
         sSpellMgr->LoadSpellProcEvents();
+        sSpellMgr->LoadSpellPrcoCheck();
+        sSpellMgr->LoadSpellTriggered();
         handler->SendGlobalGMSysMessage("DB table `spell_proc_event` (spell proc trigger requirements) reloaded.");
         return true;
     }

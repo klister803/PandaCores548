@@ -271,48 +271,15 @@ void Creature::RemoveCorpse(bool setSpawnTime)
  */
 bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data)
 {
-    CreatureTemplate const* normalInfo = sObjectMgr->GetCreatureTemplate(Entry);
-    if (!normalInfo)
+    CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(Entry);
+    if (!cinfo)
     {
         sLog->outError(LOG_FILTER_SQL, "Creature::InitEntry creature entry %u does not exist.", Entry);
         return false;
     }
 
     // get difficulty 1 mode entry
-    // Si l'entry heroic du mode de joueur est introuvable, on utilise l'entry du mode normal correpondant au nombre de joueurs du mode
-    CreatureTemplate const* cinfo = normalInfo;
-    uint8 diff = uint8(GetMap()->GetSpawnMode());
-    if(diff)
-    {
-        diff = sObjectMgr->GetDiffFromSpawn(diff);
-        if (normalInfo->DifficultyEntry[diff - 1])
-        {
-            cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->DifficultyEntry[diff - 1]);
-
-            // check and reported at startup, so just ignore (restore normalInfo)
-            if(!cinfo)
-                cinfo = normalInfo;
-        }
-
-        /*if(cinfo == normalInfo && (diff == MAN25_HEROIC_DIFFICULTY || diff == RAID_TOOL_DIFFICULTY) && normalInfo->DifficultyEntry[MAN25_DIFFICULTY - 1])
-        {
-            cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->DifficultyEntry[MAN25_DIFFICULTY - 1]);
-
-            // check and reported at startup, so just ignore (restore normalInfo)
-            if(!cinfo)
-                cinfo = normalInfo;
-        }
-
-        if(cinfo == normalInfo &&  diff == MAN10_HEROIC_DIFFICULTY && normalInfo->DifficultyEntry[MAN10_DIFFICULTY - 1])
-        {
-            cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->DifficultyEntry[MAN10_DIFFICULTY - 1]);
-
-            // check and reported at startup, so just ignore (restore normalInfo)
-            if(!cinfo)
-                cinfo = normalInfo;
-        }*/
-        difficulty = diff;
-    }
+    difficulty = sObjectMgr->GetDiffFromSpawn(GetMap()->GetSpawnMode());
 
     SetEntry(Entry);                                        // normal entry always
     m_creatureInfo = cinfo;                                 // map mode related always
@@ -349,7 +316,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     else if (data && data->equipmentId != -1)               // override, -1 means no equipment
         LoadEquipment(data->equipmentId);
 
-    SetName(normalInfo->Name);                              // at normal entry always
+    SetName(cinfo->Name);                              // at normal entry always
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, minfo->bounding_radius);
     SetFloatValue(UNIT_FIELD_COMBATREACH, minfo->combat_reach);
