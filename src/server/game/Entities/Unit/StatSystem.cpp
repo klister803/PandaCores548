@@ -382,37 +382,24 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
 
     float base_attPower = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
     float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
-    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     //add dynamic flat mods
     if (!ranged && HasAuraType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR))
     {
         AuraEffectList const& mAPbyArmor = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR);
         for (AuraEffectList::const_iterator iter = mAPbyArmor.begin(); iter != mAPbyArmor.end(); ++iter)
-        {
             // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
-            int32 temp = int32(GetArmor() / (*iter)->GetAmount());
-            if (temp > 0)
-                attPowerMod += temp;
-            else
-                attPowerMod -= temp;
-        }
+            attPowerMod += int32(GetArmor() / (*iter)->GetAmount());
     }
+
+    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     if (!HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT) || GetTypeId() != TYPEID_PLAYER)
     {
         SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, 0.00f);
-        SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
 
-        if (attPowerMod > 0)
-            SetInt32Value(index+1, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
-        else if (attPowerMod < 0)
-            SetInt32Value(index+2, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
-        else
-        {
-            SetInt32Value(index+1, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
-            SetInt32Value(index+2, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
-        }
+        SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+        SetInt32Value(index_mod_pos, (uint32)attPowerMod);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
 
         SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
     }
