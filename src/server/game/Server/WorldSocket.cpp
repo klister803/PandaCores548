@@ -882,9 +882,11 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
     if (queued)
     {
         packet.WriteBit(0);
+        packet.FlushBits();
         packet << uint32(queuePos);
     }
-    packet.FlushBits();
+    else
+        packet.FlushBits();
 
     packet << uint8(4);
     packet << uint8(4); // Expansion

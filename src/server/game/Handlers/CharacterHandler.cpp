@@ -252,8 +252,6 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
         bitBuffer.reserve(24 * charCount / 8);
         dataBuffer.reserve(charCount * 381);
 
-        
-
         do
         {
             uint32 guidLow = (*result)[0].GetUInt32();
@@ -264,11 +262,11 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
 
             _allowedCharsToLogin.insert(guidLow);
         } while (result->NextRow());
-
-        bitBuffer.FlushBits();
     }
     else
         bitBuffer.WriteBits(0, 17);
+
+    bitBuffer.FlushBits();
 
     data.append(bitBuffer);
     if (charCount)
@@ -2402,8 +2400,6 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
         uint8 bitOrder[8] = {1, 6, 2, 7, 3, 5, 4, 0};
         recvData.ReadBitInOrder(guids[i], bitOrder);
     }
-
-    recvData.FlushBits();
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     for (uint8 i = 0; i < charactersCount; ++i)

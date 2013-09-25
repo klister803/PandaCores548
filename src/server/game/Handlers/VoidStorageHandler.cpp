@@ -75,8 +75,6 @@ void WorldSession::HandleVoidStorageQuery(WorldPacket& recvData)
     uint8 bitOrder[8] = {0, 1, 3, 4, 2, 5, 7, 6};
     recvData.ReadBitInOrder(npcGuid, bitOrder);
 
-    recvData.FlushBits();
-
     uint8 byteOrder[8] = {7, 6, 2, 4, 3, 0, 1, 5};
     recvData.ReadBytesSeq(npcGuid, byteOrder);
 
@@ -159,7 +157,8 @@ void WorldSession::HandleVoidStorageQuery(WorldPacket& recvData)
     }
 
     data.FlushBits();
-    data.append(itemData);
+    if (!itemData.empty())
+        data.append(itemData);
 
     SendPacket(&data);
 }
@@ -208,8 +207,6 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     npcGuid[1] = recvData.ReadBit();
     npcGuid[2] = recvData.ReadBit();
     npcGuid[5] = recvData.ReadBit();
-
-    recvData.FlushBits();
 
     uint8 byteOrder[8] = {2, 0, 4, 6, 5, 1, 7, 3};
     for (uint32 i = 0; i < countWithdraw; ++i)
@@ -443,8 +440,6 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
     itemId[7] = recvData.ReadBit();
     npcGuid[6] = recvData.ReadBit();
 
-    recvData.FlushBits();
-    
     recvData.ReadByteSeq(itemId[2]);
     recvData.ReadByteSeq(itemId[3]);
     recvData.ReadByteSeq(npcGuid[0]);
@@ -518,7 +513,8 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
     data.WriteBit(itemId[1]);
     data.WriteBit(itemId[7]);
     data.WriteBit(itemId[2]);
-    //data.FlushBits();
+
+    data.FlushBits();
 
     data.WriteByteSeq(itemId[5]);
     data.WriteByteSeq(itemId[6]);

@@ -66,7 +66,6 @@ void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
 void WorldSession::HandleLearnTalents(WorldPacket& recvData)
 {
     uint32 count = recvData.ReadBits(25);
-    recvData.FlushBits();
 
     // Cheat - Hack check
     if (count > 6)

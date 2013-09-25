@@ -150,7 +150,8 @@ void WorldSession::HandleGuildFinderBrowse(WorldPacket& recvPacket)
     }
 
     data.FlushBits();
-    data.append(bufferData);
+    if (!bufferData.empty())
+        data.append(bufferData);
 
     player->SendDirectMessage(&data);
 }
@@ -227,7 +228,8 @@ void WorldSession::HandleGuildFinderGetApplications(WorldPacket& /*recvPacket*/)
         }
 
         data.FlushBits();
-        data.append(bufferData);
+        if (!bufferData.empty())
+            data.append(bufferData);
     }
 
     GetPlayer()->SendDirectMessage(&data);
@@ -289,7 +291,8 @@ void WorldSession::HandleGuildFinderGetRecruits(WorldPacket& recvPacket)
     }
 
     data.FlushBits();
-    data.append(dataBuffer);
+    if (!dataBuffer.empty())
+        data.append(dataBuffer);
     data << uint32(time(NULL)); // Unk time
 
     player->SendDirectMessage(&data);
@@ -318,6 +321,7 @@ void WorldSession::HandleGuildFinderPostRequest(WorldPacket& recvPacket)
     {
         data.WriteBit(settings.IsListed());
         data.WriteBits(settings.GetComment().size(), 11);
+        data.FlushBits();
         data << uint32(settings.GetLevel());
         data << uint32(0); // Unk Int32
         data << uint32(settings.GetAvailability());
@@ -327,6 +331,7 @@ void WorldSession::HandleGuildFinderPostRequest(WorldPacket& recvPacket)
     }
     else
         data.FlushBits();
+
     player->SendDirectMessage(&data);
 }
 

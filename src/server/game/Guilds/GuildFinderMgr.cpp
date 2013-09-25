@@ -364,7 +364,8 @@ void GuildFinderMgr::SendApplicantListUpdate(Guild& guild)
     }
 
     data.FlushBits();
-    data.append(dataBuffer);
+    if (!dataBuffer.empty())
+        data.append(dataBuffer);
     data << uint32(time(NULL)); // Unk time
     if (Player* player = ObjectAccessor::FindPlayer(guild.GetLeaderGUID()))
         player->SendDirectMessage(&data);
@@ -417,7 +418,8 @@ void GuildFinderMgr::SendMembershipRequestListUpdate(Player& player)
     }
 
     data.FlushBits();
-    data.append(dataBuffer);
+    if (!dataBuffer.empty())
+        data.append(dataBuffer);
     data << uint32(time(NULL)); // Unk time
     player.SendDirectMessage(&data);
 }

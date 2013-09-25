@@ -2512,7 +2512,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data.WriteBit(0);       // unknown
                     data.WriteBit(1);   // has transport
                     data.FlushBits();
-                    data  << m_transport->GetEntry() << GetMapId();
+                    data << m_transport->GetEntry() << GetMapId();
                 }
                 else
                 {
@@ -7973,7 +7973,8 @@ void Player::SendCurrencies() const
     }
 
     packet.FlushBits();
-    packet.append(currencyData);
+    if (!currencyData.empty())
+        packet.append(currencyData);
     GetSession()->SendPacket(&packet);
 }
 
@@ -17631,9 +17632,10 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
     }
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_COMPLETE, (4 + 4 + 4 + 4 + 4));
-    
+
     data.WriteBit(0);                                      // FIXME: unknown bits, common values sent
     data.WriteBit(1);
+    data.FlushBits();
 
     data << uint32(quest->GetBonusTalents());              // bonus talents (not verified for 4.x)
     data << uint32(quest->GetRewardSkillPoints());         // 4.x bonus skill points
@@ -17641,7 +17643,6 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
     data << uint32(moneyReward);
     data << uint32(questId);
     data << uint32(quest->GetRewardSkillId());             // 4.x bonus skill id
-    data.FlushBits();
 
     GetSession()->SendPacket(&data);
 
@@ -27166,9 +27167,11 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
     data.WriteBit(guid[1]);
     data.WriteBit(guid[4]);
     data.WriteBit(guid[3]);
-    data.FlushBits();
     data.WriteBit(item->GetPaidMoney() > 0);
     data.WriteBit(guid[0]);
+
+    data.FlushBits();
+
     data.WriteByteSeq(guid[5]);
     data.WriteByteSeq(guid[1]);
     data.WriteByteSeq(guid[4]);

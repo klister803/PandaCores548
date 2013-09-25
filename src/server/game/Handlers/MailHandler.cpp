@@ -85,8 +85,6 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     mailbox[4] = recvData.ReadBit();
     mailbox[3] = recvData.ReadBit();
 
-    recvData.FlushBits();
-    
     recvData.ReadByteSeq(mailbox[7]);
 
     for (uint8 i = 0; i < items_count; ++i)

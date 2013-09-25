@@ -68,7 +68,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_INVITE");
     uint32 nameLength = recvPacket.ReadBits(7);
-    recvPacket.FlushBits();
+
     std::string invitedName = recvPacket.ReadString(nameLength);
 
     if (normalizePlayerName(invitedName))
@@ -714,7 +714,8 @@ void WorldSession::HandleGuildRewardsQueryOpcode(WorldPacket& recvPacket)
             dataBuffer << uint64(rewards[i].Price);
             dataBuffer << int32(rewards[i].Racemask);
         }
-        data.append(dataBuffer);
+        if (!dataBuffer.empty())
+            data.append(dataBuffer);
         data << uint32(time(NULL));
         SendPacket(&data);
     }

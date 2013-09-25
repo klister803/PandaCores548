@@ -1457,7 +1457,8 @@ void Guild::HandleGuildRanks(WorldSession* session) const
     }
 
     data.FlushBits();
-    data.append(rankData);
+    if (!rankData.empty())
+        data.append(rankData);
     session->SendPacket(&data);
 }
 

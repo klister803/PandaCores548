@@ -214,6 +214,7 @@ void WorldSession::SendBfLeaveMessage(uint64 guid, BFLeaveReason reason)
     data.WriteBit(bgGuid[7]);
     data.WriteBit(bgGuid[3]);
 
+    data.FlushBits();
 
     data << uint8(2); // byte BattleStatus
 
@@ -242,8 +243,6 @@ void WorldSession::HandleBfQueueInviteResponse(WorldPacket & recvData)
     recvData.ReadBitInOrder(guid, bitOrder);
 
     accepted = recvData.ReadBit();
-    
-    recvData.FlushBits();
 
     uint8 byteOrder[8] = {6, 4, 0, 1, 5, 7, 3, 2};
     recvData.ReadBytesSeq(guid, byteOrder);
@@ -275,8 +274,6 @@ void WorldSession::HandleBfEntryInviteResponse(WorldPacket & recvData)
     accepted = recvData.ReadBit();
     guid[5] = recvData.ReadBit();
     guid[0] = recvData.ReadBit();
-
-    recvData.FlushBits();
 
     uint8 byteOrder[8] = {3, 2, 4, 0, 5, 7, 6, 1};
     recvData.ReadBytesSeq(guid, byteOrder);
@@ -326,8 +323,6 @@ void WorldSession::HandleBfExitQueueRequest(WorldPacket & recvData)
 
     uint8 bitOrder[8] = {4, 0, 1, 5, 3, 7, 6, 2};
     recvData.ReadBitInOrder(guid, bitOrder);
-
-    recvData.FlushBits();
 
     uint8 byteOrder[8] = {0, 6, 2, 5, 4, 1, 7, 3};
     recvData.ReadBytesSeq(guid, byteOrder);

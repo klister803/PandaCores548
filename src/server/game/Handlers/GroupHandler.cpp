@@ -91,8 +91,6 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
     crossRealmGuid[0] = recvData.ReadBit();
     crossRealmGuid[2] = recvData.ReadBit();
 
-    recvData.FlushBits();
-
     recvData.ReadByteSeq(crossRealmGuid[4]);
     recvData.ReadByteSeq(crossRealmGuid[0]);
 
@@ -420,8 +418,6 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recvData)
 
     uint8 bitOrder[8] = {4, 7, 5, 6, 1, 2, 3, 0};
     recvData.ReadBitInOrder(guid, bitOrder);
-
-    recvData.FlushBits();
 
     recvData.ReadByteSeq(guid[4]);
     recvData.ReadByteSeq(guid[5]);
@@ -976,7 +972,6 @@ void WorldSession::HandleGroupAssistantLeaderOpcode(WorldPacket & recvData)
     guid[2] = recvData.ReadBit();
     guid[4] = recvData.ReadBit();
     guid[5] = recvData.ReadBit();
-    recvData.FlushBits();
 
     uint8 byteOrder[8] = {7, 2, 4, 0, 5, 3, 6, 1};
     recvData.ReadBytesSeq(guid, byteOrder);
