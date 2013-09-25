@@ -4048,6 +4048,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
 
             // Mogu'shan Vault
+            case 129428: //Dummy Searcher(cobalt mine)
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
+                break;
             case 116000:
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                 break;

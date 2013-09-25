@@ -272,7 +272,6 @@ class boss_generic_guardian : public CreatureScript
             uint32 spellPetrificationBarId;
             uint32 spellTrueFormId;
             uint32 spellMainAttack;
-
             bool isInTrueForm;
 
             Creature* GetController()
@@ -382,20 +381,6 @@ class boss_generic_guardian : public CreatureScript
                 }
             }
 
-            void RegeneratePower(Powers power, int32& value)
-            {
-                if (!me->isInCombat())
-                {
-                    value = 0;
-                    return;
-                }
-
-                if (isInTrueForm)
-                    value = 4; // Creature regen every 2 seconds, and guardians must regen at 2/sec
-                else
-                    value = 0;
-            }
-
             void DoAction(int32 const action)
             {
                 switch (action)
@@ -415,6 +400,20 @@ class boss_generic_guardian : public CreatureScript
                     default:
                         break;
                 }
+            }
+            
+            void RegeneratePower(Powers power, int32 &value)
+            {
+                if (!me->isInCombat())
+                {
+                    value = 0;
+                    return;
+                }
+                
+               if (CheckNearGuardians())
+                   value = 4; // Creature regen every 2 seconds, and guardians must regen at 2/sec
+                else
+                   value = 0;
             }
 
             bool CheckNearGuardians()
@@ -452,24 +451,21 @@ class boss_generic_guardian : public CreatureScript
                             me->RemoveAurasDueToSpell(spellTrueFormId);
                             isInTrueForm = false;
                         }
-
                         events.ScheduleEvent(EVENT_CHECK_NEAR_GUARDIANS, 2000);
                         break;
                     }
-                    case EVENT_CHECK_ENERGY:
+                    case EVENT_CHECK_ENERGY:                           
                         if (me->GetPower(POWER_ENERGY) >= 100)
                         {
                             me->CastSpell(me, spellOverloadId, false);
                             me->RemoveAurasDueToSpell(spellPetrificationId);
                             pInstance->DoRemoveAurasDueToSpellOnPlayers(spellPetrificationBarId);
                         }
-
                         events.ScheduleEvent(EVENT_CHECK_ENERGY, 1000);
                         break;
                     case EVENT_REND_FLESH:
                         if (Unit* victim = SelectTarget(SELECT_TARGET_TOPAGGRO))
                             me->CastSpell(victim, SPELL_REND_FLESH, false);
-
                         events.ScheduleEvent(EVENT_REND_FLESH, urand(20000, 25000));
                         break;
                     case EVENT_MAIN_ATTACK:
@@ -496,7 +492,7 @@ class boss_generic_guardian : public CreatureScript
                                 }
                                 case NPC_JASPER:
                                 {
-                                    for (uint8 i = 0; i < 2; ++i)
+                                   /* for (uint8 i = 0; i < 2; ++i)
                                     {
                                         std::list<Player*> playerList;
                                         std::list<Player*> tempPlayerList;
@@ -525,6 +521,8 @@ class boss_generic_guardian : public CreatureScript
                                     }
 
                                     events.ScheduleEvent(EVENT_MAIN_ATTACK, urand(45000, 75000));
+                                    break;*/
+                                    events.CancelEvent(EVENT_MAIN_ATTACK);
                                     break;
                                 }
                             }
@@ -558,37 +556,48 @@ class mob_cobalt_mine : public CreatureScript
         struct mob_cobalt_mineAI : public ScriptedAI
         {
             mob_cobalt_mineAI(Creature* creature) : ScriptedAI(creature)
-            {}
+            {
+                me->SetDisplayId(11686);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            }
 
-            uint32 preparationTimer;
-            bool isReady;
+            uint32 active;
+            bool explose;
 
             void Reset()
             {
-                preparationTimer = 3000;
-                isReady = false;
                 me->AddAura(SPELL_COBALT_MINE_VISUAL, me);
+                explose = false;
+                active = 3000;
+            }
+
+            void EnterEvadeMode(){}
+
+            void EnterCombat(Unit* who){}
+
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
+            {
+                if (spell->Id == 129428 && target->GetTypeId() == TYPEID_PLAYER && !explose)
+                {
+                    explose = true;
+                    me->CastSpell(me, SPELL_COBALT_MINE_EXPLOSION, false);
+                    me->DespawnOrUnsummon();
+                }
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (preparationTimer)
+                if (active)
                 {
-                    if (preparationTimer <= diff)
+                    if (active <= diff)
                     {
-                        isReady = true;
-                        preparationTimer = 0;
+                        active = 0;
+                        me->AddAura(129426, me); //Aura trigger searcher dummy
                     }
                     else
-                        preparationTimer -= diff;
+                        active -= diff;
                 }
-
-                if (isReady)
-                    if (me->SelectNearestPlayerNotGM(6.5f))
-                    {
-                        me->CastSpell(me, SPELL_COBALT_MINE_EXPLOSION, false);
-                        me->DespawnOrUnsummon();
-                    }
             }
         };
 
@@ -634,7 +643,6 @@ class spell_petrification : public SpellScriptLoader
                     if (Aura* triggeredAura = target->GetAura(triggeredSpell))
                     {
                         uint8 stackCount = triggeredAura->GetStackAmount();
-
                         uint8 newStackCount = stackCount + 5 > 100 ? 100: stackCount + 5;
                         triggeredAura->SetStackAmount(newStackCount);
                         triggeredAura->RefreshDuration();
