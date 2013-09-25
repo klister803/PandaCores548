@@ -27157,7 +27157,7 @@ bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount)
 void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece, uint8 error)
 {
     ObjectGuid guid = item->GetGUID();
-    WorldPacket data(SMSG_ITEM_REFUND_RESULT, 1 + 1 + 8 + 4*8 + 4 + 4*8 + 1);
+    WorldPacket data(SMSG_ITEM_REFUND_RESULT, 2 + 8 + 1 + 5 * 8 + 4 + 5 * 8 + 1);
 
     data.WriteBit(guid[7]);
     data.WriteBit(guid[5]);
@@ -27167,7 +27167,6 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
     data.WriteBit(guid[1]);
     data.WriteBit(guid[4]);
     data.WriteBit(guid[3]);
-    data.WriteBit(item->GetPaidMoney() > 0);
     data.WriteBit(guid[0]);
 
     data.FlushBits();
