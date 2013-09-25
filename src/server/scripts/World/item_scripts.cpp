@@ -408,6 +408,101 @@ public:
         return true;
     }
 };
+/*######
+# item_Titanium_Seal_of_Dalaran
+# For do not anything
+######*/
+class item_titanium_seal_of_dalaran : public ItemScript
+{
+public:
+    item_titanium_seal_of_dalaran() : ItemScript("item_titanium_seal_of_dalaran") { }
+
+    bool OnUse(Player* pPlayer, Item* pItem, const SpellCastTargets & /*pTargets*/)
+    {
+     uint8 luky = urand(0,1);
+
+     if(pPlayer)
+     {
+        pPlayer->CastSpell(pPlayer,60458,true);
+        pPlayer->TextEmote("casually flips his Titanium Seal of Dalaran");
+
+        if(luky)
+           pPlayer->TextEmote("caches the coin heads up!");
+        else
+           pPlayer->TextEmote("finds the coin face down for tails!");
+     }
+     return false;
+   }
+};
+
+enum eBrewfestSampler
+{
+    QUEST_CHUG_AND_CHUCK_A    = 12022,
+    QUEST_CHUG_AND_CHUCK_H    = 12191,
+    NPC_BREWFEST_STOUT        = 24108
+};
+class item_brewfest_sampler : public ItemScript
+{
+public:
+    item_brewfest_sampler() : ItemScript("item_brewfest_sampler") { }
+
+    bool OnUse(Player* pPlayer, Item* pItem, const SpellCastTargets & /*pTargets*/)
+    {
+        if (pPlayer->GetQuestStatus(QUEST_CHUG_AND_CHUCK_A) == QUEST_STATUS_INCOMPLETE
+            || pPlayer->GetQuestStatus(QUEST_CHUG_AND_CHUCK_H) == QUEST_STATUS_INCOMPLETE)
+        {
+            if (Creature* pStout = pPlayer->FindNearestCreature(NPC_BREWFEST_STOUT, 10.0f)) // spell range
+            {
+                return false;
+            } else
+                pPlayer->SendEquipError(EQUIP_ERR_OUT_OF_RANGE, pItem, NULL);
+        } else
+            pPlayer->SendEquipError(EQUIP_ERR_CLIENT_LOCKED_OUT ,pItem, NULL);
+        return true;
+    }
+};
+
+enum eBrewfestRamReins
+{
+    SPELL_BREWFEST_RAM          = 43880,
+    SPELL_RAM_FATIGUE           = 43052,
+    SPELL_SPEED_RAM_GALLOP      = 42994,
+    SPELL_SPEED_RAM_CANTER      = 42993,
+    SPELL_SPEED_RAM_TROT        = 42992,
+    SPELL_SPEED_RAM_NORMAL      = 43310,
+    SPELL_SPEED_RAM_EXHAUSED    = 43332
+};
+
+class item_brewfest_ram_reins : public ItemScript
+{
+public:
+    item_brewfest_ram_reins() : ItemScript("item_brewfest_ram_reins") { }
+
+    bool OnUse(Player* pPlayer, Item* pItem, const SpellCastTargets & /*pTargets*/)
+    {
+        if (pPlayer->HasAura(SPELL_BREWFEST_RAM) && !pPlayer->HasAura(SPELL_SPEED_RAM_EXHAUSED))
+        {
+            if (pPlayer->HasAura(SPELL_SPEED_RAM_NORMAL))
+                pPlayer->CastSpell(pPlayer,SPELL_SPEED_RAM_TROT,false);
+            else if (pPlayer->HasAura(SPELL_SPEED_RAM_TROT))
+            {
+                if (pPlayer->GetAura(SPELL_SPEED_RAM_TROT)->GetDuration() < 3000)
+                    pPlayer->GetAura(SPELL_SPEED_RAM_TROT)->SetDuration(4000);
+                else
+                  pPlayer->CastSpell(pPlayer,SPELL_SPEED_RAM_CANTER,false);
+            } else if (pPlayer->HasAura(SPELL_SPEED_RAM_CANTER))
+            {
+                if (pPlayer->GetAura(SPELL_SPEED_RAM_CANTER)->GetDuration() < 3000)
+                    pPlayer->GetAura(SPELL_SPEED_RAM_CANTER)->SetDuration(4000);
+                else
+                  pPlayer->CastSpell(pPlayer,SPELL_SPEED_RAM_GALLOP,false);
+            } else if (pPlayer->HasAura(SPELL_SPEED_RAM_GALLOP))
+                pPlayer->GetAura(SPELL_SPEED_RAM_GALLOP)->SetDuration(4000);
+        } else
+            pPlayer->SendEquipError(EQUIP_ERR_CLIENT_LOCKED_OUT ,pItem, NULL);
+        return true;
+    }
+};
 
 void AddSC_item_scripts()
 {
@@ -422,4 +517,7 @@ void AddSC_item_scripts()
     new item_dehta_trap_smasher();
     new item_trident_of_nazjan();
     new item_captured_frog();
+    new item_titanium_seal_of_dalaran();
+    new item_brewfest_sampler;
+    new item_brewfest_ram_reins;    
 }

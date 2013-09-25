@@ -51,8 +51,11 @@ typedef UNORDERED_MAP<uint32, MaxCoordinat> QuestPOIPointMap;
 typedef UNORDERED_MAP<uint32, std::vector<PolygonVector> > PolygonQuestPOIPointMap;
 static QuestPOIPointMap m_questpoipoints;
 static PolygonQuestPOIPointMap m_polygonquestpoipoints;
-static std::map<uint32, std::list<uint32> > sDigestZonesList;
-static std::map<uint32, std::list<uint32> > sResearchProjectsList;
+static UNORDERED_MAP<uint16, std::list<uint16> > sDigestZonesList;
+static UNORDERED_MAP<uint16, std::list<uint16> > sResearchProjectsList;
+static UNORDERED_MAP<uint16, std::list<uint16> > sCriteriaTreeEntryList;
+static UNORDERED_MAP<uint16, std::list<uint16> > sModifierTreeEntryList;
+static UNORDERED_MAP<uint16, uint16 > sAchievementEntryParentList;
 
 typedef std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> WMOAreaInfoByTripple;
 
@@ -66,6 +69,8 @@ static WMOAreaInfoByTripple sWMOAreaInfoByTripple;
 
 DBCStorage <AchievementEntry> sAchievementStore(Achievementfmt);
 DBCStorage <AchievementCriteriaEntry> sAchievementCriteriaStore(AchievementCriteriafmt);
+DBCStorage <CriteriaTreeEntry> sCriteriaTreeStore(CriteriaTreefmt);
+DBCStorage <ModifierTreeEntry> sModifierTreeStore(ModifierTreefmt);
 DBCStorage <AreaTriggerEntry> sAreaTriggerStore(AreaTriggerEntryfmt);
 DBCStorage <ArmorLocationEntry> sArmorLocationStore(ArmorLocationfmt);
 DBCStorage <AuctionHouseEntry> sAuctionHouseStore(AuctionHouseEntryfmt);
@@ -343,50 +348,30 @@ void LoadDBCStores(const std::string& dataPath)
     }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementStore,            dbcPath, "Achievement.dbc", &CustomAchievementfmt, &CustomAchievementIndex);//14545
-    LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementCriteriaStore,    dbcPath, "Achievement_Criteria.dbc", &CustomAchievementCriteriafmt, &CustomAchievementCriteriaIndex);//14545
-    
-    // N'est pas delete au cas ou on arrive un jour a recupere le nom, ils sont pour le moment tous en inconnus
-    if (false)
+    //LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementCriteriaStore,    dbcPath, "Achievement_Criteria.dbc", &CustomAchievementCriteriafmt, &CustomAchievementCriteriaIndex);//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementCriteriaStore,    dbcPath, "Criteria.dbc");//16048
+    LoadDBC(availableDbcLocales, bad_dbc_files, sCriteriaTreeStore,           dbcPath, "CriteriaTree.dbc");//16048
+    LoadDBC(availableDbcLocales, bad_dbc_files, sModifierTreeStore,           dbcPath, "ModifierTree.dbc");//16048
+
+    for (uint16 i = 0; i < sAchievementStore.GetNumRows(); ++i)
     {
-        std::ofstream monFlux("Achievement_Criteria.dbc.csv");
+        if(AchievementEntry const* as = sAchievementStore.LookupEntry(i))
+            if(as->criteriaTree > 0)
+            sAchievementEntryParentList[as->criteriaTree] = i;
+    }
 
-        system("pause");
-        if (monFlux)
-        {
-            for (uint32 i = 0; i < sAchievementCriteriaStore.GetNumRows(); ++i)
-            {
-                AchievementCriteriaEntry const* criteria = sAchievementCriteriaStore.LookupEntry(i);
-                if (!criteria)
-                    continue;
+    for (uint16 i = 0; i < sCriteriaTreeStore.GetNumRows(); ++i)
+    {
+        if(CriteriaTreeEntry const* ct = sCriteriaTreeStore.LookupEntry(i))
+            if(ct->parent > 0)
+            sCriteriaTreeEntryList[ct->parent].push_back(i);
+    }
 
-                std::string name = criteria->name ? "Inconnu": criteria->name;
-
-                monFlux <<
-                            criteria->ID << "," <<
-                            criteria->achievement << "," <<
-                            criteria->type << "," <<
-                            criteria->raw.field3 << "," <<
-                            criteria->raw.count << "," <<
-                            criteria->additionalRequirements[0].additionalRequirement_type << "," <<
-                            criteria->additionalRequirements[0].additionalRequirement_value << "," <<
-                            criteria->additionalRequirements[1].additionalRequirement_type << "," <<
-                            criteria->additionalRequirements[1].additionalRequirement_value << "," <<
-                            name << "," <<
-                            criteria->completionFlag << "," <<
-                            criteria->timedCriteriaStartType << "," <<
-                            criteria->timedCriteriaMiscId << "," <<
-                            criteria->timeLimit << "," <<
-                            criteria->showOrder << "," <<
-                            "0" << "," <<
-                            "0" << "," <<
-                            criteria->additionalConditionType[0] << "," <<
-                            criteria->additionalConditionType[1] << "," <<
-                            criteria->additionalConditionType[2] << "," <<
-                            criteria->additionalConditionValue[0] << "," <<
-                            criteria->additionalConditionValue[1] << "," <<
-                            criteria->additionalConditionValue[2] << std::endl;
-            }
-        }
+    for (uint16 i = 0; i < sModifierTreeStore.GetNumRows(); ++i)
+    {
+        if(ModifierTreeEntry const* mt = sModifierTreeStore.LookupEntry(i))
+            if(mt->parent > 0)
+            sModifierTreeEntryList[mt->parent].push_back(i);
     }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaTriggerStore,            dbcPath, "AreaTrigger.dbc");//14545
@@ -567,7 +552,7 @@ void LoadDBCStores(const std::string& dataPath)
             m_polygonquestpoipoints[info->SpellID].push_back(polygon);
         }
     }
-    for (uint32 i = 0; i < sResearchProjectStore.GetNumRows(); ++i)
+    for (uint16 i = 0; i < sResearchProjectStore.GetNumRows(); ++i)
     {
         if (ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry(i))
         {
@@ -576,7 +561,7 @@ void LoadDBCStores(const std::string& dataPath)
             sResearchProjectsList[rs->RaceID].push_back(i);
         }
     }
-    for (uint32 i = 0; i < sResearchSiteStore.GetNumRows(); ++i)
+    for (uint16 i = 0; i < sResearchSiteStore.GetNumRows(); ++i)
     {
         if (ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(i))
             sDigestZonesList[rs->MapID].push_back(i);
@@ -865,14 +850,38 @@ std::vector<PolygonVector> const* GetPolygonQuestPOIPoints(uint32 SpellID)
     return NULL;
 }
 
-std::map<uint32, std::list<uint32> > GetDigestZonesList()
+UNORDERED_MAP<uint16, std::list<uint16> > GetDigestZonesList()
 {
     return sDigestZonesList;
 }
 
-std::map<uint32, std::list<uint32> > GetResearchProjectsList()
+UNORDERED_MAP<uint16, std::list<uint16> > GetResearchProjectsList()
 {
     return sResearchProjectsList;
+}
+
+uint16 GetsAchievementEntryByTreeList(uint16 criteriaTree)
+{
+    UNORDERED_MAP<uint16, uint16 >::const_iterator itr = sAchievementEntryParentList.find(criteriaTree);
+    if(itr != sAchievementEntryParentList.end())
+        return itr->second;
+    return 0;
+}
+
+std::list<uint16> const* GetCriteriaTreeList(uint16 parent)
+{
+    UNORDERED_MAP<uint16, std::list<uint16> >::const_iterator itr = sCriteriaTreeEntryList.find(parent);
+    if(itr != sCriteriaTreeEntryList.end())
+        return &itr->second;
+    return NULL;
+}
+
+std::list<uint16> const* GetModifierTreeList(uint16 parent)
+{
+    UNORDERED_MAP<uint16, std::list<uint16> >::const_iterator itr = sModifierTreeEntryList.find(parent);
+    if(itr != sModifierTreeEntryList.end())
+        return &itr->second;
+    return NULL;
 }
 
 char const* GetPetName(uint32 petfamily, uint32 /*dbclang*/)

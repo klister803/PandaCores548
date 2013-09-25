@@ -801,7 +801,6 @@ class SpellMgr
         void UnloadSpellInfoStore();
         void UnloadSpellInfoImplicitTargetConditionLists();
         void LoadSpellCustomAttr();
-        void LoadDbcDataCorrections();
         void LoadTalentSpellInfo();
         void LoadSpellPowerInfo();
         void LoadForbiddenSpells();

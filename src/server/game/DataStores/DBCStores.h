@@ -43,12 +43,15 @@ struct PolygonVector
 };
 
 MaxCoordinat const* GetQuestPoints(uint32 id);
-std::map<uint32, std::list<uint32> > GetResearchProjectsList();
-std::map<uint32, std::list<uint32> > GetDigestZonesList();
+UNORDERED_MAP<uint16, std::list<uint16> > GetResearchProjectsList();
+std::list<uint16> const* GetCriteriaTreeList(uint16 parent);
+std::list<uint16> const* GetModifierTreeList(uint16 parent);
+uint16 GetsAchievementEntryByTreeList(uint16 criteriaTree);
+UNORDERED_MAP<uint16, std::list<uint16> > GetDigestZonesList();
 std::vector<PolygonVector> const* GetPolygonQuestPOIPoints(uint32 SpellID);
 
 typedef std::list<uint32> ProjectRaseList;
-typedef std::map<uint32, ProjectRaseList> ProjectRaseMap;
+typedef UNORDERED_MAP<uint32, ProjectRaseList> ProjectRaseMap;
 static ProjectRaseMap sRaseProjectMap;
 ProjectRaseList const* GetProjectRaseList(uint32 RaceID);
 
@@ -100,6 +103,8 @@ PvPDifficultyEntry const* GetBattlegroundBracketById(uint32 mapid, BattlegroundB
 
 extern DBCStorage <AchievementEntry>             sAchievementStore;
 extern DBCStorage <AchievementCriteriaEntry>     sAchievementCriteriaStore;
+extern DBCStorage <CriteriaTreeEntry>            sCriteriaTreeStore;
+extern DBCStorage <ModifierTreeEntry>            sModifierTreeStore;
 extern DBCStorage <AreaTableEntry>               sAreaStore;// recommend access using functions
 extern DBCStorage <AreaGroupEntry>               sAreaGroupStore;
 extern DBCStorage <AreaPOIEntry>                 sAreaPOIStore;

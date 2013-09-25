@@ -8842,6 +8842,20 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             break;
         }
+        // Glyph of Blessed Life
+        case 54943:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+            
+            if (!(procSpell->GetAllEffectsMechanicMask() & ((1 << MECHANIC_DISARM) | (1 << MECHANIC_STUN) | (1 << MECHANIC_FEAR))))
+                return false;
+                
+            break;
+        }
         // Infusion of Light
         case 53576:
         {
@@ -14715,14 +14729,14 @@ float Unit::GetTotalAttackPowerValue(WeaponAttackType attType) const
 {
     if (attType == RANGED_ATTACK)
     {
-        int32 ap = GetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER);
+        int32 ap = GetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER) + GetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS) - GetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG);
         if (ap < 0)
             return 0.0f;
         return ap * (1.0f + GetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER));
     }
     else
     {
-        int32 ap = GetInt32Value(UNIT_FIELD_ATTACK_POWER);
+        int32 ap = GetInt32Value(UNIT_FIELD_ATTACK_POWER) + GetInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS) - GetInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_NEG);
         if (ap < 0)
             return 0.0f;
         return ap * (1.0f + GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER));

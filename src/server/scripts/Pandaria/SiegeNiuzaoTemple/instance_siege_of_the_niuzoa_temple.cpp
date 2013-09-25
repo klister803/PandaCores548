@@ -36,7 +36,7 @@ public:
             neronokGuid = 0;
             puddleGuid  = 0;
         }
-
+        
         void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())

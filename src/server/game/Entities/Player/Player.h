@@ -1626,17 +1626,17 @@ class Player : public Unit, public GridObject<Player>
             if(itr != m_archprojecthistories.end())
                 itr->second.count = itr->second.count + 1;
         }
-        void AddDigestOrProject(uint32 indexId, uint32 pointId, std::map<uint32, std::list<uint32> > & _addfor)
+        void AddDigestOrProject(uint32 indexId, uint32 pointId, UNORDERED_MAP<uint16, std::list<uint16> > & _addfor)
         {
             _addfor[indexId].push_back(pointId);
         }
-        void DelDigestOrProject(uint32 indexId, uint32 pointId, std::map<uint32, std::list<uint32> > & _delfor)
+        void DelDigestOrProject(uint32 indexId, uint32 pointId, UNORDERED_MAP<uint16, std::list<uint16> > & _delfor)
         {
-            std::list<uint32> &list = _delfor[indexId];
+            std::list<uint16> &list = _delfor[indexId];
             if (list.empty())
                 return;
 
-            for (std::list<uint32>::iterator itr = list.begin(); itr != list.end(); ++itr)
+            for (std::list<uint16>::iterator itr = list.begin(); itr != list.end(); ++itr)
             {
                 if(pointId == *itr)
                 {
@@ -1719,6 +1719,7 @@ class Player : public Unit, public GridObject<Player>
         void AddItemToBuyBackSlot(Item* pItem);
         Item* GetItemFromBuyBackSlot(uint32 slot);
         void RemoveItemFromBuyBackSlot(uint32 slot, bool del);
+        void TakeExtendedCost(uint32 extendedCostId, uint32 count);
         void SendEquipError(InventoryResult msg, Item* pItem, Item* pItem2 = NULL, uint32 itemid = 0);
         void SendBuyError(BuyResult msg, Creature* creature, uint32 item, uint32 param);
         void SendSellError(SellResult msg, Creature* creature, uint64 guid);
@@ -3241,10 +3242,10 @@ class Player : public Unit, public GridObject<Player>
         PlayerArchaelogyMap m_archaelogies;
         PlayerArchProjectMap m_archprojects;
         PlayerArchProjectHistoryMap m_archprojecthistories;
-        std::map<uint32, std::list<uint32> > m_activedigestzones;
-        std::map<uint32, std::list<uint32> > m_notactivedigestzones;
-        std::map<uint32, std::list<uint32> > m_activeresearchprojects;
-        std::map<uint32, std::list<uint32> > m_notactiveresearchprojects;
+        UNORDERED_MAP<uint16, std::list<uint16> > m_activedigestzones;
+        UNORDERED_MAP<uint16, std::list<uint16> > m_notactivedigestzones;
+        UNORDERED_MAP<uint16, std::list<uint16> > m_activeresearchprojects;
+        UNORDERED_MAP<uint16, std::list<uint16> > m_notactiveresearchprojects;
 
         VoidStorageItem* _voidStorageItems[VOID_STORAGE_MAX_SLOT];
 
