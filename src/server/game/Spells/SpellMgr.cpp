@@ -1042,6 +1042,12 @@ const std::vector<SpellLinked>* SpellMgr::GetSpellLinked(int32 spell_id) const
     return itr != mSpellLinkedMap.end() ? &(itr->second) : NULL;
 }
 
+const std::vector<SpellTalentLinked>* SpellMgr::GetSpelltalentLinked(int32 spell_id) const
+{
+    SpellTalentLinkedMap::const_iterator itr = mSpellTalentLinkedMap.find(spell_id);
+    return itr != mSpellTalentLinkedMap.end() ? &(itr->second) : NULL;
+}
+
 const uint32 SpellMgr::GetMountListId(uint32 spell_id, uint32 teamid) const
 {
     uint32 faction = 0; //both
@@ -2325,6 +2331,61 @@ void SpellMgr::LoadSpellLinked()
     } while (result->NextRow());
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u linked spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::LoadTalentSpellLinked()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellTalentLinkedMap.clear();    // need for reload case
+
+    //                                                  0        1        2
+    QueryResult result = WorldDatabase.Query("SELECT spellid, spelllink, type FROM spell_talent_linked_spell");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked talent spells. DB table `spell_talent_linked_spell` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 talent = fields[0].GetInt32();
+        int32 triger = fields[1].GetInt32();
+        int32 type   = fields[2].GetUInt8();
+
+        SpellInfo const* spellInfo = GetSpellInfo(abs(talent));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_talent_linked_spell` does not exist", abs(talent));
+            continue;
+        }
+        spellInfo = GetSpellInfo(abs(triger));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_talent_linked_spell` does not exist", abs(triger));
+            continue;
+        }
+
+        if (type) //we will find a better way when more types are needed
+        {
+            if (talent > 0)
+                talent += SPELL_LINKED_MAX_SPELLS * type;
+            else
+                talent -= SPELL_LINKED_MAX_SPELLS * type;
+        }
+        SpellTalentLinked templink;
+        templink.talent = talent;
+        templink.triger = triger;
+        templink.type   = type;
+        mSpellTalentLinkedMap[talent].push_back(templink);
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u linked talent spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SpellMgr::LoadmSpellMountList()

@@ -4469,6 +4469,17 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
 
     bool learning = addSpell(spell_id, active, true, dependent, false);
 
+    if (const std::vector<SpellTalentLinked> *spell_triggered = sSpellMgr->GetSpelltalentLinked(spell_id))
+    {
+        for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+        {
+            if (i->triger < 0)
+                RemoveAurasDueToSpell(-(i->triger));
+            else
+                CastSpell(this, i->triger, true);
+        }
+    }
+
     // prevent duplicated entires in spell book, also not send if not in world (loading)
     if (learning && IsInWorld())
     {
@@ -4523,6 +4534,17 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
         return;                                             // already unleared
+
+    if (const std::vector<SpellTalentLinked> *spell_triggered = sSpellMgr->GetSpelltalentLinked(-(int32)spell_id))
+    {
+        for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+        {
+            if (i->triger < 0)
+                RemoveAurasDueToSpell(-(i->triger));
+            else
+                CastSpell(this, i->triger, true);
+        }
+    }
 
     bool giveTalentPoints = disabled || !itr->second->disabled;
 
@@ -22509,7 +22531,7 @@ void Player::TakeExtendedCost(uint32 extendedCostId, uint32 count)
             continue;
 
         int32 cost = int32(extendedCost->RequiredCurrencyCount[i] * count);
-        ModifyCurrency(entry->ID, -cost);
+        ModifyCurrency(entry->ID, -cost, false, true);
     }
 }
 
@@ -22676,9 +22698,10 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
                 return false;
             }
 
-            uint32 precision = entry->GetPrecision();
+            int32 cost = int32(iece->RequiredCurrencyCount[i] * count);
 
-            if (!HasCurrency(iece->RequiredCurrency[i], (iece->RequiredCurrencyCount[i]) / precision))
+            bool hasCount = iece->IsSeasonCurrencyRequirement(i) ? HasCurrencySeason(iece->RequiredCurrency[i], cost) : HasCurrency(iece->RequiredCurrency[i], cost);
+            if (!hasCount)
             {
                 SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL); // Find correct error
                 return false;
