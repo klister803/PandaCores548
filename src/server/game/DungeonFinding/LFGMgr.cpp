@@ -1999,13 +1999,13 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
     Group* grp = player->GetGroup();
 
     if (!grp || !grp->isLFGGroup())                        // should never happen, but just in case...
-        error = LFG_TELEPORTERROR_INVALID_LOCATION;
+        error = LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION;
     else if (!player->isAlive())
         error = LFG_TELEPORTERROR_PLAYER_DEAD;
     else if (player->IsFalling() || player->HasUnitState(UNIT_STATE_JUMPING))
-        error = LFG_TELEPORTERROR_FALLING;
+        error = LFG_TELEPORTERROR_NOT_WHILE_FALLING;
     else if (player->IsMirrorTimerActive(FATIGUE_TIMER))
-        error = LFG_TELEPORTERROR_FATIGUE;
+        error = LFG_TELEPORTERROR_NOT_WHILE_FATIGUED;
     else
     {
         LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(GetDungeon(grp->GetGUID()));
@@ -2025,7 +2025,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         }
 
         if (!dungeon)
-            error = LFG_TELEPORTERROR_INVALID_LOCATION;
+            error = LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION;
         else if (player->GetMapId() != uint32(dungeon->map))  // Do not teleport players in dungeon to the entrance
         {
             uint32 mapid = 0;
@@ -2073,7 +2073,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
                 else
                 {
                     sLog->outError(LOG_FILTER_LFG, "LfgMgr::TeleportPlayer: Failed to teleport [" UI64FMTD "]: No areatrigger found for map: %u difficulty: %u", player->GetGUID(), dungeon->map, dungeon->difficulty);
-                    error = LFG_TELEPORTERROR_INVALID_LOCATION;
+                    error = LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION;
                 }
             }
 
@@ -2093,7 +2093,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
                     player->RemoveAurasByType(SPELL_AURA_MOUNTED);
                 else
                 {
-                    error = LFG_TELEPORTERROR_INVALID_LOCATION;
+                    error = LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION;
                     sLog->outError(LOG_FILTER_LFG, "LfgMgr::TeleportPlayer: Failed to teleport [" UI64FMTD "] to map %u: ", player->GetGUID(), mapid);
                 }
             }
