@@ -29,16 +29,13 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
     std::string channelName, pass;
 
     recvPacket >> channelId;
-    recvPacket.ReadBit();   // unknowns
-    channelLength = recvPacket.ReadBits(7);
-    channelLength <<= 1;
-    channelLength += recvPacket.ReadBit(); //If it's an odd length.
-    passLength = recvPacket.ReadBits(7);
-    passLength <<= 1;
-    passLength += recvPacket.ReadBit();
-    recvPacket.FlushBits();
-    channelName = recvPacket.ReadString(channelLength);
+    recvPacket.ReadBit();   // silent
+    channelLength = recvPacket.ReadBits(8);
+    passLength = recvPacket.ReadBits(8);
+    recvPacket.ReadBit();   // by zone update
+
     pass = recvPacket.ReadString(passLength);
+    channelName = recvPacket.ReadString(channelLength);
 
     if (channelId)
     {
