@@ -13829,6 +13829,9 @@ void Player::SwapItem(uint16 src, uint16 dst)
         return;
     }
 
+    if (IsBagPos(src) || IsBagPos(dst))
+        TradeCancel(true);
+
     // check unequip potability for equipped items and bank bags
     if (IsEquipmentPos(src) || IsBagPos(src))
     {
