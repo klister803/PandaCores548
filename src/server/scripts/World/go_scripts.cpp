@@ -501,7 +501,7 @@ public:
 
     bool OnGossipHello(Player* player, GameObject* /*go*/)
     {
-        if (player->GetQuestRewardStatus(QUEST_TELE_CRYSTAL_FLAG))
+        if (player->GetQuestRewardStatus(QUEST_LEARN_LEAVE_RETURN) || player->GetQuestStatus(QUEST_LEARN_LEAVE_RETURN) == QUEST_STATUS_INCOMPLETE)
             return false;
 
         player->GetSession()->SendNotification(GO_TELE_TO_DALARAN_CRYSTAL_FAILED);
