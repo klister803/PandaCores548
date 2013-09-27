@@ -780,6 +780,14 @@ class World
         static float Visibility_RelocationLowerLimit;
         static uint32 Visibility_AINotifyDelay;
 
+        // movement anticheat
+        static bool GetEnableMvAnticheat()       { return m_EnableMvAnticheat;     }
+        static bool GetEnableMvAnticheatDebug()       { return m_EnableMvAnticheatDebug;     }
+        static uint32 GetTeleportToPlaneAlarms() { return m_TeleportToPlaneAlarms; }
+        static uint32 GetMistimingDelta()        { return m_MistimingDelta;        }
+        static uint32 GetMistimingAlarms()       { return m_MistimingAlarms;       }
+        // end movement anticheat
+
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
 
@@ -896,6 +904,13 @@ class World
         static int32 m_visibility_notify_periodOnContinents;
         static int32 m_visibility_notify_periodInInstances;
         static int32 m_visibility_notify_periodInBGArenas;
+
+        // movement anticheat enable flag
+        static bool m_EnableMvAnticheat;
+        static bool m_EnableMvAnticheatDebug;
+        static uint32 m_TeleportToPlaneAlarms;
+        static uint32 m_MistimingDelta;
+        static uint32 m_MistimingAlarms;
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*, ACE_Thread_Mutex> cliCmdQueue;

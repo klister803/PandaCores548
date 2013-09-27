@@ -32,6 +32,8 @@ void AddSC_midsummer_fire_festival();
 void AddSC_rbg_commandscript();
 void AddSC_multi_vendor();
 void AddSC_traffic_commandscript();
+void AddSC_command_arena();
+void AddSC_custom_reward();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -808,6 +810,8 @@ void AddExampleScripts()
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
     AddSC_example_commandscript();
+    AddSC_command_arena();
+    AddSC_custom_reward();
 }
 
 void AddSpellScripts()

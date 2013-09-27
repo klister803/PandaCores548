@@ -244,6 +244,9 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modRangedHitChance = 0.0f;
     m_modSpellHitChance = 0.0f;
     m_baseSpellCritChance = 5;
+    m_anti_JupmSpeed = 0.0f;                // Jump cpeed
+    m_anti_JupmTime = 0;                // Jump Time
+    m_anti_FlightTime = 0;                // Jump Time
 
     m_CombatTimer = 0;
 
@@ -13383,6 +13386,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
     //if (this->ToPlayer())
     //    sAnticheatMgr->DisableAnticheatDetection(this->ToPlayer());
 
+    float old_speed = m_speed_rate[MOVE_RUN];
     int32 main_speed_mod  = 0;
     float stack_bonus     = 1.0f;
     float non_stack_bonus = 1.0f;
@@ -13526,6 +13530,12 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             if (speed < min_speed)
                 speed = min_speed;
         }
+    }
+    if(old_speed > speed)
+    {
+        if(m_anti_JupmSpeed < (old_speed * baseMoveSpeed[MOVE_RUN]))
+            m_anti_JupmSpeed = old_speed * baseMoveSpeed[MOVE_RUN];
+        m_anti_JupmTime = 2000;
     }
 
     SetSpeed(mtype, speed, forced);
@@ -18458,6 +18468,10 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         GetMotionMaster()->MoveKnockbackFrom(x, y, speedXY, speedZ);
     else
     {
+        uint32 time = uint32(speedZ * 100);
+        m_anti_JupmSpeed = speedXY * 10;
+        m_anti_JupmTime = time + sWorld->GetUpdateTime() * 3;
+
         float vcos, vsin;
         GetSinCos(x, y, vsin, vcos);
         SendMoveKnockBack(player, speedXY, -speedZ, vcos, vsin);
@@ -19010,6 +19024,10 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         GetMotionMaster()->MoveJumpTo(angle, speedXY, speedZ);
     else
     {
+        uint32 time = uint32(speedZ * 100);
+        m_anti_JupmSpeed = speedXY + 30;
+        m_anti_JupmTime = time + sWorld->GetUpdateTime() * 3;
+
         float vcos = std::cos(angle+GetOrientation());
         float vsin = std::sin(angle+GetOrientation());
         SendMoveKnockBack(ToPlayer(), speedXY, -speedZ, vcos, vsin);

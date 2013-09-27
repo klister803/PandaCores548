@@ -1128,6 +1128,9 @@ void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
     uint8 byteOrder[8] = {1, 4, 2, 7, 0, 5, 6, 3};
     recvData.ReadBytesSeq(guid, byteOrder);
 
+    if (_player && _player->m_mover->m_movementInfo.flags & MOVEMENTFLAG_WALKING)
+        _player->m_anti_MistiCount = 1;
+
     //TODO!
 
     /*

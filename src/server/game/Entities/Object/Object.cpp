@@ -1502,32 +1502,32 @@ ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const& st
 
 void MovementInfo::OutDebug()
 {
-    sLog->outInfo(LOG_FILTER_GENERAL, "MOVEMENT INFO");
-    sLog->outInfo(LOG_FILTER_GENERAL, "guid " UI64FMTD, guid);
-    sLog->outInfo(LOG_FILTER_GENERAL, "flags %u", flags);
-    sLog->outInfo(LOG_FILTER_GENERAL, "flags2 %u", flags2);
-    sLog->outInfo(LOG_FILTER_GENERAL, "time %u current time " UI64FMTD "", flags2, uint64(::time(NULL)));
-    sLog->outInfo(LOG_FILTER_GENERAL, "position: `%s`", pos.ToString().c_str());
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "MOVEMENT INFO");
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "guid " UI64FMTD, guid);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "flags %u", flags);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "flags2 %u", flags2);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "time %u current time " UI64FMTD "", flags2, uint64(::time(NULL)));
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", pos.ToString().c_str());
     if (t_guid)
     {
-        sLog->outInfo(LOG_FILTER_GENERAL, "TRANSPORT:");
-        sLog->outInfo(LOG_FILTER_GENERAL, "guid: " UI64FMTD, t_guid);
-        sLog->outInfo(LOG_FILTER_GENERAL, "position: `%s`", t_pos.ToString().c_str());
-        sLog->outInfo(LOG_FILTER_GENERAL, "seat: %i", t_seat);
-        sLog->outInfo(LOG_FILTER_GENERAL, "time: %u", t_time);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "TRANSPORT:");
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "guid: " UI64FMTD, t_guid);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", t_pos.ToString().c_str());
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "seat: %i", t_seat);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "time: %u", t_time);
         if (flags2 & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT)
-            sLog->outInfo(LOG_FILTER_GENERAL, "time2: %u", t_time2);
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "time2: %u", t_time2);
     }
 
     if ((flags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) || (flags2 & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING))
-        sLog->outInfo(LOG_FILTER_GENERAL, "pitch: %f", pitch);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "pitch: %f", pitch);
 
-    sLog->outInfo(LOG_FILTER_GENERAL, "fallTime: %u", fallTime);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "fallTime: %u", fallTime);
     if (flags & MOVEMENTFLAG_FALLING)
-        sLog->outInfo(LOG_FILTER_GENERAL, "j_zspeed: %f j_sinAngle: %f j_cosAngle: %f j_xyspeed: %f", j_zspeed, j_sinAngle, j_cosAngle, j_xyspeed);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "j_zspeed: %f j_sinAngle: %f j_cosAngle: %f j_xyspeed: %f", j_zspeed, j_sinAngle, j_cosAngle, j_xyspeed);
 
     if (flags & MOVEMENTFLAG_SPLINE_ELEVATION)
-        sLog->outInfo(LOG_FILTER_GENERAL, "splineElevation: %f", splineElevation);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "splineElevation: %f", splineElevation);
 }
 
 WorldObject::WorldObject(bool isWorldObject): WorldLocation(),
@@ -2753,7 +2753,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->InitStatsForLevel(getLevel());
 
     // Only slot 100, as it's not hunter pet.
-    SetMinion(pet, true, PET_SLOT_OTHER_PET);
+    SetMinion(pet, true, slotID != PET_SLOT_UNK_SLOT ? slotID : PET_SLOT_OTHER_PET);
 
     switch (petType)
     {

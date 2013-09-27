@@ -16,6 +16,8 @@ set(scripts_STAT_SRCS
 	Custom/multi_vendor.cpp
 	Custom/rbg.cpp
 	Custom/traffic_log.cpp
+	Custom/command_arena.cpp
+	Custom/custom_reward.cpp
 )
 
 message("  -> Prepared: Custom")

@@ -845,6 +845,30 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
 
+    // movement anticheat
+    m_anti_LastClientTime  = 0;          // last movement client time
+    m_anti_LastServerTime  = 0;          // last movement server time
+    m_anti_DeltaClientTime = 0;          // client side session time
+    m_anti_DeltaServerTime = 0;          // server side session time
+    m_anti_MistimingCount  = 0;          // mistiming count
+    m_anti_MistiCount  = 0;              // mistiming count
+
+    m_anti_LastSpeedChangeTime = 0;      // last speed change time
+
+    m_anti_Last_HSpeed =  7.0f;          // horizontal speed, default RUN speed
+    m_anti_Last_VSpeed = -2.3f;          // vertical speed, default max jump height
+
+    m_anti_TeleToPlane_Count = 0;        // Teleport To Plane alarm counter
+
+    m_anti_AlarmCount = 0;               // alarm counter
+
+    m_anti_JumpCount = 0;                // Jump already began, anti air jump check
+    m_anti_JumpBaseZ = 0;                // Z coord before jump (AntiGrav)
+    m_anti_Gravity = 0;                  // AntiGravity chech
+    m_anti_GravityCount = 0;             // AntiGravity chech count
+    m_anti_WEHCount = 0;                 // Check WEH DEC INC count
+    // end movement anticheat
+
     //kill honor sistem
     m_flushKills = false;
     m_saveKills = false;
@@ -2379,6 +2403,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
     if (GetMapId() == mapid)
     {
+        m_anti_JumpBaseZ = 0;
         //lets reset far teleport flag if it wasn't reset during chained teleports
         SetSemaphoreTeleportFar(false);
         //setup delayed teleport flag
@@ -2407,6 +2432,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // this will be used instead of the current location in SaveToDB
         m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
         SetFallInformation(0, z);
+        m_anti_JumpBaseZ = 0;
 
         // code for finish transfer called in WorldSession::HandleMovementOpcodes()
         // at client packet CMSG_MOVE_TELEPORT_ACK
@@ -18061,8 +18087,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
 
-    m_currentPetSlot = (PetSlot)fields[61].GetUInt8();
-    m_petSlotUsed = fields[62].GetUInt32();
+    m_currentPetSlot = (PetSlot)fields[61].GetInt8();
+    m_petSlotUsed = fields[62].GetInt32();
 
     InitDisplayIds();
 
@@ -20174,8 +20200,8 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setString(index++, ss.str());
 
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
-        stmt->setUInt8(index++, m_currentPetSlot);
-        stmt->setUInt8(index++, m_petSlotUsed);
+        stmt->setInt8(index++, m_currentPetSlot);
+        stmt->setInt8(index++, m_petSlotUsed);
         stmt->setUInt32(index++, m_grantableLevels);
     }
     else
@@ -20300,8 +20326,8 @@ void Player::SaveToDB(bool create /*=false*/)
 
         stmt->setString(index++, ss.str());
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
-        stmt->setUInt8(index++, m_currentPetSlot);
-        stmt->setUInt8(index++, m_petSlotUsed);
+        stmt->setInt8(index++, m_currentPetSlot);
+        stmt->setInt8(index++, m_petSlotUsed);
         stmt->setUInt32(index++, m_grantableLevels);
 
         stmt->setUInt8(index++, IsInWorld() ? 1 : 0);
@@ -26442,12 +26468,7 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
     if (GetPetGUID())
         return;
 
-    PetSlot summonSlot = PET_SLOT_UNK_SLOT;
-
     Pet* NewPet = new Pet(this);
-
-    if (getClass() == CLASS_HUNTER)
-        summonSlot = m_currentPetSlot;
 
     if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
         delete NewPet;
