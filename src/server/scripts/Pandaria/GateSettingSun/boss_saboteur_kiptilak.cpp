@@ -342,10 +342,52 @@ class spell_kiptilak_sabotage : public SpellScriptLoader
         }
 };
 
+class npc_rope : public CreatureScript
+{
+    public:
+        npc_rope() : CreatureScript("npc_rope") {}
+
+        struct npc_ropeAI : public CreatureAI
+        {
+            npc_ropeAI(Creature* creature) : CreatureAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                me->SetDisplayId(43636);
+            }
+
+            InstanceScript* instance;
+
+            void Reset(){}
+            
+            void OnSpellClick(Unit* clicker)
+            {
+                if (instance)
+                {
+                   if (clicker->GetTypeId() == TYPEID_PLAYER)
+                       clicker->NearTeleportTo(866.290f, 2299.666f, 296.1068f, 6.216f);
+                }
+            }
+            
+            void EnterEvadeMode(){}
+
+            void EnterCombat(Unit* who){}
+
+            void UpdateAI(const uint32 diff)
+            {
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_ropeAI(creature);
+        }
+};
+
 void AddSC_boss_saboteur_kiptilak()
 {
     new boss_saboteur_kiptilak();
     new npc_munition_explosion_bunny();
     new spell_kiptilak_munitions_explosion();
     new spell_kiptilak_sabotage();
+    new npc_rope();
 }
