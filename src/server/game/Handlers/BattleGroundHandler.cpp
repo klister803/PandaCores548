@@ -89,8 +89,6 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
 
     joinAsGroup = recvData.ReadBit();
 
-    recvData.FlushBits();
-
     uint8 byteOrder[8] = {6, 1, 3, 5, 7, 0, 4, 2};
     recvData.ReadBytesSeq(guid, byteOrder);
 
@@ -372,8 +370,6 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     action = recvData.ReadBit();
     guid[6] = recvData.ReadBit();
     guid[7] = recvData.ReadBit();
-
-    recvData.FlushBits();
 
     uint8 byteOrder[8] = {0, 3, 4, 7, 1, 5, 6, 2};
     recvData.ReadBytesSeq(guid, byteOrder);

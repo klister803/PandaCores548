@@ -518,8 +518,6 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recvPacket)
     uint8 bitOrder[8] = {2, 1, 6, 5, 4, 7, 0, 3};
     recvPacket.ReadBitInOrder(guid, bitOrder);
 
-    recvPacket.FlushBits();
-
     uint8 byteOrder[8] = {4, 2, 7, 3, 0, 5, 6, 1};
     recvPacket.ReadBytesSeq(guid, byteOrder);
 

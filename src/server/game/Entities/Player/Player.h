@@ -1492,6 +1492,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetCurrencyOnSeason(uint32 id, bool usePrecision) const;
         /// return presence related currency
         bool HasCurrency(uint32 id, uint32 count) const;
+        bool HasCurrencySeason(uint32 id, uint32 count) const { return GetCurrencyOnSeason(id, false) >= count; }
         /// @todo: not understand why it subtract from total count and for what it used. It should be remove and replaced by ModifyCurrency
         void SetCurrency(uint32 id, uint32 count, bool printLog = true);
         uint32 GetCurrencyWeekCap(uint32 id, bool usePrecision) const;

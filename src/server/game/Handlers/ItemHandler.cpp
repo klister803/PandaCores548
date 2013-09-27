@@ -1001,7 +1001,8 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
         data.WriteBit(*itr);
 
     data.FlushBits();
-    data.append(itemsData);
+    if (!itemsData.empty())
+        data.append(itemsData);
 
     data.WriteByteSeq(guid[1]);
     data.WriteByteSeq(guid[2]);
@@ -1657,8 +1658,6 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     npcGuid[3] = recvData.ReadBit();
     npcGuid[2] = recvData.ReadBit();
     npcGuid[7] = recvData.ReadBit();
-
-    recvData.FlushBits();
 
     for (uint32 i = 0; i < count; ++i)
     {

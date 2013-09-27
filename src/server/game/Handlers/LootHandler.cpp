@@ -43,14 +43,12 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
     std::vector<ObjectGuid> guids(count);
 
     uint8 bitOrder[8] = {4, 0, 2, 1, 5, 6, 7, 3};
-    for (uint32 i = 0; i < count; i++)
+    for (uint32 i = 0; i < count; ++i)
         recvData.ReadBitInOrder(guids[i], bitOrder);
-
-    recvData.FlushBits();
 
     uint8 byteOrder[8] = {2, 0, 5, 4, 6, 1, 3, 7};
 
-    for (uint32 i = 0; i < count; i++)
+    for (uint32 i = 0; i < count; ++i)
     {
         recvData >> lootSlot;
 
@@ -563,10 +561,9 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
     uint8 bitOrder[8] = {4, 6, 7, 5, 0, 1, 3, 2};
     for (uint32 i = 0; i < count; ++i)
         recvData.ReadBitInOrder(guids[i], bitOrder);
-    
+
     target_playerguid[4] = recvData.ReadBit();
     target_playerguid[0] = recvData.ReadBit();
-    recvData.FlushBits();
 
     uint8 byteOrder[8] = {6, 7, 3, 1, 0, 5, 4, 2};
     for (uint32 i = 0; i < count; ++i)

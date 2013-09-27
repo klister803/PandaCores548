@@ -606,6 +606,13 @@ struct SpellLinked
     int32 type2;
 };
 
+struct SpellTalentLinked
+{
+    int32 talent;
+    int32 triger;
+    int32 type;
+};
+
 struct SpellPrcoCheck
 {
     int32 checkspell;
@@ -638,6 +645,7 @@ struct SpellMountList
 
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
 typedef std::map<int32, std::vector<SpellLinked> > SpellLinkedMap;
+typedef std::map<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
 typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
 typedef std::map<int32, SpellMountList* > SpellMountListMap;
 
@@ -746,6 +754,7 @@ class SpellMgr
         bool IsArenaAllowedEnchancment(uint32 ench_id) const;
 
         const std::vector<SpellLinked> *GetSpellLinked(int32 spell_id) const;
+        const std::vector<SpellTalentLinked> *GetSpelltalentLinked(int32 spell_id) const;
         const uint32 GetMountListId(uint32 spell_id, uint32 teamid) const;
         const std::vector<SpellPrcoCheck> *GetSpellPrcoCheck(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggered(int32 spell_id) const;
@@ -790,6 +799,7 @@ class SpellMgr
         void LoadEnchantCustomAttr();
         void LoadSpellEnchantProcData();
         void LoadSpellLinked();
+        void LoadTalentSpellLinked();
         void LoadmSpellMountList();
         void LoadSpellPrcoCheck();
         void LoadSpellTriggered();
@@ -824,6 +834,7 @@ class SpellMgr
         SpellThreatMap             mSpellThreatMap;
         SpellPetAuraMap            mSpellPetAuraMap;
         SpellLinkedMap             mSpellLinkedMap;
+        SpellTalentLinkedMap       mSpellTalentLinkedMap;
         SpellPrcoCheckMap          mSpellPrcoCheckMap;
         SpellTriggeredMap          mSpellTriggeredMap;
         SpellEnchantProcEventMap   mSpellEnchantProcEventMap;

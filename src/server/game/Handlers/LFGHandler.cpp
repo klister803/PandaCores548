@@ -66,7 +66,8 @@ void BuildPartyLockDungeonBlock(WorldPacket& data, const LfgLockPartyMap& lockMa
         dataBuffer.WriteByteSeq(guid[1]);
     }
     data.FlushBits();
-    data.append(dataBuffer);
+    if (!dataBuffer.empty())
+        data.append(dataBuffer);
 }
 
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
@@ -82,7 +83,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
     recvData >> roles;
     length = recvData.ReadBits(10);
     numDungeons = recvData.ReadBits(24);
-    recvData.FlushBits();
+
     if (!numDungeons)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_JOIN [" UI64FMTD "] no dungeons selected", GetPlayer()->GetGUID());
@@ -670,6 +671,8 @@ void WorldSession::SendLfgJoinResult(const LfgJoinResultData& joinData)
     if (!joinData.lockmap.empty())
         BuildPartyLockDungeonBlock(data, joinData.lockmap);
 
+    data.FlushBits();
+
     SendPacket(&data);
 }
 
@@ -958,7 +961,6 @@ void WorldSession::SendLfgTeleportError(uint8 err)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_TELEPORT_DENIED [" UI64FMTD "] reason: %u", GetPlayer()->GetGUID(), err);
     WorldPacket data(SMSG_LFG_TELEPORT_DENIED, 4);
-    //Not sure it is no 4bits.
     data.WriteBits(err, 4);                                   // Error
     data.FlushBits();
     SendPacket(&data);

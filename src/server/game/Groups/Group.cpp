@@ -1913,8 +1913,8 @@ void Group::SendTargetIconList(WorldSession* session)
         dataBuffer.WriteByteSeq(guid[6]);
         ++count;
     }
-    data.PutBits<uint32>(pos, count, 25);
     data.FlushBits();
+    data.PutBits<uint32>(pos, count, 25);
     data.append(dataBuffer);
     session->SendPacket(&data);
 }
@@ -2013,7 +2013,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     data.WriteBit(guid[6]);
     data.FlushBits();
 
-    if (true)
+    //if (true)
     {
         data.WriteByteSeq(looterGuid[7]);
         data.WriteByteSeq(looterGuid[5]);

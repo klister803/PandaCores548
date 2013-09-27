@@ -2512,7 +2512,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data.WriteBit(0);       // unknown
                     data.WriteBit(1);   // has transport
                     data.FlushBits();
-                    data  << m_transport->GetEntry() << GetMapId();
+                    data << m_transport->GetEntry() << GetMapId();
                 }
                 else
                 {
@@ -3717,6 +3717,8 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, 0.0f);
 
     SetInt32Value(UNIT_FIELD_ATTACK_POWER,            0);
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS,       0);
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_NEG,       0);
     SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER, 0.0f);
     SetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER,     0);
     SetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER, 0.0f);
@@ -4467,6 +4469,17 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
 
     bool learning = addSpell(spell_id, active, true, dependent, false);
 
+    if (const std::vector<SpellTalentLinked> *spell_triggered = sSpellMgr->GetSpelltalentLinked(spell_id))
+    {
+        for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+        {
+            if (i->triger < 0)
+                RemoveAurasDueToSpell(-(i->triger));
+            else
+                CastSpell(this, i->triger, true);
+        }
+    }
+
     // prevent duplicated entires in spell book, also not send if not in world (loading)
     if (learning && IsInWorld())
     {
@@ -4521,6 +4534,17 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
         return;                                             // already unleared
+
+    if (const std::vector<SpellTalentLinked> *spell_triggered = sSpellMgr->GetSpelltalentLinked(-(int32)spell_id))
+    {
+        for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+        {
+            if (i->triger < 0)
+                RemoveAurasDueToSpell(-(i->triger));
+            else
+                CastSpell(this, i->triger, true);
+        }
+    }
 
     bool giveTalentPoints = disabled || !itr->second->disabled;
 
@@ -7971,7 +7995,8 @@ void Player::SendCurrencies() const
     }
 
     packet.FlushBits();
-    packet.append(currencyData);
+    if (!currencyData.empty())
+        packet.append(currencyData);
     GetSession()->SendPacket(&packet);
 }
 
@@ -13804,6 +13829,9 @@ void Player::SwapItem(uint16 src, uint16 dst)
         return;
     }
 
+    if (IsBagPos(src) || IsBagPos(dst))
+        TradeCancel(true);
+
     // check unequip potability for equipped items and bank bags
     if (IsEquipmentPos(src) || IsBagPos(src))
     {
@@ -17629,9 +17657,10 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
     }
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_COMPLETE, (4 + 4 + 4 + 4 + 4));
-    
+
     data.WriteBit(0);                                      // FIXME: unknown bits, common values sent
     data.WriteBit(1);
+    data.FlushBits();
 
     data << uint32(quest->GetBonusTalents());              // bonus talents (not verified for 4.x)
     data << uint32(quest->GetRewardSkillPoints());         // 4.x bonus skill points
@@ -17639,7 +17668,6 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
     data << uint32(moneyReward);
     data << uint32(questId);
     data << uint32(quest->GetRewardSkillId());             // 4.x bonus skill id
-    data.FlushBits();
 
     GetSession()->SendPacket(&data);
 
@@ -22506,7 +22534,7 @@ void Player::TakeExtendedCost(uint32 extendedCostId, uint32 count)
             continue;
 
         int32 cost = int32(extendedCost->RequiredCurrencyCount[i] * count);
-        ModifyCurrency(entry->ID, -cost);
+        ModifyCurrency(entry->ID, -cost, false, true);
     }
 }
 
@@ -22673,9 +22701,10 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
                 return false;
             }
 
-            uint32 precision = entry->GetPrecision();
+            int32 cost = int32(iece->RequiredCurrencyCount[i] * count);
 
-            if (!HasCurrency(iece->RequiredCurrency[i], (iece->RequiredCurrencyCount[i]) / precision))
+            bool hasCount = iece->IsSeasonCurrencyRequirement(i) ? HasCurrencySeason(iece->RequiredCurrency[i], cost) : HasCurrency(iece->RequiredCurrency[i], cost);
+            if (!hasCount)
             {
                 SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL); // Find correct error
                 return false;
@@ -27154,7 +27183,7 @@ bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount)
 void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece, uint8 error)
 {
     ObjectGuid guid = item->GetGUID();
-    WorldPacket data(SMSG_ITEM_REFUND_RESULT, 1 + 1 + 8 + 4*8 + 4 + 4*8 + 1);
+    WorldPacket data(SMSG_ITEM_REFUND_RESULT, 2 + 8 + 1 + 5 * 8 + 4 + 5 * 8 + 1);
 
     data.WriteBit(guid[7]);
     data.WriteBit(guid[5]);
@@ -27164,9 +27193,10 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
     data.WriteBit(guid[1]);
     data.WriteBit(guid[4]);
     data.WriteBit(guid[3]);
-    data.FlushBits();
-    data.WriteBit(item->GetPaidMoney() > 0);
     data.WriteBit(guid[0]);
+
+    data.FlushBits();
+
     data.WriteByteSeq(guid[5]);
     data.WriteByteSeq(guid[1]);
     data.WriteByteSeq(guid[4]);

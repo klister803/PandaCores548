@@ -259,7 +259,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
     updateMask.SetCount(valCount);
     _SetCreateBits(&updateMask, target);
     _BuildValuesUpdate(updateType, &buf, &updateMask, target);
-    _BuildDynamicValuesUpdate(&buf, target);
+    _BuildDynamicValuesUpdate(updateType, &buf, target);
 
     data->AddUpdateBlock(buf);
 }
@@ -291,7 +291,7 @@ void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) c
 
     _SetUpdateBits(&updateMask, target);
     _BuildValuesUpdate(UPDATETYPE_VALUES, &buf, &updateMask, target);
-    _BuildDynamicValuesUpdate(&buf, target);
+    _BuildDynamicValuesUpdate(UPDATETYPE_VALUES, &buf, target);
 
     data->AddUpdateBlock(buf);
 }
@@ -924,7 +924,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
     }
 }
 
-void Object::_BuildDynamicValuesUpdate(ByteBuffer *data, Player* target) const
+void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Player* target) const
 {
     // Dynamic Fields (5.0.5 MoP new fields)
     uint32 dynamicTabMask = 0;
@@ -938,10 +938,21 @@ void Object::_BuildDynamicValuesUpdate(ByteBuffer *data, Player* target) const
     {
         for (int index = 0; index < 32; ++index)
         {
-            if (m_dynamicChange[i][index] /*|| isType(TYPEMASK_ITEM | TYPEMASK_CONTAINER)*/)
+            if (updatetype == UPDATETYPE_CREATE_OBJECT || updatetype == UPDATETYPE_CREATE_OBJECT2)
             {
-                dynamicTabMask |= 1 << i;
-                dynamicFieldsMask[i] |= 1 << index;
+                if (m_dynamicTab[i][index] != 0)
+                {
+                    dynamicTabMask |= 1 << i;
+                    dynamicFieldsMask[i] |= 1 << index;
+                }
+            }
+            else if (updatetype == UPDATETYPE_VALUES)
+            {
+                if (m_dynamicChange[i][index])
+                {
+                    dynamicTabMask |= 1 << i;
+                    dynamicFieldsMask[i] |= 1 << index;
+                }
             }
         }
     }
