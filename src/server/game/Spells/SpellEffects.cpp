@@ -3434,7 +3434,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
 
     // caster have pet now
-    m_caster->SetMinion(pet, true, m_caster->ToPlayer()->getSlotForNewPet());
+    m_caster->SetMinion(pet, true, m_caster->GetTypeId() == TYPEID_PLAYER ? m_caster->ToPlayer()->getSlotForNewPet() : PET_SLOT_UNK_SLOT);
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
@@ -3460,8 +3460,36 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     uint32 petentry = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
 
     PetSlot slot = PetSlot(m_spellInfo->GetEffect(effIndex, m_diffMode).BasePoints);
-    if (petentry)
-        slot = PET_SLOT_UNK_SLOT;
+    if(petentry)
+    {
+        switch(petentry)
+        {
+            case 17252:
+                slot = PET_SLOT_WARLOCK_PET_FIRST;
+                break;
+            case 1863:
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 1);
+                break;
+            case 1860:
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 2);
+                break;
+            case 417:
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 3);
+                break;
+            case 416:
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 4);
+                break;
+            case 510:
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 5);
+                break;
+            case 26125:
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 6);
+                break;
+            default:
+                slot = PET_SLOT_UNK_SLOT;
+                break;
+        }
+    }
 
     if (!owner)
     {
@@ -3476,7 +3504,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     // if pet requested type already exist
     if (OldSummon)
     {
-        if (petentry == 0 || OldSummon->GetEntry() == petentry)
+        if (petentry == 0)
         {
             // pet in corpse state can't be summoned
             if (OldSummon->isDead())
@@ -3501,7 +3529,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         }
 
         if (owner->GetTypeId() == TYPEID_PLAYER)
-            owner->ToPlayer()->RemovePet(OldSummon, (OldSummon->getPetType() == HUNTER_PET ? PET_SLOT_DELETED : PET_SLOT_OTHER_PET), false);
+            owner->ToPlayer()->RemovePet(OldSummon,PET_SLOT_ACTUAL_PET_SLOT,false);
         else
             return;
     }
@@ -5150,6 +5178,7 @@ void Spell::EffectDismissPet(SpellEffIndex effIndex)
 
     ExecuteLogEffectUnsummonObject(effIndex, pet);
     pet->GetOwner()->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
+    pet->GetOwner()->m_currentPetSlot = PET_SLOT_DELETED;
 }
 
 void Spell::EffectSummonObject(SpellEffIndex effIndex)

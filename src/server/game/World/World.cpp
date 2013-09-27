@@ -97,6 +97,13 @@ int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_
 float World::Visibility_RelocationLowerLimit = 20.0f;
 uint32 World::Visibility_AINotifyDelay = 1000;
 
+// movement anticheat
+bool World::m_EnableMvAnticheat = true;
+bool World::m_EnableMvAnticheatDebug = false;
+uint32 World::m_TeleportToPlaneAlarms = 50;
+uint32 World::m_MistimingAlarms = 400;
+uint32 World::m_MistimingDelta = 25000;
+
 /// World constructor
 World::World()
 {
@@ -572,6 +579,43 @@ void World::LoadConfigSettings(bool reload)
     {
         sLog->outError(LOG_FILTER_SERVER_LOADING, "DurabilityLossChance.Block (%f) must be >=0. Using 0.0 instead.", rate_values[RATE_DURABILITY_LOSS_BLOCK]);
         rate_values[RATE_DURABILITY_LOSS_BLOCK] = 0.0f;
+    }
+
+    // movement anticheat
+    m_EnableMvAnticheat = ConfigMgr::GetBoolDefault("Anticheat.Movement.Enable", true);
+    m_EnableMvAnticheatDebug = ConfigMgr::GetBoolDefault("Anticheat.MovementDubug.Enable", false);
+    m_TeleportToPlaneAlarms = ConfigMgr::GetIntDefault("Anticheat.Movement.TeleportToPlaneAlarms", 50);
+    if (m_TeleportToPlaneAlarms < 20)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Anticheat.Movement.TeleportToPlaneAlarms (%d) must be >= 20. Using 20 instead.", m_TeleportToPlaneAlarms);
+        m_TeleportToPlaneAlarms = 20;
+    }
+    if (m_TeleportToPlaneAlarms > 100)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Anticheat.Movement.TeleportToPlaneAlarms (%d) must be <= 100. Using 100 instead.", m_TeleportToPlaneAlarms);
+        m_TeleportToPlaneAlarms = 100;
+    }
+    m_MistimingDelta = ConfigMgr::GetIntDefault("Anticheat.Movement.MistimingDelta", 15000);
+    if (m_MistimingDelta < 5000)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Anticheat.Movement.m_MistimingDelta (%d) must be >= 5000ms. Using 5000ms instead.", m_MistimingDelta);
+        m_MistimingDelta = 5000;
+    }
+    if (m_MistimingDelta > 50000)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Anticheat.Movement.m_MistimingDelta (%d) must be <= 50000ms. Using 50000ms instead.", m_MistimingDelta);
+        m_MistimingDelta = 50000;
+    }
+    m_MistimingAlarms = ConfigMgr::GetIntDefault("Anticheat.Movement.MistimingAlarms", 200);
+    if (m_MistimingAlarms < 100)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Anticheat.Movement.MistimingAlarms (%d) must be >= 100. Using 100 instead.", m_MistimingAlarms);
+        m_MistimingAlarms = 100;
+    }
+    if (m_MistimingAlarms > 500)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Anticheat.Movement.m_MistimingAlarms (%d) must be <= 500. Using 500 instead.", m_MistimingAlarms);
+        m_MistimingAlarms = 500;
     }
     ///- Read other configuration items from the config file
 

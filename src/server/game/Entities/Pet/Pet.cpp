@@ -119,9 +119,9 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     else if (current && slotID != PET_SLOT_UNK_SLOT)
         result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND slot = '%u'", ownerid, uint8(slotID));
     else if (petentry)
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND entry = '%u' AND ((slot >= '%u' AND slot <= '%u') OR slot > '%u')", ownerid, petentry, uint8(PET_SLOT_HUNTER_FIRST), uint8(PET_SLOT_HUNTER_LAST), uint8(PET_SLOT_STABLE_LAST));
+        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND entry = '%u' AND ((slot >= '%u' AND slot <= '%u') OR slot > '%u')", ownerid, petentry, uint8(PET_SLOT_HUNTER_FIRST), uint8(PET_SLOT_WARLOCK_PET_LAST), uint8(PET_SLOT_STABLE_LAST));
     else
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND ((slot >= '%u' AND slot <= '%u') OR slot > '%u')", ownerid, uint8(PET_SLOT_HUNTER_FIRST), uint8(PET_SLOT_HUNTER_LAST), uint8(PET_SLOT_STABLE_LAST));
+        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND ((slot >= '%u' AND slot <= '%u') OR slot > '%u')", ownerid, uint8(PET_SLOT_HUNTER_FIRST), uint8(PET_SLOT_WARLOCK_PET_LAST), uint8(PET_SLOT_STABLE_LAST));
 
     if (!result)
     {
@@ -298,7 +298,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         owner->SendMessageToSet(&data, true);
     }
 
-    owner->SetMinion(this, true, slotID == PET_SLOT_UNK_SLOT ? PET_SLOT_OTHER_PET : slotID, stampeded);
+    owner->SetMinion(this, true, slotID == PET_SLOT_UNK_SLOT ? (PetSlot)fields[7].GetUInt8() : slotID, stampeded);
     map->AddToMap(this->ToCreature());
 
     m_slot = fields[7].GetUInt8();
@@ -382,8 +382,17 @@ void Pet::SavePetToDB(PetSlot mode, bool stampeded)
     if (!owner)
         return;
 
-    if (mode == PET_SLOT_ACTUAL_PET_SLOT)
+    if(mode == PET_SLOT_ACTUAL_PET_SLOT)
         mode = owner->m_currentPetSlot;
+    if(mode == PET_SLOT_DELETED && owner->m_currentPetSlot >= PET_SLOT_WARLOCK_PET_FIRST && owner->m_currentPetSlot <= PET_SLOT_WARLOCK_PET_LAST)
+    {
+        mode = owner->m_currentPetSlot;
+        owner->m_currentPetSlot = PET_SLOT_DELETED;
+    }
+    if(mode >= PET_SLOT_HUNTER_FIRST && mode <= PET_SLOT_HUNTER_LAST && getPetType() != HUNTER_PET)
+        return;
+    if(mode == PET_SLOT_OTHER_PET && getPetType() == HUNTER_PET)
+        return;
 
     SetSlot(mode);
 
@@ -396,7 +405,7 @@ void Pet::SavePetToDB(PetSlot mode, bool stampeded)
             return;
 
         // for warlock case
-        mode = PET_SLOT_OTHER_PET;
+        //mode = PET_SLOT_OTHER_PET;
     }
 
     uint32 curhealth = GetHealth();
@@ -415,7 +424,7 @@ void Pet::SavePetToDB(PetSlot mode, bool stampeded)
     CharacterDatabase.CommitTransaction(trans);
 
     // current/stable/not_in_slot
-    if (mode >= PET_SLOT_HUNTER_FIRST)
+    if (mode >= PET_SLOT_HUNTER_FIRST && mode <= PET_SLOT_OTHER_PET)
     {
         uint32 ownerLowGUID = GUID_LOPART(GetOwnerGUID());
         std::string name = m_name;
@@ -460,7 +469,7 @@ void Pet::SavePetToDB(PetSlot mode, bool stampeded)
     // delete
     else
     {
-        if (owner->m_currentPetSlot >= PET_SLOT_HUNTER_FIRST && owner->m_currentPetSlot <= PET_SLOT_HUNTER_LAST)
+        if((owner->m_currentPetSlot >= PET_SLOT_HUNTER_FIRST && owner->m_currentPetSlot <= PET_SLOT_HUNTER_LAST) || (owner->m_currentPetSlot >= PET_SLOT_WARLOCK_PET_FIRST && owner->m_currentPetSlot <= PET_SLOT_WARLOCK_PET_LAST))
             owner->setPetSlotUsed(owner->m_currentPetSlot, false);
         RemoveAllAuras();
         DeleteFromDB(m_charmInfo->GetPetNumber());

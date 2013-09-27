@@ -255,13 +255,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     {
                         ASSERT(pet->GetTypeId() == TYPEID_UNIT);
                         if (pet->isPet())
-                        {
-                            if (((Pet*)pet)->getPetType() == HUNTER_PET)
-                                GetPlayer()->RemovePet((Pet*)pet, PET_SLOT_DELETED);
-                            else
-                                //dismissing a summoned pet is like killing them (this prevents returning a soulshard...)
-                                pet->setDeathState(CORPSE);
-                        }
+                            GetPlayer()->RemovePet((Pet*)pet, PET_SLOT_DELETED);
                         else if (pet->HasUnitTypeMask(UNIT_MASK_MINION))
                         {
                             ((Minion*)pet)->UnSummon();
