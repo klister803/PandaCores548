@@ -2350,7 +2350,25 @@ class npc_training_dummy : public CreatureScript
                 resetTimer = 5000;
                 despawnTimer = 15000;
             }
-
+            
+            void SpellHit(Unit* source, SpellInfo const* spell)
+            {
+                if(source)
+                {
+                    Player* player = source->ToPlayer();
+                    if(!player)
+                        return;
+                    if (spell->Id == 73899 && (player->GetQuestStatus(25143) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(26969) == QUEST_STATUS_INCOMPLETE))
+                    {
+                        player->KilledMonsterCredit(44175, 0);
+                    }
+                    if (spell->Id == 20271 && (player->GetQuestStatus(26918) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(24528) == QUEST_STATUS_INCOMPLETE))
+                    {
+                        player->KilledMonsterCredit(44175, 0);
+                    }
+                }
+            }
+            
             void EnterEvadeMode()
             {
                 if (!_EnterEvadeMode())
