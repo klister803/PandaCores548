@@ -377,6 +377,14 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
     float moveTimeHalf = speedZ / Movement::gravity;
     float max_height = -Movement::computeFallElevation(moveTimeHalf,false,-speedZ);
 
+    if (_owner->GetTypeId() == TYPEID_PLAYER)
+    {
+        uint32 time = uint32(speedZ * 100);
+        if(_owner->m_anti_JupmSpeed < speedXY + 10)
+            _owner->m_anti_JupmSpeed = speedXY + 10;
+        _owner->m_anti_JupmTime = time + sWorld->GetUpdateTime() * 3;
+    }
+
     Movement::MoveSplineInit init(*_owner);
     init.MoveTo(x,y,z);
     init.SetParabolic(max_height,0);
@@ -450,6 +458,9 @@ void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id)
 
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
+        if(_owner->m_anti_JupmSpeed < speed + 10)
+            _owner->m_anti_JupmSpeed = speed + 10;
+        _owner->m_anti_JupmTime = 50 + sWorld->GetUpdateTime() * 3;
         sLog->outDebug(LOG_FILTER_GENERAL, "Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", _owner->GetGUIDLow(), x, y, z);
         Mutate(new PointMovementGenerator<Player>(id, x, y, z, speed), MOTION_SLOT_CONTROLLED);
     }
