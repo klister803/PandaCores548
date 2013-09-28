@@ -40,7 +40,7 @@ enum RogueSpells
     ROGUE_SPELL_MIND_PARALYSIS                   = 115194,
     ROGUE_SPELL_LEECH_VITALITY                   = 116921,
     ROGUE_SPELL_PARTIAL_PARALYSIS                = 115197,
-    ROGUE_SPELL_TOTAL_PARALYSIS                  = 3609,
+    ROGUE_SPELL_TOTAL_PARALYSIS                  = 113953,
     ROGUE_SPELL_DEADLY_POISON_DOT                = 2818,
     ROGUE_SPELL_DEADLY_POISON_INSTANT_DAMAGE     = 113780,
     ROGUE_SPELL_SLICE_AND_DICE                   = 5171,

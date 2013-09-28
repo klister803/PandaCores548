@@ -152,9 +152,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Blind
             else if (spellproto->SpellFamilyFlags[0] & 0x1000000)
                 return DIMINISHING_FEAR;
-            // Cheap Shot
-            // else if (spellproto->SpellFamilyFlags[0] & 0x400)
-                // return DIMINISHING_OPENING_STUN;
+            // Paralytic Poison
+             else if (spellproto->SpellFamilyFlags[2] & 0x00000001)
+                 return DIMINISHING_OPENING_STUN;
             // Crippling poison - Limit to 10 seconds in PvP (No SpellFamilyFlags)
             else if (spellproto->SpellIconID == 163)
                 return DIMINISHING_LIMITONLY;
