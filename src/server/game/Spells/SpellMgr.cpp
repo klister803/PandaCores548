@@ -4148,6 +4148,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 79136: // Venomous Wound
             case 127802: // Touch of the Grave
+            case 2094: // Blind
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                 break;
             case 117050:
