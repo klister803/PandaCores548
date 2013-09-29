@@ -99,10 +99,13 @@ public:
                     {
                         creature->Respawn(true);
 
-                        if (--randomDespawnStoneGuardian == 0)
+                        if (!creature->GetMap()->Is25ManRaid())
                         {
-                            creature->DespawnOrUnsummon();
-                            randomDespawnStoneGuardian = -1;
+                            if (--randomDespawnStoneGuardian == 0)
+                            {
+                                creature->DespawnOrUnsummon();
+                                randomDespawnStoneGuardian = -1;
+                            }
                         }
                     }
                     break;
@@ -133,7 +136,7 @@ public:
         {
             switch (go->GetEntry())
             {
-                case GOB_STONE_GUARD_DOOR_ENTRANCE:
+               /* case GOB_STONE_GUARD_DOOR_ENTRANCE:
                 case GOB_STONE_GUARD_DOOR_EXIT:
                 case GOB_FENG_DOOR_FENCE:
                 case GOB_FENG_DOOR_EXIT:
@@ -142,7 +145,7 @@ public:
                 case GOB_SPIRIT_KINGS_WIND_WALL:
                 case GOB_SPIRIT_KINGS_EXIT:
                     AddDoor(go, true);
-                    break;
+                    break;*/
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
                 case GOB_SHIELD_STATUE:
