@@ -3270,6 +3270,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetB = 0;
                 break;
             case 60256:
+            case 26662:
+            case 106108:
+            case 52982:
+            case 102522:
                 //Crashes client on pressing ESC (Maybe because of ReqSpellFocus and GameObject)
                 spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                 break;
