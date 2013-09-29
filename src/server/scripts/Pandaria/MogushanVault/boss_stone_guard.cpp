@@ -1,5 +1,4 @@
-/*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+/* Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -96,27 +95,30 @@ class boss_stone_guard_controler : public CreatureScript
 
             InstanceScript* pInstance;
             EventMap events;
-
             uint32 lastPetrifierEntry;
-
-            uint8 totalGuardian;
-
-            bool fightInProgress;
+            bool fightInProgress, done;
 
             void Reset()
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->SetVisible(false);
-
                 fightInProgress = false;
                 lastPetrifierEntry = 0;
-
-                totalGuardian = 4;
-
+                done = false;
                 pInstance->SetBossState(DATA_STONE_GUARD, NOT_STARTED);
-                
                 events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
                 events.ScheduleEvent(EVENT_PETRIFICATION, 15000);
+            }
+
+            void RemovePlayerBar()
+            {
+                if (pInstance)
+                {
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_JASPER_PETRIFICATION_BAR);
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_JADE_PETRIFICATION_BAR);
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_COBALT_PETRIFICATION_BAR);
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_COBALT_PETRIFICATION_BAR);
+                }
             }
 
             void DoAction(int32 const action)
@@ -135,25 +137,28 @@ class boss_stone_guard_controler : public CreatureScript
                     }
                     case ACTION_GUARDIAN_DIED:
                     {
-                        if (--totalGuardian) // break if a guardian is still alive
-                            break;
+                        if (!done)
+                        {
+                            done = true;
+                            RemovePlayerBar();
+                            for (uint8 i = 0; i < 4; ++i)
+                                if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
+                                    pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gardian);
 
-                        for (uint8 i = 0; i < 4; ++i)
-                            if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
-                                pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gardian);
-
-                        pInstance->SetBossState(DATA_STONE_GUARD, DONE);
-                        fightInProgress = false;
+                            pInstance->SetBossState(DATA_STONE_GUARD, DONE);
+                            fightInProgress = false;
+                        }
                         break;
                     }
                 }
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 for (uint8 i = 0; i < 4; ++i)
                     if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
-                        me->DealDamage(gardian, damage);
+                        if (gardian->isAlive())
+                            me->DealDamage(gardian, damage);
             }
 
             void UpdateAI(const uint32 diff)
@@ -266,13 +271,13 @@ class boss_generic_guardian : public CreatureScript
             InstanceScript* pInstance;
             EventMap events;
             SummonList summons;
-
             uint32 spellOverloadId;
             uint32 spellPetrificationId;
             uint32 spellPetrificationBarId;
             uint32 spellTrueFormId;
             uint32 spellMainAttack;
             bool isInTrueForm;
+            uint64 guidt; 
 
             Creature* GetController()
             {
@@ -281,15 +286,15 @@ class boss_generic_guardian : public CreatureScript
 
             void Reset()
             {
+                guidt = 0;
+                me->LowerPlayerDamageReq(me->GetMaxHealth());
                 isInTrueForm = false;
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
-                
                 me->CastSpell(me, SPELL_SOLID_STONE, true);
                 me->CastSpell(me, SPELL_ANIM_SIT,    true);
                 me->CastSpell(me, SPELL_ZERO_ENERGY, true);
-
                 summons.DespawnAll();
 
                 switch (me->GetEntry())
@@ -360,7 +365,7 @@ class boss_generic_guardian : public CreatureScript
                 summons.Despawn(summon);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 if (Creature* controller = GetController())
                 {
@@ -368,15 +373,29 @@ class boss_generic_guardian : public CreatureScript
                     {
                         controller->AI()->DamageTaken(attacker, damage);
                         me->getThreatManager().addThreat(attacker, damage);
+                        if (damage >= me->GetHealth())
+                        {
+                            if (attacker->GetTypeId() == TYPEID_PLAYER)
+                                guidt = attacker->GetGUID();
+                        }
                         damage = 0;
+                        return;
                     }
                     else
-                        me->getThreatManager().modifyThreatPercent(attacker, 0.0f);
-
-                    if (damage >= me->GetHealth())
                     {
-                        me->LowerPlayerDamageReq(me->GetMaxHealth()); // Allow player loots even if only the controller has damaged the guardian
-                        controller->AI()->DoAction(ACTION_GUARDIAN_DIED);
+                        me->getThreatManager().modifyThreatPercent(attacker, 0.0f);
+                        if (damage >= me->GetHealth() && guidt)
+                        {
+                            if (Unit* target = me->GetUnit(*me, guidt))
+                            {
+                                if (target->IsControlledByPlayer())
+                                {
+                                    me->SetLootRecipient(target);
+                                    controller->AI()->DoAction(ACTION_GUARDIAN_DIED);
+                                    
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -643,7 +662,7 @@ class spell_petrification : public SpellScriptLoader
                     if (Aura* triggeredAura = target->GetAura(triggeredSpell))
                     {
                         uint8 stackCount = triggeredAura->GetStackAmount();
-                        uint8 newStackCount = stackCount + 5 > 100 ? 100: stackCount + 5;
+                        uint8 newStackCount = stackCount + 4 > 100 ? 100: stackCount + 4;
                         triggeredAura->SetStackAmount(newStackCount);
                         triggeredAura->RefreshDuration();
                         triggeredAura->RecalculateAmountOfEffects();
