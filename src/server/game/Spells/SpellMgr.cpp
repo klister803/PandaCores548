@@ -4179,7 +4179,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0]. BasePoints = 5000;
                 break;
             case 105709: // Master Mana Potion
-                spellInfo->Effects[0]. BasePoints = 30000;             
+                spellInfo->Effects[0]. BasePoints = 30000;   
+            case 126349:
+            case 126413:
+            case 126549:
+            case 126550:
+                spellInfo->DurationIndex = 26; // 240 seconds
                 break;                    
             default:
                 break;
