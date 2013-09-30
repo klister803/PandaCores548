@@ -744,6 +744,33 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                case 105617: // Alchemist's Flask
+                {
+                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    uint32 Agi = m_caster->GetStat(STAT_AGILITY);
+                    uint32 Int = m_caster->GetStat(STAT_INTELLECT);
+                    uint32 Str = m_caster->GetStat(STAT_STRENGTH);
+                    
+                    int32 bp0 = 0;
+                    if(m_caster->getLevel() < 60)
+                        bp0 = 48;
+                    else if(m_caster->getLevel() < 70)
+                        bp0 = 64;
+                    else if(m_caster->getLevel() < 80)
+                        bp0 = 128;
+                    else if(m_caster->getLevel() < 91)
+                        bp0 = 320;
+                    
+                    if (Agi > Int && Agi > Str)
+                        m_caster->CastCustomSpell(m_caster, 79639, &bp0, 0, 0, true);
+                    else if (Int > Agi && Int > Str)
+                        m_caster->CastCustomSpell(m_caster, 79640, &bp0, 0, 0, true);
+                    else if (Str > Agi && Str > Int)
+                        m_caster->CastCustomSpell(m_caster, 79638, &bp0, 0, 0, true);
+                    break;
+                }
                 case 47468: // Ghoul: Claw
                 {
                     if (!unitTarget)
