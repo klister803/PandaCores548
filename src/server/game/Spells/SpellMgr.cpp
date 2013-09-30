@@ -4112,6 +4112,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
                 break;
 
+            // Stormstout brewery
+            case 112944: //Carrot Breath - set 4 second becaus rotate not work
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35);
+                break;
+
             // Mogu'shan Vault
             case 129428: //Dummy Searcher(cobalt mine)
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
