@@ -726,6 +726,8 @@ void AddSC_boss_sha_of_doubt();
 void AddSC_instance_stormstout_brewery();           // The Stormstout Brewery
 void AddSC_stormstout_brewery();
 void AddSC_boss_ook_ook();
+void AddSC_boss_hoptallus();
+void AddSC_boss_yan_zhu();
 void AddSC_instance_gate_setting_sun();             // Gate of the Setting Sun
 void AddSC_gate_setting_sun();
 void AddSC_boss_saboteur_kiptilak();
@@ -1532,6 +1534,8 @@ void AddPandarieScripts()
     AddSC_instance_stormstout_brewery();            // The Stormstout Brewery
     AddSC_stormstout_brewery();
     AddSC_boss_ook_ook();
+    AddSC_boss_hoptallus();
+    AddSC_boss_yan_zhu();
     AddSC_instance_mogu_shan_palace();              // The Mogu'Shan Palace
     AddSC_boss_trial_of_the_king();
     AddSC_boss_gekkan();

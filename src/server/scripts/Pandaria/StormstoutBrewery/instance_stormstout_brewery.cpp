@@ -22,15 +22,58 @@ public:
         uint64 ookookGuid;
         uint64 hoptallusGuid;
         uint64 yanzhuGuid;
+        uint64 ookexitdoorGuid;
+        uint64 doorGuid;
+        uint64 door2Guid;
+        uint64 door3Guid;
+        uint64 door4Guid;
+        uint64 lastdoorGuid;
+        uint64 carrotdoorGuid;
 
         instance_stormstout_brewery_InstanceMapScript(Map* map) : InstanceScript(map)
         {}
 
         void Initialize()
         {
+            SetBossNumber(3);
             ookookGuid      = 0;
             hoptallusGuid   = 0;
             yanzhuGuid      = 0;
+            ookexitdoorGuid = 0;
+            doorGuid = 0;
+            door2Guid = 0;
+            door3Guid = 0;
+            door4Guid = 0;
+            lastdoorGuid = 0;
+            carrotdoorGuid = 0;
+        }
+
+        void OnGameObjectCreate(GameObject* go)
+        {
+            switch (go->GetEntry())
+            {
+            case GO_EXIT_OOK_OOK:
+                ookexitdoorGuid = go->GetGUID();
+                break;
+            case GO_DOOR:
+                doorGuid = go->GetGUID();
+                break;
+            case GO_DOOR2:
+                door2Guid = go->GetGUID();
+                break;
+            case GO_DOOR3:
+                door3Guid = go->GetGUID();
+                break;
+            case GO_DOOR4:
+                door4Guid = go->GetGUID();
+                break;
+            case GO_LAST_DOOR:
+                lastdoorGuid = go->GetGUID();
+                break;
+            case GO_CARROT_DOOR:
+                carrotdoorGuid = go->GetGUID();
+                break;
+            }
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -48,9 +91,66 @@ public:
                     break;
             }
         }
+        
+        bool SetBossState(uint32 id, EncounterState state)
+        {
+            if (!InstanceScript::SetBossState(id, state))
+                return false;
 
-        void SetData(uint32 type, uint32 data)
-        {}
+            switch (id)
+            {
+            case DATA_OOK_OOK:
+                {
+                    if (state == DONE)
+                    {
+                         HandleGameObject(ookexitdoorGuid, true);
+                         HandleGameObject(doorGuid, true);
+                         HandleGameObject(door2Guid, true);
+                    }
+                }
+                break;
+            case DATA_HOPTALLUS:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(door2Guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(door2Guid, false);
+                        break;
+                    case DONE:
+                        {
+                            HandleGameObject(door2Guid, true);
+                            HandleGameObject(door3Guid, true);
+                            HandleGameObject(door4Guid, true);
+                            if (GameObject* go = instance->GetGameObject(carrotdoorGuid))
+                                go->Delete();
+                        }
+                        break;
+                    }
+                }
+                break;
+            case DATA_YAN_ZHU:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        HandleGameObject(lastdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(lastdoorGuid, false);
+                        break;
+                    }
+                }
+                break;
+            }
+
+            return true;
+        }
+
+        void SetData(uint32 type, uint32 data){}
 
         uint32 GetData(uint32 type)
         {

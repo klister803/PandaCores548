@@ -152,9 +152,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Blind
             else if (spellproto->SpellFamilyFlags[0] & 0x1000000)
                 return DIMINISHING_FEAR;
-            // Cheap Shot
-            // else if (spellproto->SpellFamilyFlags[0] & 0x400)
-                // return DIMINISHING_OPENING_STUN;
+            // Paralytic Poison
+             else if (spellproto->SpellFamilyFlags[2] & 0x00000001)
+                 return DIMINISHING_OPENING_STUN;
             // Crippling poison - Limit to 10 seconds in PvP (No SpellFamilyFlags)
             else if (spellproto->SpellIconID == 163)
                 return DIMINISHING_LIMITONLY;
@@ -3270,6 +3270,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetB = 0;
                 break;
             case 60256:
+            case 26662:
+            case 106108:
+            case 52982:
+            case 102522:
                 //Crashes client on pressing ESC (Maybe because of ReqSpellFocus and GameObject)
                 spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                 break;
@@ -4111,6 +4115,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
                 break;
 
+            // Stormstout brewery
+            case 112944: //Carrot Breath - set 4 second becaus rotate not work
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35);
+                break;
+
             // Mogu'shan Vault
             case 129428: //Dummy Searcher(cobalt mine)
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
@@ -4151,6 +4160,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 79136: // Venomous Wound
             case 127802: // Touch of the Grave
+            case 2094: // Blind
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                 break;
             case 117050:
@@ -4177,7 +4187,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0]. BasePoints = 5000;
                 break;
             case 105709: // Master Mana Potion
-                spellInfo->Effects[0]. BasePoints = 30000;             
+                spellInfo->Effects[0]. BasePoints = 30000;   
+                break;
+            case 126349:
+            case 126413:
+            case 126549:
+            case 126550:
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(26); // 240 seconds
                 break;                    
             default:
                 break;

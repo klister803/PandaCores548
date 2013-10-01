@@ -706,15 +706,15 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
     data.WriteBits(TRADE_STATUS_BEGIN_TRADE, 5);
 
     ObjectGuid playerGuid = _player->GetGUID();
-    // WTB StartBitStream...
-    
-    uint8 bitOrder2[8] = {4, 0, 5, 6, 1, 3, 2, 7};
-    data.WriteBitInOrder(guid, bitOrder2);
 
-    data.WriteBit(0); // unk bit, usually 0
-    
+    uint8 bitOrder2[8] = {4, 0, 5, 6, 1, 3, 2, 7};
+    data.WriteBitInOrder(playerGuid, bitOrder2);
+
+    data.WriteBit(0);   // unk bit, usually 0
+    data.FlushBits();
+
     uint8 byteOrder2[8] = {0, 2, 4, 7, 5, 6, 1, 3};
-    data.WriteBytesSeq(guid, byteOrder2);
+    data.WriteBytesSeq(playerGuid, byteOrder2);
 
     pOther->GetSession()->SendPacket(&data);
 }

@@ -9,6 +9,12 @@
 #include "stormstout_brewery.h"
 #include "Vehicle.h"
 
+enum Spells
+{
+    SPELL_GROUND_POUND  = 106807,
+    SPELL_GOING_BANANAS  = 106651,
+};
+
 class boss_ook_ook : public CreatureScript
 {
     public:
@@ -22,20 +28,27 @@ class boss_ook_ook : public CreatureScript
         struct boss_ook_ook_AI : public BossAI
         {
             boss_ook_ook_AI(Creature* creature) : BossAI(creature, DATA_OOK_OOK)
-            {}
-
-            void Reset()
-            {}
-
-            void EnterCombat(Unit* /*who*/)
-            {}
-
-            void DoAction(const int32 action)
             {
+                InstanceScript* instance = creature->GetInstanceScript();
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            InstanceScript* instance;
+            uint32 groundtimer;
+            bool fbuff,sbuff,lbuff;
+
+            void Reset()
             {
+                _Reset();
+                fbuff = false;
+                sbuff = false;
+                lbuff = false;
+                groundtimer = 0;
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                _EnterCombat();
+                groundtimer = 5000;
             }
 
             void JustDied(Unit* /*killer*/)
@@ -43,16 +56,46 @@ class boss_ook_ook : public CreatureScript
                 _JustDied();
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
-
+                if (HealthBelowPct(90) && !fbuff)
+                {
+                    fbuff = true;
+                    DoCast(me, SPELL_GOING_BANANAS);
+                    return;
+                }
+                else if (HealthBelowPct(60) && !sbuff)
+                {
+                    sbuff = true;
+                    DoCast(me, SPELL_GOING_BANANAS);
+                    return;
+                }
+                else if (HealthBelowPct(30) && !lbuff)
+                {
+                    lbuff = true;
+                    DoCast(me, SPELL_GOING_BANANAS);
+                    return;
+                }
             }
 
-            void MoveInLineOfSight(Unit* who)
-            {}
-
             void UpdateAI(const uint32 diff)
-            {}
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (groundtimer <= diff)
+                {
+                    DoCast(me, SPELL_GROUND_POUND);
+                    groundtimer = 10000;
+                }
+                else
+                    groundtimer -= diff;
+
+                DoMeleeAttackIfReady();
+            }
         };
 };
 

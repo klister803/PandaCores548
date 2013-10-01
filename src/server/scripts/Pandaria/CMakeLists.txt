@@ -28,6 +28,8 @@ set(scripts_STAT_SRCS
   Pandaria/StormstoutBrewery/stormstout_brewery.cpp
   Pandaria/StormstoutBrewery/stormstout_brewery.h
   Pandaria/StormstoutBrewery/boss_ook_ook.cpp
+  Pandaria/StormstoutBrewery/boss_hoptallus.cpp
+  Pandaria/StormstoutBrewery/boss_yan_zhu.cpp
 
   Pandaria/GateSettingSun/instance_gate_setting_sun.cpp
   Pandaria/GateSettingSun/gate_setting_sun.cpp

@@ -40,7 +40,7 @@ enum RogueSpells
     ROGUE_SPELL_MIND_PARALYSIS                   = 115194,
     ROGUE_SPELL_LEECH_VITALITY                   = 116921,
     ROGUE_SPELL_PARTIAL_PARALYSIS                = 115197,
-    ROGUE_SPELL_TOTAL_PARALYSIS                  = 3609,
+    ROGUE_SPELL_TOTAL_PARALYSIS                  = 113953,
     ROGUE_SPELL_DEADLY_POISON_DOT                = 2818,
     ROGUE_SPELL_DEADLY_POISON_INSTANT_DAMAGE     = 113780,
     ROGUE_SPELL_SLICE_AND_DICE                   = 5171,
@@ -398,35 +398,6 @@ class spell_rog_nightstalker : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_rog_nightstalker_AuraScript();
-        }
-};
-
-// Called by Slice and Dice - 5171
-// Energetic Recovery - 79152
-class spell_rog_energetic_recovery : public SpellScriptLoader
-{
-    public:
-        spell_rog_energetic_recovery() : SpellScriptLoader("spell_rog_energetic_recovery") { }
-
-        class spell_rog_energetic_recovery_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_rog_energetic_recovery_AuraScript);
-
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
-            {
-                if (GetCaster())
-                    GetCaster()->EnergizeBySpell(GetCaster(), 5171, 8, POWER_ENERGY);
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_energetic_recovery_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_ENERGIZE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_rog_energetic_recovery_AuraScript();
         }
 };
 
@@ -1475,7 +1446,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_combat_readiness();
     new spell_rog_nerve_strike();
     new spell_rog_nightstalker();
-    new spell_rog_energetic_recovery();
     new spell_rog_sanguinary_vein();
     new spell_rog_hemorrhage();
     new spell_rog_restless_blades();
