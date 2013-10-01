@@ -479,6 +479,8 @@ public:
     bool CanPierceImmuneAura(SpellInfo const* aura) const;
     bool CanDispelAura(SpellInfo const* aura) const;
 
+    bool IsNeedDelayForSpell() const;
+
     bool IsSingleTarget() const;
     bool IsSingleTargetWith(SpellInfo const* spellInfo) const;
     bool IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const;
@@ -556,6 +558,7 @@ public:
     bool GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry& power) const;
     bool HasPower(Powers power) const;
     bool NoPower() const;
+    bool CanNonFacing(Unit const * caster) const;
 };
 
 #endif // _SPELLINFO_H

@@ -271,8 +271,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 {
     Opcodes opcode = recvPacket.GetOpcode();
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes %s", GetOpcodeNameForLogging(recvPacket.GetOpcode()).c_str());
-
     uint32 diff = sWorld->GetUpdateTime();
     Unit* mover = _player->m_mover;
 

@@ -3444,8 +3444,10 @@ void Spell::cast(bool skipCheck)
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
 
+    uint32 CCDelay = GetSpellDelay(m_spellInfo);
+
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if ((m_spellInfo->Speed > 0.0f && !m_spellInfo->IsChanneled() && m_spellInfo->Id != 114157) || m_spellInfo->Id == 14157)
+    if (((m_spellInfo->Speed > 0.0f || CCDelay > 0) && !m_spellInfo->IsChanneled() && m_spellInfo->Id != 114157) || m_spellInfo->Id == 14157)
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
@@ -3458,6 +3460,9 @@ void Spell::cast(bool skipCheck)
 
         if (m_caster->HasUnitState(UNIT_STATE_CASTING) && !m_caster->IsNonMeleeSpellCasted(false, false, true))
             m_caster->ClearUnitState(UNIT_STATE_CASTING);
+
+        if (m_targets.GetUnitTarget() && CCDelay)
+            m_targets.GetUnitTarget()->TriggerCCDEffect(true);
     }
     else
     {
@@ -3617,6 +3622,19 @@ void Spell::handle_immediate()
 
 uint64 Spell::handle_delayed(uint64 t_offset)
 {
+    if (GetSpellDelay(GetSpellInfo()) && m_targets.GetUnitTarget())
+    {
+        Unit* target = m_targets.GetUnitTarget();
+
+        target->TriggerCCDEffect(false);
+
+        if (uint32 interruptFlag = target->GetDelayIterruptFlag())
+        {
+            target->RemoveAurasWithInterruptFlags(interruptFlag);
+            target->SetDelayIterruptFlag(0);
+        }
+    }
+
     UpdatePointers();
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -4016,6 +4034,8 @@ void Spell::SendCastResult(SpellCastResult result)
 
 void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cast_count, SpellCastResult result, SpellCustomErrors customError /*= SPELL_CUSTOM_ERROR_NONE*/)
 {
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendCastResult  Spell: %u result %u.", spellInfo->Id, result);
+
     if (result == SPELL_CAST_OK)
         return;
 
@@ -5284,7 +5304,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_NOT_BEHIND;
 
             // Target must be facing you
-            if ((m_spellInfo->AttributesCu & SPELL_ATTR0_CU_REQ_TARGET_FACING_CASTER) && !target->HasInArc(static_cast<float>(M_PI), m_caster))
+            if ((m_spellInfo->AttributesCu & SPELL_ATTR0_CU_REQ_TARGET_FACING_CASTER) && !target->HasInArc(static_cast<float>(M_PI), m_caster) && !m_spellInfo->CanNonFacing(m_caster))
                 return SPELL_FAILED_NOT_INFRONT;
 
             if (!IsTriggered())
@@ -6001,6 +6021,64 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
             return SPELL_FAILED_NOT_READY;
 
     return CheckCast(true);
+}
+
+uint32 Spell::GetSpellDelay(SpellInfo const* _spell)
+{
+    // Some hacky ways
+    if (_spell->IsNeedDelayForSpell())
+        return 200;
+
+    // CCD for spell with auras
+    AuraType auraWithCCD[] = {
+        SPELL_AURA_MOD_STUN,
+        SPELL_AURA_MOD_CONFUSE,
+        SPELL_AURA_MOD_FEAR,
+        SPELL_AURA_MOD_SILENCE,
+        SPELL_AURA_MOD_DISARM,
+        SPELL_AURA_MOD_POSSESS,
+		SPELL_AURA_MOD_ROOT
+    };
+    uint8 CCDArraySize = 6;
+
+    const uint32 delayForInstantSpells = 80;
+
+    switch(_spell->SpellFamilyName)
+    {
+        case SPELLFAMILY_HUNTER:
+            // Traps
+            if (_spell->SpellFamilyFlags[0] & 0x8 ||      // Frozen trap
+                _spell->Id == 57879 ||                    // Snake Trap
+                _spell->SpellFamilyFlags[2] & 0x00024000) // Explosive and Immolation Trap
+                return 0;
+
+            if (_spell->SpellIconID == 20 ||              // Entrapment
+                _spell->SpellIconID == 127)               // Silencing Shot
+
+                return 0;
+            break;
+        case SPELLFAMILY_DEATHKNIGHT:
+            // Death Grip
+            if (_spell->Id == 49576)
+                return delayForInstantSpells;
+            break;
+        case SPELLFAMILY_ROGUE:
+            // Blind
+            if (_spell->Id == 2094)
+                return delayForInstantSpells;
+            break;
+        case SPELLFAMILY_MAGE:
+            // Hack Burning Determination
+            if (_spell->Id == 54748)
+                return 350;
+            break;
+    }
+
+    for (uint8 i = 0; i < CCDArraySize; ++i)
+        if (_spell->HasAura(auraWithCCD[i]))
+            return delayForInstantSpells;
+
+    return 0;
 }
 
 SpellCastResult Spell::CheckCasterAuras() const

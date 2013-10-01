@@ -2854,7 +2854,7 @@ void Player::Regenerate(Powers power)
     float rangedHaste = GetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE);
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
-    float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+    float regenmod = 1.0f / GetFloatValue(UNIT_MOD_CAST_HASTE);
 
     switch (power)
     {
@@ -2887,8 +2887,11 @@ void Player::Regenerate(Powers power)
             break;
         // Regenerate Energy
         case POWER_ENERGY:
-            addvalue += ((0.01f * m_regenTimer) * sWorld->getRate(RATE_POWER_ENERGY) * HastePct);
+        {
+            float defaultreg = 0.01f * m_regenTimer;
+            addvalue += defaultreg * regenmod * sWorld->getRate(RATE_POWER_ENERGY);
             break;
+        }
         // Regenerate Runic Power
         case POWER_RUNIC_POWER:
         {
@@ -6488,9 +6491,11 @@ float Player::GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const
     switch (attType)
     {
         case BASE_ATTACK:
-            return GetUInt32Value(PLAYER_EXPERTISE) / 4.0f;
+            return GetFloatValue(PLAYER_EXPERTISE) / 4.0f;
         case OFF_ATTACK:
-            return GetUInt32Value(PLAYER_OFFHAND_EXPERTISE) / 4.0f;
+            return GetFloatValue(PLAYER_OFFHAND_EXPERTISE) / 4.0f;
+        case RANGED_ATTACK:
+            return GetFloatValue(PLAYER_RANGED_EXPERTISE) / 4.0f;
         default:
             break;
     }
@@ -6563,32 +6568,6 @@ void Player::UpdateRating(CombatRating cr)
         amount = 0;
     SetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr, uint32(amount));
 
-    if (cr == CR_HASTE_MELEE || cr == CR_HASTE_RANGED || cr == CR_HASTE_SPELL)
-    {
-        float haste = 1 / (1 + (amount * GetRatingMultiplier(cr)) / 100);
-        // Update haste percentage for client
-        SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, haste);
-        SetFloatValue(UNIT_MOD_CAST_HASTE, haste);
-        SetFloatValue(UNIT_MOD_HASTE, haste);
-    }
-
-    // Custom MoP Script
-    // Way of the Monk - 120275
-    if (HasAura(120275) && GetTypeId() == TYPEID_PLAYER && (cr == CR_HASTE_MELEE || cr == CR_HASTE_RANGED || cr == CR_HASTE_SPELL))
-    {
-        float haste = 1.0f / (1.0f + (amount * GetRatingMultiplier(cr) + 40.0f) / 100.0f);
-        // Update melee haste percentage for client
-        SetFloatValue(UNIT_MOD_HASTE, haste);
-    }
-    else if (!HasAura(120275) && GetTypeId() == TYPEID_PLAYER && (cr == CR_HASTE_MELEE || cr == CR_HASTE_RANGED || cr == CR_HASTE_SPELL))
-    {
-        float haste = 1 / (1 + (amount * GetRatingMultiplier(cr)) / 100);
-        // Update haste percentage for client
-        SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, haste);
-        SetFloatValue(UNIT_MOD_CAST_HASTE, haste);
-        SetFloatValue(UNIT_MOD_HASTE, haste);
-    }
-
     bool affectStats = CanModifyStats();
 
     switch (cr)
@@ -6635,9 +6614,15 @@ void Player::UpdateRating(CombatRating cr)
         case CR_RESILIENCE_PLAYER_DAMAGE_TAKEN:
         case CR_RESILIENCE_CRIT_TAKEN:
         case CR_CRIT_TAKEN_SPELL:                           // Deprecated since Cataclysm
+            break;
         case CR_HASTE_MELEE:                                // Implemented in Player::ApplyRatingMod
+            UpdateMeleeHastMod();
+            break;
         case CR_HASTE_RANGED:
+            UpdateRangeHastMod();
+            break;
         case CR_HASTE_SPELL:
+            UpdateHastMod();
             break;
         case CR_WEAPON_SKILL_MAINHAND:                      // Implemented in Unit::RollMeleeOutcomeAgainst
         case CR_WEAPON_SKILL_OFFHAND:
@@ -10004,6 +9989,25 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
     // need know merged fishing/corpse loot type for achievements
     loot->loot_type = loot_type;
+
+    if (IS_GAMEOBJECT_GUID(guid))
+    {
+        GameObject *go = GetMap()->GetGameObject(guid);
+        if (go && go->GetGoType() == GAMEOBJECT_TYPE_CHEST)
+        {
+            uint32 go_min = go->GetGOInfo()->chest.minSuccessOpens;
+            uint32 go_max = go->GetGOInfo()->chest.maxSuccessOpens;
+            uint32 chestRestockTime = go->GetGOInfo()->chest.chestRestockTime;
+            uint32 consumable = go->GetGOInfo()->chest.consumable;
+            uint32 lootid =  go->GetGOInfo()->GetLootId();
+
+            if(go_min == 1 && go_max ==1 && consumable == 1 && chestRestockTime == 0 && lootid)
+            {
+                AutoStoreLoot(lootid, LootTemplates_Gameobject);
+                loot->clear();
+            }
+        }
+    }
 
     WorldPacket data(SMSG_LOOT_RESPONSE);           // we guess size
     data << LootView(*loot, this, loot_type, guid, permission, pool);
@@ -25864,19 +25868,13 @@ void Player::UpdateCharmedAI()
 uint32 Player::GetRuneTypeBaseCooldown(RuneType runeType) const
 {
     float cooldown = RUNE_BASE_COOLDOWN;
-    float hastePct = 0.0f;
 
     AuraEffectList const& regenAura = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
     for (AuraEffectList::const_iterator i = regenAura.begin();i != regenAura.end(); ++i)
-        if ((*i)->GetMiscValue() == POWER_RUNES)
-            cooldown /= ((*i)->GetAmount() + 100.0f) / 100.0f;
+        if ((*i)->GetMiscValue() == POWER_RUNES && (*i)->GetMiscValueB() == runeType)
+            cooldown *= 1.0f - (*i)->GetAmount() / 100.0f;
 
-    // Runes cooldown are now affected by player's haste from equipment ...
-    hastePct = GetRatingBonusValue(CR_HASTE_MELEE);
-    hastePct += GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_HASTE);
-    hastePct += GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_RANGED_HASTE) / 10.0f;
-
-    cooldown *=  1.0f - (hastePct / 100.0f);
+    cooldown *= GetFloatValue(UNIT_MOD_CAST_HASTE);
 
     return cooldown;
 }
@@ -25976,7 +25974,8 @@ void Player::InitRunes()
         SetDeathRuneUsed(i, false);
     }
 
-    UpdateAllRunesRegen();
+    for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
+        SetFloatValue(PLAYER_RUNE_REGEN_1 + i, 0.1f);                  // set a base regen timer equal to 10 sec
 }
 
 bool Player::IsBaseRuneSlotsOnCooldown(RuneType runeType) const

@@ -3728,6 +3728,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 1784:  // Stealth
                 spellInfo->OverrideSpellList.push_back(115191); // Add Stealth (talent) to override spell list of Stealth
                 break;
+            case 108212:  // Burst of Speed
+                spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH;
+                break;
             case 130493:// Nightstalker
                 spellInfo->Effects[1].Effect = 0;
                 spellInfo->Effects[1].ApplyAuraName = 0;
@@ -4192,6 +4195,16 @@ void SpellMgr::LoadSpellCustomAttr()
                 if (spellInfo->SpellFamilyFlags[0] & 0x8)
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
                 break;
+            case 58423:
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->Effects[0].SpellClassMask[2] = 0;
+                spellInfo->Effects[0].SpellClassMask[1] = 0;
+                spellInfo->Effects[0].SpellClassMask[0] = 0;
+                spellInfo->Effects[0].TriggerSpell = 0;
+                break;
+            case 115191:
+                spellInfo->AuraInterruptFlags = 0x08020C00;
+                break;
             default:
                 break;
             }
@@ -4224,6 +4237,66 @@ void SpellMgr::LoadSpellCustomAttr()
     CreatureAI::FillAISpellInfo();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded spell custom attributes in %u ms", GetMSTimeDiffToNow(oldMSTime));
+
+    oldMSTime = getMSTime();
+    //                                                   0            1             2              3              4              5
+    QueryResult result = WorldDatabase.Query("SELECT spell_id, effectradius0, effectradius1, effectradius2, effectradius3, effectradius4 from spell_radius");
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell effect radius records. DB table `spell_radius` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 spell_id = fields[0].GetUInt32();
+        uint32 effectradius0 = fields[1].GetUInt32();
+        uint32 effectradius1 = fields[2].GetUInt32();
+        uint32 effectradius2 = fields[3].GetUInt32();
+        uint32 effectradius3 = fields[4].GetUInt32();
+        uint32 effectradius4 = fields[5].GetUInt32();
+
+        // check if valid radius
+        SpellInfo* spellInfo = mSpellInfoMap[spell_id];
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "spell_id %u in `spell_radius` table is not found in dbcs, skipped", spell_id);
+            continue;
+        }
+
+        if (effectradius0 && sSpellRadiusStore.LookupEntry(effectradius0))
+        {
+            spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(effectradius0);
+        }
+
+        if (effectradius1 && sSpellRadiusStore.LookupEntry(effectradius1))
+        {
+            spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(effectradius1);
+        }
+
+        if (effectradius2 && sSpellRadiusStore.LookupEntry(effectradius2))
+        {
+            spellInfo->Effects[EFFECT_2].RadiusEntry = sSpellRadiusStore.LookupEntry(effectradius2);
+        }
+
+        if (effectradius3 && sSpellRadiusStore.LookupEntry(effectradius3))
+        {
+            spellInfo->Effects[EFFECT_3].RadiusEntry = sSpellRadiusStore.LookupEntry(effectradius3);
+        }
+
+        if (effectradius4 && sSpellRadiusStore.LookupEntry(effectradius4))
+        {
+            spellInfo->Effects[EFFECT_4].RadiusEntry = sSpellRadiusStore.LookupEntry(effectradius4);
+        }
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u spell effect radius records in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SpellMgr::LoadTalentSpellInfo()

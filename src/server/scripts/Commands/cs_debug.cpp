@@ -99,6 +99,13 @@ public:
             { "jump",           SEC_ADMINISTRATOR,  false, &HandleDebugMoveJump,               "", NULL },
             { "backward",       SEC_ADMINISTRATOR,  false, &HandleDebugMoveBackward,           "", NULL },
             { "load_z",         SEC_ADMINISTRATOR,  false, &HandleDebugLoadZ,                  "", NULL },
+
+            // stats debug
+            { "spellpower",     SEC_ADMINISTRATOR,  false, &HandleDebugModifySpellpowerCommand,     "", NULL },
+            { "attackpower",    SEC_ADMINISTRATOR,  false, &HandleDebugModifyAttackpowerCommand,    "", NULL },
+            { "crit",           SEC_ADMINISTRATOR,  false, &HandleDebugModifyCritChanceCommand,     "", NULL },
+            { "haste",          SEC_ADMINISTRATOR,  false, &HandleDebugModifyHasteCommand,          "", NULL },
+            { "hit",            SEC_ADMINISTRATOR,  false, &HandleDebugModifyHitCommand,            "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1569,7 +1576,130 @@ public:
 
         return true;
     }
+
+    static bool HandleDebugModifySpellpowerCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        Unit* unit = handler->getSelectedUnit();
+        Player* player = NULL;
+        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
+            player = handler->GetSession()->GetPlayer();
+        else
+            player = (Player*)unit;
+        if (!unit) unit = player;
+
+        char* cval = strtok((char*)args, " ");
+
+        if (!cval)
+            return false;
+
+        int32 Value = (int32)atoi(cval);
+        player->ApplySpellPowerBonus(Value, true);
+        return true;
+    }
+
+    static bool HandleDebugModifyAttackpowerCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        Unit* unit = handler->getSelectedUnit();
+        Player* player = NULL;
+        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
+            player = handler->GetSession()->GetPlayer();
+        else
+            player = (Player*)unit;
+        if (!unit) unit = player;
+
+        char* cval = strtok((char*)args, " ");
+
+        if (!cval)
+            return false;
+
+        int32 Value = (int32)atoi(cval);
+        player->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(Value), true);
+        player->HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(Value), true);
+        return true;
+    }
+
+    static bool HandleDebugModifyCritChanceCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        Unit* unit = handler->getSelectedUnit();
+        Player* player = NULL;
+        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
+            player = handler->GetSession()->GetPlayer();
+        else
+            player = (Player*)unit;
+        if (!unit) unit = player;
+
+        char* cval = strtok((char*)args, " ");
+
+        if (!cval)
+            return false;
+
+        int32 Value = (int32)atoi(cval);
+        player->HandleBaseModValue(CRIT_PERCENTAGE, FLAT_MOD, Value, true);
+        player->HandleBaseModValue(RANGED_CRIT_PERCENTAGE, FLAT_MOD, Value, true);
+        player->HandleBaseModValue(OFFHAND_CRIT_PERCENTAGE, FLAT_MOD, Value, true);
+        for (int school = SPELL_SCHOOL_NORMAL; school != MAX_SPELL_SCHOOL; ++school)
+            player->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1+school, Value);
+        return true;
+    }
+    static bool HandleDebugModifyHasteCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        Unit* unit = handler->getSelectedUnit();
+        Player* player = NULL;
+        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
+            player = handler->GetSession()->GetPlayer();
+        else
+            player = (Player*)unit;
+        if (!unit) unit = player;
+
+        char* cval = strtok((char*)args, " ");
+
+        if (!cval)
+            return false;
+
+        int32 Value = (int32)atoi(cval);
+        player->ApplyRatingMod(CR_HASTE_MELEE, Value, true);
+        player->ApplyRatingMod(CR_HASTE_RANGED, Value, true);
+        player->ApplyRatingMod(CR_HASTE_SPELL, Value, true);
+        return true;
+    }
+    static bool HandleDebugModifyHitCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        Unit* unit = handler->getSelectedUnit();
+        Player* player = NULL;
+        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
+            player = handler->GetSession()->GetPlayer();
+        else
+            player = (Player*)unit;
+        if (!unit) unit = player;
+
+        char* cval = strtok((char*)args, " ");
+
+        if (!cval)
+            return false;
+
+        int32 Value = (int32)atoi(cval);
+        player->ApplyRatingMod(CR_HIT_MELEE, Value, true);
+        player->ApplyRatingMod(CR_HIT_RANGED, Value, true);
+        player->ApplyRatingMod(CR_HIT_SPELL, Value, true);
+        return true;
+    }
 };
+
 
 void AddSC_debug_commandscript()
 {
