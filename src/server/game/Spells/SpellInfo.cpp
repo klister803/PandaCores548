@@ -888,9 +888,6 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     AuraInterruptFlags = _interrupt ? _interrupt->AuraInterruptFlags : 0;
     ChannelInterruptFlags = _interrupt ? _interrupt->ChannelInterruptFlags : 0;
 
-    if (AuraInterruptFlags & 0x8000000 && !(AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
-        AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
-
     // SpellLevelsEntry
     SpellLevelsEntry const* _levels = GetSpellLevels();
     MaxLevel = _levels ? _levels->maxLevel : 0;
@@ -1377,6 +1374,19 @@ bool SpellInfo::CanDispelAura(SpellInfo const* aura) const
         return false;
 
     return true;
+}
+
+bool SpellInfo::IsNeedDelayForSpell() const
+{
+    switch (Id)
+    {
+        case 94315: // Early Frost visual - need for correct handling on talent learning
+        case 90289: // Glyph of Resilient Grip
+            return true;
+    default:
+        break;
+    }
+    return false;
 }
 
 bool SpellInfo::IsSingleTarget() const
@@ -2234,9 +2244,6 @@ uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
 
     if (caster)
         caster->ModSpellCastTime(this, castTime, spell);
-
-    if (Attributes & SPELL_ATTR0_REQ_AMMO && (!IsAutoRepeatRangedSpell()) && Id != 82928)
-        castTime += 500;
 
     return (castTime > 0) ? uint32(castTime) : 0;
 }
@@ -3163,4 +3170,13 @@ bool SpellInfo::NoPower() const
             return false;
 
     return true;
+}
+
+bool SpellInfo::CanNonFacing(Unit const * caster) const
+{
+    //can with Glyph of Gouge
+    if(Id == 1776 && caster && caster->HasAura(56809))
+        return true;
+
+    return false;
 }

@@ -902,26 +902,22 @@ void Player::UpdateRuneRegen(RuneType rune)
 void Player::UpdateAllRunesRegen()
 {
     for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
-    {
         if (uint32 cooldown = GetRuneTypeBaseCooldown(RuneType(i)))
-        {
-            float regen = float(1 * IN_MILLISECONDS) / float(cooldown);
-
-            if (regen < 0.0099999998f)
-                regen = 0.01f;
-
-            SetFloatValue(PLAYER_RUNE_REGEN_1 + i, regen);
-        }
-    }
+            SetFloatValue(PLAYER_RUNE_REGEN_1 + i, float(1 * IN_MILLISECONDS) / float(cooldown));
 }
 
-void Player::UpdateHastMod()
+void Player::UpdateMeleeHastMod()
 {
-    float amount = GetRatingBonusValue(CR_HASTE_SPELL);
+    float amount = GetRatingBonusValue(CR_HASTE_MELEE);
 
-    amount += GetTotalAuraModifier(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
-    amount += GetTotalAuraModifier(SPELL_AURA_HASTE_SPELLS);
-    amount += GetTotalAuraModifier(SPELL_AURA_MELEE_SLOW);
+    std::list<AuraType> auratypelist;
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE_2);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE_3);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
+
+    amount += GetTotalForAurasModifier(&auratypelist);
 
     //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateMeleeHastMod mod %f", mod);
 
@@ -931,9 +927,61 @@ void Player::UpdateHastMod()
     else
         ApplyPercentModFloatVar(value, -amount, true);
     SetFloatValue(UNIT_MOD_CAST_HASTE, value);
-    SetFloatValue(UNIT_MOD_CAST_SPEED, value);
+    SetFloatValue(PLAYER_FIELD_MOD_PET_HASTE, value);
+
+    if (getClass() == CLASS_DEATH_KNIGHT)
+        UpdateAllRunesRegen();
 }
 
+
+void Player::UpdateHastMod()
+{
+    float amount = GetRatingBonusValue(CR_HASTE_SPELL);
+
+    amount += GetTotalAuraModifier(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+    amount += GetTotalAuraModifier(SPELL_AURA_HASTE_SPELLS);
+    amount += GetTotalAuraModifier(SPELL_AURA_MELEE_SLOW);
+
+    //sLog->outDebug(LOG_FILTER_NETWORKIO, "UpdateHastMod amount %f", amount);
+
+    float value = 1.0f;
+    if(amount > 0)
+        ApplyPercentModFloatVar(value, amount, false);
+    else
+        ApplyPercentModFloatVar(value, -amount, true);
+    SetFloatValue(UNIT_MOD_CAST_HASTE, value);
+    SetFloatValue(UNIT_MOD_CAST_SPEED, value);
+
+    if (getClass() == CLASS_DEATH_KNIGHT)
+        UpdateAllRunesRegen();
+}
+
+void Player::UpdateRangeHastMod()
+{
+    float amount = GetRatingBonusValue(CR_HASTE_RANGED);
+
+    std::list<AuraType> auratypelist;
+    auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE);
+    auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE_3);
+    auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE_3);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
+
+    amount += GetTotalForAurasModifier(&auratypelist);
+
+    //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateRangeHastMod mod %f", mod);
+
+    float value = 1.0f;
+    if(amount > 0)
+        ApplyPercentModFloatVar(value, amount, false);
+    else
+        ApplyPercentModFloatVar(value, -amount, true);
+    SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, value);
+    SetFloatValue(UNIT_MOD_CAST_HASTE, value);
+
+    if (getClass() == CLASS_DEATH_KNIGHT)
+        UpdateAllRunesRegen();
+}
 void Player::_ApplyAllStatBonuses()
 {
     SetCanModifyStats(false);

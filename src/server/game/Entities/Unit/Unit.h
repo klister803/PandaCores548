@@ -1889,6 +1889,7 @@ class Unit : public WorldObject
         uint32 GetDoTsByCaster(uint64 casterGUID) const;
 
         int32 GetTotalAuraModifier(AuraType auratype) const;
+        int32 GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const;
         float GetTotalAuraMultiplier(AuraType auratype) const;
         int32 GetMaxPositiveAuraModifier(AuraType auratype);
         int32 GetMaxNegativeAuraModifier(AuraType auratype) const;
@@ -2094,6 +2095,9 @@ class Unit : public WorldObject
         uint32 MeleeDamageBonusDone(Unit *pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL);
         uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage,WeaponAttackType attType, SpellInfo const *spellProto = NULL);
 
+        void TriggerCCDEffect(bool enable) { _haveCCDEffect = enable; }
+        void SetDelayIterruptFlag(uint32 flag) { _delayInterruptFlag = flag; }
+        uint32 GetDelayIterruptFlag() { return _delayInterruptFlag; }
 
         bool   isSpellBlocked(Unit* victim, SpellInfo const* spellProto, WeaponAttackType attackType = BASE_ATTACK);
         bool   isBlockCritical();
@@ -2459,6 +2463,10 @@ class Unit : public WorldObject
         bool _isWalkingBeforeCharm; // Are we walking before we were charmed? 
 
         int32 _eclipsePower;
+
+        // ccd system
+        bool _haveCCDEffect;
+        uint32 _delayInterruptFlag;
 };
 
 namespace Trinity

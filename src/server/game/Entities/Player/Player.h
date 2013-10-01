@@ -2383,6 +2383,8 @@ class Player : public Unit, public GridObject<Player>
         void UpdateManaRegen();
         void UpdateRuneRegen(RuneType rune);
         void UpdateAllRunesRegen();
+        void UpdateMeleeHastMod();
+        void UpdateRangeHastMod();
         void UpdateHastMod();
 
         uint64 GetLootGUID() const { return m_lootGuid; }

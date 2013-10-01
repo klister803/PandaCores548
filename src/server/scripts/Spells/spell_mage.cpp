@@ -503,6 +503,27 @@ class spell_mage_slow : public SpellScriptLoader
             }
         };
 
+        class spell_mage_slow_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_slow_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (GetCaster()->ToPlayer() && GetCaster()->ToPlayer()->GetSelectedPlayer())
+                    amount /= 2;
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_slow_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_HASTE_SPELLS);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_slow_AuraScript();
+        }
+
         SpellScript* GetSpellScript() const
         {
             return new spell_mage_slow_SpellScript();

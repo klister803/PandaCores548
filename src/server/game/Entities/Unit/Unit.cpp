@@ -174,6 +174,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , m_unitTypeMask(UNIT_MASK_NONE)
     , m_HostileRefManager(this)
     , LastCharmerGUID(0)
+    , _haveCCDEffect(0)
+    , _delayInterruptFlag(0)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -2313,11 +2315,11 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
         getLevel() < victim->getLevelForTarget(this))
     {
         // cap possible value (with bonuses > max skill)
-        int32 skill = victimMaxSkillValueForLevel ;
-        int32 maxskill = attackerMaxSkillValueForLevel;
-        skill = (skill > maxskill) ? maxskill : skill;
+        int32 skill = attackerMaxSkillValueForLevel;
 
-        tmp = victimMaxSkillValueForLevel;
+        tmp = (10 + (victimMaxSkillValueForLevel - skill)) * 100;
+        tmp = tmp > 4000 ? 4000 : tmp;
+        if (roll < (sum += tmp))
         {
             sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
             return MELEE_HIT_GLANCING;
@@ -2539,6 +2541,9 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     // Ranged attacks can only miss, resist and deflect
     if (attType == RANGED_ATTACK)
     {
+        canParry = false;
+        canDodge = false;
+
         // only if in front
         if (victim->HasInArc(M_PI, this) || victim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
         {
@@ -2769,11 +2774,27 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
     {
         case SPELL_DAMAGE_CLASS_RANGED:
         case SPELL_DAMAGE_CLASS_MELEE:
-            return MeleeSpellHitResult(victim, spell);
+            if (isTotem() || isGuardian() || isPet() || isHunterPet())
+            {
+                if (Unit* owner = GetOwner())
+                    return owner->MeleeSpellHitResult(victim, spell);
+                else
+                    return MeleeSpellHitResult(victim, spell);
+            }
+            else
+                return MeleeSpellHitResult(victim, spell);
         case SPELL_DAMAGE_CLASS_NONE:
             return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
-            return MagicSpellHitResult(victim, spell);
+            if (isTotem() || isGuardian() || isPet() || isHunterPet())
+            {
+                if (Unit* owner = GetOwner())
+                    return owner->MagicSpellHitResult(victim, spell);
+                else
+                    return MagicSpellHitResult(victim, spell);
+            }
+            else
+                return MagicSpellHitResult(victim, spell);
     }
     return SPELL_MISS_NONE;
 }
@@ -3463,9 +3484,6 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
         }
     }
 
-    if (GetTypeId() == TYPEID_PLAYER && aura->GetSpellInfo()->Id == 86346)
-        aura->GetEffect(1)->SetAmount(50);
-
     // apply effects of the aura
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
@@ -3994,6 +4012,14 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
 {
     if (!(m_interruptMask & flag))
         return;
+
+    if (_haveCCDEffect && flag & AURA_INTERRUPT_FLAG_TAKE_DAMAGE)
+    {
+        _delayInterruptFlag = flag;
+        return;
+    }
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "RemoveAurasWithInterruptFlags flag %u except %u, m_interruptMask %u", flag, except, m_interruptMask);
 
     // interrupt auras
     for (AuraApplicationList::iterator iter = m_interruptableAuras.begin(); iter != m_interruptableAuras.end();)
@@ -4581,6 +4607,32 @@ int32 Unit::GetTotalAuraModifier(AuraType auratype) const
     // Fix Mastery : Critical Block - Increase critical block chance
     if (HasAura(76857) && auratype == SPELL_AURA_MOD_BLOCK_CRIT_CHANCE)
         modifier += int32(GetFloatValue(PLAYER_MASTERY) * 2.2f);
+
+    return modifier;
+}
+
+int32 Unit::GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const
+{
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
+    int32 modifier = 0;
+
+    AuraEffectList mTotalAuraList;
+    for (std::list<AuraType>::iterator auratype = auratypelist->begin(); auratype!= auratypelist->end(); ++auratype)
+    {
+        AuraEffectList const& swaps = GetAuraEffectsByType(*auratype);
+        if (!swaps.empty())
+            mTotalAuraList.insert(mTotalAuraList.end(), swaps.begin(), swaps.end());
+    }
+
+    if (!mTotalAuraList.empty())
+    {
+        for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+            if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+                modifier += (*i)->GetAmount();
+
+        for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+            modifier += itr->second;
+    }
 
     return modifier;
 }
@@ -16190,6 +16242,20 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         }
                         break;
                     }
+                    case SPELL_AURA_MOD_STEALTH:
+                    {
+                        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: SPELL_AURA_MOD_STEALTH casting spell id %u (triggered by %s spell spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
+                        // chargeable mods are breaking on hit
+                        if (spellInfo->Id == 115191)
+                        {
+                            if (!HasAura(115192))
+                                CastSpell(this, 115192, true);
+                            takeCharges = false;
+                            break;
+                        }
+                        takeCharges = true;
+                        break;
+                    }
                     //case SPELL_AURA_ADD_FLAT_MODIFIER:
                     //case SPELL_AURA_ADD_PCT_MODIFIER:
                         // HandleSpellModAuraProc
@@ -16206,6 +16272,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 i->aura->CallScriptAfterEffectProcHandlers(triggeredByAura, aurApp, eventInfo);
             } // for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         } // if (!handled)
+
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: casting spell %u end", spellInfo->Id);
 
         // Remove charge (aura can be removed by triggers)
         if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges

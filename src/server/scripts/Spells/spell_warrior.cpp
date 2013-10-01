@@ -215,6 +215,27 @@ class spell_warr_colossus_smash : public SpellScriptLoader
             }
         };
 
+        class spell_warr_colossus_smash_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warr_colossus_smash_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (GetCaster()->ToPlayer() && GetCaster()->ToPlayer()->GetSelectedPlayer())
+                    amount /= 2;
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warr_colossus_smash_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_BYPASS_ARMOR_FOR_CASTER);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warr_colossus_smash_AuraScript();
+        }
+
         SpellScript* GetSpellScript() const
         {
             return new spell_warr_colossus_smash_SpellScript();
@@ -1099,6 +1120,35 @@ class spell_warr_charge : public SpellScriptLoader
         }
 };
 
+// Curse of Enfeeblement - 109466
+class spell_warr_curse_of_enfeeblement : public SpellScriptLoader
+{
+    public:
+        spell_warr_curse_of_enfeeblement() : SpellScriptLoader("spell_warr_curse_of_enfeeblement") { }
+
+
+        class spell_warr_curse_of_enfeeblement_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warr_curse_of_enfeeblement_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (GetCaster()->ToPlayer() && GetCaster()->ToPlayer()->GetSelectedPlayer())
+                    amount /= 2;
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warr_curse_of_enfeeblement_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_HASTE_SPELLS);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warr_curse_of_enfeeblement_AuraScript();
+        }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1129,4 +1179,5 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_thunder_clap();
     new spell_warr_deep_wounds();
     new spell_warr_charge();
+    new spell_warr_curse_of_enfeeblement();
 }

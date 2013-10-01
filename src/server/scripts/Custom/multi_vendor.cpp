@@ -421,10 +421,14 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "item_back sender %u, action %u", sender, action);
+
         if(!player || !creature || sender != GOSSIP_SENDER_MAIN || !player->getAttackers().empty())
             return true;
 
         ChatHandler chH = ChatHandler(player);
+
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "item_back sender %u, action %u", sender, action);
 
         if(action > 0)
         {

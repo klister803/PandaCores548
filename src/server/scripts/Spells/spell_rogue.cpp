@@ -858,6 +858,27 @@ class spell_rog_master_poisoner : public SpellScriptLoader
             }
         };
 
+        class spell_rog_master_poisoner_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_master_poisoner_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (GetCaster()->ToPlayer() && GetCaster()->ToPlayer()->GetSelectedPlayer())
+                    amount /= 2;
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_master_poisoner_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_HASTE_SPELLS);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_master_poisoner_AuraScript();
+        }
+
         SpellScript* GetSpellScript() const
         {
             return new spell_rog_master_poisoner_SpellScript();
@@ -1388,6 +1409,34 @@ class spell_rog_eviscerate : public SpellScriptLoader
         }
 };
 
+// Burst of Speed - 58410
+class spell_rog_burst_of_speed : public SpellScriptLoader
+{
+    public:
+        spell_rog_burst_of_speed() : SpellScriptLoader("spell_rog_burst_of_speed") { }
+
+        class spell_rog_burst_of_speed_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_burst_of_speed_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (GetCaster()->HasAuraWithMechanic((1<<MECHANIC_SNARE)))
+                    amount = 0;
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_burst_of_speed_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_INCREASE_SPEED);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_burst_of_speed_AuraScript();
+        }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     new spell_rog_cheat_death();
@@ -1416,4 +1465,5 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
     new spell_rog_eviscerate();
+    new spell_rog_burst_of_speed();
 }
