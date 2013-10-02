@@ -19,11 +19,7 @@
 #include "ScriptLoader.h"
 
 //examples
-void AddSC_example_creature();
-void AddSC_example_escort();
-void AddSC_example_gossip_codebox();
-void AddSC_example_misc();
-void AddSC_example_commandscript();
+
 
 // Customs
 void AddSC_event_april();
@@ -51,7 +47,6 @@ void AddSC_monk_spell_scripts();
 void AddSC_mastery_spell_scripts();
 void AddSC_quest_spell_scripts();
 void AddSC_item_spell_scripts();
-void AddSC_example_spell_scripts();
 void AddSC_holiday_spell_scripts();
 
 void AddSC_SmartSCripts();
@@ -807,11 +802,6 @@ void AddScripts()
 
 void AddExampleScripts()
 {
-    AddSC_example_creature();
-    AddSC_example_escort();
-    AddSC_example_gossip_codebox();
-    AddSC_example_misc();
-    AddSC_example_commandscript();
     AddSC_command_arena();
     AddSC_custom_reward();
 }
@@ -833,7 +823,6 @@ void AddSpellScripts()
     AddSC_mastery_spell_scripts();
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
-    AddSC_example_spell_scripts();
     AddSC_holiday_spell_scripts();
 }
 
