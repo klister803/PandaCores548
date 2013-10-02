@@ -8,6 +8,13 @@
 #include "ScriptedCreature.h"
 #include "stormstout_brewery.h"
 
+enum Spells
+{
+    SPELL_BLACKOUT_BREW_AURA   = 114930,
+    SPELL_BLACKOUT_BREW        = 106851,
+    SPELL_BREW_BOLT            = 114548,
+};
+
 class boss_yan_zhu : public CreatureScript
 {
     public:
@@ -21,15 +28,23 @@ class boss_yan_zhu : public CreatureScript
             }
 
             InstanceScript* instance;
+            uint32 brewtimer;
+            uint32 bolttimer;
 
             void Reset()
             {
                 _Reset();
+                bolttimer = 0;
+                brewtimer = 0;
             }
 
             void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
+                if (!me->HasAura(SPELL_BLACKOUT_BREW_AURA))
+                    DoCast(me, SPELL_BLACKOUT_BREW_AURA);
+                bolttimer = 8000;
+                brewtimer = 12000;
             }
 
             void JustDied(Unit* /*killer*/)
@@ -37,12 +52,37 @@ class boss_yan_zhu : public CreatureScript
                 _JustDied();
             }
 
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-            }
-
             void UpdateAI(const uint32 diff)
             {
+                if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (bolttimer <= diff)
+                {
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 20.0f, true))
+                    {
+                        DoCast(target, SPELL_BREW_BOLT);
+                        bolttimer = 8000;
+                    }
+                }
+                else
+                    bolttimer -= diff;
+
+                if (brewtimer <= diff)
+                {
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 20.0f, true))
+                    {
+                        DoCast(target, SPELL_BLACKOUT_BREW);
+                        brewtimer = 12000;
+                    }
+                }
+                else
+                    brewtimer -= diff;
+
+                
                 DoMeleeAttackIfReady();
             }
         };
