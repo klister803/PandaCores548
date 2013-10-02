@@ -37,8 +37,8 @@ Todo:
 [??%]-  What's left todo ?
 */
 
+#include "ScriptPCH.h"
 #include "ObjectMgr.h"
-#include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "SpellAuraEffects.h"
 #include "GridNotifiers.h"

@@ -2474,12 +2474,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     }
 
     // Your finishing moves have a 20% chance per combo point to restore 25 Energy.
-    if (m_needComboPoints)
+    /*if (m_needComboPoints)
         if (Player* plrCaster = m_caster->ToPlayer())
             if (uint8 cp = plrCaster->GetComboPoints())
                 if (m_caster->HasAura(58423))
                     if (roll_chance_i(cp * 20))
-                        m_caster->CastSpell(m_caster, 98440, true); // Restore 25 energys
+                        m_caster->CastSpell(m_caster, 98440, true); // Restore 25 energys*/
 
     // Do not take combo points on dodge and miss
     if (missInfo != SPELL_MISS_NONE && m_needComboPoints &&
@@ -3751,6 +3751,7 @@ void Spell::_handle_finish_phase()
         // Take for real after all targets are processed
         if (m_needComboPoints)
         {
+            m_caster->ProcDamageAndSpell(NULL, PROC_FLAG_GET_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, m_spellInfo);
             m_caster->m_movedPlayer->ClearComboPoints();
 
             // Anticipation

@@ -4,9 +4,7 @@
     Jade servers
 */
 
-#include "ScriptMgr.h"
-#include "InstanceScript.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 
 #define EVENT_LOREWALKER_STONESTEP_SUNS 0
 #define EVENT_LOREWALKER_STONESTEP_TRIAL 1

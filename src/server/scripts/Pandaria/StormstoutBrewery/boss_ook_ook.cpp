@@ -4,10 +4,8 @@
     Jade servers
 */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "stormstout_brewery.h"
-#include "Vehicle.h"
 
 enum Spells
 {

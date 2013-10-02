@@ -3,8 +3,7 @@
     Instance General Script
 */
 
-#include "ScriptMgr.h"
-#include "InstanceScript.h"
+#include "ScriptPCH.h"
 #include "stormstout_brewery.h"
 
 class instance_stormstout_brewery : public InstanceMapScript

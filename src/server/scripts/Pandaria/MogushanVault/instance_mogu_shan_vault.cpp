@@ -4,8 +4,7 @@
     Jade servers
 */
 
-#include "ScriptMgr.h"
-#include "InstanceScript.h"
+#include "ScriptPCH.h"
 #include "VMapFactory.h"
 #include "mogu_shan_vault.h"
 

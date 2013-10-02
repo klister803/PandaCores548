@@ -24,6 +24,7 @@ Süden->Westen 89501
 
 */
 
+#include "ScriptPCH.h"
 #include "throne_of_the_four_winds.h"
 
 #define ENCOUNTERS 4

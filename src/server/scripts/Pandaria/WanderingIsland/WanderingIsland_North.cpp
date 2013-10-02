@@ -1,7 +1,5 @@
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "ScriptedEscortAI.h"
-#include "SpellScript.h"
 
 class mob_master_shang_xi : public CreatureScript
 {

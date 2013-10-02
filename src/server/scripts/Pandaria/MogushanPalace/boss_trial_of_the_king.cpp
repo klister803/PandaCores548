@@ -4,8 +4,7 @@
     Jade servers
 */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "mogu_shan_palace.h"
 
 #define SPELL_GUARDIAN_GRUNT 85667

@@ -1,5 +1,4 @@
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "ScriptedEscortAI.h"
 
 class AreaTrigger_at_mandori : public AreaTriggerScript

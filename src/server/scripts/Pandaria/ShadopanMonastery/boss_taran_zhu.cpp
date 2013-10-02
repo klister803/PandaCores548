@@ -17,8 +17,7 @@
  */
 
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "shadopan_monastery.h"
 
 enum eSpells

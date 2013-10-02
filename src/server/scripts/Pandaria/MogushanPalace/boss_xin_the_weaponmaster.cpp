@@ -4,8 +4,7 @@
     Jade servers
 */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "mogu_shan_palace.h"
 
 class boss_xin_the_weaponmaster : public CreatureScript

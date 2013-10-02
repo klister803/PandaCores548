@@ -3,8 +3,8 @@
     Instance General Script
 */
 
+#include "ScriptPCH.h"
 #include "shadopan_monastery.h"
-#include "InstanceScript.h"
 
 Position snowdriftCenterPos = {3659.08f, 3015.38f, 804.74f};
 

@@ -4,10 +4,7 @@ World boss
 Antoine Vallee for Pandashan Servers
 
 */
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "ObjectMgr.h"
-#include "ScriptMgr.h"
+#include "ScriptPCH.h"
 
 enum eBosses
 {

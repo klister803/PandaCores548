@@ -4,8 +4,7 @@
     Jade servers
 */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 
 #define TYPE_LIU_FLAMEHEART_STATUS 6
 #define TYPE_IS_WIPE 7

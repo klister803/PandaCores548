@@ -1,6 +1,4 @@
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "ScriptedGossip.h"
+#include "ScriptPCH.h"
 #include "ScriptedEscortAI.h"
 
 enum eBonobosSpells

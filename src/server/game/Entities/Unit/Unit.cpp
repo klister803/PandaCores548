@@ -5603,6 +5603,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     continue;
                 }
                 break;
+                case SPELL_TRIGGER_NEED_COMBOPOINTS:
+                {
+                    if(!procSpell || !procSpell->NeedsComboPoints())
+                    {
+                        check = true;
+                        continue;
+                    }
+                    int32 chance = 20 * ToPlayer()->GetComboPoints();
+                    if (roll_chance_i(chance))
+                    {
+                        triggered_spell_id = abs(itr->spell_trigger);
+                        CastCustomSpell(target, triggered_spell_id, &itr->bp0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
             }
         }
 
@@ -9488,7 +9505,9 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
     if (target == NULL)
         target = !(procFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS)) && triggerEntry && triggerEntry->IsPositive() ? this : victim;
 
-    if (basepoints0)
+    if (basepoints0 && triggeredByAura->GetAuraType() == SPELL_AURA_PROC_TRIGGER_SPELL_WITH_VALUE)
+        CastCustomSpell(target, trigger_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura);
+    else if (basepoints0)
         CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
     else
         CastSpell(target, trigger_spell_id, true, castItem, triggeredByAura);
@@ -16248,6 +16267,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         // chargeable mods are breaking on hit
                         if (spellInfo->Id == 115191)
                         {
+                            if(procSpell && (!procSpell->IsBreakingStealth() || (procSpell->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO) || (procSpell->AttributesEx  & SPELL_ATTR1_NO_THREAT)))
+                            {
+                                takeCharges = false;
+                                break;
+                            }
                             if (!HasAura(115192))
                                 CastSpell(this, 115192, true);
                             takeCharges = false;

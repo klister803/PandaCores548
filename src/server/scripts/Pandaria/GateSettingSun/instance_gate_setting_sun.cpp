@@ -3,9 +3,7 @@
     Instance General Script
 */
 
-#include "ScriptMgr.h"
-#include "InstanceScript.h"
-#include "ScriptedCreature.h"
+#include "ScriptPCH.h"
 #include "gate_setting_sun.h"
 
 DoorData const doorData[] =

@@ -4,9 +4,7 @@
 */
 
 #include "gate_setting_sun.h"
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "Vehicle.h"
+#include "ScriptPCH.h"
 
 enum spells
 {
