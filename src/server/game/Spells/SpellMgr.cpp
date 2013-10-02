@@ -57,7 +57,7 @@ bool IsPartOfSkillLine(uint32 skillId, uint32 spellId)
 
 DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto, bool triggered)
 {
-    if (spellproto->IsPositive())
+    if (!spellproto || spellproto->IsPositive())
         return DIMINISHING_NONE;
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)

@@ -302,8 +302,10 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
 
             void CalculateAmounteff2(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (GetCaster()->ToPlayer() && GetCaster()->ToPlayer()->GetSelectedPlayer())
-                    amount /= 2;
+                if(Unit* caster = GetCaster())
+                    if(Player* player = caster->ToPlayer())
+                        if (player->GetSelectedPlayer())
+                            amount /= 2;
             }
 
             void Register()

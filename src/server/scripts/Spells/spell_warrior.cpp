@@ -221,8 +221,10 @@ class spell_warr_colossus_smash : public SpellScriptLoader
 
             void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (GetCaster()->ToPlayer() && GetCaster()->ToPlayer()->GetSelectedPlayer())
-                    amount /= 2;
+                if(Unit* caster = GetCaster())
+                    if(Player* player = caster->ToPlayer())
+                        if (player->GetSelectedPlayer())
+                            amount /= 2;
             }
 
             void Register()
@@ -1133,8 +1135,10 @@ class spell_warr_curse_of_enfeeblement : public SpellScriptLoader
 
             void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (GetCaster()->ToPlayer() && GetCaster()->ToPlayer()->GetSelectedPlayer())
-                    amount /= 2;
+                if(Unit* caster = GetCaster())
+                    if(Player* player = caster->ToPlayer())
+                        if (player->GetSelectedPlayer())
+                            amount /= 2;
             }
 
             void Register()

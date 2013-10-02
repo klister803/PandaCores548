@@ -509,8 +509,10 @@ class spell_mage_slow : public SpellScriptLoader
 
             void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (GetCaster()->ToPlayer() && GetCaster()->ToPlayer()->GetSelectedPlayer())
-                    amount /= 2;
+                if(Unit* caster = GetCaster())
+                    if(Player* player = caster->ToPlayer())
+                        if (player->GetSelectedPlayer())
+                            amount /= 2;
             }
 
             void Register()
