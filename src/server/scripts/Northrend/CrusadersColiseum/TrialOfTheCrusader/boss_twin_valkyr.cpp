@@ -279,7 +279,11 @@ struct boss_twin_baseAI : public ScriptedAI
                 y = y0 + sqrt(pow(r, 2) - pow((x-x0), 2));
             else
                 y = y0 - sqrt(pow(r, 2) - pow((x-x0), 2));
-            me->SummonCreature(m_uiColorballNpcId, x, y, me->GetPositionZ(), TEMPSUMMON_CORPSE_DESPAWN);
+            Trinity::NormalizeMapCoord(x);
+            Trinity::NormalizeMapCoord(y);
+
+            if(Trinity::IsValidMapCoord(x,y,me->GetPositionZ()))
+                me->SummonCreature(m_uiColorballNpcId, x, y, me->GetPositionZ(), TEMPSUMMON_CORPSE_DESPAWN);
         }
     }
 
