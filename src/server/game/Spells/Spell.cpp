@@ -3751,7 +3751,7 @@ void Spell::_handle_finish_phase()
         // Take for real after all targets are processed
         if (m_needComboPoints)
         {
-            m_caster->ProcDamageAndSpell(NULL, PROC_FLAG_GET_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, m_spellInfo);
+            m_caster->ProcDamageAndSpell(m_caster, PROC_FLAG_GET_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NORMAL_HIT, 0, BASE_ATTACK, m_spellInfo);
             m_caster->m_movedPlayer->ClearComboPoints();
 
             // Anticipation
