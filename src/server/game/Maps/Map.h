@@ -504,7 +504,7 @@ class Map : public GridRefManager<NGridType>
         bool EnsureGridLoaded(Cell const&);
         void EnsureGridLoadedForActiveObject(Cell const&, WorldObject* object);
 
-        void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(this); }
+        void buildNGridLinkage(NGridType* pNGridType) { if(pNGridType) pNGridType->link(this); }
 
         template<class T> void AddType(T *obj);
         template<class T> void RemoveType(T *obj, bool);
