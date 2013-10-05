@@ -19,13 +19,39 @@
 #ifndef DEF_SCHOLOMANCE_H
 #define DEF_SCHOLOMANCE_H
 
-#define TYPE_GANDLING                       1
-#define DATA_DOCTORTHEOLENKRASTINOV_DEATH   2
-#define DATA_INSTRUCTORMALICIA_DEATH        3
-#define DATA_LADYILLUCIABAROV_DEATH         4
-#define DATA_LORDALEXEIBAROV_DEATH          5
-#define DATA_LOREKEEPERPOLKELT_DEATH        6
-#define DATA_THERAVENIAN_DEATH              7
-#define TYPE_KIRTONOS                       8
+#include "SpellScript.h"
+#include "Map.h"
+#include "Creature.h"
+#include "CreatureAIImpl.h"
+
+
+enum DataTyped
+{ 
+    DATA_INSTRUCTOR           = 0,
+    DATA_BAROV                = 1,
+    DATA_RATTLEGORE           = 2,
+    DATA_LILIAN               = 3,
+    DATA_DARKMASTER           = 4
+};
+
+enum CreatureIds
+{
+    NPC_INSTRUCTOR_CHILLHEART = 58633,
+    NPC_JANDICE_BAROV         = 59184,
+    NPC_RATTLEGORE            = 59153,
+    NPC_LILIAN_VOSS           = 59200,
+    NPC_DARKMASTER_GANDLING   = 59080
+};
+
+enum GameObjectIds
+{
+    GO_DOOR       = 211259,
+    GO_DOOR2      = 211258,
+    GO_DOOR3      = 211256,
+    GO_DOOR4      = 211262,
+    GO_DOOR5      = 211261,
+    GO_DOOR6      = 210771
+};
+
 #endif
 

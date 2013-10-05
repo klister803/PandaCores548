@@ -17,7 +17,7 @@
  */
 
 /* ScriptData
-SDName: Boss_jandicebarov
+SDName: Boss_instructormalicia
 SD%Complete: 100
 SDComment:
 SDCategory: Scholomance
@@ -27,23 +27,28 @@ EndScriptData */
 #include "ScriptedCreature.h"
 #include "scholomance.h"
 
-class boss_jandice_barov : public CreatureScript
+class boss_instructor_chillheart : public CreatureScript
 {
 public:
-    boss_jandice_barov() : CreatureScript("boss_jandice_barov") { }
+    boss_instructor_chillheart() : CreatureScript("boss_instructor_chillheart") { }
 
-    struct boss_jandice_barovAI : public BossAI
+    struct boss_instructor_chillheartAI : public BossAI
     {
-        boss_jandice_barovAI(Creature* creature) : BossAI(creature, DATA_BAROV)
+        boss_instructor_chillheartAI(Creature* creature) : BossAI(creature, DATA_INSTRUCTOR)
         {
             InstanceScript* instance = creature->GetInstanceScript();
         }
 
         InstanceScript* instance;
-
+        
         void Reset()
         {
             _Reset();
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            _JustDied();
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -51,25 +56,23 @@ public:
             _EnterCombat();
         }
 
-        void JustDied(Unit* killer)
-        {
-            _JustDied();
-        }
-
         void UpdateAI(const uint32 diff)
         {
+            if (!UpdateVictim())
+                return;
+           
             DoMeleeAttackIfReady();
         }
     };
-    
+
     CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_jandice_barovAI (creature);
+        return new boss_instructor_chillheartAI (creature);
     }
 
 };
 
-void AddSC_boss_jandice_barov()
+void AddSC_boss_instructor_chillheart()
 {
-    new boss_jandice_barov();
+    new boss_instructor_chillheart();
 }
