@@ -126,10 +126,15 @@ class boss_stone_guard_controler : public CreatureScript
                 {
                     case ACTION_ENTER_COMBAT:
                     {
-                        for (uint8 i = 0; i < 4; ++i)
+                        for (uint8 i = 0; i < 4; ++i)\
+                        {
                             if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
+                            {
                                 pInstance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, gardian);
-
+                                if (gardian->isAlive() && !gardian->isInCombat())
+                                    DoZoneInCombat(gardian, 150.0f);
+                            }
+                        }
                         events.ScheduleEvent(EVENT_PETRIFICATION, 15000);
                         fightInProgress = true;
                         break;
@@ -334,9 +339,7 @@ class boss_generic_guardian : public CreatureScript
                         spellMainAttack             = 0;
                         break;
                 }
-                
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(spellPetrificationBarId);
-
                 events.Reset();
                 events.ScheduleEvent(EVENT_CHECK_NEAR_GUARDIANS, 2500);
                 events.ScheduleEvent(EVENT_CHECK_ENERGY, 1000);
@@ -346,9 +349,8 @@ class boss_generic_guardian : public CreatureScript
 
             void EnterCombat(Unit* attacker)
             {
-                if (pInstance)
-                    pInstance->SetBossState(DATA_STONE_GUARD, IN_PROGRESS);
-                
+                if (Creature* controller = GetController())
+                    controller->AI()->DoAction(ACTION_ENTER_COMBAT);
                 me->RemoveAurasDueToSpell(SPELL_SOLID_STONE);
                 me->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
                 me->RemoveAurasDueToSpell(SPELL_ZERO_ENERGY);
@@ -403,11 +405,6 @@ class boss_generic_guardian : public CreatureScript
             {
                 switch (action)
                 {
-                    case ACTION_ENTER_COMBAT:
-                        if (!me->isInCombat())
-                            if (Player* victim = me->SelectNearestPlayerNotGM(50.0f))
-                                AttackStart(victim);
-                        break;
                     case ACTION_PETRIFICATION:
                         me->CastSpell(me, spellPetrificationId, true);
                         pInstance->DoCastSpellOnPlayers(spellPetrificationBarId);

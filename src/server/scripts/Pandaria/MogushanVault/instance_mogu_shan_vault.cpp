@@ -171,16 +171,6 @@ public:
                 {
                     switch (state)
                     {
-                        case IN_PROGRESS:
-                        {
-                            if (Creature* stoneGuardControler = instance->GetCreature(stoneGuardControlerGuid))
-                                stoneGuardControler->AI()->DoAction(ACTION_ENTER_COMBAT);
-
-                            for (std::vector<uint64>::const_iterator guid = stoneGuardGUIDs.begin(); guid != stoneGuardGUIDs.end(); ++guid)
-                                if (Creature* stoneGuard = instance->GetCreature(*guid))
-                                    stoneGuard->AI()->DoAction(ACTION_ENTER_COMBAT);
-                            break;
-                        }
                         case FAIL:
                         {
                             for (std::vector<uint64>::const_iterator guid = stoneGuardGUIDs.begin(); guid != stoneGuardGUIDs.end(); ++guid)
