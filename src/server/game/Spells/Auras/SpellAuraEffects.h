@@ -37,6 +37,7 @@ class AuraEffect
     public:
         ~AuraEffect();
         Unit* GetCaster() const { return GetBase()->GetCaster(); }
+        Unit* GetSaveTarget() const { return saveTarget; }
         uint64 GetCasterGUID() const { return GetBase()->GetCasterGUID(); }
         Aura* GetBase() const { return m_base; }
         void GetTargetList(std::list<Unit*> & targetList) const;
@@ -47,6 +48,7 @@ class AuraEffect
         uint32 GetId() const { return m_spellInfo->Id; }
         uint32 GetEffIndex() const { return m_effIndex; }
         int32 GetBaseAmount() const { return m_baseAmount; }
+        int32 GetOldBaseAmount() const { return m_oldbaseAmount; }
         int32 GetAmplitude() const { return m_amplitude; }
 
         int32 GetMiscValueB() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).MiscValueB; }
@@ -98,6 +100,8 @@ class AuraEffect
         int32 const m_baseAmount;
 
         int32 m_amount;
+        int32 m_oldbaseAmount;
+        Unit* saveTarget;
 
         SpellModifier* m_spellmod;
 

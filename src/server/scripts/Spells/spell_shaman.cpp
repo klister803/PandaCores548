@@ -1786,6 +1786,38 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
         }
 };
 
+class spell_sha_ancestral_vigor : public SpellScriptLoader
+{
+    public:
+        spell_sha_ancestral_vigor() : SpellScriptLoader("spell_sha_ancestral_vigor") { }
+
+        class spell_sha_ancestral_vigor_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_ancestral_vigor_AuraScript);
+
+            void CalculateAmount(AuraEffect const* aurEff, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                amount += aurEff->GetOldBaseAmount();
+                if (Unit* target = aurEff->GetSaveTarget())
+                {
+                    int32 cap = int32(target->GetMaxHealth() * 0.1f);
+                    if(amount > cap)
+                        amount = cap;
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sha_ancestral_vigor_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_INCREASE_HEALTH);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_ancestral_vigor_AuraScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_prowl();
@@ -1821,4 +1853,5 @@ void AddSC_shaman_spell_scripts()
     new spell_shaman_primal_strike();
     new spell_shaman_healing_tide();
     new spell_shaman_totemic_projection();
+    new spell_sha_ancestral_vigor();
 }

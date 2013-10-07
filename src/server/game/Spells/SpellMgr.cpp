@@ -4237,6 +4237,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AuraInterruptFlags = 0;
                 spellInfo->AttributesEx4 |= SPELL_ATTR4_TRIGGERED;
                 break;
+            case 8177: //totem
+                spellInfo->RecoveryTime = 25000;
+                spellInfo->CategoryRecoveryTime = 0;
+                break;
             default:
                 break;
             }
