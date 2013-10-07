@@ -739,6 +739,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 // we're getting total damage on aura apply, change it to be damage per tick
                 amount = int32((float)amount / GetTotalTicks());
             }
+            // Death and Decay
+            else if (GetId() == 43265)
+            {
+                int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                amount += int32(AP * 0.064f);
+            }
             break;
         case SPELL_AURA_PERIODIC_ENERGIZE:
             switch (m_spellInfo->Id)
@@ -1086,6 +1092,7 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
         case SPELLMOD_EFFECT1:
         case SPELLMOD_EFFECT2:
         case SPELLMOD_EFFECT3:
+        case SPELLMOD_EFFECT4:
         {
             uint64 guid = target->GetGUID();
             Unit::AuraApplicationMap & auras = target->GetAppliedAuras();
@@ -1114,9 +1121,14 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
                        if (AuraEffect* aurEff = aura->GetEffect(1))
                             aurEff->RecalculateAmount();
                     }
-                    else //if (modOp == SPELLMOD_EFFECT3)
+                    else if (GetMiscValue() == SPELLMOD_EFFECT3)
                     {
                        if (AuraEffect* aurEff = aura->GetEffect(2))
+                            aurEff->RecalculateAmount();
+                    }
+                    else if (GetMiscValue() == SPELLMOD_EFFECT4)
+                    {
+                       if (AuraEffect* aurEff = aura->GetEffect(3))
                             aurEff->RecalculateAmount();
                     }
                 }
@@ -6244,12 +6256,12 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                     break;
             }
             // Death and Decay
-            if (GetSpellInfo()->Id == 43265)
+            /*if ((GetSpellInfo()->SpellFamilyFlags[0] & 0x20) && GetEffIndex() == 1)
             {
                 if (caster)
                     caster->CastCustomSpell(target, 52212, &m_amount, NULL, NULL, true, 0, this);
                 break;
-            }
+            }*/
             // Blood Rites
             // Reaping
             if (GetSpellInfo()->Id == 50034 || GetSpellInfo()->Id == 56835)
@@ -6853,6 +6865,10 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
     SpellPeriodicAuraLogInfo pInfo(this, damage, overkill, absorb, resist, 0.0f, crit);
     target->SendPeriodicAuraLog(&pInfo);
+
+    if (absorb && !damage && target->HasAuraType(SPELL_AURA_MOD_STEALTH))
+        if (GetTickNumber() == 1)
+            target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
 
     caster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damage, BASE_ATTACK, GetSpellInfo());
 

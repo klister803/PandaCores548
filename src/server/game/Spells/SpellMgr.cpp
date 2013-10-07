@@ -3617,7 +3617,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 19740: // Blessing of Might
             case 20217: // Blessing of Kings
             case 21562: // Power Word : Fortitude
-            case 24907: // Moonkin Aura
+            //case 24907: // Moonkin Aura
             case 109773:// Dark Intent
             case 116781:// Legacy of the White Tiger
             case 127830:// Spirit Beast Blessing
@@ -3699,9 +3699,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 64904: // Hymn of Hope
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
                 break;
-            case 59907: // Lightwell Charges
-                spellInfo->ProcCharges = 15;
-                break;
             case 81751: // Atonement
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
                 spellInfo->Effects[0].TargetB = 0;
@@ -3733,6 +3730,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 1784:  // Stealth
                 spellInfo->OverrideSpellList.push_back(115191); // Add Stealth (talent) to override spell list of Stealth
                 break;
+            case 1160:  // Demoralizing Shout
+            case 1966:  // Feint
+            case 50256:  // Demoralizing Roar
             case 108212:  // Burst of Speed
                 spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH;
                 break;
@@ -4221,6 +4221,20 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 115191:
                 spellInfo->AuraInterruptFlags = 0x08020C00;
+                break;
+            case 50371: // Improved Blood Presence disable not need efect
+                spellInfo->Effects[1].BasePoints = 0;
+                break;
+            case 43265: //Death and Decay
+                spellInfo->Effects[1].BasePoints = 260;
+                spellInfo->Effects[1].TargetA = 28;
+                spellInfo->Effects[1].TargetB = 0;
+                spellInfo->Effects[1].Amplitude = 1100;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+                break;
+            case 11327: //Vanish
+                spellInfo->AuraInterruptFlags = 0;
+                spellInfo->AttributesEx4 |= SPELL_ATTR4_TRIGGERED;
                 break;
             default:
                 break;

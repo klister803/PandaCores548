@@ -2775,9 +2775,16 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     if (!summon || !summon->isTotem())
                         return;
 
-                    // Mana Tide Totem
-                    if (m_spellInfo->Id == 16190)
-                        damage = m_caster->CountPctFromMaxHealth(10);
+                    // Mana Tide Totem || 
+                    if (m_spellInfo->Id == 16190 || m_spellInfo->Id == 108280)
+                    {
+                        uint32 perc = 10;
+                        if(m_caster->HasAura(63298))
+                            perc = 15;
+
+                        damage = m_caster->CountPctFromMaxHealth(perc);
+                    } else if(m_caster->HasAura(63298))
+                        damage += m_caster->CountPctFromMaxHealth(5);
 
                     if (damage)                                            // if not spell info, DB values used
                     {
@@ -4830,6 +4837,7 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
     if (damage <= 0)
         return;
 
+    m_caster->ProcDamageAndSpell(m_caster, PROC_FLAG_ADD_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NORMAL_HIT, damage, BASE_ATTACK, m_spellInfo);
     m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
 }
 

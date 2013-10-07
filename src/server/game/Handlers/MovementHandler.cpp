@@ -32,6 +32,7 @@
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
 #include "MovementStructures.h"
+#include "VMapFactory.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket& /*recvPacket*/)
 {
@@ -559,23 +560,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 const float delta_z = (plrMover->m_transport || plrMover->m_temp_transport) && ontransport ? 0 : mover->GetPositionZ() - movementInfo.pos.GetPositionZ();
                 const float real_delta = (plrMover->m_transport || plrMover->m_temp_transport) && ontransport ? 0 : (pow(delta_x, 2) + pow(delta_y, 2));
                  // end movement distance
-
-                // movement incdec
-                /*if(!plrMover->m_transport || !plrMover->m_temp_transport)
-                {
-                    const float incdec_x = fabs(plrMover->GetPositionX() - movementInfo.pos.GetPositionX());
-                    const float incdec_y = fabs(plrMover->GetPositionY() - movementInfo.pos.GetPositionY());
-                    const float incdec_z = plrMover->GetPositionZ() - movementInfo.pos.GetPositionZ();
-                    if(!((fmod(incdec_x,5))!=0 || (fmod(incdec_y,5))!=0 || (fmod(fabs(incdec_z),5))!=0 || (incdec_x==0.0f && incdec_y==0.0f && incdec_z==0.0f)))
-                    {
-                        check_passed = false;
-                        if (plrMover->m_anti_WEHCount < 11)
-                            plrMover->m_anti_WEHCount += 1;
-                        else
-                            sWorld->BanAccount(BAN_CHARACTER,plrMover->GetName(),"1282400845","WEH","System");
-                    }
-                }*/
-                // end movement incdec
 
                 const bool fly_auras = (plrMover->HasAuraType(SPELL_AURA_FLY) || plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
                     || plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)

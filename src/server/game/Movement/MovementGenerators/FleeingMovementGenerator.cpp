@@ -39,14 +39,13 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
     if (!_setMoveData(owner))
         return;
 
-    float x, y, z;
-    if (!_getPoint(owner, x, y, z))
+    if (!_getPoint(owner, i_x, i_y, i_z))
         return;
 
     owner.AddUnitState(UNIT_STATE_FLEEING_MOVE);
 
     Movement::MoveSplineInit init(owner);
-    init.MoveTo(x,y,z);
+    init.MoveTo(i_x,i_y,i_z);
     init.SetWalk(false);
     init.Launch();
 }
@@ -146,8 +145,8 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
                 break;
         }
 
-        temp_x = x + distance * std::cos(angle);
-        temp_y = y + distance * std::sin(angle);
+        temp_x = x + distance * cos(angle);
+        temp_y = y + distance * sin(angle);
         Trinity::NormalizeMapCoord(temp_x);
         Trinity::NormalizeMapCoord(temp_y);
         if (owner.IsWithinLOS(temp_x, temp_y, z))
@@ -158,6 +157,14 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
             {
                 x = temp_x;
                 y = temp_y;
+                Position pos;
+                pos.m_positionX = x;
+                pos.m_positionY = y;
+                pos.m_positionZ = z;
+                owner.GetFirstCollisionPosition(pos, distance, angle);
+                x = pos.m_positionX;
+                y = pos.m_positionY;
+                z = pos.m_positionZ;
                 return true;
             }
             float new_z = _map->GetHeight(owner.GetPhaseMask(), temp_x, temp_y, z, true);
@@ -172,15 +179,28 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
 
             if (!(new_z - z) || distance / fabs(new_z - z) > 1.0f)
             {
-                float new_z_left = _map->GetHeight(owner.GetPhaseMask(), temp_x + 1.0f* std::cos(angle+static_cast<float>(M_PI/2)),temp_y + 1.0f* std::sin(angle+static_cast<float>(M_PI/2)),z,true);
-                float new_z_right = _map->GetHeight(owner.GetPhaseMask(), temp_x + 1.0f* std::cos(angle-static_cast<float>(M_PI/2)),temp_y + 1.0f* std::sin(angle-static_cast<float>(M_PI/2)),z,true);
-                if (fabs(new_z_left - new_z) < 1.2f && fabs(new_z_right - new_z) < 1.2f)
+                Position pos;
+                pos.m_positionX = temp_x;
+                pos.m_positionY = temp_y;
+                pos.m_positionZ = new_z;
+                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "FleeingMovementGenerator 1 (m_positionX: %f m_positionY: %f m_positionZ: %f, temp_x: %f, temp_y: %f, new_z: %f)", pos.m_positionX, pos.m_positionY, pos.m_positionZ, temp_x, temp_y, new_z);
+                owner.GetFirstCollisionPosition(pos, distance, angle);
+                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "FleeingMovementGenerator 2 (m_positionX: %f m_positionY: %f m_positionZ: %f, temp_x: %f, temp_y: %f, new_z: %f)", pos.m_positionX, pos.m_positionY, pos.m_positionZ, temp_x, temp_y, new_z);
+                temp_x = pos.m_positionX;
+                temp_y = pos.m_positionY;
+                new_z = pos.m_positionZ;
+                float new_z_left = _map->GetHeight(owner.GetPhaseMask(), temp_x + 1.0f*cos(angle+static_cast<float>(M_PI/2)),temp_y + 1.0f*sin(angle+static_cast<float>(M_PI/2)),z,true);
+                float new_z_right = _map->GetHeight(owner.GetPhaseMask(), temp_x + 1.0f*cos(angle-static_cast<float>(M_PI/2)),temp_y + 1.0f*sin(angle-static_cast<float>(M_PI/2)),z,true);
+                if (fabs(new_z_left - new_z) < 1.2f && fabs(new_z_right - new_z) < 1.2f && fabs(new_z - z) < 1.2f)
                 {
+                    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "FleeingMovementGenerator 3 (X: %f Y: %f Z: %f, temp_x: %f, temp_y: %f, new_z: %f, new_z_left %f, new_z_right %f, new_z - z = %f)", x, y, z, temp_x, temp_y, new_z, new_z_left, new_z_right, new_z - z);
                     x = temp_x;
                     y = temp_y;
                     z = new_z;
                     return true;
                 }
+                else
+                    continue;
             }
         }
     }
@@ -333,9 +353,12 @@ void FleeingMovementGenerator<Player>::_Init(Player &)
 template<>
 void FleeingMovementGenerator<Player>::Finalize(Player &owner)
 {
+    owner.StopMoving();
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.ClearUnitState(UNIT_STATE_FLEEING|UNIT_STATE_FLEEING_MOVE);
     owner.StopMoving();
+    //if (owner.GetTypeId() == TYPEID_PLAYER)
+        //owner.UpdatePosition(i_x, i_y, i_z, owner.GetOrientation(), false);
 }
 
 template<>
@@ -396,6 +419,7 @@ void TimedFleeingMovementGenerator::Finalize(Unit &owner)
             owner.ToCreature()->AI()->AttackStart(victim);
         }
     }
+    owner.StopMoving();
 }
 
 bool TimedFleeingMovementGenerator::Update(Unit & owner, const uint32& time_diff)

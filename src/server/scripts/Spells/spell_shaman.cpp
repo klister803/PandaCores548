@@ -1783,6 +1783,104 @@ public:
     }
 };
 
+class spell_shaman_healing_tide: public SpellScriptLoader
+{
+    public:
+        spell_shaman_healing_tide() : SpellScriptLoader("spell_shaman_healing_tide") { }
+
+        class spell_shaman_healing_tide_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_shaman_healing_tide_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                uint32 count = 5;
+                if (Unit* caster = GetCaster())
+                    if(caster->GetMap() && (caster->GetMap()->GetSpawnMode() == MAN25_HEROIC_DIFFICULTY || caster->GetMap()->GetSpawnMode() == MAN25_DIFFICULTY))
+                        count = 12;
+
+                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                {
+                    if ((*itr)->ToUnit() && (*itr)->ToUnit()->GetHealthPct() != 100)
+                        ++itr;
+                    else
+                        targets.erase(itr++);
+                }
+                if (targets.size() > 5)
+                    targets.resize(5);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shaman_healing_tide_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_shaman_healing_tide_SpellScript();
+        }
+};
+
+class spell_shaman_totemic_projection : public SpellScriptLoader
+{
+    public:
+        spell_shaman_totemic_projection() : SpellScriptLoader("spell_shaman_totemic_projection") { }
+
+        class spell_shaman_totemic_projection_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_shaman_totemic_projection_SpellScript);
+
+            void SelectDest()
+            {
+                Unit* caster = GetCaster();
+                if(!caster || !caster->GetMap())
+                    return;
+
+                Position const* sumpos = GetExplTargetDest();
+                TempSummon* summon = caster->GetMap()->SummonCreature(47319, *sumpos, NULL, 0, caster, GetSpellInfo()->Id);
+                if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]))
+                {
+                    Position pos;
+                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(-M_PI/4));
+                    totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
+                    totem->SendMovementFlagUpdate();
+                }
+                if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[2]))
+                {
+                    Position pos;
+                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(-3*M_PI/4));
+                    totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
+                    totem->SendMovementFlagUpdate();
+                }
+                if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[3]))
+                {
+                    Position pos;
+                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(3*M_PI/4));
+                    totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
+                    totem->SendMovementFlagUpdate();
+                }
+                if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[4]))
+                {
+                    Position pos;
+                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(M_PI/4));
+                    totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
+                    totem->SendMovementFlagUpdate();
+                }
+            }
+
+            void Register()
+            {
+                BeforeCast += SpellCastFn(spell_shaman_totemic_projection_SpellScript::SelectDest);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_shaman_totemic_projection_SpellScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_prowl();
@@ -1818,4 +1916,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_lava_lash();
     new spell_sha_chain_heal();
     new spell_shaman_primal_strike();
+    new spell_shaman_healing_tide();
+    new spell_shaman_totemic_projection();
 }

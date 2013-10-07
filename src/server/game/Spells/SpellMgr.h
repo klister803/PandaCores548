@@ -109,6 +109,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_UPDATE_DUR        = 5,            // Update duration for select spell
     SPELL_TRIGGER_GET_DUR_AURA      = 6,            // Get duration from select aura to cast bp
     SPELL_TRIGGER_NEED_COMBOPOINTS  = 7,            // Proc from spell that need compopoiunts
+    SPELL_TRIGGER_UPDATE_DUR_TO_MAX = 8,            // Update duration for select spell to max duration
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -162,7 +163,8 @@ enum ProcFlags
     PROC_FLAG_DONE_DISPEL_SPELL               = 0x10000000,    // 28 Done dispel spell
     PROC_FLAG_TAKEN_DISPEL_SPELL              = 0x20000000,    // 29 Taken dispel spell
 
-    PROC_FLAG_GET_COMBOPOINTS                 = 0x40000000,    // 30 Get need Combo Points
+    PROC_FLAG_GET_COMBOPOINTS                 = 0x40000000,    // 30 Get need ComboPoints
+    PROC_FLAG_ADD_COMBOPOINTS                 = 0x80000000,    // 31 Add ComboPoints
 
     // flag masks
     AUTO_ATTACK_PROC_FLAG_MASK                = PROC_FLAG_DONE_MELEE_AUTO_ATTACK | PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK

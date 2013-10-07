@@ -1480,10 +1480,19 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         dist = objSize + (dist - objSize) * (float)rand_norm();
 
     Position pos;
-    if (targetType.GetTarget() == TARGET_DEST_CASTER_FRONT_LEAP)
-        m_caster->GetFirstCollisionPosition(pos, dist, angle);
-    else
-        m_caster->GetNearPosition(pos, dist, angle);
+    switch (targetType.GetTarget())
+    {
+        case TARGET_DEST_CASTER_FRONT_LEAP:
+        case TARGET_DEST_CASTER_FRONT_RIGHT:
+        case TARGET_DEST_CASTER_BACK_RIGHT:
+        case TARGET_DEST_CASTER_BACK_LEFT:
+        case TARGET_DEST_CASTER_FRONT_LEFT:
+            m_caster->GetFirstCollisionPosition(pos, dist, angle);
+            break;
+        default:
+            m_caster->GetNearPosition(pos, dist, angle);
+            break;
+    }
     m_targets.SetDst(*m_caster);
     m_targets.ModDst(pos);
 }
@@ -2698,8 +2707,12 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         {
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
             //TODO: This is a hack. But we do not know what types of stealth should be interrupted by CC
-            if ((m_spellInfo->AttributesCu & SPELL_ATTR0_CU_AURA_CC) && unit->IsControlledByPlayer())
-                unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+            //TODO2: Stealth is no longer broken by enemies using Demoralizing Shout or Demoralizing Roar.
+            if ((m_spellInfo->AttributesCu & SPELL_ATTR0_CU_AURA_CC) && unit->IsControlledByPlayer() && !(m_spellInfo->SpellFamilyFlags[0] & 0x20000 || m_spellInfo->SpellFamilyFlags[1] & 0x10000000))
+            {
+                if((m_spellInfo->SpellFamilyFlags[1] & 0x20) && !unit->HasAura(11327))
+                    unit->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+            }
         }
         else if (m_caster->IsFriendlyTo(unit))
         {

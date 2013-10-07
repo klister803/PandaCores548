@@ -2222,6 +2222,10 @@ int32 SpellInfo::GetMaxDuration() const
 {
     if (!DurationEntry)
         return 0;
+    //Hack for 5171 spell Duration
+    if(DurationEntry->ID == 599)
+        return 36000;
+
     return (DurationEntry->Duration[2] == -1) ? -1 : abs(DurationEntry->Duration[2]);
 }
 

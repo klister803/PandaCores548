@@ -708,7 +708,7 @@ class spell_pri_lightwell_renew : public SpellScriptLoader
                         if (Aura* chargesAura = m_caster->GetAura(LIGHTWELL_CHARGES))
                         {
                             m_caster->CastSpell(unitTarget, LIGHTSPRING_RENEW, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
-                            if (chargesAura->ModCharges(-1))
+                            if (chargesAura->ModStackAmount(-1))
                                 m_caster->ToTempSummon()->UnSummon();
                         }
                     }

@@ -587,38 +587,6 @@ class spell_rog_restless_blades : public SpellScriptLoader
         }
 };
 
-// Called by Envenom - 32645 and Eviscerate - 2098
-// Cut to the Chase - 51667
-class spell_rog_cut_to_the_chase : public SpellScriptLoader
-{
-    public:
-        spell_rog_cut_to_the_chase() : SpellScriptLoader("spell_rog_cut_to_the_chase") { }
-
-        class spell_rog_cut_to_the_chase_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_cut_to_the_chase_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(ROGUE_SPELL_CUT_TO_THE_CHASE_AURA))
-                            if (Aura* sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE, _player->GetGUID()))
-                                sliceAndDice->SetDuration(sliceAndDice->GetMaxDuration());
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_rog_cut_to_the_chase_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_cut_to_the_chase_SpellScript();
-        }
-};
-
 // Called by Garrote - 703 and Rupture - 1943
 // Venomous Wounds - 79134
 class spell_rog_venomous_wounds : public SpellScriptLoader
@@ -884,72 +852,6 @@ class spell_rog_master_poisoner : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_rog_master_poisoner_SpellScript();
-        }
-};
-
-// Slice and Dice - 5171
-class spell_rog_slice_and_dice : public SpellScriptLoader
-{
-    public:
-        spell_rog_slice_and_dice() : SpellScriptLoader("spell_rog_slice_and_dice") { }
-
-        class spell_rog_slice_and_dice_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_slice_and_dice_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Aura* sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE))
-                    {
-                        int32 duration = sliceAndDice->GetDuration();
-                        int32 maxDuration = sliceAndDice->GetMaxDuration();
-
-                        // Replace old duration of Slice and Dice by the new duration ...
-                        // ... five combo points : 36s instead of 30s
-                        if (maxDuration >= 30000)
-                        {
-                            sliceAndDice->SetDuration(duration + 6000);
-                            sliceAndDice->SetMaxDuration(maxDuration + 6000);
-                        }
-                        // ... four combo points : 30s instead of 25s
-                        else if (maxDuration >= 25000)
-                        {
-                            sliceAndDice->SetDuration(duration + 5000);
-                            sliceAndDice->SetMaxDuration(maxDuration + 5000);
-                        }
-                        // ... three combo points : 24s instead of 20s
-                        else if (maxDuration >= 20000)
-                        {
-                            sliceAndDice->SetDuration(duration + 4000);
-                            sliceAndDice->SetMaxDuration(maxDuration + 4000);
-                        }
-                        // ... two combo points : 18s instead of 15s
-                        else if (maxDuration >= 15000)
-                        {
-                            sliceAndDice->SetDuration(duration + 3000);
-                            sliceAndDice->SetMaxDuration(maxDuration + 3000);
-                        }
-                        // ... one combo point : 12s instead of 10s
-                        else
-                        {
-                            sliceAndDice->SetDuration(duration + 2000);
-                            sliceAndDice->SetMaxDuration(maxDuration + 2000);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_rog_slice_and_dice_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_slice_and_dice_SpellScript();
         }
 };
 
@@ -1451,13 +1353,11 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_sanguinary_vein();
     new spell_rog_hemorrhage();
     new spell_rog_restless_blades();
-    new spell_rog_cut_to_the_chase();
     new spell_rog_venomous_wounds();
     new spell_rog_redirect();
     new spell_rog_shroud_of_concealment();
     new spell_rog_crimson_tempest();
     new spell_rog_master_poisoner();
-    new spell_rog_slice_and_dice();
     new spell_rog_deadly_poison_instant_damage();
     new spell_rog_paralytic_poison();
     new spell_rog_shiv();

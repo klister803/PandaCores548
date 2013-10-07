@@ -2300,7 +2300,11 @@ class npc_lightwell : public CreatureScript
         {
             npc_lightwellAI(Creature* creature) : PassiveAI(creature)
             {
-                DoCast(me, 59907, false);
+                if (TempSummon* summon = me->ToTempSummon())
+                    if(Unit* owner = summon->GetSummoner())
+                        me->SetLevel(owner->getLevel());
+                //DoCast(me, 59907, false);
+                me->SetAuraStack(59907, me, 17);
             }
 
             void EnterEvadeMode()
@@ -4151,37 +4155,6 @@ class npc_windwalk_totem : public CreatureScript
 };
 
 /*######
-## npc_healing_tide_totem
-######*/
-
-#define HEALING_TIDE     114941
-
-class npc_healing_tide_totem : public CreatureScript
-{
-    public:
-        npc_healing_tide_totem() : CreatureScript("npc_healing_tide_totem") { }
-
-    struct npc_healing_tide_totemAI : public ScriptedAI
-    {
-        npc_healing_tide_totemAI(Creature* creature) : ScriptedAI(creature)
-        {
-            creature->CastSpell(creature, HEALING_TIDE, true);
-        }
-
-        void UpdateAI(uint32 const diff)
-        {
-            if (!me->HasAura(HEALING_TIDE))
-                me->CastSpell(me, HEALING_TIDE, true);
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_healing_tide_totemAI(creature);
-    }
-};
-
-/*######
 ## npc_ring_of_frost
 ######*/
 
@@ -4413,7 +4386,6 @@ void AddSC_npcs_special()
     new npc_stone_bulwark_totem();
     new npc_earthgrab_totem();
     new npc_windwalk_totem();
-    new npc_healing_tide_totem();
     new npc_ring_of_frost();
     new npc_wild_mushroom();
     new npc_fungal_growth();

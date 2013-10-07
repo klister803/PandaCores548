@@ -5502,10 +5502,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
-            if (!(itr->effectmask & (1<<effIndex)) || !target)
+            if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
-            if(itr->target == 1)
+            if(itr->target == 1 || !target)
                 target = this;
 
             switch (itr->option)
@@ -5616,6 +5616,14 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         triggered_spell_id = abs(itr->spell_trigger);
                         CastCustomSpell(target, triggered_spell_id, &itr->bp0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
                     }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_UPDATE_DUR_TO_MAX:
+                {
+                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                        aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration(), true);
                     check = true;
                     continue;
                 }
@@ -6999,15 +7007,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if (procSpell->Id == 115190)
                         return false;
 
-                    if (!procSpell->HasEffect(SPELL_EFFECT_ADD_COMBO_POINTS))
-                        return false;
-
                     if (ToPlayer()->GetComboPoints() < 5)
                         return false;
 
-                    triggered_spell_id = 115189;
+                    if(Aura* dummy = GetAura(115189))
+                    {
+                        dummy->ModStackAmount(damage);
+                        dummy->RefreshDuration();
+                    }
+                    else
+                        SetAuraStack(115189, this, damage);
 
-                    break;
+                    return false;
                 }
                 // Cut to the Chase
                 case 51667:
@@ -14328,6 +14339,9 @@ float Unit::ApplyEffectModifiers(SpellInfo const* spellProto, uint8 effect_index
             case 2:
                 modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT3, value);
                 break;
+            case 3:
+                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT4, value);
+                break;
         }
     }
     return value;
@@ -16414,6 +16428,13 @@ Player* Unit::GetSpellModOwner() const
         if (owner && owner->GetTypeId() == TYPEID_PLAYER)
             return (Player*)owner;
     }
+    else if (ToCreature()->isSummon())
+    {
+        if(isSummon())
+            if(Unit* owner = ToTempSummon()->GetSummoner())
+                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                    return (Player*)owner;
+    }
     return NULL;
 }
 
@@ -18294,7 +18315,7 @@ void Unit::SetAuraStack(uint32 spellId, Unit* target, uint32 stack)
     if (!aura)
         aura = AddAura(spellId, target);
     if (aura && stack)
-        aura->SetStackAmount(stack);
+        aura->ModStackAmount(stack);
 }
 
 void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)

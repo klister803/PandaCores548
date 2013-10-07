@@ -47,6 +47,7 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
         float i_caster_x;
         float i_caster_y;
         float i_caster_z;
+        float i_x, i_y, i_z;
         float i_last_distance_from_caster;
         float i_to_distance_from_caster;
         float i_cur_angle;
