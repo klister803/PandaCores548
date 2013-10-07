@@ -793,6 +793,7 @@ void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
     Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_RATED_10_VS_10);
     if (!bg)
     {
+        ChatHandler(this).PSendSysMessage("Template not found.");
         sLog->outError(LOG_FILTER_NETWORKIO, "Battleground: template bg (all arenas) not found");
         return;
     }
@@ -802,17 +803,23 @@ void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
     BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, 0);
     PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), _player->getLevel());
     if (!bracketEntry)
+    {
+        ChatHandler(this).PSendSysMessage("Bracket entry not found.");
         return;
+    }
 
     Group* grp = _player->GetGroup();
 
     GroupJoinBattlegroundResult err = ERR_BATTLEGROUND_NONE;
 
-    err = grp->CanJoinBattlegroundQueue(bg, bgQueueTypeId, 0, bg->GetMaxPlayersPerTeam(), bg->GetMaxPlayersPerTeam(), true);
-
     // no group found, error
     if (!grp)
         return;
+
+    err = grp->CanJoinBattlegroundQueue(bg, bgQueueTypeId, 0, bg->GetMaxPlayersPerTeam(), bg->GetMaxPlayersPerTeam(), true);
+
+    ChatHandler(this).PSendSysMessage("Join error: %u. Group size: %u.", err, grp->GetMembersCount());
+
     if (grp->GetLeaderGUID() != _player->GetGUID())
         return;
 
@@ -828,6 +835,7 @@ void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
 
         if (err)
         {
+            ChatHandler(_player).PSendSysMessage("Join error: %u. Group size: %u.", err, grp->GetMembersCount());
             sBattlegroundMgr->BuildStatusFailedPacket(&data, bg, _player, 0, err);
             member->GetSession()->SendPacket(&data);
             continue;
