@@ -1682,8 +1682,6 @@ class spell_sha_chain_heal : public SpellScriptLoader
                     if (AuraEffect* aurEff = GetHitUnit()->GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_SHAMAN, 0, 0, 0x10, GetCaster()->GetGUID()))
                     {
                         riptide = true;
-                        // Consume it
-                        GetHitUnit()->RemoveAura(aurEff->GetBase());
                     }
                     firstHeal = false;
                 }
