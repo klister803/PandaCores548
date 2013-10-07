@@ -4066,6 +4066,7 @@ class npc_wild_imp : public CreatureScript
 ######*/
 
 #define STONE_BULWARK_TOTEM_ABSORB      114889
+#define SPELL_SHA_STONE_BULWARK_ABSORB  114893
 
 class npc_stone_bulwark_totem : public CreatureScript
 {
@@ -4076,13 +4077,55 @@ class npc_stone_bulwark_totem : public CreatureScript
     {
         npc_stone_bulwark_totemAI(Creature* creature) : ScriptedAI(creature)
         {
-            creature->CastSpell(creature, STONE_BULWARK_TOTEM_ABSORB, true);
+            if (creature->isSummon())
+            {
+                if (Unit* Owner = creature->ToTempSummon()->GetSummoner())
+                {
+                    if (Player* _player = Owner->ToPlayer())
+                    {
+                        if(Aura* aura = creature->AddAura(SPELL_SHA_STONE_BULWARK_ABSORB, _player))
+                        {
+                            int32 spellPower = _player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                            int32 amount = int32(2.1f * spellPower);
+                            aura->GetEffect(0)->ChangeAmount(amount);
+                        }
+                    }
+                }
+            }
+            updateTimer = 5000;
         }
+
+        uint32 updateTimer;
 
         void UpdateAI(uint32 const diff)
         {
-            if (!me->HasAura(STONE_BULWARK_TOTEM_ABSORB))
-                me->CastSpell(me, STONE_BULWARK_TOTEM_ABSORB, true);
+            if (updateTimer <= diff)
+            {
+                if (me->isSummon())
+                {
+                    if (Unit* Owner = me->ToTempSummon()->GetSummoner())
+                    {
+                        if(Owner->HasAura(SPELL_SHA_STONE_BULWARK_ABSORB))
+                        {
+                            updateTimer = 1000;
+                            return;
+                        }
+
+                        if (Player* _player = Owner->ToPlayer())
+                        {
+                            if(Aura* aura = me->AddAura(SPELL_SHA_STONE_BULWARK_ABSORB, _player))
+                            {
+                                int32 spellPower = _player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                                int32 amount = int32(0.7f * spellPower);
+                                aura->GetEffect(0)->ChangeAmount(amount);
+                            }
+                        }
+                    }
+                }
+                updateTimer = 5000;
+            }
+            else
+                updateTimer -= diff;
         }
     };
 
