@@ -17,7 +17,7 @@
  */
 
 /* ScriptData
-SDName: Boss_Death_knight_darkreaver
+SDName: Boss_the_ravenian
 SD%Complete: 100
 SDComment:
 SDCategory: Scholomance
@@ -25,39 +25,49 @@ EndScriptData */
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "scholomance.h"
 
-class boss_death_knight_darkreaver : public CreatureScript
+class boss_rattlegore : public CreatureScript
 {
 public:
-    boss_death_knight_darkreaver() : CreatureScript("boss_death_knight_darkreaver") { }
+    boss_rattlegore() : CreatureScript("boss_rattlegore") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    struct boss_rattlegoreAI : public BossAI
     {
-        return new boss_death_knight_darkreaverAI (creature);
-    }
-
-    struct boss_death_knight_darkreaverAI : public ScriptedAI
-    {
-        boss_death_knight_darkreaverAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_rattlegoreAI(Creature* creature) : BossAI(creature, DATA_RATTLEGORE) {}
 
         void Reset()
         {
+           _Reset();
         }
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void JustDied(Unit* /*killer*/)
         {
-            if (me->GetHealth() <= damage)
-                DoCast(me, 23261, true);   //Summon Darkreaver's Fallen Charger
+            _JustDied();
         }
 
         void EnterCombat(Unit* /*who*/)
         {
+            _EnterCombat();
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            DoMeleeAttackIfReady();
         }
     };
 
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_rattlegoreAI (creature);
+    }
+
 };
 
-void AddSC_boss_death_knight_darkreaver()
+void AddSC_boss_rattlegore()
 {
-    new boss_death_knight_darkreaver();
+    new boss_rattlegore();
 }

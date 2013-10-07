@@ -17,9 +17,9 @@
  */
 
 /* ScriptData
-SDName: Boss_jandicebarov
+SDName: Boss_Lord_Alexei_Barov
 SD%Complete: 100
-SDComment:
+SDComment: aura applied/defined in database
 SDCategory: Scholomance
 EndScriptData */
 
@@ -27,14 +27,14 @@ EndScriptData */
 #include "ScriptedCreature.h"
 #include "scholomance.h"
 
-class boss_jandice_barov : public CreatureScript
+class boss_lilian_voss : public CreatureScript
 {
 public:
-    boss_jandice_barov() : CreatureScript("boss_jandice_barov") { }
+    boss_lilian_voss() : CreatureScript("boss_lilian_voss") { }
 
-    struct boss_jandice_barovAI : public BossAI
+    struct boss_lilian_vossAI : public BossAI
     {
-        boss_jandice_barovAI(Creature* creature) : BossAI(creature, DATA_BAROV)
+        boss_lilian_vossAI(Creature* creature) : BossAI(creature, DATA_LILIAN) 
         {
             InstanceScript* instance = creature->GetInstanceScript();
         }
@@ -43,7 +43,12 @@ public:
 
         void Reset()
         {
-            _Reset();
+           _Reset();
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+          _JustDied();
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -51,25 +56,23 @@ public:
             _EnterCombat();
         }
 
-        void JustDied(Unit* killer)
-        {
-            _JustDied();
-        }
-
         void UpdateAI(const uint32 diff)
         {
+            if (!UpdateVictim())
+                return;
+
             DoMeleeAttackIfReady();
         }
     };
-    
+
     CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_jandice_barovAI (creature);
+        return new boss_lilian_vossAI (creature);
     }
 
 };
 
-void AddSC_boss_jandice_barov()
+void AddSC_boss_lilian_voss()
 {
-    new boss_jandice_barov();
+    new boss_lilian_voss();
 }
