@@ -7444,6 +7444,33 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
                     break;
                 }
+                // Resurgence
+                case 16196:
+                {
+                    SpellInfo const* spellEnergize = sSpellMgr->GetSpellInfo(101033);
+                    if (!spellEnergize)
+                        return false;
+
+                    int32 bp0 = spellEnergize->Effects[EFFECT_0].CalcValue(this);
+
+                    switch (procSpell->Id)
+                    {
+                        case 8004: // Healing Surge
+                        case 61295: // Riptide
+                        case 73685: // Unleash life
+                            bp0 *= 0.6f;
+                            break;
+                        case 1064: // Chain Heal
+                            bp0 *= 0.33f;
+                            break;
+                    }
+                    if (dummySpell->Id == 16180)
+                        bp0 /= 2;
+
+                    EnergizeBySpell(this, 101033, bp0, POWER_MANA);
+
+                    break;
+                }
                 // Totemic Power (The Earthshatterer set)
                 case 28823:
                 {
