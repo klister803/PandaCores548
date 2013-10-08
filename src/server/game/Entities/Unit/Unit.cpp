@@ -18992,6 +18992,10 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 else if (getRace() == RACE_WORGEN)
                     return 37173;
             }
+        case FORM_GHOSTWOLF:
+            //Glyph
+            if(HasAura(58135))
+                return 21114;
         default:
             break;
     }

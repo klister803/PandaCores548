@@ -4197,7 +4197,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 126549:
             case 126550:
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(26); // 240 seconds
-                break;                    
+                break; 
+            case 88764:// Rolling Thunder
+                spellInfo->Effects[0].TriggerSpell = 0;    
+                break;                
             default:
                 break;
             }
