@@ -4245,6 +4245,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->RecoveryTime = 25000;
                 spellInfo->CategoryRecoveryTime = 0;
                 break;
+            case 45284: //Lightning Bolt
+                spellInfo->SpellFamilyFlags[0] = 0x00000001;
+                spellInfo->SpellFamilyFlags[2] = 0;
+                break;
             default:
                 break;
             }

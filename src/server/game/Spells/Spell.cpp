@@ -491,8 +491,7 @@ SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
 m_spellInfo(info),
-m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster),
-m_spellValue(new SpellValue(m_spellInfo, m_diffMode))
+m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
 {
     m_customError = SPELL_CUSTOM_ERROR_NONE;
     m_skipCheck = skipCheck;
@@ -507,6 +506,7 @@ m_spellValue(new SpellValue(m_spellInfo, m_diffMode))
 
     m_applyMultiplierMask = 0;
     m_auraScaleMask = 0;
+    m_spellValue = new SpellValue(m_spellInfo, m_diffMode);
 
     // Get data for type of attack
     switch (m_spellInfo->DmgClass)

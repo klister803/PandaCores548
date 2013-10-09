@@ -283,6 +283,9 @@ class spell_sha_conductivity : public SpellScriptLoader
                         {
                             if (DynamicObject* dynObj = _player->GetDynObject(SPELL_SHA_HEALING_RAIN))
                             {
+                                if (target->GetDistance(dynObj) > 10.0f)
+                                    return;
+
                                 std::list<Unit*> tempList;
                                 std::list<Unit*> memberList;
 
@@ -298,15 +301,21 @@ class spell_sha_conductivity : public SpellScriptLoader
                                 memberList.sort(Trinity::DistanceCompareOrderPred(dynObj));
                                 memberList.resize(1);
 
+                                CustomSpellValues values;
+                                SpellCastTargets targets;
+                                targets.SetDst(*dynObj);
+                                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SHA_CONDUCTIVITY_HEAL);
                                 // When you cast Healing Wave, Greater Healing Wave, or Healing Surge
                                 // allies within your Healing Rain share healing equal to 30% of the initial healing done
                                 if (GetSpellInfo()->IsPositive())
                                 {
                                     int32 bp = int32(GetHitHeal() * 0.30f) / memberList.size();
+                                    values.AddSpellMod(SPELLVALUE_BASE_POINT0, bp);
 
                                     for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
                                     {
-                                        _player->CastCustomSpell(*itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        //_player->CastCustomSpell(dynObj, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, _player->GetGUID());
                                         break;
                                     }
                                 }
@@ -315,10 +324,12 @@ class spell_sha_conductivity : public SpellScriptLoader
                                 else
                                 {
                                     int32 bp = int32(GetHitDamage() * 0.50f) / memberList.size();
+                                    values.AddSpellMod(SPELLVALUE_BASE_POINT0, bp);
 
                                     for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
                                     {
-                                        _player->CastCustomSpell(*itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        //_player->CastCustomSpell(dynObj, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, _player->GetGUID());
                                         break;
                                     }
                                 }

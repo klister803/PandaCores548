@@ -3931,6 +3931,26 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     uint32 damage = m_caster->MeleeDamageBonusDone(unitTarget, eff_damage, m_attackType, m_spellInfo);
 
     m_damage += unitTarget->MeleeDamageBonusTaken(m_caster, damage, m_attackType, m_spellInfo);
+
+    switch (m_spellInfo->Id)
+    {
+        case 60103:        // Lava Lash
+        {
+            if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                break;
+
+            // Searing Flames
+            if (Aura* aur = m_caster->GetAura(77661))
+            {
+                uint8 stacks = aur->GetStackAmount();
+                AddPct(m_damage, 20 * stacks);
+                m_caster->RemoveAura(77661);
+            }
+            break;
+        }
+    }
+
+
 }
 
 void Spell::EffectThreat(SpellEffIndex /*effIndex*/)

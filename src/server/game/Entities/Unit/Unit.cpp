@@ -5643,6 +5643,36 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     continue;
                 }
                 break;
+                case SPELL_TRIGGER_PERC_MAX_MANA:
+                {
+                    basepoints0 = CountPctFromMaxMana(itr->bp0);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_BASE_MANA:
+                {
+                    basepoints0 = CalculatePct(GetCreateMana(), itr->bp0);;
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_CUR_MANA:
+                {
+                    basepoints0 = CountPctFromCurMana(itr->bp0);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
             }
         }
 
