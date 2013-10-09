@@ -475,248 +475,289 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellInfo = actualSpellInfo;
     }
 
-    // Custom MoP Script
-    // Power Word : Solace - 129250 and Power Word : Insanity - 129249
-    if (spellInfo->Id == 129250 && _player->GetShapeshiftForm() == FORM_SHADOW)
+    // Custom spell overrides
+    // are most of these still needed?
+    switch (spellInfo->Id)
     {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(129249);
-        if (newSpellInfo)
+        case 116:           // Frostbolt - 116 and Frostbolt - 126201 (heal for water elemental)
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+            if (Unit* target = targets.GetUnitTarget())
+            {
+                if (target->GetOwner() && target->GetOwner()->GetTypeId() == TYPEID_PLAYER && target->GetOwner()->GetGUID() == _player->GetGUID())
+                {
+                    if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126201))
+                    {
+                        spellInfo = newSpellInfo;
+                        spellId = newSpellInfo->Id;
+                    }
+                }
+            }
+            break;
         }
-    }
-    // Aimed Shot - 19434 and Aimed Shot (for Master Marksman) - 82928
-    else if (spellInfo->Id == 19434 && _player->HasAura(82926))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(82928);
-        if (newSpellInfo)
+        case 689:           // Drain Life - 689 and Harvest Life (overrided) - 108371
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+            if (_player->HasSpell(108371))
+            {
+                // Use the right spell
+                SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(115707);
+                if (newSpellInfo)
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
         }
-    }
-    // Drain Life - 689 and Harvest Life (overrided) - 108371
-    else if (spellInfo->Id == 689 && _player->HasSpell(108371))
-    {
-        // Use the right spell
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(115707);
-        if (newSpellInfo)
+        case 755:           // Health Funnel - 755 and Health Funnel : Soulburn - 104242
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+            if (_player->HasAura(74434))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104220))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    _player->RemoveAura(74434);
+                }
+            }
+            break;
         }
-    }
-    // Alter Time - 108978 and Alter Time (overrided) - 127140
-    else if (spellInfo->Id == 108978 && _player->HasAura(110909))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127140);
-        if (newSpellInfo)
+        case 1490:          // Curse of the Elements - 1490 and Curse of the Elements : Soulburn - 104225
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+            if (_player->HasAura(74434))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104225))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    _player->RemoveAura(74434);
+                }
+            }
+            break;
         }
-    }
-    // Fix Dark Soul for Destruction warlocks
-    else if (spellInfo->Id == 113860 && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(113858);
-        if (newSpellInfo)
+        case 5697:          // Unending Breath - 5697 and Unending Breath : Soulburn - 104242
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+            if (_player->HasAura(74434))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104242))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    _player->RemoveAura(74434);
+                }
+            }
+            break;
         }
-    }
-    // Halo - 120517 and Halo - 120644 (shadow form)
-    else if (spellInfo->Id == 120517 && _player->HasAura(15473))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(120644);
-        if (newSpellInfo)
+        case 12051:         // Evocation - 12051 and  Rune of Power - 116011
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+            if (_player->HasSpell(116011))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(116011))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
         }
-    }
-    // Consecration - 116467 and Consecration - 26573
-    else if (spellInfo->Id == 116467)
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(26573);
-        if (newSpellInfo)
+        case 18223:         // Curse of Exhaustion - 18223 and Curse of Exhaustion : Soulburn - 104242
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+            if (_player->HasAura(74434))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104223))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    _player->RemoveAura(74434);
+                }
+            }
+            break;
         }
-    }
-    // Cascade (shadow) - 127632 and Cascade - 121135
-    else if (spellInfo->Id == 121135 && _player->HasAura(15473))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127632);
-        if (newSpellInfo)
+        case 19434:         // Aimed Shot - 19434 and Aimed Shot (for Master Marksman) - 82928
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+            if (_player->HasAura(82926))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(82928))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
         }
-    }
-    // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
-    else if (spellInfo->Id == 126892 && _player->HasAura(126896))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126895);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
+        case 86121:         // Soul Swap - 86121 and Soul Swap : Exhale - 86213
+        {                   // Soul Swap - 86121 and Soul Swap : Soulburn - 119678
+            if (_player->HasAura(74434))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(119678))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    _player->RemoveAura(74434);
+                }
+            }
+            if (_player->HasAura(86211))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(86213))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    _player->RemoveAura(86211);
+                }
+            }
+            break;
         }
-    }
-    // Unending Breath - 5697 and Unending Breath : Soulburn - 104242
-    else if (spellInfo->Id == 5697 && _player->HasAura(74434))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104242);
-        if (newSpellInfo)
+        case 108978:        // Alter Time - 108978 and Alter Time (overrided) - 127140
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->RemoveAura(74434);
+            if (_player->HasAura(110909))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127140))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
         }
-    }
-    // Health Funnel - 755 and Health Funnel : Soulburn - 104242
-    else if (spellInfo->Id == 755 && _player->HasAura(74434))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104220);
-        if (newSpellInfo)
+        case 109466:        // Curse of Enfeeblement - 109466 and Curse of Enfeeblement : Soulburn - 109468
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->RemoveAura(74434);
+            if (_player->HasAura(74434))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(109468))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    _player->RemoveAura(74434);
+                }
+            }
+            break;
         }
-    }
-    // Curse of Enfeeblement - 109466 and Curse of Enfeeblement : Soulburn - 109468
-    else if (spellInfo->Id == 109466 && _player->HasAura(74434))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(109468);
-        if (newSpellInfo)
+        case 113860:        // Fix Dark Soul for Destruction warlocks
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->RemoveAura(74434);
+            if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(113858))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
         }
-    }
-    // Curse of the Elements - 1490 and Curse of the Elements : Soulburn - 104225
-    else if (spellInfo->Id == 1490 && _player->HasAura(74434))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104225);
-        if (newSpellInfo)
+        case 116467:        // Consecration - 116467 and Consecration - 26573
         {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->RemoveAura(74434);
-        }
-    }
-    // Curse of Exhaustion - 18223 and Curse of Exhaustion : Soulburn - 104242
-    else if (spellInfo->Id == 18223 && _player->HasAura(74434))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104223);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->RemoveAura(74434);
-        }
-    }
-    // Soul Swap - 86121 and Soul Swap : Exhale - 86213
-    else if (spellInfo->Id == 86121 && _player->HasAura(86211))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(86213);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->RemoveAura(86211);
-        }
-    }
-    // Soul Swap - 86121 and Soul Swap : Soulburn - 119678
-    else if (spellInfo->Id == 86121 && _player->HasAura(74434))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(119678);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-            _player->RemoveAura(74434);
-        }
-    }
-    // Mage Bomb - 125430 and  Living Bomb - 44457
-    else if (spellInfo->Id == 125430 && _player->HasSpell(44457))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(44457);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-        }
-    }
-    // Mage Bomb - 125430 and Frost Bomb - 112948
-    else if (spellInfo->Id == 125430 && _player->HasSpell(112948))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112948);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-        }
-    }
-    // Mage Bomb - 125430 and  Nether Tempest - 114923
-    else if (spellInfo->Id == 125430 && _player->HasSpell(114923))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(114923);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-        }
-    }
-    // Evocation - 12051 and  Rune of Power - 116011
-    else if (spellInfo->Id == 12051 && _player->HasSpell(116011))
-    {
-        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(116011);
-        if (newSpellInfo)
-        {
-            spellInfo = newSpellInfo;
-            spellId = newSpellInfo->Id;
-        }
-    }
-    // Frostbolt - 116 and Frostbolt - 126201 (heal for water elemental)
-    else if (spellInfo->Id == 116 && targets.GetUnitTarget())
-    {
-        if (targets.GetUnitTarget()->GetOwner() && targets.GetUnitTarget()->GetOwner()->GetTypeId() == TYPEID_PLAYER && targets.GetUnitTarget()->GetOwner()->GetGUID() == _player->GetGUID())
-        {
-            SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126201);
-            if (newSpellInfo)
+            if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(26573))
             {
                 spellInfo = newSpellInfo;
                 spellId = newSpellInfo->Id;
             }
+            break;
         }
-    }
-    // Surging Mist - 116694 and Surging Mist - 116995
-    // Surging Mist is instantly casted if player is channeling Soothing Mist
-    else if (spellInfo->Id == 116694 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
-    {
-        recvPacket.rfinish();
-        _player->CastSpell(targets.GetUnitTarget(), 116995, true);
-        _player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
-        int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
-        _player->ModifyPower(POWER_MANA, -powerCost);
-        return;
-    }
-    // Enveloping Mist - 124682 and Enveloping Mist - 132120
-    // Enveloping Mist is instantly casted if player is channeling Soothing Mist
-    else if (spellInfo->Id == 124682 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
-    {
-        recvPacket.rfinish();
-        _player->CastSpell(targets.GetUnitTarget(), 132120, true);
-        int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
-        _player->ModifyPower(POWER_CHI, -powerCost);
-        return;
+        case 116694:        // Surging Mist - 116694 and Surging Mist - 116995
+        {
+            // Surging Mist is instantly casted if player is channeling Soothing Mist
+            if (_player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+            {
+                recvPacket.rfinish();
+                _player->CastSpell(targets.GetUnitTarget(), 116995, true);
+                _player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
+                int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
+                _player->ModifyPower(POWER_MANA, -powerCost);
+                return;
+            }
+            break;
+        }
+        case 120517:         // Halo - 120517 and Halo - 120644 (shadow form)
+        {
+            if (_player->HasAura(15473))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(120644))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
+        case 121135:        // Cascade (shadow) - 127632 and Cascade - 121135
+        {
+            if (_player->HasAura(15473))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127632))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
+        case 124682:        // Enveloping Mist - 124682 and Enveloping Mist - 132120
+        {
+            // Enveloping Mist is instantly casted if player is channeling Soothing Mist
+            if (_player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+            {
+                recvPacket.rfinish();
+                _player->CastSpell(targets.GetUnitTarget(), 132120, true);
+                int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
+                _player->ModifyPower(POWER_CHI, -powerCost);
+                return;
+            }
+            break;
+        }
+        case 125430:        // Mage Bomb - 125430 and  Living Bomb - 44457
+        {                   // Mage Bomb - 125430 and Frost Bomb - 112948
+                            // Mage Bomb - 125430 and  Nether Tempest - 114923
+            if (_player->HasSpell(44457))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(44457))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            if (_player->HasSpell(112948))
+            {
+
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112948))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            if (_player->HasSpell(114923))
+            {
+
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(114923))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
+        case 126892:        // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
+        {
+            if (_player->HasAura(126896))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126895))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
+        case 129250:        // Power Word : Solace - 129250 and Power Word : Insanity - 129249
+        {
+            if (_player->GetShapeshiftForm() == FORM_SHADOW)
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(129249))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
     }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
