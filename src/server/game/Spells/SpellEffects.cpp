@@ -1768,6 +1768,12 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                 if (player->HasSkill(SKILL_ENGINEERING))
                     AddPct(addhealth, 25);
         }
+        // Master Healing Potion
+        else if (m_spellInfo->Id == 105708)
+        {
+            // dbc missing scaling data
+            addhealth = 60000;
+        }
         // Death Pact - return pct of max health to caster
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
             addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, int32(caster->CountPctFromMaxHealth(damage)), HEAL);
