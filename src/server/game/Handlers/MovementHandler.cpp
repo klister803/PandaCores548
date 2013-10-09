@@ -453,7 +453,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         if(m_anty_vechicle || m_anty_possess)
             delta_check_plus = 200.0f;
 
-        if (World::GetEnableMvAnticheat() && !plrMover->GetCharmerOrOwnerPlayerOrPlayerItself()->isGameMaster())
+        if (World::GetEnableMvAnticheat() && plrMover->GetCharmerOrOwnerPlayerOrPlayerItself()->GetSession()->GetSecurity() < SEC_GAMEMASTER)
         {
             //check CX walkmode + time sinc
             if (movementInfo.flags & MOVEMENTFLAG_WALKING && _player->m_anti_MistiCount == 1)
