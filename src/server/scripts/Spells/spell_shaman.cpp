@@ -1747,28 +1747,28 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]))
                 {
                     Position pos;
-                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(-M_PI/4));
+                    summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(-M_PI/4));
                     totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[2]))
                 {
                     Position pos;
-                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(-3*M_PI/4));
+                    summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(-3*M_PI/4));
                     totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[3]))
                 {
                     Position pos;
-                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(3*M_PI/4));
+                    summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(3*M_PI/4));
                     totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[4]))
                 {
                     Position pos;
-                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(M_PI/4));
+                    summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(M_PI/4));
                     totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
                     //totem->SendMovementFlagUpdate();
                 }
