@@ -19035,6 +19035,12 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             //Glyph
             if(HasAura(58135))
                 return 21114;
+            break;
+        case FORM_AQUA:
+            // Glyph of the Orca
+            if (HasAura(114333))
+                return 4591;
+            break;
         default:
             break;
     }
