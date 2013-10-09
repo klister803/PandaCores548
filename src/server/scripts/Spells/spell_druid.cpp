@@ -2941,6 +2941,42 @@ class spell_druid_rejuvenation : public SpellScriptLoader
         }
 };
 
+class spell_druid_barkskin : public SpellScriptLoader
+{
+    public:
+        spell_druid_barkskin() : SpellScriptLoader("spell_druid_barkskin") { }
+
+        class spell_druid_barkskin_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_druid_barkskin_AuraScript);
+
+            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                // Glyph of Barkskin
+                if (target->HasAura(63057))
+                    // Glyph of Amberskin Protection
+                    target->CastSpell(target, 63058, true);
+            }
+
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                GetTarget()->RemoveAurasDueToSpell(63058);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_druid_barkskin_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_REDUCE_PUSHBACK, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_barkskin_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_REDUCE_PUSHBACK, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_druid_barkskin_AuraScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -2999,4 +3035,5 @@ void AddSC_druid_spell_scripts()
     new spell_dru_survival_instincts();
     new spell_druid_rejuvenation();
     new spell_dru_incarnation();
+    new spell_druid_barkskin();
 }
