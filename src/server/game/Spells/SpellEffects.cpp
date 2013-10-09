@@ -3998,7 +3998,7 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                 if (m_originalCaster)
                 {
                     int32 duration = m_spellInfo->GetDuration();
-                    unitTarget->ProhibitSpellSchool(curSpellInfo->GetSchoolMask(), unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex));
+                    unitTarget->ProhibitSpellSchool(curSpellInfo->GetSchoolMask(), unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex, m_originalCaster));
                 }
                 ExecuteLogEffectInterruptCast(effIndex, unitTarget, curSpellInfo->Id);
                 unitTarget->InterruptSpell(CurrentSpellTypes(i), false);

@@ -14407,11 +14407,21 @@ int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
     return duration;
 }
 
-int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, int32 duration, bool positive, uint32 effectMask)
+int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, int32 duration, bool positive, uint32 effectMask, Unit* caster)
 {
     // don't mod permanent auras duration
     if (duration < 0)
         return duration;
+
+    if (caster)
+    {
+        // Skull Bash
+        // need find other interrupt spells, whose interrupt duration is affected by spellmods and
+        // implement proper code
+        if (spellProto->Id == 93985)
+            if (Player* modOwner = caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_DURATION, duration);
+    }
 
     // cut duration only of negative effects
     if (!positive)
