@@ -746,6 +746,18 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             }
             break;
         }
+        case 127538:        // Savage Roar
+        {
+            if (_player->GetComboPoints())
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(52610))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
         case 129250:        // Power Word : Solace - 129250 and Power Word : Insanity - 129249
         {
             if (_player->GetShapeshiftForm() == FORM_SHADOW)

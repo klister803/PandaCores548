@@ -5478,9 +5478,11 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
             switch (GetId())
             {
                 case 52610:                                 // Savage Roar
+                case 127538:                                // Savage Roar
                 {
                     if (apply)
                     {
+                        target->RemoveAurasDueToSpell(GetId() == 52610 ? 127538 : 52610);
                         if (target->GetShapeshiftForm() == FORM_CAT)
                             target->CastSpell(target, 62071, true, NULL, NULL, GetCasterGUID());
                     }
