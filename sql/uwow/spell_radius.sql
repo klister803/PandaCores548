@@ -1,4 +1,4 @@
-REATE TABLE `spell_radius` (
+CREATE TABLE `spell_radius` (
   `spell_id` int(11) NOT NULL DEFAULT '0',
   `effectradius0` int(11) unsigned NOT NULL DEFAULT '0',
   `effectradius1` int(11) unsigned NOT NULL DEFAULT '0',
