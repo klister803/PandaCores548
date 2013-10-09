@@ -100,6 +100,7 @@ public:
                 w_lastchange = curtime;
                 w_loops = World::m_worldLoopCounter;
             }
+#ifndef AMARU_DEBUG
             // possible freeze
             else if (getMSTimeDiff(w_lastchange, curtime) > _delaytime)
             {
@@ -113,6 +114,7 @@ public:
                 else
                     *((uint32 volatile*)NULL) = 0;                       // bang crash
             }
+#endif
         }
         sLog->outInfo(LOG_FILTER_WORLDSERVER, "Anti-freeze thread exiting without problems.");
     }
