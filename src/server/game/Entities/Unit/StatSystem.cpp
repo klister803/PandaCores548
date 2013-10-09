@@ -462,7 +462,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
 
     float att_speed = GetAPMultiplier(attType, normalized);
 
-    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + (GetTotalAttackPowerValue(attType) / 14.0f * (GetShapeshiftForm() == FORM_CAT ? 2.f : 1.f)) * att_speed;
+    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / 14.0f * att_speed;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = addTotalPct ? GetModifierValue(unitMod, TOTAL_PCT) : 1.0f;
@@ -473,7 +473,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     if (IsInFeralForm())                                    //check if player is druid and in cat or bear forms
     {
         float weaponSpeed = BASE_ATTACK_TIME / 1000.f;
-        if (Item* weapon = GetWeaponForAttack(BASE_ATTACK, true))
+        if (Item* weapon = GetWeaponForAttack(BASE_ATTACK, false))
             weaponSpeed =  weapon->GetTemplate()->Delay / 1000;
 
         if (GetShapeshiftForm() == FORM_CAT)

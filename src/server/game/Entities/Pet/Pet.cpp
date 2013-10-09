@@ -379,7 +379,7 @@ void Pet::SavePetToDB(PetSlot mode, bool stampeded)
         return;
 
     Player* owner = (Player*)GetOwner();
-    if (!owner)
+    if (!owner || owner->getClass() == CLASS_SHAMAN)
         return;
 
     if(mode == PET_SLOT_ACTUAL_PET_SLOT)

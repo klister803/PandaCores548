@@ -1480,21 +1480,21 @@ class spell_mage_living_bomb : public SpellScriptLoader
         }
 };
 
-class spell_mage_arcane_missiles_main : public SpellScriptLoader
+class spell_mage_frost_nova : public SpellScriptLoader
 {
     public:
-        spell_mage_arcane_missiles_main() : SpellScriptLoader("spell_mage_arcane_missiles_main") { }
+        spell_mage_frost_nova() : SpellScriptLoader("spell_mage_frost_nova") { }
 
-        class spell_mage_arcane_missiles_main_SpellScript : public SpellScript
+        class spell_mage_frost_nova_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_mage_arcane_missiles_main_SpellScript)
+            PrepareSpellScript(spell_mage_frost_nova_SpellScript)
 
             bool Validate(SpellEntry const * /*spellEntry*/)
             {
                 return true;
             }
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+            void HandleOnHit()
             {
                 if (Unit * caster = GetCaster())
                 {
@@ -1508,13 +1508,13 @@ class spell_mage_arcane_missiles_main : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectHit += SpellEffectFn(spell_mage_arcane_missiles_main_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
+                OnHit += SpellHitFn(spell_mage_frost_nova_SpellScript::HandleOnHit);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
-            return new spell_mage_arcane_missiles_main_SpellScript();
+            return new spell_mage_frost_nova_SpellScript();
         }
 };
 
@@ -1549,5 +1549,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_incanters_absorbtion_manashield();
     new spell_mage_polymorph_cast_visual();
     new spell_mage_living_bomb();
-    new spell_mage_arcane_missiles_main();
+    new spell_mage_frost_nova();
 }

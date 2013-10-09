@@ -482,6 +482,7 @@ m_base(base), m_spellInfo(base->GetSpellInfo()),
 m_baseAmount(baseAmount ? *baseAmount : m_spellInfo->GetEffect(effIndex, m_diffMode).BasePoints),
 m_spellmod(NULL), m_periodicTimer(0), m_tickNumber(0), m_effIndex(effIndex),
 m_canBeRecalculated(true), m_isPeriodic(false),
+m_oldbaseAmount(0),saveTarget(NULL),
 m_diffMode(caster ? caster->GetSpawnMode() : 0)
 {
 }

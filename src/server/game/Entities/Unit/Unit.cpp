@@ -3327,6 +3327,11 @@ Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint3
                     bp = foundAura->GetSpellInfo()->GetEffect(i, GetSpawnMode()).BasePoints;
 
                 int32* oldBP = const_cast<int32*>(&(foundAura->GetEffect(i)->m_baseAmount));
+                int32* oldBPget = const_cast<int32*>(&(foundAura->GetEffect(i)->m_amount));
+                int32* oldBPSave = const_cast<int32*>(&(foundAura->GetEffect(i)->m_oldbaseAmount));
+                Unit** savetarget = const_cast<Unit**>(&(foundAura->GetEffect(i)->saveTarget));
+                *savetarget = this;
+                *oldBPSave = *oldBPget;
                 *oldBP = bp;
             }
 
@@ -5624,6 +5629,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 {
                     if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
                         aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration(), true);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_FROM_DAMGE:
+                {
+                    basepoints0 = CalculatePct(damage, itr->bp0);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
                     check = true;
                     continue;
                 }
@@ -11688,10 +11703,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         }
                     break;
                     case SPELLFAMILY_SHAMAN:
-                        // Healing Surge
-                        if (spellProto->Id == 8004)
-                            if (HasAura(53390))
-                                crit_chance += 30.0f;
                         // Lava Burst
                         if (spellProto->Id == 51505 || spellProto->Id == 77451)
                         {
@@ -18981,6 +18992,10 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 else if (getRace() == RACE_WORGEN)
                     return 37173;
             }
+        case FORM_GHOSTWOLF:
+            //Glyph
+            if(HasAura(58135))
+                return 21114;
         default:
             break;
     }

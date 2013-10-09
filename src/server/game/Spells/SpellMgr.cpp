@@ -3276,6 +3276,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 102522:
             case 94946:
             case 119626:
+            case 79206:
                 //Crashes client on pressing ESC (Maybe because of ReqSpellFocus and GameObject)
                 spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                 break;
@@ -4196,7 +4197,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 126549:
             case 126550:
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(26); // 240 seconds
-                break;                    
+                break; 
+            case 88764:// Rolling Thunder
+                spellInfo->Effects[0].TriggerSpell = 0;    
+                break;                
             default:
                 break;
             }
@@ -4236,6 +4240,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 11327: //Vanish
                 spellInfo->AuraInterruptFlags = 0;
                 spellInfo->AttributesEx4 |= SPELL_ATTR4_TRIGGERED;
+                break;
+            case 8177: //totem
+                spellInfo->RecoveryTime = 25000;
+                spellInfo->CategoryRecoveryTime = 0;
                 break;
             default:
                 break;

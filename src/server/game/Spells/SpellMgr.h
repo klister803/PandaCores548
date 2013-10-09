@@ -110,6 +110,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_GET_DUR_AURA      = 6,            // Get duration from select aura to cast bp
     SPELL_TRIGGER_NEED_COMBOPOINTS  = 7,            // Proc from spell that need compopoiunts
     SPELL_TRIGGER_UPDATE_DUR_TO_MAX = 8,            // Update duration for select spell to max duration
+    SPELL_TRIGGER_PERC_FROM_DAMGE   = 9,            // Percent from damage
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
