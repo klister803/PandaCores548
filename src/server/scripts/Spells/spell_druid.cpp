@@ -1408,9 +1408,15 @@ class spell_dru_lifebloom_refresh : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // Glyph of Blooming
+                    if (_player->HasAura(121840))
+                        return;
+
                     if (Unit* target = GetHitUnit())
                         if (Aura* lifebloom = target->GetAura(SPELL_DRUID_LIFEBLOOM, _player->GetGUID()))
                             lifebloom->RefreshDuration();
+                }
             }
 
             void Register()
