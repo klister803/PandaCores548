@@ -5053,11 +5053,11 @@ bool Player::ResetTalents(bool no_cost)
     return true;
 }
 
-void Player::ResetSpec()
+void Player::ResetSpec(bool takeMoney)
 {
     uint32 cost = 0;
 
-    if (!sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST))
+    if (takeMoney && !sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST))
     {
         cost = GetNextResetSpecializationCost();
 
@@ -5078,12 +5078,23 @@ void Player::ResetSpec()
     UpdateMasteryPercentage();
     SendTalentsInfoData(false);
 
-    ModifyMoney(-(int64)cost);
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_TALENTS, cost);
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_NUMBER_OF_TALENT_RESETS, 1);
+    if (takeMoney)
+    {
+        ModifyMoney(-(int64)cost);
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_TALENTS, cost);
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_NUMBER_OF_TALENT_RESETS, 1);
+    }
 
     SetSpecializationResetCost(cost);
     SetSpecializationResetTime(time(NULL));
+
+    // Heart of the Wild special check
+    // hacky reapply
+    if (Aura* aura = GetAura(108288))
+    {
+        RemoveAura(aura);
+        CastSpell(this, 108288, true);
+    }
 }
 
 void Player::SetSpecializationId(uint8 spec, uint32 id)
