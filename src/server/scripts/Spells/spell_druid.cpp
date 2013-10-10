@@ -2977,6 +2977,41 @@ class spell_druid_barkskin : public SpellScriptLoader
         }
 };
 
+class spell_druid_glyph_of_the_treant : public SpellScriptLoader
+{
+    public:
+        spell_druid_glyph_of_the_treant() : SpellScriptLoader("spell_druid_glyph_of_the_treant") { }
+
+        class spell_druid_glyph_of_the_treant_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_druid_glyph_of_the_treant_AuraScript);
+
+            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* target = GetTarget()->ToPlayer())
+                    // Treant Form
+                    target->learnSpell(114282, false);
+            }
+
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* target = GetTarget()->ToPlayer())
+                    target->removeSpell(114282);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_druid_glyph_of_the_treant_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_glyph_of_the_treant_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_druid_glyph_of_the_treant_AuraScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3036,4 +3071,5 @@ void AddSC_druid_spell_scripts()
     new spell_druid_rejuvenation();
     new spell_dru_incarnation();
     new spell_druid_barkskin();
+    new spell_druid_glyph_of_the_treant();
 }
