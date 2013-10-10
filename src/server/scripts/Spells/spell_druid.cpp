@@ -3036,16 +3036,13 @@ class spell_druid_heart_of_the_wild : public SpellScriptLoader
 
                 target->CastSpell(target, 17005, true);
 
-                uint32 spec = target->GetSpecializationId(target->GetActiveSpec());
                 ShapeshiftForm form = target->GetShapeshiftForm();
-                if (spec != SPEC_DROOD_RESTORATION)
-                    target->CastSpell(target, 108293, true);
-                if (spec != SPEC_DROOD_BALANCE)
-                    target->CastSpell(target, 108294, true);
-                if (spec != SPEC_DROOD_CAT && form == FORM_CAT)
-                    target->CastSpell(target, 123737, true);
-                if (spec != SPEC_DROOD_BEAR && form == FORM_BEAR)
+                uint32 spell = GetSpellInfo()->Id;
+
+                if ((spell == 108291 || spell == 108292 || spell == 108294) && form == FORM_BEAR)
                     target->CastSpell(target, 123738, true);
+                if ((spell == 108291 || spell == 108293 || spell == 108294) && form == FORM_CAT)
+                    target->CastSpell(target, 123737, true);
             }
 
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -3055,17 +3052,14 @@ class spell_druid_heart_of_the_wild : public SpellScriptLoader
                     return;
 
                 target->RemoveAurasDueToSpell(17005);   // passive
-
-                target->RemoveAurasDueToSpell(108293);  // non-restor
-                target->RemoveAurasDueToSpell(108294);  // non-balance
-                target->RemoveAurasDueToSpell(123737);  // non-feral
-                target->RemoveAurasDueToSpell(123738);  // non-guardian
+                target->RemoveAurasDueToSpell(123737);
+                target->RemoveAurasDueToSpell(123738);
             }
 
             void Register()
             {
-                AfterEffectApply += AuraEffectApplyFn(spell_druid_heart_of_the_wild_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_heart_of_the_wild_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectApply += AuraEffectApplyFn(spell_druid_heart_of_the_wild_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_heart_of_the_wild_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
             }
         };
 

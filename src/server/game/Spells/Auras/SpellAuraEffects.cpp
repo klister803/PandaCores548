@@ -1690,21 +1690,20 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     }
 
     // Heart of the Wild
-    if (target->GetTypeId() == TYPEID_PLAYER && target->HasAura(108288))
+    if (apply && target->GetTypeId() == TYPEID_PLAYER)
     {
         Player* player = target->ToPlayer();
-        uint32 spec = player->GetSpecializationId(player->GetActiveSpec());
+        if (player->HasSpell(108288))
+        {
+            ShapeshiftForm form = ShapeshiftForm(GetMiscValue());
 
-        if (spec != SPEC_DROOD_CAT)
-            if (apply && GetMiscValue() == FORM_CAT)
-                player->CastSpell(player, 123737, true);
-            else
-                player->RemoveAurasDueToSpell(123737);
-        if (spec != SPEC_DROOD_BEAR)
-            if (apply && GetMiscValue() == FORM_BEAR)
-                player->CastSpell(player, 123738, true);
-            else
-                player->RemoveAurasDueToSpell(123738);
+            // check Heart of the Wild spec-specific buffs
+            bool checkers[] = { target->HasAura(108291), target->HasAura(108292), target->HasAura(108293), target->HasAura(108294) };
+            if ((checkers[0] || checkers[1] || checkers[3]) && form == FORM_BEAR)
+                target->CastSpell(target, 123738, true);
+            if ((checkers[0] || checkers[2] || checkers[3]) && form == FORM_CAT)
+                target->CastSpell(target, 123737, true);
+        }
     }
     else
     {

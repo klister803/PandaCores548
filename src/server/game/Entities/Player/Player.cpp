@@ -5087,14 +5087,6 @@ void Player::ResetSpec(bool takeMoney)
 
     SetSpecializationResetCost(cost);
     SetSpecializationResetTime(time(NULL));
-
-    // Heart of the Wild special check
-    // hacky reapply
-    if (Aura* aura = GetAura(108288))
-    {
-        RemoveAura(aura);
-        CastSpell(this, 108288, true);
-    }
 }
 
 void Player::SetSpecializationId(uint8 spec, uint32 id)
