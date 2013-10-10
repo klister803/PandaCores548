@@ -2894,10 +2894,6 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
         uint32 displayId = 0;
         uint32 vehicleId = 0;
 
-        // Mount can be cast in Moonkin form but unapply it
-        if (target->GetShapeshiftForm() == FORM_MOONKIN)
-            target->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
-
         // Festive Holiday Mount
         if (target->HasAura(62061))
         {
