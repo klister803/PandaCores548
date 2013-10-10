@@ -19013,6 +19013,9 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             }
             return 21244;
         case FORM_TRAVEL:
+            // Glyph of the Cheetah
+            if (HasAura(131113))
+                return 918;
             if (Player::TeamForRace(getRace()) == ALLIANCE)
                 return 40816;
             return 45339;
@@ -19039,7 +19042,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
         case FORM_AQUA:
             // Glyph of the Orca
             if (HasAura(114333))
-                return 4591;
+                return 40815;
             break;
         default:
             break;
@@ -19169,35 +19172,7 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
             break;
         }
         case RACE_PANDAREN_NEUTRAL:
-        {
-            switch (totemType)
-            {
-                case SUMMON_TYPE_TOTEM_FIRE:    // fire
-                    return 41670;
-                case SUMMON_TYPE_TOTEM_EARTH:   // earth
-                    return 41669;
-                case SUMMON_TYPE_TOTEM_WATER:   // water
-                    return 41671;
-                case SUMMON_TYPE_TOTEM_AIR:     // air
-                    return 41668;
-            }
-            break;
-        }
         case RACE_PANDAREN_ALLI:
-        {
-            switch (totemType)
-            {
-                case SUMMON_TYPE_TOTEM_FIRE:    // fire
-                    return 41670;
-                case SUMMON_TYPE_TOTEM_EARTH:   // earth
-                    return 41669;
-                case SUMMON_TYPE_TOTEM_WATER:   // water
-                    return 41671;
-                case SUMMON_TYPE_TOTEM_AIR:     // air
-                    return 41668;
-            }
-            break;
-        }
         case RACE_PANDAREN_HORDE:
         {
             switch (totemType)
