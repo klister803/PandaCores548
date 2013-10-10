@@ -1446,7 +1446,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 {
     uint32 spellId      = 0;
     uint32 spellId2     = 0;
-    //uint32 spellId3     = 0;
+    uint32 spellId3     = 0;
     uint32 HotWSpellId  = 0;
 
     std::list<uint32> actionBarReplaceAuras;
@@ -1485,6 +1485,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
         case FORM_MOONKIN:
             spellId = 24905;
             spellId2 = 24907;
+            // Glyph of the Start
+            if (!apply || target->HasAura(114301))
+                spellId3 = 114302;  // Astral Form
             break;
         case FORM_FLIGHT:
             spellId = 33948;
@@ -1541,6 +1544,13 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             if (target->GetTypeId() == TYPEID_PLAYER)
                 target->ToPlayer()->RemoveSpellCooldown(spellId2);
             target->CastSpell(target, spellId2, true, NULL, this);
+        }
+
+        if (spellId3)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->RemoveSpellCooldown(spellId3);
+            target->CastSpell(target, spellId3, true, NULL, this);
         }
 
         if (target->GetTypeId() == TYPEID_PLAYER)
@@ -1660,6 +1670,8 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             target->RemoveAurasDueToSpell(spellId);
         if (spellId2)
             target->RemoveAurasDueToSpell(spellId2);
+        if (spellId3)
+            target->RemoveAurasDueToSpell(spellId3);
 
         // Improved Barkskin - apply/remove armor bonus due to shapeshift
         if (Player* player=target->ToPlayer())

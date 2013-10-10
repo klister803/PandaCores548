@@ -19076,20 +19076,18 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 40816;
             return 45339;
         case FORM_MOONKIN:
-            if (Player::TeamForRace(getRace()) == HORDE)
-            {
-                if (getRace() == RACE_TROLL)
-                    return 37174;
-                else if (getRace() == RACE_TAUREN)
-                    return 15375;
-            }
-            else if (Player::TeamForRace(getRace()) == ALLIANCE)
-            {
-                if (getRace() == RACE_NIGHTELF)
-                    return 15374;
-                else if (getRace() == RACE_WORGEN)
-                    return 37173;
-            }
+            // Glyph of the Stars
+            if (HasAura(114301))
+                return 0;
+            if (getRace() == RACE_TROLL)
+                return 37174;
+            else if (getRace() == RACE_TAUREN)
+                return 15375;
+            else if (getRace() == RACE_NIGHTELF)
+                return 15374;
+            else if (getRace() == RACE_WORGEN)
+                return 37173;
+            break;
         case FORM_GHOSTWOLF:
             //Glyph
             if(HasAura(58135))
