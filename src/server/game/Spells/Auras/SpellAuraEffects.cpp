@@ -1447,7 +1447,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     uint32 spellId      = 0;
     uint32 spellId2     = 0;
     uint32 spellId3     = 0;
-    uint32 HotWSpellId  = 0;
 
     std::list<uint32> actionBarReplaceAuras;
 
@@ -1455,7 +1454,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     {
         case FORM_CAT:
             spellId = 3025;
-            HotWSpellId = 24900;
             actionBarReplaceAuras.push_back(48629);
             break;
         case FORM_TREE:
@@ -1469,7 +1467,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             break;
         case FORM_BEAR:
             spellId = 1178;
-            HotWSpellId = 24899;
             actionBarReplaceAuras.push_back(21178);
             actionBarReplaceAuras.push_back(106829);
             break;
@@ -1607,22 +1604,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                     target->CastSpell(target, 66530, true);
             }
 
-            // Heart of the Wild
-            if (HotWSpellId)
-            {   // hacky, but the only way as spell family is not SPELLFAMILY_DRUID
-                Unit::AuraEffectList const& mModTotalStatPct = target->GetAuraEffectsByType(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE);
-                for (Unit::AuraEffectList::const_iterator i = mModTotalStatPct.begin(); i != mModTotalStatPct.end(); ++i)
-                {
-                    // Heart of the Wild
-                    if (17003 <=  (*i)->GetId() && (*i)->GetId() < 17006)
-                    {
-                        int32 HotWMod = (*i)->GetSpellInfo()->Effects[(GetMiscValue() == FORM_CAT)? 1: 0].BasePoints;
-
-                        target->CastCustomSpell(target, HotWSpellId, &HotWMod, NULL, NULL, true, NULL, this);
-                        break;
-                    }
-                }
-            }
             switch (GetMiscValue())
             {
                 case FORM_CAT:
@@ -1706,6 +1687,29 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             else
                 ++itr;
         }
+    }
+
+    // Heart of the Wild
+    if (target->GetTypeId() == TYPEID_PLAYER && target->HasAura(108288))
+    {
+        Player* player = target->ToPlayer();
+        uint32 spec = player->GetSpecializationId(player->GetActiveSpec());
+
+        if (spec != SPEC_DROOD_CAT)
+            if (apply && GetMiscValue() == FORM_CAT)
+                player->CastSpell(player, 123737, true);
+            else
+                player->RemoveAurasDueToSpell(123737);
+        if (spec != SPEC_DROOD_BEAR)
+            if (apply && GetMiscValue() == FORM_BEAR)
+                player->CastSpell(player, 123738, true);
+            else
+                player->RemoveAurasDueToSpell(123738);
+    }
+    else
+    {
+        target->RemoveAurasDueToSpell(123737);
+        target->RemoveAurasDueToSpell(123738);
     }
 }
 
