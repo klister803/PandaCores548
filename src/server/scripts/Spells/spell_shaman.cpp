@@ -1722,8 +1722,8 @@ class spell_shaman_healing_tide: public SpellScriptLoader
                     else
                         targets.erase(itr++);
                 }
-                if (targets.size() > 5)
-                    targets.resize(5);
+                if (targets.size() > count)
+                    targets.resize(count);
             }
 
             void Register()
@@ -1829,6 +1829,36 @@ class spell_sha_ancestral_vigor : public SpellScriptLoader
         }
 };
 
+class spell_sha_maelstrom_weapon : public SpellScriptLoader
+{
+    public:
+        spell_sha_maelstrom_weapon() : SpellScriptLoader("spell_sha_maelstrom_weapon") { }
+
+        class spell_sha_maelstrom_weapon_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_maelstrom_weapon_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(89646))
+                        amount = 20;
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sha_maelstrom_weapon_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_ADD_PCT_MODIFIER);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_maelstrom_weapon_AuraScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_prowl();
@@ -1865,4 +1895,5 @@ void AddSC_shaman_spell_scripts()
     new spell_shaman_healing_tide();
     new spell_shaman_totemic_projection();
     new spell_sha_ancestral_vigor();
+    new spell_sha_maelstrom_weapon();
 }

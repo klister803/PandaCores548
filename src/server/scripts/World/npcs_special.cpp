@@ -3408,21 +3408,24 @@ class npc_capacitor_totem : public CreatureScript
 
         npc_capacitor_totemAI(Creature* creature) : ScriptedAI(creature)
         {
-            CastTimer = 1000;
+            CastTimer = 5000;
 
-            if (creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
-                if (creature->GetEntry() == 61245)
-                    creature->CastSpell(creature, 118905, false);
+            if(Unit* owner = creature->GetOwner())
+                if (owner->HasAura(55442))
+                    CastTimer = 3000;
         }
 
         void UpdateAI(uint32 const diff)
         {
-            if (CastTimer >= diff)
-                if (me->GetOwner() && me->GetOwner()->GetTypeId() == TYPEID_PLAYER)
-                    if (me->GetEntry() == 61245)
-                        me->CastSpell(me, 118905, false);
+            if (CastTimer <= diff)
+            {
+                if (me->GetEntry() == 61245)
+                    me->CastSpell(me, 118905, true);
+                CastTimer = 99999;
+            }
+            else
+                CastTimer -= diff;
 
-            CastTimer = 0;
         }
     };
 

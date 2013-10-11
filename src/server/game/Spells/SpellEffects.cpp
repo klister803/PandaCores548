@@ -3950,6 +3950,17 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             if (m_caster->GetTypeId() != TYPEID_PLAYER)
                 break;
 
+            //Bonus 4P shaman
+            if(m_caster->HasAura(131554))
+            {
+                if (Item* offItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                {
+                    // Flametongue
+                    if (offItem->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) == 2)
+                        AddPct(m_damage, 40);
+                }
+            }
+
             // Searing Flames
             if (Aura* aur = m_caster->GetAura(77661))
             {

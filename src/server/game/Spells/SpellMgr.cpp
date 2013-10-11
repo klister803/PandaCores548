@@ -3492,7 +3492,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_SUMMON_PET;
                 break;
             case 114942:// Healing Tide
-                spellInfo->MaxAffectedTargets = 5;
+                spellInfo->SpellFamilyFlags[0] = 0x00002000;
                 break;
             case 108283:// Echo of the Elements
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -4239,11 +4239,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->CategoryRecoveryTime = 0;
                 break;
             case 45284: //Lightning Bolt
+            case 117014: //Elemental Blast
                 spellInfo->SpellFamilyFlags[0] = 0x00000001;
                 spellInfo->SpellFamilyFlags[2] = 0;
                 break;
             case 117679:    // Incarnation (Passive)
                 spellInfo->Attributes &= ~SPELL_ATTR0_CANT_CANCEL;
+                break;
+            case 55442: //Glyph of Capacitor Totem
+                spellInfo->Effects[0].SpellClassMask[0] = 0x00008000;
                 break;
             default:
                 break;
