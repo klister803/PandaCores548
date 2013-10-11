@@ -1457,7 +1457,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             actionBarReplaceAuras.push_back(48629);
             break;
         case FORM_TREE:
-            spellId = 106731;
             break;
         case FORM_TRAVEL:
             spellId = 5419;
