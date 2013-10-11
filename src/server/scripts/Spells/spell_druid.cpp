@@ -493,33 +493,110 @@ class spell_dru_shattering_blow : public SpellScriptLoader
         }
 };
 
+// Incarnation: Tree of Life (Shapeshift) - 33891
+// Incarnation: King of the Jungle - 102543
+// Incarnation: Son of Ursoc - 102558
+// Incarnation: Chosen of Elune (Shapeshift) - 102560
 class spell_dru_incarnation : public SpellScriptLoader
 {
     public:
         spell_dru_incarnation() : SpellScriptLoader("spell_dru_incarnation") { }
 
-        class spell_dru_incarnation_aura_AuraScript : public AuraScript
+        class spell_dru_incarnation_AuraScript : public AuraScript
         {
-            PrepareAuraScript(spell_dru_incarnation_aura_AuraScript);
+            PrepareAuraScript(spell_dru_incarnation_AuraScript);
+
+            void UpdateModel()
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                ShapeshiftForm form = target->GetShapeshiftForm();
+                if (form == FORM_CAT || form == FORM_BEAR)
+                    if (uint32 model = target->GetModelForForm(form))
+                        target->SetDisplayId(model);
+            }
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+            {
+                UpdateModel();
+
+                if (GetId() == 33891)
+                {
+                    if (Unit* target = GetTarget())
+                        target->CastSpell(target, 117679, true);
+                }
+            }
 
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
             {
-                if (Unit* unit = GetUnitOwner())
-                    unit->RemoveAurasDueToSpell(33891);
+                UpdateModel();
             }
 
             void Register()
             {
-                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_incarnation_aura_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectApply += AuraEffectApplyFn(spell_dru_incarnation_AuraScript::OnApply, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectApply += AuraEffectApplyFn(spell_dru_incarnation_AuraScript::OnApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectApply += AuraEffectApplyFn(spell_dru_incarnation_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+
+                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_incarnation_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_incarnation_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_incarnation_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
-            return new spell_dru_incarnation_aura_AuraScript();
+            return new spell_dru_incarnation_AuraScript();
         }
 };
 
+// Incarnation (Passive) - 117679
+class spell_dru_incarnation_tree_of_life : public SpellScriptLoader
+{
+    public:
+        spell_dru_incarnation_tree_of_life() : SpellScriptLoader("spell_dru_incarnation_tree_of_life") { }
+
+        class spell_dru_incarnation_tree_of_life_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_incarnation_tree_of_life_AuraScript);
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                target->CastSpell(target, 5420, true);  // Incarnation: Tree of Life (Passive)
+                target->CastSpell(target, 81097, true); // Incarnation: Tree of Life (Passive)
+                target->CastSpell(target, 81098, true); // Incarnation: Tree of Life (Passive)
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                target->RemoveAurasDueToSpell(33891);
+                target->RemoveAurasDueToSpell(5420);
+                target->RemoveAurasDueToSpell(81097);
+                target->RemoveAurasDueToSpell(81098);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_dru_incarnation_tree_of_life_AuraScript::OnApply, EFFECT_0, SPELL_AURA_383, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_incarnation_tree_of_life_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_383, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_incarnation_tree_of_life_AuraScript();
+        }
+};
 
 // Symbiosis - 110309
 class spell_dru_symbiosis : public SpellScriptLoader
@@ -3127,6 +3204,7 @@ void AddSC_druid_spell_scripts()
     new spell_dru_survival_instincts();
     new spell_druid_rejuvenation();
     new spell_dru_incarnation();
+    new spell_dru_incarnation_tree_of_life();
     new spell_druid_barkskin();
     new spell_druid_glyph_of_the_treant();
     new spell_druid_heart_of_the_wild();
