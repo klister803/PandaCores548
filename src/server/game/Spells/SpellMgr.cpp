@@ -4200,22 +4200,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 break; 
             case 88764:// Rolling Thunder
                 spellInfo->Effects[0].TriggerSpell = 0;    
-                break;                
-            default:
-                break;
-            }
-
-            switch (spellInfo->SpellFamilyName)
-            {
-            case SPELLFAMILY_WARRIOR:
-                // Shout
-                if (spellInfo->SpellFamilyFlags[0] & 0x20000 || spellInfo->SpellFamilyFlags[1] & 0x20)
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
-                break;
-            case SPELLFAMILY_DRUID:
-                // Roar
-                if (spellInfo->SpellFamilyFlags[0] & 0x8)
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
                 break;
             case 58423:
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -4248,6 +4232,22 @@ void SpellMgr::LoadSpellCustomAttr()
             case 45284: //Lightning Bolt
                 spellInfo->SpellFamilyFlags[0] = 0x00000001;
                 spellInfo->SpellFamilyFlags[2] = 0;
+                break;
+            default:
+                break;
+            }
+
+            switch (spellInfo->SpellFamilyName)
+            {
+            case SPELLFAMILY_WARRIOR:
+                // Shout
+                if (spellInfo->SpellFamilyFlags[0] & 0x20000 || spellInfo->SpellFamilyFlags[1] & 0x20)
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
+                break;
+            case SPELLFAMILY_DRUID:
+                // Roar
+                if (spellInfo->SpellFamilyFlags[0] & 0x8)
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
                 break;
             default:
                 break;
