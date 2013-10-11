@@ -4242,6 +4242,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->SpellFamilyFlags[0] = 0x00000001;
                 spellInfo->SpellFamilyFlags[2] = 0;
                 break;
+            case 117679:    // Incarnation (Passive)
+                spellInfo->Attributes &= ~SPELL_ATTR0_CANT_CANCEL;
+                break;
             default:
                 break;
             }
