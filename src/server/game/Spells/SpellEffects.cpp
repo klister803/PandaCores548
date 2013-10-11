@@ -1358,7 +1358,8 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
 
     float speedXY, speedZ;
     CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
-    if (m_spellInfo->Id == 49575)
+    // Death Grip and Wild Charge (no form)
+    if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 102401)
         m_caster->GetMotionMaster()->CustomJump(x, y, z, speedXY, speedZ);
     else
         m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
@@ -5711,8 +5712,8 @@ void Spell::EffectLeapBack(SpellEffIndex effIndex)
         speedz = float(75 / 10);
     }
 
-    //1891: Disengage
-    m_caster->JumpTo(speedxy, speedz, m_spellInfo->SpellIconID != 1891);
+    //1891: Disengage and Wild Charge (moonkin form)
+    m_caster->JumpTo(speedxy, speedz, m_spellInfo->SpellIconID != 1891 && m_spellInfo->Id != 102383);
 }
 
 void Spell::EffectQuestClear(SpellEffIndex effIndex)

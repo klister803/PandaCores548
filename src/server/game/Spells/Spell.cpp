@@ -5835,6 +5835,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     else
                         return SPELL_FAILED_DONT_REPORT;
                 }
+                // Wild Charge
+                if (m_spellInfo->Id == 102383 && !m_caster->isInCombat())
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
                 break;
             }
             case SPELL_EFFECT_TALENT_SPEC_SELECT:
