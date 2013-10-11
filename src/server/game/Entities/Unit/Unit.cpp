@@ -19096,18 +19096,24 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 40816;
             return 45339;
         case FORM_MOONKIN:
+        {
             // Glyph of the Stars
             if (HasAura(114301))
                 return 0;
+
+            // check Incarnation
+            bool epic = HasAura(102560);
+
             if (getRace() == RACE_TROLL)
-                return 37174;
+                return epic ? 43789 : 37174;
             else if (getRace() == RACE_TAUREN)
-                return 15375;
+                return epic ? 43786 : 15375;
             else if (getRace() == RACE_NIGHTELF)
-                return 15374;
+                return epic ? 43790 : 15374;
             else if (getRace() == RACE_WORGEN)
-                return 37173;
+                return epic ? 43787 : 37173;
             break;
+        }
         case FORM_GHOSTWOLF:
             //Glyph
             if(HasAura(58135))

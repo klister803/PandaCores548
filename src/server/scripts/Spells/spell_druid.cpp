@@ -513,7 +513,7 @@ class spell_dru_incarnation : public SpellScriptLoader
                     return;
 
                 ShapeshiftForm form = target->GetShapeshiftForm();
-                if (form == FORM_CAT || form == FORM_BEAR)
+                if (form == FORM_CAT || form == FORM_BEAR || form == FORM_MOONKIN)
                     if (uint32 model = target->GetModelForForm(form))
                         target->SetDisplayId(model);
             }
@@ -522,10 +522,29 @@ class spell_dru_incarnation : public SpellScriptLoader
             {
                 UpdateModel();
 
-                if (GetId() == 33891)
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                switch (GetId())
                 {
-                    if (Unit* target = GetTarget())
+                    case 33891:     // Incarnation: Tree of Life (Shapeshift)
                         target->CastSpell(target, 117679, true);
+                        break;
+                    case 102543:    // Incarnation: King of the Jungle
+                        if (!target->HasAura(768))
+                            target->CastSpell(target, 768, true);       // activate Cat Form
+                        break;
+                    case 102558:    // Incarnation: Son of Ursoc
+                        if (!target->HasAura(5487))
+                            target->CastSpell(target, 5487, true);      // activate Bear Form
+                        break;
+                    case 102560:    // Incarnation: Chosen of Elune (Shapeshift)
+                        if (!target->HasAura(24858))
+                            target->CastSpell(target, 24858, true);     // activate Moonkin Form
+                        if (target->HasAura(48517) || target->HasAura(48518))   // check Eclipse
+                            target->CastSpell(target, 122114, true);    // Chosen of Elune
+                        break;
                 }
             }
 
@@ -3148,6 +3167,50 @@ class spell_druid_heart_of_the_wild : public SpellScriptLoader
         }
 };
 
+// Eclipse (Solar) - 48517
+// Eclipse (Lunar) - 48518
+class spell_druid_eclipse_buff : public SpellScriptLoader
+{
+    public:
+        spell_druid_eclipse_buff() : SpellScriptLoader("spell_druid_eclipse_buff") { }
+
+        class spell_druid_eclipse_buff_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_druid_eclipse_buff_AuraScript);
+
+            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                if (target->HasAura(102560) &&                          // check Incarnation
+                    (target->HasAura(48517) || target->HasAura(48518))) // check Eclipse
+                    target->CastSpell(target, 122114, true);            // Chosen of Elune
+            }
+
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                target->RemoveAurasDueToSpell(122114);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_druid_eclipse_buff_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_eclipse_buff_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_druid_eclipse_buff_AuraScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3210,4 +3273,5 @@ void AddSC_druid_spell_scripts()
     new spell_druid_barkskin();
     new spell_druid_glyph_of_the_treant();
     new spell_druid_heart_of_the_wild();
+    new spell_druid_eclipse_buff();
 }
