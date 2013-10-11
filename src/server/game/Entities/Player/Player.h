@@ -2116,7 +2116,7 @@ class Player : public Unit, public GridObject<Player>
         void CastPassiveTalentSpell(uint32 spellId);
         void RemovePassiveTalentSpell(uint32 spellId);
 
-        void ResetSpec();
+        void ResetSpec(bool takeMoney = true);
 
         // Dual Spec
         void UpdateSpecCount(uint8 count);

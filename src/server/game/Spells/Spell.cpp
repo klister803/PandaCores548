@@ -5171,6 +5171,15 @@ SpellCastResult Spell::CheckCast(bool strict)
             if (!(*i)->IsAffectingSpell(m_spellInfo))
                 continue;
             checkForm = false;
+
+            // Heart of the Wild (non-restoration buff)
+            if ((*i)->GetId() == 108293)
+            {
+                if (Player* player = m_caster->ToPlayer())
+                    // only Guardian spec is allowed to cast Rejuvenation in any form
+                    if (player->GetSpecializationId(player->GetActiveSpec()) != SPEC_DROOD_BEAR)
+                        checkForm = true;
+            }
             break;
         }
         if (checkForm)

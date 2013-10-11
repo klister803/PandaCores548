@@ -4123,6 +4123,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35);
                 break;
 
+            //Scholomance
+            case 114062: //Gravity Flux
+                spellInfo->Effects[1].Effect = 0;
+                spellInfo->Effects[1].ApplyAuraName = 0;
+                break;
+            case 113996: //Bone Armor
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
+
             // Mogu'shan Vault
             case 129428: //Dummy Searcher(cobalt mine)
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);

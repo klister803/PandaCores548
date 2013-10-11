@@ -1408,9 +1408,15 @@ class spell_dru_lifebloom_refresh : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // Glyph of Blooming
+                    if (_player->HasAura(121840))
+                        return;
+
                     if (Unit* target = GetHitUnit())
                         if (Aura* lifebloom = target->GetAura(SPELL_DRUID_LIFEBLOOM, _player->GetGUID()))
                             lifebloom->RefreshDuration();
+                }
             }
 
             void Register()
@@ -2977,6 +2983,92 @@ class spell_druid_barkskin : public SpellScriptLoader
         }
 };
 
+class spell_druid_glyph_of_the_treant : public SpellScriptLoader
+{
+    public:
+        spell_druid_glyph_of_the_treant() : SpellScriptLoader("spell_druid_glyph_of_the_treant") { }
+
+        class spell_druid_glyph_of_the_treant_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_druid_glyph_of_the_treant_AuraScript);
+
+            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* target = GetTarget()->ToPlayer())
+                    // Treant Form
+                    target->learnSpell(114282, false);
+            }
+
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* target = GetTarget()->ToPlayer())
+                    target->removeSpell(114282);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_druid_glyph_of_the_treant_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_glyph_of_the_treant_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_druid_glyph_of_the_treant_AuraScript();
+        }
+};
+
+// Heart of the Wild - 108288
+class spell_druid_heart_of_the_wild : public SpellScriptLoader
+{
+    public:
+        spell_druid_heart_of_the_wild() : SpellScriptLoader("spell_druid_heart_of_the_wild") { }
+
+        class spell_druid_heart_of_the_wild_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_druid_heart_of_the_wild_AuraScript);
+
+            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Player* target = GetTarget()->ToPlayer();
+                if (!target)
+                    return;
+
+                target->CastSpell(target, 17005, true);
+
+                ShapeshiftForm form = target->GetShapeshiftForm();
+                uint32 spell = GetSpellInfo()->Id;
+
+                if ((spell == 108291 || spell == 108292 || spell == 108294) && form == FORM_BEAR)
+                    target->CastSpell(target, 123738, true);
+                if ((spell == 108291 || spell == 108293 || spell == 108294) && form == FORM_CAT)
+                    target->CastSpell(target, 123737, true);
+            }
+
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Player* target = GetTarget()->ToPlayer();
+                if (!target)
+                    return;
+
+                target->RemoveAurasDueToSpell(17005);   // passive
+                target->RemoveAurasDueToSpell(123737);
+                target->RemoveAurasDueToSpell(123738);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_druid_heart_of_the_wild_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_heart_of_the_wild_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_druid_heart_of_the_wild_AuraScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3036,4 +3128,6 @@ void AddSC_druid_spell_scripts()
     new spell_druid_rejuvenation();
     new spell_dru_incarnation();
     new spell_druid_barkskin();
+    new spell_druid_glyph_of_the_treant();
+    new spell_druid_heart_of_the_wild();
 }

@@ -126,6 +126,69 @@ public:
         {
             HandleGameObject(doorGuid, true);
         }
+        
+        bool SetBossState(uint32 id, EncounterState state)
+        {
+            if (!InstanceScript::SetBossState(id, state))
+                return false;
+
+            switch (id)
+            {
+            case DATA_INSTRUCTOR:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(doorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(doorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(doorGuid, true);
+                        HandleGameObject(door2Guid, true);
+                        break;
+                    }
+                }
+                break;
+            case DATA_BAROV:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(door2Guid, true);
+                        break;
+                    case IN_PROGRESS: 
+                        HandleGameObject(door2Guid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(door2Guid, true);
+                        HandleGameObject(door3Guid, true);
+                        break;
+                    }
+                }
+                break;
+            case DATA_RATTLEGORE:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(door3Guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(door3Guid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(door3Guid, true);
+                        HandleGameObject(door4Guid, true);
+                        break;
+                    }
+                }
+                break;
+            }
+
+            return true;
+        }
 
         uint64 GetData64(uint32 type)
         {

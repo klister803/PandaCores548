@@ -18700,6 +18700,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             // Based on Hair color
             if (getRace() == RACE_NIGHTELF)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 29405, 29406, 29407, 29408, 892 };
+                    return models[urand(0, 4)];
+                }
+
                 uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                 switch (hairColor)
                 {
@@ -18720,6 +18727,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             }
             else if (getRace() == RACE_TROLL)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 33668, 33667, 33666, 33665, 33669 };
+                    return models[urand(0, 4)];
+                }
+
                 uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                 switch (hairColor)
                 {
@@ -18742,6 +18756,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             }
             else if (getRace() == RACE_WORGEN)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 33662, 33661, 33664, 33663, 33660 };
+                    return models[urand(0, 4)];
+                }
+
                 // Based on Skin color
                 uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                 // Male
@@ -18787,6 +18808,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             // Based on Skin color
             else if (getRace() == RACE_TAUREN)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 29409, 29410, 29411, 29412, 8571 };
+                    return models[urand(0, 4)];
+                }
+
                 uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                 // Male
                 if (getGender() == GENDER_MALE)
@@ -18848,6 +18876,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             // Based on Hair color
             if (getRace() == RACE_NIGHTELF)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 29413, 29414, 29416, 29417, 2281 };
+                    return models[urand(0, 4)];
+                }
+
                 uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                 switch (hairColor)
                 {
@@ -18867,6 +18902,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             }
             else if (getRace() == RACE_TROLL)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 33657, 33659, 33656, 33658, 33655 };
+                    return models[urand(0, 4)];
+                }
+
                 uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                 switch (hairColor)
                 {
@@ -18890,6 +18932,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             }
             else if (getRace() == RACE_WORGEN)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 33652, 33651, 33653, 33654, 33650 };
+                    return models[urand(0, 4)];
+                }
+
                 // Based on Skin color
                 uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                 // Male
@@ -18935,6 +18984,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             // Based on Skin color
             else if (getRace() == RACE_TAUREN)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 29418, 29419, 29420, 29421, 2289 };
+                    return models[urand(0, 4)];
+                }
+
                 uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                 // Male
                 if (getGender() == GENDER_MALE)
@@ -19013,24 +19069,25 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             }
             return 21244;
         case FORM_TRAVEL:
+            // Glyph of the Cheetah
+            if (HasAura(131113))
+                return 918;
             if (Player::TeamForRace(getRace()) == ALLIANCE)
                 return 40816;
             return 45339;
         case FORM_MOONKIN:
-            if (Player::TeamForRace(getRace()) == HORDE)
-            {
-                if (getRace() == RACE_TROLL)
-                    return 37174;
-                else if (getRace() == RACE_TAUREN)
-                    return 15375;
-            }
-            else if (Player::TeamForRace(getRace()) == ALLIANCE)
-            {
-                if (getRace() == RACE_NIGHTELF)
-                    return 15374;
-                else if (getRace() == RACE_WORGEN)
-                    return 37173;
-            }
+            // Glyph of the Stars
+            if (HasAura(114301))
+                return 0;
+            if (getRace() == RACE_TROLL)
+                return 37174;
+            else if (getRace() == RACE_TAUREN)
+                return 15375;
+            else if (getRace() == RACE_NIGHTELF)
+                return 15374;
+            else if (getRace() == RACE_WORGEN)
+                return 37173;
+            break;
         case FORM_GHOSTWOLF:
             //Glyph
             if(HasAura(58135))
@@ -19039,7 +19096,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
         case FORM_AQUA:
             // Glyph of the Orca
             if (HasAura(114333))
-                return 4591;
+                return 40815;
             break;
         default:
             break;
@@ -19169,35 +19226,7 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
             break;
         }
         case RACE_PANDAREN_NEUTRAL:
-        {
-            switch (totemType)
-            {
-                case SUMMON_TYPE_TOTEM_FIRE:    // fire
-                    return 41670;
-                case SUMMON_TYPE_TOTEM_EARTH:   // earth
-                    return 41669;
-                case SUMMON_TYPE_TOTEM_WATER:   // water
-                    return 41671;
-                case SUMMON_TYPE_TOTEM_AIR:     // air
-                    return 41668;
-            }
-            break;
-        }
         case RACE_PANDAREN_ALLI:
-        {
-            switch (totemType)
-            {
-                case SUMMON_TYPE_TOTEM_FIRE:    // fire
-                    return 41670;
-                case SUMMON_TYPE_TOTEM_EARTH:   // earth
-                    return 41669;
-                case SUMMON_TYPE_TOTEM_WATER:   // water
-                    return 41671;
-                case SUMMON_TYPE_TOTEM_AIR:     // air
-                    return 41668;
-            }
-            break;
-        }
         case RACE_PANDAREN_HORDE:
         {
             switch (totemType)

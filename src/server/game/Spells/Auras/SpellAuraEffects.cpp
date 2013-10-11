@@ -1446,8 +1446,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 {
     uint32 spellId      = 0;
     uint32 spellId2     = 0;
-    //uint32 spellId3     = 0;
-    uint32 HotWSpellId  = 0;
+    uint32 spellId3     = 0;
 
     std::list<uint32> actionBarReplaceAuras;
 
@@ -1455,7 +1454,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     {
         case FORM_CAT:
             spellId = 3025;
-            HotWSpellId = 24900;
             actionBarReplaceAuras.push_back(48629);
             break;
         case FORM_TREE:
@@ -1469,7 +1467,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             break;
         case FORM_BEAR:
             spellId = 1178;
-            HotWSpellId = 24899;
             actionBarReplaceAuras.push_back(21178);
             actionBarReplaceAuras.push_back(106829);
             break;
@@ -1485,6 +1482,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
         case FORM_MOONKIN:
             spellId = 24905;
             spellId2 = 24907;
+            // Glyph of the Start
+            if (!apply || target->HasAura(114301))
+                spellId3 = 114302;  // Astral Form
             break;
         case FORM_FLIGHT:
             spellId = 33948;
@@ -1543,6 +1543,13 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             target->CastSpell(target, spellId2, true, NULL, this);
         }
 
+        if (spellId3)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->RemoveSpellCooldown(spellId3);
+            target->CastSpell(target, spellId3, true, NULL, this);
+        }
+
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             Player* plrTarget = target->ToPlayer();
@@ -1597,22 +1604,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                     target->CastSpell(target, 66530, true);
             }
 
-            // Heart of the Wild
-            if (HotWSpellId)
-            {   // hacky, but the only way as spell family is not SPELLFAMILY_DRUID
-                Unit::AuraEffectList const& mModTotalStatPct = target->GetAuraEffectsByType(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE);
-                for (Unit::AuraEffectList::const_iterator i = mModTotalStatPct.begin(); i != mModTotalStatPct.end(); ++i)
-                {
-                    // Heart of the Wild
-                    if (17003 <=  (*i)->GetId() && (*i)->GetId() < 17006)
-                    {
-                        int32 HotWMod = (*i)->GetSpellInfo()->Effects[(GetMiscValue() == FORM_CAT)? 1: 0].BasePoints;
-
-                        target->CastCustomSpell(target, HotWSpellId, &HotWMod, NULL, NULL, true, NULL, this);
-                        break;
-                    }
-                }
-            }
             switch (GetMiscValue())
             {
                 case FORM_CAT:
@@ -1660,6 +1651,8 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             target->RemoveAurasDueToSpell(spellId);
         if (spellId2)
             target->RemoveAurasDueToSpell(spellId2);
+        if (spellId3)
+            target->RemoveAurasDueToSpell(spellId3);
 
         // Improved Barkskin - apply/remove armor bonus due to shapeshift
         if (Player* player=target->ToPlayer())
@@ -1694,6 +1687,28 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             else
                 ++itr;
         }
+    }
+
+    // Heart of the Wild
+    if (apply && target->GetTypeId() == TYPEID_PLAYER)
+    {
+        Player* player = target->ToPlayer();
+        if (player->HasSpell(108288))
+        {
+            ShapeshiftForm form = ShapeshiftForm(GetMiscValue());
+
+            // check Heart of the Wild spec-specific buffs
+            bool checkers[] = { target->HasAura(108291), target->HasAura(108292), target->HasAura(108293), target->HasAura(108294) };
+            if ((checkers[0] || checkers[1] || checkers[3]) && form == FORM_BEAR)
+                target->CastSpell(target, 123738, true);
+            if ((checkers[0] || checkers[2] || checkers[3]) && form == FORM_CAT)
+                target->CastSpell(target, 123737, true);
+        }
+    }
+    else
+    {
+        target->RemoveAurasDueToSpell(123737);
+        target->RemoveAurasDueToSpell(123738);
     }
 }
 
@@ -2881,10 +2896,6 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
         uint32 creatureEntry = GetMiscValue();
         uint32 displayId = 0;
         uint32 vehicleId = 0;
-
-        // Mount can be cast in Moonkin form but unapply it
-        if (target->GetShapeshiftForm() == FORM_MOONKIN)
-            target->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
 
         // Festive Holiday Mount
         if (target->HasAura(62061))
