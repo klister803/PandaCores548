@@ -1288,17 +1288,49 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_ferocious_bite_SpellScript);
 
+            uint8 comboPoints;
+
+            bool Validate()
+            {
+                comboPoints = 0;
+            }
+
+            void HandleBeforeCast()
+            {
+                if (GetCaster()->ToPlayer())
+                    comboPoints = GetCaster()->ToPlayer()->GetComboPoints();
+            }
+
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (target->GetHealthPct() < 25.0f)
-                            if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
-                                rip->RefreshDuration();
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Player* player = caster->ToPlayer();
+                if (!player)
+                    return;
+
+                if (Unit* target = GetHitUnit())
+                    if (target->GetHealthPct() < 25.0f)
+                        if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, player->GetGUID()))
+                            rip->RefreshDuration();
+
+                // Soul of the Forest
+                if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                {
+                    // energize
+                    if (SpellInfo const* info = sSpellMgr->GetSpellInfo(114113))
+                    {
+                        int32 bp = info->Effects[EFFECT_0].CalcValue(player) * comboPoints;
+                        player->CastCustomSpell(player, info->Id, &bp, NULL, NULL, true);
+                    }
+                }
             }
 
             void Register()
             {
+                BeforeCast += SpellCastFn(spell_dru_ferocious_bite_SpellScript::HandleBeforeCast);
                 OnHit += SpellHitFn(spell_dru_ferocious_bite_SpellScript::HandleOnHit);
             }
         };
@@ -1306,6 +1338,64 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dru_ferocious_bite_SpellScript();
+        }
+};
+
+// Rip - 1079
+class spell_dru_rip : public SpellScriptLoader
+{
+    public:
+        spell_dru_rip() : SpellScriptLoader("spell_dru_rip") { }
+
+        class spell_dru_rip_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_rip_SpellScript);
+
+            uint8 comboPoints;
+
+            bool Validate()
+            {
+                comboPoints = 0;
+            }
+
+            void HandleBeforeCast()
+            {
+                if (GetCaster()->ToPlayer())
+                    comboPoints = GetCaster()->ToPlayer()->GetComboPoints();
+            }
+
+            void HandleOnHit()
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Player* player = caster->ToPlayer();
+                if (!player)
+                    return;
+
+                // Soul of the Forest
+                if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                {
+                    // energize
+                    if (SpellInfo const* info = sSpellMgr->GetSpellInfo(114113))
+                    {
+                        int32 bp = info->Effects[EFFECT_0].CalcValue(player) * comboPoints;
+                        player->CastCustomSpell(player, info->Id, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                BeforeCast += SpellCastFn(spell_dru_rip_SpellScript::HandleBeforeCast);
+                OnHit += SpellHitFn(spell_dru_rip_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_rip_SpellScript();
         }
 };
 
@@ -3184,8 +3274,7 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
                 if (!target)
                     return;
 
-                if (target->HasAura(102560) &&                          // check Incarnation
-                    (target->HasAura(48517) || target->HasAura(48518))) // check Eclipse
+                if (target->HasAura(102560))                            // check Incarnation
                     target->CastSpell(target, 122114, true);            // Chosen of Elune
             }
 
@@ -3196,6 +3285,18 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
                     return;
 
                 target->RemoveAurasDueToSpell(122114);
+
+                Player* player = target->ToPlayer();
+                if (!player)
+                    return;
+
+                // check Soul of the Forest
+                if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                {
+                    int32 bp = GetId() == 48517 ? -20 : 20;
+                    // Eclipse Energy
+                    target->CastCustomSpell(target, 89265, &bp, NULL, NULL, true);
+                }
             }
 
             void Register()
@@ -3233,6 +3334,7 @@ void AddSC_druid_spell_scripts()
     new spell_dru_savage_defense();
     new spell_dru_bear_form();
     new spell_dru_ferocious_bite();
+    new spell_dru_rip();
     new spell_dru_bear_hug();
     new spell_dru_ravage();
     new spell_dru_lifebloom();
