@@ -27,6 +27,14 @@ EndScriptData */
 #include "ScriptedCreature.h"
 #include "scholomance.h"
 
+enum Spells
+{
+    SPELL_INCINERATE  = 113136,
+    SPELL_IMMOLATE    = 113141,
+    SPELL_RISE        = 113143,
+    SPELL_FIRE_DUMMY  = 114910,
+};
+
 class boss_darkmaster_gandling : public CreatureScript
 {
 public:
@@ -40,16 +48,37 @@ public:
         }
 
         InstanceScript* instance;
+        uint32 incinerate;
+        uint32 immolate;
+        uint32 rise;
 
         void Reset()
         {
            _Reset();
+           if (!me->HasAura(SPELL_FIRE_DUMMY))
+               me->AddAura(SPELL_FIRE_DUMMY, me);
+           me->SetReactState(REACT_DEFENSIVE);
+           incinerate = 0;
+           immolate = 0;
+           rise = 0;
+
         }
 
         void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
+            if (me->HasAura(SPELL_FIRE_DUMMY))
+                me->RemoveAurasDueToSpell(SPELL_FIRE_DUMMY);
+            incinerate = 3000;
+            immolate = 10000;
+            rise = 20000;
         }
+
+       /* void JustSummond(Creature* summon)
+        {
+            summons.Summon(summon);
+            DoZoneInCombat(summon, 75.0f);
+        }*/
 
         void JustDied(Unit* /*killer*/)
         {
@@ -61,7 +90,34 @@ public:
             if (!UpdateVictim())
                 return;
 
-            DoMeleeAttackIfReady();
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            if (rise <= diff)
+            {
+                DoCast(me, SPELL_RISE);
+                rise = 20000; 
+            }
+            else
+                rise -= diff;
+
+            if (immolate <= diff)
+            {
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                    DoCast(target, SPELL_IMMOLATE);
+                immolate = 10000;
+            }
+            else
+                immolate -= diff;
+
+            if (incinerate <= diff)
+            {
+                if (me->getVictim())
+                    DoCast(me->getVictim(), SPELL_INCINERATE);
+                incinerate = 3000; 
+            }
+            else
+                incinerate -= diff;
         }
     };
 
@@ -72,7 +128,39 @@ public:
 
 };
 
+class npc_failed_student : public CreatureScript
+{
+    public:
+        npc_failed_student() : CreatureScript("npc_failed_student") {}
+
+        struct npc_failed_studentAI : public ScriptedAI
+        {
+            npc_failed_studentAI(Creature* creature) : ScriptedAI(creature)
+            {
+                InstanceScript* instance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* instance;
+            
+            void Reset()
+            {
+                DoZoneInCombat(me, 75.0f);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_failed_studentAI(creature);
+        }
+};
+
 void AddSC_boss_darkmaster_gandling()
 {
     new boss_darkmaster_gandling();
+    new npc_failed_student();
 }

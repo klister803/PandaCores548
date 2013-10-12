@@ -24,7 +24,6 @@
 #include "Creature.h"
 #include "CreatureAIImpl.h"
 
-
 enum DataTyped
 { 
     DATA_INSTRUCTOR           = 0,
@@ -41,16 +40,6 @@ enum CreatureIds
     NPC_RATTLEGORE            = 59153,
     NPC_LILIAN_VOSS           = 59200,
     NPC_DARKMASTER_GANDLING   = 59080
-};
-
-enum GameObjectIds
-{
-    GO_DOOR       = 211259,
-    GO_DOOR2      = 211258,
-    GO_DOOR3      = 211256,
-    GO_DOOR4      = 211262,
-    GO_DOOR5      = 211261,
-    GO_DOOR6      = 210771
 };
 
 #endif
