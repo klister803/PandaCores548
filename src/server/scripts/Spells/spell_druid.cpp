@@ -3183,6 +3183,53 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
         }
 };
 
+// Tiger's Fury - 5217
+// Berserk - 106951
+class spell_druid_berserk_tiger_fury_buff : public SpellScriptLoader
+{
+    public:
+        spell_druid_berserk_tiger_fury_buff() : SpellScriptLoader("spell_druid_berserk_tiger_fury_buff") { }
+
+        class spell_druid_berserk_tiger_fury_buff_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_druid_berserk_tiger_fury_buff_AuraScript);
+
+            void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                // Glyph of Shred (Feral)
+                if (target->HasAura(114234))
+                    target->CastSpell(target, 114235, true, NULL, aurEff);
+            }
+
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                target->RemoveAurasDueToSpell(114235);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_druid_berserk_tiger_fury_buff_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectApply += AuraEffectApplyFn(spell_druid_berserk_tiger_fury_buff_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+
+                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_berserk_tiger_fury_buff_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_druid_berserk_tiger_fury_buff_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_druid_berserk_tiger_fury_buff_AuraScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3246,4 +3293,5 @@ void AddSC_druid_spell_scripts()
     new spell_druid_glyph_of_the_treant();
     new spell_druid_heart_of_the_wild();
     new spell_druid_eclipse_buff();
+    new spell_druid_berserk_tiger_fury_buff();
 }

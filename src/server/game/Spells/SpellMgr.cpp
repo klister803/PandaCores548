@@ -3873,7 +3873,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 132158:// Nature's Swiftness
             case 74434: // Soul Burn
             case 34936: // Backlash
-            case 50334: // Berserk (bear)
+            //case 50334: // Berserk (bear)
             case 23920: // Spell Reflection
             case 114028:// Mass Spell Reflection
             case 113002:// Spell Reflection (Symbiosis)

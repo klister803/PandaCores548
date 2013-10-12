@@ -2771,7 +2771,14 @@ void AuraEffect::HandleAuraTrackCreatures(AuraApplication const* aurApp, uint8 m
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    target->SetUInt32Value(PLAYER_TRACK_CREATURES, (apply) ? ((uint32)1)<<(GetMiscValue()-1) : 0);
+    uint32 mask = 1 << (GetMiscValue() - 1);
+    // Track Humanoids
+    if (GetId() == 5225)
+        // Glyph of the Predator
+        if (!apply && target->HasAuraTypeWithMiscvalue(SPELL_AURA_TRACK_CREATURES, GetMiscValue()) || target->HasAura(114280))
+            mask |= 1 << (CREATURE_TYPE_BEAST - 1);
+
+    target->ApplyModFlag(PLAYER_TRACK_CREATURES, mask, apply);
 }
 
 void AuraEffect::HandleAuraTrackResources(AuraApplication const* aurApp, uint8 mode, bool apply) const
