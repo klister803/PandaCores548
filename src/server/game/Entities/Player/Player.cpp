@@ -941,6 +941,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     sWorld->IncreasePlayerCount();
 
     m_ChampioningFaction = 0;
+    m_ChampioningFactionDungeonLevel = 0;
 
     for (uint8 i = 0; i < MAX_POWERS_PER_CLASS; ++i)
         m_powerFraction[i] = 0;
@@ -7511,16 +7512,22 @@ void Player::RewardReputation(Unit* victim, float rate)
         Map const* map = GetMap();
         if (map && map->IsDungeon())
         {
-            InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(map->GetId());
-            if (instance)
+            uint32 dungeonLevel = GetChampioningFactionDungeonLevel();
+            if (dungeonLevel)
             {
-                AccessRequirement const* pAccessRequirement = sObjectMgr->GetAccessRequirement(map->GetId(), ((InstanceMap*)map)->GetDifficulty());
-                if (pAccessRequirement)
+                InstanceTemplate const *instance = sObjectMgr->GetInstanceTemplate(map->GetId());
+                if (instance)
                 {
-                    if (!map->IsRaid() && pAccessRequirement->levelMin == 80)
-                        ChampioningFaction = GetChampioningFaction();
+                    AccessRequirement const *pAccessRequirement = sObjectMgr->GetAccessRequirement(map->GetId(), ((InstanceMap*)map)->GetDifficulty());
+                    if (pAccessRequirement)
+                    {
+                        if (!map->IsRaid() && pAccessRequirement->levelMin >= dungeonLevel)
+                            ChampioningFaction = GetChampioningFaction();
+                    }
                 }
             }
+            else
+                ChampioningFaction = GetChampioningFaction();
         }
     }
 
@@ -7563,6 +7570,21 @@ void Player::RewardReputation(Unit* victim, float rate)
         uint32 current_reputation_rank2 = GetReputationMgr().GetRank(factionEntry2);
         if (factionEntry2 && current_reputation_rank2 <= Rep->ReputationMaxCap2)
             GetReputationMgr().ModifyReputation(factionEntry2, donerep2);
+    }
+    
+    // Implementation for cataclysm with empty default faction
+    if (!Rep->RepFaction1 && !Rep->RepFaction2 && ChampioningFaction)
+    {
+        int32 donerep = CalculateReputationGain(victim->getLevel(), Rep->RepValue1, ChampioningFaction, false);
+        donerep = int32(donerep*(rate + favored_rep_mult));
+
+        if (recruitAFriend)
+            donerep = int32(donerep * (1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS)));
+
+        FactionEntry const *factionEntry = sFactionStore.LookupEntry(ChampioningFaction);
+        uint32 current_reputation_rank = GetReputationMgr().GetRank(factionEntry);
+        if (factionEntry && current_reputation_rank <= Rep->ReputationMaxCap1)
+            GetReputationMgr().ModifyReputation(factionEntry, donerep);
     }
 }
 
