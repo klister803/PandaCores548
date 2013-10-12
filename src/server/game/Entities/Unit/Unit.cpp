@@ -7461,6 +7461,44 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                // Stormlash Totem
+                case 120676:
+                {
+                    Unit* owner = GetOwner();
+                    if(!owner)
+                        owner = this;
+                    if (!procSpell)
+                    {
+                        if(Player* _plr = owner->ToPlayer())
+                        {
+                            int32 AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                            int32 spellPower = _plr->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                            basepoints0 = (AP > spellPower) ? int32(0.2f * 0.4f * AP) : int32(0.3f * 0.4f * spellPower);
+                        }
+                    }
+                    else if(Player* _plr = owner->ToPlayer())
+                    {
+                        int32 AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                        int32 spellPower = _plr->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                        basepoints0 = (AP > spellPower) ? int32(0.2f * AP) : int32(0.3f * spellPower);
+                        switch(procSpell->Id)
+                        {
+                            case 403:
+                            case 51505:
+                            case 1120:
+                                basepoints0 *= 2;
+                                break;
+                            case 1752:
+                                basepoints0 /= 2;
+                                break;
+                        }
+                    }
+                    else
+                        return false;
+
+                    triggered_spell_id = 120687;
+                    break;
+                }
                 // Lightning Shield
                 case 324:
                 {
