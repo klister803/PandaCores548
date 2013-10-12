@@ -1088,7 +1088,7 @@ class spell_dru_solar_beam : public SpellScriptLoader
             void OnTick(AuraEffect const* aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_DRUID_SOLAR_BEAM))
-                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_SOLAR_BEAM_SILENCE, true);
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_SOLAR_BEAM_SILENCE, true, NULL, aurEff, GetCasterGUID());
             }
 
             void Register()

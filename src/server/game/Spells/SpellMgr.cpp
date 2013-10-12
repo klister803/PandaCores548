@@ -207,7 +207,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
     uint32 mechanic = spellproto->GetAllEffectsMechanicMask();
     if (mechanic & (1 << MECHANIC_CHARM))
         return DIMINISHING_MIND_CONTROL;
-    if (mechanic & (1 << MECHANIC_SILENCE))
+    if (mechanic & (1 << MECHANIC_SILENCE) && spellproto->Id != 81261)  // haxx: Solar Beam diminishing with itself
         return DIMINISHING_SILENCE;
     if (mechanic & (1 << MECHANIC_SLEEP))
         return DIMINISHING_SLEEP;
@@ -4251,6 +4251,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 55442: //Glyph of Capacitor Totem
                 spellInfo->Effects[0].SpellClassMask[0] = 0x00008000;
+                break;
+            case 116186:    // Glyph of Prowl
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
                 break;
             default:
                 break;
