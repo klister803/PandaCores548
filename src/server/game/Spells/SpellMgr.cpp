@@ -4131,6 +4131,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 113996: //Bone Armor
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
+            case 111628: //Shadow blaze dmg
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(44);
+                break;
 
             // Mogu'shan Vault
             case 129428: //Dummy Searcher(cobalt mine)

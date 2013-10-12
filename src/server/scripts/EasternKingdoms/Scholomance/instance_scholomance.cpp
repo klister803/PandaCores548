@@ -181,6 +181,24 @@ public:
                     case DONE:
                         HandleGameObject(door3Guid, true);
                         HandleGameObject(door4Guid, true);
+                        HandleGameObject(door5Guid, true);
+                        break;
+                    }
+                }
+                break;
+            case DATA_LILIAN:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(door5Guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(door5Guid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(door5Guid, true);
+                        HandleGameObject(door6Guid, true);
                         break;
                     }
                 }
