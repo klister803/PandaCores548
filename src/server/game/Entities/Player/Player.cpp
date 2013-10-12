@@ -20185,7 +20185,12 @@ void Player::SaveToDB(bool create /*=false*/)
         {
             if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
             {
-                stmt->setUInt32(index++, GetUInt32Value(UNIT_FIELD_POWER1 + storedPowers));
+                // do not save eclipse power
+                if (Powers(i) != POWER_ECLIPSE)
+                    stmt->setUInt32(index++, GetUInt32Value(UNIT_FIELD_POWER1 + storedPowers));
+                else
+                    stmt->setUInt32(index++, 0);
+
                 if (++storedPowers >= MAX_POWERS_PER_CLASS)
                     break;
             }
@@ -27077,6 +27082,9 @@ void Player::ActivateSpec(uint8 spec)
     //    SetPower(POWER_MANA, 0); // Mana must be 0 even if it isn't the active power type.
 
     //SetPower(pw, 0);
+
+    SetPower(POWER_HOLY_POWER, 0);
+    SetPower(POWER_ECLIPSE, 0);
 }
 
 void Player::ResetTimeSync()
