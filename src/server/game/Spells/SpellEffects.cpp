@@ -2229,7 +2229,11 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     if (level_diff > 0)
         damage -= level_multiplier * level_diff;
 
-    if (damage < 0)
+    if (damage < 0 && power != POWER_ECLIPSE && power != POWER_ALTERNATE_POWER)
+        return;
+
+    // Do not energize when in Celestial Alignment
+    if (power == POWER_ECLIPSE && m_caster->HasAura(112071))
         return;
 
     if (unitTarget->GetMaxPower(power) == 0)
