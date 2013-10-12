@@ -3290,8 +3290,9 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
                 if (!player)
                     return;
 
+                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                 // check Soul of the Forest
-                if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                if (removeMode != AURA_REMOVE_BY_CANCEL && player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
                 {
                     int32 bp = GetId() == 48517 ? -20 : 20;
                     // Eclipse Energy
