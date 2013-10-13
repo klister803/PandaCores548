@@ -3198,6 +3198,35 @@ class spell_druid_berserk_tiger_fury_buff : public SpellScriptLoader
         }
 };
 
+// Item - Druid PvP Set Feral 4P Bonus - 131537
+class spell_dru_a12_4p_feral_bonus : public SpellScriptLoader
+{
+    public:
+        spell_dru_a12_4p_feral_bonus() : SpellScriptLoader("spell_dru_a12_4p_feral_bonus") { }
+
+        class spell_dru_a12_4p_feral_bonus_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_a12_4p_feral_bonus_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                Unit* target = GetTarget();
+                // Stampede
+                target->CastSpell(target, 81022, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_a12_4p_feral_bonus_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_a12_4p_feral_bonus_AuraScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3261,4 +3290,5 @@ void AddSC_druid_spell_scripts()
     new spell_druid_heart_of_the_wild();
     new spell_druid_eclipse_buff();
     new spell_druid_berserk_tiger_fury_buff();
+    new spell_dru_a12_4p_feral_bonus();
 }

@@ -4255,6 +4255,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 116186:    // Glyph of Prowl
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
                 break;
+            case 131537:    // Item - Druid PvP Set Feral 4P Bonus
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
+                spellInfo->Effects[0].Amplitude = 30000;
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
+                break;
             default:
                 break;
             }
