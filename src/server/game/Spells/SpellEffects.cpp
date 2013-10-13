@@ -908,36 +908,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             }
             break;
         case SPELLFAMILY_DRUID:
-            switch (m_spellInfo->Id)
-            {
-                case 106785:
-                    if (m_caster->GetShapeshiftForm() == FORM_CAT)
-                        m_caster->CastSpell(unitTarget, sSpellMgr->GetSpellInfo(62078), TRIGGERED_IGNORE_GCD);
-                    else if (m_caster->GetShapeshiftForm() == FORM_BEAR)
-                    {
-                        m_caster->CastSpell(unitTarget, 779, true);
-
-                        if (Player* player = m_caster->ToPlayer())
-                            player->AddSpellCooldown(106785, 0, time(NULL) + 3);
-                    }
-                    break;
-                case 33917:
-                    if (m_caster->GetShapeshiftForm() == FORM_CAT)
-                    {
-                        m_caster->CastSpell(unitTarget, 33876, false);
-                        if (Player* player = m_caster->ToPlayer())
-                            player->AddSpellCooldown(33917, 0, time(NULL) + 1);
-                    }
-                    else if (m_caster->GetShapeshiftForm() == FORM_BEAR)
-                    {
-                        m_caster->CastSpell(unitTarget, 33878, false);
-                        if (Player* player = m_caster->ToPlayer())
-                            player->AddSpellCooldown(33917, 0, time(NULL) + 6);
-                    }
-
-                    break;
-            }
-
             break;
         case SPELLFAMILY_DEATHKNIGHT:
             // Death Coil
@@ -2211,6 +2181,15 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         case 24532:                                         // Burst of Energy
             level_diff = m_caster->getLevel() - 60;
             level_multiplier = 4;
+            break;
+        case 33878:                                         // Mangle
+            if (Player* player = m_caster->ToPlayer())
+            {
+                // check Soul of the Forest for guardian druids
+                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                    if (AuraEffect const* aura = player->GetAuraEffect(114107, EFFECT_2))
+                        damage += aura->GetAmount() * 10;
+            }
             break;
         case 63375:                                         // Primal Wisdom
             damage = int32(CalculatePct(unitTarget->GetCreateMana(), damage));

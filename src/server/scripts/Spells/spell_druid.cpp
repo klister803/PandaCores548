@@ -1136,39 +1136,6 @@ class spell_dru_dash : public SpellScriptLoader
         }
 };
 
-// Berserk - 106952
-class spell_dru_berserker : public SpellScriptLoader
-{
-    public:
-        spell_dru_berserker() : SpellScriptLoader("spell_dru_berserker") { }
-
-        class spell_dru_berserker_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_berserker_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (_player->GetShapeshiftForm() == FORM_BEAR)
-                        _player->CastSpell(_player, SPELL_DRUID_BERSERK_BEAR, true);
-                    else if (_player->GetShapeshiftForm() == FORM_CAT)
-                        _player->CastSpell(_player, SPELL_DRUID_BERSERK_CAT, true);
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_berserker_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_berserker_SpellScript();
-        }
-};
-
 // Called by Mangle (bear) - 33878, Mangle (cat) - 33876, Ravage - 6785 and Shred - 5221
 // Rip - 1079
 class spell_dru_rip_duration : public SpellScriptLoader
@@ -1805,7 +1772,8 @@ class spell_dru_cat_form : public SpellScriptLoader
         }
 };
 
-// Skull Bash - 106839
+// Skull Bash - 80964
+// Skull Bash - 80965
 class spell_dru_skull_bash : public SpellScriptLoader
 {
     public:
@@ -2204,7 +2172,7 @@ class spell_dru_astral_communion : public SpellScriptLoader
                 if (!player)
                     return;
 
-                int32 mod = 25 *direction;
+                int32 mod = aurEff->GetAmount() * direction;
                 // energize
                 player->CastCustomSpell(player, 89265, &mod, NULL, NULL, true);
             }
@@ -2577,7 +2545,7 @@ class spell_dru_growl : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                // This spell activate the bear form
+                // This spells activate the bear form
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (GetSpellInfo()->Id == 106898 && _player->GetShapeshiftForm() != FORM_CAT && _player->GetShapeshiftForm() != FORM_BEAR)
@@ -3247,7 +3215,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_ursols_vortex();
     new spell_dru_solar_beam();
     new spell_dru_dash();
-    new spell_dru_berserker();
     new spell_dru_rip_duration();
     new spell_dru_savage_defense();
     new spell_dru_bear_form();
