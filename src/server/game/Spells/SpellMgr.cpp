@@ -4260,6 +4260,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].Amplitude = 30000;
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
                 break;
+            case 132402:    // Savage Defense
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(32); // 6s
+                break;
             default:
                 break;
             }
