@@ -3098,30 +3098,49 @@ void Player::ResetAllPowers()
         case POWER_RUNIC_POWER:
             SetPower(POWER_RUNIC_POWER, 0);
             break;
-        case POWER_ECLIPSE:
-            SetPower(POWER_ECLIPSE, 0);
-            break;
-        case POWER_DEMONIC_FURY:
-            SetPower(POWER_DEMONIC_FURY, 200);
-            break;
-        case POWER_BURNING_EMBERS:
-            SetPower(POWER_BURNING_EMBERS, 10);
-            break;
-        case POWER_SOUL_SHARDS:
-            SetPower(POWER_SOUL_SHARDS, 100);
-            break;
-        case POWER_SHADOW_ORB:
-            SetPower(POWER_SHADOW_ORB, 0);
-            break;
-        case POWER_CHI:
-            SetPower(POWER_CHI, 0);
-            break;
-        case POWER_ALTERNATE_POWER:
-            SetPower(POWER_ALTERNATE_POWER, 0);
-            break;
         default:
             break;
     }
+
+    SetPower(POWER_ALTERNATE_POWER, 0);
+
+    switch (getClass())
+    {
+        case CLASS_DRUID:
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                ResetEclipseState();
+            break;
+        case CLASS_MONK:
+            SetPower(POWER_CHI, 0);
+            break;
+        case CLASS_PRIEST:
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                SetPower(POWER_SHADOW_ORB, 0);
+            break;
+        case CLASS_WARLOCK:
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
+                SetPower(POWER_SOUL_SHARDS, 100);
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
+                SetPower(POWER_DEMONIC_FURY, 200);
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+                SetPower(POWER_BURNING_EMBERS, 10);
+            break;
+        case CLASS_PALADIN:
+            SetPower(POWER_HOLY_POWER, 0);
+            break;
+    }
+}
+
+void Player::ResetEclipseState()
+{
+    SetPower(POWER_ECLIPSE, 0);
+
+    // remove Eclipse
+    RemoveAurasDueToSpell(48517);
+    RemoveAurasDueToSpell(48518);
+    // remove markers
+    RemoveAurasDueToSpell(67483);
+    RemoveAurasDueToSpell(67484);
 }
 
 bool Player::CanInteractWithQuestGiver(Object* questGiver)
