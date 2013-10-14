@@ -792,8 +792,10 @@ void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
 
     Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_RATED_10_VS_10);
     if (!bg)
+    {
         sLog->outError(LOG_FILTER_NETWORKIO, "Battleground: template bg (all arenas) not found");
         return;
+    }
 
     BattlegroundTypeId bgTypeId = bg->GetTypeID();
 
