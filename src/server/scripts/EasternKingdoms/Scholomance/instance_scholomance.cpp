@@ -26,6 +26,18 @@ EndScriptData */
 #include "ScriptMgr.h"
 #include "scholomance.h"
 
+enum GameObjectId
+{
+    GO_DOOR       = 211259,
+    GO_DOOR2      = 211258,
+    GO_DOOR3      = 211256,
+    GO_DOOR4      = 211262,
+    GO_DOOR5      = 211261,
+    GO_DOOR6      = 210771,
+    GO_DOOR7      = 211260,
+    GO_LAST_DOOR  = 210789
+};
+
 class instance_scholomance : public InstanceMapScript
 {
 public:
@@ -54,6 +66,8 @@ public:
         uint64 door4Guid;
         uint64 door5Guid;
         uint64 door6Guid;
+        uint64 door7Guid;
+        uint64 lastdoorGuid;
 
         void Initialize()
         {
@@ -72,6 +86,8 @@ public:
             door4Guid = 0;
             door5Guid = 0;
             door6Guid = 0;
+            door7Guid = 0;
+            lastdoorGuid = 0;
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -117,6 +133,12 @@ public:
                     break;
                 case GO_DOOR6:
                     door6Guid = go->GetGUID(); 
+                    break;
+                case GO_DOOR7:
+                    door7Guid = go->GetGUID();
+                    break;
+                case GO_LAST_DOOR:
+                    lastdoorGuid = go->GetGUID();
                     break;
             }
             OpenDoor();
@@ -199,9 +221,24 @@ public:
                     case DONE:
                         HandleGameObject(door5Guid, true);
                         HandleGameObject(door6Guid, true);
+                        HandleGameObject(door7Guid, true);
                         break;
                     }
                 }
+                break;
+            case DATA_DARKMASTER:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        HandleGameObject(lastdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(lastdoorGuid, false);
+                        break;
+                    }
+                }                
                 break;
             }
 

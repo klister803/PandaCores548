@@ -207,7 +207,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
     uint32 mechanic = spellproto->GetAllEffectsMechanicMask();
     if (mechanic & (1 << MECHANIC_CHARM))
         return DIMINISHING_MIND_CONTROL;
-    if (mechanic & (1 << MECHANIC_SILENCE))
+    if (mechanic & (1 << MECHANIC_SILENCE) && spellproto->Id != 81261)  // haxx: Solar Beam diminishing with itself
         return DIMINISHING_SILENCE;
     if (mechanic & (1 << MECHANIC_SLEEP))
         return DIMINISHING_SLEEP;
@@ -1469,10 +1469,10 @@ void SpellMgr::LoadSpellLearnSpells()
     {
         Field* fields = result->Fetch();
 
-        uint32 spell_id = fields[0].GetUInt16();
+        uint32 spell_id = fields[0].GetUInt32();
 
         SpellLearnSpellNode node;
-        node.spell       = fields[1].GetUInt16();
+        node.spell       = fields[1].GetUInt32();
         node.active      = fields[2].GetBool();
         node.autoLearned = false;
 
@@ -3873,7 +3873,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 132158:// Nature's Swiftness
             case 74434: // Soul Burn
             case 34936: // Backlash
-            case 50334: // Berserk (bear)
+            //case 50334: // Berserk (bear)
             case 23920: // Spell Reflection
             case 114028:// Mass Spell Reflection
             case 113002:// Spell Reflection (Symbiosis)
@@ -4251,6 +4251,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 55442: //Glyph of Capacitor Totem
                 spellInfo->Effects[0].SpellClassMask[0] = 0x00008000;
+                break;
+            case 116186:    // Glyph of Prowl
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
+                break;
+            case 131537:    // Item - Druid PvP Set Feral 4P Bonus
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
+                spellInfo->Effects[0].Amplitude = 30000;
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
+                break;
+            case 132402:    // Savage Defense
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(32); // 6s
                 break;
             default:
                 break;
