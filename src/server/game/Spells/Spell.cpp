@@ -491,8 +491,7 @@ SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
 m_spellInfo(info),
-m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster),
-m_spellValue(new SpellValue(m_spellInfo, m_diffMode))
+m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
 {
     m_customError = SPELL_CUSTOM_ERROR_NONE;
     m_skipCheck = skipCheck;
@@ -507,6 +506,7 @@ m_spellValue(new SpellValue(m_spellInfo, m_diffMode))
 
     m_applyMultiplierMask = 0;
     m_auraScaleMask = 0;
+    m_spellValue = new SpellValue(m_spellInfo, m_diffMode);
 
     // Get data for type of attack
     switch (m_spellInfo->DmgClass)
@@ -5171,6 +5171,15 @@ SpellCastResult Spell::CheckCast(bool strict)
             if (!(*i)->IsAffectingSpell(m_spellInfo))
                 continue;
             checkForm = false;
+
+            // Heart of the Wild (non-restoration buff)
+            if ((*i)->GetId() == 108293)
+            {
+                if (Player* player = m_caster->ToPlayer())
+                    // only Guardian spec is allowed to cast Rejuvenation in any form
+                    if (player->GetSpecializationId(player->GetActiveSpec()) != SPEC_DROOD_BEAR)
+                        checkForm = true;
+            }
             break;
         }
         if (checkForm)
@@ -5826,6 +5835,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     else
                         return SPELL_FAILED_DONT_REPORT;
                 }
+                // Wild Charge
+                if (m_spellInfo->Id == 102383 && !m_caster->isInCombat())
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
                 break;
             }
             case SPELL_EFFECT_TALENT_SPEC_SELECT:

@@ -283,6 +283,9 @@ class spell_sha_conductivity : public SpellScriptLoader
                         {
                             if (DynamicObject* dynObj = _player->GetDynObject(SPELL_SHA_HEALING_RAIN))
                             {
+                                if (target->GetDistance(dynObj) > 10.0f)
+                                    return;
+
                                 std::list<Unit*> tempList;
                                 std::list<Unit*> memberList;
 
@@ -298,15 +301,21 @@ class spell_sha_conductivity : public SpellScriptLoader
                                 memberList.sort(Trinity::DistanceCompareOrderPred(dynObj));
                                 memberList.resize(1);
 
+                                CustomSpellValues values;
+                                SpellCastTargets targets;
+                                targets.SetDst(*dynObj);
+                                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SHA_CONDUCTIVITY_HEAL);
                                 // When you cast Healing Wave, Greater Healing Wave, or Healing Surge
                                 // allies within your Healing Rain share healing equal to 30% of the initial healing done
                                 if (GetSpellInfo()->IsPositive())
                                 {
                                     int32 bp = int32(GetHitHeal() * 0.30f) / memberList.size();
+                                    values.AddSpellMod(SPELLVALUE_BASE_POINT0, bp);
 
                                     for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
                                     {
-                                        _player->CastCustomSpell(*itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        //_player->CastCustomSpell(dynObj, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, _player->GetGUID());
                                         break;
                                     }
                                 }
@@ -315,10 +324,12 @@ class spell_sha_conductivity : public SpellScriptLoader
                                 else
                                 {
                                     int32 bp = int32(GetHitDamage() * 0.50f) / memberList.size();
+                                    values.AddSpellMod(SPELLVALUE_BASE_POINT0, bp);
 
                                     for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
                                     {
-                                        _player->CastCustomSpell(*itr, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        //_player->CastCustomSpell(dynObj, SPELL_SHA_CONDUCTIVITY_HEAL, &bp, NULL, NULL, true);
+                                        _player->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, _player->GetGUID());
                                         break;
                                     }
                                 }
@@ -1711,8 +1722,8 @@ class spell_shaman_healing_tide: public SpellScriptLoader
                     else
                         targets.erase(itr++);
                 }
-                if (targets.size() > 5)
-                    targets.resize(5);
+                if (targets.size() > count)
+                    targets.resize(count);
             }
 
             void Register()
@@ -1747,28 +1758,28 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]))
                 {
                     Position pos;
-                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(-M_PI/4));
+                    summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(-M_PI/4));
                     totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[2]))
                 {
                     Position pos;
-                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(-3*M_PI/4));
+                    summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(-3*M_PI/4));
                     totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[3]))
                 {
                     Position pos;
-                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(3*M_PI/4));
+                    summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(3*M_PI/4));
                     totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[4]))
                 {
                     Position pos;
-                    summon->GetFirstCollisionPosition(pos, 5.0f, static_cast<float>(M_PI/4));
+                    summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(M_PI/4));
                     totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
                     //totem->SendMovementFlagUpdate();
                 }
@@ -1818,6 +1829,36 @@ class spell_sha_ancestral_vigor : public SpellScriptLoader
         }
 };
 
+class spell_sha_maelstrom_weapon : public SpellScriptLoader
+{
+    public:
+        spell_sha_maelstrom_weapon() : SpellScriptLoader("spell_sha_maelstrom_weapon") { }
+
+        class spell_sha_maelstrom_weapon_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_maelstrom_weapon_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(89646))
+                        amount = 20;
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sha_maelstrom_weapon_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_ADD_PCT_MODIFIER);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_maelstrom_weapon_AuraScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_prowl();
@@ -1854,4 +1895,5 @@ void AddSC_shaman_spell_scripts()
     new spell_shaman_healing_tide();
     new spell_shaman_totemic_projection();
     new spell_sha_ancestral_vigor();
+    new spell_sha_maelstrom_weapon();
 }

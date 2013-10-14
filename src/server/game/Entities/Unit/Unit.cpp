@@ -277,8 +277,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _lastLiquid = NULL;
     _isWalkingBeforeCharm = false;
 
-    SetEclipsePower(0); // Not sure of 0
-
     // Area Skip Update
     _skipCount = 0;
     _skipDiff = 0;
@@ -5363,120 +5361,95 @@ bool Unit::HandleSpellCritChanceAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
 bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 /*procEx*/, uint32 cooldown)
 {
     // Get triggered aura spell info
-    SpellInfo const* auraSpellInfo = triggeredByAura->GetSpellInfo();
+    SpellInfo const* spellProto = triggeredByAura->GetSpellInfo();
+    int32 triggerAmount = triggeredByAura->GetAmount();
+    Powers powerType = Powers(triggeredByAura->GetMiscValue());
+    if (GetPowerIndex(powerType) == MAX_POWERS)
+        return false;
 
-    // Get effect index used for the proc
-    uint32 effIndex = triggeredByAura->GetEffIndex();
+    int32 powerAmount = GetPower(powerType);
 
-    // Power amount required to proc the spell
-    int32 powerAmountRequired = triggeredByAura->GetAmount();
-    // Power type required to proc
-    Powers powerRequired = Powers(auraSpellInfo->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).MiscValue);
-
-    // Set trigger spell id, target, custom basepoints
-    uint32 trigger_spell_id = auraSpellInfo->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).TriggerSpell;
-
-    Unit*  target = NULL;
-    int32  basepoints0 = 0;
-
-    Item* castItem = triggeredByAura->GetBase()->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
-        ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
-
-    /* Try handle unknown trigger spells or with invalid power amount or misc value
-    if (sSpellMgr->GetSpellInfo(trigger_spell_id) == NULL || powerAmountRequired == NULL || powerRequired >= MAX_POWER)
+    switch (spellProto->Id)
     {
-        switch (auraSpellInfo->SpellFamilyName)
+        case 79577:         // Eclipse Mastery Driver Passive
         {
-            case SPELLFAMILY_GENERIC:
+            if (!procSpell)
+                return false;
+
+            // forbid proc when not in balance spec or while in Celestial Alignment
+            if (!HasSpell(78674) || HasAura(112071))
+                return false;
+
+            bool hasMarker = false;
+            int32 direction = 1;
+            // lunar Eclipse Marker
+            if (HasAura(67484))
             {
-                break;
+                hasMarker = true;
+                direction = -1;
             }
-        }
-    }*/
+            // solar Eclipse Marker
+            else if (HasAura(67483))
+                hasMarker = true;
 
-    // All ok. Check current trigger spell
-    SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(trigger_spell_id);
-    if (triggerEntry == NULL)
-    {
-        // Not cast unknown spell
-        // sLog->outError("Unit::HandleAuraProcOnPowerAmount: Spell %u have 0 in EffectTriggered[%d], not handled custom case?", auraSpellInfo->Id, triggeredByAura->GetEffIndex());
-        return false;
-    }
+            int32 powerMod = 0;
+            // Starfire
+            if (procSpell->Id == 2912)
+                powerMod = procSpell->Effects[1].CalcValue(this);
+            // Wrath
+            else if (procSpell->Id == 5176)
+                powerMod = -procSpell->Effects[1].CalcValue(this);
+            // Starsurge
+            else if (procSpell->Id == 78674)
+                powerMod = direction * procSpell->Effects[1].CalcValue(this);
 
-    // not allow proc extra attack spell at extra attack
-    if (m_extraAttacks && triggerEntry->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
-        return false;
+            // proc failed if wrong spell or spell direction does not match marker direction
+            if (!powerMod || hasMarker && direction * powerMod < 0)
+                return false;
 
-    if (!powerRequired || !powerAmountRequired)
-    {
-        sLog->outError(LOG_FILTER_SPELLS_AURAS, "Unit::HandleAuraProcOnPowerAmount: Spell %u have 0 powerAmountRequired in EffectAmount[%d] or 0 powerRequired in EffectMiscValue, not handled custom case?", auraSpellInfo->Id, triggeredByAura->GetEffIndex());
-        return false;
-    }
+            if (powerMod > 0 && triggeredByAura->GetEffIndex() != EFFECT_0)
+                return false;
+            else if (powerMod < 0 && triggeredByAura->GetEffIndex() != EFFECT_1)
+                return false;
 
-    if (GetPower(powerRequired) != powerAmountRequired)
-        return false;
-
-    // Custom requirements (not listed in procEx) Warning! damage dealing after this
-    // Custom triggered spells
-    switch (auraSpellInfo->SpellFamilyName)
-    {
-        case SPELLFAMILY_DRUID:
-        {
-            // Eclipse Mastery Driver Passive
-            if (auraSpellInfo->Id == 79577)
+            // while not in Eclipse State
+            if (!HasAura(48517) && !HasAura(48518))
             {
-                uint32 solarEclipseMarker = 67483;
-                uint32 lunarEclipseMarker = 67484;
-
-                switch(effIndex)
+                // only Starfire and Wrath
+                if (procSpell->Id == 2912 || procSpell->Id == 5176)
                 {
-                    case 0:
-                    {
-                        // Do not proc if proc spell isnt starfire and starsurge
-                        if (procSpell->Id != 2912 && procSpell->Id != 78674)
-                            return false;
+                    // search Euphoria
+                    if (HasAura(81062))
+                        powerMod *= 2;
 
-                        if (HasAura(solarEclipseMarker))
-                        {
-                            RemoveAurasDueToSpell(solarEclipseMarker);
-                            CastSpell(this,lunarEclipseMarker,true);
-                        }
-                        break;
-                    }
-                    case 1:
-                    {
-                        // Do not proc if proc spell isnt wrath and starsurge
-                        if (procSpell->Id != 5176 && procSpell->Id != 78674)
-                            return false;
-
-                        if (HasAura(lunarEclipseMarker))
-                        {
-                            RemoveAurasDueToSpell(lunarEclipseMarker);
-                            CastSpell(this,solarEclipseMarker,true);
-                        }
-
-                        break;
-                    }
+                    // Item - Druid T12 Balance 4P Bonus
+                    if (HasAura(99049))
+                        powerMod += direction * (procSpell->Id == 2912 ? 5 : 3);
                 }
+            }
+
+            ModifyPower(powerType, powerMod);
+            int32 newPower = GetPower(powerType);
+
+            if (newPower == powerAmount)
+                return false;
+
+            // Marker casted only when not by Starsurge
+            if (newPower != triggerAmount && !hasMarker && procSpell->Id != 78674)
+            {
+                // solar marker or lunar marker
+                uint32 markerSpellAdd = powerMod > 0 ? 67483 : 67484;
+                uint32 markerSpellRemove = powerMod < 0 ? 67483 : 67484;
+
+                RemoveAurasDueToSpell(markerSpellRemove);
+                if (!HasAura(markerSpellAdd))
+                    CastSpell(this, markerSpellAdd, true);
             }
             break;
         }
+        default:
+            break;
     }
-
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(trigger_spell_id))
-        return false;
-
-    // try detect target manually if not set
-    if (target == NULL)
-        target = !(procFlag & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS)) && triggerEntry && triggerEntry->IsPositive() ? this : victim;
-
-    if (basepoints0)
-        CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
-    else
-        CastSpell(target, trigger_spell_id, true, castItem, triggeredByAura);
-
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(trigger_spell_id, 0, time(NULL) + cooldown);
 
     return true;
 }
@@ -5636,6 +5609,36 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 case SPELL_TRIGGER_PERC_FROM_DAMGE:
                 {
                     basepoints0 = CalculatePct(damage, itr->bp0);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_MAX_MANA:
+                {
+                    basepoints0 = CountPctFromMaxMana(itr->bp0);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_BASE_MANA:
+                {
+                    basepoints0 = CalculatePct(GetCreateMana(), itr->bp0);;
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_CUR_MANA:
+                {
+                    basepoints0 = CountPctFromCurMana(itr->bp0);
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
@@ -6774,46 +6777,24 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
-                // Sudden Eclipse (S12 - 2P Balance)
+                // Sudden Eclipse
                 case 46832:
                 {
-                    if (GetTypeId() != TYPEID_PLAYER)
+                    if (GetTypeId() != TYPEID_PLAYER || triggeredByAura->GetEffIndex() != EFFECT_0)
                         return false;
 
-                    if (!(procEx & PROC_EX_CRITICAL_HIT))
+                    if ((procEx & PROC_EX_CRITICAL_HIT) == 0)
                         return false;
 
-                    // Solar and Lunar Eclipse
-                    if (HasAura(48517) || HasAura(48518))
+                    // ignore when in Solar and Lunar Eclipse, Celestial Alignment
+                    if (HasAura(48517) || HasAura(48518) || HasAura(112071))
                         return false;
 
-                    if (ToPlayer()->HasSpellCooldown(46832))
-                        return false;
-
-                    ToPlayer()->AddSpellCooldown(46832, 0, time(NULL) + 6);
-
-                    if (GetEclipsePower() <= 0)
-                        SetEclipsePower(GetEclipsePower() - 20);
-                    else
-                        SetEclipsePower(GetEclipsePower() + 20);
-
-                    if (GetEclipsePower() == 100)
-                    {
-                        CastSpell(this, 48517, true, 0); // Cast Lunar Eclipse
-                        CastSpell(this, 16886, true); // Cast Nature's Grace
-                        CastSpell(this, 81070, true); // Cast Eclipse - Give 35% of POWER_MANA
-                    }
-                    else if (GetEclipsePower() == -100)
-                    {
-                        CastSpell(this, 48518, true, 0); // Cast Lunar Eclipse
-                        CastSpell(this, 16886, true); // Cast Nature's Grace
-                        CastSpell(this, 81070, true); // Cast Eclipse - Give 35% of POWER_MANA
-                        CastSpell(this, 107095, true);
-
-                        if (ToPlayer()->HasSpellCooldown(48505))
-                            ToPlayer()->RemoveSpellCooldown(48505, true);
-                    }
-
+                    triggered_spell_id = 95746;
+                    basepoints0 = 20;
+                    // check Lunar eclipse marker
+                    if (HasAura(67484))
+                        basepoints0 *= -1;
                     break;
                 }
                 // Glyph of Innervate
@@ -7431,6 +7412,44 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                // Stormlash Totem
+                case 120676:
+                {
+                    Unit* owner = GetOwner();
+                    if(!owner)
+                        owner = this;
+                    if (!procSpell)
+                    {
+                        if(Player* _plr = owner->ToPlayer())
+                        {
+                            int32 AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                            int32 spellPower = _plr->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                            basepoints0 = (AP > spellPower) ? int32(0.2f * 0.4f * AP) : int32(0.3f * 0.4f * spellPower);
+                        }
+                    }
+                    else if(Player* _plr = owner->ToPlayer())
+                    {
+                        int32 AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                        int32 spellPower = _plr->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                        basepoints0 = (AP > spellPower) ? int32(0.2f * AP) : int32(0.3f * spellPower);
+                        switch(procSpell->Id)
+                        {
+                            case 403:
+                            case 51505:
+                            case 1120:
+                                basepoints0 *= 2;
+                                break;
+                            case 1752:
+                                basepoints0 /= 2;
+                                break;
+                        }
+                    }
+                    else
+                        return false;
+
+                    triggered_spell_id = 120687;
+                    break;
+                }
                 // Lightning Shield
                 case 324:
                 {
@@ -8052,6 +8071,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             break;
     }
 
+    // Misdirection
     if (dummySpell->Id == 110588)
     {
         if (!GetMisdirectionTarget())
@@ -9164,7 +9184,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
             break;
         }
         case 76857:     // Mastery : Critical Block
-        case 16864:     // Omen of Clarity (old)
         case 58410:     // Master Poisoner
         case 79147:     // Sanguinary Vein
         case 91023:     // Find Weakness
@@ -13433,6 +13452,8 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
     if (val <= GetMinPower(power))
     {
         SetPower(power, GetMinPower(power));
+        if (power == POWER_ECLIPSE)
+            TriggerEclipse(curPower);
         return -curPower;
     }
 
@@ -13449,7 +13470,39 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
         gain = maxPower - curPower;
     }
 
+    if (gain && power == POWER_ECLIPSE)
+        TriggerEclipse(curPower);
+
     return gain;
+}
+
+void Unit::TriggerEclipse(int32 oldPower)
+{
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(79577);
+    if (!spellInfo)
+        return;
+
+    int32 newPower = GetPower(POWER_ECLIPSE);
+    if (newPower == oldPower)
+        return;
+
+    // Eclipse is cleared when eclipse power reaches 0
+    if (newPower * oldPower <= 0)
+    {
+        RemoveAurasDueToSpell(spellInfo->Effects[EFFECT_0].TriggerSpell);
+        RemoveAurasDueToSpell(spellInfo->Effects[EFFECT_1].TriggerSpell);
+    }
+
+    if (newPower != spellInfo->Effects[EFFECT_0].CalcValue(this) && newPower != spellInfo->Effects[EFFECT_1].CalcValue(this))
+        return;
+
+    uint32 effIdx = newPower > 0 ? EFFECT_0 : EFFECT_1;
+    uint32 eclipseSpell = spellInfo->Effects[effIdx].TriggerSpell;
+    if (!eclipseSpell)
+        return;
+
+    // cast Eclipse
+    CastSpell(this, eclipseSpell, true);
 }
 
 // returns negative amount on power reduction
@@ -14408,11 +14461,21 @@ int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
     return duration;
 }
 
-int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, int32 duration, bool positive, uint32 effectMask)
+int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, int32 duration, bool positive, uint32 effectMask, Unit* caster)
 {
     // don't mod permanent auras duration
     if (duration < 0)
         return duration;
+
+    if (caster)
+    {
+        // Skull Bash
+        // need find other interrupt spells, whose interrupt duration is affected by spellmods and
+        // implement proper code
+        if (spellProto->Id == 93985)
+            if (Player* modOwner = caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_DURATION, duration);
+    }
 
     // cut duration only of negative effects
     if (!positive)
@@ -18658,51 +18721,79 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
     switch (form)
     {
         case FORM_CAT:
+        {
+            // check Incarnation
+            bool epic = HasAura(102543);
+
             // Based on Hair color
             if (getRace() == RACE_NIGHTELF)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 29405, 29406, 29407, 29408, 892 };
+                    uint32 epicModels[] = { 43764, 43763, 43762, 43765, 43761 };
+                    return epic ? epicModels[urand(0, 4)] : models[urand(0, 4)];
+                }
+
                 uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                 switch (hairColor)
                 {
                     case 7: // Violet
                     case 8:
-                        return 29405;
+                        return epic ? 43764 : 29405;
                     case 3: // Light Blue
-                        return 29406;
+                        return epic ? 43763 : 29406;
                     case 0: // Green
                     case 1: // Light Green
                     case 2: // Dark Green
-                        return 29407;
+                        return epic ? 43762 : 29407;
                     case 4: // White
-                        return 29408;
+                        return epic ? 43765 : 29408;
                     default: // original - Dark Blue
-                        return 892;
+                        return epic ? 43761 :892;
                 }
             }
             else if (getRace() == RACE_TROLL)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 33668, 33667, 33666, 33665, 33669 };
+                    uint32 epicModels[] = { 43776, 43778, 43773, 43775, 43777 };
+                    return epic ? epicModels[urand(0, 4)] : models[urand(0, 4)];
+                }
+
                 uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                 switch (hairColor)
                 {
                     case 0: // Red
                     case 1:
-                        return 33668;
+                        return epic ? 43776 : 33668;
                     case 2: // Yellow
                     case 3:
-                        return 33667;
+                        return epic ? 43778 : 33667;
                     case 4: // Blue
                     case 5:
                     case 6:
-                        return 33666;
+                        return epic ? 43773 : 33666;
                     case 7: // Purple
                     case 10:
-                        return 33665;
+                        return epic ? 43775 : 33665;
                     default: // original - white
-                        return 33669;
+                        return epic ? 43777 : 33669;
                 }
             }
             else if (getRace() == RACE_WORGEN)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 33662, 33661, 33664, 33663, 33660 };
+                    uint32 epicModels[] = { 43781, 43780, 43784, 43785, 43782 };
+                    return epic ? epicModels[urand(0, 4)] : models[urand(0, 4)];
+                }
+
                 // Based on Skin color
                 uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                 // Male
@@ -18711,17 +18802,17 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                     switch (skinColor)
                     {
                         case 1: // Brown
-                            return 33662;
+                            return epic ? 43781 :33662;
                         case 2: // Black
                         case 7:
-                            return 33661;
+                            return epic ? 43780 : 33661;
                         case 4: // yellow
-                            return 33664;
+                            return epic ? 43784 : 33664;
                         case 3: // White
                         case 5:
-                            return 33663;
+                            return epic ? 43785 : 33663;
                         default: // original - Gray
-                            return 33660;
+                            return epic ? 43782 : 33660;
                     }
                 }
                 // Female
@@ -18731,23 +18822,31 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                     {
                         case 5: // Brown
                         case 6:
-                            return 33662;
+                            return epic ? 43781 :33662;
                         case 7: // Black
                         case 8:
-                            return 33661;
+                            return epic ? 43780 : 33661;
                         case 3: // yellow
                         case 4:
-                            return 33664;
+                            return epic ? 43784 : 33664;
                         case 2: // White
-                            return 33663;
+                            return epic ? 43785 : 33663;
                         default: // original - Gray
-                            return 33660;
+                            return epic ? 43782 : 33660;
                     }
                 }
             }
             // Based on Skin color
             else if (getRace() == RACE_TAUREN)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 29409, 29410, 29411, 29412, 8571 };
+                    uint32 epicModels[] = { 43769, 43770, 43768, 43766, 43767 };
+                    return epic ? epicModels[urand(0, 4)] : models[urand(0, 4)];
+                }
+
                 uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                 // Male
                 if (getGender() == GENDER_MALE)
@@ -18758,24 +18857,24 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                         case 13:
                         case 14:
                         case 18: // Completly White
-                            return 29409;
+                            return epic ? 43769 : 29409;
                         case 9: // Light Brown
                         case 10:
                         case 11:
-                            return 29410;
+                            return epic ? 43770 : 29410;
                         case 6: // Brown
                         case 7:
                         case 8:
-                            return 29411;
+                            return epic ? 43768 : 29411;
                         case 0: // Dark
                         case 1:
                         case 2:
                         case 3: // Dark Grey
                         case 4:
                         case 5:
-                            return 29412;
+                            return epic ? 43766 : 29412;
                         default: // original - Grey
-                            return 8571;
+                            return epic ? 43767 : 8571;
                     }
                 }
                 // Female
@@ -18784,20 +18883,20 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                     switch (skinColor)
                     {
                         case 10: // White
-                            return 29409;
+                            return epic ? 43769 : 29409;
                         case 6: // Light Brown
                         case 7:
-                            return 29410;
+                            return epic ? 43770 : 29410;
                         case 4: // Brown
                         case 5:
-                            return 29411;
+                            return epic ? 43768 : 2941;
                         case 0: // Dark
                         case 1:
                         case 2:
                         case 3:
-                            return 29412;
+                            return epic ? 43766 : 29412;
                         default: // original - Grey
-                            return 8571;
+                            return epic ? 43767 : 8571;
                     }
                 }
             }
@@ -18805,52 +18904,82 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 892;
             else
                 return 8571;
+            break;
+        }
         case FORM_BEAR:
+        {
+            // check Incarnation
+            bool epic = HasAura(102558);
+
             // Based on Hair color
             if (getRace() == RACE_NIGHTELF)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 29413, 29414, 29416, 29417, 2281 };
+                    uint32 epicModels[] = { 43759, 43756, 43760, 43757, 43758 };
+                    return epic ? epicModels[urand(0, 4)] : models[urand(0, 4)];
+                }
+
                 uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                 switch (hairColor)
                 {
                     case 0: // Green
                     case 1: // Light Green
                     case 2: // Dark Green
-                        return 29413; // 29415?
+                        return epic ? 43759 : 29413;
                     case 6: // Dark Blue
-                        return 29414;
+                        return epic ? 43756 : 29414;
                     case 4: // White
-                        return 29416;
+                        return epic ? 43760 : 29416;
                     case 3: // Light Blue
-                        return 29417;
+                        return epic ? 43757 : 29415;
                     default: // original - Violet
-                        return 2281;
+                        return epic ? 43758 : 2281;
                 }
             }
             else if (getRace() == RACE_TROLL)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 33657, 33659, 33656, 33658, 33655 };
+                    uint32 epicModels[] = { 43748, 43750, 43747, 43749, 43746 };
+                    return epic ? epicModels[urand(0, 4)] : models[urand(0, 4)];
+                }
+
                 uint8 hairColor = GetByteValue(PLAYER_BYTES, 3);
                 switch (hairColor)
                 {
                     case 0: // Red
                     case 1:
-                        return 33657;
+                        return epic ? 43748 : 33657;
                     case 2: // Yellow
                     case 3:
-                        return 33659;
+                        return epic ? 43750 : 33659;
                     case 7: // Purple
                     case 10:
-                        return 33656;
+                        return epic ? 43747 : 33656;
                     case 8: // White
                     case 9:
                     case 11:
                     case 12:
-                        return 33658;
+                        return epic ? 43749 : 33658;
                     default: // original - Blue
-                        return 33655;
+                        return epic ? 43746 : 33655;
                 }
             }
             else if (getRace() == RACE_WORGEN)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 33652, 33651, 33653, 33654, 33650 };
+                    uint32 epicModels[] = { 43752, 43751, 43754, 43755, 43753 };
+                    return epic ? epicModels[urand(0, 4)] : models[urand(0, 4)];
+                }
+
                 // Based on Skin color
                 uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                 // Male
@@ -18859,17 +18988,17 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                     switch (skinColor)
                     {
                         case 1: // Brown
-                            return 33652;
+                            return epic ? 43752 : 33652;
                         case 2: // Black
                         case 7:
-                            return 33651;
+                            return epic ? 43751 : 33651;
                         case 4: // Yellow
-                            return 33653;
+                            return epic ? 43754 : 33653;
                         case 3: // White
                         case 5:
-                            return 33654;
+                            return epic ? 43755 : 33654;
                         default: // original - Gray
-                            return 33650;
+                            return epic ? 43753 : 33650;
                     }
                 }
                 // Female
@@ -18879,23 +19008,31 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                     {
                         case 5: // Brown
                         case 6:
-                            return 33652;
+                            return epic ? 43752 : 33652;
                         case 7: // Black
                         case 8:
-                            return 33651;
+                            return epic ? 43751 : 33651;
                         case 3: // yellow
                         case 4:
-                            return 33654;
+                            return epic ? 43755 : 33654;
                         case 2: // White
-                            return 33653;
+                            return epic ? 43754 : 33653;
                         default: // original - Gray
-                            return 33650;
+                            return epic ? 43753 : 33650;
                     }
                 }
             }
             // Based on Skin color
             else if (getRace() == RACE_TAUREN)
             {
+                // Glyph of the Chameleon
+                if (HasAura(107059))
+                {
+                    uint32 models[] = { 29418, 29419, 29420, 29421, 2289 };
+                    uint32 epicModels[] = { 43741, 43743, 43745, 43744, 43742 };
+                    return epic ? epicModels[urand(0, 4)] : models[urand(0, 4)];
+                }
+
                 uint8 skinColor = GetByteValue(PLAYER_BYTES, 0);
                 // Male
                 if (getGender() == GENDER_MALE)
@@ -18905,25 +19042,25 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                         case 0: // Dark (Black)
                         case 1:
                         case 2:
-                            return 29418;
+                            return epic ? 43741 : 29418;
                         case 3: // White
                         case 4:
                         case 5:
                         case 12:
                         case 13:
                         case 14:
-                            return 29419;
+                            return epic ? 43743 : 29419;
                         case 9: // Light Brown/Grey
                         case 10:
                         case 11:
                         case 15:
                         case 16:
                         case 17:
-                            return 29420;
+                            return epic ? 43745 : 29420;
                         case 18: // Completly White
-                            return 29421;
+                            return epic ? 43744 : 29421;
                         default: // original - Brown
-                            return 2289;
+                            return epic ? 43742 : 2289;
                     }
                 }
                 // Female
@@ -18933,19 +19070,19 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                     {
                         case 0: // Dark (Black)
                         case 1:
-                            return 29418;
+                            return epic ? 43741 : 29418;
                         case 2: // White
                         case 3:
-                            return 29419;
+                            return epic ? 43743 : 29419;
                         case 6: // Light Brown/Grey
                         case 7:
                         case 8:
                         case 9:
-                            return 29420;
+                            return epic ? 43745 : 29420;
                         case 10: // Completly White
-                            return 29421;
+                            return epic ? 43744 : 29421;
                         default: // original - Brown
-                            return 2289;
+                            return epic ? 43742 : 2289;
                     }
                 }
             }
@@ -18953,6 +19090,8 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 2281;
             else
                 return 2289;
+            break;
+        }
         case FORM_FLIGHT:
             if (Player::TeamForRace(getRace()) == ALLIANCE)
                 return 20857;
@@ -18974,28 +19113,41 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             }
             return 21244;
         case FORM_TRAVEL:
+            // Glyph of the Cheetah
+            if (HasAura(131113))
+                return 918;
             if (Player::TeamForRace(getRace()) == ALLIANCE)
                 return 40816;
             return 45339;
         case FORM_MOONKIN:
-            if (Player::TeamForRace(getRace()) == HORDE)
-            {
-                if (getRace() == RACE_TROLL)
-                    return 37174;
-                else if (getRace() == RACE_TAUREN)
-                    return 15375;
-            }
-            else if (Player::TeamForRace(getRace()) == ALLIANCE)
-            {
-                if (getRace() == RACE_NIGHTELF)
-                    return 15374;
-                else if (getRace() == RACE_WORGEN)
-                    return 37173;
-            }
+        {
+            // Glyph of the Stars
+            if (HasAura(114301))
+                return 0;
+
+            // check Incarnation
+            bool epic = HasAura(102560);
+
+            if (getRace() == RACE_TROLL)
+                return epic ? 43789 : 37174;
+            else if (getRace() == RACE_TAUREN)
+                return epic ? 43786 : 15375;
+            else if (getRace() == RACE_NIGHTELF)
+                return epic ? 43790 : 15374;
+            else if (getRace() == RACE_WORGEN)
+                return epic ? 43787 : 37173;
+            break;
+        }
         case FORM_GHOSTWOLF:
             //Glyph
             if(HasAura(58135))
                 return 21114;
+            break;
+        case FORM_AQUA:
+            // Glyph of the Orca
+            if (HasAura(114333))
+                return 40815;
+            break;
         default:
             break;
     }
@@ -19124,35 +19276,7 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
             break;
         }
         case RACE_PANDAREN_NEUTRAL:
-        {
-            switch (totemType)
-            {
-                case SUMMON_TYPE_TOTEM_FIRE:    // fire
-                    return 41670;
-                case SUMMON_TYPE_TOTEM_EARTH:   // earth
-                    return 41669;
-                case SUMMON_TYPE_TOTEM_WATER:   // water
-                    return 41671;
-                case SUMMON_TYPE_TOTEM_AIR:     // air
-                    return 41668;
-            }
-            break;
-        }
         case RACE_PANDAREN_ALLI:
-        {
-            switch (totemType)
-            {
-                case SUMMON_TYPE_TOTEM_FIRE:    // fire
-                    return 41670;
-                case SUMMON_TYPE_TOTEM_EARTH:   // earth
-                    return 41669;
-                case SUMMON_TYPE_TOTEM_WATER:   // water
-                    return 41671;
-                case SUMMON_TYPE_TOTEM_AIR:     // air
-                    return 41668;
-            }
-            break;
-        }
         case RACE_PANDAREN_HORDE:
         {
             switch (totemType)
@@ -20058,48 +20182,6 @@ void Unit::SendMovementCanFlyChange()
 bool Unit::IsSplineEnabled() const
 {
     return movespline->Initialized();
-}
-
-void Unit::SetEclipsePower(int32 power)
-{
-    if (power > 100)
-        power = 100;
-
-    if (power < -100)
-        power = -100;
-
-    if (power > 0)
-    {
-        if (HasAura(48518))
-            RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
-        if (HasAura(107095))
-            RemoveAurasDueToSpell(107095);// Eclipse (Lunar) - SPELL_AURA_OVERRIDE_SPELLS
-    }
-
-    if (power == 0)
-    {
-        if (HasAura(48517))
-            RemoveAurasDueToSpell(48517); // Eclipse (Solar)
-        if (HasAura(48518))
-            RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
-        if (HasAura(107095))
-            RemoveAurasDueToSpell(107095);// Eclipse (Lunar) - SPELL_AURA_OVERRIDE_SPELLS
-    }
-
-    if (power < 0)
-    {
-        if (HasAura(48517))
-            RemoveAurasDueToSpell(48517); // Eclipse (Solar)
-    }
-
-    _eclipsePower = power;
-
-    WorldPacket data(SMSG_POWER_UPDATE);
-    data.append(GetPackGUID());
-    data << int32(1);
-    data << int8(POWER_ECLIPSE);
-    data << int32(_eclipsePower);
-    SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
 }
 
 /* In the next functions, we keep 1 minute of last damage */

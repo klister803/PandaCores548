@@ -77,17 +77,17 @@ void Totem::InitStats(uint32 duration)
         {
             for (int i = SUMMON_SLOT_TOTEM; i < MAX_TOTEM_SLOT; ++i)
             {
-                if (m_owner->m_SummonSlot[i] == m_Properties->Slot)
+                if (i == m_Properties->Slot)
                     continue;
                 else
                 {
                     switch (i)
                     {
                         case 1:
-                            m_owner->CastSpell(m_owner, 120218, true); // Fake Earth Totem
+                            m_owner->CastSpell(m_owner, 120217, true); // Fake Fire Totem
                             break;
                         case 2:
-                            m_owner->CastSpell(m_owner, 120217, true); // Fake Fire Totem
+                            m_owner->CastSpell(m_owner, 120218, true); // Fake Earth Totem
                             break;
                         case 3:
                             m_owner->CastSpell(m_owner, 120214, true); // Fake Water Totem

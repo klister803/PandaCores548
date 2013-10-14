@@ -298,6 +298,21 @@ public:
             return true;
         }
 
+        std::string GetSaveData()
+        {
+            std::ostringstream saveStream;
+            saveStream << GetBossSaveData() << " ";
+            return saveStream.str();
+        }
+
+        void Load(const char* data)
+        {
+            std::istringstream loadStream(LoadBossState(data));
+            uint32 buff;
+            for (uint32 i=0; i < DATA_MAX_BOSS_DATA; ++i)
+                loadStream >> buff;
+        }
+
         void Update(uint32 diff)
         {
             if (GetBossState(DATA_WILL_OF_EMPEROR) != IN_PROGRESS)

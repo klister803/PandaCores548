@@ -1446,20 +1446,19 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 {
     uint32 spellId      = 0;
     uint32 spellId2     = 0;
-    //uint32 spellId3     = 0;
-    uint32 HotWSpellId  = 0;
+    uint32 spellId3     = 0;
+    uint32 spellId4     = 0;
 
     std::list<uint32> actionBarReplaceAuras;
 
     switch (GetMiscValue())
     {
         case FORM_CAT:
-            spellId = 3025;
-            HotWSpellId = 24900;
-            actionBarReplaceAuras.push_back(48629);
+            spellId = 3025;     // Wild Charge
+            spellId2 = 48629;   // Swipe, Mangle, Thrash
+            spellId3 = 106840;  // Skull Bash, Stampeding Roar, Berserk
             break;
         case FORM_TREE:
-            spellId = 106731;
             break;
         case FORM_TRAVEL:
             spellId = 5419;
@@ -1469,9 +1468,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             break;
         case FORM_BEAR:
             spellId = 1178;
-            HotWSpellId = 24899;
-            actionBarReplaceAuras.push_back(21178);
-            actionBarReplaceAuras.push_back(106829);
+            spellId2 = 21178;   // Swipe, Wild Charge
+            spellId3 = 106829;  // Mangle, Thrash, Skull Bash
+            spellId4 = 106899;  // Stampeding Roar, Berserk
             break;
         case FORM_BATTLESTANCE:
             spellId = 21156;
@@ -1485,6 +1484,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
         case FORM_MOONKIN:
             spellId = 24905;
             spellId2 = 24907;
+            // Glyph of the Start
+            if (!apply || target->HasAura(114301))
+                spellId3 = 114302;  // Astral Form
             break;
         case FORM_FLIGHT:
             spellId = 33948;
@@ -1521,13 +1523,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 
     if (apply)
     {
-        for (std::list<uint32>::iterator itr = actionBarReplaceAuras.begin(); itr != actionBarReplaceAuras.end(); ++itr)
-        {
-            if (target->GetTypeId() == TYPEID_PLAYER)
-                target->RemoveAurasDueToSpell(*itr);
-            target->CastSpell(target, *itr, true, NULL, this);
-        }
-
         // Remove cooldown of spells triggered on stance change - they may share cooldown with stance spell
         if (spellId)
         {
@@ -1543,6 +1538,20 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             target->CastSpell(target, spellId2, true, NULL, this);
         }
 
+        if (spellId3)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->RemoveSpellCooldown(spellId3);
+            target->CastSpell(target, spellId3, true, NULL, this);
+        }
+
+        if (spellId4)
+        {
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->RemoveSpellCooldown(spellId4);
+            target->CastSpell(target, spellId4, true, NULL, this);
+        }
+
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             Player* plrTarget = target->ToPlayer();
@@ -1553,7 +1562,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                 if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
                     continue;
 
-                if (itr->first == spellId || itr->first == spellId2)
+                if (itr->first == spellId || itr->first == spellId2|| itr->first == spellId3 || itr->first == spellId4)
                     continue;
 
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
@@ -1597,22 +1606,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                     target->CastSpell(target, 66530, true);
             }
 
-            // Heart of the Wild
-            if (HotWSpellId)
-            {   // hacky, but the only way as spell family is not SPELLFAMILY_DRUID
-                Unit::AuraEffectList const& mModTotalStatPct = target->GetAuraEffectsByType(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE);
-                for (Unit::AuraEffectList::const_iterator i = mModTotalStatPct.begin(); i != mModTotalStatPct.end(); ++i)
-                {
-                    // Heart of the Wild
-                    if (17003 <=  (*i)->GetId() && (*i)->GetId() < 17006)
-                    {
-                        int32 HotWMod = (*i)->GetSpellInfo()->Effects[(GetMiscValue() == FORM_CAT)? 1: 0].BasePoints;
-
-                        target->CastCustomSpell(target, HotWSpellId, &HotWMod, NULL, NULL, true, NULL, this);
-                        break;
-                    }
-                }
-            }
             switch (GetMiscValue())
             {
                 case FORM_CAT:
@@ -1653,13 +1646,14 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     }
     else
     {
-        for (std::list<uint32>::iterator itr = actionBarReplaceAuras.begin(); itr != actionBarReplaceAuras.end(); ++itr)
-            target->RemoveAurasDueToSpell(*itr);
-
         if (spellId)
             target->RemoveAurasDueToSpell(spellId);
         if (spellId2)
             target->RemoveAurasDueToSpell(spellId2);
+        if (spellId3)
+            target->RemoveAurasDueToSpell(spellId3);
+        if (spellId4)
+            target->RemoveAurasDueToSpell(spellId4);
 
         // Improved Barkskin - apply/remove armor bonus due to shapeshift
         if (Player* player=target->ToPlayer())
@@ -1694,6 +1688,28 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             else
                 ++itr;
         }
+    }
+
+    // Heart of the Wild
+    if (apply && target->GetTypeId() == TYPEID_PLAYER)
+    {
+        Player* player = target->ToPlayer();
+        if (player->HasSpell(108288))
+        {
+            ShapeshiftForm form = ShapeshiftForm(GetMiscValue());
+
+            // check Heart of the Wild spec-specific buffs
+            bool checkers[] = { target->HasAura(108291), target->HasAura(108292), target->HasAura(108293), target->HasAura(108294) };
+            if ((checkers[0] || checkers[1] || checkers[3]) && form == FORM_BEAR)
+                target->CastSpell(target, 123738, true);
+            if ((checkers[0] || checkers[2] || checkers[3]) && form == FORM_CAT)
+                target->CastSpell(target, 123737, true);
+        }
+    }
+    else
+    {
+        target->RemoveAurasDueToSpell(123737);
+        target->RemoveAurasDueToSpell(123738);
     }
 }
 
@@ -2757,7 +2773,14 @@ void AuraEffect::HandleAuraTrackCreatures(AuraApplication const* aurApp, uint8 m
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    target->SetUInt32Value(PLAYER_TRACK_CREATURES, (apply) ? ((uint32)1)<<(GetMiscValue()-1) : 0);
+    uint32 mask = 1 << (GetMiscValue() - 1);
+    // Track Humanoids
+    if (GetId() == 5225)
+        // Glyph of the Predator
+        if (!apply && target->HasAuraTypeWithMiscvalue(SPELL_AURA_TRACK_CREATURES, GetMiscValue()) || target->HasAura(114280))
+            mask |= 1 << (CREATURE_TYPE_BEAST - 1);
+
+    target->ApplyModFlag(PLAYER_TRACK_CREATURES, mask, apply);
 }
 
 void AuraEffect::HandleAuraTrackResources(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -2881,10 +2904,6 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
         uint32 creatureEntry = GetMiscValue();
         uint32 displayId = 0;
         uint32 vehicleId = 0;
-
-        // Mount can be cast in Moonkin form but unapply it
-        if (target->GetShapeshiftForm() == FORM_MOONKIN)
-            target->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
 
         // Festive Holiday Mount
         if (target->HasAura(62061))
@@ -4797,9 +4816,9 @@ void AuraEffect::HandleOverrideAttackPowerBySpellPower(AuraApplication const* au
 
     Unit* target = aurApp->GetTarget();
 
-    int32 spellPower = target->ToPlayer()->GetBaseSpellPowerBonus(); // SpellPower from Weapon
-    spellPower += std::max(0, int32(target->ToPlayer()->GetStat(STAT_INTELLECT)) - 10); // SpellPower from intellect
-    target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(GetAmount() / 100 * spellPower), apply);
+    // Recalculate bonus
+    if (target->GetTypeId() == TYPEID_PLAYER)
+        target->ToPlayer()->UpdateAttackPowerAndDamage(false);
 }
 
 void AuraEffect::HandleOverrideSpellPowerByAttackPower(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5348,29 +5367,32 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                 case 57820: // Ebon Champion
                 case 57821: // Champion of the Kirin Tor
                 case 57822: // Wyrmrest Champion
-                case 93339: // Champion of the Earthen Ring
-                case 94158: // Champion of the Dragonmaw Clan
                 case 93337: // Champion of Ramkahen
+                case 93339: // Champion of the Earthen Ring
                 case 93341: // Champion of the Guardians of Hyjal
-                case 93368: // Champion of the Wildhammer Clan
                 case 93347: // Champion of Therazane
-                case 93830: // Bilgewater Champion
-                case 93827: // Darkspear Champion
+                case 93368: // Champion of the Wildhammer Clan
+                case 94158: // Champion of the Dragonmaw Clan
+                case 93795: // Stormwind Champion
+                case 93805: // Ironforge Champion
                 case 93806: // Darnassus Champion
                 case 93811: // Exodar Champion
                 case 93816: // Gilneas Champion
                 case 93821: // Gnomeregan Champion
-                case 93805: // Ironforge Champion
                 case 93825: // Orgrimmar Champion
-                case 93795: // Stormwind Champion
-                case 94463: // Thunder Bluff Champion
+                case 93827: // Darkspear Champion
+                case 93828: // Silvermoon Champion
+                case 93830: // Bilgewater Champion
                 case 94462: // Undercity Champion
-                case 93828: // Silvermoon Champion 
+                case 94463: // Thunder Bluff Champion
+                case 126434: // Tushui
+                case 126436: // Huojin
                 {
                     if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
                         break;
 
                     uint32 FactionID = 0;
+                    uint32 DungeonLevel = 0;
 
                     if (apply)
                     {
@@ -5380,27 +5402,32 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             case 57820: FactionID = 1098; break; // Knights of the Ebon Blade
                             case 57821: FactionID = 1090; break; // Kirin Tor
                             case 57822: FactionID = 1091; break; // The Wyrmrest Accord
-                            case 93339: FactionID = 1135; break; // The Earthen Ring
-                            case 94158: FactionID = 1172; break; // Dragonmaw Clan
-                            case 93337: FactionID = 1173; break; // Ramkahen
-                            case 93341: FactionID = 1158; break; // Guardians of Hyjal
-                            case 93368: FactionID = 1174; break; // Wildhammer Clan
-                            case 93347: FactionID = 1171; break; // Therazane
-                            case 93830: FactionID = 1133; break; // Bilgewater Cartel
-                            case 93827: FactionID = 530;  break; // Darkspear Trolls
-                            case 93806: FactionID = 69;   break; // Darnassus
-                            case 93811: FactionID = 930;  break; // Exodar
-                            case 93816: FactionID = 1134; break; // Gilneas
-                            case 93821: FactionID = 54;   break; // Gnomeregan
-                            case 93805: FactionID = 47;   break; // Ironforge
-                            case 93825: FactionID = 76;   break; // Orgrimmar
-                            case 93795: FactionID = 72;   break; // Stormwind
-                            case 94463: FactionID = 81;   break; // Thunder Bluff
-                            case 94462: FactionID = 68;   break; // Undercity
-                            case 93828: FactionID = 911;  break; // Silvermoon 
+                            // Alliance factions
+                            case 93795: FactionID = 72;   DungeonLevel = 0;  break; // Stormwind
+                            case 93805: FactionID = 47;   DungeonLevel = 0;  break; // Ironforge
+                            case 93806: FactionID = 69;   DungeonLevel = 0;  break; // Darnassus
+                            case 93811: FactionID = 930;  DungeonLevel = 0;  break; // Exodar
+                            case 93816: FactionID = 1134; DungeonLevel = 0;  break; // Gilneas
+                            case 93821: FactionID = 54;   DungeonLevel = 0;  break; // Gnomeregan
+                            case 126434: FactionID = 1353; DungeonLevel = 0; break; // Tushui Pandaren
+                            // Horde factions
+                            case 93825: FactionID = 76;   DungeonLevel = 0;  break; // Orgrimmar
+                            case 93827: FactionID = 530;  DungeonLevel = 0;  break; // Darkspear Trolls
+                            case 93828: FactionID = 911;  DungeonLevel = 0;  break; // Silvermoon
+                            case 93830: FactionID = 1133; DungeonLevel = 0;  break; // Bilgewater Cartel
+                            case 94462: FactionID = 68;   DungeonLevel = 0;  break; // Undercity
+                            case 94463: FactionID = 81;   DungeonLevel = 0;  break; // Thunder Bluff
+                            case 126436: FactionID = 1352; DungeonLevel = 0; break; // Huojin Pandaren
+                            // Cataclysm factions
+                            case 93337: FactionID = 1173; DungeonLevel = 83; break; // Ramkahen
+                            case 93339: FactionID = 1135; DungeonLevel = 83; break; // The Earthen Ring
+                            case 93341: FactionID = 1158; DungeonLevel = 83; break; // Guardians of Hyjal
+                            case 93347: FactionID = 1171; DungeonLevel = 83; break; // Therazane
+                            case 93368: FactionID = 1174; DungeonLevel = 83; break; // Wildhammer Clan
+                            case 94158: FactionID = 1172; DungeonLevel = 83; break; // Dragonmaw Clan
                         }
                     }
-                    caster->ToPlayer()->SetChampioningFaction(FactionID);
+                    caster->ToPlayer()->SetChampioningFaction(FactionID, DungeonLevel);
                     break;
                 }
                 // LK Intro VO (1)
@@ -5478,9 +5505,11 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
             switch (GetId())
             {
                 case 52610:                                 // Savage Roar
+                case 127538:                                // Savage Roar
                 {
                     if (apply)
                     {
+                        target->RemoveAurasDueToSpell(GetId() == 52610 ? 127538 : 52610);
                         if (target->GetShapeshiftForm() == FORM_CAT)
                             target->CastSpell(target, 62071, true, NULL, NULL, GetCasterGUID());
                     }

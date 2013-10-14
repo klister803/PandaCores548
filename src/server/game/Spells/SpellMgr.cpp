@@ -207,7 +207,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
     uint32 mechanic = spellproto->GetAllEffectsMechanicMask();
     if (mechanic & (1 << MECHANIC_CHARM))
         return DIMINISHING_MIND_CONTROL;
-    if (mechanic & (1 << MECHANIC_SILENCE))
+    if (mechanic & (1 << MECHANIC_SILENCE) && spellproto->Id != 81261)  // haxx: Solar Beam diminishing with itself
         return DIMINISHING_SILENCE;
     if (mechanic & (1 << MECHANIC_SLEEP))
         return DIMINISHING_SLEEP;
@@ -1469,10 +1469,10 @@ void SpellMgr::LoadSpellLearnSpells()
     {
         Field* fields = result->Fetch();
 
-        uint32 spell_id = fields[0].GetUInt16();
+        uint32 spell_id = fields[0].GetUInt32();
 
         SpellLearnSpellNode node;
-        node.spell       = fields[1].GetUInt16();
+        node.spell       = fields[1].GetUInt32();
         node.active      = fields[2].GetBool();
         node.autoLearned = false;
 
@@ -3492,7 +3492,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_SUMMON_PET;
                 break;
             case 114942:// Healing Tide
-                spellInfo->MaxAffectedTargets = 5;
+                spellInfo->SpellFamilyFlags[0] = 0x00002000;
                 break;
             case 108283:// Echo of the Elements
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -3873,7 +3873,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 132158:// Nature's Swiftness
             case 74434: // Soul Burn
             case 34936: // Backlash
-            case 50334: // Berserk (bear)
+            //case 50334: // Berserk (bear)
             case 23920: // Spell Reflection
             case 114028:// Mass Spell Reflection
             case 113002:// Spell Reflection (Symbiosis)
@@ -4123,6 +4123,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35);
                 break;
 
+            //Scholomance
+            case 114062: //Gravity Flux
+                spellInfo->Effects[1].Effect = 0;
+                spellInfo->Effects[1].ApplyAuraName = 0;
+                break;
+            case 113996: //Bone Armor
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
+            case 111628: //Shadow blaze dmg
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(44);
+                break;
+
             // Mogu'shan Vault
             case 129428: //Dummy Searcher(cobalt mine)
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
@@ -4200,22 +4212,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 break; 
             case 88764:// Rolling Thunder
                 spellInfo->Effects[0].TriggerSpell = 0;    
-                break;                
-            default:
-                break;
-            }
-
-            switch (spellInfo->SpellFamilyName)
-            {
-            case SPELLFAMILY_WARRIOR:
-                // Shout
-                if (spellInfo->SpellFamilyFlags[0] & 0x20000 || spellInfo->SpellFamilyFlags[1] & 0x20)
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
-                break;
-            case SPELLFAMILY_DRUID:
-                // Roar
-                if (spellInfo->SpellFamilyFlags[0] & 0x8)
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
                 break;
             case 58423:
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -4244,6 +4240,44 @@ void SpellMgr::LoadSpellCustomAttr()
             case 8177: //totem
                 spellInfo->RecoveryTime = 25000;
                 spellInfo->CategoryRecoveryTime = 0;
+                break;
+            case 45284: //Lightning Bolt
+            case 117014: //Elemental Blast
+                spellInfo->SpellFamilyFlags[0] = 0x00000001;
+                spellInfo->SpellFamilyFlags[2] = 0;
+                break;
+            case 117679:    // Incarnation (Passive)
+                spellInfo->Attributes &= ~SPELL_ATTR0_CANT_CANCEL;
+                break;
+            case 55442: //Glyph of Capacitor Totem
+                spellInfo->Effects[0].SpellClassMask[0] = 0x00008000;
+                break;
+            case 116186:    // Glyph of Prowl
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
+                break;
+            case 131537:    // Item - Druid PvP Set Feral 4P Bonus
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
+                spellInfo->Effects[0].Amplitude = 30000;
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
+                break;
+            case 132402:    // Savage Defense
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(32); // 6s
+                break;
+            default:
+                break;
+            }
+
+            switch (spellInfo->SpellFamilyName)
+            {
+            case SPELLFAMILY_WARRIOR:
+                // Shout
+                if (spellInfo->SpellFamilyFlags[0] & 0x20000 || spellInfo->SpellFamilyFlags[1] & 0x20)
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
+                break;
+            case SPELLFAMILY_DRUID:
+                // Roar
+                if (spellInfo->SpellFamilyFlags[0] & 0x8)
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
                 break;
             default:
                 break;

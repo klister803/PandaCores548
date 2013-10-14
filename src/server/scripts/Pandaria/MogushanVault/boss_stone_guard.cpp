@@ -149,6 +149,20 @@ class boss_stone_guard_controler : public CreatureScript
                                 if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
                                     pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gardian);
 
+                            if (pInstance)
+                            {
+                                Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                                if (!players.isEmpty())
+                                {
+                                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                                    {
+                                        Player* pPlayer = itr->getSource();
+                                        if (pPlayer)
+                                            me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
+                                    }
+                                }
+                            }
+
                             pInstance->SetBossState(DATA_STONE_GUARD, DONE);
                             fightInProgress = false;
                         }

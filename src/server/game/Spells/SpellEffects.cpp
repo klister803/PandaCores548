@@ -908,36 +908,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             }
             break;
         case SPELLFAMILY_DRUID:
-            switch (m_spellInfo->Id)
-            {
-                case 106785:
-                    if (m_caster->GetShapeshiftForm() == FORM_CAT)
-                        m_caster->CastSpell(unitTarget, sSpellMgr->GetSpellInfo(62078), TRIGGERED_IGNORE_GCD);
-                    else if (m_caster->GetShapeshiftForm() == FORM_BEAR)
-                    {
-                        m_caster->CastSpell(unitTarget, 779, true);
-
-                        if (Player* player = m_caster->ToPlayer())
-                            player->AddSpellCooldown(106785, 0, time(NULL) + 3);
-                    }
-                    break;
-                case 33917:
-                    if (m_caster->GetShapeshiftForm() == FORM_CAT)
-                    {
-                        m_caster->CastSpell(unitTarget, 33876, false);
-                        if (Player* player = m_caster->ToPlayer())
-                            player->AddSpellCooldown(33917, 0, time(NULL) + 1);
-                    }
-                    else if (m_caster->GetShapeshiftForm() == FORM_BEAR)
-                    {
-                        m_caster->CastSpell(unitTarget, 33878, false);
-                        if (Player* player = m_caster->ToPlayer())
-                            player->AddSpellCooldown(33917, 0, time(NULL) + 6);
-                    }
-
-                    break;
-            }
-
             break;
         case SPELLFAMILY_DEATHKNIGHT:
             // Death Coil
@@ -1358,7 +1328,8 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
 
     float speedXY, speedZ;
     CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
-    if (m_spellInfo->Id == 49575)
+    // Death Grip and Wild Charge (no form)
+    if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 102401)
         m_caster->GetMotionMaster()->CustomJump(x, y, z, speedXY, speedZ);
     else
         m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
@@ -1737,8 +1708,18 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
         int32 addhealth = damage;
 
+        // Swiftmend
+        if (m_spellInfo->Id == 18562)
+        {
+            // Soul of the Forest
+            if (Player* player = m_caster->ToPlayer())
+            {
+                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_RESTORATION && player->HasAura(114107))
+                    player->CastSpell(player, 114108, true);    // haste
+            }
+        }
         // Vessel of the Naaru (Vial of the Sunwell trinket)
-        if (m_spellInfo->Id == 45064)
+        else if (m_spellInfo->Id == 45064)
         {
             // Amount of heal - depends from stacked Holy Energy
             int damageAmount = 0;
@@ -1767,6 +1748,12 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             if (Player* player = m_caster->ToPlayer())
                 if (player->HasSkill(SKILL_ENGINEERING))
                     AddPct(addhealth, 25);
+        }
+        // Master Healing Potion
+        else if (m_spellInfo->Id == 105708)
+        {
+            // dbc missing scaling data
+            addhealth = 60000;
         }
         // Death Pact - return pct of max health to caster
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
@@ -2195,6 +2182,15 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
             level_diff = m_caster->getLevel() - 60;
             level_multiplier = 4;
             break;
+        case 33878:                                         // Mangle
+            if (Player* player = m_caster->ToPlayer())
+            {
+                // check Soul of the Forest for guardian druids
+                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                    if (AuraEffect const* aura = player->GetAuraEffect(114107, EFFECT_2))
+                        damage += aura->GetAmount() * 10;
+            }
+            break;
         case 63375:                                         // Primal Wisdom
             damage = int32(CalculatePct(unitTarget->GetCreateMana(), damage));
             break;
@@ -2212,7 +2208,11 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     if (level_diff > 0)
         damage -= level_multiplier * level_diff;
 
-    if (damage < 0)
+    if (damage < 0 && power != POWER_ECLIPSE && power != POWER_ALTERNATE_POWER)
+        return;
+
+    // Do not energize when in Celestial Alignment
+    if (power == POWER_ECLIPSE && m_caster->HasAura(112071))
         return;
 
     if (unitTarget->GetMaxPower(power) == 0)
@@ -3925,6 +3925,37 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     uint32 damage = m_caster->MeleeDamageBonusDone(unitTarget, eff_damage, m_attackType, m_spellInfo);
 
     m_damage += unitTarget->MeleeDamageBonusTaken(m_caster, damage, m_attackType, m_spellInfo);
+
+    switch (m_spellInfo->Id)
+    {
+        case 60103:        // Lava Lash
+        {
+            if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                break;
+
+            //Bonus 4P shaman
+            if(m_caster->HasAura(131554))
+            {
+                if (Item* offItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                {
+                    // Flametongue
+                    if (offItem->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) == 2)
+                        AddPct(m_damage, 40);
+                }
+            }
+
+            // Searing Flames
+            if (Aura* aur = m_caster->GetAura(77661))
+            {
+                uint8 stacks = aur->GetStackAmount();
+                AddPct(m_damage, 20 * stacks);
+                m_caster->RemoveAura(77661);
+            }
+            break;
+        }
+    }
+
+
 }
 
 void Spell::EffectThreat(SpellEffIndex /*effIndex*/)
@@ -3992,7 +4023,7 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                 if (m_originalCaster)
                 {
                     int32 duration = m_spellInfo->GetDuration();
-                    unitTarget->ProhibitSpellSchool(curSpellInfo->GetSchoolMask(), unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex));
+                    unitTarget->ProhibitSpellSchool(curSpellInfo->GetSchoolMask(), unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex, m_originalCaster));
                 }
                 ExecuteLogEffectInterruptCast(effIndex, unitTarget, curSpellInfo->Id);
                 unitTarget->InterruptSpell(CurrentSpellTypes(i), false);
@@ -5685,8 +5716,8 @@ void Spell::EffectLeapBack(SpellEffIndex effIndex)
         speedz = float(75 / 10);
     }
 
-    //1891: Disengage
-    m_caster->JumpTo(speedxy, speedz, m_spellInfo->SpellIconID != 1891);
+    //1891: Disengage and Wild Charge (moonkin form)
+    m_caster->JumpTo(speedxy, speedz, m_spellInfo->SpellIconID != 1891 && m_spellInfo->Id != 102383);
 }
 
 void Spell::EffectQuestClear(SpellEffIndex effIndex)

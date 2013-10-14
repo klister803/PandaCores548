@@ -111,6 +111,9 @@ enum SpellTriggeredType
     SPELL_TRIGGER_NEED_COMBOPOINTS  = 7,            // Proc from spell that need compopoiunts
     SPELL_TRIGGER_UPDATE_DUR_TO_MAX = 8,            // Update duration for select spell to max duration
     SPELL_TRIGGER_PERC_FROM_DAMGE   = 9,            // Percent from damage
+    SPELL_TRIGGER_PERC_MAX_MANA     = 10,           // Percent from max mana
+    SPELL_TRIGGER_PERC_BASE_MANA    = 11,           // Percent from base mana
+    SPELL_TRIGGER_PERC_CUR_MANA     = 12,           // Percent from curent mana
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)

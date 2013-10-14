@@ -459,12 +459,13 @@ void GuildMgr::LoadGuilds()
             Guild* guild = itr->second;
             if (guild)
             {
-                if (!guild->Validate())
+                /*if (!guild->Validate())
                 {
+                    volatile uint32 _guildId = guild->GetId();
                     GuildStore.erase(itr++);
                     delete guild;
                 }
-                else
+                else*/
                     ++itr;
             }
             else
