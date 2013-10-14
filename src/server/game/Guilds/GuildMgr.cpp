@@ -461,6 +461,7 @@ void GuildMgr::LoadGuilds()
             {
                 if (!guild->Validate())
                 {
+                    TC_LOG_ERROR(LOG_FILTER_GUILD, "Guild !guild->Validate() GetId %u", guild->GetId());
                     GuildStore.erase(itr++);
                     delete guild;
                 }
