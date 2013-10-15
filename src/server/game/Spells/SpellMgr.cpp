@@ -4181,6 +4181,24 @@ void SpellMgr::LoadSpellCustomAttr()
             case 117050:
                 spellInfo->Speed = 25.f;
                 break;
+
+            //World Boss
+            //Sha of Anger
+            case 119487: //Anger
+                spellInfo->Effects[0].TargetA = 22;
+                spellInfo->Effects[0].TargetB = 15;
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(30);
+                spellInfo->Effects[1].TargetA = 22;
+                spellInfo->Effects[1].TargetB = 15;
+                spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(30);
+                break;
+            case 119610: //Bitter thoughts
+                spellInfo->Effects[0].TargetB = 15;
+                break;
+            case 119489: //Unleashed Wrath
+                spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
+                break;
+
             // Dalaran arena knockback
             case 61698:
                 spellInfo->Attributes = 536871296;
