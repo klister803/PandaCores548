@@ -354,7 +354,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //295 unused (4.3.4)
     &AuraEffect::HandleAuraSetVehicle,                            //296 SPELL_AURA_SET_VEHICLE_ID sets vehicle on target
     &AuraEffect::HandleNULL,                                      //297 Spirit Burst spells
-    &AuraEffect::HandleAuraStrangulate,                           //298 70569 - Strangulating, maybe prevents talk or cast
+    &AuraEffect::HandleAuraStrangulate,                           //298 SPELL_AURA_STRANGULATE 70569 - Strangulating, maybe prevents talk or cast
     &AuraEffect::HandleUnused,                                    //299 unused (4.3.4)
     &AuraEffect::HandleNoImmediateEffect,                         //300 SPELL_AURA_SHARE_DAMAGE_PCT implemented in Unit::DealDamage
     &AuraEffect::HandleNoImmediateEffect,                         //301 SPELL_AURA_SCHOOL_HEAL_ABSORB implemented in Unit::CalcHealAbsorb
@@ -382,7 +382,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //323 unused (4.3.4)
     &AuraEffect::HandleNULL,                                      //324 SPELL_AURA_324
     &AuraEffect::HandleUnused,                                    //325 unused (4.3.4)
-    &AuraEffect::HandleNULL,                                      //326 SPELL_AURA_326
+    &AuraEffect::HandleNULL,                                      //326 SPELL_AURA_PHASE_2
     &AuraEffect::HandleUnused,                                    //327 unused (4.3.4)
     &AuraEffect::HandleNoImmediateEffect,                         //328 SPELL_AURA_PROC_ON_POWER_AMOUNT implemented in Unit::HandleAuraProcOnPowerAmount
     &AuraEffect::HandleNULL,                                      //329 SPELL_AURA_MOD_RUNE_REGEN_SPEED
@@ -391,7 +391,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //332 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS implemented in WorldSession::HandleCastSpellOpcode
     &AuraEffect::HandleNoImmediateEffect,                         //333 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2 implemented in WorldSession::HandleCastSpellOpcode
     &AuraEffect::HandleNULL,                                      //334 SPELL_AURA_MOD_BLIND
-    &AuraEffect::HandleNULL,                                      //335 SPELL_AURA_335
+    &AuraEffect::HandleNULL,                                      //335 SPELL_AURA_SEE_WHILE_INVISIBLE
     &AuraEffect::HandleNULL,                                      //336 SPELL_AURA_MOD_FLYING_RESTRICTIONS
     &AuraEffect::HandleNoImmediateEffect,                         //337 SPELL_AURA_MOD_VENDOR_ITEMS_PRICES
     &AuraEffect::HandleNoImmediateEffect,                         //338 SPELL_AURA_MOD_DURABILITY_LOSS
@@ -406,13 +406,13 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //347 SPELL_AURA_MOD_SPELL_COOLDOWN_BY_HASTE
     &AuraEffect::HandleNoImmediateEffect,                         //348 SPELL_AURA_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT implemented in WorldSession::HandleLootMoneyOpcode
     &AuraEffect::HandleNoImmediateEffect,                         //349 SPELL_AURA_MOD_CURRENCY_GAIN implemented in Player::ModifyCurrency (TODO?)
-    &AuraEffect::HandleNULL,                                      //350 SPELL_AURA_MOD_GATHERING_ITEMS_GAINED_PERCENT
-    &AuraEffect::HandleNULL,                                      //351 SPELL_AURA_351
-    &AuraEffect::HandleNULL,                                      //352 SPELL_AURA_352
+    &AuraEffect::HandleNULL,                                      //350 SPELL_AURA_MOD_ITEM_LOOT
+    &AuraEffect::HandleNULL,                                      //351 SPELL_AURA_MOD_CURRENCY_LOOT
+    &AuraEffect::HandleNULL,                                      //352 SPELL_AURA_ALLOW_WORGEN_TRANSFORM
     &AuraEffect::HandleModCamouflage,                             //353 SPELL_AURA_MOD_CAMOUFLAGE
-    &AuraEffect::HandleNULL,                                      //354 SPELL_AURA_354
+    &AuraEffect::HandleNULL,                                      //354 SPELL_AURA_MOD_HEALING_DONE_FROM_PCT_HEALTH
     &AuraEffect::HandleUnused,                                    //355 unused (4.3.4)
-    &AuraEffect::HandleNULL,                                      //356 SPELL_AURA_356
+    &AuraEffect::HandleNULL,                                      //356 SPELL_AURA_MOD_DAMAGE_DONE_FROM_PCT_POWER
     &AuraEffect::HandleNULL,                                      //357 SPELL_AURA_ENABLE_BOSS1_UNIT_FRAME
     &AuraEffect::HandleNULL,                                      //358 SPELL_AURA_358
     &AuraEffect::HandleNULL,                                      //359 SPELL_AURA_359
@@ -430,46 +430,46 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //371 SPELL_AURA_372
     &AuraEffect::HandleNULL,                                      //372 SPELL_AURA_372
     &AuraEffect::HandleAuraModIncreaseSpeed,                      //373 SPELL_AURA_INCREASE_MIN_SWIM_SPEED
-    &AuraEffect::HandleNULL,                                      //374 SPELL_AURA_374
+    &AuraEffect::HandleNULL,                                      //374 SPELL_AURA_MOD_FALL_DAMAGE
     &AuraEffect::HandleNULL,                                      //375 SPELL_AURA_375
-    &AuraEffect::HandleNULL,                                      //376 SPELL_AURA_376
+    &AuraEffect::HandleNULL,                                      //376 SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE
     &AuraEffect::HandleNULL,                                      //377 SPELL_AURA_377
     &AuraEffect::HandleNULL,                                      //378 SPELL_AURA_378
-    &AuraEffect::HandleNULL,                                      //379 SPELL_AURA_379
+    &AuraEffect::HandleNULL,                                      //379 SPELL_AURA_MOD_MANA_REGEN_PERCENT
     &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
-    &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_381
-    &AuraEffect::HandleNULL,                                      //382 SPELL_AURA_382
+    &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT
+    &AuraEffect::HandleNULL,                                      //382 SPELL_AURA_MODE_PET_HEALTH_PCT
     &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
     &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
     &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
-    &AuraEffect::HandleNULL,                                      //386 SPELL_AURA_386
-    &AuraEffect::HandleNULL,                                      //387 SPELL_AURA_387
-    &AuraEffect::HandleNULL,                                      //388 SPELL_AURA_388
-    &AuraEffect::HandleNULL,                                      //389 SPELL_AURA_389
+    &AuraEffect::HandleNULL,                                      //386 SPELL_AURA_MOD_REST_GAINED
+    &AuraEffect::HandleNULL,                                      //387 SPELL_AURA_MOD_REFORGE_AND_TRANSMOGRIFY_COST
+    &AuraEffect::HandleNULL,                                      //388 SPELL_AURA_MOD_FLY_PATH_SPEED
+    &AuraEffect::HandleNULL,                                      //389 SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING
     &AuraEffect::HandleNULL,                                      //390 SPELL_AURA_390
     &AuraEffect::HandleNULL,                                      //391 SPELL_AURA_391
     &AuraEffect::HandleNULL,                                      //392 SPELL_AURA_392
-    &AuraEffect::HandleNULL,                                      //393 SPELL_AURA_393
-    &AuraEffect::HandleNULL,                                      //394 SPELL_AURA_394
+    &AuraEffect::HandleNULL,                                      //393 SPELL_AURA_MOD_PARRY_PERCENT_2
+    &AuraEffect::HandleNULL,                                      //394 SPELL_AURA_LOOT_BONUS
     &AuraEffect::HandleNULL,                                      //395 SPELL_AURA_395
     &AuraEffect::HandleNULL,                                      //396 SPELL_AURA_396
     &AuraEffect::HandleNULL,                                      //397 SPELL_AURA_397
     &AuraEffect::HandleNULL,                                      //398 SPELL_AURA_398
     &AuraEffect::HandleNULL,                                      //399 SPELL_AURA_399
-    &AuraEffect::HandleNULL,                                      //400 SPELL_AURA_400
+    &AuraEffect::HandleNULL,                                      //400 SPELL_AURA_SKILL_2
     &AuraEffect::HandleNULL,                                      //401 SPELL_AURA_401
     &AuraEffect::HandleNULL,                                      //402 SPELL_AURA_402
-    &AuraEffect::HandleNULL,                                      //403 SPELL_AURA_403
+    &AuraEffect::HandleNULL,                                      //403 SPELL_AURA_MOD_SPELL_VISUAL
     &AuraEffect::HandleOverrideAttackPowerBySpellPower,           //404 SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT
     &AuraEffect::HandleIncreaseHasteFromItemsByPct,               //405 SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT
     &AuraEffect::HandleNULL,                                      //406 SPELL_AURA_406
-    &AuraEffect::HandleModFear,                                   //407 SPELL_AURA_407      TODO : Find the difference between 7 & 407
-    &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_408
-    &AuraEffect::HandleNULL,                                      //409 SPELL_AURA_409
+    &AuraEffect::HandleModFear,                                   //407 SPELL_AURA_MOD_FEAR_2
+    &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_PROC_SPELL_CHARGE
+    &AuraEffect::HandleNULL,                                      //409 SPELL_AURA_MOD_FALL_SPEED
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
     &AuraEffect::HandleNoImmediateEffect,                         //411 SPELL_AURA_MOD_CHARGES implemented in Spell::cast
     &AuraEffect::HandleNULL,                                      //412 SPELL_AURA_412
-    &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_413
+    &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_HASTE_AFFECTS_MANA_REGEN
     &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_414
     &AuraEffect::HandleNULL,                                      //415 SPELL_AURA_415
     &AuraEffect::HandleNULL,                                      //416 SPELL_AURA_416
