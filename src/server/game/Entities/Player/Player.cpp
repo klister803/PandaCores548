@@ -26452,7 +26452,7 @@ void Player::HandleFall(MovementInfo const& movementInfo)
         //Safe fall, fall height reduction
         int32 safe_fall = GetTotalAuraModifier(SPELL_AURA_SAFE_FALL);
 
-        float damageperc = 0.018f*(z_diff-safe_fall)-0.2426f;
+        float damageperc = (0.018f*(z_diff-safe_fall)-0.2426f) * GetTotalAuraMultiplier(SPELL_AURA_MOD_FALL_DAMAGE);
 
         if (damageperc > 0)
         {
