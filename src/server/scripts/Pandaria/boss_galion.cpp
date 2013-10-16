@@ -14,10 +14,10 @@ enum eBosses
 enum eSpells
 {
     SPELL_STOMP                 = 121787,
-    SPELL_CANNON_BARRAGE        = 121600,
-    SPELL_FIRE_SHOT             = 121673,
+    SPELL_CANNON_BARRAGE        = 121577, 
+    SPELL_FIRE_SHOT             = 121673, 
     SPELL_EMPALLING_PULL        = 121747,
-    SPELL_BERSERK               = 47008,
+    SPELL_BERSERK               =  47008,
 };
 
 enum eEvents
@@ -56,17 +56,13 @@ public:
             _Reset();
         }
 
-        void KilledUnit(Unit* u)
-        {
-        }
-
         void EnterCombat(Unit* unit)
         {
-            events.ScheduleEvent(EVENT_STOMP, 50000);
-            events.ScheduleEvent(EVENT_CANNON,25000);
-            events.ScheduleEvent(EVENT_SPAWN,60000);
-            events.ScheduleEvent(EVENT_FIRE_SHOT,10000);
-            events.ScheduleEvent(EVENT_BERSERK,900000);
+            events.ScheduleEvent(EVENT_STOMP, 40000);
+            events.ScheduleEvent(EVENT_CANNON, 25000);
+            events.ScheduleEvent(EVENT_SPAWN, 60000);
+            events.ScheduleEvent(EVENT_FIRE_SHOT, 10000);
+            events.ScheduleEvent(EVENT_BERSERK, 900000);
         }
 
         void UpdateAI(const uint32 diff)
@@ -74,45 +70,37 @@ public:
             if (!UpdateVictim())
                 return;
 
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
             events.Update(diff);
+
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
                     case EVENT_STOMP:
-                    {
-                        me->CastSpell(me,SPELL_STOMP,true);
-                        events.ScheduleEvent(EVENT_STOMP, 60000);
+                        DoCast(me, SPELL_STOMP);
+                        events.ScheduleEvent(EVENT_STOMP, 40000);
                         break;
-                    }
                     case EVENT_CANNON:
-                    {
-                        me->CastSpell(me,SPELL_CANNON_BARRAGE,true);
-                        events.ScheduleEvent(EVENT_CANNON, 60000);
+                        DoCast(me, SPELL_CANNON_BARRAGE);
+                        events.ScheduleEvent(EVENT_CANNON, 50000);
                         break;
-                    }
-             /*       case EVENT_FIRE_SHOT:
-                    {
+                    case EVENT_FIRE_SHOT:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
-                        me->CastSpell(target, SPELL_FIRE_SHOT, false);
-
+                            DoCast(target, SPELL_FIRE_SHOT);
                         events.ScheduleEvent(EVENT_FIRE_SHOT, 5000);
                         break;
-                    }*/
                     case EVENT_SPAWN:
-                    {
-                        for (uint8 i=0; i<6;++i)
-                                me->SummonCreature(CREATURE_GALION,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ());
+                        for (uint8 i = 0; i < 6; ++i)
+                            me->SummonCreature(CREATURE_GALION, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
 
                         events.ScheduleEvent(EVENT_SPAWN, 60000);
                         break;
-                    }
-
                     case EVENT_BERSERK:
-                    {
-                        me->CastSpell(me,SPELL_BERSERK,false);
+                        me->CastSpell(me, SPELL_BERSERK);
                         break;
-                    }
                 }
             }
             DoMeleeAttackIfReady();
@@ -152,7 +140,7 @@ class npc_galion : public CreatureScript
                 {
                     case EVENT_EMPALLING:
                     {
-                        if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                             me->CastSpell(target,SPELL_EMPALLING_PULL,true);
                         events.ScheduleEvent(EVENT_EMPALLING, 60000);
                         break;

@@ -4198,6 +4198,19 @@ void SpellMgr::LoadSpellCustomAttr()
             case 119489: //Unleashed Wrath
                 spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
                 break;
+            // Galion
+            case 121787: //Stomp
+                spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(12);
+                spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(12);
+                break;
+            case 121577: //Barrege
+                spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
+                break;
+            case 121600: //Barrage Dmg
+                spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                break;
+
 
             // Dalaran arena knockback
             case 61698:
