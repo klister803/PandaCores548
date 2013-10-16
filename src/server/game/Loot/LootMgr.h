@@ -29,6 +29,7 @@
 #include <map>
 #include <vector>
 
+struct Loot;
 enum RollType
 {
     ROLL_PASS         = 0,
@@ -158,7 +159,7 @@ struct LootItem
 
     // Constructor, copies most fields from LootStoreItem, generates random count and random suffixes/properties
     // Should be called for non-reference LootStoreItem entries only (mincountOrRef > 0)
-    explicit LootItem(LootStoreItem const& li);
+    explicit LootItem(LootStoreItem const& li, Loot* loot);
 
     // Basic checks for player/item compatibility - if false no chance to see the item in the loot
     bool AllowedForPlayer(Player const* player) const;
@@ -308,7 +309,7 @@ struct Loot
     uint8 spawnMode;
     uint32 countItem;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0), m_lootOwner(NULL) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -360,6 +361,7 @@ struct Loot
     uint32 GetMaxSlotInLootFor(Player* player) const;
     bool hasItemFor(Player* player) const;
     bool hasOverThresholdItem() const;
+    Player const* GetLootOwner() const { return m_lootOwner; }
 
     private:
         void FillNotNormalLootFor(Player* player, bool presentAtLooting);
@@ -374,6 +376,8 @@ struct Loot
 
         // All rolls are registered here. They need to know, when the loot is not valid anymore
         LootValidatorRefManager i_LootValidatorRefManager;
+
+        Player* m_lootOwner;
 };
 
 struct LootView

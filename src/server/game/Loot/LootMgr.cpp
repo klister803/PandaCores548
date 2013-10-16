@@ -316,7 +316,7 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
 //
 
 // Constructor, copies most fields from LootStoreItem and generates random count
-LootItem::LootItem(LootStoreItem const& li)
+LootItem::LootItem(LootStoreItem const& li, Loot* loot)
 {
     itemid      = li.itemid;
     conditions   = li.conditions;
@@ -328,6 +328,19 @@ LootItem::LootItem(LootStoreItem const& li)
     needs_quest = li.needs_quest;
 
     count       = urand(li.mincountOrRef, li.maxcount);     // constructor called for mincountOrRef > 0 only
+    if (loot)
+    {
+        float mult = 1.0f;
+        if (Player const* lootOwner = loot->GetLootOwner())
+        {
+            Unit::AuraEffectList const& auras = lootOwner->GetAuraEffectsByType(SPELL_AURA_MOD_ITEM_LOOT);
+            for (Unit::AuraEffectList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                if ((*itr)->GetMiscValue() == proto->Class && (*itr)->GetMiscValueB() & (1 << proto->SubClass))
+                    mult *= ((*itr)->GetAmount() + 100.0f) / 100.0f;
+        }
+
+        count = uint32(count * mult + 0.5f);
+    }
     randomSuffix = GenerateEnchSuffixFactor(itemid);
     randomPropertyId = Item::GenerateItemRandomPropertyId(itemid);
     is_looted = 0;
@@ -380,11 +393,11 @@ void Loot::AddItem(LootStoreItem const & item)
     if (item.needs_quest)                                   // Quest drop
     {
         if (quest_items.size() < MAX_NR_QUEST_ITEMS)
-            quest_items.push_back(LootItem(item));
+            quest_items.push_back(LootItem(item, this));
     }
     else if (items.size() < MAX_NR_LOOT_ITEMS)              // Non-quest drop
     {
-        items.push_back(LootItem(item));
+        items.push_back(LootItem(item, this));
 
         // non-conditional one-player only items are counted here,
         // free for all items are counted in FillFFALoot(),
@@ -404,6 +417,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
     // Must be provided
     if (!lootOwner)
         return false;
+
+    m_lootOwner = lootOwner;
 
     LootTemplate const* tab = store.GetLootFor(lootId);
 
