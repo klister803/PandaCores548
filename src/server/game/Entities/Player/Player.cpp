@@ -7859,6 +7859,17 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
         if(info.count < limit)
             ++info.count;
     }
+
+    if (victim)
+    {
+        AuraEffectList const& mMultipliers = GetAuraEffectsByType(SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE);
+        for (AuraEffectList::const_iterator itr = mMultipliers.begin(); itr != mMultipliers.end(); ++itr)
+        {
+            if ((*itr)->GetMiscValueB() == victim->GetCreatureType() && (*itr)->GetMiscValue() == CURRENCY_TYPE_HONOR_POINTS)
+                AddPct(honor, (*itr)->GetAmount());
+        }
+    }
+
     // honor - for show honor points in log
     // victim_guid - for show victim name in log
     // victim_rank [1..4]  HK: <dishonored rank>
