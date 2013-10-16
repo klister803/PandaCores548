@@ -2163,7 +2163,12 @@ class spell_dru_astral_communion : public SpellScriptLoader
             {
                 // check eclipse markers for direction
                 if (Player* player = GetTarget()->ToPlayer())
-                    direction = player->HasAura(67484) ? -1 : 1;
+                {
+                    if (player->HasAura(67484))
+                        direction = -1;
+                    else if (!player->HasAura(67483))
+                        direction = urand(0, 1) ? 1 : -1;
+                }
             }
 
             void OnTick(AuraEffect const* aurEff)
