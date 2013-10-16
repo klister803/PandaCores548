@@ -495,7 +495,13 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
     std::list<CurrencyLoot> temp = sObjectMgr->GetCurrencyLoot(objEntry, objType);
     for (std::list<CurrencyLoot>::iterator i = temp.begin(); i != temp.end(); ++i)
         if(CurrencyTypesEntry const* proto = sCurrencyTypesStore.LookupEntry(i->CurrencyId))
-            player->ModifyCurrency(i->CurrencyId, urand(i->CurrencyAmount, i->currencyMaxAmount) * proto->GetPrecision() * countItem);
+        {
+            uint32 amount = urand(i->CurrencyAmount, i->currencyMaxAmount) * proto->GetPrecision() * countItem;
+            if (m_lootOwner)
+                amount = uint32(0.5f + amount * m_lootOwner->GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_CURRENCY_LOOT, proto->Category));
+
+            player->ModifyCurrency(i->CurrencyId, amount);
+        }
 }
 
 QuestItemList* Loot::FillFFALoot(Player* player)
