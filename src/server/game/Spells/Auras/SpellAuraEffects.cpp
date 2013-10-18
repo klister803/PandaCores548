@@ -468,8 +468,8 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //409 SPELL_AURA_MOD_FALL_SPEED
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
     &AuraEffect::HandleNoImmediateEffect,                         //411 SPELL_AURA_MOD_CHARGES implemented in Spell::cast
-    &AuraEffect::HandleNULL,                                      //412 SPELL_AURA_412
-    &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_HASTE_AFFECTS_MANA_REGEN
+    &AuraEffect::HandleNULL,                                      //412 SPELL_AURA_HASTE_AFFECTS_MANA_REGEN
+    &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_413
     &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_414
     &AuraEffect::HandleNULL,                                      //415 SPELL_AURA_415
     &AuraEffect::HandleNULL,                                      //416 SPELL_AURA_416

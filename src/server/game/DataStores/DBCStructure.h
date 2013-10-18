@@ -1972,10 +1972,11 @@ struct SpellFocusObjectEntry
 
 struct SpellRadiusEntry
 {
-    uint32    ID;
-    float     radiusHostile;
-    //uint32    Unk    //always 0
-    float     radiusFriend;
+    uint32    ID;                                           // 0
+    float     radiusHostile;                                // 1
+    //float   radiusPerLevel                                // 2
+    //uint32                                                // 3    new 5.0.5
+    float     radiusFriend;                                 // 4
 };
 
 struct SpellRangeEntry

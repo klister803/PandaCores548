@@ -838,23 +838,10 @@ void Player::UpdateManaRegen()
         base_regen *= 2;
     }
 
-    // Chaotic Energy : Increase Mana regen by 625%
-    if (HasAura(111546))
+    if (HasAuraType(SPELL_AURA_HASTE_AFFECTS_MANA_REGEN))
     {
         // haste also increase your mana regeneration
-        HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
-
-        combat_regen = combat_regen + (combat_regen * 6.25f);
-        combat_regen *= HastePct;
-        base_regen = base_regen + (base_regen * 6.25f);
-        base_regen *= HastePct;
-    }
-
-    // Nether Attunement - 117957 : Haste also increase your mana regeneration
-    if (HasAura(117957))
-    {
-        HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
-
+        HastePct = 1.0f + GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
         combat_regen *= HastePct;
         base_regen *= HastePct;
     }
