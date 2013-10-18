@@ -573,7 +573,7 @@ struct AreaTableEntry
     float   MaxDepth;                                       // 19 determine the maximum depth that a player an reach in an area before being teleported back up.
     //float  unk13;                                         // 20
     //uint32 unk19;                                         // 21 All zeros (4.2.2)
-    //uint32 unk20;                                         // 22 4.0.0
+    uint32 mountFlags;                                      // 20
     //uint32 unk21;                                         // 23 4.0.0
     //uint32 unk22;                                         // 24 4.0.0
     //uint32 unk23;                                         // 25 4.0.0

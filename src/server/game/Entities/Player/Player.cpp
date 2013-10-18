@@ -4557,6 +4557,9 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
                 learnSpell(itr2->second, false);
         }
     }
+
+    // Many mounts depend on learned spells, update right now
+    UpdateMount();
 }
 
 void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
@@ -9272,6 +9275,73 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
 
         sLog->outDebug(LOG_FILTER_PLAYER, "WORLD: cast %s Equip spellId - %i", (item ? "item" : "itemset"), spellInfo->Id);
 
+        if(item)
+        {
+            //change bonus for custom item
+            switch(item->GetTemplate()->ItemId)
+            {
+                case 1:
+                {
+                    int32 bp = 100;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 2:
+                {
+                    int32 bp = 90;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 3:
+                {
+                    int32 bp = 80;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 4:
+                {
+                    int32 bp = 70;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 5:
+                {
+                    int32 bp = 60;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 6:
+                {
+                    int32 bp = 50;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 7:
+                {
+                    int32 bp = 40;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 8:
+                {
+                    int32 bp = 30;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 9:
+                {
+                    int32 bp = 20;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 10:
+                {
+                    int32 bp = 10;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+            }
+        }
         CastSpell(this, spellInfo, true, item);
     }
     else
@@ -25196,6 +25266,8 @@ void Player::UpdateZoneDependentAuras(uint32 newZone)
 
 void Player::UpdateAreaDependentAuras(uint32 newArea)
 {
+    UpdateMount();
+
     // remove auras from spells with area limitations
     for (AuraMap::iterator iter = m_ownedAuras.begin(); iter != m_ownedAuras.end();)
     {

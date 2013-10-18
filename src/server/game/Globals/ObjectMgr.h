@@ -1293,11 +1293,11 @@ class ObjectMgr
                     break;
                 case MAN25_DIFFICULTY:
                 case MAN25_HEROIC_DIFFICULTY:
+                case MAN40_DIFFICULTY:
                     count = 4;
                     break;
                 case RAID_TOOL_DIFFICULTY:
                 case CHALLENGE_MODE_DIFFICULTY:
-                case MAN40_DIFFICULTY:
                     count = 3;
                     break;
             }

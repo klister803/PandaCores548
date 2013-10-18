@@ -1010,6 +1010,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
                 break;
             case MSEHasPitch:
                 hasPitch = !data.ReadBit();
+                mi->HavePitch = hasPitch;
                 break;
             case MSEHasFallData:
                 hasFallData = data.ReadBit();
