@@ -2569,6 +2569,8 @@ void InstanceMap::UnloadAll()
     if (m_resetAfterUnload == true)
         DeleteRespawnTimes();
 
+    volatile uint32 _mspId = GetId();
+
     Map::UnloadAll();
 }
 
