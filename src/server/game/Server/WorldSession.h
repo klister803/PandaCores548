@@ -1100,6 +1100,7 @@ class WorldSession
         time_t timeLastChannelKickCommand;
         time_t timeLastHandleSendMail;
         time_t timeLastHandleSellItem;
+        time_t timeLastHandlePlayerLogin;
         uint8 playerLoginCounter;
 
         uint32 _pakagepersecond;

@@ -849,6 +849,15 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeLastHandlePlayerLogin < 1)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeLastHandlePlayerLogin = now;
+
     // Prevent flood of CMSG_PLAYER_LOGIN
     playerLoginCounter++;
     if (playerLoginCounter > 10)
