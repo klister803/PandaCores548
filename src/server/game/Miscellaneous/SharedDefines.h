@@ -4102,7 +4102,7 @@ enum BattlegroundTypeId
     BATTLEGROUND_CTF3               = 706,
     BATTLEGROUND_SSM                = 708, // Silvershard Mines
     BATTLEGROUND_TV                 = 719, // Tol'vir Arena
-    BATTLEGROUND_TTP                = 757  // The Tiger's Peak - only for 5.3.0
+    //BATTLEGROUND_TTP              = 757  // The Tiger's Peak - only for 5.3.0
 };
 
 #define MAX_BATTLEGROUND_TYPE_ID 720
