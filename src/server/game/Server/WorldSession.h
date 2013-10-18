@@ -1101,6 +1101,10 @@ class WorldSession
         time_t timeLastHandleSendMail;
         time_t timeLastHandleSellItem;
         uint8 playerLoginCounter;
+
+        uint32 _pakagepersecond;
+        uint32 _second;
+        uint32 _counttokick;
 };
 #endif
 /// @}
