@@ -107,7 +107,7 @@ timeLastChannelSetownerCommand(0),
 timeLastChannelUnmoderCommand(0),
 timeLastChannelUnmuteCommand(0),
 timeLastChannelKickCommand(0), timeLastHandleSendMail(0), timeLastHandleSellItem(0), timeLastHandlePlayerLogin(0),
-timeCharEnumOpcode(0),
+timeCharEnumOpcode(0), timeAddIgnoreOpcode(0),
 playerLoginCounter(0)
 {
     _warden = NULL;

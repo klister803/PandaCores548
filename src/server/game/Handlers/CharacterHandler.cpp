@@ -305,6 +305,15 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
 
 void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeAddIgnoreOpcode < 3)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeAddIgnoreOpcode = now;
+
     std::string name;
     uint32 name_length = 0;
     uint8 race_, class_;
@@ -850,7 +859,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 {
     time_t now = time(NULL);
-    if (now - timeLastHandlePlayerLogin < 1)
+    if (now - timeLastHandlePlayerLogin < 5)
     {
         recvData.rfinish();
         return;

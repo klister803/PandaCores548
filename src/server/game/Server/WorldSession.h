@@ -1101,6 +1101,7 @@ class WorldSession
         time_t timeLastHandleSendMail;
         time_t timeLastHandleSellItem;
         time_t timeLastHandlePlayerLogin;
+        time_t timeAddIgnoreOpcode;
         uint8 playerLoginCounter;
 
         uint32 _pakagepersecond;

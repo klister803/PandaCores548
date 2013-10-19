@@ -554,6 +554,15 @@ void WorldSession::HandleContactListOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeAddIgnoreOpcode < 3)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeAddIgnoreOpcode = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_ADD_FRIEND");
 
     std::string friendName = GetTrinityString(LANG_FRIEND_IGNORE_UNKNOWN);
@@ -647,6 +656,15 @@ void WorldSession::HandleDelFriendOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleAddIgnoreOpcode(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeAddIgnoreOpcode < 3)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeAddIgnoreOpcode = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_ADD_IGNORE");
 
     std::string ignoreName = GetTrinityString(LANG_FRIEND_IGNORE_UNKNOWN);
