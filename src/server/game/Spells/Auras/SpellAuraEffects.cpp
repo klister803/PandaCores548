@@ -388,8 +388,8 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //329 SPELL_AURA_MOD_RUNE_REGEN_SPEED
     &AuraEffect::HandleNoImmediateEffect,                         //330 SPELL_AURA_CAST_WHILE_WALKING
     &AuraEffect::HandleAuraForceWeather,                          //331 SPELL_AURA_FORCE_WEATHER
-    &AuraEffect::HandleNoImmediateEffect,                         //332 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS implemented in WorldSession::HandleCastSpellOpcode
-    &AuraEffect::HandleNoImmediateEffect,                         //333 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2 implemented in WorldSession::HandleCastSpellOpcode
+    &AuraEffect::HandleOverrideActionbarSpells,                   //332 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS implemented in WorldSession::HandleCastSpellOpcode
+    &AuraEffect::HandleOverrideActionbarSpells,                   //333 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2 implemented in WorldSession::HandleCastSpellOpcode
     &AuraEffect::HandleNULL,                                      //334 SPELL_AURA_MOD_BLIND
     &AuraEffect::HandleNULL,                                      //335 SPELL_AURA_SEE_WHILE_INVISIBLE
     &AuraEffect::HandleNULL,                                      //336 SPELL_AURA_MOD_FLYING_RESTRICTIONS
@@ -7657,5 +7657,49 @@ void AuraEffect::HandleAuraStrangulate(AuraApplication const* aurApp, uint8 mode
             target->UpdateHeight(target->GetPositionZ() + newZ);
         else
             target->UpdateHeight(target->GetPositionZ() - newZ);
+    }
+}
+
+void AuraEffect::HandleOverrideActionbarSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (target->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    if (!apply)
+    {
+        Unit::AuraEffectList swaps = target->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
+        Unit::AuraEffectList const& swaps2 = target->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2);
+        if (!swaps2.empty())
+            swaps.insert(swaps.end(), swaps2.begin(), swaps2.end());
+
+        SpellInfo const* thisInfo = GetSpellInfo();
+
+        // update auras that replace same spells that unapplying aura do
+        for (Unit::AuraEffectList::const_iterator itr = swaps.begin(); itr != swaps.end(); ++itr)
+        {
+            SpellInfo const* otherInfo = (*itr)->GetSpellInfo();
+            if (thisInfo->SpellFamilyName == otherInfo->SpellFamilyName)
+            {
+                bool updated = false;
+                for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                {
+                    for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
+                    {
+                        if (thisInfo->Effects[i].SpellClassMask & otherInfo->Effects[j].SpellClassMask)
+                        {
+                            updated = true;
+                            (*itr)->GetBase()->SetNeedClientUpdateForTargets();
+                            break;
+                        }
+                    }
+                    if (updated)
+                        break;
+                }
+            }
+        }
     }
 }
