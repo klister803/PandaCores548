@@ -1827,8 +1827,8 @@ void SpellMgr::LoadSpellProcEvents()
 
     mSpellProcEventMap.clear();                             // need for reload case
 
-    //                                                0      1           2                3                 4                 5                 6          7       8        9             10            11
-    QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask0, SpellFamilyMask1, SpellFamilyMask2, procFlags, procEx, ppmRate, CustomChance, Cooldown, effectmask FROM spell_proc_event");
+    //                                               0      1           2                3                 4                 5                 6                 7          8       9        10            11        12
+    QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask0, SpellFamilyMask1, SpellFamilyMask2, SpellFamilyMask3, procFlags, procEx, ppmRate, CustomChance, Cooldown, effectmask FROM spell_proc_event");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell proc event conditions. DB table `spell_proc_event` is empty.");
@@ -1858,12 +1858,13 @@ void SpellMgr::LoadSpellProcEvents()
         spe.spellFamilyMask[0] = fields[3].GetUInt32();
         spe.spellFamilyMask[1] = fields[4].GetUInt32();
         spe.spellFamilyMask[2] = fields[5].GetUInt32();
-        spe.procFlags       = fields[6].GetUInt32();
-        spe.procEx          = fields[7].GetUInt32();
-        spe.ppmRate         = fields[8].GetFloat();
-        spe.customChance    = fields[9].GetFloat();
-        spe.cooldown        = fields[10].GetUInt32();
-        spe.effectMask        = fields[11].GetUInt32();
+        spe.spellFamilyMask[3] = fields[6].GetUInt32();
+        spe.procFlags       = fields[7].GetUInt32();
+        spe.procEx          = fields[8].GetUInt32();
+        spe.ppmRate         = fields[9].GetFloat();
+        spe.customChance    = fields[10].GetFloat();
+        spe.cooldown        = fields[11].GetUInt32();
+        spe.effectMask        = fields[12].GetUInt32();
 
         mSpellProcEventMap[entry].push_back(spe);
 
@@ -1892,8 +1893,8 @@ void SpellMgr::LoadSpellProcs()
 
     mSpellProcMap.clear();                             // need for reload case
 
-    //                                                 0        1           2                3                 4                 5                 6         7              8               9        10              11             12      13        14        15
-    QueryResult result = WorldDatabase.Query("SELECT spellId, schoolMask, spellFamilyName, spellFamilyMask0, spellFamilyMask1, spellFamilyMask2, typeMask, spellTypeMask, spellPhaseMask, hitMask, attributesMask, ratePerMinute, chance, cooldown, charges, modcharges FROM spell_proc");
+    //                                               0        1           2                3                 4                 5                 6                 7         8              9               10       11              12             13      14        15       16
+    QueryResult result = WorldDatabase.Query("SELECT spellId, schoolMask, spellFamilyName, spellFamilyMask0, spellFamilyMask1, spellFamilyMask2, spellFamilyMask3, typeMask, spellTypeMask, spellPhaseMask, hitMask, attributesMask, ratePerMinute, chance, cooldown, charges, modcharges FROM spell_proc");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell proc conditions and data. DB table `spell_proc` is empty.");
@@ -1937,17 +1938,18 @@ void SpellMgr::LoadSpellProcs()
         baseProcEntry.spellFamilyMask[0] = fields[3].GetUInt32();
         baseProcEntry.spellFamilyMask[1] = fields[4].GetUInt32();
         baseProcEntry.spellFamilyMask[2] = fields[5].GetUInt32();
-        baseProcEntry.typeMask        = fields[6].GetUInt32();
-        baseProcEntry.spellTypeMask   = fields[7].GetUInt32();
-        baseProcEntry.spellPhaseMask  = fields[8].GetUInt32();
-        baseProcEntry.hitMask         = fields[9].GetUInt32();
-        baseProcEntry.attributesMask  = fields[10].GetUInt32();
-        baseProcEntry.ratePerMinute   = fields[11].GetFloat();
-        baseProcEntry.chance          = fields[12].GetFloat();
-        float cooldown                = fields[13].GetFloat();
+        baseProcEntry.spellFamilyMask[3] = fields[6].GetUInt32();
+        baseProcEntry.typeMask        = fields[7].GetUInt32();
+        baseProcEntry.spellTypeMask   = fields[8].GetUInt32();
+        baseProcEntry.spellPhaseMask  = fields[9].GetUInt32();
+        baseProcEntry.hitMask         = fields[10].GetUInt32();
+        baseProcEntry.attributesMask  = fields[11].GetUInt32();
+        baseProcEntry.ratePerMinute   = fields[12].GetFloat();
+        baseProcEntry.chance          = fields[13].GetFloat();
+        float cooldown                = fields[14].GetFloat();
         baseProcEntry.cooldown        = uint32(cooldown);
-        baseProcEntry.charges         = fields[14].GetUInt32();
-        baseProcEntry.modcharges      = fields[15].GetUInt32();
+        baseProcEntry.charges         = fields[15].GetUInt32();
+        baseProcEntry.modcharges      = fields[16].GetUInt32();
 
         while (true)
         {
