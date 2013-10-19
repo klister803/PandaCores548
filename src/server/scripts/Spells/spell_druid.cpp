@@ -3117,6 +3117,9 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
                 // search Euphoria, energize mana
                 if (player->HasAura(81062))
                     player->CastSpell(player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true);
+
+                // cast Nature's Grace
+                player->CastSpell(player, 16886, true);
             }
 
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
