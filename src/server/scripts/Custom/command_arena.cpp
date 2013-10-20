@@ -498,15 +498,15 @@ public:
                             //std::string commandArg = member.Name;
                             //commandArg += " \"Realm Strongest Team\" \"Congratulations, arena season is over and your team is Top 1 in realm!\"";
                             //handler->SendItemsCommand(commandArg.c_str());
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", member.Guid, 71954);
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", member.Guid, 95041);
                             CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','200')", member.Guid, 38186);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", member.Guid, 6124);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", member.Guid, 280);
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", member.Guid, 8214);
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", member.Guid, 343);
 
-                            sLog->outArena("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", member.Guid, 71954);
+                            sLog->outArena("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", member.Guid, 95041);
                             sLog->outArena("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','200')", member.Guid, 38186);
-                            sLog->outArena("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", member.Guid, 6124);
-                            sLog->outArena("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", member.Guid, 280);
+                            sLog->outArena("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", member.Guid, 8214);
+                            sLog->outArena("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", member.Guid, 343);
 
                             playersCount++;
                         }

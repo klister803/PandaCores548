@@ -2163,7 +2163,12 @@ class spell_dru_astral_communion : public SpellScriptLoader
             {
                 // check eclipse markers for direction
                 if (Player* player = GetTarget()->ToPlayer())
-                    direction = player->HasAura(67484) ? -1 : 1;
+                {
+                    if (player->HasAura(67484))
+                        direction = -1;
+                    else if (!player->HasAura(67483))
+                        direction = urand(0, 1) ? 1 : -1;
+                }
             }
 
             void OnTick(AuraEffect const* aurEff)
@@ -3112,6 +3117,9 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
                 // search Euphoria, energize mana
                 if (player->HasAura(81062))
                     player->CastSpell(player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true);
+
+                // cast Nature's Grace
+                player->CastSpell(player, 16886, true);
             }
 
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)

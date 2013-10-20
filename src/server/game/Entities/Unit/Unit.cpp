@@ -276,6 +276,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _focusSpell = NULL;
     _lastLiquid = NULL;
     _isWalkingBeforeCharm = false;
+    _mount = NULL;
 
     // Area Skip Update
     _skipCount = 0;
@@ -335,6 +336,8 @@ Unit::~Unit()
 
 void Unit::Update(uint32 p_time)
 {
+    volatile uint32 entryorguid = GetTypeId() == TYPEID_PLAYER ? GetGUIDLow() : GetEntry();
+
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
@@ -2763,7 +2766,7 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
         if (reflectchance > 0 && roll_chance_i(reflectchance))
         {
             // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
-            ProcDamageAndSpell(victim, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, spell);
+            //ProcDamageAndSpell(victim, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, spell);
             return SPELL_MISS_REFLECT;
         }
     }
@@ -4029,7 +4032,8 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
     {
         Aura* aura = (*iter)->GetBase();
         ++iter;
-        if ((aura->GetSpellInfo()->AuraInterruptFlags & flag) && (!except || aura->GetId() != except))
+        if ((aura->GetSpellInfo()->AuraInterruptFlags & flag) && (!except || aura->GetId() != except) &&
+            ((flag & AURA_INTERRUPT_FLAG_MOVING) == 0 || !HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, aura->GetSpellInfo())))
         {
             uint32 removedAuras = m_removedAurasCount;
             RemoveAura(aura);
@@ -4043,7 +4047,8 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
         if (spell->getState() == SPELL_STATE_CASTING
             && (spell->m_spellInfo->ChannelInterruptFlags & flag)
             && spell->m_spellInfo->Id != except
-            && !(spell->m_spellInfo->Id == 120360 && flag == AURA_INTERRUPT_FLAG_MOVE))
+            && !(spell->m_spellInfo->Id == 120360 && flag == AURA_INTERRUPT_FLAG_MOVE)
+            && ((flag & AURA_INTERRUPT_FLAG_MOVING) == 0 || !HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, spell->m_spellInfo)))
             InterruptNonMeleeSpells(false);
 
     UpdateInterruptMask();
@@ -12939,6 +12944,157 @@ void Unit::Dismount()
     }
 }
 
+void Unit::UpdateMount()
+{
+    MountCapabilityEntry const* newMount = NULL;
+    AuraEffect* effect = NULL;
+
+    // First get the mount type
+    MountTypeEntry const* mountType = NULL;
+    {
+        AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOUNTED);
+        for (AuraEffectList::const_reverse_iterator itr = auras.rbegin(); itr != auras.rend(); ++itr)
+        {
+            AuraEffect* aura = *itr;
+            aura->GetMiscValueB();
+            mountType = sMountTypeStore.LookupEntry(uint32(aura->GetMiscValueB()));
+            if (mountType)
+            {
+                effect = aura;
+                break;
+            }
+        }
+    }
+
+    if (mountType)
+    {
+        uint32 zoneId, areaId;
+        GetZoneAndAreaId(zoneId, areaId);
+
+        uint32 ridingSkill = 5000;
+        if (GetTypeId() == TYPEID_PLAYER)
+            ridingSkill = ToPlayer()->GetSkillValue(SKILL_RIDING);
+
+        // Find the currently allowed mount flags
+        uint32 currentMountFlags;
+        {
+            AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOD_FLYING_RESTRICTIONS);
+            if (!auras.empty())
+            {
+                currentMountFlags = 0;
+                for (AuraEffectList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                    currentMountFlags |= (*itr)->GetMiscValue();
+            }
+            else
+            {
+                AreaTableEntry const* entry;
+                entry = GetAreaEntryByAreaID(areaId);
+                if (!entry)
+                    entry = GetAreaEntryByAreaID(zoneId);
+
+                if (entry)
+                    currentMountFlags = entry->mountFlags;
+            }
+        }
+
+        // Find the fitting mount
+        for (uint32 i = MAX_MOUNT_CAPABILITIES-1; i < MAX_MOUNT_CAPABILITIES; --i)
+        {
+            uint32 id = mountType->MountCapability[i];
+            if (!id)
+                continue;
+
+            MountCapabilityEntry const* mountCapability = sMountCapabilityStore.LookupEntry(id);
+            if (!mountCapability)
+                continue;
+
+            if (ridingSkill < mountCapability->RequiredRidingSkill)
+                continue;
+
+            // Flags required to use this mount
+            uint32 reqFlags = mountCapability->Flags;
+
+            if (reqFlags&1 && !(currentMountFlags&1))
+                continue;
+
+            if (reqFlags&2 && !(currentMountFlags&2))
+                continue;
+
+            if (reqFlags&4 && !(currentMountFlags&4))
+                continue;
+
+            if (reqFlags&8 && !(currentMountFlags&8))
+                continue;
+
+            if (m_movementInfo.HavePitch)
+            {
+                if (!(reqFlags & MOUNT_FLAG_CAN_PITCH))
+                    continue;
+            }
+
+            if (HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
+            {
+                if (!(reqFlags & MOUNT_FLAG_CAN_SWIM))
+                    continue;
+            }
+
+            //if (!(reqFlags & 3))
+                //continue;
+
+            if (mountCapability->RequiredMap != -1 && GetMapId() != uint32(mountCapability->RequiredMap))
+                continue;
+
+            if (mountCapability->RequiredArea && (mountCapability->RequiredArea != zoneId && mountCapability->RequiredArea != areaId))
+                continue;
+
+            if (mountCapability->RequiredAura && !HasAura(mountCapability->RequiredAura))
+                continue;
+
+            if (mountCapability->RequiredSpell && (GetTypeId() != TYPEID_PLAYER || !ToPlayer()->HasSpell(mountCapability->RequiredSpell)))
+                continue;
+
+            newMount = mountCapability;
+            break;
+        }
+    }
+
+    if (_mount != newMount)
+    {
+        uint32 oldSpell = _mount ? _mount->SpeedModSpell : 0;
+        bool oldFlyer = _mount ? (_mount->Flags & 2) : false;
+        uint32 newSpell = newMount ? newMount->SpeedModSpell : 0;
+        bool newFlyer = newMount ? (newMount->Flags & 2) : false;
+
+        // This is required for displaying speeds on aura
+        if (effect)
+            effect->SetAmount(newMount ? newMount->Id : 0);
+
+        if (oldSpell != newSpell)
+        {
+            if (oldSpell)
+                RemoveAurasDueToSpell(oldSpell);
+
+            if (newSpell)
+                CastSpell(this, newSpell, true, NULL, effect);
+        }
+
+        if (oldFlyer != newFlyer)
+            SetCanFly(newFlyer);
+
+        if (!(oldFlyer ^ newFlyer))
+            SetCanFly(newFlyer);
+
+        Player* player = ToPlayer();
+        if (!player)
+            player = m_movedPlayer;
+
+        if (player)
+            player->SendMovementCanFlyChange();
+
+        _mount = newMount;
+    }
+}
+
 MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
 {
     if (!mountType)
@@ -12963,11 +13119,11 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
         if (ridingSkill < mountCapability->RequiredRidingSkill)
             continue;
 
-        if (HasExtraUnitMovementFlag(MOVEMENTFLAG2_FULL_SPEED_PITCHING))
+        /*if (HasExtraUnitMovementFlag(MOVEMENTFLAG2_FULL_SPEED_PITCHING))
         {
             if (!(mountCapability->Flags & MOUNT_FLAG_CAN_PITCH))
                 continue;
-        }
+        }*/
         else if (HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
         {
             if (!(mountCapability->Flags & MOUNT_FLAG_CAN_SWIM))
@@ -15033,6 +15189,7 @@ uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
             case 60043:
             case 60047:
             case 60051:
+            case 60491: //Sha of Anger
                 return 0;
             default:
                 break;
@@ -18480,6 +18637,27 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, u
     //calculate miss chance
     float missChance = victim->GetUnitMissChance(attType);
 
+    // for example
+    // | caster | target | miss 
+    //    85        85      5
+    //    85        86     5.5
+    //    85        87      6
+    //    85        88      8
+    //    85        89      10
+
+    if (victim->getLevel() > getLevel())
+    {
+        uint8 level_diff = victim->getLevel() - getLevel();
+        if (level_diff <= 2)
+        {
+            missChance += 0.5f * level_diff;
+        }
+        else
+        {
+            missChance += ((0.5f + level_diff - 2) * 2);
+        }
+    }
+
     if (!spellId && haveOffhandWeapon())
         missChance += 19;
 
@@ -18503,8 +18681,8 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, u
     // Limit miss chance from 0 to 60%
     if (missChance < 0.0f)
         return 0.0f;
-    if (missChance > 60.0f)
-        return 60.0f;
+    if (missChance > 100.0f)
+        return 100.0f;
     return missChance;
 }
 

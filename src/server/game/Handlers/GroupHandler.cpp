@@ -847,6 +847,15 @@ void WorldSession::HandleGroupRaidConvertOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeAddIgnoreOpcode < 3)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeAddIgnoreOpcode = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_CHANGE_SUB_GROUP");
 
     // we will get correct pointer for group here, so we don't have to check if group is BG raid

@@ -161,7 +161,7 @@ struct SpellModifier
     SpellModType type : 8;
     int16 charges     : 16;
     int32 value;
-    flag96 mask;
+    flag128 mask;
     uint32 spellId;
     Aura* const ownerAura;
 };
@@ -2564,6 +2564,7 @@ class Player : public Unit, public GridObject<Player>
         void _RemoveAllStatBonuses();
 
         void ResetAllPowers();
+        void ResetEclipseState();
 
         void _ApplyWeaponDependentAuraMods(Item* item, WeaponAttackType attackType, bool apply);
         void _ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply);

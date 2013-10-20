@@ -89,6 +89,7 @@ enum SpellAuraInterruptFlags
     AURA_INTERRUPT_FLAG_LANDING             = 0x02000000,   // 25   removed by hitting the ground
 
     AURA_INTERRUPT_FLAG_NOT_VICTIM = (AURA_INTERRUPT_FLAG_HITBYSPELL | AURA_INTERRUPT_FLAG_TAKE_DAMAGE | AURA_INTERRUPT_FLAG_DIRECT_DAMAGE),
+    AURA_INTERRUPT_FLAG_MOVING = AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_TURNING | AURA_INTERRUPT_FLAG_JUMP,
 };
 
 enum SpellModOp
@@ -1497,6 +1498,7 @@ class Unit : public WorldObject
         uint32 GetMountID() const { return GetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID); }
         void Mount(uint32 mount, uint32 vehicleId = 0, uint32 creatureEntry = 0);
         void Dismount();
+        void UpdateMount();
         MountCapabilityEntry const* GetMountCapability(uint32 mountType) const;
 
         void SendDurabilityLoss(Player* receiver, uint32 percent);
@@ -2393,6 +2395,7 @@ class Unit : public WorldObject
 
         uint32 m_unitTypeMask;
         LiquidTypeEntry const* _lastLiquid;
+        MountCapabilityEntry const* _mount;
 
         // Zone Skip Update
         uint32 _skipCount;

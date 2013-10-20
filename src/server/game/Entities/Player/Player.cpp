@@ -3098,30 +3098,49 @@ void Player::ResetAllPowers()
         case POWER_RUNIC_POWER:
             SetPower(POWER_RUNIC_POWER, 0);
             break;
-        case POWER_ECLIPSE:
-            SetPower(POWER_ECLIPSE, 0);
-            break;
-        case POWER_DEMONIC_FURY:
-            SetPower(POWER_DEMONIC_FURY, 200);
-            break;
-        case POWER_BURNING_EMBERS:
-            SetPower(POWER_BURNING_EMBERS, 10);
-            break;
-        case POWER_SOUL_SHARDS:
-            SetPower(POWER_SOUL_SHARDS, 100);
-            break;
-        case POWER_SHADOW_ORB:
-            SetPower(POWER_SHADOW_ORB, 0);
-            break;
-        case POWER_CHI:
-            SetPower(POWER_CHI, 0);
-            break;
-        case POWER_ALTERNATE_POWER:
-            SetPower(POWER_ALTERNATE_POWER, 0);
-            break;
         default:
             break;
     }
+
+    SetPower(POWER_ALTERNATE_POWER, 0);
+
+    switch (getClass())
+    {
+        case CLASS_DRUID:
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                ResetEclipseState();
+            break;
+        case CLASS_MONK:
+            SetPower(POWER_CHI, 0);
+            break;
+        case CLASS_PRIEST:
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                SetPower(POWER_SHADOW_ORB, 0);
+            break;
+        case CLASS_WARLOCK:
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
+                SetPower(POWER_SOUL_SHARDS, 100);
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
+                SetPower(POWER_DEMONIC_FURY, 200);
+            if (GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+                SetPower(POWER_BURNING_EMBERS, 10);
+            break;
+        case CLASS_PALADIN:
+            SetPower(POWER_HOLY_POWER, 0);
+            break;
+    }
+}
+
+void Player::ResetEclipseState()
+{
+    SetPower(POWER_ECLIPSE, 0);
+
+    // remove Eclipse
+    RemoveAurasDueToSpell(48517);
+    RemoveAurasDueToSpell(48518);
+    // remove markers
+    RemoveAurasDueToSpell(67483);
+    RemoveAurasDueToSpell(67484);
 }
 
 bool Player::CanInteractWithQuestGiver(Object* questGiver)
@@ -3791,7 +3810,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
         SetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+i, 0.0f);
     }
     // Reset no reagent cost field
-    for (uint8 i = 0; i < 3; ++i)
+    for (uint8 i = 0; i < 4; ++i)
         SetUInt32Value(PLAYER_NO_REAGENT_COST_1 + i, 0);
     // Init data for form but skip reapply item mods for form
     InitDataForForm(reapplyMods);
@@ -4538,6 +4557,9 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
                 learnSpell(itr2->second, false);
         }
     }
+
+    // Many mounts depend on learned spells, update right now
+    UpdateMount();
 }
 
 void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
@@ -7840,6 +7862,17 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
         if(info.count < limit)
             ++info.count;
     }
+
+    if (victim)
+    {
+        AuraEffectList const& mMultipliers = GetAuraEffectsByType(SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE);
+        for (AuraEffectList::const_iterator itr = mMultipliers.begin(); itr != mMultipliers.end(); ++itr)
+        {
+            if ((*itr)->GetMiscValueB() == victim->GetCreatureType() && (*itr)->GetMiscValue() == CURRENCY_TYPE_HONOR_POINTS)
+                AddPct(honor, (*itr)->GetAmount());
+        }
+    }
+
     // honor - for show honor points in log
     // victim_guid - for show victim name in log
     // victim_rank [1..4]  HK: <dishonored rank>
@@ -9242,6 +9275,73 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
 
         sLog->outDebug(LOG_FILTER_PLAYER, "WORLD: cast %s Equip spellId - %i", (item ? "item" : "itemset"), spellInfo->Id);
 
+        if(item)
+        {
+            //change bonus for custom item
+            switch(item->GetTemplate()->ItemId)
+            {
+                case 1:
+                {
+                    int32 bp = 100;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 2:
+                {
+                    int32 bp = 90;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 3:
+                {
+                    int32 bp = 80;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 4:
+                {
+                    int32 bp = 70;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 5:
+                {
+                    int32 bp = 60;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 6:
+                {
+                    int32 bp = 50;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 7:
+                {
+                    int32 bp = 40;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 8:
+                {
+                    int32 bp = 30;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 9:
+                {
+                    int32 bp = 20;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+                case 10:
+                {
+                    int32 bp = 10;
+                    CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
+                    return;
+                }
+            }
+        }
         CastSpell(this, spellInfo, true, item);
     }
     else
@@ -21879,7 +21979,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
     Opcodes opcode = Opcodes((mod->type == SPELLMOD_FLAT) ? SMSG_SET_FLAT_SPELL_MODIFIER : SMSG_SET_PCT_SPELL_MODIFIER);
 
     int i = 0;
-    flag96 _mask = 0;
+    flag128 _mask = 0;
     uint32 modTypeCount = 0; // count of mods per one mod->op
     WorldPacket data(opcode);
     data << uint32(1);  // count of different mod->op's in packet
@@ -24889,11 +24989,12 @@ bool Player::CanNoReagentCast(SpellInfo const* spellInfo) const
         return true;
 
     // Check no reagent use mask
-    flag96 noReagentMask;
+    flag128 noReagentMask;
     noReagentMask[0] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1);
     noReagentMask[1] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1+1);
     noReagentMask[2] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1+2);
-    if (spellInfo->SpellFamilyFlags  & noReagentMask)
+    noReagentMask[3] = GetUInt32Value(PLAYER_NO_REAGENT_COST_1+3);
+    if (spellInfo->SpellFamilyFlags & noReagentMask)
         return true;
 
     return false;
@@ -25166,6 +25267,8 @@ void Player::UpdateZoneDependentAuras(uint32 newZone)
 
 void Player::UpdateAreaDependentAuras(uint32 newArea)
 {
+    UpdateMount();
+
     // remove auras from spells with area limitations
     for (AuraMap::iterator iter = m_ownedAuras.begin(); iter != m_ownedAuras.end();)
     {
@@ -26350,7 +26453,7 @@ void Player::HandleFall(MovementInfo const& movementInfo)
         //Safe fall, fall height reduction
         int32 safe_fall = GetTotalAuraModifier(SPELL_AURA_SAFE_FALL);
 
-        float damageperc = 0.018f*(z_diff-safe_fall)-0.2426f;
+        float damageperc = (0.018f*(z_diff-safe_fall)-0.2426f) * GetTotalAuraMultiplier(SPELL_AURA_MOD_FALL_DAMAGE);
 
         if (damageperc > 0)
         {

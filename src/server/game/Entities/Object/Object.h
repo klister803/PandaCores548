@@ -550,6 +550,7 @@ struct MovementInfo
     uint32 t_time3;
     // swimming/flying
     float pitch;
+    uint32 HavePitch;
     // falling
     uint32 fallTime;
     // jumping

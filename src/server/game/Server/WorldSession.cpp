@@ -106,11 +106,14 @@ timeLastChannelModerCommand(0), timeLastChannelOwnerCommand(0),
 timeLastChannelSetownerCommand(0),
 timeLastChannelUnmoderCommand(0),
 timeLastChannelUnmuteCommand(0),
-timeLastChannelKickCommand(0), timeLastHandleSendMail(0), timeLastHandleSellItem(0),
-timeCharEnumOpcode(0),
+timeLastChannelKickCommand(0), timeLastHandleSendMail(0), timeLastHandleSellItem(0), timeLastHandlePlayerLogin(0),
+timeCharEnumOpcode(0), timeAddIgnoreOpcode(0),
 playerLoginCounter(0)
 {
     _warden = NULL;
+    _pakagepersecond = 0;
+    _counttokick = 0;
+    _second = 1000;
     _filterAddonMessages = false;
 
     if (sock)
@@ -262,7 +265,11 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 /// Add an incoming packet to the queue
 void WorldSession::QueuePacket(WorldPacket* new_packet)
 {
-    _recvQueue.add(new_packet);
+    if(_counttokick < 4 && _pakagepersecond < 2000)
+    {
+        _pakagepersecond++;
+        _recvQueue.add(new_packet);
+    }
 }
 
 /// Logging helper for unexpected opcodes
@@ -291,6 +298,20 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     if (IsConnectionIdle())
         m_Socket->CloseSocket();
 
+    //count pakage
+    if(_second <= diff)
+    {
+        if(_pakagepersecond > 1200)
+            _counttokick++;
+        else _counttokick = 0;
+
+        if(_counttokick > 3)
+            KickPlayer();
+
+        _pakagepersecond = 0;
+        _second = 1000;
+    } else _second -= diff;
+
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not process packets if socket already closed
     WorldPacket* packet = NULL;
@@ -303,6 +324,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     //! delayed packets that were re-enqueued due to improper timing. To prevent an infinite
     //! loop caused by re-enqueueing the same packets over and over again, we stop updating this session
     //! and continue updating others. The re-enqueued packets will be handled in the next Update call for this session.
+    uint32 processedPackets = 0;
+
     while (m_Socket && !m_Socket->IsClosed() &&
             !_recvQueue.empty() && _recvQueue.peek(true) != firstDelayedPacket &&
             _recvQueue.next(packet, updater))
@@ -404,6 +427,14 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
         if (deletePacket)
             delete packet;
+
+#define MAX_PROCESSED_PACKETS_IN_SAME_WORLDSESSION_UPDATE 100
+        processedPackets++;
+
+        //process only a max amout of packets in 1 Update() call.
+        //Any leftover will be processed in next update
+        if (processedPackets > MAX_PROCESSED_PACKETS_IN_SAME_WORLDSESSION_UPDATE)
+            break;
     }
 
     if (m_Socket && !m_Socket->IsClosed() && _warden)

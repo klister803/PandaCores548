@@ -704,6 +704,8 @@ void Map::MoveAllCreaturesInMoveList()
         if (c->FindMap() != this) //pet is teleported to another map
             continue;
 
+        volatile uint32 creatureEntry = c->GetEntry();
+
         if (c->_moveState != CREATURE_CELL_MOVE_ACTIVE)
         {
             c->_moveState = CREATURE_CELL_MOVE_NONE;
@@ -752,6 +754,7 @@ void Map::MoveAllCreaturesInMoveList()
 bool Map::CreatureCellRelocation(Creature* c, Cell new_cell)
 {
     Cell const& old_cell = c->GetCurrentCell();
+    volatile uint32 creatureEntry = c->GetEntry();
     if (!old_cell.DiffGrid(new_cell))                       // in same grid
     {
         // if in same cell then none do
@@ -2565,6 +2568,8 @@ void InstanceMap::UnloadAll()
 
     if (m_resetAfterUnload == true)
         DeleteRespawnTimes();
+
+    volatile uint32 _mspId = GetId();
 
     Map::UnloadAll();
 }

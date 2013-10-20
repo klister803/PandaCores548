@@ -1324,6 +1324,22 @@ public:
     }
 };
 
+class go_sikthik_cage : public GameObjectScript
+{
+public:
+    go_sikthik_cage() : GameObjectScript("go_sikthik_cage") { }
+
+    bool OnGossipHello(Player* player, GameObject* /*go*/)
+    {
+        if (player->GetQuestStatus(31688) == QUEST_STATUS_INCOMPLETE && player->GetReqKillOrCastCurrentCount(31688, -214734) >= 7)
+        {
+            player->CastSpell(player, 128920, true);
+            return true;
+        }
+        return false;
+    }
+};
+
 void AddSC_go_scripts()
 {
     new go_cat_figurine;
@@ -1366,4 +1382,5 @@ void AddSC_go_scripts()
     new go_veil_skith_cage;
     new go_frostblade_shrine;
     new go_midsummer_bonfire;
+    new go_sikthik_cage;
 }

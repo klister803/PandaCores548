@@ -573,7 +573,7 @@ struct AreaTableEntry
     float   MaxDepth;                                       // 19 determine the maximum depth that a player an reach in an area before being teleported back up.
     //float  unk13;                                         // 20
     //uint32 unk19;                                         // 21 All zeros (4.2.2)
-    //uint32 unk20;                                         // 22 4.0.0
+    uint32 mountFlags;                                      // 20
     //uint32 unk21;                                         // 23 4.0.0
     //uint32 unk22;                                         // 24 4.0.0
     //uint32 unk23;                                         // 25 4.0.0
@@ -1814,8 +1814,7 @@ struct SpellEffectEntry
     uint32    EffectRadiusIndex;                            // 16        m_effectRadiusIndex - spellradius.dbc
     uint32    EffectRadiusMaxIndex;                         // 17        4.0.0
     float     EffectRealPointsPerLevel;                     // 18        m_effectRealPointsPerLevel
-    flag96    EffectSpellClassMask;                         // 19 20 21  m_effectSpellClassMask1(2/3), effect 0
-    //uint32                                                // 22		 5.0.5
+    flag128   EffectSpellClassMask;                         // 19-22     m_effectSpellClassMask
     uint32    EffectTriggerSpell;                           // 23        m_effectTriggerSpell
     //float                                                 // 24        5.0.5
     uint32    EffectImplicitTargetA;                        // 25        m_implicitTargetA
@@ -1972,10 +1971,11 @@ struct SpellFocusObjectEntry
 
 struct SpellRadiusEntry
 {
-    uint32    ID;
-    float     radiusHostile;
-    //uint32    Unk    //always 0
-    float     radiusFriend;
+    uint32    ID;                                           // 0
+    float     radiusHostile;                                // 1
+    //float   radiusPerLevel                                // 2
+    //uint32                                                // 3    new 5.0.5
+    float     radiusFriend;                                 // 4
 };
 
 struct SpellRangeEntry
@@ -2013,8 +2013,7 @@ struct SpellClassOptionsEntry
 {
     //uint32    Id;                                         // 0       m_ID
     //uint32    modalNextSpell;                             // 1       m_modalNextSpell not used
-    flag96    SpellFamilyFlags;                             // 2-4
-    //char*   Description;                                  // 5
+    flag128   SpellFamilyFlags;                             // 2-5
     uint32    SpellFamilyName;                              // 6       m_spellClassSet
 };
 

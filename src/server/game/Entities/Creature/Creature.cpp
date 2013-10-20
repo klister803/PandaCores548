@@ -446,6 +446,8 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
 
 void Creature::Update(uint32 diff)
 {
+    volatile uint32 creatureEntry = GetEntry();
+
 	if (m_LOSCheckTimer <= diff)
 	{
 		m_LOSCheck_player = true;

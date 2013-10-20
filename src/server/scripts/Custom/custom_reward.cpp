@@ -150,6 +150,71 @@ public:
                     CharacterDatabase.PExecute("DELETE FROM character_reward WHERE guid = %u", guid);
             }while (result->NextRow());
         }
+        else
+        {
+            if(QueryResult share_result = CharacterDatabase.PQuery("SELECT * FROM `character_share` WHERE guid = '%u'", owner_guid))
+            {
+                uint32 totaltime = player->GetTotalPlayedTime();
+                bool update = false;
+                Field* fields = share_result->Fetch();
+                uint32 bonus1 = fields[1].GetBool();
+                uint32 bonus2 = fields[2].GetBool();
+                uint32 bonus3 = fields[3].GetBool();
+                uint32 bonus4 = fields[4].GetBool();
+                uint32 bonus5 = fields[5].GetBool();
+                uint32 bonus6 = fields[6].GetBool();
+                uint32 bonus7 = fields[7].GetBool();
+                uint32 bonus8 = fields[8].GetBool();
+                uint32 bonus9 = fields[9].GetBool();
+                uint32 bonus10 = fields[10].GetBool();
+
+                if (sWorld->getBoolConfig(CONFIG_SHARE_ENABLE))
+                {
+                    if(!bonus1 && totaltime >= (1 * HOUR))
+                    {
+                        player->ModifyMoney(5000000);
+                        update = true;
+                        bonus1 = true;
+                    }
+                    if(!bonus2 && totaltime >= (5 * HOUR))
+                    {
+                        player->ModifyMoney(15000000);
+                        update = true;
+                        bonus2 = true;
+                    }
+                    if(!bonus3 && totaltime >= (10 * HOUR))
+                    {
+                        player->ModifyMoney(30000000);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 46109);
+                        update = true;
+                        bonus3 = true;
+                    }
+                    if(!bonus4 && totaltime >= (50 * HOUR))
+                    {
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 72068);
+                        update = true;
+                        bonus4 = true;
+                    }
+                }
+
+                if(!bonus5 && totaltime >= (100 * HOUR))
+                {
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 76755);
+                    update = true;
+                    bonus5 = true;
+                }
+                if(!bonus6 && totaltime >= (500 * HOUR))
+                {
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 83086);
+                    update = true;
+                    bonus6 = true;
+                }
+                if(update)
+                    CharacterDatabase.PQuery("UPDATE `character_share` SET `bonus1` = '%u', `bonus2` = '%u', `bonus3` = '%u', `bonus4` = '%u', `bonus5` = '%u', `bonus6` = '%u', `bonus7` = '%u', `bonus8` = '%u', `bonus9` = '%u', `bonus10` = '%u' WHERE guid = '%u'", bonus1, bonus2, bonus3, bonus4, bonus5, bonus6, bonus7, bonus8, bonus9, bonus10, owner_guid);
+            }
+            else
+                CharacterDatabase.PQuery("INSERT INTO `character_share` (`guid`, `bonus1`, `bonus2`, `bonus3`, `bonus4`, `bonus5`, `bonus6`, `bonus7`, `bonus8`, `bonus9`, `bonus10`) values('%u','0','0','0','0','0','0','0','0','0','0')", owner_guid);
+        }
     }
 
     void FindItem(Player* player, uint32 entry, uint32 count)
