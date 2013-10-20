@@ -1331,7 +1331,7 @@ public:
 
     bool OnGossipHello(Player* player, GameObject* /*go*/)
     {
-        if (player->GetQuestStatus(31688) == QUEST_STATUS_INCOMPLETE && player->GetReqKillOrCastCurrentCount(31688, 214734) >= 7)
+        if (player->GetQuestStatus(31688) == QUEST_STATUS_INCOMPLETE && player->GetReqKillOrCastCurrentCount(31688, -214734) >= 7)
         {
             player->CastSpell(player, 128920, true);
             return true;
