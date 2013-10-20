@@ -4296,6 +4296,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 132402:    // Savage Defense
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(32); // 6s
                 break;
+            case 76724: // Offering
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(3); // 60s
+                break;
             default:
                 break;
             }
