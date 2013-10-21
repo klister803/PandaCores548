@@ -137,6 +137,7 @@ class boss_stone_guard_controler : public CreatureScript
                         }
                         events.ScheduleEvent(EVENT_PETRIFICATION, 15000);
                         fightInProgress = true;
+                        pInstance->SetBossState(DATA_STONE_GUARD, IN_PROGRESS);
                         break;
                     }
                     case ACTION_GUARDIAN_DIED:
