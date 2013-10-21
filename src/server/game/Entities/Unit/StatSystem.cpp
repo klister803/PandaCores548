@@ -815,8 +815,6 @@ void Player::UpdateManaRegen()
     // Mana regen from spirit
     float spirit_regen = OCTRegenMPPerSpirit();
     float HastePct = 1.0f;
-    // Apply PCT bonus from SPELL_AURA_MOD_POWER_REGEN_PERCENT aura on spirit base regen
-    spirit_regen *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
 
     float combat_regen = 0.004f * GetMaxPower(POWER_MANA) + spirit_regen + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
     float base_regen = 0.004f * GetMaxPower(POWER_MANA) + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
@@ -827,15 +825,10 @@ void Player::UpdateManaRegen()
         base_regen = 0.01f * GetMaxPower(POWER_MANA) + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
     }
 
-    // Mana Meditation && Meditation
     if (HasAuraType(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT))
-        base_regen += 0.5 * spirit_regen; // Allows 50% of your mana regeneration from Spirit to continue while in combat.
-
-    // Rune of Power : Increase Mana regeneration by 100%
-    if (HasAura(116014))
     {
-        combat_regen *= 2;
-        base_regen *= 2;
+        int32 mod = std::min(GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT), 100);
+        combat_regen += float(mod) * spirit_regen / 100;
     }
 
     if (HasAuraType(SPELL_AURA_HASTE_AFFECTS_MANA_REGEN))
@@ -846,22 +839,10 @@ void Player::UpdateManaRegen()
         base_regen *= HastePct;
     }
 
-    // Mana Attunement : Increase Mana regen by 400%
-    if (HasAura(121039))
-    {
-        combat_regen = combat_regen + (combat_regen * 4.0f);
-        combat_regen *= HastePct;
-        base_regen = base_regen + (base_regen * 4.0f);
-        base_regen *= HastePct;
-    }
+    float pctMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
+    combat_regen *= pctMod;
+    base_regen *= pctMod;
 
-    // Invocation : Decrease your mana regen by 50%
-    if (HasAura(114003))
-    {
-        combat_regen *= 0.5f;
-        base_regen *= 0.5f;
-    }
-    
     // Not In Combat : 2% of base mana + spirit_regen
     SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, base_regen);
     // In Combat : 2% of base mana
