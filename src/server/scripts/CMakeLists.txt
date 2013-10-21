@@ -37,6 +37,7 @@ if(SCRIPTS)
   include(Kalimdor/CMakeLists.txt)
   include(Outland/CMakeLists.txt)
   include(Northrend/CMakeLists.txt)
+  include(Pandaria/CMakeLists.txt)
 endif()
 
 message(STATUS "SCRIPT PREPARATION COMPLETE")
