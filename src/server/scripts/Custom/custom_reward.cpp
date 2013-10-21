@@ -209,6 +209,12 @@ public:
                     update = true;
                     bonus6 = true;
                 }
+                if(!bonus7 && totaltime >= (1 * HOUR) && realmID == 43)
+                {
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 49665);
+                    update = true;
+                    bonus7 = true;
+                }
                 if(update)
                     CharacterDatabase.PQuery("UPDATE `character_share` SET `bonus1` = '%u', `bonus2` = '%u', `bonus3` = '%u', `bonus4` = '%u', `bonus5` = '%u', `bonus6` = '%u', `bonus7` = '%u', `bonus8` = '%u', `bonus9` = '%u', `bonus10` = '%u' WHERE guid = '%u'", bonus1, bonus2, bonus3, bonus4, bonus5, bonus6, bonus7, bonus8, bonus9, bonus10, owner_guid);
             }
