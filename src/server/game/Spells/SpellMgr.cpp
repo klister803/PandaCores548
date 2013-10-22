@@ -3768,6 +3768,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 44457: // Living Bomb
                 spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                 break;
+            case 44461: // Living Bomb
+                spellInfo->MaxAffectedTargets = 3;
+                break;
             case 12051: // Evocation
                 spellInfo->Effects[1].Effect = 0;
                 spellInfo->Effects[1].ApplyAuraName = 0;
