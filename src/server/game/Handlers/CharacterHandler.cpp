@@ -275,7 +275,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
     SendPacket(&data);
 }
 
-void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
+void WorldSession::HandleCharEnumOpcode(WorldPacket & recvData)
 {
     time_t now = time(NULL);
     if (now - timeCharEnumOpcode < 5)
