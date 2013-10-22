@@ -678,7 +678,7 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
     time_t now = time(NULL);
     if (now - timeAddIgnoreOpcode < 3)
     {
-        recvData.rfinish();
+        recv_data.rfinish();
         return;
     }
     else
