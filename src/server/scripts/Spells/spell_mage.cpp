@@ -404,7 +404,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                         if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
                         {
                             chargeCount = arcaneCharge->GetStackAmount();
-                            _player->RemoveAura(SPELL_MAGE_ARCANE_CHARGE);
+                            _player->RemoveAura(arcaneCharge);
                         }
 
                         if (chargeCount)
@@ -447,13 +447,45 @@ class spell_mage_arcane_explosion : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_arcane_explosion_SpellScript);
 
+            bool casted;
+
+        public:
+            spell_mage_arcane_explosion_SpellScript() : SpellScript()
+            {
+                casted = false;
+            }
+
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Player* player = caster->ToPlayer();
+                if (!player)
+                    return;
+
+                if (player->GetSpecializationId(player->GetActiveSpec()) != SPEC_MAGE_ARCANE)
+                    return;
+
+                if (!casted)
+                {
                     if (Unit* target = GetHitUnit())
-                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_MAGE_ARCANE)
-                            if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
-                                arcaneCharge->RefreshDuration();
+                    {
+                        if (roll_chance_i(30))
+                        {
+                            casted = true;
+                            caster->CastSpell(caster, SPELL_MAGE_ARCANE_CHARGE, true);
+                        }
+                    }
+                }
+
+                if (!casted)
+                {
+                    if (Unit* target = GetHitUnit())
+                        if (Aura* arcaneCharge = caster->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                            arcaneCharge->RefreshDuration();
+                }
             }
 
             void Register()
@@ -465,6 +497,44 @@ class spell_mage_arcane_explosion : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_mage_arcane_explosion_SpellScript();
+        }
+};
+
+//Arcane Missiles - 7268
+class spell_mage_arcane_missiles : public SpellScriptLoader
+{
+    public:
+        spell_mage_arcane_missiles() : SpellScriptLoader("spell_mage_arcane_missiles") { }
+
+        class spell_mage_arcane_missiles_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_arcane_missiles_SpellScript);
+
+            void HandleOnHit()
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Player* player = caster->ToPlayer();
+                if (!player)
+                    return;
+
+                if (player->GetSpecializationId(player->GetActiveSpec()) != SPEC_MAGE_ARCANE)
+                    return;
+
+                caster->CastSpell(caster, SPELL_MAGE_ARCANE_CHARGE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_arcane_missiles_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_arcane_missiles_SpellScript();
         }
 };
 
@@ -1565,6 +1635,7 @@ void AddSC_mage_spell_scripts()
     new spell_mage_pyromaniac();
     new spell_mage_arcane_barrage();
     new spell_mage_arcane_explosion();
+    new spell_mage_arcane_missiles();
     new spell_mage_slow();
     new spell_mage_frostbolt();
     new spell_mage_invocation();

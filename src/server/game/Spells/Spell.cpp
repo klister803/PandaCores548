@@ -1401,11 +1401,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             }
         }
 
-        if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id == 1449 && unitTargets.size() >= 1)
-            if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_MAGE_ARCANE)
-                if (roll_chance_i(30))
-                    m_caster->AddAura(36032, m_caster);
-
         // Other special target selection goes here
         if (uint32 maxTargets = m_spellValue->MaxAffectedTargets)
             Trinity::Containers::RandomResizeList(unitTargets, maxTargets);
