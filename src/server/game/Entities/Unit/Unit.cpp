@@ -15856,6 +15856,7 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_MOD_DAMAGE_FROM_CASTER] = true;
     isTriggerAura[SPELL_AURA_MOD_SPELL_CRIT_CHANCE] = true;
     isTriggerAura[SPELL_AURA_ABILITY_IGNORE_AURASTATE] = true;
+    isTriggerAura[SPELL_AURA_CAST_WHILE_WALKING] = true;
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN] = true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK] = true;
@@ -15868,6 +15869,7 @@ bool InitTriggerAuraData()
     isAlwaysTriggeredAura[SPELL_AURA_SPELL_MAGNET] = true;
     isAlwaysTriggeredAura[SPELL_AURA_SCHOOL_ABSORB] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_STEALTH] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_CAST_WHILE_WALKING] = true;
 
     return true;
 }
@@ -16063,15 +16065,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         procSpell->HasEffect(SPELL_EFFECT_SCHOOL_DAMAGE) && damage > 0)
         if (Aura* pyroblastDriver = GetAura(44448))
             countCrit = 0;
-
-    // Hack Fix Ice Floes - Drop charges
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !(procExtra & PROC_EX_INTERNAL_DOT)
-        && (procSpell->Id == 30451 && damage > 0))
-    {
-        AuraApplication* aura = GetAuraApplication(108839, GetGUID());
-        if (aura)
-            aura->GetBase()->DropCharge();
-    }
 
     // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
@@ -16549,6 +16542,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             takeCharges = false;
                             break;
                         }
+                        takeCharges = true;
+                        break;
+                    }
+                    case SPELL_AURA_CAST_WHILE_WALKING:
+                    {
                         takeCharges = true;
                         break;
                     }
