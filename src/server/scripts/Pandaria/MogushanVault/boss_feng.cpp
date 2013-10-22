@@ -149,10 +149,12 @@ class boss_feng : public CreatureScript
             uint32 dotSpellId;
             std::list<uint32> phaseList;
             std::list<uint64> sparkList;
+            bool justdie;
 
             void Reset()
             {
                 _Reset();
+                justdie = false;
                 phaseList.clear();
                 actualPhase  = PHASE_NONE;
                 nextPhasePct = 95;
@@ -189,6 +191,7 @@ class boss_feng : public CreatureScript
 
             void JustDied(Unit* attacker)
             {
+                justdie = true;
                 _JustDied();
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
@@ -301,7 +304,8 @@ class boss_feng : public CreatureScript
             {
                 summons.Despawn(summon);
 
-                sparkList.remove(summon->GetGUID());
+                if(!justdie)
+                    sparkList.remove(summon->GetGUID());
             }
 
             /*void SpellHitTarget(Unit* target, SpellInfo const* spell)
