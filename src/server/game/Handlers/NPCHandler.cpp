@@ -675,6 +675,15 @@ void WorldSession::SendStableResult(uint8 res)
 
 void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
 {
+    time_t now = time(NULL);
+    if (now - timeAddIgnoreOpcode < 3)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeAddIgnoreOpcode = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recv CMSG_SET_PET_SLOT.");
     uint32 pet_number;
     ObjectGuid npcGUID;

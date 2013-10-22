@@ -1102,6 +1102,7 @@ class WorldSession
         time_t timeLastHandleSellItem;
         time_t timeLastHandlePlayerLogin;
         time_t timeAddIgnoreOpcode;
+        time_t timeMoveTeleportAck;
         uint8 playerLoginCounter;
 
         uint32 _pakagepersecond;
