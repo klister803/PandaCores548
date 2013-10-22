@@ -689,6 +689,15 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
 
 void WorldSession::HandlePetAbandon(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeAddIgnoreOpcode < 3)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeAddIgnoreOpcode = now;
+
     uint64 guid;
     recvData >> guid;                                      //pet guid
     sLog->outInfo(LOG_FILTER_NETWORKIO, "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid));

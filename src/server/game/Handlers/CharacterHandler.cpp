@@ -277,15 +277,15 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
 
 void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
 {
-    /*time_t now = time(NULL);
+    time_t now = time(NULL);
     if (now - timeCharEnumOpcode < 5)
     {
         recvData.rfinish();
         return;
     }
     else
-        timeCharEnumOpcode = now;*/
-    
+        timeCharEnumOpcode = now;
+
     // remove expired bans
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_EXPIRED_BANS);
     CharacterDatabase.Execute(stmt);
@@ -306,6 +306,7 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
 void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
 {
     time_t now = time(NULL);
+    timeCharEnumOpcode = now + 5;
     if (now - timeAddIgnoreOpcode < 3)
     {
         recvData.rfinish();
@@ -1310,6 +1311,15 @@ void WorldSession::HandleShowingCloakOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeAddIgnoreOpcode < 3)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeAddIgnoreOpcode = now;
+
     uint64 guid;
     std::string newName;
 
