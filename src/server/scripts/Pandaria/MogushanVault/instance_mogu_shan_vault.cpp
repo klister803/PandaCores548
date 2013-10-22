@@ -46,6 +46,11 @@ public:
         uint32 StoneGuardPetrificationTimer;
         uint32 willOfEmperorTimer;
 
+        //GameObject
+        uint64 stoneexitdoorGuid;
+        uint64 stoneentrdoorGuid;
+
+        //Creature
         uint64 stoneGuardControlerGuid;
         uint64 fengGuid;
         uint64 inversionGobGuid;
@@ -55,6 +60,7 @@ public:
         uint64 qinxiGuid;
 
         std::vector<uint64> stoneGuardGUIDs;
+        std::vector<uint64> fengdoorGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
         std::vector<uint64> spiritKingsGUIDs;
 
@@ -62,14 +68,17 @@ public:
         {
             SetBossNumber(DATA_MAX_BOSS_DATA);
             LoadDoorData(doorData);
-
             randomDespawnStoneGuardian      = urand(1,4);
             willOfEmperorPhase              = 0;
-
             actualPetrifierEntry            = 0;
             StoneGuardPetrificationTimer    = 10000;
-            willOfEmperorTimer              = 0;
+            willOfEmperorTimer  = 0;
 
+            //GameObject
+            stoneexitdoorGuid = 0;
+            stoneentrdoorGuid = 0;
+
+            //Creature
             stoneGuardControlerGuid         = 0;
             fengGuid                        = 0;
             inversionGobGuid                = 0;
@@ -78,6 +87,7 @@ public:
 
             stoneGuardGUIDs.clear();
             fengStatuesGUIDs.clear();
+            fengdoorGUIDs.clear();
             spiritKingsGUIDs.clear();
         }
 
@@ -135,16 +145,23 @@ public:
         {
             switch (go->GetEntry())
             {
-               /* case GOB_STONE_GUARD_DOOR_ENTRANCE:
+                case GOB_STONE_GUARD_DOOR_ENTRANCE:
+                    stoneentrdoorGuid = go->GetGUID();
+                    break;
                 case GOB_STONE_GUARD_DOOR_EXIT:
+                    stoneexitdoorGuid = go->GetGUID();
+                    break;
                 case GOB_FENG_DOOR_FENCE:
-                case GOB_FENG_DOOR_EXIT:
-                case GOB_GARAJAL_FENCE:
-                case GOB_GARAJAL_EXIT:
-                case GOB_SPIRIT_KINGS_WIND_WALL:
-                case GOB_SPIRIT_KINGS_EXIT:
-                    AddDoor(go, true);
-                    break;*/
+                    fengdoorGUIDs.push_back(go->GetGUID());
+                    break;
+                //case GOB_FENG_DOOR_FENCE:
+                //case GOB_FENG_DOOR_EXIT:
+                //case GOB_GARAJAL_FENCE:
+                //case GOB_GARAJAL_EXIT:
+                //case GOB_SPIRIT_KINGS_WIND_WALL:
+                //case GOB_SPIRIT_KINGS_EXIT:
+                    //AddDoor(go, true);
+                    //break;
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
                 case GOB_SHIELD_STATUE:
@@ -176,12 +193,36 @@ public:
                             for (std::vector<uint64>::const_iterator guid = stoneGuardGUIDs.begin(); guid != stoneGuardGUIDs.end(); ++guid)
                                 if (Creature* stoneGuard = instance->GetCreature(*guid))
                                     stoneGuard->AI()->DoAction(ACTION_FAIL);
+
+                            HandleGameObject(stoneentrdoorGuid, true);
                         }
-                        default:
+                        break;
+                        case IN_PROGRESS:
+                            HandleGameObject(stoneentrdoorGuid, false);
+                            break;
+                        case DONE:
+                            HandleGameObject(stoneexitdoorGuid, true);
+                            HandleGameObject(stoneentrdoorGuid, true);
                             break;
                     }
                     break;
                 }
+                case DATA_FENG:
+                    {
+                        switch (state)
+                        {
+                        case NOT_STARTED:
+                        case DONE:
+                            for (std::vector<uint64>::const_iterator guid = fengdoorGUIDs.begin(); guid != fengdoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, true);
+                            break;
+                        case IN_PROGRESS:
+                            for (std::vector<uint64>::const_iterator guid = fengdoorGUIDs.begin(); guid != fengdoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, false);
+                            break;
+                        }
+                        break;
+                    }
                 case DATA_SPIRIT_KINGS:
                 {
                     switch (state)

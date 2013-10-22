@@ -144,21 +144,21 @@ class boss_feng : public CreatureScript
             }
 
             InstanceScript* pInstance;
-
             uint8 actualPhase;
-
             uint32 nextPhasePct;
             uint32 dotSpellId;
             std::list<uint32> phaseList;
-
             std::list<uint64> sparkList;
 
             void Reset()
             {
                 _Reset();
-
                 phaseList.clear();
-                for (int i = 1; i <= (IsHeroic() ? 4: 3); ++i)
+                actualPhase  = PHASE_NONE;
+                nextPhasePct = 95;
+                dotSpellId = 0;
+
+                for (int i = 1; i <= 3; ++i)
                     phaseList.push_back(i);
 
                 //std::random_shuffle(phaseList.begin(), phaseList.end()); Todo : changer chaque semaine
@@ -168,7 +168,6 @@ class boss_feng : public CreatureScript
 
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
-
                 // Desactivate old statue
                 if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
                 {
@@ -181,16 +180,16 @@ class boss_feng : public CreatureScript
 
                 if (GameObject* cancelGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_CANCEL)))
                     cancelGob->Respawn();
+            }
 
-                actualPhase  = PHASE_NONE;
-                nextPhasePct = 95;
-                dotSpellId = 0;
+            void EnterCombat(Unit* who)
+            {
+                _EnterCombat();
             }
 
             void JustDied(Unit* attacker)
             {
                 _JustDied();
-
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
 
@@ -230,8 +229,11 @@ class boss_feng : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->GetMotionMaster()->Clear();
 
-                if (Creature* controler = GetClosestCreatureWithEntry(me, NPC_PHASE_CONTROLER, 20.0f))
+                if (Creature* controler = me->FindNearestCreature(NPC_PHASE_CONTROLER, 60.0f, true))
+                {
+                    controler->RemoveAllAuras();
                     controler->DespawnOrUnsummon();
+                }
 
                 // Desactivate old statue and enable the new one
                 if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
@@ -249,7 +251,7 @@ class boss_feng : public CreatureScript
                 for (uint8 i = 0; i < 4; ++i)
                     me->RemoveAurasDueToSpell(fengVisualId[i]);
 
-                me->AddAura(fengVisualId[newPhase - 1], me);
+                //me->AddAura(fengVisualId[newPhase - 1], me);
                 me->CastSpell(me, SPELL_DRAW_ESSENCE, true);
 
                 switch (newPhase)
@@ -272,7 +274,7 @@ class boss_feng : public CreatureScript
                     {
                         dotSpellId = SPELL_ARCANE_SHOCK;
                         events.ScheduleEvent(EVENT_ARCANE_VELOCITY,  25000, PHASE_STAFF);
-                        events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 40000, PHASE_STAFF);
+                        events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 10000, PHASE_STAFF);
                         break;
                     }
                     case PHASE_SHIELD:
@@ -302,7 +304,7 @@ class boss_feng : public CreatureScript
                 sparkList.remove(summon->GetGUID());
             }
 
-            void SpellHitTarget(Unit* target, SpellInfo const* spell)
+            /*void SpellHitTarget(Unit* target, SpellInfo const* spell)
             {
                 if (Aura* inversion = target->GetAura(115911))
                 {
@@ -329,7 +331,7 @@ class boss_feng : public CreatureScript
                         }
                     }
                 }
-            }
+            }*/
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
@@ -343,12 +345,10 @@ class boss_feng : public CreatureScript
                         events.Reset();
                         uint8  newPhase = *phaseList.begin();
                         phaseList.pop_front();
-
                         if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newPhase - 1].GetPositionX(), modPhasePositions[newPhase - 1].GetPositionY(), modPhasePositions[newPhase - 1].GetPositionZ()))
                             controler->AddAura(controlerVisualId[newPhase - 1], controler);
 
                         me->GetMotionMaster()->MovePoint(newPhase, modPhasePositions[newPhase - 1].GetPositionX(), modPhasePositions[newPhase - 1].GetPositionY(), modPhasePositions[newPhase - 1].GetPositionZ());
-
                         uint32 reduction = IsHeroic() ? 25: 32;
                         nextPhasePct >= reduction ? nextPhasePct-= reduction: nextPhasePct = 0;
                     }
@@ -362,76 +362,53 @@ class boss_feng : public CreatureScript
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
-
+                
                 events.Update(diff);
 
                 switch(events.ExecuteEvent())
                 {
                     // All Phases
                     case EVENT_DOT_ATTACK:
-                    {
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                            me->CastSpell(target, dotSpellId, false);
-
+                            DoCast(target, dotSpellId);
                         events.ScheduleEvent(EVENT_DOT_ATTACK, 12500);
                         break;
-                    }
-                    case EVENT_RE_ATTACK:
-                    {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                     case EVENT_RE_ATTACK:
+                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                             me->GetMotionMaster()->MoveChase(target);
-                        
-                        me->SetReactState(REACT_AGGRESSIVE);
+                         me->SetReactState(REACT_AGGRESSIVE);
                         break;
-                    }
-                    // Fist Phase
+                     // Fist Phase
                     case EVENT_LIGHTNING_FISTS:
-                    {
-                        me->CastSpell(me, SPELL_LIGHTNING_FISTS, false);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                            DoCast(target, SPELL_LIGHTNING_FISTS);
                         events.ScheduleEvent(EVENT_LIGHTNING_FISTS, 20000);
                         break;
-                    }
                     case EVENT_EPICENTER:
-                    {
-                        me->CastSpell(me, SPELL_EPICENTER, false);
-                        events.ScheduleEvent(EVENT_EPICENTER, 35000);
+                        DoCast(me, SPELL_EPICENTER);
+                        events.ScheduleEvent(EVENT_EPICENTER, 30000);
                         break;
-                    }
                     // Spear Phase
                     case EVENT_WILDFIRE_SPARK:
-                    {
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                            me->CastSpell(target, SPELL_WILDFIRE_SPARK, false);
+                            DoCast(target, SPELL_WILDFIRE_SPARK);
                         events.ScheduleEvent(EVENT_WILDFIRE_SPARK, urand(25000, 35000));
                         break;
-                    }
                     case EVENT_DRAW_FLAME: 
-                    {
-                        me->CastSpell(me, SPELL_DRAW_FLAME, false);
+                        DoCast(me, SPELL_DRAW_FLAME);
                         events.ScheduleEvent(EVENT_DRAW_FLAME, 60000);
                         break;
-                    }
                     // Staff Phase
                     case EVENT_ARCANE_VELOCITY:
-                    {
-                        me->SetSpeed(MOVE_RUN, 0.0f);
-                        me->CastSpell(me, SPELL_ARCANE_VELOCITY, false);
-                        events.ScheduleEvent(EVENT_ARCANE_VELOCITY_END, 100);   // The eventmap don't update while the creature is casting
-                        events.ScheduleEvent(EVENT_ARCANE_VELOCITY,     15000);
+                        DoCast(me, SPELL_ARCANE_VELOCITY);
+                        events.ScheduleEvent(EVENT_ARCANE_VELOCITY, 15000);
                         break;
-                    }
-                    case EVENT_ARCANE_VELOCITY_END:
-                    {
-                        me->SetSpeed(MOVE_RUN, 1.14f);
-                        break;
-                    }
                     case EVENT_ARCANE_RESONANCE:
-                    {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
-                            target->AddAura(SPELL_ARCANE_RESONANCE, target);
-                        events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 40000);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true ))
+                            DoCast(target, SPELL_ARCANE_RESONANCE);
+                        events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 20000);
                         break;
-                    }
+                    
                     // Shield Phase : TODO
                     default:
                         break;
@@ -451,7 +428,9 @@ enum eLightningFistSpell
 {
     SPELL_FIST_BARRIER      = 115856,
     SPELL_FIST_CHARGE       = 116374,
-    SPELL_FIST_VISUAL       = 116225
+    SPELL_FIST_VISUAL       = 116225,
+    SPELL_AURA_SEARCHER     = 129426,
+    SPELL_SEARCHER          = 129428
 };
 
 class mob_lightning_fist : public CreatureScript
@@ -462,49 +441,43 @@ class mob_lightning_fist : public CreatureScript
         struct mob_lightning_fistAI : public ScriptedAI
         {
             mob_lightning_fistAI(Creature* creature) : ScriptedAI(creature)
-            {}
+            {
+                InstanceScript* pInstance = creature->GetInstanceScript();
+            }
 
-            uint32 checkNearPlayerTimer;
+            InstanceScript* pInstance;
 
+            uint32 unsummon;
+            
             void Reset()
             {
                 me->SetReactState(REACT_PASSIVE);
-                me->AddAura(SPELL_FIST_BARRIER, me);
+                me->AddAura(SPELL_AURA_SEARCHER, me);
                 me->AddAura(SPELL_FIST_VISUAL, me);
-
                 float x = 0, y = 0;
                 GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
-
                 me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
-
-                checkNearPlayerTimer = 500;
+                unsummon = 6000; 
             }
 
-            void MovementInform(uint32 type, uint32 id)
-            {
-                if (type != POINT_MOTION_TYPE)
-                    return;
+            void EnterCombat(Unit* who){}
 
-                if (id == 1)
-                    me->DespawnOrUnsummon();
+            void EnterEvadeMode(){}
+
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
+            {
+                if (target->GetTypeId() == TYPEID_PLAYER && spell->Id == SPELL_SEARCHER)
+                    DoCast(target, SPELL_FIST_CHARGE);
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (checkNearPlayerTimer)
+                if (unsummon)
                 {
-                    if (checkNearPlayerTimer <= diff)
-                    {
-                        std::list<Player*> playerList;
-                        GetPlayerListInGrid(playerList, me, 5.0f);
-
-						for (std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
-                            me->CastSpell((*itr), SPELL_FIST_CHARGE, true);
-
-                        checkNearPlayerTimer = 500;
-                    }
+                    if (unsummon <= diff)
+                        me->DespawnOrUnsummon();
                     else
-                        checkNearPlayerTimer -= diff;
+                        unsummon -= diff;
                 }
             }
         };
@@ -524,8 +497,6 @@ class mob_wild_spark : public CreatureScript
         {
             mob_wild_sparkAI(Creature* creature) : ScriptedAI(creature)
             {}
-
-            uint32 checkNearPlayerTimer;
 
             void Reset()
             {
@@ -705,7 +676,7 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
 };
 
 // Arcane Resonance - 116434
-class spell_mogu_arcane_resonance : public SpellScriptLoader
+/*class spell_mogu_arcane_resonance : public SpellScriptLoader
 {
     public:
         spell_mogu_arcane_resonance() : SpellScriptLoader("spell_mogu_arcane_resonance") { }
@@ -740,7 +711,7 @@ class spell_mogu_arcane_resonance : public SpellScriptLoader
         {
             return new spell_mogu_arcane_resonance_SpellScript();
         }
-};
+};*/
 
 // Mogu Inversion - 118300 / 118302 / 118304 / 118305 / 118307 / 118308 / 132296 / 132297 / 132298
 class spell_mogu_inversion : public SpellScriptLoader
@@ -786,6 +757,6 @@ void AddSC_boss_feng()
     new spell_mogu_wildfire_spark();
     new spell_mogu_wildfire_infusion();
     new spell_mogu_arcane_velocity();
-    new spell_mogu_arcane_resonance();
+    //new spell_mogu_arcane_resonance();
     new spell_mogu_inversion();
 }

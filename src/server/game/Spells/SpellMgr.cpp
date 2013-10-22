@@ -4138,9 +4138,31 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
 
             // Mogu'shan Vault
+            // Stone Guards
             case 129428: //Dummy Searcher(cobalt mine)
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                 break;
+            //
+            // Feng
+            case 116364: //Arcane Velocity
+            case 116018: //Epicenter
+            case 116157: //Lightning fists
+            case 116374: //Lightning fists (trigger dmg)
+                spellInfo->CasterAuraSpell = 0;
+                break;
+            case 116040: //Epicenter(trigger dmg)
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
+                spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                break;
+            case 116365: //Arcane Velocrity (trigger dmg)
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
+                break;
+            case 116434: //Arcane Resonance(trigger dmg)
+                spellInfo->Effects[0].TargetB = 30;
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                break;
+            //
             case 116782:
             case 116803: //Titan Gase
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8); //5yards
@@ -4205,7 +4227,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(12);
                 spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(12);
                 break;
-            case 121577: //Barrege
+            case 121577: //Barrage
                 spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
                 break;
             case 121600: //Barrage Dmg

@@ -1099,6 +1099,43 @@ class spell_mage_conjure_refreshment : public SpellScriptLoader
         }
 };
 
+// Conjure Refreshment Table - 43987
+class spell_mage_conjure_refreshment_table : public SpellScriptLoader
+{
+    public:
+        spell_mage_conjure_refreshment_table() : SpellScriptLoader("spell_mage_conjure_refreshment_table") { }
+
+        class spell_mage_conjure_refreshment_table_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_conjure_refreshment_table_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->getLevel() < 80)
+                        _player->CastSpell(_player, 74650, true);   // Conjure Refreshment Table (Rank 1)
+                    else if (_player->getLevel() < 85)
+                        _player->CastSpell(_player, 92824, true);   // Conjure Refreshment Table (Rank 2)
+                    else if (_player->getLevel() < 90)
+                        _player->CastSpell(_player, 92827, true);   // Conjure Refreshment Table (Rank 3)
+                    else
+                        _player->CastSpell(_player, 116133, true);  // Conjure Refreshment Table (Rank 3)
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_conjure_refreshment_table_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_conjure_refreshment_table_SpellScript();
+        }
+};
+
 // Time Warp - 80353
 class spell_mage_time_warp : public SpellScriptLoader
 {
@@ -1541,6 +1578,7 @@ void AddSC_mage_spell_scripts()
     new spell_mage_replenish_mana();
     new spell_mage_evocation();
     new spell_mage_conjure_refreshment();
+    new spell_mage_conjure_refreshment_table();
     new spell_mage_time_warp();
     new spell_mage_alter_time_overrided();
     new spell_mage_alter_time();
