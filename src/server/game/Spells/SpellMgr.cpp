@@ -3766,7 +3766,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); // 1s
                 break;
             case 44457: // Living Bomb
-                spellInfo->MaxAffectedTargets = 3;
+                spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                 break;
             case 12051: // Evocation
                 spellInfo->Effects[1].Effect = 0;

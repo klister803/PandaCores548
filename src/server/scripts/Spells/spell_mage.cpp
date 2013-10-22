@@ -1560,6 +1560,29 @@ class spell_mage_living_bomb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_living_bomb_AuraScript);
 
+            void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                std::deque<uint64>::iterator curr = std::find(caster->m_livingBombTargets.begin(), caster->m_livingBombTargets.end(), target->GetGUID());
+                if (curr != caster->m_livingBombTargets.end())
+                    caster->m_livingBombTargets.erase(curr);
+
+                // Living Bomb can only be at 3 targets at once
+                while (caster->m_livingBombTargets.size() >= 3)
+                {
+                    if (Unit* toRemove = Unit::GetUnit(*caster, caster->m_livingBombTargets[0]))
+                        toRemove->RemoveAurasDueToSpell(aurEff->GetId(), caster->GetGUID());
+
+                    caster->m_livingBombTargets.pop_front();
+                }
+
+                caster->m_livingBombTargets.push_back(target->GetGUID());
+            }
+
             void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
@@ -1577,6 +1600,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
             void Register()
             {
+                AfterEffectApply += AuraEffectApplyFn(spell_mage_living_bomb_AuraScript::AfterApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
                 AfterEffectRemove += AuraEffectRemoveFn(spell_mage_living_bomb_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };

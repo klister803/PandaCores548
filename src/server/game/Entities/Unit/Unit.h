@@ -2315,6 +2315,8 @@ class Unit : public WorldObject
 
         void OnRelocated();
 
+        std::deque<uint64> m_livingBombTargets;
+
     protected:
         explicit Unit (bool isWorldObject);
 
