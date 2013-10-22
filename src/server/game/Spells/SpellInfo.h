@@ -407,8 +407,8 @@ public:
     SpellPowerEntry spellPower[MAX_POWERS_FOR_SPELL];
 
     // SpecializationSpellEntry
-    std::list<uint32> SpecializationIdList;
-    std::list<uint32> OverrideSpellList;
+    std::set<uint32> SpecializationIdList;
+    std::set<SpecializationSpellEntry const*> SpecializationOverrideSpellList;
 
     // TalentInfo
     uint32 talentId;

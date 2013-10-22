@@ -975,10 +975,10 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
             continue;
 
         if (specializationInfo->LearnSpell == Id)
-            SpecializationIdList.push_back(specializationInfo->SpecializationEntry);
+            SpecializationIdList.insert(specializationInfo->SpecializationEntry);
 
         if(specializationInfo->OverrideSpell == Id)
-            OverrideSpellList.push_back(specializationInfo->LearnSpell);
+            SpecializationOverrideSpellList.insert(specializationInfo);
     }
 
     talentId = 0;

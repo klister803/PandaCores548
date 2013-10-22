@@ -3655,20 +3655,12 @@ void Player::InitSpellForLevel()
         if (HasSpell(*spellId))
             continue;
 
-        if (!spell->SpecializationIdList.empty())
-        {
-            bool find = false;
-
-            for (std::list<uint32>::const_iterator itr = spell->SpecializationIdList.begin(); itr != spell->SpecializationIdList.end(); ++itr)
-                if((*itr) == specializationId)
-                    find = true;
-
-            if(!find)
-                continue;
-        }
+        // if spell relates to some specialization and it is not our spec - do not learn
+        if (!spell->SpecializationIdList.empty() && spell->SpecializationIdList.find(specializationId) == spell->SpecializationIdList.end())
+            continue;
 
         if (!IsSpellFitByClassAndRace(*spellId))
-        	continue;
+            continue;
 
         if (spell->SpellLevel <= level)
             learnSpell(*spellId, false);
@@ -3973,24 +3965,24 @@ void Player::AddNewMailDeliverTime(time_t deliver_time)
     }
 }
 
-bool Player::AddTalent(uint32 spellId, uint8 spec, bool learning)
+bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
 {
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(talent->spellId);
     if (!spellInfo)
     {
         // do character spell book cleanup (all characters)
         if (!IsInWorld() && !learning)                       // spell load case
         {
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::addSpell: Non-existed in SpellStore spell #%u request, deleting for all characters in `character_spell`.", spellId);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::addSpell: Non-existed in SpellStore spell #%u request, deleting for all characters in `character_spell`.", talent->spellId);
 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_SPELL);
 
-            stmt->setUInt32(0, spellId);
+            stmt->setUInt32(0, talent->spellId);
 
             CharacterDatabase.Execute(stmt);
         }
         else
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::addSpell: Non-existed in SpellStore spell #%u request.", spellId);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::addSpell: Non-existed in SpellStore spell #%u request.", talent->spellId);
 
         return false;
     }
@@ -4000,21 +3992,21 @@ bool Player::AddTalent(uint32 spellId, uint8 spec, bool learning)
         // do character spell book cleanup (all characters)
         if (!IsInWorld() && !learning)                       // spell load case
         {
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::addTalent: Broken spell #%u learning not allowed, deleting for all characters in `character_talent`.", spellId);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::addTalent: Broken spell #%u learning not allowed, deleting for all characters in `character_talent`.", talent->spellId);
 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_SPELL);
 
-            stmt->setUInt32(0, spellId);
+            stmt->setUInt32(0, talent->spellId);
 
             CharacterDatabase.Execute(stmt);
         }
         else
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::addTalent: Broken spell #%u learning not allowed.", spellId);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::addTalent: Broken spell #%u learning not allowed.", talent->spellId);
 
         return false;
     }
 
-    PlayerTalentMap::iterator itr = GetTalentMap(spec)->find(spellId);
+    PlayerTalentMap::iterator itr = GetTalentMap(spec)->find(talent->spellId);
     if (itr != GetTalentMap(spec)->end())
         itr->second->state = PLAYERSPELL_UNCHANGED;
     else 
@@ -4025,8 +4017,9 @@ bool Player::AddTalent(uint32 spellId, uint8 spec, bool learning)
 
         newtalent->state = state;
         newtalent->spec = spec;
+        newtalent->talentEntry = talent;
 
-        (*GetTalentMap(spec))[spellId] = newtalent;
+        (*GetTalentMap(spec))[talent->spellId] = newtalent;
         return true;
     }
     return false;
@@ -26554,7 +26547,7 @@ bool Player::LearnTalent(uint32 talentId)
 
     // learn! (other talent ranks will unlearned at learning)
     learnSpell(spellid, false);
-    AddTalent(spellid, GetActiveSpec(), true);
+    AddTalent(talentInfo, GetActiveSpec(), true);
     CastPassiveTalentSpell(spellid);
 
     sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
@@ -26999,7 +26992,36 @@ void Player::_LoadTalents(PreparedQueryResult result)
     if (result)
     {
         do
-            AddTalent((*result)[0].GetUInt32(), (*result)[1].GetUInt8(), false);
+        {
+            uint32 spellId = (*result)[0].GetUInt32();
+            SpellInfo const* spell = sSpellMgr->GetSpellInfo(spellId);
+            if (!spell)
+            {
+                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::_LoadTalents: Non-existed in SpellStore spell #%u request, deleting for all characters in `character_talent`.", spellId);
+
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_SPELL);
+
+                stmt->setUInt32(0, spellId);
+
+                CharacterDatabase.Execute(stmt);
+                continue;
+            }
+
+            TalentEntry const* talent = sTalentStore.LookupEntry(spell->talentId);
+            if (!talent)
+            {
+                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::_LoadTalents: Zero or non-existed talent #%u (spell #%u) in character_talent, deleting for all characters in `character_talent`.", spell->talentId, spellId);
+
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_SPELL);
+
+                stmt->setUInt32(0, spellId);
+
+                CharacterDatabase.Execute(stmt);
+                continue;
+            }
+
+            AddTalent(talent, (*result)[1].GetUInt8(), false);
+        }
         while (result->NextRow());
     }
 }
@@ -27128,7 +27150,7 @@ void Player::ActivateSpec(uint8 spec)
     for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
     {
         removeSpell(itr->first, true); // removes the talent, and all dependant, learned, and chained spells..
-        if (const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(itr->first))
+        if (SpellInfo const* _spellEntry = sSpellMgr->GetSpellInfo(itr->first))
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)                  // search through the SpellInfo for valid trigger spells
                 if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
                     removeSpell(_spellEntry->Effects[i].TriggerSpell, true); // and remove any spells that the talent teaches

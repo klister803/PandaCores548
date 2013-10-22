@@ -1790,6 +1790,7 @@ struct SpecializationSpellEntry
     uint32  SpecializationEntry;     // 1
     uint32  LearnSpell;              // 2
     uint32  OverrideSpell;           // 3
+    //uint32 unk;                    // 4
 };
 
 // SpellEffect.dbc

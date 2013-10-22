@@ -376,24 +376,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    // Override spell Id, client send base spell and not the overrided id
-    if (!spellInfo->OverrideSpellList.empty())
-    {
-        for (std::list<uint32>::const_iterator itr = spellInfo->OverrideSpellList.begin(); itr != spellInfo->OverrideSpellList.end(); ++itr)
-        {
-            if (_player->HasSpell(*itr))
-            {
-                SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo(*itr);
-                if (overrideSpellInfo)
-                {
-                    spellInfo = overrideSpellInfo;
-                    spellId = *itr;
-                }
-                break;
-            }
-        }
-    }
-
     if (mover->GetTypeId() == TYPEID_PLAYER)
     {
         // not have spell in spellbook or spell passive and not casted by client
@@ -421,6 +403,41 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             //cheater? kick? ban?
             recvPacket.rfinish(); // prevent spam at ignore packet
             return;
+        }
+    }
+
+    // process spells overriden by SpecializationSpells.dbc
+    for (auto itr : spellInfo->SpecializationOverrideSpellList)
+    {
+        if (_player->HasSpell(itr->LearnSpell))
+        {
+            if (SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo(itr->LearnSpell))
+            {
+                spellInfo = overrideSpellInfo;
+                spellId = overrideSpellInfo->Id;
+            }
+            break;
+        }
+    }
+
+    // process spellOverride column replacements of Talent.dbc
+    if (Player* plMover = mover->ToPlayer())
+    {
+        PlayerTalentMap const* talents = plMover->GetTalentMap(plMover->GetActiveSpec());
+        for (auto itr : *talents)
+        {
+            if (itr.second->state == PLAYERSPELL_REMOVED)
+                continue;
+
+            if (itr.second->talentEntry->spellOverride == spellId)
+            {
+                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(itr.second->talentEntry->spellId))
+                {
+                    spellInfo = newInfo;
+                    spellId = newInfo->Id;
+                }
+                break;
+            }
         }
     }
 
@@ -494,33 +511,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             }
             break;
         }
-        case 689:           // Drain Life - 689 and Harvest Life (overrided) - 108371
-        {
-            if (_player->HasSpell(108371))
-            {
-                // Use the right spell
-                SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(115707);
-                if (newSpellInfo)
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                }
-            }
-            break;
-        }
-        case 755:           // Health Funnel - 755 and Health Funnel : Soulburn - 104242
-        {
-            if (_player->HasAura(74434))
-            {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104220))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                    _player->RemoveAura(74434);
-                }
-            }
-            break;
-        }
         case 1490:          // Curse of the Elements - 1490 and Curse of the Elements : Soulburn - 104225
         {
             if (_player->HasAura(74434))
@@ -543,18 +533,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
                     _player->RemoveAura(74434);
-                }
-            }
-            break;
-        }
-        case 12051:         // Evocation - 12051 and  Rune of Power - 116011
-        {
-            if (_player->HasSpell(116011))
-            {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(116011))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
                 }
             }
             break;
@@ -700,37 +678,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
                 _player->ModifyPower(POWER_CHI, -powerCost);
                 return;
-            }
-            break;
-        }
-        case 125430:        // Mage Bomb - 125430 and  Living Bomb - 44457
-        {                   // Mage Bomb - 125430 and Frost Bomb - 112948
-                            // Mage Bomb - 125430 and  Nether Tempest - 114923
-            if (_player->HasSpell(44457))
-            {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(44457))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                }
-            }
-            if (_player->HasSpell(112948))
-            {
-
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112948))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                }
-            }
-            if (_player->HasSpell(114923))
-            {
-
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(114923))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                }
             }
             break;
         }

@@ -3506,9 +3506,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
                 spellInfo->Effects[0].TargetB = 0;
                 break;
-            case 2484:  // Earthbind Totem
-                spellInfo->OverrideSpellList.push_back(51485);
-                break;
             case 6544:  // Heroic Leap
                 spellInfo->Effects[2].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -3536,9 +3533,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[2].TargetA = TARGET_DEST_TARGET_ENEMY;
                 spellInfo->Effects[2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                 break;
-            case 853:   // Hammer of Justice
-                spellInfo->OverrideSpellList.push_back(105593); // Replace Hammer of Justice by Fist of Justice
-                break;
             case 94339: // Fungal Area
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(18); // 20s
                 break;
@@ -3551,22 +3545,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
                 spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_PET;
-                break;
-            case 6785:  // Ravage
-                spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
-                spellInfo->OverrideSpellList.push_back(102545); // Replace Ravage by Ravage (Incarnation)
-                break;
-            case 5212:  // Prowl
-                spellInfo->OverrideSpellList.push_back(102547); // Replace Prowl by Prowl (Incarnation)
-                break;
-            case 16914: // Hurricane
-                spellInfo->OverrideSpellList.push_back(106996); // Replace Hurricane by Astral Storm
-                break;
-            case 755:   // Health Funnel
-                spellInfo->OverrideSpellList.push_back(108415); // Replace Health Funnel by Soul Link
-                break;
-            case 85673: // Word of Glory
-                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal Flame
                 break;
             case 974:   // Earth Shield
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
@@ -3648,7 +3626,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetA = 0;
                 spellInfo->Effects[0].Effect = 0;
                 spellInfo->Effects[0].BasePoints = 0;
-                spellInfo->OverrideSpellList.push_back(123408); // Add Spinning Fire Blossom (Overrided by Glyph) to override spell list of Spinning Fire Blossom
                 break;
             case 86150: // Guardian of Ancient Kings
                 spellInfo->Effects[0].TargetA = TARGET_CHECK_ENTRY;
@@ -3697,9 +3674,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[2].ApplyAuraName = 0;
                 spellInfo->Effects[2].BasePoints = 0;
                 break;
-            case 34433: // Shadowfiend
-                spellInfo->OverrideSpellList.push_back(123040); // Add Mindbender to override spell list of Shadowfiend
-                break;
             case 64904: // Hymn of Hope
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
                 break;
@@ -3724,15 +3698,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = -50;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                 break;
-            case 9005:  // Pounce
-                spellInfo->OverrideSpellList.push_back(102546); // Replace Pounce by Pounce (Incarnation)
-                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
-                break;
             case 33763: // Lifebloom
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
-                break;
-            case 1784:  // Stealth
-                spellInfo->OverrideSpellList.push_back(115191); // Add Stealth (talent) to override spell list of Stealth
                 break;
             case 1160:  // Demoralizing Shout
             case 1966:  // Feint
@@ -3751,12 +3718,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 84747: // Deep Insight
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
                 spellInfo->Effects[0].MiscValue = SPELL_SCHOOL_MASK_ALL;
-                break;
-            case 121733:// Throw
-                spellInfo->OverrideSpellList.push_back(114014); // Add Shuriken Toss to override spell list of Throw
-                break;
-            case 105361:// Seal of Command
-                spellInfo->OverrideSpellList.push_back(31801); // Replace Seal of Command with Seal of Truth
                 break;
             case 117895:// Eminence (statue)
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
@@ -3868,9 +3829,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                 break;
-            case 13165: // Aspect of the Hawk
-                spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
-                break;
             case 6346:  // Fear Ward
             case 110717:// Fear Ward (Symbiosis)
             case 48108: // Hot Streak
@@ -3948,13 +3906,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 80325: // Camouflage
             case 119450:// Glyph of Camouflage
                 spellInfo->Effects[1].Effect = 0;
-                break;
-            case 115008:// Chi Torpedo
-                spellInfo->OverrideSpellList.push_back(121828); // Override List with Chi Torpedo - Talent
-                break;
-            case 109132:// Roll
-                spellInfo->OverrideSpellList.push_back(115008); // Override List with Chi Torpedo
-                spellInfo->OverrideSpellList.push_back(121827); // Override List with Roll - Talent
                 break;
             case 115295:// Guard
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;

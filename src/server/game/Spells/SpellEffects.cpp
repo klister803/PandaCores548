@@ -6858,9 +6858,7 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
         if (!spell)
             continue;
 
-        TalentEntry const* talent = sTalentStore.LookupEntry(spell->talentId);
-        if (!talent)
-            continue;
+        TalentEntry const* talent = itr->second->talentEntry;
 
         if (spell->talentId != m_glyphIndex)
             continue;

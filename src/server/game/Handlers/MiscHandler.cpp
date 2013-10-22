@@ -1410,7 +1410,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         data.WriteByteSeq(guildGuid[0]);
     }
 
-    PlayerTalentMap* Talents = player->GetTalentMap(0);
+    PlayerTalentMap* Talents = player->GetTalentMap(player->GetActiveSpec());
     for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
     {
         SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
