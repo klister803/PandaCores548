@@ -373,7 +373,7 @@ class boss_feng : public CreatureScript
                      // Fist Phase
                     case EVENT_LIGHTNING_FISTS:
                         fistguid = 0;
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
                         {
                             fistguid = target->GetGUID();
                             DoCast(target, SPELL_LIGHTNING_FISTS);
