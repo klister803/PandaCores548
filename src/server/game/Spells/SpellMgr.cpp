@@ -4104,6 +4104,12 @@ void SpellMgr::LoadSpellCustomAttr()
             case 116374: //Lightning fists (trigger dmg)
                 spellInfo->CasterAuraSpell = 0;
                 break;
+            case 116417: //Arcane Resonance
+                spellInfo->Effects[0].TargetA = 6;
+                spellInfo->Effects[0].TargetB = 0;
+                spellInfo->Effects[1].TargetA = 6;
+                spellInfo->Effects[1].TargetB = 0;
+                break;
             case 116040: //Epicenter(trigger dmg)
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
                 spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
