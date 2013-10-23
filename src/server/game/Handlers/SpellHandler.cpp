@@ -407,11 +407,11 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // process spells overriden by SpecializationSpells.dbc
-    for (auto itr : spellInfo->SpecializationOverrideSpellList)
+    for (std::set<SpecializationSpellEntry const*>::const_iterator itr = spellInfo->SpecializationOverrideSpellList.begin(); itr != spellInfo->SpecializationOverrideSpellList.end(); ++itr)
     {
-        if (_player->HasSpell(itr->LearnSpell))
+        if (_player->HasSpell((*itr)->LearnSpell))
         {
-            if (SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo(itr->LearnSpell))
+            if (SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo((*itr)->LearnSpell))
             {
                 spellInfo = overrideSpellInfo;
                 spellId = overrideSpellInfo->Id;
@@ -424,14 +424,14 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     if (Player* plMover = mover->ToPlayer())
     {
         PlayerTalentMap const* talents = plMover->GetTalentMap(plMover->GetActiveSpec());
-        for (auto itr : *talents)
+        for (PlayerTalentMap::const_iterator itr = talents->begin(); itr != talents->end(); ++itr)
         {
-            if (itr.second->state == PLAYERSPELL_REMOVED)
+            if (itr->second->state == PLAYERSPELL_REMOVED)
                 continue;
 
-            if (itr.second->talentEntry->spellOverride == spellId)
+            if (itr->second->talentEntry->spellOverride == spellId)
             {
-                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(itr.second->talentEntry->spellId))
+                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(itr->second->talentEntry->spellId))
                 {
                     spellInfo = newInfo;
                     spellId = newInfo->Id;
