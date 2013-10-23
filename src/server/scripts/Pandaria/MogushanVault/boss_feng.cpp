@@ -147,18 +147,17 @@ class boss_feng : public CreatureScript
             uint8 actualPhase;
             uint32 nextPhasePct;
             uint32 dotSpellId;
+            uint64 fistguid;
             std::list<uint32> phaseList;
-            std::list<uint64> sparkList;
-            bool justdie;
 
             void Reset()
             {
                 _Reset();
-                justdie = false;
                 phaseList.clear();
                 actualPhase  = PHASE_NONE;
                 nextPhasePct = 95;
                 dotSpellId = 0;
+                fistguid = 0;
 
                 for (int i = 1; i <= 3; ++i)
                     phaseList.push_back(i);
@@ -184,6 +183,11 @@ class boss_feng : public CreatureScript
                     cancelGob->Respawn();
             }
 
+            uint64 GetFistGuid()
+            {
+                return fistguid;
+            }
+
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
@@ -191,7 +195,6 @@ class boss_feng : public CreatureScript
 
             void JustDied(Unit* attacker)
             {
-                justdie = true;
                 _JustDied();
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
@@ -293,21 +296,6 @@ class boss_feng : public CreatureScript
                 actualPhase = newPhase;
             }
 
-            void JustSummoned(Creature* summon)
-            {
-                summons.Summon(summon);
-
-                sparkList.push_back(summon->GetGUID());
-            }
-
-            void SummonedCreatureDespawn(Creature* summon)
-            {
-                summons.Despawn(summon);
-
-                if(!justdie)
-                    sparkList.remove(summon->GetGUID());
-            }
-
             /*void SpellHitTarget(Unit* target, SpellInfo const* spell)
             {
                 if (Aura* inversion = target->GetAura(115911))
@@ -384,8 +372,12 @@ class boss_feng : public CreatureScript
                         break;
                      // Fist Phase
                     case EVENT_LIGHTNING_FISTS:
+                        fistguid = 0;
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                        {
+                            fistguid = target->GetGUID();
                             DoCast(target, SPELL_LIGHTNING_FISTS);
+                        }
                         events.ScheduleEvent(EVENT_LIGHTNING_FISTS, 20000);
                         break;
                     case EVENT_EPICENTER:
@@ -458,10 +450,29 @@ class mob_lightning_fist : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->AddAura(SPELL_AURA_SEARCHER, me);
                 me->AddAura(SPELL_FIST_VISUAL, me);
-                float x = 0, y = 0;
-                GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
-                me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
-                unsummon = 6000; 
+                if (me->ToTempSummon())
+                {
+                    if (Creature* Feng = me->ToTempSummon()->GetSummoner()->ToCreature())
+                    {
+                        if (boss_feng::boss_fengAI * FengAI = CAST_AI(boss_feng::boss_fengAI, Feng->AI()))
+                        {
+                            if (FengAI->GetFistGuid())
+                            {
+                                uint64 targetguid = FengAI->GetFistGuid();
+                                {
+                                    if (Unit* target = me->GetUnit(*me, targetguid))
+                                    {
+                                        me->SetFacingToObject(target);
+                                        float x = 0, y = 0;
+                                        GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
+                                        me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
+                                        unsummon = 6000;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } 
             }
 
             void EnterCombat(Unit* who){}
@@ -576,7 +587,7 @@ class spell_mogu_epicenter : public SpellScriptLoader
 };
 
 // Wildfire Spark - 116583
-class spell_mogu_wildfire_spark : public SpellScriptLoader
+/*class spell_mogu_wildfire_spark : public SpellScriptLoader
 {
     public:
         spell_mogu_wildfire_spark() : SpellScriptLoader("spell_mogu_wildfire_spark") { }
@@ -585,7 +596,7 @@ class spell_mogu_wildfire_spark : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mogu_wildfire_spark_SpellScript);
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+            void HandleDummy(SpellEffIndex effIndex)
             {
                 const uint8 maxSpark = 3;
 
@@ -612,7 +623,7 @@ class spell_mogu_wildfire_spark : public SpellScriptLoader
         {
             return new spell_mogu_wildfire_spark_SpellScript();
         }
-};
+};*/
 
 // Wildfire Infusion - 116816
 class spell_mogu_wildfire_infusion : public SpellScriptLoader
@@ -758,7 +769,7 @@ void AddSC_boss_feng()
     new mob_lightning_fist();
     new mob_wild_spark();
     new spell_mogu_epicenter();
-    new spell_mogu_wildfire_spark();
+    //new spell_mogu_wildfire_spark();
     new spell_mogu_wildfire_infusion();
     new spell_mogu_arcane_velocity();
     //new spell_mogu_arcane_resonance();
