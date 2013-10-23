@@ -1649,6 +1649,45 @@ class spell_mage_frost_nova : public SpellScriptLoader
         }
 };
 
+// Greater Invisibility - 110960
+class spell_mage_greater_invisibility : public SpellScriptLoader
+{
+    public:
+        spell_mage_greater_invisibility() : SpellScriptLoader("spell_mage_greater_invisibility") { }
+
+        class spell_mage_greater_invisibility_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_greater_invisibility_AuraScript);
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    caster->CastSpell(GetTarget(), 113862, true, NULL, aurEff);
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Aura* aura = GetTarget()->GetAura(113862, caster->GetGUID()))
+                    {
+                        aura->SetDuration(3000);
+                        aura->SetMaxDuration(3000);
+                    }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_mage_greater_invisibility_AuraScript::OnApply, EFFECT_1, SPELL_AURA_MOD_INVISIBILITY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_mage_greater_invisibility_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_INVISIBILITY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_greater_invisibility_AuraScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -1683,4 +1722,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_polymorph_cast_visual();
     new spell_mage_living_bomb();
     new spell_mage_frost_nova();
+    new spell_mage_greater_invisibility();
 }
