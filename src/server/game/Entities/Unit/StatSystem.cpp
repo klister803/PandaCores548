@@ -816,13 +816,13 @@ void Player::UpdateManaRegen()
     float spirit_regen = OCTRegenMPPerSpirit();
     float HastePct = 1.0f;
 
-    float combat_regen = 0.004f * GetMaxPower(POWER_MANA) + spirit_regen + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
-    float base_regen = 0.004f * GetMaxPower(POWER_MANA) + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
+    float base_regen = 0.004f * GetMaxPower(POWER_MANA) + spirit_regen + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
+    float combat_regen = 0.004f * GetMaxPower(POWER_MANA) + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
 
     if (getClass() == CLASS_WARLOCK)
     {
-        combat_regen = 0.01f * GetMaxPower(POWER_MANA) + spirit_regen + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
-        base_regen = 0.01f * GetMaxPower(POWER_MANA) + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
+        base_regen = 0.01f * GetMaxPower(POWER_MANA) + spirit_regen + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
+        combat_regen = 0.01f * GetMaxPower(POWER_MANA) + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
     }
 
     if (HasAuraType(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT))
@@ -835,18 +835,18 @@ void Player::UpdateManaRegen()
     {
         // haste also increase your mana regeneration
         HastePct = 1.0f + GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
-        combat_regen *= HastePct;
         base_regen *= HastePct;
+        combat_regen *= HastePct;
     }
 
     float pctMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
-    combat_regen *= pctMod;
     base_regen *= pctMod;
+    combat_regen *= pctMod;
 
     // Not In Combat : 2% of base mana + spirit_regen
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, base_regen);
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, base_regen);
     // In Combat : 2% of base mana
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, combat_regen);
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, combat_regen);
 }
 
 void Player::UpdateRuneRegen(RuneType rune)
