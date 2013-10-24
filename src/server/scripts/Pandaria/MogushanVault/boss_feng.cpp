@@ -353,7 +353,10 @@ class boss_feng : public CreatureScript
                             me->SetReactState(REACT_PASSIVE);
                             me->AttackStop();
                             me->SetFacingToObject(target);
-                            DoCast(target, SPELL_LIGHTNING_FISTS);
+                            Position pos;
+                            me->GetPosition(&pos);
+                            me->SummonCreature(60241, pos);
+                            //DoCast(target, SPELL_LIGHTNING_FISTS);
                         }
                         events.ScheduleEvent(EVENT_LIGHTNING_FISTS, 20000);
                         break;
