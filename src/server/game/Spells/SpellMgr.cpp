@@ -4291,6 +4291,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 76724: // Offering
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(3); // 60s
                 break;
+            case 76724: // The Challenger's Ring: Summon Snow Blossom Fighter
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(5); // 300s
+                break;
             default:
                 break;
             }
