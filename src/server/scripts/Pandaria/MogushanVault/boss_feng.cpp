@@ -206,21 +206,11 @@ class boss_feng : public CreatureScript
 
             void DoAction(const int32 action)
             {
-                switch (action)
-                {
-                case ACTION_SPARK:
+                if (action == ACTION_SPARK)
                     if (Aura* aura = me->GetAura(SPELL_WILDFIRE_INFUSION))
                         aura->ModCharges(1);
                     else
                         me->AddAura(SPELL_WILDFIRE_INFUSION, me);
-                    break;
-                case ACTION_ATTACK:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 60.0f);
-                    if (me->getVictim())
-                        me->GetMotionMaster()->MoveChase(me->getVictim());
-                    break;
-                }
             }
 
             void PrepareNewPhase(uint8 newPhase)
@@ -349,15 +339,7 @@ class boss_feng : public CreatureScript
                      // Fist Phase
                     case EVENT_LIGHTNING_FISTS:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
-                        {
-                            me->SetReactState(REACT_PASSIVE);
-                            me->AttackStop();
-                            me->SetFacingToObject(target);
-                            Position pos;
-                            me->GetPosition(&pos);
-                            me->SummonCreature(60241, pos);
-                            //DoCast(target, SPELL_LIGHTNING_FISTS);
-                        }
+                            DoCast(target, SPELL_LIGHTNING_FISTS);
                         events.ScheduleEvent(EVENT_LIGHTNING_FISTS, 20000);
                         break;
                     case EVENT_EPICENTER:
@@ -434,14 +416,6 @@ class mob_lightning_fist : public CreatureScript
                 GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
                 me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
                 unsummon = 6000;
-                if (me->ToTempSummon())
-                {
-                    if (Creature* feng = me->ToTempSummon()->GetSummoner()->ToCreature())
-                    {
-                        if (feng && feng->isAlive())
-                            feng->AI()->DoAction(ACTION_ATTACK);
-                    }
-                }
             }
 
             void EnterCombat(Unit* who){}
