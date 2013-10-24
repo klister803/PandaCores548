@@ -2158,6 +2158,13 @@ bool WorldObject::CanDetectInvisibilityOf(WorldObject const* obj) const
     if (mask != obj->m_invisibility.GetFlags())
         return false;
 
+    if (obj->ToUnit())
+        if ((m_invisibility.GetFlags() & obj->m_invisibilityDetect.GetFlags()) != m_invisibility.GetFlags())
+        {
+            if (obj->m_invisibility.GetFlags() != 0 || !isType(TYPEMASK_UNIT) || !ToUnit()->HasAuraType(SPELL_AURA_SEE_WHILE_INVISIBLE))
+                return false;
+        }
+
     for (uint32 i = 0; i < TOTAL_INVISIBILITY_TYPES; ++i)
     {
         if (!(mask & (1 << i)))
