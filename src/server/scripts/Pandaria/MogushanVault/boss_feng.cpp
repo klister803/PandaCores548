@@ -144,32 +144,26 @@ class boss_feng : public CreatureScript
             }
 
             InstanceScript* pInstance;
+            bool phaseone, phasetwo, phasethree;
+            uint8 newphase;
             uint8 actualPhase;
-            uint32 nextPhasePct;
             uint32 dotSpellId;
-            uint64 fistguid;
-            std::list<uint32> phaseList;
 
             void Reset()
             {
                 _Reset();
-                phaseList.clear();
-                actualPhase  = PHASE_NONE;
-                nextPhasePct = 95;
+                phaseone = false;
+                phasetwo = false;
+                phasethree = false;
+                newphase = 0;
+                actualPhase = PHASE_NONE;
                 dotSpellId = 0;
-                fistguid = 0;
-
-                for (int i = 1; i <= 3; ++i)
-                    phaseList.push_back(i);
-
-                //std::random_shuffle(phaseList.begin(), phaseList.end()); Todo : changer chaque semaine
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
 
                 for (uint8 i = 0; i < 4; ++i)
                     me->RemoveAurasDueToSpell(fengVisualId[i]);
 
-                pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
-                pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
-                // Desactivate old statue
                 if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
                 {
                     oldStatue->SetLootState(GO_READY);
@@ -182,12 +176,7 @@ class boss_feng : public CreatureScript
                 if (GameObject* cancelGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_CANCEL)))
                     cancelGob->Respawn();
             }
-
-            uint64 GetFistGuid()
-            {
-                return fistguid;
-            }
-
+            
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
@@ -217,12 +206,20 @@ class boss_feng : public CreatureScript
 
             void DoAction(const int32 action)
             {
-                if (action == ACTION_SPARK)
+                switch (action)
                 {
+                case ACTION_SPARK:
                     if (Aura* aura = me->GetAura(SPELL_WILDFIRE_INFUSION))
                         aura->ModCharges(1);
                     else
                         me->AddAura(SPELL_WILDFIRE_INFUSION, me);
+                    break;
+                case ACTION_ATTACK:
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 60.0f);
+                    if (me->getVictim())
+                        me->GetMotionMaster()->MoveChase(me->getVictim());
+                    break;
                 }
             }
 
@@ -231,7 +228,6 @@ class boss_feng : public CreatureScript
                 events.Reset();
                 events.ScheduleEvent(EVENT_DOT_ATTACK, 15000);
                 events.ScheduleEvent(EVENT_RE_ATTACK,  500);
-
                 me->SetReactState(REACT_PASSIVE);
                 me->GetMotionMaster()->Clear();
 
@@ -296,54 +292,34 @@ class boss_feng : public CreatureScript
                 actualPhase = newPhase;
             }
 
-            /*void SpellHitTarget(Unit* target, SpellInfo const* spell)
-            {
-                if (Aura* inversion = target->GetAura(115911))
-                {
-                    if (Unit* caster = inversion->GetCaster())
-                    {
-                        for (uint8 i = 0; i < MAX_INVERSION_SPELLS; ++i)
-                        {
-                            if (spell->Id == inversionMatching[i][0])
-                            {
-                                bool alreadyHaveAnInversion = false;
-
-                                for (uint8 j = 0; j < MAX_INVERSION_SPELLS; ++j)
-                                    if (caster->HasAura(inversionMatching[j][1]))
-                                    {
-                                        alreadyHaveAnInversion = true;
-                                        break;
-                                    }
-
-                                if (!alreadyHaveAnInversion)
-                                    caster->CastSpell(caster, inversionMatching[i][1], true);
-
-                                break;
-                            }
-                        }
-                    }
-                }
-            }*/
-
-            void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 if (!pInstance)
                     return;
 
-                if (nextPhasePct)
+                if (HealthBelowPct(95) && !phaseone)
                 {
-                    if (me->HealthBelowPctDamaged(nextPhasePct, damage))
-                    {
-                        events.Reset();
-                        uint8  newPhase = *phaseList.begin();
-                        phaseList.pop_front();
-                        if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newPhase - 1].GetPositionX(), modPhasePositions[newPhase - 1].GetPositionY(), modPhasePositions[newPhase - 1].GetPositionZ()))
-                            controler->AddAura(controlerVisualId[newPhase - 1], controler);
-
-                        me->GetMotionMaster()->MovePoint(newPhase, modPhasePositions[newPhase - 1].GetPositionX(), modPhasePositions[newPhase - 1].GetPositionY(), modPhasePositions[newPhase - 1].GetPositionZ());
-                        uint32 reduction = IsHeroic() ? 25: 32;
-                        nextPhasePct >= reduction ? nextPhasePct-= reduction: nextPhasePct = 0;
-                    }
+                    phaseone = true;
+                    newphase = 1;
+                    if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
+                        controler->AddAura(controlerVisualId[newphase - 1], controler);
+                    me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
+                }
+                else if (HealthBelowPct(63) && !phasetwo)
+                {
+                    phasetwo = true;
+                    newphase = 2;
+                    if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
+                        controler->AddAura(controlerVisualId[newphase - 1], controler);
+                    me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
+                }
+                else if (HealthBelowPct(31) && !phasethree)
+                {
+                    phasethree = true;
+                    newphase = 3;
+                    if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
+                        controler->AddAura(controlerVisualId[newphase - 1], controler);
+                    me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
                 }
             }
 
@@ -372,10 +348,11 @@ class boss_feng : public CreatureScript
                         break;
                      // Fist Phase
                     case EVENT_LIGHTNING_FISTS:
-                        fistguid = 0;
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
                         {
-                            fistguid = target->GetGUID();
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();
+                            me->SetFacingToObject(target);
                             DoCast(target, SPELL_LIGHTNING_FISTS);
                         }
                         events.ScheduleEvent(EVENT_LIGHTNING_FISTS, 20000);
@@ -450,29 +427,18 @@ class mob_lightning_fist : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->AddAura(SPELL_AURA_SEARCHER, me);
                 me->AddAura(SPELL_FIST_VISUAL, me);
+                float x = 0, y = 0;
+                GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
+                me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
+                unsummon = 6000;
                 if (me->ToTempSummon())
                 {
-                    if (Creature* Feng = me->ToTempSummon()->GetSummoner()->ToCreature())
+                    if (Creature* feng = me->ToTempSummon()->GetSummoner()->ToCreature())
                     {
-                        if (boss_feng::boss_fengAI * FengAI = CAST_AI(boss_feng::boss_fengAI, Feng->AI()))
-                        {
-                            if (FengAI->GetFistGuid())
-                            {
-                                uint64 targetguid = FengAI->GetFistGuid();
-                                {
-                                    if (Unit* target = me->GetUnit(*me, targetguid))
-                                    {
-                                        me->SetFacingToObject(target);
-                                        float x = 0, y = 0;
-                                        GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
-                                        me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
-                                        unsummon = 6000;
-                                    }
-                                }
-                            }
-                        }
+                        if (feng && feng->isAlive())
+                            feng->AI()->DoAction(ACTION_ATTACK);
                     }
-                } 
+                }
             }
 
             void EnterCombat(Unit* who){}
