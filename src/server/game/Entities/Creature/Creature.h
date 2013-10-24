@@ -909,4 +909,14 @@ class SetPhaseDelayEvent : public BasicEvent
         uint32 m_phase;
 };
 
+class SetImuneDelayEvent : public BasicEvent
+{
+    public:
+        SetImuneDelayEvent(Creature& owner) : BasicEvent(), m_owner(owner) { }
+        bool Execute(uint64 e_time, uint32 p_time);
+
+    private:
+        Creature& m_owner;
+};
+
 #endif
