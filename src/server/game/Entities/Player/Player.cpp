@@ -26525,8 +26525,8 @@ bool Player::LearnTalent(uint32 talentId)
         if (TalentEntry const* tmpTalent = sTalentStore.LookupEntry(i)) // Someday, someone needs to revamp the way talents are tracked
         {
             if (talentInfo->classId == tmpTalent->classId &&
-                talentInfo->TalentTab != tmpTalent->TalentTab &&
-                talentInfo->rank == tmpTalent->rank)
+                talentInfo->column != tmpTalent->column &&
+                talentInfo->row == tmpTalent->row)
             {
                 if (HasSpell(tmpTalent->spellId))
                     return false;
