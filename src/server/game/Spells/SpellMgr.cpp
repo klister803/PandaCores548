@@ -1135,8 +1135,12 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
         if (!player || !(raceMask & player->getRaceMask()))
             return false;
 
-    if (areaId)                                  // not in expected zone
+    if (areaId > 0)                                  // not in expected zone
         if (newZone != areaId && newArea != areaId)
+            return false;
+
+    if (areaId < 0 && player)
+        if(player->GetMapId() != abs(areaId))
             return false;
 
     if (questStart)                              // not in expected required quest state
@@ -2763,7 +2767,7 @@ void SpellMgr::LoadSpellAreas()
         uint32 spell = fields[0].GetUInt32();
         SpellArea spellArea;
         spellArea.spellId             = spell;
-        spellArea.areaId              = fields[1].GetUInt32();
+        spellArea.areaId              = fields[1].GetInt32();
         spellArea.questStart          = fields[2].GetUInt32();
         spellArea.questStartStatus    = fields[3].GetUInt32();
         spellArea.questEndStatus      = fields[4].GetUInt32();
@@ -2814,9 +2818,15 @@ void SpellMgr::LoadSpellAreas()
             }
         }
 
-        if (spellArea.areaId && !GetAreaEntryByAreaID(spellArea.areaId))
+        if (spellArea.areaId > 0 && !GetAreaEntryByAreaID(spellArea.areaId))
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_area` have wrong area (%u) requirement", spell, spellArea.areaId);
+            continue;
+        }
+
+        if (spellArea.areaId < 0 && !sMapStore.LookupEntry(abs(spellArea.areaId)))
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_area` have wrong mapid (%u) requirement", spell, abs(spellArea.areaId));
             continue;
         }
 

@@ -520,7 +520,7 @@ typedef std::map<uint32, PetAura> SpellPetAuraMap;
 struct SpellArea
 {
     uint32 spellId;
-    uint32 areaId;                                          // zone/subzone/or 0 is not limited to zone
+    int32  areaId;                                          // zone/subzone/or 0 is not limited to zone, if - than mapid
     uint32 questStart;                                      // quest start (quest must be active or rewarded for spell apply)
     uint32 questEnd;                                        // quest end (quest must not be rewarded for spell apply)
     int32  auraSpell;                                       // spell aura must be applied for spell apply)if possitive) and it must not be applied in other case
