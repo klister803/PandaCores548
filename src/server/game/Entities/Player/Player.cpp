@@ -8183,6 +8183,9 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
+    if (!modifyWeek && weekCap && newWeekCount > weekCap)
+        newWeekCount = weekCap;
+
     // if we get more then weekCap just set to limit
     if (modifyWeek && weekCap && (int32(weekCap) < newWeekCount))
     {
@@ -26522,8 +26525,8 @@ bool Player::LearnTalent(uint32 talentId)
         if (TalentEntry const* tmpTalent = sTalentStore.LookupEntry(i)) // Someday, someone needs to revamp the way talents are tracked
         {
             if (talentInfo->classId == tmpTalent->classId &&
-                talentInfo->TalentTab != tmpTalent->TalentTab &&
-                talentInfo->rank == tmpTalent->rank)
+                talentInfo->column != tmpTalent->column &&
+                talentInfo->row == tmpTalent->row)
             {
                 if (HasSpell(tmpTalent->spellId))
                     return false;

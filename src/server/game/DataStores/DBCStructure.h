@@ -2241,8 +2241,8 @@ struct TalentEntry
 {
     uint32  Id;                                     // 0
     //uint32  petTab;                               // 1
-    uint32  rank;                                   // 2
-    uint32  TalentTab;                              // 3
+    uint32  row;                                    // 2
+    uint32  column;                                 // 3
     uint32  spellId;                                // 4
     //uint32  needAddInSpellBook;                   // 5
     //uint32  unk2;                                 // 6

@@ -1688,6 +1688,45 @@ class spell_mage_greater_invisibility : public SpellScriptLoader
         }
 };
 
+// Ice Block - 45438
+class spell_mage_ice_block : public SpellScriptLoader
+{
+    public:
+        spell_mage_ice_block() : SpellScriptLoader("spell_mage_ice_block") { }
+
+        class spell_mage_ice_block_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_ice_block_AuraScript);
+
+            void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                if (removeMode == AURA_REMOVE_BY_DEATH)
+                    return;
+
+                Unit* target = GetTarget();
+                // Glyph of Ice Block
+                if (target->HasAura(115723))
+                {
+                    // Glyph of Ice Block
+                    target->CastSpell(target, 115760, true);
+                    // Frost Nova
+                    target->CastSpell(target, 115757, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_mage_ice_block_AuraScript::AfterRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_ice_block_AuraScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -1723,4 +1762,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_living_bomb();
     new spell_mage_frost_nova();
     new spell_mage_greater_invisibility();
+    new spell_mage_ice_block();
 }

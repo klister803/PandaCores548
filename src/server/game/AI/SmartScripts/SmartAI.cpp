@@ -450,7 +450,7 @@ void SmartAI::RemoveAuras()
 
 void SmartAI::EnterEvadeMode()
 {
-    if (!me->isAlive())
+    if (!me->isAlive() || me->IsInEvadeMode())
         return;
 
     RemoveAuras();
@@ -461,6 +461,10 @@ void SmartAI::EnterEvadeMode()
     me->LoadCreaturesAddon();
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
+
+    me->m_Events.AddEvent(new SetImuneDelayEvent(*me), me->m_Events.CalculateTime(30000));
+    me->SetReactState(REACT_PASSIVE);
+    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
 
     GetScript()->ProcessEventsFor(SMART_EVENT_EVADE);//must be after aura clear so we can cast spells from db
 
