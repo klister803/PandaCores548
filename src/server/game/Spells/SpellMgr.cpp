@@ -4292,6 +4292,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(3); // 60s
                 break;
             case 122557: // The Challenger's Ring: Summon Snow Blossom Fighter
+            case 122746: // The Challenger's Ring: Yalia Sagewhisper
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(5); // 300s
                 break;
             default:
