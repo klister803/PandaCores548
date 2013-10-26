@@ -1266,7 +1266,7 @@ class spell_sha_earthquake : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                     if (DynamicObject* dynObj = caster->GetDynObject(SPELL_SHA_EARTHQUAKE))
-                        Gcaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_EARTHQUAKE_TICK, true);
+                        caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_EARTHQUAKE_TICK, true);
             }
 
             void Register()
