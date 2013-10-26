@@ -462,7 +462,7 @@ void SmartAI::EnterEvadeMode()
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
 
-    me->m_Events.AddEvent(new SetImuneDelayEvent(*me), me->m_Events.CalculateTime(30000));
+    me->m_Events.AddEvent(new SetImuneDelayEvent(*me), me->m_Events.CalculateTime(15000));
     me->SetReactState(REACT_PASSIVE);
     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
 

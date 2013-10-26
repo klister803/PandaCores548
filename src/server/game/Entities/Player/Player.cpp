@@ -2617,7 +2617,7 @@ void Player::ProcessDelayedOperations()
     if (m_DelayedOperations == 0)
         return;
 
-    if (m_DelayedOperations & DELAYED_RESURRECT_PLAYER)
+    if ((m_DelayedOperations & DELAYED_RESURRECT_PLAYER) && _resurrectionData)
     {
         ResurrectPlayer(0.0f, false);
 

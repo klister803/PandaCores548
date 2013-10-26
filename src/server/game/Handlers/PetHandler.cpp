@@ -880,7 +880,7 @@ void WorldSession::HandleLearnPetSpecialization(WorldPacket & recvData)
     // GUID : useless =P
     recvData.rfinish();
 
-    if(_player->isInCombat())
+    if(_player->isInCombat() || _player->getClass() != CLASS_HUNTER)
         return;
 
     uint32 specializationId = 0;
