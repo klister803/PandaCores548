@@ -82,43 +82,35 @@ class boss_garajal : public CreatureScript
             void Reset()
             {
                 _Reset();
-
+                me->RemoveAllAuras();
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
 
-                events.ScheduleEvent(EVENT_SECONDARY_ATTACK,        urand(5000, 10000));
-                events.ScheduleEvent(EVENT_SUMMON_TOTEM,            urand(27500, 32500));
-                events.ScheduleEvent(EVENT_SUMMON_SHADOWY_MINION,   urand(10000, 15000));
-                events.ScheduleEvent(EVENT_BANISHMENT,              90000);
-                events.ScheduleEvent(EVENT_VOODOO_DOLL,             2500);
+                for (uint8 n = 0; n < 4; n++) 
+                    voodooTargets[n] = 0;
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                _EnterCombat();
+                events.ScheduleEvent(EVENT_SECONDARY_ATTACK,      urand(5000, 10000));
+                events.ScheduleEvent(EVENT_SUMMON_TOTEM,          urand(27500, 32500));
+                events.ScheduleEvent(EVENT_SUMMON_SHADOWY_MINION, urand(10000, 15000));
+                events.ScheduleEvent(EVENT_BANISHMENT,            90000);
+                events.ScheduleEvent(EVENT_VOODOO_DOLL,           2500);
             }
 
             void JustDied(Unit* attacker)
             {
                 _JustDied();
-
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
             }
 
-            void JustSummoned(Creature* summon)
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                summons.Summon(summon);
-            }
-
-            void SummonedCreatureDespawn(Creature* summon)
-            {
-                summons.Despawn(summon);
-            }
-
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {
-                if (!pInstance)
-                    return;
-
-                if (!me->HasAura(SPELL_FRENESIE))
-                    if (me->HealthBelowPctDamaged(20, damage))
-                        me->CastSpell(me, SPELL_FRENESIE, true);
+                if (me->HealthBelowPctDamaged(20, damage) && !me->HasAura(SPELL_FRENESIE))
+                    DoCast(me, SPELL_FRENESIE, true);
             }
 
             void UpdateAI(const uint32 diff)
@@ -167,22 +159,36 @@ class boss_garajal : public CreatureScript
                             pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
 
                             uint8 mobCount = Is25ManRaid() ? 4: 3;
-
                             for (uint8 i = 0; i < mobCount; ++i)
                             {
-                                if (Unit* target = SelectTarget(i == 0 ? SELECT_TARGET_TOPAGGRO:SELECT_TARGET_RANDOM, 0, 0, true, -SPELL_VOODOO_DOLL_VISUAL))
+                                if (Unit* target = SelectTarget(i == 0 ? SELECT_TARGET_TOPAGGRO : SELECT_TARGET_RANDOM, 1, 5.0f, true))
                                 {
-                                    voodooTargets[i] = target->GetGUID();
-                                    target->AddAura(SPELL_VOODOO_DOLL_VISUAL, target);
+                                    if (!target->HasAura(SPELL_VOODOO_DOLL_VISUAL))
+                                    {
+                                        voodooTargets[i] = target->GetGUID();
+                                        target->AddAura(SPELL_VOODOO_DOLL_VISUAL, target);
+                                    }
                                 }
                             }
 
-                            for (uint8 i = 0; i < 3; ++i)
-                                if (Player* caster = sObjectAccessor->GetPlayer(*me, voodooTargets[i]))
-                                    for (uint8 j = 0; j < 3; ++j)
-                                        if (j != i)
-                                            if (Player* target = sObjectAccessor->GetPlayer(*me, voodooTargets[j]))
-                                                caster->CastSpell(target, SPELL_VOODOO_DOLL_SHARE, true);
+                            if (Player* plc = me->GetPlayer(*me, voodooTargets[0]))
+                                if (Player* plt = me->GetPlayer(*me, voodooTargets[1]))
+                                    plc->CastSpell(plt, SPELL_VOODOO_DOLL_SHARE);
+
+                            if (Player* plc = me->GetPlayer(*me, voodooTargets[1]))
+                                if (Player* plt = me->GetPlayer(*me, voodooTargets[2]))
+                                    plc->CastSpell(plt, SPELL_VOODOO_DOLL_SHARE);
+
+                            if (Is25ManRaid())
+                            {
+                                if (Player* plc = me->GetPlayer(*me, voodooTargets[2]))
+                                    if (Player* plt = me->GetPlayer(*me, voodooTargets[3]))
+                                        plc->CastSpell(plt, SPELL_VOODOO_DOLL_SHARE);
+                            }
+
+                            for (uint8 n = 0; n < 4; n++)
+                                voodooTargets[n] = 0;
+
                             break;
                         }
                         case EVENT_BANISHMENT:
@@ -198,6 +204,7 @@ class boss_garajal : public CreatureScript
                                 uint8  mobCount   = IsHeroic() ? 3: 1;
 
                                 for (uint8 i = 0; i < mobCount; ++i)
+                                {
                                     if (Creature* soulCutter = me->SummonCreature(NPC_SOUL_CUTTER, target->GetPositionX() + 2.0f, target->GetPositionY() + 2.0f, target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000, i == 0 ? viewerGuid: 0))
                                     {
                                         soulCutter->SetPhaseMask(2, true);
@@ -205,13 +212,11 @@ class boss_garajal : public CreatureScript
                                         soulCutter->SetInCombatWith(target);
                                         soulCutter->getThreatManager().addThreat(target, 10000.0f);
                                     }
-
+                                }
                                 me->getThreatManager().resetAllAggro();
                             }
-
                             pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
                             pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
-
                             events.ScheduleEvent(EVENT_VOODOO_DOLL, 5000);
                             events.ScheduleEvent(EVENT_BANISHMENT, 90000);
                             break;
@@ -230,7 +235,7 @@ class boss_garajal : public CreatureScript
             return new boss_garajalAI(creature);
         }
 };
-
+//Creature 60240
 class mob_spirit_totem : public CreatureScript
 {
     public:
@@ -273,12 +278,9 @@ class mob_spirit_totem : public CreatureScript
 
                         player->CastSpell(player, SPELL_CLONE_VISUAL, true);
                         player->CastSpell(player, SPELL_CROSSED_OVER, true);
-
                         player->CastSpell(clone,  SPELL_CLONE, true);
-
                         clone->CastSpell(clone, SPELL_LIFE_FRAGILE_THREAD, true);
                         clone->GetMotionMaster()->MoveTakeoff(1, clone->GetPositionX(), clone->GetPositionY(), clone->GetPositionZ() + 10.0f);
-
                         player->AddAura(SPELL_LIFE_FRAGILE_THREAD, player);
                     }
                 }
@@ -297,7 +299,7 @@ class mob_spirit_totem : public CreatureScript
             return new mob_spirit_totemAI(creature);
         }
 };
-
+//Creature 60940, 60184
 class mob_shadowy_minion : public CreatureScript
 {
     public:
@@ -369,22 +371,16 @@ class mob_shadowy_minion : public CreatureScript
                     {
                         // Spirit World
                         case EVENT_SHADOW_BOLT:
-                        {
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                                me->CastSpell(target, SPELL_SHADOW_BOLT, false);
-
+                                DoCast(target, SPELL_SHADOW_BOLT);
                             events.ScheduleEvent(EVENT_SHADOW_BOLT, urand(2000, 3000));
                             break;
-                        }
                         // Real World
                         case EVENT_SPIRITUAL_GRASP:
-                        {
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                                me->CastSpell(target, SPELL_SPIRITUAL_GRASP, false);
-
+                                DoCast(target, SPELL_SPIRITUAL_GRASP);
                             events.ScheduleEvent(EVENT_SPIRITUAL_GRASP, urand(5000, 8000));
                             break;
-                        }
                     }
                 }
             }
@@ -395,7 +391,7 @@ class mob_shadowy_minion : public CreatureScript
             return new mob_shadowy_minionAI(creature);
         }
 };
-
+//Creature 62003
 class mob_soul_cutter : public CreatureScript
 {
     public:
@@ -464,8 +460,6 @@ class spell_soul_back : public SpellScriptLoader
                     target->RemoveAurasDueToSpell(SPELL_CROSSED_OVER);
                     target->AddAura(SPELL_FRAIL_SOUL, target);
                     target->SetHealth(target->GetMaxHealth() * 0.3);
-
-                    // Todo : Jump le joueur là ou était son corps
                 }
             }
 

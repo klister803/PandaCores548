@@ -41,7 +41,6 @@ public:
 
         int8   randomDespawnStoneGuardian;
         uint8  willOfEmperorPhase;
-        
         uint32 actualPetrifierEntry;
         uint32 StoneGuardPetrificationTimer;
         uint32 willOfEmperorTimer;
@@ -49,6 +48,8 @@ public:
         //GameObject
         uint64 stoneexitdoorGuid;
         uint64 stoneentrdoorGuid;
+        uint64 fengexitdoorGuid;
+        uint64 garajalexitdoorGuid;
 
         //Creature
         uint64 stoneGuardControlerGuid;
@@ -61,9 +62,10 @@ public:
 
         std::vector<uint64> stoneGuardGUIDs;
         std::vector<uint64> fengdoorGUIDs;
+        std::vector<uint64> garajaldoorGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
         std::vector<uint64> spiritKingsGUIDs;
-
+        
         void Initialize()
         {
             SetBossNumber(DATA_MAX_BOSS_DATA);
@@ -77,6 +79,8 @@ public:
             //GameObject
             stoneexitdoorGuid = 0;
             stoneentrdoorGuid = 0;
+            fengexitdoorGuid = 0;
+            garajalexitdoorGuid = 0;
 
             //Creature
             stoneGuardControlerGuid         = 0;
@@ -87,6 +91,7 @@ public:
 
             stoneGuardGUIDs.clear();
             fengStatuesGUIDs.clear();
+            garajaldoorGUIDs.clear();
             fengdoorGUIDs.clear();
             spiritKingsGUIDs.clear();
         }
@@ -154,14 +159,15 @@ public:
                 case GOB_FENG_DOOR_FENCE:
                     fengdoorGUIDs.push_back(go->GetGUID());
                     break;
-                //case GOB_FENG_DOOR_FENCE:
-                //case GOB_FENG_DOOR_EXIT:
-                //case GOB_GARAJAL_FENCE:
-                //case GOB_GARAJAL_EXIT:
-                //case GOB_SPIRIT_KINGS_WIND_WALL:
-                //case GOB_SPIRIT_KINGS_EXIT:
-                    //AddDoor(go, true);
-                    //break;
+                case GOB_FENG_DOOR_EXIT:
+                    fengexitdoorGuid = go->GetGUID();
+                    break;
+                case GOB_GARAJAL_FENCE:
+                    garajaldoorGUIDs.push_back(go->GetGUID());
+                    break;
+                case GOB_GARAJAL_EXIT:
+                    garajalexitdoorGuid = go->GetGUID();
+                    break;
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
                 case GOB_SHIELD_STATUE:
@@ -212,13 +218,37 @@ public:
                         switch (state)
                         {
                         case NOT_STARTED:
+                            for (std::vector<uint64>::const_iterator guid = fengdoorGUIDs.begin(); guid != fengdoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, true);
+                            break;
                         case DONE:
                             for (std::vector<uint64>::const_iterator guid = fengdoorGUIDs.begin(); guid != fengdoorGUIDs.end(); guid++)
                                 HandleGameObject(*guid, true);
+                            HandleGameObject(fengexitdoorGuid, true);
                             break;
                         case IN_PROGRESS:
                             for (std::vector<uint64>::const_iterator guid = fengdoorGUIDs.begin(); guid != fengdoorGUIDs.end(); guid++)
                                 HandleGameObject(*guid, false);
+                            break;
+                        }
+                        break;
+                    }
+                case DATA_GARAJAL:
+                    {
+                        switch (state)
+                        {
+                        case NOT_STARTED:
+                            for (std::vector<uint64>::const_iterator guid = garajaldoorGUIDs.begin(); guid != garajaldoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, true);
+                            break;
+                        case IN_PROGRESS:
+                            for (std::vector<uint64>::const_iterator guid = garajaldoorGUIDs.begin(); guid != garajaldoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, false);
+                            break;
+                        case DONE:
+                            for (std::vector<uint64>::const_iterator guid = garajaldoorGUIDs.begin(); guid != garajaldoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, true);
+                            //HandleGameObject(garajalexitdoorGuid, true); Comment becouse next boss not ready
                             break;
                         }
                         break;
