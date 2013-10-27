@@ -444,7 +444,7 @@ enum AuraType
     SPELL_AURA_384                                          = 384,  // 0 auras
     SPELL_AURA_STRIKE_SELF                                  = 385,  // Give a chance to misfire attacks and hit self instead
     SPELL_AURA_MOD_REST_GAINED                              = 386,
-    SPELL_AURA_MOD_REFORGE_AND_TRANSMOGRIFY_COST            = 387,
+    SPELL_AURA_MOD_VOID_STORAGE_AND_TRANSMOGRIFY_COST       = 387,
     SPELL_AURA_MOD_FLY_PATH_SPEED                           = 388,
     SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING                   = 389,
     SPELL_AURA_390                                          = 390,  // 0 auras
