@@ -4296,6 +4296,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 122746: // The Challenger's Ring: Yalia Sagewhisper
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(5); // 300s
                 break;
+            case 37062: // To Catch A Thistlehead
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(4); // 120s
+                break;
             default:
                 break;
             }
