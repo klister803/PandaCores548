@@ -2537,6 +2537,10 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                     break;
             }
             break;
+        case SPELLFAMILY_WARLOCK:
+            if (Id == 119049)       // Kil'jaeden's Cunning
+                return true;
+            break;
         default:
             break;
     }
