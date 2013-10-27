@@ -259,7 +259,7 @@ class mob_spirit_totem : public CreatureScript
             void JustDied(Unit* attacker)
             {
                 std::list<Player*> playerList;
-                GetPlayerListInGrid(playerList, me, 3.0f);
+                GetPlayerListInGrid(playerList, me, 5.0f);
 
                 uint8 count = 0;
 				for (std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
@@ -441,6 +441,37 @@ class mob_soul_cutter : public CreatureScript
         }
 };
 
+// Life Fragile 116227
+class spell_life_fragile : public SpellScriptLoader
+{
+    public:
+        spell_life_fragile() : SpellScriptLoader("spell_life_fragile") { }
+
+        class spell_life_fragile_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_life_fragile_AuraScript);
+
+            void HandlePeriodic(AuraEffect const* aurEff)
+            {
+                if (GetTarget()->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (GetTarget()->GetHealth() == GetTarget()->GetMaxHealth())
+                        GetTarget()->CastSpell(GetTarget(), 120717); //Bar, if use, return target in real world
+                }
+            }
+            
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_life_fragile_AuraScript::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_life_fragile_AuraScript();
+        }
+};
+
 // Soul Back - 120715
 class spell_soul_back : public SpellScriptLoader
 {
@@ -475,11 +506,13 @@ class spell_soul_back : public SpellScriptLoader
         }
 };
 
+
 void AddSC_boss_garajal()
 {
     new boss_garajal();
     new mob_spirit_totem();
     new mob_shadowy_minion();
     new mob_soul_cutter();
+    new spell_life_fragile();
     new spell_soul_back();
 }
