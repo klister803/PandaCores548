@@ -2639,34 +2639,22 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
                 }
                 case 116011: // Rune of Power
                 {
-                    std::list<Unit*> targetList;
-                    bool affected = false;
+                    UnitList targetList;
                     radius = 2.25f;
 
                     Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
                     Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
                     GetDynobjOwner()->VisitNearbyObject(radius, searcher);
 
-                    if (!targetList.empty())
+                    for (UnitList::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                     {
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                        if ((*itr)->GetGUID() == dynObjOwnerCaster->GetGUID())
                         {
-                            if ((*itr)->GetGUID() == dynObjOwnerCaster->GetGUID())
-                            {
+                            if (!dynObjOwnerCaster->HasAura(116014))
                                 dynObjOwnerCaster->CastSpell(*itr, 116014, true); // Rune of Power
-                                affected = true;
-
-                                if (dynObjOwnerCaster->ToPlayer())
-                                    dynObjOwnerCaster->ToPlayer()->UpdateManaRegen();
-
-                                return;
-                            }
+                            return;
                         }
                     }
-
-                    if (!affected)
-                        dynObjOwnerCaster->RemoveAura(116014);
-
                     break;
                 }
                 case 115817: // Cancel Barrier

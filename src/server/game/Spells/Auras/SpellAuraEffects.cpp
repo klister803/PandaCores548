@@ -435,7 +435,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //376 SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE
     &AuraEffect::HandleNULL,                                      //377 SPELL_AURA_377
     &AuraEffect::HandleNULL,                                      //378 SPELL_AURA_378
-    &AuraEffect::HandleNULL,                                      //379 SPELL_AURA_MOD_MANA_REGEN_PERCENT
+    &AuraEffect::HandleModManaRegen,                              //379 SPELL_AURA_MOD_MANA_REGEN_PERCENT
     &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
     &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT
     &AuraEffect::HandleNULL,                                      //382 SPELL_AURA_MODE_PET_HEALTH_PCT

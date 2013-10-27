@@ -840,6 +840,7 @@ void Player::UpdateManaRegen()
     }
 
     float pctMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
+    pctMod *= GetTotalAuraMultiplier(SPELL_AURA_MOD_MANA_REGEN_PERCENT);
     base_regen *= pctMod;
     combat_regen *= pctMod;
 

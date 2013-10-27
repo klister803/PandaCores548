@@ -1727,6 +1727,64 @@ class spell_mage_ice_block : public SpellScriptLoader
         }
 };
 
+// Rune of Power - 116014
+class spell_mage_rune_of_power : public SpellScriptLoader
+{
+    public:
+        spell_mage_rune_of_power() : SpellScriptLoader("spell_mage_rune_of_power") { }
+
+        class spell_mage_rune_of_power_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_rune_of_power_AuraScript);
+
+            uint32 m_auraCheck;
+
+        public:
+            spell_mage_rune_of_power_AuraScript() : AuraScript()
+            {
+                m_auraCheck = 500;
+            }
+
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
+            {
+                if (!GetDuration())
+                    return;
+
+                if (m_auraCheck <= diff)
+                {
+                    m_auraCheck = 500;
+
+                    Unit* target = aurEff->GetBase()->GetUnitOwner();
+                    if (!target)
+                        return;
+
+                    std::list<DynamicObject*> runeOfPowerList;
+                    target->GetDynObjectList(runeOfPowerList, 116011);
+
+                    for (std::list<DynamicObject*>::const_iterator itr = runeOfPowerList.begin(); itr != runeOfPowerList.end(); ++itr)
+                    {
+                        if ((*itr)->GetDistance2d(target) < 2.25f)
+                            return;
+                    }
+
+                    SetDuration(0);
+                }
+                else
+                    m_auraCheck -= diff;
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_mage_rune_of_power_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_MANA_REGEN_PERCENT);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_rune_of_power_AuraScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -1763,4 +1821,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_frost_nova();
     new spell_mage_greater_invisibility();
     new spell_mage_ice_block();
+    new spell_mage_rune_of_power();
 }

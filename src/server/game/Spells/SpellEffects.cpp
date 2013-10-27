@@ -6914,23 +6914,18 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
         {
             case 121536: // Angelic Feather
             {
-                int32 count = caster->CountDynObject(m_spellInfo->Id);
+                std::list<DynamicObject*> angelicFeatherList;
+                caster->GetDynObjectList(angelicFeatherList, m_spellInfo->Id);
 
-                if (count > 3)
+                if (angelicFeatherList.size() > 3)
                 {
-                    std::list<DynamicObject*> angelicFeatherList;
-                    caster->GetDynObjectList(angelicFeatherList, m_spellInfo->Id);
+                    angelicFeatherList.sort(Trinity::DurationPctOrderPred());
 
-                    if (!angelicFeatherList.empty())
+                    for (std::list<DynamicObject*>::const_iterator itr = angelicFeatherList.begin(); itr != angelicFeatherList.end(); ++itr)
                     {
-                        angelicFeatherList.sort(Trinity::DurationPctOrderPred());
-
-                        for (std::list<DynamicObject*>::const_iterator itr = angelicFeatherList.begin(); itr != angelicFeatherList.end(); ++itr)
-                        {
-                            DynamicObject* angelicFeather = *itr;
-                            angelicFeather->SetDuration(0);
-                            break;
-                        }
+                        DynamicObject* angelicFeather = *itr;
+                        angelicFeather->SetDuration(0);
+                        break;
                     }
                 }
 
@@ -6938,23 +6933,18 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
             }
             case 115460: // Healing Sphere
             {
-                int32 count = caster->CountDynObject(m_spellInfo->Id);
+                std::list<DynamicObject*> healingSphereList;
+                caster->GetDynObjectList(healingSphereList, m_spellInfo->Id);
 
-                if (count > 3)
+                if (healingSphereList.size() > 3)
                 {
-                    std::list<DynamicObject*> healingSphereList;
-                    caster->GetDynObjectList(healingSphereList, m_spellInfo->Id);
+                    healingSphereList.sort(Trinity::DurationPctOrderPred());
 
-                    if (!healingSphereList.empty())
+                    for (std::list<DynamicObject*>::const_iterator itr = healingSphereList.begin(); itr != healingSphereList.end(); ++itr)
                     {
-                        healingSphereList.sort(Trinity::DurationPctOrderPred());
-
-                        for (std::list<DynamicObject*>::const_iterator itr = healingSphereList.begin(); itr != healingSphereList.end(); ++itr)
-                        {
-                            DynamicObject* healingSphere = *itr;
-                            healingSphere->SetDuration(0);
-                            break;
-                        }
+                        DynamicObject* healingSphere = *itr;
+                        healingSphere->SetDuration(0);
+                        break;
                     }
                 }
 
@@ -6962,23 +6952,18 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
             }
             case 116011: // Rune of Power
             {
-                int32 count = caster->CountDynObject(m_spellInfo->Id);
+                std::list<DynamicObject*> runeOfPowerList;
+                caster->GetDynObjectList(runeOfPowerList, m_spellInfo->Id);
 
-                if (count > 2)
+                if (runeOfPowerList.size() > 2)
                 {
-                    std::list<DynamicObject*> runeOfPowerList;
-                    caster->GetDynObjectList(runeOfPowerList, m_spellInfo->Id);
+                    runeOfPowerList.sort(Trinity::DurationPctOrderPred());
 
-                    if (!runeOfPowerList.empty())
+                    for (std::list<DynamicObject*>::const_iterator itr = runeOfPowerList.begin(); itr != runeOfPowerList.end(); ++itr)
                     {
-                        runeOfPowerList.sort(Trinity::DurationPctOrderPred());
-
-                        for (std::list<DynamicObject*>::const_iterator itr = runeOfPowerList.begin(); itr != runeOfPowerList.end(); ++itr)
-                        {
-                            DynamicObject* runeOfPower = *itr;
-                            runeOfPower->SetDuration(0);
-                            break;
-                        }
+                        DynamicObject* runeOfPower = *itr;
+                        runeOfPower->SetDuration(0);
+                        break;
                     }
                 }
 
