@@ -25,7 +25,6 @@
 
 #include "Corpse.h"
 #include "Object.h"
-#include "AreaTrigger.h"
 #include "DynamicObject.h"
 #include "GameObject.h"
 #include "Player.h"
@@ -118,7 +117,6 @@ namespace Trinity
         void Visit(GameObjectMapType &m) { updateObjects<GameObject>(m); }
         void Visit(DynamicObjectMapType &m) { updateObjects<DynamicObject>(m); }
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
-        void Visit(AreaTriggerMapType &m) { updateObjects<AreaTrigger>(m); }
     };
 
     struct MessageDistDeliverer
@@ -184,7 +182,6 @@ namespace Trinity
         void Visit(CreatureMapType &m);
         void Visit(CorpseMapType &m);
         void Visit(DynamicObjectMapType &m);
-        void Visit(AreaTriggerMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -205,7 +202,6 @@ namespace Trinity
         void Visit(CreatureMapType &m);
         void Visit(CorpseMapType &m);
         void Visit(DynamicObjectMapType &m);
-        void Visit(AreaTriggerMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -226,7 +222,6 @@ namespace Trinity
         void Visit(CorpseMapType &m);
         void Visit(GameObjectMapType &m);
         void Visit(DynamicObjectMapType &m);
-        void Visit(AreaTriggerMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -281,15 +276,6 @@ namespace Trinity
             if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
                 return;
             for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                if (itr->getSource()->InSamePhase(i_phaseMask))
-                    i_do(itr->getSource());
-        }
-
-        void Visit(AreaTriggerMapType &m)
-        {
-            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGER))
-                return;
-            for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 if (itr->getSource()->InSamePhase(i_phaseMask))
                     i_do(itr->getSource());
         }

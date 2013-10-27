@@ -30,7 +30,6 @@ class DynamicObject;
 class GameObject;
 class Pet;
 class Player;
-class AreaTrigger;
 
 #define MAX_NUMBER_OF_CELLS     8
 
@@ -58,14 +57,13 @@ class AreaTrigger;
 
 // Creature used instead pet to simplify *::Visit templates (not required duplicate code for Creature->Pet case)
 typedef TYPELIST_4(Player, Creature/*pets*/, Corpse/*resurrectable*/, DynamicObject/*farsight target*/) AllWorldObjectTypes;
-typedef TYPELIST_5(GameObject, Creature/*except pets*/, DynamicObject, Corpse/*Bones*/, AreaTrigger) AllGridObjectTypes;
+typedef TYPELIST_4(GameObject, Creature/*except pets*/, DynamicObject, Corpse/*Bones*/) AllGridObjectTypes;
 
 typedef GridRefManager<Corpse>          CorpseMapType;
 typedef GridRefManager<Creature>        CreatureMapType;
 typedef GridRefManager<DynamicObject>   DynamicObjectMapType;
 typedef GridRefManager<GameObject>      GameObjectMapType;
 typedef GridRefManager<Player>          PlayerMapType;
-typedef GridRefManager<AreaTrigger>     AreaTriggerMapType;
 
 enum GridMapTypeMask
 {
@@ -74,8 +72,7 @@ enum GridMapTypeMask
     GRID_MAP_TYPE_MASK_DYNAMICOBJECT    = 0x04,
     GRID_MAP_TYPE_MASK_GAMEOBJECT       = 0x08,
     GRID_MAP_TYPE_MASK_PLAYER           = 0x10,
-    GRID_MAP_TYPE_MASK_AREATRIGGER      = 0x20,
-    GRID_MAP_TYPE_MASK_ALL              = 0x3F
+    GRID_MAP_TYPE_MASK_ALL              = 0x1F
 };
 
 typedef Grid<Player, AllWorldObjectTypes, AllGridObjectTypes> GridType;

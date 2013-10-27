@@ -959,7 +959,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
             if (pvp->HandleAreaTrigger(_player, triggerId))
                 return;
 
-        AreaTriggerStruct const* at = sObjectMgr->GetAreaTrigger(triggerId);
+        AreaTrigger const* at = sObjectMgr->GetAreaTrigger(triggerId);
         if (!at)
             return;
 

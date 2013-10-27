@@ -183,7 +183,6 @@ class ObjectAccessor
         static Corpse* GetCorpse(WorldObject const& u, uint64 guid);
         static GameObject* GetGameObject(WorldObject const& u, uint64 guid);
         static DynamicObject* GetDynamicObject(WorldObject const& u, uint64 guid);
-        static AreaTrigger* GetAreaTrigger(WorldObject const& u, uint64 guid);
         static Unit* GetUnit(WorldObject const&, uint64 guid);
         static Creature* GetCreature(WorldObject const& u, uint64 guid);
         static Pet* GetPet(WorldObject const&, uint64 guid);
