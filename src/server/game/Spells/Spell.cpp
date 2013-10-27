@@ -6643,8 +6643,15 @@ SpellCastResult Spell::CheckItems()
                                 return SPELL_FAILED_TOO_MANY_OF_ITEM;
                             else if (!(p_caster->HasItemCount(m_spellInfo->GetEffect(i, m_diffMode).ItemType)))
                                 return SPELL_FAILED_TOO_MANY_OF_ITEM;
-                            else
-                                p_caster->CastSpell(m_caster, m_spellInfo->GetEffect(EFFECT_1, m_diffMode).CalcValue(), false);        // move this to anywhere
+                            // Conjure Mana Gem
+                            else if (m_spellInfo->Id == 759)
+                                p_caster->CastSpell(m_caster, 54408, false);
+                            // Conjure Mana Gem
+                            else if (m_spellInfo->Id == 119316)
+                                p_caster->CastSpell(m_caster, 119318, false);
+                            // Conjure Healthstone
+                            else if (m_spellInfo->Id == 23517)
+                                p_caster->CastSpell(m_caster, 120038, false);
                             return SPELL_FAILED_DONT_REPORT;
                         }
                     }
