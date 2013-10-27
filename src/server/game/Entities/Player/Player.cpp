@@ -6820,6 +6820,8 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
         return false;
     }
 
+    Chance += int32(Chance * GetTotalAuraModifier(SPELL_AURA_INCREASE_SKILL_GAIN_CHANCE) / 100.0f);
+
     SkillStatusMap::iterator itr = mSkillStatus.find(SkillId);
     if (itr == mSkillStatus.end() || itr->second.uState == SKILL_DELETED)
         return false;
