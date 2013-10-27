@@ -8867,7 +8867,11 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         // Arcane Missiles !
         case 79684:
         {
-            if (GetTypeId() != TYPEID_PLAYER)
+            Player* player = ToPlayer();
+            if (!player)
+                return false;
+
+            if (player->GetSpecializationId(player->GetActiveSpec()) != SPEC_MAGE_ARCANE)
                 return false;
 
             if (!procSpell)
