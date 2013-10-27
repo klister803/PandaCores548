@@ -43,7 +43,7 @@ enum HighGuid
     HIGHGUID_VEHICLE        = 0xF15,                       // blizz F550
     HIGHGUID_DYNAMICOBJECT  = 0xF10,                       // blizz F100
     HIGHGUID_CORPSE         = 0xF101,                      // blizz F100
-    HIGHGUID_AREATRIGGER    = 0xF102,                      // blizz F100
+    HIGHGUID_AREATRIGGER    = 0xF100,                      // blizz F100
     HIGHGUID_TYPE_BATTLEGROUND = 0x1F1,                    // new 4.x
     HIGHGUID_MO_TRANSPORT   = 0x1FC,                       // blizz 1FC0 (for GAMEOBJECT_TYPE_MO_TRANSPORT)
     HIGHGUID_GROUP          = 0x1F5,
@@ -80,7 +80,7 @@ inline uint64 MAKE_NEW_GUID(uint64 l, uint64 e, uint64 h)
     if (!l)
         return 0;
 
-    return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_CORPSE || t == HIGHGUID_AREATRIGGER) ? 48 : 52)));
+    return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_CORPSE || h == HIGHGUID_AREATRIGGER) ? 48 : 52)));
 }
 //#define MAKE_NEW_GUID(l, e, h)   uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_GUILD || h == HIGHGUID_CORPSE) ? 48 : 52)))
 

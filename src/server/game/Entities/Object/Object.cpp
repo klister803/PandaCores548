@@ -1035,7 +1035,7 @@ void Object::GetUpdateFieldData(Player const* target, uint32*& flags, bool& isOw
         case TYPEID_ITEM:
         case TYPEID_CONTAINER:
             flags = ItemUpdateFieldFlags;
-            isOwner = isItemOwner = ((Item*)this)->GetOwnerGUID() == target->GetGUID();
+            isOwner = isItemOwner = ToItem()->GetOwnerGUID() == target->GetGUID();
             break;
         case TYPEID_UNIT:
         case TYPEID_PLAYER:
@@ -1053,7 +1053,7 @@ void Object::GetUpdateFieldData(Player const* target, uint32*& flags, bool& isOw
             break;
         case TYPEID_DYNAMICOBJECT:
             flags = DynamicObjectUpdateFieldFlags;
-            isOwner = ((DynamicObject*)this)->GetCasterGUID() == target->GetGUID();
+            isOwner = ToDynObject()->GetCasterGUID() == target->GetGUID();
             break;
         case TYPEID_CORPSE:
             flags = CorpseUpdateFieldFlags;
@@ -1061,6 +1061,7 @@ void Object::GetUpdateFieldData(Player const* target, uint32*& flags, bool& isOw
             break;
         case TYPEID_AREATRIGGER:
             flags = AreaTriggerUpdateFieldFlags;
+            isOwner = ToAreaTrigger()->GetUInt64Value(AREATRIGGER_CASTER) == target->GetGUID();
             break;
         case TYPEID_OBJECT:
             break;
