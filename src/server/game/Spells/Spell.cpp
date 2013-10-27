@@ -2681,6 +2681,17 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
             if (unit->IsImmunedToSpellEffect(m_spellInfo, effectNumber))
                 effectMask &= ~(1 << effectNumber);
 
+    switch (m_spellInfo->Id)
+    {
+        case 12051:     // Evocation
+        {
+            // Glyph of Evocation, Invocation
+            if (!m_caster->HasAura(56380) || m_caster->HasSpell(114003))
+                effectMask &= ~(1 << EFFECT_1);
+            break;
+        }
+    }
+
     if (!effectMask)
         return returnVal;
 

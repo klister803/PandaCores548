@@ -658,7 +658,7 @@ class spell_mage_invocation : public SpellScriptLoader
                         caster->CastSpell(caster, SPELL_MAGE_INVOKERS_ENERGY, true);
 
                         if (caster->HasAura(SPELL_MAGE_GLYPH_OF_EVOCATION))
-                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(12051), caster->CountPctFromMaxHealth(40), false);
+                            caster->CastSpell(caster, 125440, true);
                     }
                 }
             }
@@ -1093,34 +1093,6 @@ class spell_mage_replenish_mana : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_mage_replenish_mana_SpellScript();
-        }
-};
-
-// Evocation - 12051
-class spell_mage_evocation : public SpellScriptLoader
-{
-    public:
-        spell_mage_evocation() : SpellScriptLoader("spell_mage_evocation") { }
-
-        class spell_mage_evocation_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_evocation_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.15), POWER_MANA);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mage_evocation_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_evocation_SpellScript();
         }
 };
 
@@ -1807,7 +1779,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_inferno_blast();
     new spell_mage_arcane_brilliance();
     new spell_mage_replenish_mana();
-    new spell_mage_evocation();
     new spell_mage_conjure_refreshment();
     new spell_mage_conjure_refreshment_table();
     new spell_mage_time_warp();
