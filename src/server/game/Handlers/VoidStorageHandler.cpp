@@ -263,7 +263,9 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
         return;
     }
 
-    if (!player->HasEnoughMoney(uint64(itemGuids.size() * VOID_STORAGE_STORE_ITEM)))
+    float auraCostMod = player->GetTotalAuraMultiplier(SPELL_AURA_MOD_VOID_STORAGE_AND_TRANSMOGRIFY_COST);
+    int64 cost = uint64(itemGuids.size() * VOID_STORAGE_STORE_ITEM * auraCostMod);
+    if (!player->HasEnoughMoney(cost))
     {
         SendVoidStorageTransferResult(VOID_TRANSFER_ERROR_NOT_ENOUGH_MONEY);
         return;
@@ -289,7 +291,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
         player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
     }
 
-    int64 cost = depositCount * VOID_STORAGE_STORE_ITEM;
+    cost = int64(depositCount * VOID_STORAGE_STORE_ITEM * auraCostMod);
 
     player->ModifyMoney(-cost);
 

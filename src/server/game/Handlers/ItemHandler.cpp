@@ -1786,6 +1786,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
             itemTransmogrifier->SetState(ITEM_CHANGED, player);
 
             cost += itemTransmogrified->GetSpecialPrice();
+            cost = int32(cost * player->GetTotalAuraMultiplier(SPELL_AURA_MOD_VOID_STORAGE_AND_TRANSMOGRIFY_COST));
         }
     }
 
