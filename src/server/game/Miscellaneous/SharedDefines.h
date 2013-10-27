@@ -738,7 +738,7 @@ enum SpellAttr10
     SPELL_ATTR10_UNK21                            = 0x00200000, // 21
     SPELL_ATTR10_UNK22                            = 0x00400000, // 22
     SPELL_ATTR10_UNK23                            = 0x00800000, // 23
-    SPELL_ATTR10_UNK24                            = 0x01000000, // 24
+    SPELL_ATTR10_COOLDOWN_MARKER                  = 0x01000000, // 24
     SPELL_ATTR10_UNK25                            = 0x02000000, // 25
     SPELL_ATTR10_UNK26                            = 0x04000000, // 26
     SPELL_ATTR10_UNK27                            = 0x08000000, // 27
