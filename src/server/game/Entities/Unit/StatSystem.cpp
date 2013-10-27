@@ -308,7 +308,7 @@ float Player::GetHealthBonusFromStamina()
 {
     // Taken from PaperDollFrame.lua - 4.3.4.15595
     float ratio = 14.0f;
-    if (gtOCTHpPerStaminaEntry const* hpBase = sGtOCTHpPerStaminaStore.LookupEntry((getClass() - 1) * GT_MAX_LEVEL + getLevel() - 1))
+    if (gtOCTHpPerStaminaEntry const* hpBase = sGtOCTHpPerStaminaStore.LookupEntry(getLevel() - 1))
         ratio = hpBase->ratio;
 
     float stamina = GetStat(STAT_STAMINA);
@@ -814,16 +814,9 @@ void Player::UpdateManaRegen()
         return;
     // Mana regen from spirit
     float spirit_regen = OCTRegenMPPerSpirit();
-    float HastePct = 1.0f;
 
     float base_regen = 0.004f * GetMaxPower(POWER_MANA) + spirit_regen + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
     float combat_regen = 0.004f * GetMaxPower(POWER_MANA) + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
-
-    if (getClass() == CLASS_WARLOCK)
-    {
-        base_regen = 0.01f * GetMaxPower(POWER_MANA) + spirit_regen + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
-        combat_regen = 0.01f * GetMaxPower(POWER_MANA) + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
-    }
 
     if (HasAuraType(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT))
     {
@@ -834,7 +827,7 @@ void Player::UpdateManaRegen()
     if (HasAuraType(SPELL_AURA_HASTE_AFFECTS_MANA_REGEN))
     {
         // haste also increase your mana regeneration
-        HastePct = 1.0f + GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
+        float HastePct = 1.0f + GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
         base_regen *= HastePct;
         combat_regen *= HastePct;
     }
