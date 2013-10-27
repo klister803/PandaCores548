@@ -17694,12 +17694,11 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
         if ((durabilityLoss && !player && !victim->ToPlayer()->InBattleground()) || (player && sWorld->getBoolConfig(CONFIG_DURABILITY_LOSS_IN_PVP)))
         {
             double baseLoss = sWorld->getRate(RATE_DURABILITY_LOSS_ON_DEATH);
-            uint32 loss = uint32(baseLoss - (baseLoss * plrVictim->GetTotalAuraMultiplier(SPELL_AURA_MOD_DURABILITY_LOSS)));
-            sLog->outDebug(LOG_FILTER_UNITS, "We are dead, losing %u percent durability", loss);
+            sLog->outDebug(LOG_FILTER_UNITS, "We are dead, losing %u percent durability", baseLoss);
             // Durability loss is calculated more accurately again for each item in Player::DurabilityLoss
-            plrVictim->DurabilityLossAll(baseLoss, false);
+            plrVictim->DurabilityLossAll(baseLoss, false, true);
             // durability lost message
-            SendDurabilityLoss(plrVictim, loss);
+            SendDurabilityLoss(plrVictim, baseLoss);
         }
         // Call KilledUnit for creatures
         if (GetTypeId() == TYPEID_UNIT && IsAIEnabled)
