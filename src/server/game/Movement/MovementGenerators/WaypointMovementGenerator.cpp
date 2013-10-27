@@ -239,7 +239,8 @@ void FlightPathMovementGenerator::Reset(Player & player)
     init.SetFly();
     init.SetSmooth();
     init.SetWalk(true);
-    init.SetVelocity(PLAYER_FLIGHT_SPEED);
+    float speed = PLAYER_FLIGHT_SPEED * player.GetTotalAuraMultiplier(SPELL_AURA_MOD_FLY_PATH_SPEED);
+    init.SetVelocity(speed);
     init.Launch();
 }
 
