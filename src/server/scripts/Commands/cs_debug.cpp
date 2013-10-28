@@ -106,6 +106,7 @@ public:
             { "crit",           SEC_ADMINISTRATOR,  false, &HandleDebugModifyCritChanceCommand,     "", NULL },
             { "haste",          SEC_ADMINISTRATOR,  false, &HandleDebugModifyHasteCommand,          "", NULL },
             { "hit",            SEC_ADMINISTRATOR,  false, &HandleDebugModifyHitCommand,            "", NULL },
+            { "mastery",        SEC_ADMINISTRATOR,  false, &HandleDebugModifyMasteryCommand,        "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1696,6 +1697,28 @@ public:
         player->ApplyRatingMod(CR_HIT_MELEE, Value, true);
         player->ApplyRatingMod(CR_HIT_RANGED, Value, true);
         player->ApplyRatingMod(CR_HIT_SPELL, Value, true);
+        return true;
+    }
+    static bool HandleDebugModifyMasteryCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        Unit* unit = handler->getSelectedUnit();
+        Player* player = NULL;
+        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
+            player = handler->GetSession()->GetPlayer();
+        else
+            player = (Player*)unit;
+        if (!unit) unit = player;
+
+        char* cval = strtok((char*)args, " ");
+
+        if (!cval)
+            return false;
+
+        int32 Value = (int32)atoi(cval);
+        player->ApplyRatingMod(CR_MASTERY, Value, true);
         return true;
     }
 };
