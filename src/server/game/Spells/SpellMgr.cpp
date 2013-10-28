@@ -3279,6 +3279,7 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 case 53: // Backstab
                     spellInfo->Effects[0].ScalingMultiplier = 0.845f;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
                 case 127424:
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
@@ -3313,7 +3314,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 52743: // Head Smack
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_TARGET_FACING_CASTER;
                     break;
-                case 53: // Backstab
                 case 2589:
                 case 2590:
                 case 2591:
