@@ -2268,16 +2268,5 @@ void WorldSession::HandleCemeteryListOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandlerCategoryCooldownOpocde(WorldPacket& recvPacket)
 {
-    Unit::AuraEffectList const& list = GetPlayer()->GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_CATEGORY_COOLDOWN);
-
-    WorldPacket data(SMSG_SPELL_CATEGORY_COOLDOWN, 4 + (int(list.size()) * 8));
-    data.WriteBits<int>(list.size(), 23);
-    for (Unit::AuraEffectList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
-    {
-        AuraEffect* effect = *itr;
-        data << uint32(effect->GetMiscValue());
-        data << int32(-effect->GetAmount());
-    }
-
-    SendPacket(&data);
+    _player->SendCategoryCooldownMods();
 }

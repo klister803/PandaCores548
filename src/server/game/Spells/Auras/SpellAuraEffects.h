@@ -293,6 +293,7 @@ class AuraEffect
         void HandleAuraForceWeather(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleOverrideActionbarSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModCategoryCooldown(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
         // aura effect periodic tick handlers
         void HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const;
