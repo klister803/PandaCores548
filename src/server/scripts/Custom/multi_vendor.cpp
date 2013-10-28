@@ -471,7 +471,7 @@ public:
                 player->CLOSE_GOSSIP_MENU(); return true;
             }
 
-            if(Item *item = player->GetItemByGuid(action))
+            if(Item *item = GetItemByGuid(action, player))
             {
                 player->DestroyItemCount(item, count, true);
                 player->AddItem(EFIRALS, uint32(efircount * 0.8));
@@ -483,6 +483,35 @@ public:
 
         player->CLOSE_GOSSIP_MENU();
         return true;
+    }
+
+    Item* GetItemByGuid(uint64 guid, Player* player) const
+    {
+        for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i)
+            if (Item *pItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                if (pItem->GetGUIDLow() == guid)
+                    return pItem;
+
+        for (int i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; ++i)
+            if (Item *pItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                if (pItem->GetGUIDLow() == guid)
+                    return pItem;
+
+        for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+            if (Bag *pBag = player->GetBagByPos(i))
+                for (uint32 j = 0; j < pBag->GetBagSize(); ++j)
+                    if (Item* pItem = pBag->GetItemByPos(j))
+                        if (pItem->GetGUIDLow() == guid)
+                            return pItem;
+
+        for (uint8 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
+            if (Bag *pBag = player->GetBagByPos(i))
+                for (uint32 j = 0; j < pBag->GetBagSize(); ++j)
+                    if (Item* pItem = pBag->GetItemByPos(j))
+                        if (pItem->GetGUIDLow() == guid)
+                            return pItem;
+
+        return NULL;
     }
 };
 

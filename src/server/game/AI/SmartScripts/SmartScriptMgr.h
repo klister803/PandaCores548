@@ -1055,6 +1055,7 @@ struct SmartTarget
         struct
         {
             uint32 dist;
+            uint32 spell;
         } playerDistance;
 
         struct
@@ -1110,7 +1111,7 @@ struct SmartTarget
         {
             int32 entry;
             uint32 dist;
-            uint32 param3;
+            uint32 topornot;
         } spell;
     };
 };

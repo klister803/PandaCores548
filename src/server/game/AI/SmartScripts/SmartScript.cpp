@@ -2249,6 +2249,11 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                 if (Unit* u = me->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1))
                     l->push_back(u);
             break;
+        case SMART_TARGET_HOSTILE_RANDOM_AURA:
+            if (me)
+                if (Unit* u = me->AI()->SelectTarget(SELECT_TARGET_RANDOM, e.target.spell.topornot, (float)e.target.spell.dist, true, e.target.spell.entry))
+                    l->push_back(u);
+            break;
         case SMART_TARGET_NONE:
         case SMART_TARGET_ACTION_INVOKER:
             if (trigger)
@@ -2417,7 +2422,12 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
             ObjectList* units = GetWorldObjectsInDist((float)e.target.playerDistance.dist);
             for (ObjectList::const_iterator itr = units->begin(); itr != units->end(); ++itr)
                 if (IsPlayer(*itr))
-                    l->push_back(*itr);
+                {
+                    if(e.target.playerDistance.spell && (*itr)->ToUnit()->HasAura(e.target.playerDistance.spell))
+                        l->push_back(*itr);
+                    else if(!e.target.playerDistance.spell)
+                        l->push_back(*itr);
+                }
 
             delete units;
             break;
