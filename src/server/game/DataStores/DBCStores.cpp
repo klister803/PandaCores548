@@ -264,6 +264,17 @@ DBCStorage <WorldMapAreaEntry> sWorldMapAreaStore(WorldMapAreaEntryfmt);
 DBCStorage <WorldMapOverlayEntry> sWorldMapOverlayStore(WorldMapOverlayEntryfmt);
 DBCStorage <WorldSafeLocsEntry> sWorldSafeLocsStore(WorldSafeLocsEntryfmt);
 DBCStorage <PhaseEntry> sPhaseStores(PhaseEntryfmt);
+typedef std::map<uint32, std::set<uint32> > SpecializationMasterySpellsMap;
+SpecializationMasterySpellsMap sSpecializationMasterySpells;
+
+std::set<uint32> const* GetSpecializationMasterySpells(uint32 specId)
+{
+    SpecializationMasterySpellsMap::const_iterator itr = sSpecializationMasterySpells.find(specId);
+    if (itr == sSpecializationMasterySpells.end())
+        return NULL;
+
+    return &itr->second;
+}
 
 typedef std::list<std::string> StoreProblemList;
 
@@ -576,6 +587,24 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpecializationSpellStore,    dbcPath, "SpecializationSpells.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellStore,                  dbcPath, "Spell.dbc", &CustomSpellEntryfmt, &CustomSpellEntryIndex);//
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellMiscStore,              dbcPath, "SpellMisc.dbc", &CustomSpellMiscEntryfmt, &CustomSpellMiscEntryIndex);//16038
+
+    for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); ++i)
+    {
+        SpecializationSpellEntry const* entry = sSpecializationSpellStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        SpellEntry const* spellInfo = sSpellStore.LookupEntry(entry->LearnSpell);
+        if (!spellInfo)
+            continue;
+
+        SpellMiscEntry const* spellMisc = sSpellMiscStore.LookupEntry(spellInfo->SpellMiscId);
+        if (!spellMisc)
+            continue;
+
+        if (spellMisc->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION)
+            sSpecializationMasterySpells[entry->SpecializationEntry].insert(spellInfo->Id);
+    }
 
     for (uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
     {

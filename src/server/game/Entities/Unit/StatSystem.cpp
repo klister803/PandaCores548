@@ -277,14 +277,6 @@ void Player::UpdateArmor()
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
-    // Custom MoP Script
-    // 77494 - Mastery : Nature's Guardian
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(77494))
-    {
-        float Mastery = 1.0f + GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
-        value *= Mastery;
-    }
-
     //add dynamic flat mods
     AuraEffectList const& mResbyIntellect = GetAuraEffectsByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT);
     for (AuraEffectList::const_iterator i = mResbyIntellect.begin(); i != mResbyIntellect.end(); ++i)
@@ -550,16 +542,6 @@ void Player::UpdateBlockPercentage()
         // Increase from SPELL_AURA_MOD_BLOCK_PERCENT aura
         value += GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_PERCENT);
 
-        // Custom MoP Script
-        // 76671 - Mastery : Divine Bulwark - Block Percentage
-        if (GetTypeId() == TYPEID_PLAYER && HasAura(76671))
-            value += GetFloatValue(PLAYER_MASTERY);
-
-        // Custom MoP Script
-        // 76857 - Mastery : Critical Block - Block Percentage
-        if (GetTypeId() == TYPEID_PLAYER && HasAura(76857))
-            value += GetFloatValue(PLAYER_MASTERY) / 2.0f;
-
         // Increase from rating
         value += GetRatingBonusValue(CR_BLOCK);
         value = value < 0.0f ? 0.0f : value;
@@ -716,51 +698,6 @@ void Player::UpdateSpellCritChance(uint32 school)
 
     // Store crit value
     SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
-}
-
-void Player::UpdateMasteryPercentage()
-{
-    // No mastery
-    float value = 0.0f;
-    if (CanMastery() && getLevel() >= 80)
-    {
-        // Mastery from SPELL_AURA_MASTERY aura
-        value += GetTotalAuraModifier(SPELL_AURA_MASTERY);
-        // Mastery from rating
-        value += GetRatingBonusValue(CR_MASTERY);
-        value = value < 0.0f ? 0.0f : value;        
-    }
-    SetFloatValue(PLAYER_MASTERY, value);
-
-    int32 spell = 0;
-
-    if (HasAura(76808)) spell = 76808; // Rogue - Mastery: Executioner
-
-    if (spell != 0)
-    {
-        if (Aura* aura = GetAura(spell))
-        {
-            for (uint8 j = 0; j < 3; ++j)
-            {
-                if (AuraEffect* eff = aura->GetEffect(j))
-                {
-                    eff->SetCanBeRecalculated(true);
-                    eff->RecalculateAmount(this);
-                }
-            }
-        }
-    }
-    // Custom MoP Script
-    // 76671 - Mastery : Divine Bulwark - Update Block Percentage
-    // 76857 - Mastery : Critical Block - Update Block Percentage
-    if (HasAura(76671) || HasAura(76857))
-        UpdateBlockPercentage();
-    // 77494 - Mastery : Nature's Guardian - Update Armor
-    if (HasAura(77494))
-        UpdateArmor();
-
-    if (HasAura(76657) && GetPet())
-        GetPet()->UpdateAttackPowerAndDamage();
 }
 
 void Player::UpdateMeleeHitChances()
@@ -1474,15 +1411,6 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
     float mindamage = ((base_value + weapon_mindamage) * base_pct + total_value) * total_pct;
     float maxdamage = ((base_value + weapon_maxdamage) * base_pct + total_value) * total_pct;
 
-    // Custom MoP Script
-    // 76657 - Mastery : Master of Beasts
-    if (m_owner->HasAura(76657))
-    {
-        float Mastery = m_owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-        AddPct(mindamage, Mastery);
-        AddPct(maxdamage, Mastery);
-    }
-
     SetStatFloatValue(UNIT_FIELD_MINDAMAGE, mindamage);
     SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, maxdamage);
 }
@@ -1492,4 +1420,40 @@ void Guardian::SetBonusDamage(int32 damage)
     m_bonusSpellDamage = damage;
     if (GetOwner()->GetTypeId() == TYPEID_PLAYER)
         GetOwner()->SetUInt32Value(PLAYER_PET_SPELL_POWER, damage);
+}
+
+void Player::UpdateMasteryAuras()
+{
+    if (!HasAuraType(SPELL_AURA_MASTERY))
+    {
+        SetFloatValue(PLAYER_MASTERY, 0.0f);
+        return;
+    }
+
+    float masteryValue = GetTotalAuraModifier(SPELL_AURA_MASTERY) + GetRatingBonusValue(CR_MASTERY);
+    SetFloatValue(PLAYER_MASTERY, masteryValue);
+
+    // TODO: rewrite 115556 Master Demonologist
+
+    std::set<uint32> const* masterySpells = GetSpecializationMasterySpells(GetSpecializationId(GetActiveSpec()));
+    if (!masterySpells)
+        return;
+
+    for (std::set<uint32>::const_iterator itr = masterySpells->begin(); itr != masterySpells->end(); ++itr)
+    {
+        Aura* aura = GetAura(*itr);
+        if (!aura)
+            continue;
+
+        // update aura modifiers
+        for (uint32 j = 0; j < MAX_EFFECTS; ++j)
+        {
+            AuraEffect* auraEff = aura->GetEffect(j);
+            if (!auraEff)
+                continue;
+
+            auraEff->SetCanBeRecalculated(true);
+            auraEff->RecalculateAmount(this);
+        }
+    }
 }

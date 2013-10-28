@@ -999,10 +999,11 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
     {
         float stagger = 0.80f;
 
-        if (victim->HasAura(117906))
+        // Mastery: Elusive Brawler
+        if (AuraEffect const* aurEff = victim->GetAuraEffect(117906, EFFECT_0))
         {
-            float Mastery = victim->GetFloatValue(PLAYER_MASTERY) / 2.0f / 100.0f;
-            stagger = 0.80f - Mastery;
+            float masteryMod = aurEff->GetAmount() / 100.0f;
+            stagger = 0.80f - masteryMod;
 
             // Brewmaster Training : Your Fortifying Brew also increase stagger amount by 20%
             if (victim->HasAura(115203) && victim->HasAura(117967))
@@ -4611,10 +4612,6 @@ int32 Unit::GetTotalAuraModifier(AuraType auratype) const
     for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
         modifier += itr->second;
 
-    // Fix Mastery : Critical Block - Increase critical block chance
-    if (HasAura(76857) && auratype == SPELL_AURA_MOD_BLOCK_CRIT_CHANCE)
-        modifier += int32(GetFloatValue(PLAYER_MASTERY) * 2.2f);
-
     return modifier;
 }
 
@@ -6763,6 +6760,33 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         basepoints0 = int32(CalculatePct(damage, triggerAmount) / (blessHealing->GetMaxDuration() / blessHealing->GetEffect(0, GetSpawnMode()).Amplitude));
                     }
                     break;
+                // Illuminated Healing
+                case 76669:
+                {
+                    if (effIndex != EFFECT_0)
+                        return false;
+
+                    triggered_spell_id = 86273;
+                    int32 maxAmt = GetMaxHealth() / 3;
+                    if (AuraEffect const* oldEff = victim->GetAuraEffect(triggered_spell_id, EFFECT_0, GetGUID()))
+                        basepoints0 = oldEff->GetAmount();
+
+                    basepoints0 += int32(triggerAmount * damage / 100);
+                    // Must not exceed 1/3 of paladin's health
+                    if (basepoints0 > maxAmt)
+                        basepoints0 = maxAmt;
+                    break;
+                }
+                // Echo of Light
+                case 77485:
+                {
+                    if (effIndex != EFFECT_0)
+                        return false;
+
+                    triggered_spell_id = 77489;
+                    basepoints0 = int32(damage * triggerAmount / 100 / 6);
+                    break;
+                }
             }
             break;
         }
@@ -7024,6 +7048,22 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     CastSpell(redirectTarget,57933,true);
                     break;
                 }
+                case 76806:                                 // Main Gauche
+                {
+                    if (effIndex != EFFECT_0 || !roll_chance_i(triggerAmount))
+                        return false;
+
+                    triggered_spell_id = 86392;
+                    break;
+                }
+                case 76838:                                 // Strikes of Opportunity
+                {
+                    if (effIndex != EFFECT_0 || !roll_chance_i(triggerAmount))
+                        return false;
+
+                    triggered_spell_id = 76858;
+                    break;
+                }
             }
 
             switch (dummySpell->SpellIconID)
@@ -7102,6 +7142,17 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
             switch (dummySpell->Id)
             {
+                case 76659: // Mastery: Wild Quiver
+                {
+                    if (triggeredByAura->GetEffIndex() != EFFECT_0)
+                        return false;
+
+                    if (!roll_chance_i(triggerAmount))
+                        return false;
+
+                    triggered_spell_id = 76663;
+                    break;
+                }
                 case 82661: // Aspect of the Fox
                 {
                     EnergizeBySpell(this, 82661, 2, POWER_FOCUS);
@@ -10567,40 +10618,34 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
         // Ancestral Vigor - 105284
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
-    // 117907 - Mastery : Gift of the Serpent
+    // 117907 - Mastery: Gift of the Serpent
     else if (unit && unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(117907) && unit->getLevel() >= 80 && addhealth > 0 && spellProto && spellProto->Id != 124041)
     {
-        float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.22f;
-        float scaling = spellProto->GetGiftOfTheSerpentScaling(this);
-
-        if (roll_chance_f(Mastery * scaling))
+        if (AuraEffect const* aurEff = unit->GetAuraEffect(117907, EFFECT_0))
         {
-            std::list<Unit*> targetList;
+            float Mastery = aurEff->GetAmount();
+            float scaling = spellProto->GetGiftOfTheSerpentScaling(this);
 
-            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(unit, unit, 6.0f);
-            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(unit, targetList, u_check);
-            unit->VisitNearbyObject(6.0f, searcher);
-
-            if (!targetList.empty())
+            if (roll_chance_f(Mastery * scaling))
             {
-                targetList.sort(Trinity::HealthPctOrderPred());
+                std::list<Unit*> targetList;
 
-                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(unit, unit, 6.0f);
+                Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(unit, targetList, u_check);
+                unit->VisitNearbyObject(6.0f, searcher);
+
+                if (!targetList.empty())
                 {
-                    unit->CastSpell(*itr, 119031, true);
-                    break;
+                    targetList.sort(Trinity::HealthPctOrderPred());
+
+                    for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                    {
+                        unit->CastSpell(*itr, 119031, true);
+                        break;
+                    }
                 }
             }
         }
-    }
-    // 76669 - Mastery : Illuminated Healing
-    else if (unit && victim && addhealth != 0 && unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(76669) && unit->getLevel() >= 80)
-    {
-        float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
-
-        int32 bp = CalculatePct(addhealth, Mastery) * 100;
-
-        unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
     }
 
     if (Player* player = unit->ToPlayer())
@@ -10899,186 +10944,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         AddPct(DoneTotalMod, PowerJcJ);
     }
 
-    // Custom MoP Script
-    // 76658 - Mastery : Essence of the Viper
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY);
-        AddPct(DoneTotalMod, Mastery);
-    }
-
-    // Custom MoP Script
-    // 76657 - Mastery : Master of Beasts
-    if (isPet())
-    {
-        Unit* owner = GetOwner();
-        if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76657))
-        {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Mastery : Emberstorm - 77220
-    // Increases the damage of Immolate, Incinerate, Fel Flame and Conflagrate (include the Fire and Brimstone spells)
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(77220) && spellProto
-        && (spellProto->Id == 17962 || spellProto->Id == 348 || spellProto->Id == 77799
-        || spellProto->Id == 29722 || spellProto->Id == 114654 || spellProto->Id == 108685
-        || spellProto->Id == 108686))
-    {
-        float Mastery = (GetFloatValue(PLAYER_MASTERY) + 1);
-        AddPct(DoneTotalMod, Mastery);
-    }
-
-    // Mastery : Emberstorm - 77220
-    // Increases the damage of spells wich consume Burning Embers (Shadowburn and Chaos Bolt)
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(77220) && spellProto && (spellProto->Id == 17877 || spellProto->Id == 116858))
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
-        AddPct(DoneTotalMod, Mastery);
-    }
-
-    // Custom MoP Script
-    // 77215 - Mastery : Potent Afflictions
-    // Increase periodic damage of Corruption, Agony and Unstable Affliction
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->IsAfflictionPeriodicDamage() && damagetype == DOT && HasAura(77215))
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f;
-        AddPct(DoneTotalMod, Mastery);
-    }
-
-    // Custom MoP Script
-    // 76803 - Mastery : Potent Poisons
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680 || spellProto->Id == 113780) && pdamage != 0 && HasAura(76803))
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f;
-        AddPct(DoneTotalMod, Mastery);
-    }
-
-    // Custom MoP Script
-    // 77219 - Mastery : Master Demonologist
-    // Bonus damage while using Metamorphosis
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(103958) && HasAura(77219))
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
-        AddPct(DoneTotalMod, Mastery);
-    }
-    // Bonus damage in caster form
-    else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY);
-        AddPct(DoneTotalMod, Mastery);
-    }
-    // Bonus damage for demon servants
-    else if (isPet())
-    {
-        Unit* owner = GetOwner();
-        if (owner && owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
-        {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY);
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Custom MoP Script
-    // 77493 - Mastery : Razor Claws
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && damagetype == DOT)
-    {
-        if (HasAura(77493))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.13f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Custom MoP Script
-    // 76547 - Mastery : Mana Adept
-    if (spellProto && GetTypeId() == TYPEID_PLAYER)
-    {
-        if (HasAura(76547))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
-            float manapct = float(GetPower(POWER_MANA)) / float(GetMaxPower(POWER_MANA)) * 100.0f;
-            float bonus = 0;
-            bonus = (1.5f * Mastery * manapct);
-
-            AddPct(DoneTotalMod, bonus);
-        }
-    }
-
-    // Custom MoP Script
-    // 77514 - Mastery : Frozen Heart
-    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
-    {
-        if (HasAura(77514))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Custom MoP Script
-    // 77515 - Mastery : Dreadblade
-    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
-    {
-        if (HasAura(77515))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Custom MoP Script
-    // 76613 - Mastery : Frostburn
-    if (spellProto && victim)
-    {
-        if (isPet())
-        {
-            Unit* owner = GetOwner();
-            if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76613))
-            {
-                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-                AddPct(DoneTotalMod, Mastery);
-            }
-        }
-        else
-        {
-            if (GetTypeId() == TYPEID_PLAYER && HasAura(76613))
-            {
-                if (victim->HasAuraState(AURA_STATE_FROZEN))
-                {
-                    float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
-                    AddPct(DoneTotalMod, Mastery);
-                }
-            }
-        }
-    }
-
-    // Custom MoP Script
-    // 77223 - Mastery : Enhanced Elements
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FIRE || spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST || spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
-    {
-        if (HasAura(77223))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
-
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Custom MoP Script
-    // 77492 - Mastery : Total Eclipse
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE && HasAura(77492) && HasAura(48517)) // Solar Eclipse
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f;
-        AddPct(DoneTotalMod, Mastery);
-    }
-    else if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_ARCANE && HasAura(77492) && HasAura(48518)) // Lunar Eclipse
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f;
-        AddPct(DoneTotalMod, Mastery);
-    }
-
     // Chaos Bolt - 116858 and Soul Fire - 6353
     // damage is increased by your critical strike chance
     if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 116858 || spellProto->Id == 6353 || spellProto->Id == 104027))
@@ -11133,6 +10998,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
         {
             if (spellProto->EquippedItemClass == -1 && (*i)->GetSpellInfo()->EquippedItemClass != -1)    //prevent apply mods from weapon specific case to non weapon specific spells (Example: thunder clap and two-handed weapon specialization)
+                continue;
+
+            // Mastery: Unshackled Fury
+            if ((*i)->GetId() == 76856 && !HasAuraState(AURA_STATE_ENRAGE))
                 continue;
 
             if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
@@ -11278,6 +11147,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             }
             break;
         case SPELLFAMILY_PRIEST:
+        {
             // Smite
             if (spellProto->SpellFamilyFlags[0] & 0x80)
             {
@@ -11286,8 +11156,18 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                     if (victim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x100000, 0, 0, GetGUID()))
                         AddPct(DoneTotalMod, aurEff->GetAmount());
             }
+
+            // Mastery: Shadowy Recall
+            if (AuraEffect const* aurEff = GetAuraEffect(77486, EFFECT_0))
+            {
+                if (aurEff->IsAffectingSpell(spellProto))
+                    if (roll_chance_i(aurEff->GetAmount()))
+                        DoneTotalMod *= 2.0f;
+            }
             break;
+        }
         case SPELLFAMILY_WARLOCK:
+        {
             // Fire and Brimstone
             if (spellProto->SpellFamilyFlags[1] & 0x00020040)
                 if (victim->HasAuraState(AURA_STATE_CONFLAGRATE))
@@ -11304,7 +11184,19 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             if (spellProto->SpellFamilyFlags[1] & 0x00400000 && isPet())
                 if (uint8 count = victim->GetDoTsByCaster(GetOwnerGUID()))
                     AddPct(DoneTotalMod, 30 * count);
+
+            // Mastery: Master Demonologist
+            if (AuraEffect const* aurEff = GetAuraEffect(77219, EFFECT_0))
+                AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
+
+            // Mastery: Emberstorm
+            if (spellProto->Id == 17877 || spellProto->Id == 116858)
+            {
+                if (AuraEffect const* aurEff = GetAuraEffect(77220, EFFECT_0))
+                    AddPct(DoneTotalMod, aurEff->GetAmount());
+            }
             break;
+        }
         case SPELLFAMILY_DEATHKNIGHT:
             // Sigil of the Vengeful Heart
             if (spellProto->SpellFamilyFlags[0] & 0x2000)
@@ -11369,14 +11261,27 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod);
     }
 
-    // Custom MoP Script
-    // 77486 - Mastery : Shadowy Recall
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && damagetype == DOT && HasAura(77486))
+    if (getPowerType() == POWER_MANA)
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.8f;
+        Unit::AuraEffectList const& doneFromManaPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_FROM_PCT_POWER);
+        if (!doneFromManaPctAuras.empty())
+        {
+            float powerPct = std::min(float(GetPower(POWER_MANA)) / GetMaxPower(POWER_MANA), 1.0f);
+            for (Unit::AuraEffectList::const_iterator itr = doneFromManaPctAuras.begin(); itr != doneFromManaPctAuras.end(); ++itr)
+            {
+                if (spellProto->SchoolMask & (*itr)->GetMiscValue())
+                    DoneTotalMod *= (100.0f + (*itr)->GetAmount() * powerPct) / 100.0f;
+            }
+        }
+    }
 
-        if (roll_chance_f(Mastery))
-            DoneTotalMod *= 2.0f;
+    // 76613 - Mastery: Frostburn
+    if (GetTypeId() == TYPEID_PLAYER && spellProto->SpellFamilyName == SPELLFAMILY_MAGE &&
+        getLevel() >= 80 && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_MAGE_FROST)
+    {
+        if (AuraEffect const* aurEff = GetAuraEffect(76613, EFFECT_0))
+            if (victim->isFrozen() && aurEff->IsAffectingSpell(spellProto))
+                AddPct(DoneTotalMod, aurEff->GetAmount());
     }
 
     // Fix spellPower bonus for Holy Prism
@@ -11888,6 +11793,18 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     AuraEffectList const& mHealingDonePct = GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
     for (AuraEffectList::const_iterator i = mHealingDonePct.begin(); i != mHealingDonePct.end(); ++i)
         AddPct(DoneTotalMod, (*i)->GetAmount());
+
+    if (victim)
+    {
+        AuraEffectList const& mHealingFromHealthPct = GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_DONE_FROM_PCT_HEALTH);
+        if (!mHealingFromHealthPct.empty())
+        {
+            float healthPct = std::max(0.0f, 1.0f - float(victim->GetHealth()) / victim->GetMaxHealth());
+            for (AuraEffectList::const_iterator i = mHealingFromHealthPct.begin(); i != mHealingFromHealthPct.end(); ++i)
+                if ((*i)->IsAffectingSpell(spellProto))
+                    DoneTotalMod *= (100.0f + (*i)->GetAmount() * healthPct) / 100.0f;
+        }
+    }
 
     // Apply Power JcJ healing bonus
     if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && (HasAura(74411) || HasAura(74410)))
@@ -12450,128 +12367,10 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         AddPct(DoneTotalMod, PowerJcJ);
     }
 
-    // Custom MoP Script
-    // 76658 - Mastery : Essence of the Viper
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY);
-        AddPct(DoneTotalMod, Mastery);
-    }
-
     // Sudden Death - 29725
     if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARRIOR_ARMS && HasAura(29725) && (attType == BASE_ATTACK || attType == OFF_ATTACK || spellProto))
         if (roll_chance_i(20))
             CastSpell(this, 52437, true); // Reset Cooldown of Colossus Smash
-
-    // Custom MoP Script
-    // 76659 - Mastery : Wild Quiver
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(76659) && attType == RANGED_ATTACK && (spellProto->Id != 76663))
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
-
-        if (roll_chance_f(Mastery))
-            CastSpell(victim, 76663, true);
-    }
-
-    // Custom MoP Script
-    // 77219 - Mastery : Master Demonologist
-    // Bonus damage while using Metamorphosis
-    if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
-        AddPct(DoneTotalMod, Mastery);
-    }
-    // Bonus damage in caster form
-    else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
-    {
-        float Mastery = GetFloatValue(PLAYER_MASTERY);
-        AddPct(DoneTotalMod, Mastery);
-    }
-    // Bonus damage for demon servants
-    else if (isPet())
-    {
-        Unit* owner = GetOwner();
-        if (owner && owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
-        {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY);
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-
-    // Custom MoP Script
-    // 76856 - Mastery : Unshackled Fury
-    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0)
-    {
-        if (HasAura(76856) && HasAuraState(AURA_STATE_ENRAGE))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.4f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Custom MoP Script
-    // 77514 - Mastery : Frozen Heart
-    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
-    {
-        if (HasAura(77514))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Custom MoP Script
-    // 77515 - Mastery : Dreadblade
-    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
-    {
-        if (HasAura(77515))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f;
-            AddPct(DoneTotalMod, Mastery);
-        }
-    }
-
-    // Custom MoP Script
-    // 76806 - Mastery : Main Gauche
-    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && attType == BASE_ATTACK && !spellProto)
-    {
-        if (HasAura(76806))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
-
-            if (roll_chance_f(Mastery))
-                this->CastSpell(victim, 86392, true);
-        }
-    }
-
-    // Custom MoP Script
-    // 76838 - Mastery : Strikes of Opportunity
-    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK) && !spellProto)
-    {
-        if (HasAura(76838))
-        {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
-
-            if (roll_chance_f(Mastery))
-                this->CastSpell(victim, 76858, true);
-        }
-    }
-
-    // Custom MoP Script
-    // 76613 - Mastery : Frostburn for Water elemental Melee damage
-    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0)
-    {
-        if (isPet())
-        {
-            Unit* owner = this->GetOwner();
-            if (owner->HasAura(76613) && owner->GetTypeId() == TYPEID_PLAYER)
-            {
-                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-                AddPct(DoneTotalMod, Mastery);
-            }
-        }
-    }
 
     // Some spells don't benefit from pct done mods
     if (spellProto)
@@ -12580,6 +12379,10 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
             AuraEffectList const& mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
             {
+                // Mastery: Unshackled Fury
+                if ((*i)->GetId() == 76856 && !HasAuraState(AURA_STATE_ENRAGE))
+                    continue;
+
                 if ((*i)->GetMiscValue() & spellProto->GetSchoolMask() && !(spellProto->GetSchoolMask() & SPELL_SCHOOL_MASK_NORMAL))
                 {
                     if ((*i)->GetSpellInfo()->EquippedItemClass == -1)
@@ -12625,6 +12428,17 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     if (spellProto)
         if (Player* modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_DAMAGE, tmpDamage);
+
+
+    if (Player* modOwner = GetSpellModOwner())
+    {
+        if (modOwner->getClass() == CLASS_WARLOCK)
+        {
+            // Mastery: Master Demonologist
+            if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
+                AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
+        }
+    }
 
     // bonus result can be negative
     return uint32(std::max(tmpDamage, 0.0f));
@@ -15849,6 +15663,8 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_MOD_SPELL_CRIT_CHANCE] = true;
     isTriggerAura[SPELL_AURA_ABILITY_IGNORE_AURASTATE] = true;
     isTriggerAura[SPELL_AURA_CAST_WHILE_WALKING] = true;
+    isTriggerAura[SPELL_AURA_ADD_PCT_MODIFIER] = true;
+    isTriggerAura[SPELL_AURA_ADD_FLAT_MODIFIER] = true;
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN] = true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK] = true;
@@ -16543,10 +16359,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             takeCharges = true;
                         break;
                     }
-                    //case SPELL_AURA_ADD_FLAT_MODIFIER:
-                    //case SPELL_AURA_ADD_PCT_MODIFIER:
-                        // HandleSpellModAuraProc
-                        //break;
+                    case SPELL_AURA_ADD_FLAT_MODIFIER:
+                    case SPELL_AURA_ADD_PCT_MODIFIER:
+                        if (HandleSpellModAuraProc(target, damage, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
+                            takeCharges = true;
+                        break;
                     default:
                         // nothing do, just charges counter
                         // Don't drop charge for Earth Shield because of second effect
@@ -20510,6 +20327,56 @@ bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, uint32 /*damage*/, AuraE
                 return false;
             triggered_spell_id = 119050;
             break;
+        }
+    }
+
+    // processed charge only counting case
+    if (!triggered_spell_id)
+        return true;
+
+    SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(triggered_spell_id);
+
+    if (!triggerEntry)
+    {
+        sLog->outError(LOG_FILTER_UNITS, "Unit::HandleSpellCritChanceAuraProc: Spell %u has non-existing triggered spell %u", triggeredByAuraSpell->Id, triggered_spell_id);
+        return false;
+    }
+
+    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+        return false;
+
+    if (basepoints0)
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
+    else
+        CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
+
+    if (cooldown && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, time(NULL) + cooldown);
+
+    return true;
+}
+
+bool Unit::HandleSpellModAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+{
+    SpellInfo const* triggeredByAuraSpell = triggeredByAura->GetSpellInfo();
+
+    uint32 triggered_spell_id = 0;
+    Unit* target = victim;
+    int32 basepoints0 = 0;
+
+    Item* castItem = triggeredByAura->GetBase()->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
+        ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
+
+    switch (triggeredByAuraSpell->Id)
+    {
+        case 77495:         // Mastery: Harmony
+        {
+            if (!procSpell)
+                return false;
+
+            int32 bp = triggeredByAura->GetAmount();
+            CastCustomSpell(this, 100977, &bp, &bp, NULL, true);
+            return true;
         }
     }
 

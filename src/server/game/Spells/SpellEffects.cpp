@@ -1767,52 +1767,6 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
             unitTarget->RemoveAura(48920);
 
-        // Custom MoP Script
-        // 77495 - Mastery : Harmony
-        if (m_caster && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->getClass() == CLASS_DRUID)
-        {
-            if (m_caster->HasAura(77495))
-            {
-                if (addhealth)
-                {
-                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25 / 100.0f;
-
-                    if (m_spellInfo->HasEffect(SPELL_EFFECT_HEAL))
-                    {
-                        addhealth *= (1 + Mastery);
-
-                        int32 bp = int32(100.0f * Mastery);
-
-                        m_caster->CastCustomSpell(m_caster, 100977, &bp, NULL, NULL, true);
-                    }
-                }
-            }
-        }
-        // 77226 - Mastery : Deep Healing
-        if (m_caster && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->getClass() == CLASS_SHAMAN)
-        {
-            if (m_caster->HasAura(77226))
-            {
-                if (addhealth)
-                {
-                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
-                    float healthpct = unitTarget->GetHealthPct();
-
-                    float bonus = 0;
-                    bonus = CalculatePct((1 + (100.0f - healthpct)), Mastery);
-
-                    addhealth *= 1 + bonus;
-                }
-            }
-        }
-        // 77485 - Mastery : Echo of Light
-        if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && m_caster->getLevel() >= 80 && addhealth)
-        {
-            float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
-            int32 bp = (Mastery * addhealth) / 6;
-
-            m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
-        }
         // 115072 - Expel Harm
         if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth && m_spellInfo->Id == 115072)
         {
@@ -1883,7 +1837,17 @@ void Spell::EffectHealPct(SpellEffIndex /*effIndex*/)
     if (m_spellInfo->Id == 59754 && unitTarget == m_caster)
         return;
 
-    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(damage), HEAL);
+    uint32 heal = uint32(damage);
+
+    // Ember Tap
+    if (m_spellInfo->Id == 114635)
+    {
+        // Mastery: Emberstorm
+        if (AuraEffect const* aurEff = m_caster->GetAuraEffect(77220, EFFECT_0))
+            AddPct(damage, aurEff->GetAmount());
+    }
+
+    heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(heal), HEAL);
     heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL);
 
     m_healing += heal;

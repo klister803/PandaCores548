@@ -261,6 +261,8 @@ extern DBCStorage <WorldMapAreaEntry>            sWorldMapAreaStore; //-- use Zo
 extern DBCStorage <WorldMapOverlayEntry>         sWorldMapOverlayStore;
 extern DBCStorage <WorldSafeLocsEntry>           sWorldSafeLocsStore;
 
+std::set<uint32> const* GetSpecializationMasterySpells(uint32 specId);
+
 void LoadDBCStores(const std::string& dataPath);
 
 #endif

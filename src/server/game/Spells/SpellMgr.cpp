@@ -4205,7 +4205,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     break;
 
-
                 // Dalaran arena knockback
                 case 61698:
                     spellInfo->Attributes = 536871296;
@@ -4296,6 +4295,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 37062: // To Catch A Thistlehead
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(4); // 120s
+                    break;
+                case 76856: // Mastery: Unshackled Fury
+                    spellInfo->CasterAuraState = 0;
                     break;
                 default:
                     break;

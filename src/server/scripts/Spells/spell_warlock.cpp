@@ -1440,49 +1440,6 @@ class spell_warl_chaos_bolt : public SpellScriptLoader
         }
 };
 
-// Ember Tap - 114635
-class spell_warl_ember_tap : public SpellScriptLoader
-{
-    public:
-        spell_warl_ember_tap() : SpellScriptLoader("spell_warl_ember_tap") { }
-
-        class spell_warl_ember_tap_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_ember_tap_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        int32 healAmount;
-                        float pct;
-                        float Mastery;
-
-                        Mastery = 3.0f * _player->GetFloatValue(PLAYER_MASTERY) / 100.0f;
-
-                        pct = 0.15f * (1 + Mastery);
-
-                        healAmount = int32(_player->GetMaxHealth() * pct);
-
-                        SetHitHeal(healAmount);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_ember_tap_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_ember_tap_SpellScript();
-        }
-};
-
 // Called By : Incinerate (Fire and Brimstone) - 114654, Conflagrate (Fire and Brimstone) - 108685
 // Curse of the Elements (Fire and Brimstone) - 104225, Curse of Enfeeblement (Fire and Brimstone) - 109468
 // Immolate (Fire and Brimstone) - 108686
@@ -2288,7 +2245,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_demonic_gateway();
     new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
-    new spell_warl_ember_tap();
     new spell_warl_fire_and_brimstone();
     new spell_warl_conflagrate_aura();
     new spell_warl_shadowburn();

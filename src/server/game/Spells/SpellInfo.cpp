@@ -1232,7 +1232,7 @@ bool SpellInfo::IsPassiveStackableWithRanks() const
 
 bool SpellInfo::IsMultiSlotAura() const
 {
-    return (IsPassive() || Id == 44413) && Id != 76856; // hack fix for Unshackled Fury stacking with itself
+    return IsPassive();
 }
 
 bool SpellInfo::IsDeathPersistent() const
