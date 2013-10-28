@@ -3743,10 +3743,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 44461: // Living Bomb
                 spellInfo->MaxAffectedTargets = 3;
                 break;
-            case 12051: // Evocation
-                spellInfo->Effects[1].Effect = 0;
-                spellInfo->Effects[1].ApplyAuraName = 0;
-                break;
             case 23691: // Berzerker Rage Effect
                 spellInfo->Effects[0].BasePoints = 100;
                 break;

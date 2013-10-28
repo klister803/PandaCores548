@@ -1478,7 +1478,7 @@ uint32 Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
         if (type == DAMAGE_FALL)                               // DealDamage not apply item durability loss at self damage
         {
             sLog->outDebug(LOG_FILTER_PLAYER, "We are fall to death, loosing 10 percents durability");
-            DurabilityLossAll(0.10f, false);
+            DurabilityLossAll(0.10f, false, true);
             // durability lost message
             SendDurabilityLoss(this, 10);
         }
@@ -5963,8 +5963,14 @@ Corpse* Player::GetCorpse() const
     return sObjectAccessor->GetCorpseForPlayerGUID(GetGUID());
 }
 
-void Player::DurabilityLossAll(double percent, bool inventory)
+void Player::DurabilityLossAll(double percent, bool inventory, bool withMods)
 {
+    if (withMods)
+    {
+        int32 mod = std::min(100, GetTotalAuraModifier(SPELL_AURA_MOD_DURABILITY_LOSS));
+        percent = percent - (percent * mod / 100.0f);
+    }
+
     for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
         if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
             DurabilityLoss(pItem, percent);
@@ -5995,8 +6001,6 @@ void Player::DurabilityLoss(Item* item, double percent)
 
     if (!pMaxDurability)
         return;
-
-    percent /= GetTotalAuraMultiplier(SPELL_AURA_MOD_DURABILITY_LOSS);
 
     uint32 pDurabilityLoss = uint32(pMaxDurability*percent);
 
@@ -6825,6 +6829,8 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
         sLog->outDebug(LOG_FILTER_PLAYER_SKILLS, "Player::UpdateSkillPro Chance=%3.1f%% missed", Chance / 10.0f);
         return false;
     }
+
+    Chance += int32(Chance * GetTotalAuraModifier(SPELL_AURA_INCREASE_SKILL_GAIN_CHANCE) / 100.0f);
 
     SkillStatusMap::iterator itr = mSkillStatus.find(SkillId);
     if (itr == mSkillStatus.end() || itr->second.uState == SKILL_DELETED)

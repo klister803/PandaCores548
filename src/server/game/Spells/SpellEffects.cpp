@@ -5930,7 +5930,7 @@ void Spell::EffectDurabilityDamagePCT(SpellEffIndex effIndex)
     // Possibly its mean -1 all player equipped items and -2 all items
     if (slot < 0)
     {
-        unitTarget->ToPlayer()->DurabilityLossAll(float(damage) / 100.0f, (slot < -1));
+        unitTarget->ToPlayer()->DurabilityLossAll(float(damage) / 100.0f, (slot < -1), false);
         return;
     }
 
