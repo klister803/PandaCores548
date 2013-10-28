@@ -18746,17 +18746,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // must be after loading spells and talents
     Tokenizer talentTrees(fields[26].GetString(), ' ', MAX_TALENT_SPECS);
-    /*for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
-    {
-        if (i >= talentTrees.size())
-            break;
-
-        uint32 talentTree = atol(talentTrees[i]);
-        if (sTalentTabStore.LookupEntry(talentTree))
-            SetPrimaryTalentTree(i, talentTree);
-        else if (i == GetActiveSpec())
-            SetAtLoginFlag(AT_LOGIN_RESET_TALENTS); // invalid tree, reset talents
-    }*/
 
     sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "The value of player %s after load item and aura is: ", m_name.c_str());
     outDebugValues();
@@ -20255,7 +20244,7 @@ void Player::SaveToDB(bool create /*=false*/)
 
         ss.str("");
         for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
-            ss << GetPrimaryTalentTree(i) << " ";
+            ss << uint32(0) << " ";
         stmt->setString(index++, ss.str());
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
         stmt->setUInt8(index++,  m_stableSlots);
@@ -20385,7 +20374,7 @@ void Player::SaveToDB(bool create /*=false*/)
 
         ss.str("");
         for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
-            ss << GetPrimaryTalentTree(i) << " ";
+            ss << uint32(0) << " ";
         stmt->setString(index++, ss.str());
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
         stmt->setUInt8(index++,  m_stableSlots);

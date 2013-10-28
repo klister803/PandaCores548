@@ -642,7 +642,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         if(isArena)
             buff << int32(bg->GetArenaTeamRatingChangeByIndex(bg->GetPlayerTeam(guid) == HORDE));
         buff.WriteByteSeq(guid[4]);
-        buff << int32(player->GetPrimaryTalentTree(player->GetActiveSpec()));
+        buff << int32(player->GetSpecializationId(player->GetActiveSpec()));
         buff.WriteByteSeq(guid[3]);
         buff.WriteByteSeq(guid[5]);
         ++count;

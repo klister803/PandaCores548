@@ -492,8 +492,8 @@ class npc_firelands_molten_lord : public CreatureScript
                                 if (!(pPlayer->getClass() == CLASS_MAGE ||
                                     pPlayer->getClass() == CLASS_WARLOCK ||
                                     pPlayer->getClass() == CLASS_PRIEST ||
-                                    (pPlayer->getClass() == CLASS_SHAMAN && (pPlayer->GetPrimaryTalentTree(pPlayer->GetActiveSpec()) == TALENT_TREE_SHAMAN_ELEMENTAL || pPlayer->GetPrimaryTalentTree(pPlayer->GetActiveSpec()) == TALENT_TREE_SHAMAN_RESTORATION)) ||
-                                    (pPlayer->getClass() == CLASS_DRUID && (pPlayer->GetPrimaryTalentTree(pPlayer->GetActiveSpec()) == TALENT_TREE_DRUID_BALANCE || pPlayer->GetPrimaryTalentTree(pPlayer->GetActiveSpec()) == TALENT_TREE_DRUID_RESTORATION))))
+                                    (pPlayer->getClass() == CLASS_SHAMAN && (pPlayer->GetSpecializationId(pPlayer->GetActiveSpec()) == SPEC_SHAMAN_ELEMENTAL || pPlayer->GetSpecializationId(pPlayer->GetActiveSpec()) == SPEC_SHAMAN_RESTORATION)) ||
+                                    (pPlayer->getClass() == CLASS_DRUID && (pPlayer->GetSpecializationId(pPlayer->GetActiveSpec()) == SPEC_DROOD_BALANCE || pPlayer->GetSpecializationId(pPlayer->GetActiveSpec()) == SPEC_DROOD_RESTORATION))))
                                     continue;
 
                                 if (pPlayer->GetTeam() == ALLIANCE && pPlayer->GetQuestStatus(29453) == QUEST_STATUS_NONE)
