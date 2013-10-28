@@ -731,6 +731,25 @@ void Player::UpdateMasteryPercentage()
         value = value < 0.0f ? 0.0f : value;        
     }
     SetFloatValue(PLAYER_MASTERY, value);
+
+    int32 spell = 0;
+
+    if (HasAura(76808)) spell = 76808; // Rogue - Mastery: Executioner
+
+    if (spell != 0)
+    {
+        if (Aura* aura = GetAura(spell))
+        {
+            for (uint8 j = 0; j < 3; ++j)
+            {
+                if (AuraEffect* eff = aura->GetEffect(j))
+                {
+                    eff->SetCanBeRecalculated(true);
+                    eff->RecalculateAmount(this);
+                }
+            }
+        }
+    }
     // Custom MoP Script
     // 76671 - Mastery : Divine Bulwark - Update Block Percentage
     // 76857 - Mastery : Critical Block - Update Block Percentage

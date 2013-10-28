@@ -801,6 +801,21 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellInfo()->SpellFamilyFlags[2] & 0x00000008)
                 amount = GetBase()->GetUnitOwner()->GetShapeshiftForm() == FORM_CAT ? amount : 0;
             break;
+        case SPELL_AURA_ADD_PCT_MODIFIER:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 76808: // Mastery: Executioner
+                {
+                    float Mastery = caster->ToPlayer()->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_MASTERY) / 200.0f;
+                    amount = 24 + Mastery;
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
         {
             if (caster)
@@ -1003,6 +1018,7 @@ void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply)
             m_amount = newAmount;
         else
             SetAmount(newAmount);
+        CalculateSpellMod();
     }
 
     if (handleMask & AURA_EFFECT_HANDLE_REAPPLY)
@@ -4658,14 +4674,6 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
     Unit* target = aurApp->GetTarget();
 
     int32 value = GetAmount();
-
-    // Custom MoP Script
-    // 76808 - Mastery : Executioner - Increase effect of Slice and Dice
-    if (aurApp->GetTarget()->GetTypeId() == TYPEID_PLAYER && aurApp->GetTarget()->HasAura(76808) && aurApp->GetBase()->GetId() == 5171)
-    {
-        float Mastery = 1.0f + aurApp->GetTarget()->GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
-        value *= Mastery;
-    }
 
     target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)value, apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)value, apply);
