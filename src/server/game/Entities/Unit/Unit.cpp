@@ -8656,9 +8656,26 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                 break;
             case SPELLFAMILY_PRIEST:
             {
-                // Greater Heal Refund
-                if (auraSpellInfo->Id == 37594)
-                    trigger_spell_id = 37595;
+                switch (auraSpellInfo->Id)
+                {
+                    case 37594: // Greater Heal Refund
+                    {
+                        trigger_spell_id = 37595;
+                        break;
+                    }
+                    case 108945: // Angelic Bulwark
+                    {
+                        if ((this->GetHealth() - damage) < CalculatePct(this->GetMaxHealth(), auraSpellInfo->Effects[0].BasePoints))
+                        {
+                            trigger_spell_id = 114214;
+                            basepoints0 = CalculatePct(this->GetMaxHealth(), 20);
+                            cooldown = 90;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
                 break;
             }
             case SPELLFAMILY_DRUID:
