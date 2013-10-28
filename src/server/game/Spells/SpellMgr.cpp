@@ -4256,7 +4256,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
                 break;
             case 11327: //Vanish
-                spellInfo->AuraInterruptFlags = 0;
                 spellInfo->AttributesEx4 |= SPELL_ATTR4_TRIGGERED;
                 break;
             case 8177: //totem
