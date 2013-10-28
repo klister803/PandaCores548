@@ -3647,6 +3647,12 @@ void Player::InitSpellForLevel()
         if (!spell)
             continue;
 
+        if(spell->AttributesEx7 & SPELL_ATTR7_ALLIANCE_ONLY && GetTeam() != ALLIANCE)
+            continue;
+
+        if(spell->AttributesEx7 & SPELL_ATTR7_HORDE_ONLY && GetTeam() != HORDE)
+            continue;
+
         if (HasSpell(*spellId))
             continue;
 
