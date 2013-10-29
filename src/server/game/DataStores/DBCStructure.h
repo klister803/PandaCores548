@@ -793,10 +793,10 @@ struct ChrSpecializationsEntry
     //uint32 unk                    // 4, empty
     uint32 tabId;                   // 5
     //uint32 unk                    // 6
-    //uint32 unk                    // 7
+    //uint32 role;                  // 7
     //uint32 unk                    // 8
     //uint32 unk                    // 9
-    //uint32 unk                    // 10
+    uint32 flags;                   // 10
     char* specializationName;       // 11
     char* description;              // 12
     //uint32 unk                    // 13

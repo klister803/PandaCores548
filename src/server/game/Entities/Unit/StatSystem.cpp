@@ -768,12 +768,18 @@ void Player::UpdateManaRegen()
 {
     if (getPowerType() != POWER_MANA)
         return;
+
     // Mana regen from spirit
     float spirit_regen = OCTRegenMPPerSpirit();
+    // percent of base mana per 5 sec
+    float manaMod = 5.0f;
+    ChrSpecializationsEntry const* spec = sChrSpecializationsStore.LookupEntry(GetSpecializationId(GetActiveSpec()));
+    if (!spec || (spec->flags & 0x1) == 0)
+        manaMod = 2.0f;
 
-    // 5% of base mana every 5 seconds is base for all classes
-    float base_regen = GetCreateMana() * 1.0f / 100 + spirit_regen + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
-    float combat_regen = GetCreateMana() * 1.0f / 100 + (GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f);
+    // manaMod% of base mana every 5 seconds is base for all classes
+    float base_regen = GetCreateMana() * manaMod / 100 / 5 + spirit_regen + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
+    float combat_regen = GetCreateMana() * manaMod / 100 / 5 + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
     float totalMod = 1.0f;
 
     if (HasAuraType(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT))
