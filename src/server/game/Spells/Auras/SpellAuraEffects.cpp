@@ -6023,6 +6023,9 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 113957: // Cooking
+                    target->CastSpell(caster, 113950, true);
+                    break;
                 case 76691: // Vengeance tank mastery
                 {
                     if (!GetCaster() || GetCaster()->GetTypeId() != TYPEID_PLAYER)
