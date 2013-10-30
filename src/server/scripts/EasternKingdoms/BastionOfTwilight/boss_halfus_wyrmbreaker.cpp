@@ -416,7 +416,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                     me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_SHADOW_NOVA_25 ||
                     me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_SHADOW_NOVA_10H ||
                     me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_SHADOW_NOVA_25H)
-                    for (uint8 i = 0; i < 3; ++i)
+                    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                         if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
                             me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }

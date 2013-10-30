@@ -151,9 +151,9 @@ class boss_lady_nazjar : public CreatureScript
                 if (me->GetCurrentSpell(CURRENT_GENERIC_SPELL))
                     if (me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_SHOCK_BLAST
                         || me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_SHOCK_BLAST_H)
-                        for (uint8 i = 0; i < 3; ++i)
-						    if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
-							    me->InterruptSpell(CURRENT_GENERIC_SPELL);
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                            if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
+                                me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
 
             void JustSummoned(Creature* summon)

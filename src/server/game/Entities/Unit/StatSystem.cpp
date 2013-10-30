@@ -1446,7 +1446,7 @@ void Player::UpdateMasteryAuras()
             continue;
 
         // update aura modifiers
-        for (uint32 j = 0; j < MAX_EFFECTS; ++j)
+        for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
             AuraEffect* auraEff = aura->GetEffect(j);
             if (!auraEff)

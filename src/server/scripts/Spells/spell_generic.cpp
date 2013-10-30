@@ -986,17 +986,16 @@ class spell_generic_clone_weapon : public SpellScriptLoader
                 }
             }
 
-                    void Register()
-                    {
-                        OnEffectHitTarget += SpellEffectFn(spell_generic_clone_weapon_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-                    }
-                };
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_generic_clone_weapon_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
 
-                SpellScript* GetSpellScript() const
-                {
-                    return new spell_generic_clone_weapon_SpellScript();
-                }
-                   
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_generic_clone_weapon_SpellScript();
+        }
 };
 
 class spell_gen_clone_weapon_aura : public SpellScriptLoader

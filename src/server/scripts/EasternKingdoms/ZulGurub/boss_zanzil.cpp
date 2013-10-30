@@ -114,7 +114,7 @@ class boss_zanzil : public CreatureScript
                 if (me->GetCurrentSpell(CURRENT_GENERIC_SPELL))
                     if (me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_VOODOO_BOLT ||
                         me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_VOODOO_BOLT_H)
-                        for (uint8 i = 0; i < 3; ++i)
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                             if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
                                 me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
