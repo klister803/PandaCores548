@@ -302,11 +302,17 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     if(_second <= diff)
     {
         if(_pakagepersecond > 1200)
+        {
+            sLog->outSpamm("_pakagepersecond: %u, Account: %u: Player: %s.", _pakagepersecond, GetAccountId(), (_player) ? _player->GetName() : "None");
             _counttokick++;
+        }
         else _counttokick = 0;
 
         if(_counttokick > 3)
+        {
+            sLog->outSpamm("Kick Player: %s. Reason: packets spam.", (_player) ? _player->GetName() : "None");
             KickPlayer();
+        }
 
         _pakagepersecond = 0;
         _second = 1000;
@@ -324,7 +330,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     //! delayed packets that were re-enqueued due to improper timing. To prevent an infinite
     //! loop caused by re-enqueueing the same packets over and over again, we stop updating this session
     //! and continue updating others. The re-enqueued packets will be handled in the next Update call for this session.
-    uint32 processedPackets = 0;
 
     while (m_Socket && !m_Socket->IsClosed() &&
             !_recvQueue.empty() && _recvQueue.peek(true) != firstDelayedPacket &&
@@ -427,14 +432,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
         if (deletePacket)
             delete packet;
-
-#define MAX_PROCESSED_PACKETS_IN_SAME_WORLDSESSION_UPDATE 100
-        processedPackets++;
-
-        //process only a max amout of packets in 1 Update() call.
-        //Any leftover will be processed in next update
-        if (processedPackets > MAX_PROCESSED_PACKETS_IN_SAME_WORLDSESSION_UPDATE)
-            break;
     }
 
     if (m_Socket && !m_Socket->IsClosed() && _warden)

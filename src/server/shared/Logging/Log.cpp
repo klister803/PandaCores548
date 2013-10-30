@@ -32,6 +32,7 @@
 Log::Log() : worker(NULL)
 {
     arenaLogFile = NULL;
+    spammLogFile = NULL;
     SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
     LoadFromConfig();
@@ -484,6 +485,9 @@ void Log::Close()
     if (arenaLogFile != NULL)
         fclose(arenaLogFile);
     arenaLogFile = NULL;
+    if (spammLogFile != NULL)
+        fclose(spammLogFile);
+    spammLogFile = NULL;
 
     delete worker;
     worker = NULL;
@@ -508,6 +512,7 @@ void Log::LoadFromConfig()
     ReadAppendersFromConfig();
     ReadLoggersFromConfig();
     arenaLogFile = openLogFile("ArenaLogFile", NULL, "a");
+    spammLogFile = openLogFile("SpammLogFile", NULL, "a");
 }
 
 void Log::outArena(const char * str, ...)
@@ -556,4 +561,21 @@ FILE* Log::openLogFile(char const* configFileName, char const* configTimeStampFl
     }
 
     return fopen((m_logsDir+logfn).c_str(), mode);
+}
+
+void Log::outSpamm(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if (spammLogFile)
+    {
+        va_list ap;
+        outTimestamp(spammLogFile);
+        va_start(ap, str);
+        vfprintf(spammLogFile, str, ap);
+        fprintf(spammLogFile, "\n");
+        va_end(ap);
+        fflush(spammLogFile);
+    }
 }
