@@ -230,6 +230,7 @@ class Spell
         void EffectHealthLeech(SpellEffIndex effIndex);
         void EffectQuestComplete(SpellEffIndex effIndex);
         void EffectCreateItem(SpellEffIndex effIndex);
+        void EffectDestroyItem(SpellEffIndex effIndex);
         void EffectCreateItem2(SpellEffIndex effIndex);
         void EffectCreateRandomItem(SpellEffIndex effIndex);
         void EffectPersistentAA(SpellEffIndex effIndex);

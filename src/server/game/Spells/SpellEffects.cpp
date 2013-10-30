@@ -238,7 +238,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectGiveCurrency,                             //166 SPELL_EFFECT_GIVE_CURRENCY
     &Spell::EffectNULL,                                     //167 SPELL_EFFECT_167
     &Spell::EffectNULL,                                     //168 SPELL_EFFECT_168
-    &Spell::EffectNULL,                                     //169 SPELL_EFFECT_DESTROY_ITEM
+    &Spell::EffectDestroyItem,                              //169 SPELL_EFFECT_DESTROY_ITEM
     &Spell::EffectNULL,                                     //170 SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES
     &Spell::EffectNULL,                                     //171 SPELL_EFFECT_171
     &Spell::EffectResurrectWithAura,                        //172 SPELL_EFFECT_RESURRECT_WITH_AURA
@@ -2030,6 +2030,19 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
 
     DoCreateItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
     ExecuteLogEffectCreateItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
+}
+
+void Spell::EffectDestroyItem(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* player = unitTarget->ToPlayer();
+    if(!player)
+        return;
+
+    player->DestroyItemCount(m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType, 1, true);
+    ExecuteLogEffectDestroyItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
 }
 
 void Spell::EffectCreateItem2(SpellEffIndex effIndex)
