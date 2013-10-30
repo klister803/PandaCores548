@@ -2037,7 +2037,7 @@ void Spell::EffectDestroyItem(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    Player* player = m_caster->ToPlayer();
+    Player* player = unitTarget->ToPlayer();
     if(!player)
         return;
 

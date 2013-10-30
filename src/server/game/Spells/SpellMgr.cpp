@@ -4299,6 +4299,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 76856: // Mastery: Unshackled Fury
                     spellInfo->CasterAuraState = 0;
                     break;
+                case 114714:// Grilled Plainshawk Leg
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                    break;
                 default:
                     break;
             }
