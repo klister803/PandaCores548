@@ -994,19 +994,21 @@ class spell_pri_spirit_shell : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                Unit* caster = GetCaster();
+                if (caster->HasAura(PRIEST_SPIRIT_SHELL_AURA))
                 {
-                    if (Unit* target = GetHitUnit())
+                    Unit* target = GetHitUnit();
+                    int32 bp = GetHitHeal();
+                    if (AuraEffect* aurEff = target->GetAuraEffect(PRIEST_SPIRIT_SHELL_ABSORPTION, 0))
                     {
-                        if (_player->HasAura(PRIEST_SPIRIT_SHELL_AURA))
-                        {
-                            int32 bp = GetHitHeal();
-
-                            SetHitHeal(0);
-
-                            _player->CastCustomSpell(target, PRIEST_SPIRIT_SHELL_ABSORPTION, &bp, NULL, NULL, true);
-                        }
+                        bp += aurEff->GetAmount();
                     }
+                    if (bp > int32(CalculatePct(target->GetMaxHealth(), 60)))
+                    {
+                        bp = int32(CalculatePct(target->GetMaxHealth(), 60));
+                    }
+                    caster->CastCustomSpell(target, PRIEST_SPIRIT_SHELL_ABSORPTION, &bp, NULL, NULL,  true);
+                    SetHitHeal(0);
                 }
             }
 
