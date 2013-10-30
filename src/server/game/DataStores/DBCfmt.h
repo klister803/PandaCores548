@@ -47,7 +47,7 @@ const char ChatChannelsEntryfmt[]="nixsx";
 const char ChrClassesEntryfmt[]="nixsxxxixiiiixxxxx";
 const char ChrRacesEntryfmt[]="nxixiixixxxxixsxxxxxixxxxxxxxxxxxxxx";
 const char ChrClassesXPowerTypesfmt[]="nii";
-const char ChrSpecializationsfmt[]="nsiixixxxxxssx";
+const char ChrSpecializationsfmt[]="nsiixixxxxissx";
 
 const char CinematicSequencesEntryfmt[]="nxxxxxxxxx";
 const char CreatureDisplayInfofmt[]="nixxfxxxxxxxxxxxxxx";
