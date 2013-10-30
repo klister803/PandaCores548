@@ -341,12 +341,9 @@ SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* 
     SpellEffectScalingEntry const* _effectScaling = GetSpellEffectScalingEntry(_effect ? _effect->Id : 0);
     SpellScalingEntry const* scaling = spellInfo->GetSpellScaling();
 
-    memset(EffectByDiff, 0, sizeof(EffectByDiff));
-
     _spellInfo = spellInfo;
     _effIndex = effIndex;
     Effect = _effect ? _effect->Effect : 0;
-    EffectDifficulty = _effect ? _effect->EffectDifficulty : 0;
     ApplyAuraName = _effect ? _effect->EffectApplyAuraName : 0;
     Amplitude = _effect ? _effect->EffectAmplitude : 0;
     DieSides = _effect ? _effect->EffectDieSides : 0;
@@ -602,14 +599,6 @@ uint32 SpellEffectInfo::GetMissingTargetMask(bool srcSet /*= false*/, bool dstSe
     return effImplicitTargetMask;
 }
 
-SpellEffectInfo const& SpellEffectInfo::GetDifficultyEntry(uint8 diff) const
-{
-    if (EffectByDiff[diff] != NULL)
-        return *EffectByDiff[diff];
-    else
-        return *this;
-}
-
 SpellEffectImplicitTargetTypes SpellEffectInfo::GetImplicitTargetType() const
 {
     return _data[Effect].ImplicitTargetType;
@@ -820,18 +809,14 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     // SpellDifficultyEntry
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        for (uint8 j = 0; j < MAX_DIFFICULTY; ++j)
-        {
-            SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(i, j);
-            if (j == 0)
-            {
-                Effects[i] = SpellEffectInfo(spellEntry, this, i, _effect);
-                Effects[i].EffectByDiff[j] = &Effects[i];
-            }
-            else
-                Effects[i].EffectByDiff[j] = new SpellEffectInfo(spellEntry, this, i, _effect);
-        }
+        SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(i, 0);
+        Effects[i] = SpellEffectInfo(spellEntry, this, i, _effect);
     }
+
+    for(int difficulty = 1; difficulty < MAX_DIFFICULTY; difficulty++)
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS_DIFF; ++i)
+            if(SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(i, difficulty))
+                EffectsMap[MAKE_PAIR16(i, difficulty)] = SpellEffectInfo(spellEntry, this, i, _effect);
 
     // SpellScalingEntry
     SpellScalingEntry const* _scaling = GetSpellScaling();
@@ -876,9 +861,9 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     PreventionType = _categorie ? _categorie->PreventionType : 0;
 
     if (SpellCategoryEntry const* categoryInfo = sSpellCategoryStores.LookupEntry(Category))
-        CategoryFlags = categoryInfo->Flags;
+    	CategoryFlags = categoryInfo->Flags;
     else
-        CategoryFlags = 0;
+    	CategoryFlags = 0;
 
     // SpellClassOptionsEntry
     SpellClassOptionsEntry const* _class = GetSpellClassOptions();
@@ -1009,7 +994,14 @@ SpellInfo::~SpellInfo()
 
 SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) const
 {
-    return Effects[effect].GetDifficultyEntry(difficulty);
+    if(difficulty)
+    {
+        SpellEffectInfoMap::const_iterator itr = EffectsMap.find(MAKE_PAIR16(effect, difficulty));
+        if(itr != EffectsMap.end())
+            return itr->second;
+    }
+
+    return Effects[effect];
 }
 
 bool SpellInfo::HasEffect(SpellEffects effect) const
@@ -1496,10 +1488,9 @@ SpellCastResult SpellInfo::CheckShapeshift(uint32 form) const
 {
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)
-    if (/*GetTalentSpellCost(Id) > 0 &&*/true)
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
-                return SPELL_CAST_OK;
+    if (/*GetTalentSpellCost(Id) > 0 &&*/
+        (Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL || Effects[1].Effect == SPELL_EFFECT_LEARN_SPELL || Effects[2].Effect == SPELL_EFFECT_LEARN_SPELL))
+        return SPELL_CAST_OK;
 
     uint32 stanceMask = (form ? 1 << (form - 1) : 0);
 

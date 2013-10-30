@@ -40,14 +40,7 @@ enum SpellEffIndex
     EFFECT_11,
     EFFECT_12,
     EFFECT_13,
-    EFFECT_14,
-    EFFECT_15,
-    EFFECT_16,
-    EFFECT_17,
-    EFFECT_18,
-    EFFECT_19,
-    EFFECT_20,
-    MAX_SPELL_EFFECTS,
+    MAX_EFFECTS,
 };
 
 enum Roles

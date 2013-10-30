@@ -1834,6 +1834,7 @@ struct SpellEffectScalingEntry
     uint32    SpellEffectId;                                // 4
 };
 
+#define MAX_SPELL_EFFECTS 14
 #define MAX_SPELL_EFFECTS_DIFF 5
 #define MAX_EFFECT_MASK 4294967295
 #define MAX_SPELL_REAGENTS 8
@@ -2537,19 +2538,27 @@ struct TalentSpellPos
 
 typedef UNORDERED_MAP<uint32, TalentSpellPos> TalentSpellPosMap;
 
-struct SpellEffectsStruct
+struct SpellEffect
 {
-    SpellEffectEntry const* effects[MAX_DIFFICULTY][MAX_SPELL_EFFECTS];
-
-    SpellEffectsStruct()
+    SpellEffect()
     {
-        for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            for (int j = 0; j < MAX_DIFFICULTY; ++j)
-                effects[j][i] = NULL;
+        for(int i = 0; i < MAX_SPELL_EFFECTS; i++)
+        {
+            effects[i] = NULL;
+        }
     }
+    SpellEffectEntry const* effects[MAX_SPELL_EFFECTS];
 };
 
-typedef UNORDERED_MAP<uint32, SpellEffectsStruct> SpellEffectMap;
+typedef UNORDERED_MAP<uint16, SpellEffectEntry const*> SpellEffectsMap;
+
+struct SpellEffectDiff
+{
+    SpellEffectsMap effects;
+};
+
+typedef UNORDERED_MAP<uint32, SpellEffectDiff> SpellEffectDiffMap;
+typedef UNORDERED_MAP<uint32, SpellEffect> SpellEffectMap;
 
 struct TaxiPathBySourceAndDestination
 {

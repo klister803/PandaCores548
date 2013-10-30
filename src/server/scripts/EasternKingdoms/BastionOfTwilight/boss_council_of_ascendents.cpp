@@ -392,7 +392,7 @@ class boss_feludius : public CreatureScript
                         me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_HYDROLANCE_25 ||
                         me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_HYDROLANCE_10H ||
                         me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_HYDROLANCE_25H)
-                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                        for (uint8 i = 0; i < 3; ++i)
                             if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
                                 me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
@@ -610,7 +610,7 @@ class boss_ignacious : public CreatureScript
 
                 if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
                     if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id == SPELL_RISING_FLAMES)
-                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                        for (uint8 i = 0; i < 3; ++i)
                             if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
                                 me->InterruptSpell(CURRENT_CHANNELED_SPELL);
             }
@@ -871,7 +871,7 @@ class boss_arion : public CreatureScript
                         me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_LIGHTNING_BLAST_25 ||
                         me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_LIGHTNING_BLAST_10H ||
                         me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_LIGHTNING_BLAST_25H)
-                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                        for (uint8 i = 0; i < 3; ++i)
                             if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
                                 me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }

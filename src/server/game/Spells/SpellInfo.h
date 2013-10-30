@@ -232,11 +232,8 @@ class SpellEffectInfo
 {
     SpellInfo const* _spellInfo;
     uint8 _effIndex;
-
 public:
     uint32    Effect;
-    SpellEffectInfo const * EffectByDiff[MAX_DIFFICULTY];
-    uint32    EffectDifficulty;
     uint32    ApplyAuraName;
     uint32    Amplitude;
     int32     DieSides;
@@ -262,9 +259,8 @@ public:
     float     DeltaScalingMultiplier;
     float     ComboScalingMultiplier;
 
-    SpellEffectInfo() { }
+    SpellEffectInfo() {}
     SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* spellInfo, uint8 effIndex, SpellEffectEntry const* _effect);
-    ~SpellEffectInfo() { delete[] EffectByDiff; }
 
     bool IsEffect() const;
     bool IsEffect(SpellEffects effectName) const;
@@ -290,8 +286,6 @@ public:
     SpellEffectImplicitTargetTypes GetImplicitTargetType() const;
     SpellTargetObjectTypes GetUsedTargetObjectType() const;
 
-    SpellEffectInfo const& GetDifficultyEntry(uint8 diff) const;
-
 private:
     struct StaticData
     {
@@ -300,6 +294,8 @@ private:
     };
     static StaticData _data[TOTAL_SPELL_EFFECTS];
 };
+
+typedef UNORDERED_MAP<uint16, SpellEffectInfo> SpellEffectInfoMap;
 
 class SpellInfo
 {
@@ -405,6 +401,7 @@ public:
     float  CoefBase;
     int32  CoefLevelBase;
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
+    SpellEffectInfoMap EffectsMap;
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;
     SpellPowerEntry spellPower[MAX_POWERS_FOR_SPELL];
