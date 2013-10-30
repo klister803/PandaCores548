@@ -226,7 +226,11 @@ enum ScoreType
     SCORE_CARTS_HELPED          = 20,
     //TK
     SCORE_ORB_HANDLES           = 21,
-    SCORE_ORB_SCORE             = 22
+    SCORE_ORB_SCORE             = 22,
+    /** World of Warcraft Armory **/
+    SCORE_DAMAGE_TAKEN          = 23,
+    SCORE_HEALING_TAKEN         = 24
+    /** World of Warcraft Armory **/
 };
 
 enum ArenaType
@@ -309,7 +313,7 @@ class BattlegroundScore
 {
     public:
         BattlegroundScore() : KillingBlows(0), Deaths(0), HonorableKills(0),
-            BonusHonor(0), DamageDone(0), HealingDone(0)
+            BonusHonor(0), DamageDone(0), HealingDone(0), DamageTaken(0), HealingTaken(0)
         {}
         virtual ~BattlegroundScore() {}                     //virtual destructor is used when deleting score from scores map
 
@@ -319,6 +323,10 @@ class BattlegroundScore
         uint32 BonusHonor;
         uint32 DamageDone;
         uint32 HealingDone;
+    /** World of Warcraft Armory **/
+    uint32 DamageTaken;
+    uint32 HealingTaken;
+    /** World of Warcraft Armory **/
 };
 
 enum BGHonorMode
