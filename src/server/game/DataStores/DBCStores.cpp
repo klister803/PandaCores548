@@ -616,27 +616,30 @@ void LoadDBCStores(const std::string& dataPath)
     for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
     {
         SkillLineAbilityEntry const *skillLine = sSkillLineAbilityStore.LookupEntry(j);
-
         if (!skillLine)
             continue;
 
         SpellEntry const* spellInfo = sSpellStore.LookupEntry(skillLine->spellId);
-        SpellMiscEntry const* spellMisc = sSpellMiscStore.LookupEntry(spellInfo ? spellInfo->SpellMiscId : 0);
-        if (spellMisc && spellMisc->Attributes & SPELL_ATTR0_PASSIVE)
-        {
-            for (uint32 i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
-            {
-                SpellLevelsEntry const* levels = sSpellLevelsStore.LookupEntry(i);
-                if (!levels)
-                    continue;
+        if (!spellInfo)
+            continue;
 
+        SpellMiscEntry const* spellMisc = sSpellMiscStore.LookupEntry(spellInfo->SpellMiscId);
+        if (!spellMisc)
+            continue;
+
+        SpellLevelsEntry const* levels = sSpellLevelsStore.LookupEntry(spellInfo->SpellLevelsId);
+        if (levels && levels->spellLevel)
+            continue;
+
+        if (spellMisc->Attributes & SPELL_ATTR0_PASSIVE)
+        {
+            for (uint32 i = 0; i < sCreatureFamilyStore.GetNumRows(); ++i)
+            {
                 CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(i);
                 if (!cFamily)
                     continue;
 
                 if (skillLine->skillId != cFamily->skillLine[0] && skillLine->skillId != cFamily->skillLine[1])
-                    continue;
-                if (levels->spellLevel)
                     continue;
 
                 if (skillLine->learnOnGetSkill != ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL)
@@ -646,7 +649,6 @@ void LoadDBCStores(const std::string& dataPath)
             }
         }
     }
-
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellReagentsStore,          dbcPath,"SpellReagents.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellScalingStore,           dbcPath,"SpellScaling.dbc");//14545
