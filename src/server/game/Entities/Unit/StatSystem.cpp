@@ -139,6 +139,8 @@ void Player::UpdateSpellDamageAndHealingBonus()
         SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, SpellBaseDamageBonusDone(SpellSchoolMask(1 << i)));
 
     SetStatFloatValue(PLAYER_FIELD_OVERRIDE_SPELL_POWER_BY_AP_PCT, GetTotalAuraModifier(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT));
+    if (getClass() == CLASS_MONK && GetSpecializationId(GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
+        UpdateAttackPowerAndDamage();
 }
 
 bool Player::UpdateAllStats()
@@ -338,10 +340,7 @@ void Player::UpdateMaxPower(Powers power)
 
 void Player::UpdateAttackPowerAndDamage(bool ranged)
 {
-    float val2 = 0.0f;
-    float level = float(getLevel());
 
-    ChrClassesEntry const* entry = sChrClassesStore.LookupEntry(getClass());
     UnitMods unitMod = ranged ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
 
     uint16 index = UNIT_FIELD_ATTACK_POWER;
@@ -355,67 +354,70 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         index_mod_pos = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS;
         index_mod_neg = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG;
         index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
-        val2 = (level + std::max(GetStat(STAT_AGILITY) - 10.0f, 0.0f)) * entry->RAPPerAgility;
     }
-    else
-    {
-        float strengthValue = std::max((GetStat(STAT_STRENGTH) - 10.0f) * entry->APPerStrenth, 0.0f);
-        float agilityValue = std::max((GetStat(STAT_AGILITY) - 10.0f) * entry->APPerAgility, 0.0f);
 
-        SpellShapeshiftFormEntry const* form = sSpellShapeshiftFormStore.LookupEntry(GetShapeshiftForm());
-        // Directly taken from client, SHAPESHIFT_FLAG_AP_FROM_STRENGTH ?
-        if (form && form->flags1 & 0x20)
+    if (!HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT))
+    {
+        float val2 = 0.0f;
+        float level = float(getLevel());
+        ChrClassesEntry const* entry = sChrClassesStore.LookupEntry(getClass());
+
+        if (ranged)
+            val2 = (level + std::max(GetStat(STAT_AGILITY) - 10.0f, 0.0f)) * entry->RAPPerAgility;
+        else
         {
-            agilityValue += std::max((GetStat(STAT_AGILITY) - 10.0f) * entry->APPerStrenth, 0.0f);
-            // Druid feral has AP per agility = 2
-            if (form->ID == FORM_CAT || form->ID == FORM_BEAR)
-                agilityValue *= 2;
+            float strengthValue = std::max((GetStat(STAT_STRENGTH) - 10.0f) * entry->APPerStrenth, 0.0f);
+            float agilityValue = std::max((GetStat(STAT_AGILITY) - 10.0f) * entry->APPerAgility, 0.0f);
+
+            SpellShapeshiftFormEntry const* form = sSpellShapeshiftFormStore.LookupEntry(GetShapeshiftForm());
+            // Directly taken from client, SHAPESHIFT_FLAG_AP_FROM_STRENGTH ?
+            if (form && form->flags1 & 0x20)
+            {
+                agilityValue += std::max((GetStat(STAT_AGILITY) - 10.0f) * entry->APPerStrenth, 0.0f);
+                // Druid feral has AP per agility = 2
+                if (form->ID == FORM_CAT || form->ID == FORM_BEAR)
+                    agilityValue *= 2;
+            }
+
+            val2 = strengthValue + agilityValue;
         }
 
-        val2 = strengthValue + agilityValue;
-    }
+        SetModifierValue(unitMod, BASE_VALUE, val2);
 
-    SetModifierValue(unitMod, BASE_VALUE, val2);
+        float base_attPower = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
+        float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
 
-    float base_attPower = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
-    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
+        //add dynamic flat mods
+        if (!ranged && HasAuraType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR))
+        {
+            AuraEffectList const& mAPbyArmor = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR);
+            for (AuraEffectList::const_iterator iter = mAPbyArmor.begin(); iter != mAPbyArmor.end(); ++iter)
+                // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
+                attPowerMod += int32(GetArmor() / (*iter)->GetAmount());
+        }
 
-    //add dynamic flat mods
-    if (!ranged && HasAuraType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR))
-    {
-        AuraEffectList const& mAPbyArmor = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR);
-        for (AuraEffectList::const_iterator iter = mAPbyArmor.begin(); iter != mAPbyArmor.end(); ++iter)
-            // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
-            attPowerMod += int32(GetArmor() / (*iter)->GetAmount());
-    }
+        float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
-    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
+        SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, 0.0f);
 
-    if (!HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT) || GetTypeId() != TYPEID_PLAYER)
-    {
-        SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, 0.00f);
+        SetInt32Value(index, (uint32)base_attPower);        //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+        SetInt32Value(index_mod_pos, (uint32)attPowerMod);  //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
 
-        SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
-        SetInt32Value(index_mod_pos, (uint32)attPowerMod);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
-
-        SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
+        SetFloatValue(index_mult, attPowerMultiplier);      //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
     }
     else
     {
-        int32 ApBySpellPct = 0;
-        int32 spellPower = ToPlayer()->GetBaseSpellPowerBonus(); // SpellPower from Weapon
-        spellPower += std::max(0, int32(ToPlayer()->GetStat(STAT_INTELLECT)) - 10); // SpellPower from intellect
+        float ApBySpellPct = float(GetTotalAuraModifier(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT));
+        int32 spellPower = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL, false);
 
-        AuraEffectList const& APbySpell = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT);
-        for (AuraEffectList::const_iterator iter = APbySpell.begin(); iter != APbySpell.end(); ++iter)
-            ApBySpellPct += (*iter)->GetAmount();
+        SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, ApBySpellPct);
+        SetModifierValue(unitMod, BASE_VALUE, ApBySpellPct / 100.0f * spellPower);
+        SetInt32Value(index, ApBySpellPct / 100.0f * spellPower);
 
-        SetModifierValue(unitMod, BASE_VALUE, (((ApBySpellPct / 100) * spellPower) - 1));
-        SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, ApBySpellPct);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
-        SetInt32Value(index, (((ApBySpellPct / 100) * spellPower) - 1));
-
+        SetInt32Value(index_mod_pos, 0);                    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+        float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
         if (attPowerMultiplier < 0)
-            SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
+            SetFloatValue(index_mult, attPowerMultiplier);  //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
     }
 
     Pet* pet = GetPet();                                //update pet's AP
