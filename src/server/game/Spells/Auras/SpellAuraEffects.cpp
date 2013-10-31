@@ -6671,17 +6671,10 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         }
 
         // Curse of Agony damage-per-tick calculation
-        if (GetSpellInfo()->Id == 980)
+        if (GetSpellInfo()->Id == 980) // Agony
         {
-            uint32 totalTick = GetTotalTicks();
-            // 1..4 ticks, 1/2 from normal tick damage
-            if (m_tickNumber <= totalTick / 3)
-                damage = damage/2;
-            // 9..12 ticks, 3/2 from normal tick damage
-            else if (m_tickNumber > totalTick * 2 / 3)
-                damage += (damage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
-            // 5..8 ticks have normal tick damage
-            damage /= 10; // Prevent insane damage with 10 stacks
+            Aura* agony = target->GetAura(980, caster->GetGUID());
+            agony->ModStackAmount(1);
         }
         // Malefic Grasp
         if (GetSpellInfo()->Id == 103103)

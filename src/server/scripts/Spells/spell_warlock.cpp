@@ -128,36 +128,6 @@ class spell_warl_shield_of_shadow : public SpellScriptLoader
         }
 };
 
-// Agony - 980
-class spell_warl_agony : public SpellScriptLoader
-{
-    public:
-        spell_warl_agony() : SpellScriptLoader("spell_warl_agony") { }
-
-        class spell_warl_agony_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_agony_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (GetCaster())
-                    if (GetTarget())
-                        if (Aura* agony = GetTarget()->GetAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
-                            agony->ModStackAmount(1);
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_agony_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_agony_AuraScript();
-        }
-};
-
 // Grimoire of Sacrifice - 108503
 class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
 {
@@ -2213,7 +2183,6 @@ class spell_warl_immolate : public SpellScriptLoader
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
-    new spell_warl_agony();
     new spell_warl_grimoire_of_sacrifice();
     new spell_warl_flames_of_xoroth();
     new spell_warl_soul_link_dummy();
