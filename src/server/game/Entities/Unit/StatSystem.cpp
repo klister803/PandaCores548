@@ -792,7 +792,7 @@ void Player::UpdateManaRegen()
     // out of combar
     SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, (combat_regen * combatMod + spirit_regen) * pctRegenMod);
     // in combat
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, (combat_regen * combatMod + spirit_regen * interruptMod) * pctRegenMod);
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, (combat_regen * combatMod + spirit_regen * interruptMod / 100.0f) * pctRegenMod);
 }
 
 void Player::UpdateRuneRegen(RuneType rune)
