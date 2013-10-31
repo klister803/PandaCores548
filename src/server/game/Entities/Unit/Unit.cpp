@@ -6377,6 +6377,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                // Pyroblast Clearcasting Driver
+                case 44448:
+                {
+                    int32 amount = triggeredByAura->GetAmount();
+                    if (procEx & PROC_EX_CRITICAL_HIT)
+                    {
+                        amount *= 2;
+                        if (amount < 400)   // not enough
+                        {
+                            triggeredByAura->SetAmount(amount);
+                            return true;
+                        }
+                        CastSpell(this, 48108, true, castItem, triggeredByAura);
+                    }
+                    triggeredByAura->SetAmount(100);
+                    return true;
+                }
                 // Glyph of Polymorph
                 case 56375:
                 {
@@ -10980,11 +10997,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         AddPct(DoneTotalMod, crit_chance);
     }
 
-    // Pyroblast - 11366
-    // Pyroblast ! - 48108 : Next Pyroblast damage increased by 25%
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 11366 && damagetype == DIRECT_DAMAGE && HasAura(48108))
-        AddPct(DoneTotalMod, 25);
-
     // Fingers of Frost - 112965
     if (GetTypeId() == TYPEID_PLAYER && pdamage != 0 && ToPlayer()->HasSpell(112965) && spellProto)
     {
@@ -11318,6 +11330,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             DoneTotal = int32(0.962 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
         else
             DoneTotal = int32(1.428 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
+    }
+
+    // Pyroblast
+    if (spellProto && spellProto->Id == 11366)
+    {
+        // Pyroblast!
+        if (HasAura(48108))
+            DoneTotalMod *= (100.0f + spellProto->Effects[2].CalcValue()) / 100.0f;
     }
 
     float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
@@ -15891,28 +15911,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 moderateInsight->RefreshDuration();
         }
     }
-
-    // Hack fix Pyroblast - Hot Streak
-    if ((procExtra & PROC_EX_CRITICAL_HIT) && !(procExtra & PROC_EX_INTERNAL_DOT) && procSpell &&
-        procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_FIRE && procSpell->Id != 12654 && procSpell->Id != 83853 &&
-        procSpell->HasEffect(SPELL_EFFECT_SCHOOL_DAMAGE) && damage > 0)
-    {
-        if (Aura* pyroblastDriver = GetAura(44448))
-        {
-            countCrit++;
-
-            if (countCrit >= 2)
-            {
-                CastSpell(this, 48108, true);
-                countCrit = 0;
-            }
-        }
-    }
-    else if (!(procExtra & PROC_EX_CRITICAL_HIT) && !(procExtra & PROC_EX_INTERNAL_DOT) && procSpell &&
-        procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_FIRE && procSpell->Id != 12654 && procSpell->Id != 83853 &&
-        procSpell->HasEffect(SPELL_EFFECT_SCHOOL_DAMAGE) && damage > 0)
-        if (Aura* pyroblastDriver = GetAura(44448))
-            countCrit = 0;
 
     // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
