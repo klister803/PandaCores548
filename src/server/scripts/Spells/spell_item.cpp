@@ -2190,6 +2190,34 @@ class spell_alchemist_rejuvenation : public SpellScriptLoader
         }
 };
 
+// Hardened Shell - 129787
+class spell_item_hardened_shell : public SpellScriptLoader
+{
+    public:
+        spell_item_hardened_shell() : SpellScriptLoader("spell_item_hardened_shell") { }
+
+        class spell_item_hardened_shell_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_item_hardened_shell_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* target = GetTarget())
+                    target->RemoveAurasByType(SPELL_AURA_MOUNTED);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_item_hardened_shell_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_item_hardened_shell_AuraScript();
+        }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2243,4 +2271,5 @@ void AddSC_item_spell_scripts()
     new spell_item_bandage_q24944();
     new spell_item_gen_alchemy_mop();
     new spell_alchemist_rejuvenation();
+    new spell_item_hardened_shell();
 }
