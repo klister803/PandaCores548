@@ -1747,7 +1747,7 @@ class spell_mage_rune_of_power : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectUpdate += AuraEffectUpdateFn(spell_mage_rune_of_power_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_MANA_REGEN_PERCENT);
+                OnEffectUpdate += AuraEffectUpdateFn(spell_mage_rune_of_power_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT);
             }
         };
 

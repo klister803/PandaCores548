@@ -436,7 +436,7 @@ enum AuraType
     SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE              = 376,  // ????
     SPELL_AURA_377                                          = 377,  // forbids spells?
     SPELL_AURA_378                                          = 378,  // 0 auras
-    SPELL_AURA_MOD_MANA_REGEN_PERCENT                       = 379,
+    SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT                  = 379,
     SPELL_AURA_380                                          = 380,  // 0 auras
     SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT                = 381,
     SPELL_AURA_MODE_PET_HEALTH_PCT                          = 382,
@@ -469,7 +469,7 @@ enum AuraType
     SPELL_AURA_MOD_FALL_SPEED                               = 409,
     SPELL_AURA_410                                          = 410,  // Glyph of Stampede
     SPELL_AURA_MOD_CHARGES                                  = 411,  // SPELL_AURA_MOD_CHARGES
-    SPELL_AURA_HASTE_AFFECTS_MANA_REGEN                     = 412,
+    SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN                = 412,
     SPELL_AURA_413                                          = 413,  // 0 auras
     SPELL_AURA_414                                          = 414,  // 5.0.5 unk aura
     SPELL_AURA_415                                          = 415,  // 5.0.5 unk aura

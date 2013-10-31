@@ -435,7 +435,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //376 SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE
     &AuraEffect::HandleNULL,                                      //377 SPELL_AURA_377
     &AuraEffect::HandleNULL,                                      //378 SPELL_AURA_378
-    &AuraEffect::HandleModManaRegen,                              //379 SPELL_AURA_MOD_MANA_REGEN_PERCENT
+    &AuraEffect::HandleModManaRegen,                              //379 SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT
     &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
     &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT
     &AuraEffect::HandleNULL,                                      //382 SPELL_AURA_MODE_PET_HEALTH_PCT
@@ -468,7 +468,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //409 SPELL_AURA_MOD_FALL_SPEED
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
     &AuraEffect::HandleNoImmediateEffect,                         //411 SPELL_AURA_MOD_CHARGES implemented in Spell::cast
-    &AuraEffect::HandleModPowerRegen,                             //412 SPELL_AURA_HASTE_AFFECTS_MANA_REGEN
+    &AuraEffect::HandleModPowerRegen,                             //412 SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN
     &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_413
     &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_414
     &AuraEffect::HandleNULL,                                      //415 SPELL_AURA_415
