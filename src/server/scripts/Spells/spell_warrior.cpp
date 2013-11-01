@@ -493,7 +493,7 @@ class spell_warr_taste_for_blood : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_warr_taste_for_blood_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_warr_taste_for_blood_SpellScript::HandleOnHit);
             }
         };
 

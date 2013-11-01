@@ -3707,10 +3707,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_CONFUSED;
                     spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
                     break;
-                case 125831:// Taste for Blood (damage done)
-                    spellInfo->Effects[0].SpellClassMask[0] &= ~0x400040;
-                    spellInfo->Effects[0].SpellClassMask[0] |= 0x200040;
-                    break;
                 case 61336: // Survival Instincts
                     spellInfo->Effects[0].BasePoints = -50;
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
