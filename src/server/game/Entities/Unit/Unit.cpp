@@ -11467,7 +11467,7 @@ int32 Unit::SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, bool withAp /*=
             if (schoolMask & (*itr)->GetMiscValue())
                 DoneAdvertisedBenefit += (*itr)->GetAmount();
 
-        return int32(GetTotalAttackPowerValue(BASE_ATTACK) * (100.0f + DoneAdvertisedBenefit) / 100.0f);
+        return int32(GetTotalAttackPowerValue(BASE_ATTACK) * DoneAdvertisedBenefit / 100.0f);
     }
 
     AuraEffectList const& mDamageDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE);
@@ -11895,9 +11895,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
+    int32 bonusDone = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
 
-    if (!DoneAdvertisedBenefit || (SpellBaseHealingBonusDone(spellProto->GetSchoolMask()) < SpellBaseDamageBonusDone(spellProto->GetSchoolMask())))
-        DoneAdvertisedBenefit = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
+    if (!DoneAdvertisedBenefit || DoneAdvertisedBenefit < bonusDone)
+        DoneAdvertisedBenefit = bonusDone;
 
     // Check for table values
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
@@ -12173,7 +12174,7 @@ int32 Unit::SpellBaseHealingBonusDone(SpellSchoolMask schoolMask)
             if (schoolMask & (*itr)->GetMiscValue())
                 AdvertisedBenefit += (*itr)->GetAmount();
 
-        return int32(GetTotalAttackPowerValue(BASE_ATTACK) * (100.0f + AdvertisedBenefit) / 100.0f);
+        return int32(GetTotalAttackPowerValue(BASE_ATTACK) * AdvertisedBenefit / 100.0f);
     }
 
     AuraEffectList const& mHealingDone = GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_DONE);
