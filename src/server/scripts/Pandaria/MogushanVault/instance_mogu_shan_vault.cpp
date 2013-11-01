@@ -57,6 +57,10 @@ public:
         uint64 inversionGobGuid;
         uint64 cancelGobGuid;
         uint64 spiritKingsControlerGuid;
+        uint64 qiangGuid;
+        uint64 subetaiGuid;
+        uint64 zianGuid;
+        uint64 mengGuid;
         uint64 janxiGuid;
         uint64 qinxiGuid;
 
@@ -64,7 +68,9 @@ public:
         std::vector<uint64> fengdoorGUIDs;
         std::vector<uint64> garajaldoorGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
-        std::vector<uint64> spiritKingsGUIDs;
+        //std::vector<uint64> spiritKingsGUIDs;
+        std::vector<uint64> kingsdoorGUIDs;
+
         
         void Initialize()
         {
@@ -88,12 +94,17 @@ public:
             inversionGobGuid                = 0;
             cancelGobGuid                   = 0;
             spiritKingsControlerGuid        = 0;
+            qiangGuid                       = 0;
+            subetaiGuid                     = 0;
+            zianGuid                        = 0;
+            mengGuid                        = 0;
 
             stoneGuardGUIDs.clear();
             fengStatuesGUIDs.clear();
             garajaldoorGUIDs.clear();
             fengdoorGUIDs.clear();
-            spiritKingsGUIDs.clear();
+            //spiritKingsGUIDs.clear();
+            kingsdoorGUIDs.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -129,11 +140,17 @@ public:
                 case NPC_SPIRIT_GUID_CONTROLER:
                     spiritKingsControlerGuid = creature->GetGUID();
                     break;
-                case NPC_ZIAN:
-                case NPC_MENG:
                 case NPC_QIANG:
+                    qiangGuid = creature->GetGUID();
+                    break;
+                case NPC_ZIAN:
+                    zianGuid = creature->GetGUID();
+                    break;
+                case NPC_MENG:
+                    mengGuid = creature->GetGUID();
+                    break;
                 case NPC_SUBETAI:
-                    spiritKingsGUIDs.push_back(creature->GetGUID());
+                    subetaiGuid = creature->GetGUID();
                     break;
                 case NPC_QIN_XI:
                     qinxiGuid = creature->GetGUID();
@@ -167,6 +184,9 @@ public:
                     break;
                 case GOB_GARAJAL_EXIT:
                     garajalexitdoorGuid = go->GetGUID();
+                    break;
+                case GOB_SPIRIT_KINGS_WIND_WALL:
+                    kingsdoorGUIDs.push_back(go->GetGUID());
                     break;
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
@@ -248,7 +268,7 @@ public:
                         case DONE:
                             for (std::vector<uint64>::const_iterator guid = garajaldoorGUIDs.begin(); guid != garajaldoorGUIDs.end(); guid++)
                                 HandleGameObject(*guid, true);
-                            //HandleGameObject(garajalexitdoorGuid, true); Comment becouse next boss not ready
+                            //HandleGameObject(garajalexitdoorGuid, true); //Comment becouse next boss not ready
                             break;
                         }
                         break;
@@ -257,21 +277,26 @@ public:
                 {
                     switch (state)
                     {
-                        case IN_PROGRESS:
-                        {
-                            if (Creature* spiritKingsControler = instance->GetCreature(spiritKingsControlerGuid))
-                                spiritKingsControler->AI()->DoAction(ACTION_ENTER_COMBAT);
-                            break;
-                        }
-                        default:
-                            break;
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        
+                        if (Creature* spiritKingsControler = instance->GetCreature(spiritKingsControlerGuid))
+                            spiritKingsControler->AI()->DoAction(ACTION_ENTER_COMBAT);
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        //TODO: here must be door for next boss
+                        break;
                     }
                     break;
                 }
-                default:
-                    break;
             }
-
             return true;
         }
 
@@ -288,9 +313,6 @@ public:
         {
             switch (type)
             {
-                /// Creature
-
-                // Stone Guard
                 case NPC_STONE_GUARD_CONTROLER:
                     return stoneGuardControlerGuid;
                 case NPC_JASPER:
@@ -304,33 +326,22 @@ public:
                                 return *guid;
                     break;
                 }
-
-                // Feng
                 case NPC_FENG:
                     return fengGuid;
-
-                // Spirit Kings
                 case NPC_SPIRIT_GUID_CONTROLER:
                     return spiritKingsControlerGuid;
-                case NPC_ZIAN:
-                case NPC_MENG:
                 case NPC_QIANG:
+                    return qiangGuid;
+                case NPC_ZIAN:
+                    return zianGuid;
+                case NPC_MENG:
+                    return mengGuid;
                 case NPC_SUBETAI:
-                {
-                    for (std::vector<uint64>::const_iterator guid = spiritKingsGUIDs.begin(); guid != spiritKingsGUIDs.end(); ++guid)
-                        if (Creature* spiritKing = instance->GetCreature(*guid))
-                            if (spiritKing->GetEntry() == type)
-                                return *guid;
-                    break;
-                }
-
-                // Will of Emperor
+                    return subetaiGuid;
                 case NPC_QIN_XI:
                     return qinxiGuid;
                 case NPC_JAN_XI:
                     return janxiGuid;
-
-                /// Gameobject
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
                 case GOB_SHIELD_STATUE:
@@ -342,8 +353,10 @@ public:
                                 return *guid;
                     break;
                 }
-                case GOB_INVERSION: return inversionGobGuid;
-                case GOB_CANCEL:    return cancelGobGuid;
+                case GOB_INVERSION: 
+                    return inversionGobGuid;
+                case GOB_CANCEL: 
+                    return cancelGobGuid;
             }
             return 0;
         }

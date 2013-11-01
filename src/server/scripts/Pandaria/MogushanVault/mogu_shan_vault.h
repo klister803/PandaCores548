@@ -35,10 +35,11 @@ enum eActions
     ACTION_SPARK                    = 5,
 
     // Spirit Kings
-    ACTION_FIRST_FIGHT              = 6,
+    ACTION_START_FIGHT              = 6,
     ACTION_FLANKING_MOGU            = 7,
     ACTION_SPIRIT_LOW_HEALTH        = 8,
-    ACTION_SPIRIT_KILLED            = 9
+    ACTION_SPIRIT_KILLED            = 9,
+    ACTION_SPIRIT_DONE              = 10 
 };
 
 enum eCreatures

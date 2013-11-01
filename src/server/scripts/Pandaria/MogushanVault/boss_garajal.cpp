@@ -77,7 +77,7 @@ class boss_garajal : public CreatureScript
             }
 
             InstanceScript* pInstance;
-            uint64 voodooTargets[3];
+            uint64 voodooTargets[4];
 
             void Reset()
             {
