@@ -618,11 +618,9 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
 
                         if (attacker->HasAura(aurEff->GetSpellInfo()->Id, caster->GetGUID()))
                         {
-                            if (Aura* touchOfKarma = attacker->GetAura(SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, caster->GetGUID()))
-                                bp += attacker->GetRemainingPeriodicAmount(caster->GetGUID(), SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, SPELL_AURA_PERIODIC_DAMAGE);
-
                             bp /= 6;
-
+                            bp += attacker->GetRemainingPeriodicAmount(caster->GetGUID(), SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, SPELL_AURA_PERIODIC_DAMAGE);
+                            
                             if (bp)
                                 caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
                         }
