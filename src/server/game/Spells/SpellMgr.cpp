@@ -3277,6 +3277,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 122013: // Glyph of Incite (Protection)
+                    spellInfo->AttributesEx3 = SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
+                    break;
                 case 53: // Backstab
                     spellInfo->Effects[0].ScalingMultiplier = 0.845f;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
