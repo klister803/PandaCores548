@@ -8063,6 +8063,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 124489: // Restless Pursuit
+                {
+                    RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
+                    break;
+                }
                 // Sparring (stacks)
                 case 116033:
                 {
