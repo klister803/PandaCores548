@@ -1156,13 +1156,13 @@ class spell_mage_conjure_refreshment_table : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (_player->getLevel() < 80)
-                        _player->CastSpell(_player, 74650, true);   // Conjure Refreshment Table (Rank 1)
+                        _player->CastSpell(_player, 120056, true);  // Conjure Refreshment Table
                     else if (_player->getLevel() < 85)
-                        _player->CastSpell(_player, 92824, true);   // Conjure Refreshment Table (Rank 2)
+                        _player->CastSpell(_player, 120055, true);  // Conjure Refreshment Table
                     else if (_player->getLevel() < 90)
-                        _player->CastSpell(_player, 92827, true);   // Conjure Refreshment Table (Rank 3)
+                        _player->CastSpell(_player, 120054, true);  // Conjure Refreshment Table
                     else
-                        _player->CastSpell(_player, 116133, true);  // Conjure Refreshment Table (Rank 3)
+                        _player->CastSpell(_player, 120053, true);  // Conjure Refreshment Table
                 }
             }
 
