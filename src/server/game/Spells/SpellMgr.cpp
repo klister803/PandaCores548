@@ -4304,9 +4304,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 114714:// Grilled Plainshawk Leg
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     break;
-                case 131780: // Summon Kovok the Destroyer
-                    spellInfo->Effects[1].MiscValue = 2;
-                    break;
                 default:
                     break;
             }
