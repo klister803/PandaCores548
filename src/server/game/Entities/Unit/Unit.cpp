@@ -624,19 +624,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
             damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
     }
-    // Temporal Shield - 115610
-    if (victim->GetTypeId() == TYPEID_PLAYER && victim->HasAura(115610) && damage != 0)
-    {
-        int32 bp = damage;
-
-        // Temporal Ripples : Add remaining amount to the basepoints
-        if (victim->HasAura(115611))
-            bp += victim->GetRemainingPeriodicAmount(victim->GetGUID(), 115611, SPELL_AURA_PERIODIC_HEAL, 0);
-
-        bp /= 3;
-
-        victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
-    }
     // Stance of the Wise Serpent - 115070
     if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto
         && spellProto->Id != 124098 && spellProto->Id != 107270 && spellProto->Id != 132467
@@ -6428,6 +6415,13 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     }
                     target = victim;
                     triggered_spell_id = 64413;
+                    break;
+                }
+                // Temporal Shield
+                case 115610:
+                {
+                    triggered_spell_id = 115611;
+                    basepoints0 = (damage + GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_HEAL)) / 3;
                     break;
                 }
             }
