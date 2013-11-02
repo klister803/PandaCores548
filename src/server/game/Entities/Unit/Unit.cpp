@@ -11328,15 +11328,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 AddPct(DoneTotalMod, aurEff->GetAmount());
     }
 
-    // Fix spellPower bonus for Holy Prism
-    if (spellProto && (spellProto->Id == 114871 || spellProto->Id == 114852) && GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_PALADIN)
-    {
-        if (spellProto->Id == 114871)
-            DoneTotal = int32(0.962 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
-        else
-            DoneTotal = int32(1.428 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
-    }
-
     // Pyroblast
     if (spellProto && spellProto->Id == 11366)
     {
@@ -11951,15 +11942,6 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         }
         if (spellProto->GetEffect(i, GetSpawnMode()).Effect == SPELL_EFFECT_HEALTH_LEECH)
             DoneTotal = 0;
-    }
-
-    // Fix spellPower bonus for Holy Prism
-    if (spellProto && (spellProto->Id == 114871 || spellProto->Id == 114852) && GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_PALADIN)
-    {
-        if (spellProto->Id == 114852)
-            DoneTotal = int32(0.962f * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
-        else
-            DoneTotal = int32(1.428f * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
     }
 
     // use float as more appropriate for negative values and percent applying

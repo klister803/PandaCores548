@@ -649,6 +649,22 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 }
                 break;
             }
+            case SPELLFAMILY_PALADIN:
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 114871: // Holy Prism (for Friend)
+                    case 114852: // Holy Prism (for Enemy)
+                    {
+                        int32 SPD = m_caster->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_HOLY);
+                        damage += effIndex == 0 ? SPD * 1.428f: SPD * 0.962f;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_MONK:
             {
                 switch (m_spellInfo->Id)
@@ -1701,7 +1717,7 @@ void Spell::EffectPowerBurn(SpellEffIndex effIndex)
     m_damage += newDamage;
 }
 
-void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
+void Spell::EffectHeal(SpellEffIndex effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
         return;
@@ -1717,55 +1733,67 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
         int32 addhealth = damage;
 
-        // Swiftmend
-        if (m_spellInfo->Id == 18562)
+        switch (m_spellInfo->Id)
         {
-            // Soul of the Forest
-            if (Player* player = m_caster->ToPlayer())
+            case 18562: // Swiftmend
             {
-                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_RESTORATION && player->HasAura(114107))
-                    player->CastSpell(player, 114108, true);    // haste
+                // Soul of the Forest
+                if (Player* player = m_caster->ToPlayer())
+                {
+                    if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_RESTORATION && player->HasAura(114107))
+                        player->CastSpell(player, 114108, true);    // haste
+                }
+                break;
             }
-        }
-        // Vessel of the Naaru (Vial of the Sunwell trinket)
-        else if (m_spellInfo->Id == 45064)
-        {
-            // Amount of heal - depends from stacked Holy Energy
-            int damageAmount = 0;
-            if (AuraEffect const* aurEff = m_caster->GetAuraEffect(45062, 0))
+            case 45064: // Vessel of the Naaru (Vial of the Sunwell trinket)
             {
-                damageAmount+= aurEff->GetAmount();
-                m_caster->RemoveAurasDueToSpell(45062);
+                int damageAmount = 0; // Amount of heal - depends from stacked Holy Energy
+                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(45062, 0))
+                {
+                    damageAmount+= aurEff->GetAmount();
+                    m_caster->RemoveAurasDueToSpell(45062);
+                }
+                addhealth += damageAmount;
+                break;
             }
+            case 19750: // Selfless Healer - Increases heal of Flash of Light if it heals an other player than you
+            {
+                if (caster->HasAura(114250))
+                {
+                    int32 charges = 0;
 
-            addhealth += damageAmount;
-        }
-        // Selfless Healer - Increases heal of Flash of Light if it heals an other player than you
-        else if (m_spellInfo->Id == 19750 && caster->HasAura(114250))
-        {
-            int32 charges = 0;
+                    if (Aura* selflessHealer = caster->GetAura(114250))
+                        charges = selflessHealer->GetStackAmount();
 
-            if (Aura* selflessHealer = caster->GetAura(114250))
-                charges = selflessHealer->GetStackAmount();
-
-            if (charges && unitTarget->GetGUID() != caster->GetGUID())
-                AddPct(addhealth, (35 * charges));
-        }
-        // Runic Healing Injector (heal increased by 25% for engineers - 3.2.0 patch change)
-        else if (m_spellInfo->Id == 67489)
-        {
-            if (Player* player = m_caster->ToPlayer())
-                if (player->HasSkill(SKILL_ENGINEERING))
-                    AddPct(addhealth, 25);
-        }
-        // Master Healing Potion
-        else if (m_spellInfo->Id == 105708)
-        {
-            // dbc missing scaling data
-            addhealth = 60000;
+                    if (charges && unitTarget->GetGUID() != caster->GetGUID())
+                        AddPct(addhealth, (35 * charges));
+                }
+                break;
+            }
+            case 67489: // Runic Healing Injector (heal increased by 25% for engineers - 3.2.0 patch change)
+            {
+                if (Player* player = m_caster->ToPlayer())
+                    if (player->HasSkill(SKILL_ENGINEERING))
+                        AddPct(addhealth, 25);
+                break;
+            }
+            case 105708: // Master Healing Potion
+            {
+                addhealth = 60000; // dbc missing scaling data
+                break;
+            }
+            case 114871: // Holy Prism (for Friend)
+            case 114852: // Holy Prism (for Enemy)
+            {
+                int32 SPD = caster->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_HOLY);
+                addhealth += effIndex == 0 ? SPD * 1.428f: SPD * 0.962f;
+                break;
+            }
+            default:
+                break;
         }
         // Death Pact - return pct of max health to caster
-        else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
+        if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
             addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, int32(caster->CountPctFromMaxHealth(damage)), HEAL);
         else
             addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, addhealth, HEAL);
