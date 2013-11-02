@@ -9338,14 +9338,18 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             break;
         }
-        // Blazing Speed
+        // Blazing Speed Trigger
         case 113857:
         {
-            int32 health = GetHealth();
+            int32 health = GetMaxHealth();
 
-            if (damage < 0 || damage < uint32(health / 50))
+            if (!(procFlags & PROC_FLAG_KILL) && int32(damage) * 100 < health * auraSpellInfo->Effects[2].CalcValue())
                 return false;
 
+            // check Blazing Speed cooldown
+            if (Player* player = ToPlayer())
+                if (player->HasSpellCooldown(108843))
+                    return false;
             break;
         }
         // Enrage
