@@ -2150,7 +2150,7 @@ class npc_mirror_image : public CreatureScript
 
                 bool hasCC = false;
                 if (me->GetCharmerOrOwnerGUID() && me->getVictim())
-                    hasCC = me->getVictim()->HasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_TAKE_DAMAGE);
+                    hasCC = me->getVictim()->HasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2);
 
                 if (hasCC)
                 {
