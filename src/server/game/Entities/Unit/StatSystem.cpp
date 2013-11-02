@@ -779,20 +779,21 @@ void Player::UpdateManaRegen()
         manaMod = 2.0f;
 
     // manaMod% of base mana every 5 seconds is base for all classes
-    float combat_regen = GetCreateMana() * manaMod / 100 / 5 + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
+    float baseRegen = GetCreateMana() * manaMod / 100 / 5;
+    float auraMp5regen = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
 
     float interruptMod = float(std::min(GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT), 100));
-    float combatMod = GetTotalAuraMultiplier(SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT);
+    float baseMod = GetTotalAuraMultiplier(SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT);
     // haste also increase your mana regeneration
     if (HasAuraType(SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN))
-        combatMod *= 1.0f + GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
+        baseMod *= 1.0f + GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
 
     float pctRegenMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
 
     // out of combar
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, (combat_regen * combatMod + spirit_regen) * pctRegenMod);
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, (baseRegen * baseMod + auraMp5regen + spirit_regen) * pctRegenMod);
     // in combat
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, (combat_regen * combatMod + spirit_regen * interruptMod / 100.0f) * pctRegenMod);
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, (baseRegen * baseMod + auraMp5regen + spirit_regen * interruptMod / 100.0f) * pctRegenMod);
 }
 
 void Player::UpdateRuneRegen(RuneType rune)
