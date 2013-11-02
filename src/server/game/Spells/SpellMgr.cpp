@@ -3292,18 +3292,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
-                case 60256:
-                case 26662:
-                case 106108:
-                case 52982:
-                case 102522:
-                case 94946:
-                case 119626:
-                case 79206:
-                case 127354:
-                    //Crashes client on pressing ESC (Maybe because of ReqSpellFocus and GameObject)
-                    spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
-                    break;
                 case 1776: // Gouge
                 case 1777:
                 case 8629:
