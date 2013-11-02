@@ -630,13 +630,22 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_MAGE:
             {
-                // Frost Bomb
-                if (m_spellInfo->Id == 113092)
+                switch (m_spellInfo->Id)
                 {
-                    if (effIndex == 0)
-                        damage += m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 2.462f;
-                    else if (effIndex == 1)
-                        damage += m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 1.231f;
+                    case 113092: // Frost Bomb
+                    {
+                        float pct;
+                        switch (effIndex)
+                        {
+                            case 0: pct = 2.462f; break;
+                            case 1: pct = 1.231f; break;
+                            default:              break;
+                        }
+                        damage += m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * pct;
+                        break;
+                    }
+                    default:
+                        break;
                 }
                 break;
             }
