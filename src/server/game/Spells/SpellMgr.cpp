@@ -3277,6 +3277,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 8676: // Ambush
+                    spellInfo->Effects[0].ScalingMultiplier = 1.787f;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
+                    break;
                 case 122013: // Glyph of Incite (Protection)
                     spellInfo->AttributesEx3 = SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
                     break;
@@ -3346,7 +3350,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 27002:
                 case 48571:
                 case 48572:
-                case 8676: // Ambush
                 case 8724:
                 case 8725:
                 case 11267:
