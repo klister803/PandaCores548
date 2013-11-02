@@ -9343,7 +9343,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         {
             int32 health = GetMaxHealth();
 
-            if (!(procFlags & PROC_FLAG_KILL) && int32(damage) * 100 < health * auraSpellInfo->Effects[2].CalcValue())
+            if (!(procFlags & PROC_FLAG_KILL) && int32(damage) * 100 < health * 2)
                 return false;
 
             // check Blazing Speed cooldown
