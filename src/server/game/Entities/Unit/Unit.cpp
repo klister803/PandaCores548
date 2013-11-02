@@ -11631,11 +11631,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         // Inferno Blast
                         if (spellProto->Id == 108853)
                             return true;
-                        // Critical Mass - 117216
-                        // Fireball, Frost Fire Bolt, Pyroblast and scorch have 50% more crit chance
-                        if (spellProto->Id == 133 || spellProto->Id == 44614 || spellProto->Id == 11366 || spellProto->Id == 2948)
-                            if (HasAura(117216))
-                                crit_chance *= 1.5f;
                         break;
                     case SPELLFAMILY_PALADIN:
                         // Holy Shock
