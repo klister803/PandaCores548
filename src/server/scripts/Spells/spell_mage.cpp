@@ -612,19 +612,74 @@ class spell_mage_frostbolt : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_frostbolt_SpellScript);
 
+            bool Validate(SpellInfo const* /*spellEntry*/) override
+            {
+                return true;
+            }
+
             SpellCastResult CheckTarget()
             {
-                if (!GetExplTargetUnit())
+                Unit* target = GetExplTargetUnit();
+                if (!target || target == GetCaster() || target->IsFriendlyTo(GetCaster()))
+                    target = GetCaster()->GetGuardianPet();
+
+                if (!target)
                     return SPELL_FAILED_NO_VALID_TARGETS;
-                else if (GetExplTargetUnit()->GetGUID() == GetCaster()->GetGUID())
-                    return SPELL_FAILED_BAD_TARGETS;
 
                 return SPELL_CAST_OK;
+            }
+
+            void OnTargetSelect(WorldObject* &obj)
+            {
+                if (!obj || !obj->isType(TYPEMASK_UNIT))
+                    return;
+
+                if (obj == GetCaster() || obj->ToUnit()->IsFriendlyTo(GetCaster()))
+                {
+                    if (Unit* pet = GetCaster()->GetGuardianPet())
+                        obj = pet;
+                }
+            }
+
+            void HandleEffect(SpellEffIndex effIndex)
+            {
+                Unit* target = GetHitUnit();
+                if (!target)
+                    return;
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                if (target->GetOwnerGUID() != caster->GetGUID())
+                    return;
+
+                switch (effIndex)
+                {
+                    case EFFECT_0:
+                    case EFFECT_3:
+                        PreventHitAura();
+                        break;
+                    case EFFECT_1:
+                        PreventHitDamage();
+                        break;
+                    case EFFECT_2:
+                        caster->CastSpell(target, 126201, true);
+                        break;
+                }
             }
 
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_mage_frostbolt_SpellScript::CheckTarget);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_frostbolt_SpellScript::OnTargetSelect, EFFECT_0, TARGET_UNIT_TARGET_ANY);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_frostbolt_SpellScript::OnTargetSelect, EFFECT_1, TARGET_UNIT_TARGET_ANY);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_frostbolt_SpellScript::OnTargetSelect, EFFECT_2, TARGET_UNIT_TARGET_ANY);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_frostbolt_SpellScript::OnTargetSelect, EFFECT_3, TARGET_UNIT_TARGET_ANY);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_frostbolt_SpellScript::HandleEffect, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_frostbolt_SpellScript::HandleEffect, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_frostbolt_SpellScript::HandleEffect, EFFECT_2, SPELL_EFFECT_SCRIPT_EFFECT);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_frostbolt_SpellScript::HandleEffect, EFFECT_3, SPELL_EFFECT_APPLY_AURA);
             }
         };
 

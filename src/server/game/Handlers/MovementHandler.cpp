@@ -531,7 +531,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                     speed_plus = 7.0f;
                 if(plrMover->HasAura(19503))
                     speed_plus = 15.0f;
-                if(plrMover->HasAura(2983) || plrMover->HasAura(8696) || plrMover->HasAura(11305) || plrMover->HasAura(48594) || plrMover->HasAura(56354) || plrMover->HasAura(32720) || plrMover->HasAura(3714))
+                if(plrMover->HasAura(2983) || plrMover->HasAura(48594) || plrMover->HasAura(56354) || plrMover->HasAura(32720) || plrMover->HasAura(3714))
                     speed_plus = 4.0f;
 
                 float current_speed = mover->GetSpeed(MOVE_RUN) > mover->GetSpeed(MOVE_FLIGHT) ? mover->GetSpeed(MOVE_RUN) : mover->GetSpeed(MOVE_FLIGHT);

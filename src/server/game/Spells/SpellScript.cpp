@@ -104,6 +104,64 @@ std::string _SpellScript::EffectHook::EffIndexToString()
             return "EFFECT_1";
         case EFFECT_2:
             return "EFFECT_2";
+        case EFFECT_3:
+            return "EFFECT_3";
+        case EFFECT_4:
+            return "EFFECT_4";
+        case EFFECT_5:
+            return "EFFECT_5";
+        case EFFECT_6:
+            return "EFFECT_6";
+        case EFFECT_7:
+            return "EFFECT_7";
+        case EFFECT_8:
+            return "EFFECT_8";
+        case EFFECT_9:
+            return "EFFECT_9";
+        case EFFECT_10:
+            return "EFFECT_10";
+        case EFFECT_11:
+            return "EFFECT_11";
+        case EFFECT_12:
+            return "EFFECT_12";
+        case EFFECT_13:
+            return "EFFECT_13";
+        /*case EFFECT_14:
+            return "EFFECT_14";
+        case EFFECT_15:
+            return "EFFECT_15";
+        case EFFECT_16:
+            return "EFFECT_16";
+        case EFFECT_17:
+            return "EFFECT_17";
+        case EFFECT_18:
+            return "EFFECT_18";
+        case EFFECT_19:
+            return "EFFECT_19";
+        case EFFECT_20:
+            return "EFFECT_20";
+        case EFFECT_21:
+            return "EFFECT_21";
+        case EFFECT_22:
+            return "EFFECT_22";
+        case EFFECT_23:
+            return "EFFECT_23";
+        case EFFECT_24:
+            return "EFFECT_24";
+        case EFFECT_25:
+            return "EFFECT_25";
+        case EFFECT_26:
+            return "EFFECT_26";
+        case EFFECT_27:
+            return "EFFECT_27";
+        case EFFECT_28:
+            return "EFFECT_28";
+        case EFFECT_29:
+            return "EFFECT_29";
+        case EFFECT_30:
+            return "EFFECT_30";
+        case EFFECT_31:
+            return "EFFECT_31";*/
     }
     return "Invalid Value";
 }
