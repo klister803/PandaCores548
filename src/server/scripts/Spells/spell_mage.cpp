@@ -1812,6 +1812,52 @@ class spell_mage_rune_of_power : public SpellScriptLoader
         }
 };
 
+// Invisibility - 32612
+// Greater Invisibility - 110960
+class spell_elem_invisibility : public SpellScriptLoader
+{
+    public:
+        spell_elem_invisibility() : SpellScriptLoader("spell_elem_invisibility") { }
+
+        class spell_elem_invisibility_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_elem_invisibility_AuraScript);
+
+        public:
+ 
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                if (target->GetOwnerGUID())
+                    return;
+
+                if (Guardian* pet = target->GetGuardianPet())
+                    pet->CastSpell(pet, 96243, true);
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                if (target->GetOwnerGUID())
+                    return;
+
+                if (Guardian* pet = target->GetGuardianPet())
+                    pet->RemoveAurasDueToSpell(96243);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_elem_invisibility_AuraScript::OnApply, EFFECT_1, SPELL_AURA_MOD_INVISIBILITY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_elem_invisibility_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_INVISIBILITY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_elem_invisibility_AuraScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -1848,4 +1894,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_greater_invisibility();
     new spell_mage_ice_block();
     new spell_mage_rune_of_power();
+    new spell_elem_invisibility();
 }
