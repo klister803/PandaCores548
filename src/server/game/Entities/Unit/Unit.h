@@ -42,6 +42,8 @@
 
 #define WORLD_TRIGGER   12999
 
+class DotaStatsDump;
+
 enum SpellInterruptFlags
 {
     SPELL_INTERRUPT_FLAG_MOVEMENT     = 0x01, // why need this for instant?
@@ -2096,7 +2098,7 @@ class Unit : public WorldObject
 
         int32 SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, bool withAp = true);
         int32 SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask);
-        uint32 SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack = 1);
+        uint32 SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack = 1, DotaStatsDump *fillIn = NULL, DotaStatsDump *use = NULL);
         uint32 SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack = 1);
         int32 SpellBaseHealingBonusDone(SpellSchoolMask schoolMask);
         int32 SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask);
@@ -2112,7 +2114,7 @@ class Unit : public WorldObject
 
         bool   isSpellBlocked(Unit* victim, SpellInfo const* spellProto, WeaponAttackType attackType = BASE_ATTACK);
         bool   isBlockCritical();
-        bool   isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK) const;
+        bool   isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK, DotaStatsDump *fillIn = NULL, DotaStatsDump *use = NULL) const;
         uint32 SpellCriticalDamageBonus(SpellInfo const* spellProto, uint32 damage, Unit* victim);
         uint32 SpellCriticalHealingBonus(SpellInfo const* spellProto, uint32 damage, Unit* victim);
 

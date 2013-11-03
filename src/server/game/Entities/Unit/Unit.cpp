@@ -10975,7 +10975,7 @@ void Unit::EnergizeBySpell(Unit* victim, uint32 spellID, int32 damage, Powers po
     victim->getHostileRefManager().threatAssist(this, float(damage) * 0.5f, spellInfo);
 }
 
-uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack)
+uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack, DotaStatsDump *fillIn, DotaStatsDump *use)
 {
     if (!spellProto || !victim || damagetype == DIRECT_DAMAGE)
         return pdamage;
@@ -11341,6 +11341,21 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             DoneTotalMod *= (100.0f + spellProto->Effects[2].CalcValue()) / 100.0f;
     }
 
+    if (fillIn)
+    {
+        fillIn->SetSpellTotalDamage(DoneTotal);
+        fillIn->SetDamageMod(DoneTotalMod);
+    }
+
+    if (use)
+    {
+        if (use->spellTotalDamage)
+            DoneTotal = *(use->spellTotalDamage);
+
+        if (use->damageMod)
+            DoneTotalMod = *(use->damageMod);
+    }
+
     float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
     // apply spellmod to Done damage (flat and pct)
     if (Player* modOwner = GetSpellModOwner())
@@ -11524,7 +11539,7 @@ int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask)
     return TakenAdvertisedBenefit;
 }
 
-bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType) const
+bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType, DotaStatsDump *fillIn, DotaStatsDump *use) const
 {
     //! Mobs can't crit with spells. Player Totems can
     //! Fire Elemental (from totem) can too - but this part is a hack and needs more research
@@ -11754,6 +11769,12 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     for (AuraEffectList::const_iterator i = critAuras.begin(); i != critAuras.end(); ++i)
         if ((*i)->GetCasterGUID() == GetGUID() && (*i)->IsAffectingSpell(spellProto))
             crit_chance += (*i)->GetAmount();
+
+    if (fillIn)
+        fillIn->SetCritChance(crit_chance);
+
+    if (use && use->critChance)
+        crit_chance = *(use->critChance);
 
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
     if (roll_chance_f(crit_chance))

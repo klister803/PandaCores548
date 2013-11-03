@@ -23,6 +23,81 @@ class Unit;
 class AuraEffect;
 class Aura;
 
+class DotaStatsDump {
+public:
+    DotaStatsDump()
+    {
+        spellTotalDamage = NULL;
+        damageMod = NULL;
+        critChance = NULL;
+        amplitude = NULL;
+    }
+
+    ~DotaStatsDump()
+    {
+        if (spellTotalDamage)
+            delete spellTotalDamage;
+
+        if (damageMod)
+            delete damageMod;
+
+        if (critChance)
+            delete critChance;
+
+        if (amplitude)
+            delete amplitude;
+    }
+
+    void SetSpellTotalDamage(int32 value)
+    {
+        if (!spellTotalDamage)
+        {
+            spellTotalDamage = new int32;
+            *spellTotalDamage = value;
+        }
+        else
+            *spellTotalDamage = value;
+    }
+
+    void SetDamageMod(float value)
+    {
+        if (!damageMod)
+        {
+            damageMod = new float;
+            *damageMod = value;
+        }
+        else
+            *damageMod = value;
+    }
+
+    void SetCritChance(float value)
+    {
+        if (!critChance)
+        {
+            critChance = new float;
+            *critChance = value;
+        }
+        else
+            *critChance = value;
+    }
+
+    void SetAmplitude(int32 value)
+    {
+        if (!amplitude)
+        {
+            amplitude = new int32;
+            *amplitude = value;
+        }
+        else
+            *amplitude = value;
+    }
+
+    int32 *spellTotalDamage;
+    float *damageMod;
+    float *critChance;
+    int32 *amplitude;
+};
+
 #include "SpellAuras.h"
 
 typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uint8 mode, bool apply) const;
@@ -59,6 +134,8 @@ class AuraEffect
 
         int32 GetPeriodicTimer() const { return m_periodicTimer; }
         void SetPeriodicTimer(int32 periodicTimer) { m_periodicTimer = periodicTimer; }
+
+        void CalculateDotaStatsDump(bool refresh = false);
 
         int32 CalculateAmount(Unit* caster);
         void CalculatePeriodic(Unit* caster, bool resetPeriodicTimer = true, bool load = false);
@@ -113,8 +190,10 @@ class AuraEffect
         bool m_canBeRecalculated;
         bool m_isPeriodic;
         uint8 m_diffMode;
+
+        DotaStatsDump* m_dotaStatsDump;
     private:
-        bool IsPeriodicTickCrit(Unit* target, Unit const* caster) const;
+        bool IsPeriodicTickCrit(Unit* target, Unit const* caster, DotaStatsDump* use = NULL) const;
 
     public:
         // aura effect apply/remove handlers

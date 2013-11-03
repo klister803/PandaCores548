@@ -525,6 +525,10 @@ void Aura::_ApplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp
             caster->ToPlayer()->AddSpellAndCategoryCooldowns(m_spellInfo, castItem ? castItem->GetEntry() : 0, NULL, true);
         }
     }
+
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (AuraEffect* aurEff = GetEffect(i))
+            aurEff->CalculateDotaStatsDump();
 }
 
 void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp)
@@ -856,9 +860,17 @@ void Aura::SetDuration(int32 duration, bool withMods)
     SetNeedClientUpdateForTargets();
 }
 
-void Aura::RefreshDuration()
+void Aura::RefreshDuration(bool /*recalculate*/)
 {
     SetDuration(GetMaxDuration());
+
+    Unit* caster = GetCaster();
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (HasEffect(i))
+        {
+            GetEffect(i)->CalculatePeriodic(caster, false, false);
+            GetEffect(i)->CalculateDotaStatsDump(true);
+        }
 
     SpellPowerEntry power;
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
@@ -872,7 +884,7 @@ void Aura::RefreshTimers()
 {
     m_maxDuration = CalcMaxDuration();
 
-    RefreshDuration();
+    RefreshDuration(false);
     Unit* caster = GetCaster();
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (HasEffect(i))
@@ -1012,6 +1024,11 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
                     if (SpellModifier* mod = aurEff->GetSpellModifier())
                         mod->charges = GetCharges();
     }
+
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (AuraEffect* aurEff = GetEffect(i))
+            aurEff->CalculateDotaStatsDump();
+
     SetNeedClientUpdateForTargets();
     return false;
 }

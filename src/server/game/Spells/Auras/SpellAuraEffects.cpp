@@ -483,13 +483,51 @@ m_baseAmount(baseAmount ? *baseAmount : m_spellInfo->GetEffect(effIndex, m_diffM
 m_spellmod(NULL), m_periodicTimer(0), m_tickNumber(0), m_effIndex(effIndex),
 m_canBeRecalculated(true), m_isPeriodic(false),
 m_oldbaseAmount(0),saveTarget(NULL),
-m_diffMode(caster ? caster->GetSpawnMode() : 0)
+m_diffMode(caster ? caster->GetSpawnMode() : 0),
+  m_dotaStatsDump(NULL)
 {
 }
 
 AuraEffect::~AuraEffect()
 {
+    if (m_dotaStatsDump)
+        delete m_dotaStatsDump;
+
     delete m_spellmod;
+}
+
+void AuraEffect::CalculateDotaStatsDump(bool refresh)
+{
+    if (GetAuraType() != SPELL_AURA_PERIODIC_DAMAGE)
+        return;
+
+    if (m_dotaStatsDump)
+    {
+        delete m_dotaStatsDump;
+        m_dotaStatsDump = NULL;
+    }
+
+    Unit* caster = GetCaster();
+    Unit *target = GetBase()->GetOwner()->ToUnit();
+    if (!caster || !target)
+        return;
+
+    m_dotaStatsDump = new DotaStatsDump;
+    uint32 damage = std::max(GetAmount(), 0);
+    caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount(), m_dotaStatsDump);
+    caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_dotaStatsDump);
+
+    switch (m_spellInfo->SpellFamilyName)
+    {
+        case SPELLFAMILY_WARLOCK:
+            if (m_spellInfo->SpellFamilyFlags[0] & 0x2 && refresh)
+                if (m_dotaStatsDump->spellTotalDamage)
+                {
+                    delete m_dotaStatsDump->spellTotalDamage;
+                    m_dotaStatsDump->spellTotalDamage = NULL;
+                }
+            break;
+    }
 }
 
 void AuraEffect::GetTargetList(std::list<Unit*> & targetList) const
@@ -1306,10 +1344,10 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
     GetBase()->CallScriptEffectUpdatePeriodicHandlers(this);
 }
 
-bool AuraEffect::IsPeriodicTickCrit(Unit* target, Unit const* caster) const
+bool AuraEffect::IsPeriodicTickCrit(Unit* target, Unit const* caster, DotaStatsDump* use) const
 {
     ASSERT(caster);
-    return caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask());
+    return caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, NULL, use);
 }
 
 bool AuraEffect::IsAffectingSpell(SpellInfo const* spell) const
@@ -6659,7 +6697,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
     if (GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
     {
-        damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
+        damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount(), NULL, m_dotaStatsDump);
         damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT, GetBase()->GetStackAmount());
 
         // Calculate armor mitigation
@@ -6841,7 +6879,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     else
         damage = uint32(target->CountPctFromMaxHealth(damage));
 
-    bool crit = IsPeriodicTickCrit(target, caster);
+    bool crit = IsPeriodicTickCrit(target, caster, m_dotaStatsDump);
     if (crit)
         damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
 
