@@ -6417,6 +6417,39 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     triggered_spell_id = 64413;
                     break;
                 }
+                // Fingers of Frost
+                case 112965:
+                {
+                    if (!procSpell)
+                        return false;
+
+                    uint8 effIdx = triggeredByAura->GetEffIndex();
+                    switch (procSpell->Id)
+                    {
+                        case 116:       // Frostbolt
+                        case 44614:     // Frostfire Bolt
+                        case 84714:     // Frozen Orb
+                            if (effIdx != EFFECT_0)
+                                return false;
+                            break;
+                        case 42208:     // Blizzard
+                            if (effIdx != EFFECT_1)
+                                return false;
+                            break;
+                        case 2948:      // Scorch
+                            if (effIdx != EFFECT_2)
+                                return false;
+                            break;
+                    }
+
+                    if (!roll_chance_i(triggerAmount))
+                        return false;
+
+                    triggered_spell_id = 44544;
+                    if (HasAura(triggered_spell_id))
+                        CastSpell(this, 126084, true);  // cast second charge visual
+                    break;
+                }
                 // Temporal Shield
                 case 115610:
                 {
@@ -10234,9 +10267,6 @@ bool Unit::HasAuraState(AuraStateType flag, SpellInfo const* spellProto, Unit co
         // Fix Brain Freeze (57761) - Frostfire Bolt (44614) act as if target has aurastate frozen
         if (spellProto && spellProto->Id == 44614 && Caster->HasAura(57761))
             return true;
-        // Fix Fingers of Frost (44544) - Ice Lance (30455) and Deep Freeze (44572) act as if target has aurastate frozen
-        if (spellProto && (spellProto->Id == 30455 || spellProto->Id == 44572) && Caster->HasAura(44544))
-            return true;
         // Check per caster aura state
         // If aura with aurastate by caster not found return false
         if ((1<<(flag-1)) & PER_CASTER_AURA_STATE_MASK)
@@ -11000,35 +11030,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         AddPct(DoneTotalMod, crit_chance);
     }
 
-    // Fingers of Frost - 112965
-    if (GetTypeId() == TYPEID_PLAYER && pdamage != 0 && ToPlayer()->HasSpell(112965) && spellProto)
-    {
-        if (spellProto->Id == 116 || spellProto->Id == 44614 || spellProto->Id == 84721)
-        {
-            if (roll_chance_i(12))
-            {
-                CastSpell(this, 44544, true);  // Fingers of frost proc
-                CastSpell(this, 126084, true); // Fingers of frost visual
-            }
-        }
-        else if (spellProto->Id == 42208)
-        {
-            if (roll_chance_i(4))
-            {
-                CastSpell(this, 44544, true);  // Fingers of frost proc
-                CastSpell(this, 126084, true); // Fingers of frost visual
-            }
-        }
-        else if (spellProto->Id == 2948)
-        {
-            if (roll_chance_i(9))
-            {
-                CastSpell(this, 44544, true);  // Fingers of frost proc
-                CastSpell(this, 126084, true); // Fingers of frost visual
-            }
-        }
-    }
-
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
         DoneTotalMod *= ToCreature()->GetSpellDamageMod(ToCreature()->GetCreatureTemplate()->rank);
@@ -11168,8 +11169,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         case SPELLFAMILY_MAGE:
             // Ice Lance
             if (spellProto->SpellIconID == 186)
+            {
                 if (victim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
                     DoneTotalMod *= 4.0f;
+
+                // search Fingers of Frost
+                if (AuraEffect const* aurEff = GetAuraEffect(44544, EFFECT_1))
+                    AddPct(DoneTotalMod, aurEff->GetAmount());
+            }
 
             // Torment the weak
             if (spellProto->GetSchoolMask() & SPELL_SCHOOL_MASK_ARCANE)
@@ -15910,18 +15917,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && HasAura(121152) && getClass() == CLASS_ROGUE && procSpell && procSpell->Id == 111240)
         RemoveAura(121153);
 
-    // Fix Drop charge for Fingers of Frost
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(44544) && getClass() == CLASS_MAGE && procSpell && (procSpell->Id == 30455 || procSpell->Id == 44572))
-    {
-        AuraApplication* fingersOfFrost = GetAuraApplication(44544, GetGUID());
-        AuraApplication* fingersVisual = GetAuraApplication(126084, GetGUID());
-
-        if (fingersOfFrost)
-            fingersOfFrost->GetBase()->DropCharge();
-        if (fingersVisual)
-            fingersVisual->GetBase()->DropCharge();
-    }
-
     // Hack Fix Immolate - Critical strikes generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
         if (roll_chance_i(50))
@@ -16380,6 +16375,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
                     case SPELL_AURA_ADD_PCT_MODIFIER:
                         if (HandleSpellModAuraProc(target, damage, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
+                            takeCharges = true;
+                        break;
+                    case SPELL_AURA_ABILITY_IGNORE_AURASTATE:
+                        if (HandleIgnoreAurastateAuraProc(target, damage, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
                         break;
                     default:
@@ -20423,3 +20422,52 @@ bool Unit::HandleSpellModAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* t
 
     return true;
 }
+
+bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+{
+    SpellInfo const* triggeredByAuraSpell = triggeredByAura->GetSpellInfo();
+
+    uint32 triggered_spell_id = 0;
+    Unit* target = victim;
+    int32 basepoints0 = 0;
+
+    Item* castItem = triggeredByAura->GetBase()->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
+        ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
+
+    switch (triggeredByAuraSpell->Id)
+    {
+        case 44544:         // Fingers of Frost
+        {
+            RemoveAurasDueToSpell(126084);  // remove second visual
+            if (triggeredByAura->GetBase()->ModStackAmount(-1))
+                RemoveAura(triggeredByAura->GetBase());
+            return true;
+        }
+    }
+
+    // processed charge only counting case
+    if (!triggered_spell_id)
+        return true;
+
+    SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(triggered_spell_id);
+
+    if (!triggerEntry)
+    {
+        sLog->outError(LOG_FILTER_UNITS, "Unit::HandleSpellCritChanceAuraProc: Spell %u has non-existing triggered spell %u", triggeredByAuraSpell->Id, triggered_spell_id);
+        return false;
+    }
+
+    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+        return false;
+
+    if (basepoints0)
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
+    else
+        CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
+
+    if (cooldown && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, time(NULL) + cooldown);
+
+    return true;
+}
+

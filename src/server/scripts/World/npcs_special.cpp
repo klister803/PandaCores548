@@ -3664,8 +3664,9 @@ class npc_frozen_orb : public CreatureScript
                 if (owner)
                 {
                     owner->CastSpell(creature, 84721, true);
+                    if (owner->HasAura(44544))
+                        owner->CastSpell(owner, 126084, true);
                     owner->CastSpell(owner, 44544, true);
-                    owner->CastSpell(owner, 126084, true);
                 }
 
                 frozenOrbTimer = 1000;

@@ -3877,9 +3877,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ProcCharges = 2;
                     break;
                 case 44544: // Fingers of Frost
-                case 126084:// Fingers of Frost - visual
-                    spellInfo->ProcCharges = 2;
-                    spellInfo->StackAmount = 0;
+                    // affect Ice Lance
+                    spellInfo->Effects[0].SpellClassMask[0] |= 0x20000;
                     break;
                 case 85222: // Light of Dawn
                     spellInfo->MaxAffectedTargets = 6;
@@ -4031,9 +4030,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                  // Malygos Enrage
                 case 60670:
-            	    spellInfo->Effects[1].TriggerSpell = 0;
-            	    spellInfo->Effects[2].TriggerSpell = 0;
-            	    break;
+                    spellInfo->Effects[1].TriggerSpell = 0;
+                    spellInfo->Effects[2].TriggerSpell = 0;
+                    break;
                 case 114746:
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_TARGET_ALLY;
                     spellInfo->Effects[2].TargetB = 0;
@@ -4302,6 +4301,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 102359:    // Mass Entanglement
                 case 104239:    // Horror (Soulburn)
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
+                    break;
+                case 112965:    // Fingers of Frost
+                    for (int i = 0; i < 3; ++i)
+                    {
+                        spellInfo->Effects[i].Effect = SPELL_EFFECT_APPLY_AURA;
+                        spellInfo->Effects[i].ApplyAuraName = SPELL_AURA_DUMMY;
+                        spellInfo->Effects[i].TargetA = TARGET_UNIT_CASTER;
+                    }
                     break;
                 default:
                     break;
