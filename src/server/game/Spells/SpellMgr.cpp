@@ -4310,6 +4310,10 @@ void SpellMgr::LoadSpellCustomAttr()
                         spellInfo->Effects[i].TargetA = TARGET_UNIT_CASTER;
                     }
                     break;
+                case 122137: // Summon Ghosts from Urns - Summons
+                    spellInfo->Effects[0].BasePoints = 5;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(25); // 180s
+                    break;                    
                 default:
                     break;
             }
