@@ -6284,6 +6284,10 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
     if (success_list.empty())
         return;
 
+    // Spellsteal and Glyph of Spellsteal
+    if (m_spellInfo->Id == 30449 && m_caster->HasAura(115713))
+        m_caster->CastSpell(m_caster, 115714, true);
+
     WorldPacket dataSuccess(SMSG_SPELLSTEALLOG, 8+8+4+1+4+damage*5);
     dataSuccess.append(unitTarget->GetPackGUID());  // Victim GUID
     dataSuccess.append(m_caster->GetPackGUID());    // Caster GUID
