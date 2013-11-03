@@ -132,9 +132,6 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Pounce
             if (spellproto->SpellFamilyFlags[0] & 0x20000)
                 return DIMINISHING_OPENING_STUN;
-            // Cyclone
-            else if (spellproto->SpellFamilyFlags[1] & 0x20)
-                return DIMINISHING_CYCLONE;
             // Entangling Roots
             // Nature's Grasp
             else if (spellproto->SpellFamilyFlags[0] & 0x00000200)
