@@ -3274,7 +3274,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 8676: // Ambush
+                case 123154: // Fists of Fury Visual Target
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36);
+                    break;
+                case 8676:   // Ambush
                     spellInfo->Effects[0].ScalingMultiplier = 1.787f;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
