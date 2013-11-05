@@ -268,7 +268,7 @@ public:
                         case DONE:
                             for (std::vector<uint64>::const_iterator guid = garajaldoorGUIDs.begin(); guid != garajaldoorGUIDs.end(); guid++)
                                 HandleGameObject(*guid, true);
-                            //HandleGameObject(garajalexitdoorGuid, true); //Comment becouse next boss not ready
+                            HandleGameObject(garajalexitdoorGuid, true);
                             break;
                         }
                         break;
@@ -284,9 +284,6 @@ public:
                     case IN_PROGRESS:
                         for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
                             HandleGameObject(*guid, false);
-                        
-                        if (Creature* spiritKingsControler = instance->GetCreature(spiritKingsControlerGuid))
-                            spiritKingsControler->AI()->DoAction(ACTION_ENTER_COMBAT);
                         break;
                     case DONE:
                         for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)

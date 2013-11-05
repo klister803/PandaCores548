@@ -496,21 +496,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // are most of these still needed?
     switch (spellInfo->Id)
     {
-        case 116:           // Frostbolt - 116 and Frostbolt - 126201 (heal for water elemental)
-        {
-            if (Unit* target = targets.GetUnitTarget())
-            {
-                if (target->GetOwner() && target->GetOwner()->GetTypeId() == TYPEID_PLAYER && target->GetOwner()->GetGUID() == _player->GetGUID())
-                {
-                    if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126201))
-                    {
-                        spellInfo = newSpellInfo;
-                        spellId = newSpellInfo->Id;
-                    }
-                }
-            }
-            break;
-        }
         case 1490:          // Curse of the Elements - 1490 and Curse of the Elements : Soulburn - 104225
         {
             if (_player->HasAura(74434))

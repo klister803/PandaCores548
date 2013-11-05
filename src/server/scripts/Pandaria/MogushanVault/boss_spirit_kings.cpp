@@ -29,7 +29,7 @@ enum eSpells
     SPELL_IMPERVIOUS_SHIELD     = 117961, // Heroic
 
     // Subetai
-    SPELL_PILLAGE               = 118047, // Also when vanquished
+    SPELL_PILLAGE               = 118049, 
     SPELL_VOLLEY_VISUAL         = 118100,
     SPELL_VOLLEY_1              = 118094,
     SPELL_VOLLEY_2              = 118105,
@@ -58,6 +58,7 @@ enum eSpells
     SPELL_INACTIVE              = 118205,
     SPELL_INACTIVE_STUN         = 118319,
     SPELL_BERSERK               = 120207,
+    SPELL_NEXT_SPIRIT_VISUAL    = 118861,
 
     // Flanking Mogu
     SPELL_GHOST_VISUAL          = 117904,
@@ -92,81 +93,13 @@ enum eEvents
     EVENT_CRAZY_TOUGHT          = 15
 };
 
-#define MAX_FLANKING_MOGU   48
-
-Position flankingPos[MAX_FLANKING_MOGU] =
-{
-    {4195.25f, 1590.85f, 438.841f, 0.12350f},
-    {4194.99f, 1586.06f, 438.841f, 0.26639f},
-    {4193.99f, 1581.04f, 438.840f, 0.39482f},
-    {4195.19f, 1576.21f, 438.840f, 0.52845f},
-    {4196.93f, 1571.99f, 438.839f, 0.64866f},
-    {4200.06f, 1568.31f, 438.839f, 0.77664f},
-    {4203.17f, 1564.49f, 438.837f, 0.90416f},
-    {4206.52f, 1561.59f, 438.837f, 1.01808f},
-    {4209.94f, 1558.79f, 438.836f, 1.12821f},
-    {4213.91f, 1556.73f, 438.837f, 1.23942f},
-    {4217.99f, 1556.02f, 438.839f, 1.34239f},
-    {4222.20f, 1555.52f, 438.839f, 1.44913f},
-    {4226.90f, 1555.01f, 438.839f, 1.56812f},
-    {4231.69f, 1555.00f, 438.839f, 1.68814f},
-    {4236.49f, 1556.31f, 438.838f, 1.81247f},
-    {4241.28f, 1558.22f, 438.837f, 1.94289f},
-    {4245.75f, 1561.11f, 438.837f, 2.07869f},
-    {4250.17f, 1563.56f, 438.837f, 2.20908f},
-    {4253.08f, 1568.12f, 438.839f, 2.34491f},
-    {4255.07f, 1573.32f, 438.840f, 2.48865f},
-    {4257.26f, 1579.05f, 438.840f, 2.66189f},
-    {4257.36f, 1584.80f, 438.841f, 2.82356f},
-    {4258.93f, 1591.29f, 438.841f, 3.03247f},
-    {4259.81f, 1597.36f, 438.841f, 3.21968f},
-    {4265.56f, 1603.04f, 438.842f, 3.35247f},
-    {4264.61f, 1608.74f, 438.843f, 3.49683f},
-    {4263.33f, 1613.64f, 438.841f, 3.62029f},
-    {4260.61f, 1618.46f, 438.842f, 3.75534f},
-    {4257.08f, 1622.41f, 438.845f, 3.88442f},
-    {4253.70f, 1625.77f, 438.845f, 4.00111f},
-    {4250.06f, 1629.08f, 438.844f, 4.12039f},
-    {4245.74f, 1631.66f, 438.843f, 4.24225f},
-    {4241.14f, 1634.23f, 438.846f, 4.36825f},
-    {4236.42f, 1635.51f, 438.847f, 4.48507f},
-    {4231.43f, 1635.73f, 438.849f, 4.60476f},
-    {4226.52f, 1635.65f, 438.851f, 4.72422f},
-    {4221.75f, 1635.25f, 438.851f, 4.84165f},
-    {4217.01f, 1633.81f, 438.853f, 4.96304f},
-    {4211.88f, 1632.07f, 438.853f, 5.09767f},
-    {4207.12f, 1629.80f, 438.851f, 5.22899f},
-    {4202.68f, 1626.57f, 438.851f, 5.36565f},
-    {4198.73f, 1623.16f, 438.850f, 5.49605f},
-    {4195.37f, 1619.05f, 438.849f, 5.62901f},
-    {4192.82f, 1614.57f, 438.849f, 5.75861f},
-    {4190.84f, 1609.64f, 438.847f, 5.89364f},
-    {4190.58f, 1604.28f, 438.850f, 6.02825f},
-    {4192.61f, 1600.68f, 438.844f, 6.11362f},
-    {4195.38f, 1595.63f, 438.841f, 6.25653f}
-};
-
+// This array need for remove some auras
 uint32 spiritKingsEntry[4] =
 {
     NPC_QIANG,
     NPC_SUBETAI,
     NPC_ZIAN,
     NPC_MENG
-};
-
-Position spiritKingsPos[4] =
-{
-    {4226.33f, 1626.28f, 438.856f, 4.72348f},
-    {4257.35f, 1591.36f, 438.841f, 3.13526f},
-    {4226.97f, 1558.32f, 438.804f, 1.58495f},
-    {4198.78f, 1590.29f, 438.841f, 6.26345f}
-};
-
-uint32 volleySpells[3] =
-{
-    SPELL_VOLLEY_1,
-    SPELL_VOLLEY_2,
-    SPELL_VOLLEY_3
 };
 
 class boss_spirit_kings_controler : public CreatureScript
@@ -264,7 +197,7 @@ class boss_spirit_kings_controler : public CreatureScript
                     if (!qiang->isAlive())
                         qiang->Respawn();
                     
-                    qiang->AI()->DoAction(ACTION_START_FIGHT);                    
+                    qiang->AI()->DoAction(ACTION_START_FIGHT);                   
                 }
 
                 for (uint8 n = 0; n < 3; n++)
@@ -275,6 +208,9 @@ class boss_spirit_kings_controler : public CreatureScript
                             kings->Respawn();
                     }
                 }
+
+                if (Creature* nspirit = me->GetCreature(*me, pInstance->GetData64(spiritkings[0])))
+                        nspirit->AddAura(SPELL_NEXT_SPIRIT_VISUAL, nspirit);
             }
 
             void DoAction(const int32 action)
@@ -296,6 +232,11 @@ class boss_spirit_kings_controler : public CreatureScript
                                 {
                                     if (Creature* sp = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
                                         sp->AI()->DoAction(ACTION_SPIRIT_LOW_HEALTH);
+                                }
+                                else
+                                {
+                                    if (Creature* nspirit = me->GetCreature(*me, pInstance->GetData64(spiritkings[n+1])))
+                                        nspirit->AddAura(SPELL_NEXT_SPIRIT_VISUAL, nspirit);
                                 }
                                 spiritkings[n] = 0;
                                 break;
@@ -338,7 +279,17 @@ class boss_spirit_kings_controler : public CreatureScript
                         case EVENT_CHECK_WIPE:
                             {
                                 if (pInstance->IsWipe())
+                                {
+                                    for (uint8 n = 0; n < 4; n++)
+                                    {
+                                        if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritKingsEntry[n])))
+                                        {
+                                            if (king->isAlive() && king->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
+                                                king->RemoveAurasDueToSpell(SPELL_NEXT_SPIRIT_VISUAL);
+                                        }
+                                    }
                                     EnterEvadeMode();
+                                }
                                 else
                                     events.ScheduleEvent(EVENT_CHECK_WIPE, 1500);
                             }
@@ -375,6 +326,8 @@ class boss_spirit_kings : public CreatureScript
 
             void Reset()
             {
+                if (me->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
+                    me->RemoveAurasDueToSpell(SPELL_NEXT_SPIRIT_VISUAL);
                 me->SetReactState(REACT_PASSIVE);
                 shadowCount = 0;
                 maxShadowCount = 3;
@@ -397,14 +350,14 @@ class boss_spirit_kings : public CreatureScript
                 switch (me->GetEntry())
                 {
                     case NPC_QIANG:
-                        events.ScheduleEvent(EVENT_FLANKING_MOGU,       30000);
+                        //events.ScheduleEvent(EVENT_FLANKING_MOGU,       30000);
                         events.ScheduleEvent(EVENT_MASSIVE_ATTACK,      3500);
                         events.ScheduleEvent(EVENT_ANNIHILATE,          urand(15000, 20000));
                         break;
                     case NPC_SUBETAI:
                         events.ScheduleEvent(EVENT_PILLAGE,             30000);
                         events.ScheduleEvent(EVENT_VOLLEY_1,            urand(15000, 20000));
-                        events.ScheduleEvent(EVENT_RAIN_OF_ARROWS,      45000);
+                        //events.ScheduleEvent(EVENT_RAIN_OF_ARROWS,      45000);
                         break;
                     case NPC_ZIAN:
                         events.ScheduleEvent(EVENT_UNDYING_SHADOWS,     30000);
@@ -427,6 +380,8 @@ class boss_spirit_kings : public CreatureScript
                 switch (action)
                 {
                     case ACTION_START_FIGHT:
+                        if (me->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
+                            me->RemoveAurasDueToSpell(SPELL_NEXT_SPIRIT_VISUAL);
                         me->RemoveAurasDueToSpell(SPELL_INACTIVE);
                         me->setFaction(16);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -460,7 +415,7 @@ class boss_spirit_kings : public CreatureScript
                     me->AddAura(SPELL_INACTIVE, me);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     // We reschedule only the vanquished spell
-                    events.Reset();
+                  /*events.Reset();
                     switch (me->GetEntry())
                     {
                         case NPC_QIANG:
@@ -476,7 +431,7 @@ class boss_spirit_kings : public CreatureScript
                             break;
                         default:
                             break;
-                    }
+                    }*/
                 }
 
                 if (me->HasAura(SPELL_COWARDICE))
@@ -502,65 +457,64 @@ class boss_spirit_kings : public CreatureScript
                     switch(eventId)
                     {
                         // Qiang
-                        case EVENT_FLANKING_MOGU:
+                        case EVENT_FLANKING_MOGU: //Not work
                             if (Creature* controler = GetControler())
-                                DoCast(me, SPELL_FLANKING_ORDERS, false);
+                                DoCast(me, SPELL_FLANKING_ORDERS);
                                 //controler->AI()->DoAction(ACTION_FLANKING_MOGU);
                             events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
                             break;
                         case EVENT_MASSIVE_ATTACK:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                                DoCast(target, SPELL_MASSIVE_ATTACKS, false);
+                            if (me->getVictim())
+                                DoCast(me->getVictim(), SPELL_MASSIVE_ATTACKS);
                             events.ScheduleEvent(EVENT_MASSIVE_ATTACK, 3500);
                             break;
                         case EVENT_ANNIHILATE:
-                            DoCast(me, SPELL_ANNIHILATE, false);
+                            if (me->getVictim())
+                                DoCast(me->getVictim(), SPELL_ANNIHILATE);
                             events.ScheduleEvent(EVENT_ANNIHILATE, urand(15000, 20000));
                             break;
                         // Subetai
                         case EVENT_PILLAGE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                                DoCast(target, SPELL_PILLAGE, false);
+                            if (me->getVictim())
+                                DoCast(me->getVictim(), SPELL_PILLAGE);
                             events.ScheduleEvent(EVENT_PILLAGE, 30000);
                             break;
                         case EVENT_VOLLEY_1:
-                        case EVENT_VOLLEY_2:
-                        case EVENT_VOLLEY_3:
-                            DoCast(me, volleySpells[eventId - EVENT_VOLLEY_1], false);
-                            events.ScheduleEvent(eventId == EVENT_VOLLEY_3 ? EVENT_VOLLEY_1: eventId + 1, eventId == EVENT_VOLLEY_3 ? urand(15000, 20000): 50);
+                            DoCast(me, SPELL_VOLLEY_3);
+                            events.ScheduleEvent(EVENT_VOLLEY_1, urand(15000, 20000));
                             break;
                         case EVENT_RAIN_OF_ARROWS:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
-                                DoCast(target, SPELL_RAIN_OF_ARROWS, false);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f , true))
+                                DoCast(target, SPELL_RAIN_OF_ARROWS);
                             events.ScheduleEvent(EVENT_RAIN_OF_ARROWS, 45000);
                             break;
                         // Zian
                         case EVENT_UNDYING_SHADOWS:
                             if (shadowCount < maxShadowCount) // Max 3 undying shadow during the fight
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
-                                    DoCast(target, SPELL_UNDYING_SHADOWS, false);
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
+                                    DoCast(target, SPELL_UNDYING_SHADOWS);
                             events.ScheduleEvent(EVENT_UNDYING_SHADOWS, 45000);
                             break;
                         case EVENT_SHADOW_BLAST:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
-                                DoCast(target, SPELL_SHADOW_BLAST, false);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                                DoCast(target, SPELL_SHADOW_BLAST);
                             events.ScheduleEvent(EVENT_SHADOW_BLAST, 15000);
                             break;
                         case EVENT_CHARGED_SHADOWS:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 2))
-                                DoCast(target, SPELL_CHARGED_SHADOWS, false);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
+                                DoCast(target, SPELL_CHARGED_SHADOWS);
                             events.ScheduleEvent(EVENT_CHARGED_SHADOWS, 15000);
                             break;
                         // Meng
                         case EVENT_MADDENING_SHOUT:
-                            DoCast(me, SPELL_MADDENING_SHOUT, false);
+                            DoCast(me, SPELL_MADDENING_SHOUT);
                             events.ScheduleEvent(EVENT_MADDENING_SHOUT, 30000);
                             break;
                         case EVENT_CRAZED:
-                            DoCast(me, SPELL_CRAZED, false);
+                            DoCast(me, SPELL_CRAZED);
                             break;
                         case EVENT_CRAZY_TOUGHT:
-                            DoCast(me, SPELL_CRAZY_TOUGHT, false);
+                            DoCast(me, SPELL_CRAZY_TOUGHT);
                             events.ScheduleEvent(EVENT_CRAZY_TOUGHT, 10000);
                             break;
                         default:

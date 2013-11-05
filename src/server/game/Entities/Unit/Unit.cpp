@@ -11907,9 +11907,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
-    //int32 bonusDone = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
-    //if (!DoneAdvertisedBenefit || DoneAdvertisedBenefit < bonusDone)
-    //    DoneAdvertisedBenefit = bonusDone;
+    int32 bonusDone = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
+    if (!DoneAdvertisedBenefit || DoneAdvertisedBenefit < bonusDone)
+        DoneAdvertisedBenefit = bonusDone;
 
     // Check for table values
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);

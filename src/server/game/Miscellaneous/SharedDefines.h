@@ -1485,7 +1485,28 @@ enum SpellCustomErrors
     SPELL_CUSTOM_ERROR_AGGRA_EARTH_TOTEM                = 139, // You need to be closer to Aggra's Earth Totem, in the east.
     SPELL_CUSTOM_ERROR_AGGRA_FIRE_TOTEM                 = 140, // You need to be closer to Aggra's Fire Totem, near Thrall.
     SPELL_CUSTOM_ERROR_TARGET_HAS_STARTDUST_2           = 148, // Target is already affected by Stardust No. 2.
-    SPELL_CUSTOM_ERROR_ELEMENTIUM_GEM_CLUSTERS          = 149  // You cannot deconstruct Elementium Gem Clusters while collecting them!
+    SPELL_CUSTOM_ERROR_ELEMENTIUM_GEM_CLUSTERS          = 149, // You cannot deconstruct Elementium Gem Clusters while collecting them!
+    SPELL_CUSTOM_ERROR_DONT_ENOUGH_HEALTH               = 150, // You don't have enough health.
+    SPELL_CUSTOM_ERROR_CANT_USE_GATEWAY_YET             = 151,// You cannot use the gateway yet.
+    SPELL_CUSTOM_ERROR_CHOOSE_SPECIALIZATION            = 152, // You must choose a specialization to use Ascendance.
+    SPELL_CUSTOM_ERROR_INSUFFICIENT_BLOOD_CHARGES       = 153, // You have insufficient Blood Charges.
+    SPELL_CUSTOM_ERROR_NO_DEPLETED_RUNES                = 154, // No fully depleted runes.
+    SPELL_CUSTOM_ERROR_NO_MORE_CHARGES                  = 155, // No more charges.
+    SPELL_CUSTOM_ERROR_STATUE_OUT_OF_RANGE              = 156, // Statue is out of range of the target.
+    SPELL_CUSTOM_ERROR_NO_STATUE_SUMMONED               = 157, // You don't have a statue summoned.
+    SPELL_CUSTOM_ERROR_NO_SPIRIT_ACTIVE                 = 158, // You have no spirit active.
+    SPELL_CUSTOM_ERROR_FEVER_PLAGUE_MUST_BE_PRESENT     = 159, // Both Frost Fever and Blood Plague must be present on the target.
+    SPELL_CUSTOM_ERROR_CANT_DO_WHILE_HOLDING_ORB_OF_POWER = 160, // You can't do that while holding an Orb of Power.
+    SPELL_CUSTOM_ERROR_CANT_DO_WHILE_JUMPING_OR_FALLING = 161, // You can't do that while jumping or falling.
+    SPELL_CUSTOM_ERROR_MUST_BE_TRANSFORMED_BY_ACID      = 162, // You must be transformed by Polyformic Acid.
+    SPELL_CUSTOM_ERROR_NOT_ENOUGH_ACIDE                 = 163, // There isn't enough acid left to store this transformation.
+    SPELL_CUSTOM_ERROR_NO_MASTER_LICENSE                = 164, // You must obtain a Flight Master's License before using this spell.
+    SPELL_CUSTOM_ERROR_ALREADY_SAMPLED_SAP              = 165, // You have already sampled sap from this Feeder.
+    SPELL_CUSTOM_ERROR_MUST_BE_NEAR_FEEDER              = 166, // Requires you to be near a Mantid Feeder in the Heart of Fear.
+    SPELL_CUSTOM_ERROR_MUST_BE_DIRECTLY_IN_FRONT        = 167, // Target must be directly in front of you.
+    SPELL_CUSTOM_ERROR_CANT_DO_DURING_CHALLENGE_MODE    = 168, // You can't do that during a Challenge Mode.
+    SPELL_CUSTOM_ERROR_WRONG_CLASS_FOR_MOUNT            = 169, // You are not the correct class for that mount.
+    SPELL_CUSTOM_ERROR_NOTHING_LEFT_TO_DISCOVER         = 170, // Nothing left to discover.
 };
 
 enum StealthType

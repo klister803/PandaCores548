@@ -3274,7 +3274,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 8676: // Ambush
+                case 123154: // Fists of Fury Visual Target
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36);
+                    break;
+                case 8676:   // Ambush
                     spellInfo->Effects[0].ScalingMultiplier = 1.787f;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
@@ -3620,11 +3623,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 61316: // Dalaran Illumination
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
-                    break;
-                case 11958: // Cold Snap
-                    spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
-                    spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
-                    spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_CONFUSED;
                     break;
                 case 116033:// Sparring (stacks)
                     spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
