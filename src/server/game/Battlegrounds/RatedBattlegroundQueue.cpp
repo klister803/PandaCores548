@@ -125,6 +125,8 @@ GroupQueueInfo* RatedBattlegroundQueue::AddGroup(Player *leader)
     queueInfo->IsInvitedToBGInstanceGUID = 0;
     queueInfo->Team             = leader->GetTeam();
 
+    queueInfo->Players.clear();
+
     uint8 onlineMembers = 0;
     uint16 mmv = 0;
     for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
@@ -136,10 +138,10 @@ GroupQueueInfo* RatedBattlegroundQueue::AddGroup(Player *leader)
         onlineMembers++;
         mmv += member->getRBG()->getMMV();
 
-        PlayerQueueInfo pl_info;
-        pl_info.LastOnlineTime  = queueInfo->JoinTime;
-        pl_info.GroupInfo       = queueInfo;
-        queueInfo->Players[member->GetGUID()]  = &pl_info;
+        PlayerQueueInfo* pl_info = new PlayerQueueInfo;
+        pl_info->LastOnlineTime  = queueInfo->JoinTime;
+        pl_info->GroupInfo       = queueInfo;
+        queueInfo->Players[member->GetGUID()]  = pl_info;
 
         m_playersQueueStore[member->GetGUID()] = queueInfo;
     }
@@ -191,7 +193,14 @@ void RatedBattlegroundQueue::RemovePlayer(uint64 playerGuid)
         TRINITY_GUARD(ACE_Thread_Mutex, Lock);
 
         m_playersQueueStore.erase(playerGuid);
-        gInfo->Players.erase(playerGuid);
+
+        std::map<uint64, PlayerQueueInfo*>::iterator itr = gInfo->Players.find(playerGuid);
+        if (itr != gInfo->Players.end())
+        {
+            delete itr->second;
+            gInfo->Players.erase(itr);
+        }
+
         if (gInfo->Players.empty())
             delete gInfo;
     }
@@ -235,6 +244,9 @@ bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg
         BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, bg->GetArenaType());
 
         ginfo->RemoveInviteTime = getMSTime() + INVITE_ACCEPT_WAIT_TIME;
+
+        if (ginfo->Players.empty())
+            return false;
 
         // loop through the players
         for (std::map<uint64, PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
