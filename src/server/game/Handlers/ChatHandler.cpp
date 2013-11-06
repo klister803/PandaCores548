@@ -287,37 +287,37 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
 
         if (msg.empty())
             return;
+    }
 
-         /// filtering of bad words
-        if(sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE))
+    /// filtering of bad words
+    if(sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE))
+    {
+        sender->m_sentMsgCache.append(msg);
+
+        // horizontally
+        std::string badWord = sWordFilterMgr->FindBadWord(msg);
+
+        // vertically
+        if(badWord.empty())
+            badWord = sWordFilterMgr->FindBadWord(sender->m_sentMsgCache);
+
+        if (!badWord.empty())
         {
-            sender->m_sentMsgCache.append(msg);
+            sender->m_sentMsgCache.erase();
 
-            // horizontally
-            std::string badWord = sWordFilterMgr->FindBadWord(msg);
-
-            // vertically
-            if(badWord.empty())
-                badWord = sWordFilterMgr->FindBadWord(sender->m_sentMsgCache);
-
-            if (!badWord.empty())
-            {
-                sender->m_sentMsgCache.erase();
-
-                if(!sender->CanSpeak())
-                   return;
-
-                time_t muteTime = time(NULL) + (int64)(sWorld->getIntConfig(CONFIG_WORD_FILTER_MUTE_DURATION) / 1000);
-                sender->GetSession()->m_muteTime = muteTime;
-                ChatHandler(sender->GetSession()).PSendSysMessage(LANG_WORD_FILTER_FOUND_BAD_WORD_IN_CHAT, badWord.c_str());
+            if(!sender->CanSpeak())
                 return;
-            }
 
-            const uint8 maxSentMsgCacheSize = 64;
-
-            if(sender->m_sentMsgCache.size() >= maxSentMsgCacheSize)
-                sender->m_sentMsgCache.erase();
+            time_t muteTime = time(NULL) + (int64)(sWorld->getIntConfig(CONFIG_WORD_FILTER_MUTE_DURATION) / 1000);
+            sender->GetSession()->m_muteTime = muteTime;
+            ChatHandler(sender->GetSession()).PSendSysMessage(LANG_WORD_FILTER_FOUND_BAD_WORD_IN_CHAT, badWord.c_str());
+            return;
         }
+
+        const uint8 maxSentMsgCacheSize = 64;
+
+        if(sender->m_sentMsgCache.size() >= maxSentMsgCacheSize)
+            sender->m_sentMsgCache.erase();
     }
 
     switch (type)
