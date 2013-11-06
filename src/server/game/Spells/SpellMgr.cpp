@@ -4308,7 +4308,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 122137: // Summon Ghosts from Urns - Summons
                     spellInfo->Effects[0].BasePoints = 5;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(25); // 180s
-                    break;                    
+                    break;
+                case 30451: // Arcane Blast
+                    // trigger spell is handled in script
+                    spellInfo->Effects[1].Effect = 0;
                 default:
                     break;
             }

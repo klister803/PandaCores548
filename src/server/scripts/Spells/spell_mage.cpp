@@ -1858,6 +1858,37 @@ class spell_elem_invisibility : public SpellScriptLoader
         }
 };
 
+// Arcane Blast - 30451
+class spell_mage_arcane_blast : public SpellScriptLoader
+{
+    public:
+        spell_mage_arcane_blast() : SpellScriptLoader("spell_mage_arcane_blast") { }
+
+        class spell_mage_arcane_blast_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_arcane_blast_SpellScript);
+
+            void HandleAfterHit()
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                caster->CastSpell(caster, GetSpellInfo()->Effects[1].TriggerSpell, true);
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_mage_arcane_blast_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_arcane_blast_SpellScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -1895,4 +1926,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_ice_block();
     new spell_mage_rune_of_power();
     new spell_elem_invisibility();
+    new spell_mage_arcane_blast();
 }
