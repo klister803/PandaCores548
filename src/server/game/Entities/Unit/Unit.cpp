@@ -11315,7 +11315,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         Unit::AuraEffectList const& doneFromManaPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_FROM_PCT_POWER);
         if (!doneFromManaPctAuras.empty())
         {
-            float powerPct = std::min(float(GetPower(POWER_MANA)) / GetMaxPower(POWER_MANA), 1.0f);
+            float powerPct = 1.0f - float(GetPower(POWER_MANA)) / GetMaxPower(POWER_MANA);
+            powerPct = std::min(1.0f, powerPct);
+            powerPct = std::max(0.0f, powerPct);
             for (Unit::AuraEffectList::const_iterator itr = doneFromManaPctAuras.begin(); itr != doneFromManaPctAuras.end(); ++itr)
             {
                 if (spellProto->SchoolMask & (*itr)->GetMiscValue())
