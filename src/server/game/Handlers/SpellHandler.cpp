@@ -569,18 +569,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             }
             break;
         }
-        case 108978:        // Alter Time - 108978 and Alter Time (overrided) - 127140
-        {
-            if (_player->HasAura(110909))
-            {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127140))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                }
-            }
-            break;
-        }
         case 109466:        // Curse of Enfeeblement - 109466 and Curse of Enfeeblement : Soulburn - 109468
         {
             if (_player->HasAura(74434))

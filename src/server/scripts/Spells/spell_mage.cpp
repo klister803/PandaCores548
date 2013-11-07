@@ -1292,8 +1292,7 @@ class spell_mage_alter_time_overrided : public SpellScriptLoader
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(SPELL_MAGE_ALTER_TIME))
-                        _player->RemoveAura(SPELL_MAGE_ALTER_TIME);
+                    _player->RemoveAurasDueToSpell(SPELL_MAGE_ALTER_TIME);
             }
 
             void Register()
@@ -1334,6 +1333,12 @@ class spell_mage_alter_time : public SpellScriptLoader
             uint32 map;
             std::set<auraData*> auras;
 
+        public:
+            spell_mage_alter_time_AuraScript() : AuraScript()
+            {
+                map = uint32(-1);
+            }
+
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* _player = GetTarget()->ToPlayer())
@@ -1353,6 +1358,12 @@ class spell_mage_alter_time : public SpellScriptLoader
                             if (auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
                                 continue;
 
+                            if (auraInfo->Attributes & SPELL_ATTR0_PASSIVE)
+                                continue;
+
+                            if (aura->IsArea() && aura->GetCasterGUID() != _player->GetGUID())
+                                continue;
+
                             if (auraInfo->Id == SPELL_MAGE_ALTER_TIME)
                                 continue;
 
@@ -1366,8 +1377,14 @@ class spell_mage_alter_time : public SpellScriptLoader
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
+                if (map == uint32(-1))
+                    return;
+
                 if (Player* _player = GetTarget()->ToPlayer())
                 {
+                    if (_player->GetMapId() != map)
+                        return;
+
                     for (std::set<auraData*>::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
                     {
                         Aura* aura = !_player->HasAura((*itr)->m_id) ? _player->AddAura((*itr)->m_id, _player) : _player->GetAura((*itr)->m_id);
@@ -1384,8 +1401,7 @@ class spell_mage_alter_time : public SpellScriptLoader
 
                     _player->SetPower(POWER_MANA, mana);
                     _player->SetHealth(health);
-                    if (map && posX && posY && posZ && orientation)
-                        _player->TeleportTo(map, posX, posY, posZ, orientation);
+                    _player->TeleportTo(map, posX, posY, posZ, orientation);
                 }
             }
 
