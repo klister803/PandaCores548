@@ -3274,6 +3274,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 2094: // Blind
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
+                    break;
                 case 123154: // Fists of Fury Visual Target
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36);
                     break;
@@ -4155,9 +4159,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 79136: // Venomous Wound
                 case 127802: // Touch of the Grave
-                case 2094: // Blind
-                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
-                    break;
                 case 117050:
                     spellInfo->Speed = 25.f;
                     break;
