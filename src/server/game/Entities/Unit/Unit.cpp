@@ -6372,6 +6372,22 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         target->RemoveOwnedAura(112948);
                         CastSpell(target, 113092, true);
                     }
+                    else if (target->HasAura(114923, GetGUID())) // for Nether Tempest
+                    {
+                        std::list<Unit*> targetList;
+                        target->GetAttackableUnitListInRange(targetList, 10.0f);
+
+                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                        {
+                            if ((!this || !target) || !this->IsValidAttackTarget(*itr) || !(*itr)->IsWithinLOSInMap(this) ||
+                                (*itr)->GetGUID() == this->GetGUID() || (*itr)->GetGUID() == target->GetGUID())
+                                continue;
+
+                            CastSpell(*itr, 114954, true);
+                            CastSpell(*itr, 114924, true);
+                            target->CastSpell(*itr, 114956, true);
+                        }
+                    }
                     break;
                 }
                 case 44448: // Pyroblast Clearcasting Driver
