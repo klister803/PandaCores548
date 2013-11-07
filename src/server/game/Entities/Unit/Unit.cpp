@@ -6365,8 +6365,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
-                // Pyroblast Clearcasting Driver
-                case 44448:
+                case 89926: // Glyph of Fire Blast
+                {
+                    if (target->HasAura(112948, GetGUID())) // for Frost Bomb
+                    {
+                        target->RemoveOwnedAura(112948);
+                        CastSpell(target, 113092, true);
+                    }
+                    break;
+                }
+                case 44448: // Pyroblast Clearcasting Driver
                 {
                     int32 amount = triggeredByAura->GetAmount();
                     if (procEx & PROC_EX_CRITICAL_HIT)
