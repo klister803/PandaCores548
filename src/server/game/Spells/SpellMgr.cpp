@@ -4279,6 +4279,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 122557: // The Challenger's Ring: Summon Snow Blossom Fighter
                 case 122746: // The Challenger's Ring: Yalia Sagewhisper
+                case 62772: // Summon Gorat's Spirit
+                case 62814: // Summon Elendilad
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(5); // 300s
                     break;
                 case 37062: // To Catch A Thistlehead
