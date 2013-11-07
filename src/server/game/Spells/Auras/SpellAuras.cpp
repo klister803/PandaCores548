@@ -1497,6 +1497,14 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                 switch (GetId())
                 {
+                    case 6770: // Sap
+                    {
+                        if (!target->HasAura(11327))
+                        {
+                            target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+                        }
+                        break;
+                    }
                     case 2094: // Blind
                     {
                         // Glyph of Blind

@@ -3274,9 +3274,6 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 1784: // Stealth
-                    spellInfo->ProcFlags = 0;
-                    break;
                 case 123154: // Fists of Fury Visual Target
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36);
                     break;
