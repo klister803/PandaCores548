@@ -3030,6 +3030,10 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     if (success_list.empty())
         return;
 
+    // Remove Curse and Glyph of Remove Curse
+    if (m_spellInfo->Id == 475 && m_caster->HasAura(115700))
+        m_caster->CastSpell(m_caster, 115701, true);
+
     m_caster->ProcDamageAndSpell(unitTarget, PROC_FLAG_DONE_DISPEL_SPELL, PROC_FLAG_TAKEN_DISPEL_SPELL, PROC_EX_NORMAL_HIT, 1, BASE_ATTACK, m_spellInfo);
 
     WorldPacket dataSuccess(SMSG_SPELLDISPELLOG, 8+8+4+1+4+success_list.size()*5);
