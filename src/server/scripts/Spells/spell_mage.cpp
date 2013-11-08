@@ -1070,6 +1070,14 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                                 if (combustionBp)
                                     _player->CastCustomSpell(unit, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
                             }
+                            // 4 : Living Bomb
+                            if (_player->HasAura(89926))
+                            {
+                                if (target->HasAura(44457, _player->GetGUID()))
+                                {
+                                    _player->AddAura(44457, unit);
+                                }
+                            }
                         }
                     }
                 }
