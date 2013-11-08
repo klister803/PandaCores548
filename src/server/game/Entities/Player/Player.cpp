@@ -21959,7 +21959,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
     size_t writePos = data.wpos();
     data << uint32(modTypeCount);
     data << uint8(mod->op);
-    for (int eff = 0; eff < 96; ++eff)
+    for (int eff = 0; eff < 128; ++eff)
     {
         if (eff != 0 && (eff % 32) == 0)
             _mask[i++] = 0;
