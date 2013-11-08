@@ -3274,6 +3274,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 131619: // Item - Mage PvP Set 4P Bonus
+                    spellInfo->Effects[0].SpellClassMask[2] |= 0x00000008;
+                    break;
                 case 2094: // Blind
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
