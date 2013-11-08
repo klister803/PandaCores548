@@ -6835,23 +6835,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         basepoints0 = int32(CalculatePct(damage, triggerAmount) / (blessHealing->GetMaxDuration() / blessHealing->GetEffect(0, GetSpawnMode()).Amplitude));
                     }
                     break;
-                // Illuminated Healing
-                case 76669:
-                {
-                    if (effIndex != EFFECT_0)
-                        return false;
-
-                    triggered_spell_id = 86273;
-                    int32 maxAmt = GetMaxHealth() / 3;
-                    if (AuraEffect const* oldEff = victim->GetAuraEffect(triggered_spell_id, EFFECT_0, GetGUID()))
-                        basepoints0 = oldEff->GetAmount();
-
-                    basepoints0 += int32(triggerAmount * damage / 100);
-                    // Must not exceed 1/3 of paladin's health
-                    if (basepoints0 > maxAmt)
-                        basepoints0 = maxAmt;
-                    break;
-                }
                 // Echo of Light
                 case 77485:
                 {
@@ -7248,6 +7231,22 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 76669: // Illuminated Healing
+                {
+                    if (effIndex != EFFECT_0)
+                        return false;
+
+                    triggered_spell_id = 86273;
+                    int32 maxAmt = GetMaxHealth() / 3;
+                    if (AuraEffect const* oldEff = victim->GetAuraEffect(triggered_spell_id, EFFECT_0, GetGUID()))
+                        basepoints0 = oldEff->GetAmount();
+
+                    basepoints0 += int32(triggerAmount * damage / 100);
+                    // Must not exceed 1/3 of paladin's health
+                    if (basepoints0 > maxAmt)
+                        basepoints0 = maxAmt;
+                    break;
+                }
                 // Ancient Crusader (player)
                 case 86701:
                 {
