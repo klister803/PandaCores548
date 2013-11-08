@@ -5061,6 +5061,7 @@ bool Player::ResetTalents(bool no_cost)
 
 void Player::ResetSpec(bool takeMoney)
 {
+    RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
     uint32 cost = 0;
 
     if (takeMoney && !sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST))
