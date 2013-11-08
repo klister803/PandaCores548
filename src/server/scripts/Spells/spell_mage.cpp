@@ -1021,7 +1021,6 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         std::list<Unit*> targetList;
-                        int32 combustionBp = 0;
 
                         _player->CastSpell(target, SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 
@@ -1059,6 +1058,7 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                             // 3 : Combustion
                             if (target->HasAura(SPELL_MAGE_COMBUSTION_DOT, _player->GetGUID()))
                             {
+                                int32 combustionBp = 0;
                                 if (unit->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
                                 {
                                     combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
