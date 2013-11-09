@@ -4123,6 +4123,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     break;
                 //
+                //Elegon
+                case 129724: //Energy tendrols (trigger spell - grip)
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_JUMP;
+                    break;
+                //
                 case 116782:
                 case 116803: //Titan Gase
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8); //5yards

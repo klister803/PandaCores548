@@ -16,18 +16,43 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+//Work only first phase (Sanmay)
+
 #include "ScriptPCH.h"
 #include "mogu_shan_vault.h"
 
 enum eSpells
-{
+{   
+    //Elegon
+    SPELL_TOUCH_OF_THE_TITANS       = 117870,
+    SPELL_OVERCHARGED               = 117877,
+    SPELL_CELESTIAL_BREATH          = 117960,
+    SPELL_ENERGY_TENDROLS           = 127362,
+    SPELL_RADIATING_ENERGIES        = 118310,
+    SPELL_MATERIALIZE_PROTECTOR     = 117954,
+
+    //Protector
+    SPELL_TOTAL_ANNIHILATION        = 117914,
+    SPELL_ARCING_ENERGY             = 117945,
+    SPELL_STABILITY_FLUX            = 117911,
+    SPELL_ECLIPSE                   = 117885,
 };
 
 enum eEvents
 {
+    //Elegon
+    EVENT_CHECK_DISTANCE         = 1,
+    EVENT_BREATH                 = 2,
+    EVENT_PROTECTOR              = 3,
+
+    //Buff controller
+    EVENT_CHECK_DIST             = 4,
+
+    //Protector
+    EVENT_ARCING_ENERGY          = 5,
 };
 
-Position middlePos = { 4022.00f, 1908.00f, 358.00f, 0.0f };
+Position midpos = {4023.13f, 1907.75f, 358.083f, 0.0f};
 
 class boss_elegon : public CreatureScript
 {
@@ -39,6 +64,10 @@ class boss_elegon : public CreatureScript
             boss_elegonAI(Creature* creature) : BossAI(creature, DATA_ELEGON)
             {
                 pInstance = creature->GetInstanceScript();
+                me->SetCanFly(true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+
             }
 
             InstanceScript* pInstance;
@@ -46,24 +75,33 @@ class boss_elegon : public CreatureScript
             void Reset()
             {
                 _Reset();
+                RemoveBuff();
+                me->SetReactState(REACT_DEFENSIVE);
             }
 
-            void DoAction(const int32 action)
+            void RemoveBuff()
             {
+                if (pInstance)
+                {
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCHARGED);
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_THE_TITANS);
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(117878);//Overcharged (trigger aura)
+                }
             }
 
-            void JustSummoned(Creature* summon)
+            void EnterCombat(Unit* who)
             {
-                summons.Summon(summon);
+                _EnterCombat();
+                me->SummonCreature(65297, me->GetPositionX(), me->GetPositionY(), 358.84118f);//Buff Controller
+                events.ScheduleEvent(EVENT_CHECK_DISTANCE, 5000);
+                events.ScheduleEvent(EVENT_BREATH, 10000);
+                events.ScheduleEvent(EVENT_PROTECTOR, 20000);
             }
 
-            void SummonedCreatureDespawn(Creature* summon)
+            void JustDied(Unit* attacker)
             {
-                summons.Despawn(summon);
-            }
-
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {
+                _JustDied();
+                RemoveBuff();
             }
 
             void UpdateAI(const uint32 diff)
@@ -76,6 +114,24 @@ class boss_elegon : public CreatureScript
 
                 events.Update(diff);
 
+                switch (events.ExecuteEvent())
+                {
+                case EVENT_CHECK_DISTANCE:
+                    if (me->getVictim())
+                        if (!me->IsWithinMeleeRange(me->getVictim()))
+                            DoCast(me->getVictim(), SPELL_ENERGY_TENDROLS);
+                    events.ScheduleEvent(EVENT_CHECK_DISTANCE, 5000);
+                    break;
+                case EVENT_BREATH:
+                    DoCast(me, SPELL_CELESTIAL_BREATH);
+                    events.ScheduleEvent(EVENT_BREATH, 15000);
+                    break;
+                case EVENT_PROTECTOR:
+                    DoCast(me, SPELL_MATERIALIZE_PROTECTOR);
+                    events.ScheduleEvent(EVENT_PROTECTOR, 25000);
+                    break;
+                }
+
                 DoMeleeAttackIfReady();
             }
         };
@@ -86,20 +142,80 @@ class boss_elegon : public CreatureScript
         }
 };
 
-enum eCelestialProtectorSpells
+class npc_buff_controller : public CreatureScript
 {
-    SPELL_TOTAL_ANNIHILATION        = 129711,
-    SPELL_ARCING_ENERGY             = 117945,
-    SPELL_STABILITY_FLUX            = 117911,
-    SPELL_TOUCH_OF_THE_TITANS       = 117870,
-    SPELL_ECLIPSE                   = 117885,
-};
+    public:
+        npc_buff_controller() : CreatureScript("npc_buff_controller") {}
 
-enum eCelestialProtectorEvents
-{
-    EVENT_ARCING_ENERGY             = 1,
-    EVENT_TOUCH_OF_THE_TITANS       = 2,
-    EVENT_KILLED                    = 3,
+        struct npc_buff_controllerAI : public CreatureAI
+        {
+            npc_buff_controllerAI(Creature* creature) : CreatureAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+                me->SetDisplayId(11686);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+            }
+
+            InstanceScript* instance;
+            EventMap events;
+
+            void Reset()
+            {
+                events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
+            }
+
+            void CheckDistPlayersToMe()
+            {
+                if (Map* map = me->GetMap())
+                    if (map->IsDungeon())
+                    {
+                        Map::PlayerList const &players = map->GetPlayers();
+                        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                        {
+                            if (Player* pl = i->getSource())
+                            {
+                                if (pl->isAlive() && pl->GetDistance(me) <= 38.9f)
+                                {
+                                    if (!pl->HasAura(SPELL_TOUCH_OF_THE_TITANS))
+                                        pl->AddAura(SPELL_TOUCH_OF_THE_TITANS, pl);
+
+                                    if (!pl->HasAura(SPELL_OVERCHARGED))
+                                        pl->AddAura(SPELL_OVERCHARGED, pl);
+                                }
+                                else if (pl->isAlive() && pl->GetDistance(me) >= 38.9f)
+                                {
+                                    pl->RemoveAurasDueToSpell(SPELL_TOUCH_OF_THE_TITANS);
+                                    pl->RemoveAurasDueToSpell(SPELL_OVERCHARGED);
+                                    pl->RemoveAurasDueToSpell(117878);//Overcharged (trigger aura)
+                                }
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
+                    }
+            }
+            
+            void EnterEvadeMode(){}
+
+            void EnterCombat(Unit* who){}
+
+            void UpdateAI(const uint32 diff)
+            {
+                events.Update(diff);
+
+                switch (events.ExecuteEvent())
+                {
+                case EVENT_CHECK_DIST:
+                    CheckDistPlayersToMe();
+                    break;
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_buff_controllerAI(creature);
+        }
 };
 
 class mob_celestial_protector : public CreatureScript
@@ -107,50 +223,45 @@ class mob_celestial_protector : public CreatureScript
     public:
         mob_celestial_protector() : CreatureScript("mob_celestial_protector") { }
 
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new mob_celestial_protectorAI(creature);
-        }
-
         struct mob_celestial_protectorAI : public ScriptedAI
         {
-            mob_celestial_protectorAI(Creature* creature) : ScriptedAI(creature)
-            {
-            }
+            mob_celestial_protectorAI(Creature* creature) : ScriptedAI(creature){}
 
             EventMap events;
-            bool stabilityFluxCasted;
-            bool totalAnnihilationCasted;
+            bool flux;
+            bool annihilation;
+            bool eclipse;
 
             void Reset()
             {
+                DoZoneInCombat(me, 100.0f);
                 events.Reset();
-                
                 events.ScheduleEvent(EVENT_ARCING_ENERGY, 30000);
-
-                stabilityFluxCasted = false;
-                totalAnnihilationCasted = false;
+                flux = false;
+                eclipse = false;
+                annihilation = false;
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
-                if (!stabilityFluxCasted)
-                    if (me->HealthBelowPctDamaged(25, damage))
-                    {
-                        me->CastSpell(me, SPELL_STABILITY_FLUX, false);
-                        stabilityFluxCasted = true;
-                    }
+                if (me->HealthBelowPctDamaged(25, damage) && !flux)
+                {
+                    flux = true;
+                    DoCast(me, SPELL_STABILITY_FLUX);
+                }
 
-                if (me->GetHealth() < damage)
+                if (me->GetHealthPct() > 25.0f && me->GetDistance(midpos) > 40 && !eclipse)
+                {
+                    eclipse = true;
+                    DoCast(me, SPELL_ECLIPSE);
+                }
+
+                if (me->GetHealth() <= damage && !annihilation)
                 {
                     damage = 0;
-                    
-                    if (!totalAnnihilationCasted)
-                    {
-                        me->CastSpell(me, SPELL_TOTAL_ANNIHILATION, false);
-                        totalAnnihilationCasted = true;
-                        events.ScheduleEvent(EVENT_KILLED , 4500);
-                    }
+                    annihilation = true;
+                    DoCast(me, SPELL_TOTAL_ANNIHILATION);
+                    me->DespawnOrUnsummon(2000);
                 }
             }
 
@@ -158,11 +269,6 @@ class mob_celestial_protector : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
-                
-                if (me->GetHealthPct() > 25.0f && me->GetDistance(middlePos) >= 40)
-                {
-                    me->CastSpell(me, SPELL_ECLIPSE, false);
-                }
                 
                 events.Update(diff);
                 
@@ -171,90 +277,27 @@ class mob_celestial_protector : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_ARCING_ENERGY:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                                me->CastSpell(target, SPELL_ARCING_ENERGY, false);
-                            events.ScheduleEvent(EVENT_ARCING_ENERGY,      30000);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                                DoCast(target, SPELL_ARCING_ENERGY);
+                            events.ScheduleEvent(EVENT_ARCING_ENERGY, 30000);
                             break;
-                        
-                        case EVENT_KILLED:
-                            me->Kill(me);
-                            break;
-
                         default:
                             break;
                     }
                 }
-
                 DoMeleeAttackIfReady();
             }
         };
-};
-
-enum eCosmicSparkSpells
-{
-    SPELL_ICE_TRAP        = 135382,
-};
-
-enum eCosmicSparkEvents
-{
-    EVENT_ICE_TRAP             = 1,
-};
-
-class mob_cosmic_spark : public CreatureScript
-{
-    public:
-        mob_cosmic_spark() : CreatureScript("mob_cosmic_spark") { }
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new mob_cosmic_sparkAI(creature);
+            return new mob_celestial_protectorAI(creature);
         }
-
-        struct mob_cosmic_sparkAI : public ScriptedAI
-        {
-            mob_cosmic_sparkAI(Creature* creature) : ScriptedAI(creature)
-            {
-            }
-
-            EventMap events;
-
-            void Reset()
-            {
-                events.Reset();
-                
-                events.ScheduleEvent(EVENT_ICE_TRAP, 60000);
-            }
-
-            void UpdateAI(const uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-                
-                events.Update(diff);
-                
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_ICE_TRAP:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                                me->CastSpell(target, SPELL_ICE_TRAP, false);
-                            events.ScheduleEvent(EVENT_ICE_TRAP,      60000);
-                            break;
-                        
-                        default:
-                            break;
-                    }
-                }
-
-                DoMeleeAttackIfReady();
-            }
-        };
 };
 
 void AddSC_boss_elegon()
 {
     new boss_elegon();
+    new npc_buff_controller();
     new mob_celestial_protector();
-    new mob_cosmic_spark();
 }
