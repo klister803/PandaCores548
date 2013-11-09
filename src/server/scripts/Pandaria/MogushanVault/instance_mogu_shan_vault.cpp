@@ -50,6 +50,10 @@ public:
         uint64 stoneentrdoorGuid;
         uint64 fengexitdoorGuid;
         uint64 garajalexitdoorGuid;
+        uint64 spiritexitdoorGuid;
+        uint64 elegonentdoorGuid;
+        uint64 elegonceldoorGuid;
+        uint64 elegonplatformGuid;
 
         //Creature
         uint64 stoneGuardControlerGuid;
@@ -68,7 +72,6 @@ public:
         std::vector<uint64> fengdoorGUIDs;
         std::vector<uint64> garajaldoorGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
-        //std::vector<uint64> spiritKingsGUIDs;
         std::vector<uint64> kingsdoorGUIDs;
 
         
@@ -83,10 +86,14 @@ public:
             willOfEmperorTimer  = 0;
 
             //GameObject
-            stoneexitdoorGuid = 0;
-            stoneentrdoorGuid = 0;
-            fengexitdoorGuid = 0;
-            garajalexitdoorGuid = 0;
+            stoneexitdoorGuid               = 0;
+            stoneentrdoorGuid               = 0;
+            fengexitdoorGuid                = 0;
+            garajalexitdoorGuid             = 0;
+            spiritexitdoorGuid              = 0;
+            elegonentdoorGuid               = 0;
+            elegonceldoorGuid               = 0;
+            elegonplatformGuid              = 0;
 
             //Creature
             stoneGuardControlerGuid         = 0;
@@ -103,7 +110,6 @@ public:
             fengStatuesGUIDs.clear();
             garajaldoorGUIDs.clear();
             fengdoorGUIDs.clear();
-            //spiritKingsGUIDs.clear();
             kingsdoorGUIDs.clear();
         }
 
@@ -176,6 +182,18 @@ public:
                 case GOB_FENG_DOOR_FENCE:
                     fengdoorGUIDs.push_back(go->GetGUID());
                     break;
+                case GOB_SPEAR_STATUE:
+                case GOB_FIST_STATUE:
+                case GOB_SHIELD_STATUE:
+                case GOB_STAFF_STATUE:
+                    fengStatuesGUIDs.push_back(go->GetGUID());
+                    break;
+                case GOB_INVERSION:
+                    inversionGobGuid = go->GetGUID();
+                    break;
+                case GOB_CANCEL:
+                    cancelGobGuid = go->GetGUID();
+                    break;
                 case GOB_FENG_DOOR_EXIT:
                     fengexitdoorGuid = go->GetGUID();
                     break;
@@ -188,17 +206,17 @@ public:
                 case GOB_SPIRIT_KINGS_WIND_WALL:
                     kingsdoorGUIDs.push_back(go->GetGUID());
                     break;
-                case GOB_SPEAR_STATUE:
-                case GOB_FIST_STATUE:
-                case GOB_SHIELD_STATUE:
-                case GOB_STAFF_STATUE:
-                    fengStatuesGUIDs.push_back(go->GetGUID());
+                case GOB_SPIRIT_KINGS_EXIT:
+                    spiritexitdoorGuid = go->GetGUID();
                     break;
-                case GOB_INVERSION:
-                    inversionGobGuid = go->GetGUID();
+                case GOB_ELEGON_DOOR_ENTRANCE:
+                    elegonentdoorGuid = go->GetGUID();
                     break;
-                case GOB_CANCEL:
-                    cancelGobGuid = go->GetGUID();
+                case GOB_ELEGON_CELESTIAL_DOOR:
+                    elegonceldoorGuid = go->GetGUID();
+                    break;
+                case GOB_ENERGY_PLATFORM:
+                    elegonplatformGuid = go->GetGUID();
                     break;
             }
         }
@@ -274,25 +292,43 @@ public:
                         break;
                     }
                 case DATA_SPIRIT_KINGS:
-                {
-                    switch (state)
                     {
-                    case NOT_STARTED:
-                        for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
-                            HandleGameObject(*guid, true);
-                        break;
-                    case IN_PROGRESS:
-                        for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
-                            HandleGameObject(*guid, false);
-                        break;
-                    case DONE:
-                        for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
-                            HandleGameObject(*guid, true);
-                        //TODO: here must be door for next boss
+                        switch (state)
+                        {
+                        case NOT_STARTED:
+                            for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, true);
+                            break;
+                        case IN_PROGRESS:
+                            for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, false);
+                            break;
+                        case DONE:
+                            for (std::vector<uint64>::const_iterator guid = kingsdoorGUIDs.begin(); guid != kingsdoorGUIDs.end(); guid++)
+                                HandleGameObject(*guid, true);
+                            HandleGameObject(spiritexitdoorGuid, true);
+                            HandleGameObject(elegonentdoorGuid, true);
+                            break;
+                        }
+                    break;
+                    }
+                case DATA_ELEGON:
+                    {
+                        switch (state)
+                        {
+                        case NOT_STARTED:
+                            HandleGameObject(elegonceldoorGuid, true);
+                            break;
+                        case IN_PROGRESS:
+                            HandleGameObject(elegonceldoorGuid, false);
+                            break;
+                        case DONE:
+                            HandleGameObject(elegonceldoorGuid, true);
+                            //TODO: here must be door for next boss
+                            break;
+                        }
                         break;
                     }
-                    break;
-                }
             }
             return true;
         }
@@ -325,20 +361,6 @@ public:
                 }
                 case NPC_FENG:
                     return fengGuid;
-                case NPC_SPIRIT_GUID_CONTROLER:
-                    return spiritKingsControlerGuid;
-                case NPC_QIANG:
-                    return qiangGuid;
-                case NPC_ZIAN:
-                    return zianGuid;
-                case NPC_MENG:
-                    return mengGuid;
-                case NPC_SUBETAI:
-                    return subetaiGuid;
-                case NPC_QIN_XI:
-                    return qinxiGuid;
-                case NPC_JAN_XI:
-                    return janxiGuid;
                 case GOB_SPEAR_STATUE:
                 case GOB_FIST_STATUE:
                 case GOB_SHIELD_STATUE:
@@ -354,6 +376,22 @@ public:
                     return inversionGobGuid;
                 case GOB_CANCEL: 
                     return cancelGobGuid;
+                case NPC_SPIRIT_GUID_CONTROLER:
+                    return spiritKingsControlerGuid;
+                case NPC_QIANG:
+                    return qiangGuid;
+                case NPC_ZIAN:
+                    return zianGuid;
+                case NPC_MENG:
+                    return mengGuid;
+                case NPC_SUBETAI:
+                    return subetaiGuid;
+                case GOB_ENERGY_PLATFORM:
+                    return elegonplatformGuid;
+                case NPC_QIN_XI:
+                    return qinxiGuid;
+                case NPC_JAN_XI:
+                    return janxiGuid;
             }
             return 0;
         }

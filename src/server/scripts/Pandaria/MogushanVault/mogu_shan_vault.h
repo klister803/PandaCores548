@@ -106,7 +106,6 @@ enum eGameObjects
     GOB_FIST_STATUE                 = 213246,
     GOB_SHIELD_STATUE               = 213247,
     GOB_STAFF_STATUE                = 213248,
-
     GOB_INVERSION                   = 211628,
     GOB_CANCEL                      = 211626,
 

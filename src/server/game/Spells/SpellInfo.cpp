@@ -2093,7 +2093,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
         case SPELLFAMILY_WARLOCK:
         {
             // only warlock curses have this
-            if (Dispel == DISPEL_CURSE)
+            if (Dispel == DISPEL_CURSE && Id != 980)
                 return SPELL_SPECIFIC_CURSE;
 
             // seed of corruption and corruption

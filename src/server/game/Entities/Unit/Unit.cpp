@@ -6736,6 +6736,21 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 77486: // Mastery: Shadowy Recall
+                {
+                    if (roll_chance_i(triggerAmount))
+                    {
+                        switch (procSpell->Id)
+                        {
+                            case 589:   triggered_spell_id = 124464; break;
+                            case 15407: triggered_spell_id = 124468; break;
+                            case 34914: triggered_spell_id = 124465; break;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
                 // Vampiric Embrace
                 case 15286:
                 {
@@ -6835,23 +6850,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         basepoints0 = int32(CalculatePct(damage, triggerAmount) / (blessHealing->GetMaxDuration() / blessHealing->GetEffect(0, GetSpawnMode()).Amplitude));
                     }
                     break;
-                // Illuminated Healing
-                case 76669:
-                {
-                    if (effIndex != EFFECT_0)
-                        return false;
-
-                    triggered_spell_id = 86273;
-                    int32 maxAmt = GetMaxHealth() / 3;
-                    if (AuraEffect const* oldEff = victim->GetAuraEffect(triggered_spell_id, EFFECT_0, GetGUID()))
-                        basepoints0 = oldEff->GetAmount();
-
-                    basepoints0 += int32(triggerAmount * damage / 100);
-                    // Must not exceed 1/3 of paladin's health
-                    if (basepoints0 > maxAmt)
-                        basepoints0 = maxAmt;
-                    break;
-                }
                 // Echo of Light
                 case 77485:
                 {
@@ -7248,6 +7246,22 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 76669: // Illuminated Healing
+                {
+                    if (effIndex != EFFECT_0)
+                        return false;
+
+                    triggered_spell_id = 86273;
+                    int32 maxAmt = GetMaxHealth() / 3;
+                    if (AuraEffect const* oldEff = victim->GetAuraEffect(triggered_spell_id, EFFECT_0, GetGUID()))
+                        basepoints0 = oldEff->GetAmount();
+
+                    basepoints0 += int32(triggerAmount * damage / 100);
+                    // Must not exceed 1/3 of paladin's health
+                    if (basepoints0 > maxAmt)
+                        basepoints0 = maxAmt;
+                    break;
+                }
                 // Ancient Crusader (player)
                 case 86701:
                 {
@@ -11229,14 +11243,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 if (AuraEffect* aurEff = GetAuraEffect(55692, 0))
                     if (victim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x100000, 0, 0, GetGUID()))
                         AddPct(DoneTotalMod, aurEff->GetAmount());
-            }
-
-            // Mastery: Shadowy Recall
-            if (AuraEffect const* aurEff = GetAuraEffect(77486, EFFECT_0))
-            {
-                if (aurEff->IsAffectingSpell(spellProto))
-                    if (roll_chance_i(aurEff->GetAmount()))
-                        DoneTotalMod *= 2.0f;
             }
             break;
         }
