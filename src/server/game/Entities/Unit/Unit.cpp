@@ -6736,6 +6736,21 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 77486: // Mastery: Shadowy Recall
+                {
+                    if (roll_chance_i(triggerAmount))
+                    {
+                        switch (procSpell->Id)
+                        {
+                            case 589:   triggered_spell_id = 124464; break;
+                            case 15407: triggered_spell_id = 124468; break;
+                            case 34914: triggered_spell_id = 124465; break;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
                 // Vampiric Embrace
                 case 15286:
                 {
@@ -11228,14 +11243,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 if (AuraEffect* aurEff = GetAuraEffect(55692, 0))
                     if (victim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x100000, 0, 0, GetGUID()))
                         AddPct(DoneTotalMod, aurEff->GetAmount());
-            }
-
-            // Mastery: Shadowy Recall
-            if (AuraEffect const* aurEff = GetAuraEffect(77486, EFFECT_0))
-            {
-                if (aurEff->IsAffectingSpell(spellProto))
-                    if (roll_chance_i(aurEff->GetAmount()))
-                        DoneTotalMod *= 2.0f;
             }
             break;
         }

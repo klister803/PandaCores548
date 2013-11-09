@@ -3274,6 +3274,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 124465: // Mastery: Vampiric Touch
+                    spellInfo->CastTimeMin = 0;
+                    spellInfo->CastTimeMax = 0;
+                    break;
                 case 2094: // Blind
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
