@@ -932,8 +932,22 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     break;
             }
             break;
-        case SPELLFAMILY_DRUID:
+        case SPELLFAMILY_WARLOCK:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 111397: // Blood Horror
+                {
+                    uint32 HealthCost = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[0].BasePoints);
+                    m_caster->CastSpell(unitTarget, 118699, true);
+                    m_caster->SetHealth(m_caster->GetHealth() - HealthCost);
+                    break;
+                }
+                default:
+                    break;
+            }
             break;
+        }
         case SPELLFAMILY_DEATHKNIGHT:
             // Death Coil
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_COIL)
