@@ -28554,7 +28554,7 @@ void Player::GenerateResearchDigSites(uint32 max)
         return;
 
     uint32 _mapId = GetMapId();
-    if((_mapId != 0 && _mapId != 1&& _mapId != 530 && _mapId != 571) || (_mapId == 530 && skill_now < 275) || (_mapId == 571 && skill_now < 350))
+    if((_mapId != 0 && _mapId != 1&& _mapId != 530 && _mapId != 571 && _mapId != 870) || (_mapId == 530 && skill_now < 275) || (_mapId == 571 && skill_now < 350) || (_mapId == 870 && skill_now < 525))
         return;
 
     if(m_digsite.pointCount[_mapId] == 0)

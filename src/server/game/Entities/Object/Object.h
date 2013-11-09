@@ -600,7 +600,7 @@ struct DigSiteInfo
     float last_cast_dist;
     uint32 loot_GO_entry;
     uint32 race;
-    uint32 pointCount[572];
+    uint32 pointCount[871];
     uint32 countProject;
     uint32 currentDigest;
 
@@ -616,6 +616,7 @@ struct DigSiteInfo
         pointCount[1] = 0;
         pointCount[530] = 0;
         pointCount[571] = 0;
+        pointCount[870] = 0;
     }
 };
 
