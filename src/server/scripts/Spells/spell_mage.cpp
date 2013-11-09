@@ -209,8 +209,11 @@ class spell_mage_arcane_missile : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_arcane_missile_AuraScript);
 
+            bool casterCharge;
+
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
+                casterCharge = false;
                 if (!GetCaster())
                     return;
 
@@ -219,9 +222,26 @@ class spell_mage_arcane_missile : public SpellScriptLoader
                         arcaneMissiles->DropCharge();
             }
 
+            void OnTick(AuraEffect const* aurEff)
+            {
+                Player* target = GetTarget()->ToPlayer();
+                if (!target)
+                    return;
+
+                if (target->GetSpecializationId(target->GetActiveSpec()) != SPEC_MAGE_ARCANE)
+                    return;
+
+                if (!casterCharge)
+                {
+                    casterCharge = true;
+                    target->CastSpell(target, SPELL_MAGE_ARCANE_CHARGE, true);
+                }
+            }
+
             void Register()
             {
                 OnEffectApply += AuraEffectApplyFn(spell_mage_arcane_missile_AuraScript::OnApply, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_arcane_missile_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             }
 
         };
@@ -497,44 +517,6 @@ class spell_mage_arcane_explosion : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_mage_arcane_explosion_SpellScript();
-        }
-};
-
-//Arcane Missiles - 7268
-class spell_mage_arcane_missiles : public SpellScriptLoader
-{
-    public:
-        spell_mage_arcane_missiles() : SpellScriptLoader("spell_mage_arcane_missiles") { }
-
-        class spell_mage_arcane_missiles_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_arcane_missiles_SpellScript);
-
-            void HandleOnHit()
-            {
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                Player* player = caster->ToPlayer();
-                if (!player)
-                    return;
-
-                if (player->GetSpecializationId(player->GetActiveSpec()) != SPEC_MAGE_ARCANE)
-                    return;
-
-                caster->CastSpell(caster, SPELL_MAGE_ARCANE_CHARGE, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mage_arcane_missiles_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_arcane_missiles_SpellScript();
         }
 };
 
@@ -1923,7 +1905,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_pyromaniac();
     new spell_mage_arcane_barrage();
     new spell_mage_arcane_explosion();
-    new spell_mage_arcane_missiles();
     new spell_mage_slow();
     new spell_mage_frostbolt();
     new spell_mage_invocation();
