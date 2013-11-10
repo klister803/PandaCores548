@@ -95,7 +95,7 @@ class boss_stone_guard_controler : public CreatureScript
             InstanceScript* pInstance;
             EventMap events;
             uint32 lastPetrifierEntry;
-            bool fightInProgress, done;
+            bool fightInProgress;
 
             void Reset()
             {
@@ -103,7 +103,6 @@ class boss_stone_guard_controler : public CreatureScript
                 me->SetVisible(false);
                 fightInProgress = false;
                 lastPetrifierEntry = 0;
-                done = false;
                 pInstance->SetBossState(DATA_STONE_GUARD, NOT_STARTED);
                 events.ScheduleEvent(EVENT_CHECK_WIPE, 2500);
                 events.ScheduleEvent(EVENT_PETRIFICATION, 15000);
@@ -142,44 +141,32 @@ class boss_stone_guard_controler : public CreatureScript
                     }
                     case ACTION_GUARDIAN_DIED:
                     {
-                        if (!done)
+                        if (pInstance)
                         {
-                            done = true;
                             RemovePlayerBar();
                             for (uint8 i = 0; i < 4; ++i)
+                            {
                                 if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
                                     pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, gardian);
-
-                            if (pInstance)
+                            }
+                            
+                            Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                            if (!players.isEmpty())
                             {
-                                Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                                if (!players.isEmpty())
+                                for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                                 {
-                                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                                    {
-                                        Player* pPlayer = itr->getSource();
-                                        if (pPlayer)
-                                            me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
-                                    }
+                                    if (Player* pPlayer = itr->getSource())
+                                        me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
                                 }
                             }
-
                             pInstance->SetBossState(DATA_STONE_GUARD, DONE);
                             fightInProgress = false;
                         }
                         break;
                     }
                 }
-            }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-                for (uint8 i = 0; i < 4; ++i)
-                    if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
-                        if (gardian->isAlive())
-                            me->DealDamage(gardian, damage);
-            }
-
+            } 
+            
             void UpdateAI(const uint32 diff)
             {
                 if (!fightInProgress)
@@ -275,6 +262,41 @@ class boss_stone_guard_controler : public CreatureScript
         }
 };
 
+void DiedManager(InstanceScript* pInstance, Creature* caller, uint32 callerEntry) 
+{
+    if (caller && pInstance)
+    {
+        for (uint8 n = 0; n < 4; n++)
+        {
+            if (Creature* guardian = caller->GetCreature(*caller, pInstance->GetData64(guardiansEntry[n])))
+            {
+                if (guardian->isAlive() && guardian->GetEntry() != callerEntry)
+                {
+                    guardian->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    guardian->Kill(guardian, true);
+                }
+            }
+        }
+        if (Creature* controller = caller->GetCreature(*caller, pInstance->GetData64(NPC_STONE_GUARD_CONTROLER)))
+            controller->AI()->DoAction(ACTION_GUARDIAN_DIED);
+    }
+}
+
+void DamageManager(InstanceScript* pInstance, Creature* caller, uint32 callerEntry, uint32 damage)
+{
+    if (caller && pInstance)
+    {
+        for (uint8 n = 0; n < 4; n++)
+        {
+            if (Creature* guardian = caller->GetCreature(*caller, pInstance->GetData64(guardiansEntry[n])))
+            {
+                if (guardian->isAlive() && guardian->GetEntry() != callerEntry)
+                    guardian->SetHealth(guardian->GetHealth() - damage);
+            }
+        }
+    }
+}
+
 class boss_generic_guardian : public CreatureScript
 {
     public:
@@ -295,8 +317,7 @@ class boss_generic_guardian : public CreatureScript
             uint32 spellPetrificationBarId;
             uint32 spellTrueFormId;
             uint32 spellMainAttack;
-            bool isInTrueForm;
-            uint64 guidt; 
+            bool isInTrueForm; 
 
             Creature* GetController()
             {
@@ -305,7 +326,6 @@ class boss_generic_guardian : public CreatureScript
 
             void Reset()
             {
-                guidt = 0;
                 me->LowerPlayerDamageReq(me->GetMaxHealth());
                 isInTrueForm = false;
                 me->SetReactState(REACT_DEFENSIVE);
@@ -383,36 +403,12 @@ class boss_generic_guardian : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (Creature* controller = GetController())
+                if (attacker->GetTypeId() == TYPEID_PLAYER)
                 {
-                    if (attacker != controller)
-                    {
-                        controller->AI()->DamageTaken(attacker, damage);
-                        me->getThreatManager().addThreat(attacker, damage);
-                        if (damage >= me->GetHealth())
-                        {
-                            if (attacker->GetTypeId() == TYPEID_PLAYER)
-                                guidt = attacker->GetGUID();
-                        }
-                        damage = 0;
-                        return;
-                    }
+                    if (damage >= me->GetHealth())
+                        DiedManager(pInstance, me, me->GetEntry());
                     else
-                    {
-                        me->getThreatManager().modifyThreatPercent(attacker, 0.0f);
-                        if (damage >= me->GetHealth() && guidt)
-                        {
-                            if (Unit* target = me->GetUnit(*me, guidt))
-                            {
-                                if (target->IsControlledByPlayer())
-                                {
-                                    me->SetLootRecipient(target);
-                                    controller->AI()->DoAction(ACTION_GUARDIAN_DIED);
-                                    
-                                }
-                            }
-                        }
-                    }
+                        DamageManager(pInstance, me, me->GetEntry(), damage);
                 }
             }
 
