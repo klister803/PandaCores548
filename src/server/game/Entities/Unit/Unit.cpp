@@ -2847,7 +2847,7 @@ float Unit::GetUnitParryChance() const
 
 float Unit::GetUnitMissChance(WeaponAttackType attType) const
 {
-    float miss_chance = 5.00f;
+    float miss_chance = 3.00f;
 
     if (attType == RANGED_ATTACK)
         miss_chance -= GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE);
@@ -18525,23 +18525,16 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, u
 
     // for example
     // | caster | target | miss 
-    //    85        85      5
-    //    85        86     5.5
-    //    85        87      6
-    //    85        88      8
-    //    85        89      10
+    //    90        90      3
+    //    90        91     4.5
+    //    90        92      6
+    //    90        93     7.5
+
 
     if (victim->getLevel() > getLevel())
     {
         uint8 level_diff = victim->getLevel() - getLevel();
-        if (level_diff <= 2)
-        {
-            missChance += 0.5f * level_diff;
-        }
-        else
-        {
-            missChance += ((0.5f + level_diff - 2) * 2);
-        }
+        missChance += 1.5f * level_diff;
     }
 
     if (!spellId && haveOffhandWeapon())
