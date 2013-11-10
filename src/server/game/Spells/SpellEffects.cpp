@@ -938,9 +938,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             {
                 case 111397: // Blood Horror
                 {
-                    uint32 HealthCost = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[0].BasePoints);
+                    float HealthCost = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[0].BasePoints);
+                    float gethp = m_caster->GetHealth() - HealthCost;
                     m_caster->CastSpell(unitTarget, 118699, true);
-                    m_caster->SetHealth(m_caster->GetHealth() - HealthCost);
+                    m_caster->SetHealth(gethp > 1 ? gethp: 1);
                     break;
                 }
                 default:
