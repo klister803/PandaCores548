@@ -9730,10 +9730,16 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         }
         // Primal Fury
         case 16959:
-            if (GetShapeshiftForm() == FORM_CAT && ToPlayer() &&  procSpell)
-                if (procSpell->Id == 33876 || procSpell->Id == 5221 || procSpell->Id == 62078)
-                    ToPlayer()->AddComboPoints(victim, 1);
+        {
+            if (procSpell)
+            {
+                if (procSpell->HasEffect(SPELL_EFFECT_ADD_COMBO_POINTS) || procSpell->Id == 33876)
+                {
+                    CastSpell(victim, 16953, true);
+                }
+            }
             break;
+        }
     }
 
     if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(trigger_spell_id))
