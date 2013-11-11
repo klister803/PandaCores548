@@ -6739,6 +6739,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 89489: // MoA Inner Focus
+                {
+                    triggered_spell_id = 96267;
+                    break;
+                }
                 case 77486: // Mastery: Shadowy Recall
                 {
                     if (roll_chance_i(triggerAmount))
