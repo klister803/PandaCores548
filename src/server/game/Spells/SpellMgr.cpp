@@ -3274,6 +3274,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 125831: // Taste for Blood
+                    spellInfo->ProcCharges = 1;
+                    break;
                 case 124465: // Mastery: Vampiric Touch
                     spellInfo->CastTimeMin = 0;
                     spellInfo->CastTimeMax = 0;
