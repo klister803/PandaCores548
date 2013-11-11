@@ -553,9 +553,9 @@ int WorldSocket::handle_input_header (void)
 
         if(!m_Session && !_player)
         {
-            char buffer[200];
-            sprintf(buffer,"ipset -A badip %s>/dev/null 2>/dev/null &",GetRemoteAddress().c_str());
-            system(buffer);
+            //char buffer[200];
+            //sprintf(buffer,"ipset -A badip %s>/dev/null 2>/dev/null &",GetRemoteAddress().c_str());
+            //system(buffer);
         }
 
         errno = EINVAL;
