@@ -844,6 +844,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         {
             switch (m_spellInfo->Id)
             {
+                case 12975:// Last Stand
                 case 106922:// Might of Ursoc
                 case 113072:// Might of Ursoc (Symbiosis)
                 {
