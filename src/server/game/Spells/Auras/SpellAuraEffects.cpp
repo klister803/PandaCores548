@@ -1362,14 +1362,6 @@ bool AuraEffect::IsAffectingSpell(SpellInfo const* spell) const
     if (m_spellInfo->GetEffect(m_effIndex, m_diffMode).SpellClassMask & spell->SpellFamilyFlags)
         return true;
 
-    // Fix Aspect of the Fox - Allow Barrage to be cast while walking
-    if (m_spellInfo->Id == 82661 && spell->Id == 120360)
-        return true;
-
-    // Fix Spiritwalker's Grace - Allow Elemental Blast to be cast while walking
-    if (m_spellInfo->Id == 79206 && spell->Id == 117014)
-        return true;
-
     return false;
 }
 
