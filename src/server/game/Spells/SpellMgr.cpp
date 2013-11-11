@@ -4327,6 +4327,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 30451: // Arcane Blast
                     // trigger spell is handled in script
                     spellInfo->Effects[1].Effect = 0;
+                    break;
+                case 74793:// Summoning Ritual
+                    spellInfo->AreaGroupId = -1;
+                    break;
                 default:
                     break;
             }
