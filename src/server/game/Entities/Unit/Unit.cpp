@@ -11745,6 +11745,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
             break;
         }
         case SPELL_DAMAGE_CLASS_MELEE:
+        {
             if (victim)
             {
                 // Custom crit by class
@@ -11760,23 +11761,40 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                                 crit_chance += 50.0f; // Ravage has a 50% increased chance to critically strike targets with over 80% health.
                     break;
                     case SPELLFAMILY_WARRIOR:
-                       // Victory Rush
-                       if (spellProto->SpellFamilyFlags[1] & 0x100)
-                       {
-                           // Glyph of Victory Rush
-                           if (AuraEffect const* aurEff = GetAuraEffect(58382, 0))
-                               crit_chance += aurEff->GetAmount();
-                           break;
-                       }
-                       // Dragon Roar is always a critical hit
-                       if (spellProto->Id == 118000)
-                           return true;
-                       // Bloodthirst has double critical chance
-                       if (spellProto->Id == 23881)
-                           crit_chance *= 2;
-                    break;
+                    {
+                        // Victory Rush
+                        if (spellProto->SpellFamilyFlags[1] & 0x100)
+                        {
+                            // Glyph of Victory Rush
+                            if (AuraEffect const* aurEff = GetAuraEffect(58382, 0))
+                                crit_chance += aurEff->GetAmount();
+                            break;
+                        }
+                        switch (spellProto->Id)
+                        {
+                            case 118000: // Dragon Roar is always a critical hit
+                            {
+                                return true;
+                            }
+                            case 23881: // Bloodthirst has double critical chance
+                            {
+                                crit_chance *= 2;
+                                break;
+                            }
+                            case 7384: // Overpower
+                            {
+                                crit_chance += spellProto->Effects[2].BasePoints;
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        break;
+                    }
                 }
             }
+            break;
+        }
         case SPELL_DAMAGE_CLASS_RANGED:
         {
             if (victim)
