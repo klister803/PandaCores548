@@ -840,6 +840,21 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             if (GetId() == 55233)
                 amount = GetBase()->GetUnitOwner()->CountPctFromMaxHealth(amount);
             break;
+        case SPELL_AURA_MOD_INCREASE_HEALTH_2:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 106922:// Might of Ursoc
+                case 113072:// Might of Ursoc (Symbiosis)
+                {
+                    amount = CalculatePct(caster->GetMaxHealth(), amount);
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_MOD_INCREASE_SPEED:
             // Dash - do not set speed if not in cat form
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellInfo()->SpellFamilyFlags[2] & 0x00000008)
@@ -4421,22 +4436,12 @@ void AuraEffect::HandleAuraModIncreaseHealthPercent(AuraApplication const* aurAp
     Unit* target = aurApp->GetTarget();
 
     // Unit will keep hp% after MaxHealth being modified if unit is alive.
-    float saveamount = apply ? target->CountPctFromMaxHealth(GetAmount()): target->GetHealth();
+    float percent = target->GetHealthPct();
 
     target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(GetAmount()), apply);
 
     if (target->isAlive())
-    {
-        if (apply)
-        {
-            target->SetHealth(target->GetHealth() + saveamount);
-        }
-        else
-        {
-            float val = saveamount - target->CountPctFromMaxHealth(GetAmount());
-            target->SetHealth(val > 1 ? val: 1);
-        }
-    }
+        target->SetHealth(target->CountPctFromMaxHealth(int32(percent)));
 }
 
 void AuraEffect::HandleAuraIncreaseBaseHealthPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const

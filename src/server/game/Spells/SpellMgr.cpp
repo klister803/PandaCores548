@@ -3768,10 +3768,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                     break;
-                case 106922:// Might of Ursoc
-                case 113072:// Might of Ursoc (Symbiosis)
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
-                    break;
                 case 111771:// Demonic Gateway
                     spellInfo->Effects[2].Effect = 0;
                     spellInfo->Effects[2].TriggerSpell = 0;
