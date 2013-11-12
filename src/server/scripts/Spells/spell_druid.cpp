@@ -1410,35 +1410,6 @@ class spell_dru_bear_hug : public SpellScriptLoader
         }
 };
 
-// Ravage - 6785
-class spell_dru_ravage : public SpellScriptLoader
-{
-    public:
-        spell_dru_ravage() : SpellScriptLoader("spell_dru_ravage") { }
-
-        class spell_dru_ravage_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_ravage_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->CastSpell(target, SPELL_DRUID_INFECTED_WOUNDS, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_ravage_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_ravage_SpellScript();
-        }
-};
-
 // Lifebloom - 33763 : Final heal
 class spell_dru_lifebloom : public SpellScriptLoader
 {
@@ -3268,7 +3239,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_ferocious_bite();
     new spell_dru_rip();
     new spell_dru_bear_hug();
-    new spell_dru_ravage();
     new spell_dru_lifebloom();
     new spell_dru_killer_instinct();
     new spell_dru_lifebloom_refresh();
