@@ -3274,6 +3274,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 115450: // Detox
+                    spellInfo->Effects[2].BasePoints = 0;
+                    break;
                 case 65148: // Sacred Shield
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
