@@ -24,6 +24,25 @@
 #include "Log.h"
 #include "Utilities/ByteConverter.h"
 
+#define BITS_1 uint8 _1
+#define BITS_2 BITS_1, uint8 _2
+#define BITS_3 BITS_2, uint8 _3
+#define BITS_4 BITS_3, uint8 _4
+#define BITS_5 BITS_4, uint8 _5
+#define BITS_6 BITS_5, uint8 _6
+#define BITS_7 BITS_6, uint8 _7
+#define BITS_8 BITS_7, uint8 _8
+
+#define BIT_VALS_1 _1
+#define BIT_VALS_2 BIT_VALS_1, _2
+#define BIT_VALS_3 BIT_VALS_2, _3
+#define BIT_VALS_4 BIT_VALS_3, _4
+#define BIT_VALS_5 BIT_VALS_4, _5
+#define BIT_VALS_6 BIT_VALS_5, _6
+#define BIT_VALS_7 BIT_VALS_6, _7
+#define BIT_VALS_8 BIT_VALS_7, _8
+
+
 //! Structure to ease conversions from single 64 bit integer guid into individual bytes, for packet sending purposes
 //! Nuke this out when porting ObjectGuid from MaNGOS, but preserve the per-byte storage
 struct ObjectGuid
@@ -751,6 +770,76 @@ class ByteBuffer
         }
 
         std::vector<uint8>& _GetStorage() { return _storage; }
+
+        #define DEFINE_READGUIDMASK(T1, T2) template <T1> \
+            void ReadGuidMask(ObjectGuid& guid) \
+            { \
+                uint8 maskArr[] = { T2 }; \
+                for (uint8 i = 0; i < countof(maskArr); ++i) \
+                    guid[maskArr[i]] = ReadBit(); \
+            }
+
+        #define DEFINE_WRITEGUIDMASK(T1, T2) template <T1> \
+            void WriteGuidMask(ObjectGuid guid) \
+            { \
+                uint8 maskArr[] = { T2 }; \
+                for (uint8 i = 0; i < countof(maskArr); ++i) \
+                    WriteBit(guid[maskArr[i]]); \
+            }
+
+        #define DEFINE_READGUIDBYTES(T1, T2) template <T1> \
+            void ReadGuidBytes(ObjectGuid& guid) \
+            { \
+                uint8 maskArr[] = { T2 }; \
+                for (uint8 i = 0; i < countof(maskArr); ++i) \
+                    if (guid[maskArr[i]] != 0) \
+                        guid[maskArr[i]] ^= read<uint8>(); \
+            }
+
+        #define DEFINE_WRITEGUIDBYTES(T1, T2) template <T1> \
+            void WriteGuidBytes(ObjectGuid guid) \
+            { \
+                uint8 maskArr[] = { T2 }; \
+                for (uint8 i = 0; i < countof(maskArr); ++i) \
+                    if (guid[maskArr[i]] != 0) \
+                        (*this) << uint8(guid[maskArr[i]] ^ 1); \
+            }
+
+        DEFINE_READGUIDMASK(BITS_1, BIT_VALS_1)
+        DEFINE_READGUIDMASK(BITS_2, BIT_VALS_2)
+        DEFINE_READGUIDMASK(BITS_3, BIT_VALS_3)
+        DEFINE_READGUIDMASK(BITS_4, BIT_VALS_4)
+        DEFINE_READGUIDMASK(BITS_5, BIT_VALS_5)
+        DEFINE_READGUIDMASK(BITS_6, BIT_VALS_6)
+        DEFINE_READGUIDMASK(BITS_7, BIT_VALS_7)
+        DEFINE_READGUIDMASK(BITS_8, BIT_VALS_8)
+
+        DEFINE_WRITEGUIDMASK(BITS_1, BIT_VALS_1)
+        DEFINE_WRITEGUIDMASK(BITS_2, BIT_VALS_2)
+        DEFINE_WRITEGUIDMASK(BITS_3, BIT_VALS_3)
+        DEFINE_WRITEGUIDMASK(BITS_4, BIT_VALS_4)
+        DEFINE_WRITEGUIDMASK(BITS_5, BIT_VALS_5)
+        DEFINE_WRITEGUIDMASK(BITS_6, BIT_VALS_6)
+        DEFINE_WRITEGUIDMASK(BITS_7, BIT_VALS_7)
+        DEFINE_WRITEGUIDMASK(BITS_8, BIT_VALS_8)
+
+        DEFINE_READGUIDBYTES(BITS_1, BIT_VALS_1)
+        DEFINE_READGUIDBYTES(BITS_2, BIT_VALS_2)
+        DEFINE_READGUIDBYTES(BITS_3, BIT_VALS_3)
+        DEFINE_READGUIDBYTES(BITS_4, BIT_VALS_4)
+        DEFINE_READGUIDBYTES(BITS_5, BIT_VALS_5)
+        DEFINE_READGUIDBYTES(BITS_6, BIT_VALS_6)
+        DEFINE_READGUIDBYTES(BITS_7, BIT_VALS_7)
+        DEFINE_READGUIDBYTES(BITS_8, BIT_VALS_8)
+
+        DEFINE_WRITEGUIDBYTES(BITS_1, BIT_VALS_1)
+        DEFINE_WRITEGUIDBYTES(BITS_2, BIT_VALS_2)
+        DEFINE_WRITEGUIDBYTES(BITS_3, BIT_VALS_3)
+        DEFINE_WRITEGUIDBYTES(BITS_4, BIT_VALS_4)
+        DEFINE_WRITEGUIDBYTES(BITS_5, BIT_VALS_5)
+        DEFINE_WRITEGUIDBYTES(BITS_6, BIT_VALS_6)
+        DEFINE_WRITEGUIDBYTES(BITS_7, BIT_VALS_7)
+        DEFINE_WRITEGUIDBYTES(BITS_8, BIT_VALS_8)
 
     protected:
         size_t _rpos, _wpos, _bitpos;
