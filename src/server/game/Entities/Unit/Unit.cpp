@@ -18491,7 +18491,7 @@ void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
     data.WriteByteSeq(guid[6]);
     data.WriteByteSeq(guid[2]);
     data.WriteByteSeq(guid[5]);
-    data << uint32(id); // SpellVisualKit.dbc index
+    data << uint32(id); // SpellVisualKit.db2 index
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[3]);
     SendMessageToSet(&data, false);

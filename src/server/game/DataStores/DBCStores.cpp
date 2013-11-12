@@ -203,8 +203,6 @@ SpellCategoryStore sSpellCategoryStore;
 SpellSkillingList sSpellSkillingList;
 PetFamilySpellsStore sPetFamilySpellsStore;
 
-
-DBCStorage <SpellReagentsEntry> sSpellReagentsStore(SpellReagentsEntryfmt);
 DBCStorage <SpellScalingEntry> sSpellScalingStore(SpellScalingEntryfmt);
 DBCStorage <SpellTotemsEntry> sSpellTotemsStore(SpellTotemsEntryfmt);
 DBCStorage <SpellTargetRestrictionsEntry> sSpellTargetRestrictionsStore(SpellTargetRestrictionsEntryfmt);
@@ -221,7 +219,6 @@ DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore(SpellC
 
 SpellEffectMap sSpellEffectMap;
 SpellEffectDiffMap sSpellEffectDiffMap;
-SpellReagentMap sSpellReagentMap;
 SpellTotemMap sSpellTotemMap;
 
 DBCStorage <SpellCastTimesEntry> sSpellCastTimesStore(SpellCastTimefmt);
@@ -650,7 +647,6 @@ void LoadDBCStores(const std::string& dataPath)
         }
     }
 
-    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellReagentsStore,          dbcPath,"SpellReagents.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellScalingStore,           dbcPath,"SpellScaling.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellTotemsStore,            dbcPath,"SpellTotems.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellTargetRestrictionsStore,dbcPath,"SpellTargetRestrictions.dbc");//14545
@@ -824,11 +820,11 @@ void LoadDBCStores(const std::string& dataPath)
     }
 
     // Check loaded DBC files proper version
-    if (!sAreaStore.LookupEntry(5197)          ||     // last area (areaflag) added in 5.0.5 (16057)
-        !sCharTitlesStore.LookupEntry(321)     ||     // last char title added in 5.0.5 (16057)
-        !sGemPropertiesStore.LookupEntry(2402) ||     // last gem property added in 5.0.5 (16057)
-        !sMapStore.LookupEntry(1076)           ||     // last map added in 5.0.5 (16057)
-        !sSpellStore.LookupEntry(133376)       )      // last spell added in 5.0.5 (16057)
+    if (!sAreaStore.LookupEntry(5491)          ||     // last area (areaflag) added in 5.4.1 (17358)
+        !sCharTitlesStore.LookupEntry(389)     ||     // last char title added in 5.4.1 (17358)
+        !sGemPropertiesStore.LookupEntry(2467) ||     // last gem property added in 5.4.1 (17358)
+        !sMapStore.LookupEntry(1173)           ||     // last map added in 5.4.1 (17358)
+        !sSpellStore.LookupEntry(152028)       )      // last spell added in 5.4.1 (17358)
     {
         sLog->outError(LOG_FILTER_GENERAL, "You have _outdated_ DBC files. Please extract correct versions from current using client.");
         exit(1);
@@ -953,15 +949,6 @@ SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint8
 SpellEffectScalingEntry const* GetSpellEffectScalingEntry(uint32 effectId)
 {
     return sSpellEffectScalingStore.LookupEntry(effectId);
-}
-
-SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent)
-{
-    SpellReagentMap::const_iterator itr = sSpellReagentMap.find(spellId);
-    if(itr == sSpellReagentMap.end())
-        return NULL;
-
-    return itr->second.reagents[reagent];
 }
 
 SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem)

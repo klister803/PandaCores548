@@ -32,6 +32,7 @@
 #include "ObjectMgr.h"
 #include "MovementStructures.h"
 #include "VMapFactory.h"
+#include "Vehicle.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket& /*recvPacket*/)
 {

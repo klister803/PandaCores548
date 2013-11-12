@@ -35,7 +35,10 @@ extern DB2Storage <ItemExtendedCostEntry> sItemExtendedCostStore;
 extern DB2Storage <ItemSparseEntry> sItemSparseStore;
 extern DB2Storage <BattlePetSpeciesEntry> sBattlePetSpeciesStore;
 extern DB2Storage <QuestPackageItem> sQuestPackageItemStore;
+extern DB2Storage <SpellReagentsEntry> sSpellReagentsStore;
 
 void LoadDB2Stores(const std::string& dataPath);
+
+SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent);
 
 #endif

@@ -31,6 +31,7 @@ DB2Storage <ItemExtendedCostEntry> sItemExtendedCostStore(ItemExtendedCostEntryf
 DB2Storage <ItemSparseEntry> sItemSparseStore (ItemSparsefmt);
 DB2Storage <BattlePetSpeciesEntry> sBattlePetSpeciesStore(BattlePetSpeciesEntryfmt);
 DB2Storage <QuestPackageItem> sQuestPackageItemStore(QuestPackageItemfmt);
+DB2Storage <SpellReagentsEntry> sSpellReagentsStore(SpellReagentsEntryfmt);
 
 typedef std::list<std::string> StoreProblemList1;
 static std::map<uint32, std::list<uint32> > sPackageItemList;
@@ -106,6 +107,7 @@ void LoadDB2Stores(const std::string& dataPath)
             sPackageItemList[sp->packageEntry].push_back(i);
         }
     }
+    LoadDB2(bad_db2_files, sSpellReagentsStore, db2Path,"SpellReagents.db2");
 
     if (false)
     {
@@ -178,4 +180,15 @@ void LoadDB2Stores(const std::string& dataPath)
 std::list<uint32> GetPackageItemList(uint32 packageEntry)
 {
     return sPackageItemList[packageEntry];
+}
+
+SpellReagentMap sSpellReagentMap;
+
+SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent)
+{
+    SpellReagentMap::const_iterator itr = sSpellReagentMap.find(spellId);
+    if(itr == sSpellReagentMap.end())
+        return NULL;
+
+    return itr->second.reagents[reagent];
 }

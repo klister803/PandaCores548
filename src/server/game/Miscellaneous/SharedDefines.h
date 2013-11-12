@@ -3234,7 +3234,8 @@ enum CreatureType
     CREATURE_TYPE_TOTEM            = 11,
     CREATURE_TYPE_NON_COMBAT_PET   = 12,
     CREATURE_TYPE_GAS_CLOUD        = 13,
-    CREATURE_TYPE_WILD_PET         = 14     // New on MoP 5.0.5, used for battle pet
+    CREATURE_TYPE_WILD_PET         = 14,
+    CREATURE_TYPE_ABBERATION       = 15,
 };
 
 uint32 const CREATURE_TYPEMASK_DEMON_OR_UNDEAD = (1 << (CREATURE_TYPE_DEMON-1)) | (1 << (CREATURE_TYPE_UNDEAD-1));
@@ -3477,10 +3478,16 @@ enum QuestSort
     QUEST_SORT_FIRELANDS_INVASION  = 379,
     QUEST_SORT_ZANDALARI           = 380,
     QUEST_SORT_ELEMENTAL_BONDS     = 381,
-    QUEST_SORT_BREWMASTER_PANDAREN = 391, // New on MoP 5.0.5
-    QUEST_SORT_SCENARIO            = 392, // New on MoP 5.0.5
-    QUEST_SORT_BATTLE_PET          = 394, // New on MoP 5.0.5
-    QUEST_SORT_MONK                = 395  // New on MoP 5.0.5
+    QUEST_SORT_BREWMASTER_PANDAREN = 391,
+    QUEST_SORT_SCENARIO            = 392,
+    QUEST_SORT_BATTLE_PETS         = 394,
+    QUEST_SORT_MONK                = 395,
+    QUEST_SORT_LANDFALL            = 396,
+    QUEST_SORT_PANDAREN_CAMPAIGN   = 397,
+    QUEST_SORT_RIDING              = 398,
+    QUEST_SORT_BRAWLERS_GUILD      = 399,
+    QUEST_SORT_PROVING_GROUNDS     = 400,
+
 };
 
 inline uint8 ClassByQuestSort(int32 QuestSort)
@@ -4159,10 +4166,11 @@ enum BattlegroundTypeId
     BATTLEGROUND_CTF3               = 706,
     BATTLEGROUND_SSM                = 708, // Silvershard Mines
     BATTLEGROUND_TV                 = 719, // Tol'vir Arena
-    //BATTLEGROUND_TTP              = 757  // The Tiger's Peak - only for 5.3.0
+    BATTLEGROUND_DG                 = 754, // Deepwind Gorge
+    BATTLEGROUND_TTP                = 757, // The Tiger's Peak
 };
 
-#define MAX_BATTLEGROUND_TYPE_ID 720
+#define MAX_BATTLEGROUND_TYPE_ID 758
 
 enum MailResponseType
 {
