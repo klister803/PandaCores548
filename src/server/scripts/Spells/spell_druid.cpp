@@ -3187,27 +3187,39 @@ class spell_dru_a12_4p_feral_bonus : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_a12_4p_feral_bonus_AuraScript);
 
-            void OnTick(AuraEffect const* aurEff)
+
+            bool Load()
             {
-                Unit* target = GetTarget();
-                // Stampede
-                target->CastSpell(target, 81022, true);
+                if (!GetCaster())
+                    return false;
+
+                cooldown = 30000;
+                return true;
+            }
+
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
+            {
+                if (!GetCaster()->HasAura(81022))
+                {
+                    if (cooldown <= 0)
+                    {
+                        GetCaster()->CastSpell(GetCaster(), 81022, true);
+                        cooldown = 30000;
+                    }
+                    else
+                    {
+                        cooldown -= diff;
+                    }
+                }
+
             }
 
             void Register()
             {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_a12_4p_feral_bonus_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_a12_4p_feral_bonus_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectUpdate += AuraEffectUpdateFn(spell_dru_a12_4p_feral_bonus_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_DUMMY);
             }
 
-            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                Unit* target = GetTarget();
-                if (!target)
-                    return;
-
-                target->RemoveAurasDueToSpell(81022);
-            }
+            int32 cooldown;
         };
 
         AuraScript* GetAuraScript() const
