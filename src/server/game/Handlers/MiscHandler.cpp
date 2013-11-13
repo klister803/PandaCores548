@@ -175,7 +175,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_WHO Message");
 
     time_t now = time(NULL);
-    if (now - timeLastWhoCommand < 5)
+    if (now - timeLastWhoCommand < 15)
     {
         recvData.rfinish();
         return;

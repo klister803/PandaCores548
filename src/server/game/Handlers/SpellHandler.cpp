@@ -847,6 +847,15 @@ void WorldSession::HandleSelfResOpcode(WorldPacket& /*recvData*/)
 
 void WorldSession::HandleSpellClick(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeLastHandleSpellClick < 2)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeLastHandleSpellClick = now;
+
     uint64 guid;
     recvData >> guid;
 

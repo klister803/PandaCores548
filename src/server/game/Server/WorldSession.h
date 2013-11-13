@@ -1103,6 +1103,7 @@ class WorldSession
         time_t timeLastHandlePlayerLogin;
         time_t timeAddIgnoreOpcode;
         time_t timeMoveTeleportAck;
+        time_t timeLastHandleSpellClick;
         uint8 playerLoginCounter;
 
         uint32 _pakagepersecond;
