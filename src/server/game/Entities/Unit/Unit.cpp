@@ -11812,15 +11812,14 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                     default:
                         break;
                 }
-
-                crit_chance += GetUnitCriticalChance(attackType, victim);
-                crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
             break;
         }
         default:
             return false;
     }
+    crit_chance += GetUnitCriticalChance(attackType, victim);
+    crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
     // percent done
     // only players use intelligence for critical chance computations
     if (Player* modOwner = GetSpellModOwner())
