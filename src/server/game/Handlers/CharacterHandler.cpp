@@ -238,16 +238,13 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
     ByteBuffer bitBuffer;
     ByteBuffer dataBuffer;
 
-    bitBuffer.WriteBits(0, 23);
-    bitBuffer.WriteBit(1);
-
     if (result)
     {
         _allowedCharsToLogin.clear();
 
         charCount = uint32(result->GetRowCount());
 
-        bitBuffer.WriteBits(charCount, 17);
+        bitBuffer.WriteBits(charCount, 16);
 
         bitBuffer.reserve(24 * charCount / 8);
         dataBuffer.reserve(charCount * 381);
@@ -264,9 +261,10 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
         } while (result->NextRow());
     }
     else
-        bitBuffer.WriteBits(0, 17);
+        bitBuffer.WriteBits(0, 16);
 
-    bitBuffer.FlushBits();
+    bitBuffer.WriteBit(1);
+    bitBuffer.WriteBits(0, 21);
 
     data.append(bitBuffer);
     if (charCount)

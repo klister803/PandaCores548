@@ -64,7 +64,7 @@ enum Opcodes
     CMSG_AUCTION_PLACE_BID                            = 0x915,  // 5.0.5 16048
     CMSG_AUCTION_REMOVE_ITEM                          = 0x965,  // 5.0.5 16048
     CMSG_AUCTION_SELL_ITEM                            = 0xCC6,  // 5.0.5 16048
-    CMSG_AUTH_SESSION                                 = 0x08A,  // 5.0.5 16048
+    CMSG_AUTH_SESSION                                 = 0x14DA, // 5.4.1 17358
     CMSG_AUTOBANK_ITEM                                = 0xCC0,  // 5.0.5 16048
     CMSG_AUTOEQUIP_GROUND_ITEM                        = 0x000,  // Not found in 4.3.4
     CMSG_AUTOEQUIP_ITEM                               = 0x888,  // 5.0.5 16048
@@ -148,7 +148,7 @@ enum Opcodes
     CMSG_CHAR_CREATE                                  = 0x332,  // 5.0.5 16048
     CMSG_CHAR_CUSTOMIZE                               = 0xC99,  // 5.0.5 16048
     CMSG_CHAR_DELETE                                  = 0x944,  // 5.0.5 16048
-    CMSG_CHAR_ENUM                                    = 0x576,  // 5.0.5 16048
+    CMSG_CHAR_ENUM                                    = 0x0848, // 5.4.1 17538
     CMSG_CHAR_FACTION_CHANGE                          = 0x9B9,  // 5.0.5 16048
     CMSG_CHAR_RACE_CHANGE                             = 0x96C,  // 5.0.5 16048
     CMSG_CHAR_RENAME                                  = 0xCD2,  // 5.0.5 16048
@@ -640,7 +640,7 @@ enum Opcodes
     SMSG_ACHIEVEMENT_EARNED                           = 0xAF4,  // 5.0.5 16048
     SMSG_ACTION_BUTTONS                               = 0xE34,  // 5.0.5 16048
     SMSG_ACTIVATETAXIREPLY                            = 0x9DE,  // 5.0.5 16048
-    SMSG_ADDON_INFO                                   = 0x9C6,  // 5.0.5 16048
+    SMSG_ADDON_INFO                                   = 0x1136, // 5.4.1 17538
     SMSG_ADD_RUNE_POWER                               = 0x86A,  // 5.0.5 16048
     SMSG_AI_REACTION                                  = 0x828,  // 5.0.5 16048
     SMSG_ALL_ACHIEVEMENT_DATA                         = 0xB64,  // 5.0.5 16048
@@ -676,8 +676,8 @@ enum Opcodes
     SMSG_AURA_POINTS_DEPLETED                         = 0xBF7,  // 5.0.5 16048
     SMSG_AURA_UPDATE                                  = 0x8AB,  // 5.0.5 16048
     SMSG_AURA_UPDATE_ALL                              = 0xDDA,  // 5.0.5 16048
-    SMSG_AUTH_CHALLENGE                               = 0x523,  // 5.0.5 16048
-    SMSG_AUTH_RESPONSE                                = 0xE20,  // 5.0.5 16048
+    SMSG_AUTH_CHALLENGE                               = 0x0C5D, // 5.4.1 17538
+    SMSG_AUTH_RESPONSE                                = 0x0D05, // 5.4.1 17538
     SMSG_AVAILABLE_VOICE_CHANNEL                      = 0x941,  // 5.0.5 16048
     SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,  // 5.0.5 16048
     SMSG_BARBER_SHOP_RESULT                           = 0x835,  // 5.0.5 16048
@@ -784,7 +784,7 @@ enum Opcodes
     SMSG_CLEAR_COOLDOWNS                              = 0xEB2,  // 5.0.5 16048
     SMSG_CLEAR_FAR_SIGHT_IMMEDIATE                    = 0xCDE,  // 5.0.5 16048
     SMSG_CLEAR_TARGET                                 = 0xD0B,  // 5.0.5 16048
-    SMSG_CLIENTCACHE_VERSION                          = 0xEB4,  // 5.0.5 16048
+    SMSG_CLIENTCACHE_VERSION                          = 0x1037, // 5.4.1 17358
     SMSG_CLIENT_CONTROL_UPDATE                        = 0,      // 0x2837 in 4.3.4 @todo : Find me and BACON !
     SMSG_COMBAT_EVENT_FAILED                          = 0x9EF,  // 5.0.5 16048
     SMSG_COMBAT_LOG_MULTIPLE                          = 0,      // Not found in 4.3.4
@@ -1337,7 +1337,7 @@ enum Opcodes
     SMSG_TRIGGER_CINEMATIC                            = 0xC18,  // 5.0.5 16048
     SMSG_TRIGGER_MOVIE                                = 0xD51,  // 5.0.5 16048
     SMSG_TURN_IN_PETITION_RESULTS                     = 0xD7B,  // 5.0.5 16048
-    SMSG_TUTORIAL_FLAGS                               = 0x8AE,  // 5.0.5 16048
+    SMSG_TUTORIAL_FLAGS                               = 0x0D1B, // 5.4.1 17538
     SMSG_UNIT_HEALTH_FREQUENT                         = 0x8D1,  // 5.0.5 16048
     SMSG_UNIT_SPELLCAST_START                         = 0xC12,  // 5.0.5 16048
     SMSG_UPDATE_ACCOUNT_DATA                          = 0x860,  // 5.0.5 16048

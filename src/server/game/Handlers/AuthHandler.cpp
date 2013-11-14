@@ -16,130 +16,98 @@
  */
 
 #include "Opcodes.h"
+#include "SharedDefines.h"
 #include "WorldSession.h"
 #include "WorldPacket.h"
 
+struct ExpansionInfoStrunct
+{
+    uint8 raceOrClass;
+    uint8 expansion;
+};
+
+ExpansionInfoStrunct classExpansionInfo[MAX_CLASSES - 1] =
+{
+    { CLASS_WARRIOR, EXP_VANILLA },
+    { CLASS_PALADIN, EXP_VANILLA },
+    { CLASS_HUNTER, EXP_VANILLA },
+    { CLASS_ROGUE, EXP_VANILLA },
+    { CLASS_PRIEST, EXP_VANILLA },
+    { CLASS_DEATH_KNIGHT, EXP_WOTLK },
+    { CLASS_SHAMAN, EXP_VANILLA },
+    { CLASS_MAGE, EXP_VANILLA },
+    { CLASS_WARLOCK, EXP_VANILLA },
+    { CLASS_MONK, EXP_PANDARIA },
+    { CLASS_DRUID, EXP_VANILLA }
+};
+
+ExpansionInfoStrunct raceExpansionInfo[MAX_PLAYABLE_RACES] =
+{
+    { RACE_HUMAN, EXP_VANILLA },
+    { RACE_ORC, EXP_VANILLA },
+    { RACE_DWARF, EXP_VANILLA },
+    { RACE_NIGHTELF, EXP_VANILLA },
+    { RACE_UNDEAD_PLAYER, EXP_VANILLA },
+    { RACE_TAUREN, EXP_VANILLA },
+    { RACE_GNOME, EXP_VANILLA },
+    { RACE_TROLL, EXP_VANILLA },
+    { RACE_GOBLIN, EXP_CATACLYSM },
+    { RACE_BLOODELF, EXP_BC },
+    { RACE_DRAENEI, EXP_BC },
+    { RACE_WORGEN, EXP_CATACLYSM },
+    { RACE_PANDAREN_NEUTRAL, EXP_PANDARIA },
+    { RACE_PANDAREN_ALLI, EXP_PANDARIA },
+    { RACE_PANDAREN_HORDE, EXP_PANDARIA }
+};
+
 void WorldSession::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
 {
+    bool hasAccountData = true;
+
     WorldPacket packet(SMSG_AUTH_RESPONSE);
 
-    uint32 realmRaceCount = 15;
-    uint32 realmClassCount = 11;
-
-    packet.WriteBit(1);                                    // has account info
-    packet.WriteBit(0);                                    // Unk
-    packet.WriteBits(realmClassCount, 25);                  // Read realmRaceResult.count // 11 (class ?)
-    packet.WriteBits(0, 22);                               // Unk
-    packet.WriteBits(realmRaceCount, 25);                 // Read realmClassResult.count // 15 (race ?)
-
+    packet << uint8(code);
     packet.WriteBit(queued);
     if (queued)
+        packet.WriteBit(1);
+
+    packet.WriteBit(hasAccountData);
+    if (hasAccountData)
     {
         packet.WriteBit(0);
-        packet.FlushBits();
+        packet.WriteBits(0, 21);
+        packet.WriteBits(0, 21);
+        packet.WriteBits(MAX_PLAYABLE_RACES, 23);
+        packet.WriteBit(0);
+        packet.WriteBit(0);
+        packet.WriteBit(0);
+        packet.WriteBits(MAX_CLASSES - 1, 23);
 
-        packet << uint32(queuePos);
-    }
-    else
-        packet.FlushBits();
+        packet << uint32(0);
+        packet << uint32(0);
+        packet << uint8(Expansion());
 
-    packet << uint8(Expansion());
-    packet << uint8(Expansion());
-
-    for(uint32 i = 0; i < realmClassCount; i++)
-    {
-        switch(i)
+        for (uint8 i = 0; i < MAX_PLAYABLE_RACES; ++i)
         {
-            case 0:
-                packet << uint8(CLASS_WARRIOR);
-                packet << uint8(0); // Prebc       
-                break;
-            case 1:
-                packet << uint8(CLASS_PALADIN);
-                packet << uint8(0); // Prebc              
-                break;
-            case 2:               
-                packet << uint8(CLASS_HUNTER);
-                packet << uint8(0); // Prebc
-                break;
-            case 3:
-                packet << uint8(CLASS_ROGUE);
-                packet << uint8(0); // Prebc            
-                break;
-            case 4:
-                packet << uint8(CLASS_PRIEST);
-                packet << uint8(0); // Prebc              
-                break;
-            case 5:                
-                packet << uint8(CLASS_DEATH_KNIGHT);
-                packet << uint8(2); // Wotlk
-                break;
-            case 6:               
-                packet << uint8(CLASS_SHAMAN);
-                packet << uint8(0); // Prebc
-                break;
-            case 7:               
-                packet << uint8(CLASS_MAGE);
-                packet << uint8(0); // Prebc
-                break;
-            case 8:                
-                packet << uint8(CLASS_WARLOCK);
-                packet << uint8(0); // Prebc
-                break;
-            case 9:
-                packet << uint8(CLASS_DRUID);
-                packet << uint8(0); // Prebc               
-                break;
-            case 10:
-                packet << uint8(CLASS_MONK);
-                packet << uint8(4); // MoP            
-                break;
+            packet << uint8(raceExpansionInfo[i].expansion);
+            packet << uint8(raceExpansionInfo[i].raceOrClass);
         }
+
+        packet << uint8(Expansion());
+        packet << uint32(0);
+
+        for (uint8 i = 0; i < MAX_CLASSES - 1; ++i)
+        {
+            packet << uint8(classExpansionInfo[i].raceOrClass);
+            packet << uint8(classExpansionInfo[i].expansion);
+        }
+
+        packet << uint32(0);
+        packet << uint32(0);
     }
 
-    packet << uint32(0);
-    packet << uint32(0);
-    packet << uint32(0);
-
-    packet << uint8(RACE_HUMAN);
-    packet << uint8(0);
-    packet << uint8(RACE_ORC);
-    packet << uint8(0);
-    packet << uint8(RACE_DWARF);
-    packet << uint8(0);
-    packet << uint8(RACE_NIGHTELF);
-    packet << uint8(0);
-    packet << uint8(RACE_UNDEAD_PLAYER);
-    packet << uint8(0);
-    packet << uint8(RACE_TAUREN);
-    packet << uint8(0);
-    packet << uint8(RACE_GNOME);
-    packet << uint8(0);
-    packet << uint8(RACE_TROLL);
-    packet << uint8(0);
-    packet << uint8(RACE_GOBLIN);
-    packet << uint8(3);
-    packet << uint8(RACE_BLOODELF);
-    packet << uint8(1);
-    packet << uint8(RACE_DRAENEI);
-    packet << uint8(1);
-    packet << uint8(RACE_WORGEN);
-    packet << uint8(3);
-    packet << uint8(RACE_PANDAREN_NEUTRAL);
-    packet << uint8(4);
-    packet << uint8(RACE_PANDAREN_ALLI);
-    packet << uint8(4);
-    packet << uint8(RACE_PANDAREN_HORDE);
-    packet << uint8(4);
-    
-    /*for(uint32 i = 0; i < realmRaceCount; i++)
-    {
-        packet << uint8(0);                                // class
-        packet << uint8(0);                                // expansion
-    }*/
-
-    packet << uint8(Expansion());                                    // BillingPlanFlags
-    packet << uint8(code);   
+    if (queued)
+        packet << uint32(queuePos);
 
     SendPacket(&packet);
 }
