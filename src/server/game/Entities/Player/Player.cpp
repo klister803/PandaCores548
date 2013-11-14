@@ -4073,6 +4073,20 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         return false;
     }
 
+    // Validate profession
+    if (loading)
+    {
+        SkillLineAbilityMapBounds spellBounds = sSpellMgr->GetSkillLineAbilityMapBounds(spellInfo->Id);
+        for (SkillLineAbilityMap::const_iterator spell_idx = spellBounds.first; spell_idx != spellBounds.second; ++spell_idx)
+        {
+            if (!IsProfessionSkill(spell_idx->second->skillId))
+                continue;
+
+            if (!HasSkill(spell_idx->second->skillId))
+                disabled = true;
+        }
+    }
+
     PlayerSpellState state = learning ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
 
     bool dependent_set = false;
