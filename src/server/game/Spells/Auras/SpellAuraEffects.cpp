@@ -969,6 +969,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     case 79631: // Prismatic Elixir
                         amount += 45;
                         break;
+                    // Pandaria
+                    case 105689: // Flask of Spring Blossoms
+                    case 105691: // Flask of the Warm Sun
+                    case 105696: // Flask of Winter's Bite
+                        amount += 320;
+                        break;
+                    case 105694: // Flask of the Earth
+                    case 105693: // Flask of Falling Leaves
+                        amount += 480;
+                        break;
+                    //need info    
+                  // case 105686: // Elixir of Perfection
+                  // case 105687: // Elixir of Mirrors
+                  // case 105685: // Elixir of Peace
+                  // case 105684: // Elixir of the Rapids
+                  // case 105682: // Mad Hozen Elixir
+                  // case 105681: // Mantid Elixir
+                  // case 105683: // Elixir of Weaponry
+                  // case 105688: // Monk's Elixir
                 }
             }
         }
