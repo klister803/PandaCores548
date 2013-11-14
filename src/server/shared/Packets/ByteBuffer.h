@@ -42,6 +42,39 @@
 #define BIT_VALS_7 BIT_VALS_6, _7
 #define BIT_VALS_8 BIT_VALS_7, _8
 
+#define DEFINE_READGUIDMASK(T1, T2) template <T1> \
+    void ReadGuidMask(ObjectGuid& guid) \
+    { \
+        uint8 maskArr[] = { T2 }; \
+        for (uint8 i = 0; i < sizeof(maskArr) / sizeof(maskArr[0]) ; ++i) \
+            guid[maskArr[i]] = ReadBit(); \
+    }
+
+#define DEFINE_WRITEGUIDMASK(T1, T2) template <T1> \
+    void WriteGuidMask(ObjectGuid guid) \
+    { \
+        uint8 maskArr[] = { T2 }; \
+        for (uint8 i = 0; i < sizeof(maskArr) / sizeof(maskArr[0]); ++i) \
+            WriteBit(guid[maskArr[i]]); \
+    }
+
+#define DEFINE_READGUIDBYTES(T1, T2) template <T1> \
+    void ReadGuidBytes(ObjectGuid& guid) \
+    { \
+        uint8 maskArr[] = { T2 }; \
+        for (uint8 i = 0; i < sizeof(maskArr) / sizeof(maskArr[0]); ++i) \
+            if (guid[maskArr[i]] != 0) \
+                guid[maskArr[i]] ^= read<uint8>(); \
+    }
+
+#define DEFINE_WRITEGUIDBYTES(T1, T2) template <T1> \
+    void WriteGuidBytes(ObjectGuid guid) \
+    { \
+        uint8 maskArr[] = { T2 }; \
+        for (uint8 i = 0; i < sizeof(maskArr) / sizeof(maskArr[0]); ++i) \
+            if (guid[maskArr[i]] != 0) \
+                (*this) << uint8(guid[maskArr[i]] ^ 1); \
+    }
 
 //! Structure to ease conversions from single 64 bit integer guid into individual bytes, for packet sending purposes
 //! Nuke this out when porting ObjectGuid from MaNGOS, but preserve the per-byte storage
@@ -770,40 +803,6 @@ class ByteBuffer
         }
 
         std::vector<uint8>& _GetStorage() { return _storage; }
-
-        #define DEFINE_READGUIDMASK(T1, T2) template <T1> \
-            void ReadGuidMask(ObjectGuid& guid) \
-            { \
-                uint8 maskArr[] = { T2 }; \
-                for (uint8 i = 0; i < countof(maskArr); ++i) \
-                    guid[maskArr[i]] = ReadBit(); \
-            }
-
-        #define DEFINE_WRITEGUIDMASK(T1, T2) template <T1> \
-            void WriteGuidMask(ObjectGuid guid) \
-            { \
-                uint8 maskArr[] = { T2 }; \
-                for (uint8 i = 0; i < countof(maskArr); ++i) \
-                    WriteBit(guid[maskArr[i]]); \
-            }
-
-        #define DEFINE_READGUIDBYTES(T1, T2) template <T1> \
-            void ReadGuidBytes(ObjectGuid& guid) \
-            { \
-                uint8 maskArr[] = { T2 }; \
-                for (uint8 i = 0; i < countof(maskArr); ++i) \
-                    if (guid[maskArr[i]] != 0) \
-                        guid[maskArr[i]] ^= read<uint8>(); \
-            }
-
-        #define DEFINE_WRITEGUIDBYTES(T1, T2) template <T1> \
-            void WriteGuidBytes(ObjectGuid guid) \
-            { \
-                uint8 maskArr[] = { T2 }; \
-                for (uint8 i = 0; i < countof(maskArr); ++i) \
-                    if (guid[maskArr[i]] != 0) \
-                        (*this) << uint8(guid[maskArr[i]] ^ 1); \
-            }
 
         DEFINE_READGUIDMASK(BITS_1, BIT_VALS_1)
         DEFINE_READGUIDMASK(BITS_2, BIT_VALS_2)
