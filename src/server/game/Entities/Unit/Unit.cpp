@@ -7910,14 +7910,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             // Earth Shield
             if (dummySpell->Id == 974)
             {
-                // 3.0.8: Now correctly uses the Shaman's own spell critical strike chance to determine the chance of a critical heal.
-                originalCaster = triggeredByAura->GetCasterGUID();
-                target = this;
-                basepoints0 = triggerAmount;
-
-                // Glyph of Earth Shield
-                if (AuraEffect* aur = GetAuraEffect(63279, 0))
-                    AddPct(basepoints0, aur->GetAmount());
                 triggered_spell_id = 379;
                 break;
             }

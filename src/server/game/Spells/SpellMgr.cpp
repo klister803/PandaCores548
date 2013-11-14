@@ -3274,6 +3274,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 379: // Earth Shield
+                    spellInfo->ScalingClass = 11;
+                    spellInfo->Effects[0].ScalingMultiplier = 1.862f;
+                    break;
                 case 115450: // Detox
                     spellInfo->Effects[2].BasePoints = 0;
                     break;
