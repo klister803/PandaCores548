@@ -6739,6 +6739,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 55672: // Glyph of Power Word: Shield
+                {
+                    if (Aura* aur = GetAura(procSpell->Id))
+                    {
+                        int32 amount = aur->GetEffect(EFFECT_0)->GetAmount();
+                        triggered_spell_id = 56160;
+                        basepoints0 = CalculatePct(amount, triggerAmount);
+                    }
+                    break;
+                }
                 case 89489: // MoA Inner Focus
                 {
                     triggered_spell_id = 96267;
