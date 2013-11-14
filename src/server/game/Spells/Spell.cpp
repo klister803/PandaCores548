@@ -1310,6 +1310,21 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         ++itr;
                 }
                 break;
+            case SPELLFAMILY_SHAMAN:
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 52042: // Healing Stream Totem
+                    {
+                        maxSize = 1;
+                        power = POWER_HEALTH;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_PALADIN:
                 // Holy Wrath
                 if (m_spellInfo->Id == 119072 && effIndex == 1)
