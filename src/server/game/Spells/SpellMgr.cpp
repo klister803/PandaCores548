@@ -3274,6 +3274,11 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 52042: // Healing Stream Totem
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
+                    spellInfo->ScalingClass = 11;
+                    spellInfo->Effects[0].ScalingMultiplier = 0.029f;
+                    break;
                 case 379: // Earth Shield
                     spellInfo->ScalingClass = 11;
                     spellInfo->Effects[0].ScalingMultiplier = 1.862f;
@@ -3902,10 +3907,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 2641:  // Dismiss Pet
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
-                    break;
-                case 52042: // Healing Stream - Totem
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
-                    spellInfo->Effects[0].BasePoints = 31;
                     break;
                 case 324:   // Lightning Shield
                     spellInfo->ProcCharges = 0;
