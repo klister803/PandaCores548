@@ -478,6 +478,17 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     float weapon_mindamage = GetWeaponDamageRange(attType, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(attType, MAXDAMAGE);
 
+    if (IsInFeralForm())
+    {
+        float weaponSpeed = att_speed;
+        if (Item* weapon = GetWeaponForAttack(BASE_ATTACK, false))
+        {
+            weaponSpeed = weapon->GetTemplate()->Delay / 1000;
+        }
+        weapon_mindamage = weapon_mindamage / weaponSpeed * att_speed;
+        weapon_maxdamage = weapon_maxdamage / weaponSpeed * att_speed;
+    }
+
     if (!CanUseAttackType(attType))      //check if player not in form but still can't use (disarm case)
     {
         //cannot use ranged/off attack, set values to 0
