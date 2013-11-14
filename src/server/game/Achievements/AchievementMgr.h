@@ -101,6 +101,11 @@ struct AchievementCriteriaData
             uint32 spell_id;
             uint32 effect_idx;
         } aura;
+        // ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AREA            = 6
+        struct
+        {
+            uint32 id;
+        } area;
         // ACHIEVEMENT_CRITERIA_DATA_TYPE_VALUE             = 8
         struct
         {
