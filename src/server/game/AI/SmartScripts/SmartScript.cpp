@@ -518,6 +518,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_CAST:
         {
+            if(go)
+                go->CastSpell(unit, e.action.cast.spell);
+
             if (!me)
                 break;
 

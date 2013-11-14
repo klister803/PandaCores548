@@ -897,8 +897,83 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
         default:
             break;
-        
     }
+
+    // Mixology - Effect value mod
+    if (caster && caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_POTION && (
+            sSpellMgr->IsSpellMemberOfSpellGroup(GetId(), SPELL_GROUP_ELIXIR_BATTLE) ||
+            sSpellMgr->IsSpellMemberOfSpellGroup(GetId(), SPELL_GROUP_ELIXIR_GUARDIAN)))
+        {
+            if (caster->HasAura(53042) && caster->HasSpell(GetSpellInfo()->Effects[0].TriggerSpell))
+            {
+                switch (GetId())
+                {
+                    case 53749: // Guru's Elixir
+                        amount += 8;
+                        break;
+                    case 11328: // Elixir of Agility
+                        amount += 10;
+                        break;
+                    case 28497: // Elixir of Mighty Agility
+                    case 53747: // Elixir of Spirit
+                    case 54212: // Flask of Pure Mojo
+                    case 60340: // Elixir of Accuracy
+                    case 60341: // Elixir of Deadly Strikes
+                    case 60343: // Elixir of Mighty Defense
+                    case 60344: // Elixir of Expertise
+                    case 60345: // Elixir of Armor Piercing
+                    case 60346: // Elixir of Lightning Speed
+                    case 60347: // Elixir of Mighty Thoughts
+                        amount += 20;
+                        break;
+                    case 53752: // Lesser Flask of Toughness
+                    case 62380: // Lesser Flask of Resistance
+                        amount += 40;
+                        break;
+                    case 53755: // Flask of the Frost Wyrm
+                        amount += 47;
+                        break;
+                    case 53760: // Flask of Endless Rage
+                        amount += 64;
+                        break;
+                    case 53751: // Elixir of Mighty Fortitude
+                        amount += 200;
+                        break;
+                    case 53763: // Elixir of Protection
+                        amount += 280;
+                        break;
+                    case 53758: // Flask of Stoneblood
+                        amount += 320;
+                        break;
+                    // Cataclysm
+                    case 79469: // Flask of Steelskin
+                    case 79470: // Flask of the Draconic Mind
+                    case 79471: // Flask of the Winds
+                    case 79472: // Flask of Titanic Strength
+                    case 94160: // Flask of Flowing Water
+                        amount += 80;
+                        break;
+                    case 79635: // Flask of the Master
+                    case 79632: // Elixir of Mighty Speed
+                    case 79481: // Elixir of Impossible Accuracy
+                    case 79477: // Elixir of the Cobra
+                    case 79474: // Elixir of the Naga
+                    case 79468: // Ghost Elixir
+                        amount += 40;
+                        break;
+                    case 79480: // Elixir of Deep Earth
+                        amount += 345;
+                        break;
+                    case 79631: // Prismatic Elixir
+                        amount += 45;
+                        break;
+                }
+            }
+        }
+    }
+    
     if (DoneActualBenefit != 0.0f)
     {
         DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellInfo());
