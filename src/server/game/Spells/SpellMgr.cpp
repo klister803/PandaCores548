@@ -3284,6 +3284,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 115460: // Healing Sphere
+                    spellInfo->PreventionType = 1;
+                    break;
                 case 16213: // Purification
                     spellInfo->Effects[0].SpellClassMask[0] &= ~8192;
                     spellInfo->Effects[0].SpellClassMask[3] &= ~16384;
