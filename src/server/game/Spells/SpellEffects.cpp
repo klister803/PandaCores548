@@ -1750,6 +1750,14 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 52042: // Glyph of Healing Stream Totem
+            {
+                if (m_caster->ToTotem()->GetOwner()->HasAura(55456))
+                {
+                    m_caster->CastSpell(unitTarget, 119523, true);
+                }
+                break;
+            }
             case 18562: // Swiftmend
             {
                 // Soul of the Forest
