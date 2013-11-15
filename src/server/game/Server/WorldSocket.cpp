@@ -925,7 +925,7 @@ int WorldSocket::HandleSendAuthSession()
 {
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 37);
 
-    //packet << uint16(0);
+    packet << uint16(0);                                    // crap
     packet << uint8(1);
 
     BigNumber seed1;
