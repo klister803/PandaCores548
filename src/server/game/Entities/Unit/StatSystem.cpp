@@ -483,7 +483,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
         float weaponSpeed = att_speed;
         if (Item* weapon = GetWeaponForAttack(BASE_ATTACK, false))
         {
-            weaponSpeed = weapon->GetTemplate()->Delay / 1000;
+            weaponSpeed = weapon->GetTemplate()->Delay / 1000.0f;
         }
         weapon_mindamage = weapon_mindamage / weaponSpeed * att_speed;
         weapon_maxdamage = weapon_maxdamage / weaponSpeed * att_speed;
