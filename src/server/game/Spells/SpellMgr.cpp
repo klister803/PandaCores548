@@ -109,8 +109,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
         }
         case SPELLFAMILY_WARRIOR:
         {
-            // Hamstring - limit duration to 10s in PvP
-            if (spellproto->SpellFamilyFlags[0] & 0x2)
+            // Hamstring and Piercing Howl - limit duration to 10s in PvP
+            if (spellproto->SpellFamilyFlags[0] & 0x2 || spellproto->Id == 12323)
                 return DIMINISHING_LIMITONLY;
             // Charge Stun (own diminishing)
             else if (spellproto->SpellFamilyFlags[0] & 0x01000000)
