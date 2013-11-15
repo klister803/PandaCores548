@@ -52,8 +52,6 @@ enum ShamanSpells
     SPELL_SHA_FLAME_SHOCK                   = 8050,
     SPELL_SHA_STORMSTRIKE                   = 17364,
     SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE   = 26364,
-    SPELL_SHA_HEALING_STREAM                = 52042,
-    SPELL_SHA_GLYPH_OF_HEALING_STREAM       = 119423,
     SPELL_SHA_LAVA_SURGE_CAST_TIME          = 77762,
     SPELL_SHA_FULMINATION                   = 88766,
     SPELL_SHA_FULMINATION_TRIGGERED         = 88767,
@@ -1037,44 +1035,6 @@ class spell_sha_lava_surge : public SpellScriptLoader
         }
 };
 
-// Healing Stream - 52042
-class spell_sha_healing_stream : public SpellScriptLoader
-{
-    public:
-        spell_sha_healing_stream() : SpellScriptLoader("spell_sha_healing_stream") { }
-
-        class spell_sha_healing_stream_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_healing_stream_SpellScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_HEALING_STREAM))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        // Glyph of Healing Stream Totem
-                        if (target->GetGUID() != _player->GetGUID() && _player->HasAura(55456))
-                            _player->CastSpell(target, SPELL_SHA_GLYPH_OF_HEALING_STREAM, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_sha_healing_stream_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_healing_stream_SpellScript();
-        }
-};
-
 // Called by Stormstrike - 17364 and Lava Lash - 60103
 // Static Shock - 51527
 class spell_sha_static_shock : public SpellScriptLoader
@@ -1881,7 +1841,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_rolling_thunder();
     new spell_sha_fulmination();
     new spell_sha_lava_surge();
-    new spell_sha_healing_stream();
     new spell_sha_static_shock();
     new spell_sha_elemental_blast();
     new spell_sha_earthquake_tick();
