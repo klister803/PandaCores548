@@ -424,7 +424,7 @@ enum Opcodes
     CMSG_RAID_LEADER_READY_CHECK                      = 0x709,  // 5.0.5 16048
     CMSG_RAID_CONFIRM_READY_CHECK                     = 0x112,  // 5.0.5 16048
     CMSG_RANDOMIZE_CHAR_NAME                          = 0x044,  // 5.0.5 16048
-    CMSG_READY_FOR_ACCOUNT_DATA_TIMES                 = 0x9A2,  // 5.0.5 16048
+    CMSG_READY_FOR_ACCOUNT_DATA_TIMES                 = 0x144C, // 5.4.1 17538
     CMSG_READ_ITEM                                    = 0x819,  // 5.0.5 16048
     CMSG_REALM_NAME_QUERY                             = 0x81B,  // 5.0.5 16048
     CMSG_REALM_SPLIT                                  = 0x820,  // 5.0.5 16048
@@ -633,7 +633,7 @@ enum Opcodes
     SMSG_RAID_TARGET_UPDATE_SINGLE                    = 0xF13,  // 5.0.5 16048
     SMSG_RAID_TARGET_UPDATE_ALL                       = 0xB9E,  // 5.0.5 16048
     SMSG_CORPSE_QUERY                                 = 0xAA2,  // 5.0.5 16048
-    SMSG_ACCOUNT_DATA_TIMES                           = 0xC4B,  // 5.0.5 16048
+    SMSG_ACCOUNT_DATA_TIMES                           = 0x1486, // 5.4.1 17538
     SMSG_ACCOUNT_INFO_RESPONSE                        = 0xF05,  // 5.0.5 16048
     SMSG_ACCOUNT_RESTRICTED_WARNING                   = 0xB66,  // 5.0.5 16048
     SMSG_ACHIEVEMENT_DELETED                          = 0x920,  // 5.0.5 16048
