@@ -767,7 +767,7 @@ enum Opcodes
     SMSG_CHAR_CREATE                                  = 0xC15,  // 5.0.5 16048
     SMSG_CHAR_CUSTOMIZE                               = 0xD27,  // 5.0.5 16048
     SMSG_CHAR_DELETE                                  = 0x936,  // 5.0.5 16048
-    SMSG_CHAR_ENUM                                    = 0xE28,  // 5.0.5 16048
+    SMSG_CHAR_ENUM                                    = 0x40E,  // 5.4.1 17538
     SMSG_CHAR_FACTION_CHANGE                          = 0x9E0,  // 5.0.5 16048
     SMSG_CHAR_RENAME                                  = 0x945,  // 5.0.5 16048
     SMSG_CHAT_IGNORED_ACCOUNT_MUTED                   = 0x000,  // 5.0.5 16048
@@ -784,7 +784,7 @@ enum Opcodes
     SMSG_CLEAR_COOLDOWNS                              = 0xEB2,  // 5.0.5 16048
     SMSG_CLEAR_FAR_SIGHT_IMMEDIATE                    = 0xCDE,  // 5.0.5 16048
     SMSG_CLEAR_TARGET                                 = 0xD0B,  // 5.0.5 16048
-    SMSG_CLIENTCACHE_VERSION                          = 0x1037, // 5.4.1 17358
+    SMSG_CLIENTCACHE_VERSION                          = 0x1037, // 5.4.1 17538
     SMSG_CLIENT_CONTROL_UPDATE                        = 0,      // 0x2837 in 4.3.4 @todo : Find me and BACON !
     SMSG_COMBAT_EVENT_FAILED                          = 0x9EF,  // 5.0.5 16048
     SMSG_COMBAT_LOG_MULTIPLE                          = 0,      // Not found in 4.3.4

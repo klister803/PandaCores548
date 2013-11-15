@@ -265,6 +265,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
 
     bitBuffer.WriteBit(1);
     bitBuffer.WriteBits(0, 21);
+    bitBuffer.FlushBits();
 
     data.append(bitBuffer);
     if (charCount)
