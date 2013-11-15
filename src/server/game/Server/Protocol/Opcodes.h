@@ -387,7 +387,7 @@ enum Opcodes
     CMSG_PET_SET_ACTION                               = 0xD07,  // 5.0.5 16048
     CMSG_PET_SPELL_AUTOCAST                           = 0x000,  // Deprecated in 5.0.5 16048
     CMSG_PET_STOP_ATTACK                              = 0xC59,  // 5.0.5 16048
-    CMSG_PING                                         = 0x4EB,  // 5.0.5 16048
+    CMSG_PING                                         = 0x11E6, // 5.4.1 17538
     CMSG_PLAYED_TIME                                  = 0x9B1,  // 5.0.5 16048
     CMSG_PLAYER_DIFFICULTY_CHANGE                     = 0x000,  // Not found in 4.3.4
     CMSG_PLAYER_LOGIN                                 = 0x203,  // 5.0.5 16048
@@ -427,7 +427,7 @@ enum Opcodes
     CMSG_READY_FOR_ACCOUNT_DATA_TIMES                 = 0x144C, // 5.4.1 17538
     CMSG_READ_ITEM                                    = 0x819,  // 5.0.5 16048
     CMSG_REALM_NAME_QUERY                             = 0x81B,  // 5.0.5 16048
-    CMSG_REALM_SPLIT                                  = 0x820,  // 5.0.5 16048
+    CMSG_REALM_SPLIT                                  = 0x0449, // 5.4.1 17538
     CMSG_RECLAIM_CORPSE                               = 0xCF4,  // 5.0.5 16048
     CMSG_REDIRECTION_AUTH_PROOF                       = 0x68A,  // 5.0.5 16048
     CMSG_REFORGE_ITEM                                 = 0x51C,  // 5.0.5 16048
@@ -1156,7 +1156,7 @@ enum Opcodes
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0xBFD,  // 5.0.5 16048
     SMSG_PLAY_TIME_WARNING                            = 0x817,  // 5.0.5 16048
-    SMSG_PONG                                         = 0x462,  // 5.0.5 16048
+    SMSG_PONG                                         = 0x005D, // 5.4.1 17538
     SMSG_POWER_UPDATE                                 = 0x94A,  // 5.0.5 16048
     SMSG_PRE_RESURRECT                                = 0x88A,  // 5.0.5 16048
     SMSG_PROCRESIST                                   = 0X80F,  // 5.0.5 16048
@@ -1203,7 +1203,7 @@ enum Opcodes
     SMSG_READ_ITEM_FAILED                             = 0x86D,  // 5.0.5 16048
     SMSG_READ_ITEM_OK                                 = 0xD80,  // 5.0.5 16048
     SMSG_REALM_QUERY_RESPONSE                         = 0xC26,  // 5.0.5 16048
-    SMSG_REALM_SPLIT                                  = 0xCCD,  // 5.0.5 16048
+    SMSG_REALM_SPLIT                                  = 0x0884, // 5.4.1 17538
     SMSG_REAL_GROUP_UPDATE                            = 0x000,  // 5.0.5 16048 Deprecated
     SMSG_RECEIVED_MAIL                                = 0x8D7,  // 5.0.5 16048
     SMSG_REDIRECT_CLIENT                              = 0x423,  // 5.0.5 16048
