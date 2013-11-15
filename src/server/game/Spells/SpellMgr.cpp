@@ -196,6 +196,16 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_LIMITONLY;
             break;
         }
+        case SPELLFAMILY_MONK:
+        {
+            switch (spellproto->Id)
+            {
+                case 116095: return DIMINISHING_LIMITONLY; // Disable
+                default:
+                    break;
+            }
+            break;
+        }
         default:
             break;
     }
