@@ -3277,6 +3277,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 16213: // Purification
                     spellInfo->Effects[0].SpellClassMask[0] &= ~8192;
                     spellInfo->Effects[0].SpellClassMask[3] &= ~16384;
+                    spellInfo->Effects[0].SpellClassMask[2] |= 64;
                     break;
                 case 52042: // Healing Stream Totem
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
