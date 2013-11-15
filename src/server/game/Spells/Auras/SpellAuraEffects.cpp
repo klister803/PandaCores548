@@ -640,19 +640,19 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 case SPELLFAMILY_MAGE:
-                    // Ice Barrier
-                    if (GetSpellInfo()->SpellFamilyFlags[1] & 0x1 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
+                {
+                    switch (m_spellInfo->Id)
                     {
-                        // +330% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.30f;
-                    }
-                    // Mage Ward
-                    else if (GetSpellInfo()->SpellFamilyFlags[0] & 0x8 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
-                    {
-                        // +80.68% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.8068f;
+                        case 11426: // Ice Barrier
+                        {
+                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 4.401f;
+                            break;
+                        }
+                        default:
+                            break;
                     }
                     break;
+                }
                 case SPELLFAMILY_WARLOCK:
                     // Twilight Ward
                     if (m_spellInfo->Id == 6229 || m_spellInfo->Id == 104048 || m_spellInfo->Id == 131623 || m_spellInfo->Id == 131624)
