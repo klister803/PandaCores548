@@ -662,31 +662,20 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 case SPELLFAMILY_PRIEST:
-                    // Power Word : Shield
-                    if (GetSpellInfo()->Id == 17 || GetSpellInfo()->Id == 123258)
+                {    
+                    switch (m_spellInfo->Id)
                     {
-                        if (Player* _plr = caster->ToPlayer())
+                        case 17:     // Power Word : Shield
+                        case 123258:
                         {
-                            switch (_plr->GetSpecializationId(_plr->GetActiveSpec()))
-                            {
-                                case SPEC_PRIEST_DISCIPLINE:
-                                    // +263.8% from sp bonus
-                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 2.638f;
-                                    break;
-                                case SPEC_PRIEST_HOLY:
-                                    // +233.9% from sp bonus
-                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 2.339f;
-                                    break;
-                                case SPEC_PRIEST_SHADOW:
-                                    // +187.1% from sp bonus
-                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 1.871f;
-                                    break;
-                                default:
-                                    break;
-                            }
+                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 1.871f;
+                            break;
                         }
+                        default:
+                            break;
                     }
                     break;
+                }
                 default:
                     break;
             }
