@@ -4519,10 +4519,25 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
     {
         for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
-            if (i->triger < 0)
-                RemoveAurasDueToSpell(-(i->triger));
-            else
-                CastSpell(this, i->triger, true);
+            switch (i->type)
+            {
+                case 0: //remove or add auras
+                {
+                    if (i->triger < 0)
+                        RemoveAurasDueToSpell(-(i->triger));
+                    else
+                        CastSpell(this, i->triger, true);
+                        break;
+                }
+                case 1: //remove or add spell
+                {
+                    if (i->triger < 0)
+                        removeSpell(-(i->triger));
+                    else
+                        learnSpell(i->triger, false);
+                        break;
+                }
+            }
         }
     }
 
@@ -4588,10 +4603,25 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     {
         for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
-            if (i->triger < 0)
-                RemoveAurasDueToSpell(-(i->triger));
-            else
-                CastSpell(this, i->triger, true);
+            switch (i->type)
+            {
+                case 0: //remove or add auras
+                {
+                    if (i->triger < 0)
+                        RemoveAurasDueToSpell(-(i->triger));
+                    else
+                        CastSpell(this, i->triger, true);
+                        break;
+                }
+                case 1: //remove or add spell
+                {
+                    if (i->triger < 0)
+                        removeSpell(-(i->triger));
+                    else
+                        learnSpell(i->triger, false);
+                        break;
+                }
+            }
         }
     }
 
