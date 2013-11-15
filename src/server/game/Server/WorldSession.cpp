@@ -954,40 +954,320 @@ void WorldSession::SendAddonsInfo()
     };
 
     WorldPacket data(SMSG_ADDON_INFO, 4);
+    data.WriteBits(0, 18);                      // banned count
+    data.WriteBits(m_addonsList.size(), 23);    // addons count
 
+    ByteBuffer buffer;
     for (AddonsList::iterator itr = m_addonsList.begin(); itr != m_addonsList.end(); ++itr)
     {
-        data << uint8(itr->State);
+        bool bit0 = itr->UsePublicKeyOrCRC;
+        bool bit1 = itr->UsePublicKeyOrCRC && itr->CRC != STANDARD_ADDON_CRC;
+        bool bit2 = false;
 
-        uint8 crcpub = itr->UsePublicKeyOrCRC;
-        data << uint8(crcpub);
-        if (crcpub)
+        data.WriteBit(bit0);                                // data.WriteBit(itr->CRC != 0x4c1c776d);
+        data.WriteBit(bit1);                                // non-standard CRC
+        data.WriteBit(bit2);
+
+        if (bit2)
         {
-            uint8 usepk = (itr->CRC != STANDARD_ADDON_CRC); // If addon is Standard addon CRC
-            data << uint8(usepk);
-            if (usepk)                                      // if CRC is wrong, add public key (client need it)
-            {
-                sLog->outInfo(LOG_FILTER_GENERAL, "ADDON: CRC (0x%x) for addon %s is wrong (does not match expected 0x%x), sending pubkey",
-                    itr->CRC, itr->Name.c_str(), STANDARD_ADDON_CRC);
+            data.WriteBits(0, 8);                           // string length
+            //buffer.WriteStringData(..);                   // use <Addon>\<Addon>.url file or not
+        }
+        if (bit1)
+        {
+            sLog->outInfo(LOG_FILTER_GENERAL, "ADDON: CRC (0x%x) for addon %s is wrong (does not match expected 0x%x), sending pubkey",
+                itr->CRC, itr->Name.c_str(), STANDARD_ADDON_CRC);
 
-                data.append(addonPublicKey, sizeof(addonPublicKey));
-            }
+#pragma region crcOrder
+            buffer << uint8(addonPublicKey[181]);
+            buffer << uint8(addonPublicKey[205]);
+            buffer << uint8(addonPublicKey[44]);
+            buffer << uint8(addonPublicKey[93]);
+            buffer << uint8(addonPublicKey[236]);
+            buffer << uint8(addonPublicKey[21]);
+            buffer << uint8(addonPublicKey[91]);
+            buffer << uint8(addonPublicKey[221]);
+            buffer << uint8(addonPublicKey[133]);
+            buffer << uint8(addonPublicKey[152]);
+            buffer << uint8(addonPublicKey[226]);
+            buffer << uint8(addonPublicKey[172]);
+            buffer << uint8(addonPublicKey[168]);
+            buffer << uint8(addonPublicKey[146]);
+            buffer << uint8(addonPublicKey[83]);
+            buffer << uint8(addonPublicKey[113]);
+            buffer << uint8(addonPublicKey[100]);
+            buffer << uint8(addonPublicKey[50]);
+            buffer << uint8(addonPublicKey[191]);
+            buffer << uint8(addonPublicKey[241]);
+            buffer << uint8(addonPublicKey[142]);
+            buffer << uint8(addonPublicKey[96]);
+            buffer << uint8(addonPublicKey[17]);
+            buffer << uint8(addonPublicKey[244]);
+            buffer << uint8(addonPublicKey[155]);
+            buffer << uint8(addonPublicKey[160]);
+            buffer << uint8(addonPublicKey[36]);
+            buffer << uint8(addonPublicKey[196]);
+            buffer << uint8(addonPublicKey[45]);
+            buffer << uint8(addonPublicKey[165]);
+            buffer << uint8(addonPublicKey[32]);
+            buffer << uint8(addonPublicKey[15]);
+            buffer << uint8(addonPublicKey[98]);
+            buffer << uint8(addonPublicKey[20]);
+            buffer << uint8(addonPublicKey[137]);
+            buffer << uint8(addonPublicKey[88]);
+            buffer << uint8(addonPublicKey[136]);
+            buffer << uint8(addonPublicKey[22]);
+            buffer << uint8(addonPublicKey[231]);
+            buffer << uint8(addonPublicKey[224]);
+            buffer << uint8(addonPublicKey[188]);
+            buffer << uint8(addonPublicKey[158]);
+            buffer << uint8(addonPublicKey[192]);
+            buffer << uint8(addonPublicKey[217]);
+            buffer << uint8(addonPublicKey[253]);
+            buffer << uint8(addonPublicKey[81]);
+            buffer << uint8(addonPublicKey[210]);
+            buffer << uint8(addonPublicKey[122]);
+            buffer << uint8(addonPublicKey[220]);
+            buffer << uint8(addonPublicKey[77]);
+            buffer << uint8(addonPublicKey[35]);
+            buffer << uint8(addonPublicKey[180]);
+            buffer << uint8(addonPublicKey[132]);
+            buffer << uint8(addonPublicKey[73]);
+            buffer << uint8(addonPublicKey[223]);
+            buffer << uint8(addonPublicKey[153]);
+            buffer << uint8(addonPublicKey[242]);
+            buffer << uint8(addonPublicKey[190]);
+            buffer << uint8(addonPublicKey[74]);
+            buffer << uint8(addonPublicKey[34]);
+            buffer << uint8(addonPublicKey[80]);
+            buffer << uint8(addonPublicKey[144]);
+            buffer << uint8(addonPublicKey[48]);
+            buffer << uint8(addonPublicKey[252]);
+            buffer << uint8(addonPublicKey[161]);
+            buffer << uint8(addonPublicKey[13]);
+            buffer << uint8(addonPublicKey[38]);
+            buffer << uint8(addonPublicKey[239]);
+            buffer << uint8(addonPublicKey[97]);
+            buffer << uint8(addonPublicKey[9]);
+            buffer << uint8(addonPublicKey[166]);
+            buffer << uint8(addonPublicKey[43]);
+            buffer << uint8(addonPublicKey[40]);
+            buffer << uint8(addonPublicKey[4]);
+            buffer << uint8(addonPublicKey[41]);
+            buffer << uint8(addonPublicKey[37]);
+            buffer << uint8(addonPublicKey[3]);
+            buffer << uint8(addonPublicKey[173]);
+            buffer << uint8(addonPublicKey[211]);
+            buffer << uint8(addonPublicKey[194]);
+            buffer << uint8(addonPublicKey[186]);
+            buffer << uint8(addonPublicKey[193]);
+            buffer << uint8(addonPublicKey[111]);
+            buffer << uint8(addonPublicKey[92]);
+            buffer << uint8(addonPublicKey[249]);
+            buffer << uint8(addonPublicKey[105]);
+            buffer << uint8(addonPublicKey[53]);
+            buffer << uint8(addonPublicKey[106]);
+            buffer << uint8(addonPublicKey[116]);
+            buffer << uint8(addonPublicKey[107]);
+            buffer << uint8(addonPublicKey[76]);
+            buffer << uint8(addonPublicKey[204]);
+            buffer << uint8(addonPublicKey[202]);
+            buffer << uint8(addonPublicKey[118]);
+            buffer << uint8(addonPublicKey[232]);
+            buffer << uint8(addonPublicKey[159]);
+            buffer << uint8(addonPublicKey[49]);
+            buffer << uint8(addonPublicKey[228]);
+            buffer << uint8(addonPublicKey[203]);
+            buffer << uint8(addonPublicKey[60]);
+            buffer << uint8(addonPublicKey[179]);
+            buffer << uint8(addonPublicKey[99]);
+            buffer << uint8(addonPublicKey[31]);
+            buffer << uint8(addonPublicKey[101]);
+            buffer << uint8(addonPublicKey[0]);
+            buffer << uint8(addonPublicKey[164]);
+            buffer << uint8(addonPublicKey[89]);
+            buffer << uint8(addonPublicKey[141]);
+            buffer << uint8(addonPublicKey[234]);
+            buffer << uint8(addonPublicKey[149]);
+            buffer << uint8(addonPublicKey[117]);
+            buffer << uint8(addonPublicKey[198]);
+            buffer << uint8(addonPublicKey[16]);
+            buffer << uint8(addonPublicKey[82]);
+            buffer << uint8(addonPublicKey[135]);
+            buffer << uint8(addonPublicKey[148]);
+            buffer << uint8(addonPublicKey[94]);
+            buffer << uint8(addonPublicKey[57]);
+            buffer << uint8(addonPublicKey[230]);
+            buffer << uint8(addonPublicKey[238]);
+            buffer << uint8(addonPublicKey[51]);
+            buffer << uint8(addonPublicKey[109]);
+            buffer << uint8(addonPublicKey[66]);
+            buffer << uint8(addonPublicKey[240]);
+            buffer << uint8(addonPublicKey[103]);
+            buffer << uint8(addonPublicKey[187]);
+            buffer << uint8(addonPublicKey[119]);
+            buffer << uint8(addonPublicKey[108]);
+            buffer << uint8(addonPublicKey[171]);
+            buffer << uint8(addonPublicKey[195]);
+            buffer << uint8(addonPublicKey[90]);
+            buffer << uint8(addonPublicKey[130]);
+            buffer << uint8(addonPublicKey[56]);
+            buffer << uint8(addonPublicKey[246]);
+            buffer << uint8(addonPublicKey[39]);
+            buffer << uint8(addonPublicKey[185]);
+            buffer << uint8(addonPublicKey[47]);
+            buffer << uint8(addonPublicKey[184]);
+            buffer << uint8(addonPublicKey[8]);
+            buffer << uint8(addonPublicKey[11]);
+            buffer << uint8(addonPublicKey[95]);
+            buffer << uint8(addonPublicKey[213]);
+            buffer << uint8(addonPublicKey[139]);
+            buffer << uint8(addonPublicKey[178]);
+            buffer << uint8(addonPublicKey[183]);
+            buffer << uint8(addonPublicKey[182]);
+            buffer << uint8(addonPublicKey[243]);
+            buffer << uint8(addonPublicKey[67]);
+            buffer << uint8(addonPublicKey[218]);
+            buffer << uint8(addonPublicKey[229]);
+            buffer << uint8(addonPublicKey[61]);
+            buffer << uint8(addonPublicKey[248]);
+            buffer << uint8(addonPublicKey[245]);
+            buffer << uint8(addonPublicKey[27]);
+            buffer << uint8(addonPublicKey[214]);
+            buffer << uint8(addonPublicKey[174]);
+            buffer << uint8(addonPublicKey[28]);
+            buffer << uint8(addonPublicKey[42]);
+            buffer << uint8(addonPublicKey[162]);
+            buffer << uint8(addonPublicKey[112]);
+            buffer << uint8(addonPublicKey[216]);
+            buffer << uint8(addonPublicKey[209]);
+            buffer << uint8(addonPublicKey[120]);
+            buffer << uint8(addonPublicKey[86]);
+            buffer << uint8(addonPublicKey[64]);
+            buffer << uint8(addonPublicKey[121]);
+            buffer << uint8(addonPublicKey[29]);
+            buffer << uint8(addonPublicKey[131]);
+            buffer << uint8(addonPublicKey[129]);
+            buffer << uint8(addonPublicKey[6]);
+            buffer << uint8(addonPublicKey[176]);
+            buffer << uint8(addonPublicKey[19]);
+            buffer << uint8(addonPublicKey[225]);
+            buffer << uint8(addonPublicKey[62]);
+            buffer << uint8(addonPublicKey[233]);
+            buffer << uint8(addonPublicKey[199]);
+            buffer << uint8(addonPublicKey[26]);
+            buffer << uint8(addonPublicKey[59]);
+            buffer << uint8(addonPublicKey[123]);
+            buffer << uint8(addonPublicKey[145]);
+            buffer << uint8(addonPublicKey[55]);
+            buffer << uint8(addonPublicKey[78]);
+            buffer << uint8(addonPublicKey[125]);
+            buffer << uint8(addonPublicKey[69]);
+            buffer << uint8(addonPublicKey[30]);
+            buffer << uint8(addonPublicKey[126]);
+            buffer << uint8(addonPublicKey[207]);
+            buffer << uint8(addonPublicKey[24]);
+            buffer << uint8(addonPublicKey[147]);
+            buffer << uint8(addonPublicKey[71]);
+            buffer << uint8(addonPublicKey[115]);
+            buffer << uint8(addonPublicKey[14]);
+            buffer << uint8(addonPublicKey[25]);
+            buffer << uint8(addonPublicKey[46]);
+            buffer << uint8(addonPublicKey[157]);
+            buffer << uint8(addonPublicKey[215]);
+            buffer << uint8(addonPublicKey[250]);
+            buffer << uint8(addonPublicKey[197]);
+            buffer << uint8(addonPublicKey[237]);
+            buffer << uint8(addonPublicKey[140]);
+            buffer << uint8(addonPublicKey[206]);
+            buffer << uint8(addonPublicKey[85]);
+            buffer << uint8(addonPublicKey[219]);
+            buffer << uint8(addonPublicKey[212]);
+            buffer << uint8(addonPublicKey[227]);
+            buffer << uint8(addonPublicKey[10]);
+            buffer << uint8(addonPublicKey[251]);
+            buffer << uint8(addonPublicKey[222]);
+            buffer << uint8(addonPublicKey[58]);
+            buffer << uint8(addonPublicKey[254]);
+            buffer << uint8(addonPublicKey[1]);
+            buffer << uint8(addonPublicKey[23]);
+            buffer << uint8(addonPublicKey[154]);
+            buffer << uint8(addonPublicKey[169]);
+            buffer << uint8(addonPublicKey[138]);
+            buffer << uint8(addonPublicKey[84]);
+            buffer << uint8(addonPublicKey[151]);
+            buffer << uint8(addonPublicKey[7]);
+            buffer << uint8(addonPublicKey[70]);
+            buffer << uint8(addonPublicKey[68]);
+            buffer << uint8(addonPublicKey[33]);
+            buffer << uint8(addonPublicKey[2]);
+            buffer << uint8(addonPublicKey[208]);
+            buffer << uint8(addonPublicKey[63]);
+            buffer << uint8(addonPublicKey[54]);
+            buffer << uint8(addonPublicKey[134]);
+            buffer << uint8(addonPublicKey[167]);
+            buffer << uint8(addonPublicKey[127]);
+            buffer << uint8(addonPublicKey[189]);
+            buffer << uint8(addonPublicKey[177]);
+            buffer << uint8(addonPublicKey[124]);
+            buffer << uint8(addonPublicKey[75]);
+            buffer << uint8(addonPublicKey[65]);
+            buffer << uint8(addonPublicKey[175]);
+            buffer << uint8(addonPublicKey[79]);
+            buffer << uint8(addonPublicKey[235]);
+            buffer << uint8(addonPublicKey[52]);
+            buffer << uint8(addonPublicKey[201]);
+            buffer << uint8(addonPublicKey[102]);
+            buffer << uint8(addonPublicKey[5]);
+            buffer << uint8(addonPublicKey[104]);
+            buffer << uint8(addonPublicKey[150]);
+            buffer << uint8(addonPublicKey[163]);
+            buffer << uint8(addonPublicKey[200]);
+            buffer << uint8(addonPublicKey[156]);
+            buffer << uint8(addonPublicKey[72]);
+            buffer << uint8(addonPublicKey[110]);
+            buffer << uint8(addonPublicKey[247]);
+            buffer << uint8(addonPublicKey[143]);
+            buffer << uint8(addonPublicKey[114]);
+            buffer << uint8(addonPublicKey[87]);
+            buffer << uint8(addonPublicKey[255]);
+            buffer << uint8(addonPublicKey[18]);
+            buffer << uint8(addonPublicKey[12]);
+            buffer << uint8(addonPublicKey[170]);
+            buffer << uint8(addonPublicKey[128]);
 
-            data << uint32(0);                              // TODO: Find out the meaning of this.
+#pragma endregion
+        }
+        if (bit0)
+        {
+            buffer << uint8(0);
+            buffer << uint32(0);
         }
 
-        uint8 unk3 = 0;                                     // 0 is sent here
-        data << uint8(unk3);
-        if (unk3)
-        {
-            // String, length 256 (null terminated)
-            data << uint8(0);
-        }
+        buffer << uint8(itr->State);
     }
 
-    m_addonsList.clear();
+    /*if (bannedAddons)
+    {
+        foreach(bannedAddon)
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                buffer << uint32(0);
+                buffer << uint32(0);
+            }
 
-    data << uint32(0); // count for an unknown for loop
+            buffer << uint32(0);
+            buffer << uint32(0);
+            buffer << uint32(0);
+        }
+    }*/
+
+    data.FlushBits();
+    if (!buffer.empty())
+        data.append(buffer);
+
+    m_addonsList.clear();
 
     SendPacket(&data);
 }
