@@ -273,7 +273,7 @@ class WorldSession
         void SendQueryTimeResponse();
         void HandleLearnPetSpecialization(WorldPacket& data);
 
-        void SendAuthResponse(uint8 code, bool queued, uint32 queuePos = 0);
+        void SendAuthResponse(uint8 code, bool hasAccountData = true, bool queued = false, uint32 queuePos = 0);
         void SendClientCacheVersion(uint32 version);
 
         AccountTypes GetSecurity() const { return _security; }

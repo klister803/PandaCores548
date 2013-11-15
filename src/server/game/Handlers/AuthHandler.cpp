@@ -60,10 +60,8 @@ ExpansionInfoStrunct raceExpansionInfo[MAX_PLAYABLE_RACES] =
     { RACE_PANDAREN_HORDE, EXP_PANDARIA }
 };
 
-void WorldSession::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
+void WorldSession::SendAuthResponse(uint8 code, bool hasAccountData, bool queued, uint32 queuePos)
 {
-    bool hasAccountData = true;
-
     WorldPacket packet(SMSG_AUTH_RESPONSE);
 
     packet << uint8(code);

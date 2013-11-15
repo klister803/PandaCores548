@@ -723,9 +723,9 @@ void WorldSession::Handle_Deprecated(WorldPacket& recvPacket)
 void WorldSession::SendAuthWaitQue(uint32 position)
 {
     if (position == 0)
-        SendAuthResponse(AUTH_OK, false);
+        SendAuthResponse(AUTH_OK);
     else
-        SendAuthResponse(AUTH_OK, true, position);
+        SendAuthResponse(AUTH_OK, true, true, position);
 }
 
 void WorldSession::LoadGlobalAccountData()

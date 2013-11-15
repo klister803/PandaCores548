@@ -994,7 +994,14 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     if (sWorld->IsClosed())
     {
-        //SendAuthResponse(AUTH_REJECT, false, 0);
+        WorldPacket data(SMSG_AUTH_RESPONSE, 2);
+
+        data << uint8(AUTH_REJECT);
+        data.WriteBit(false);   // not queued
+        data.WriteBit(false);   // no account data
+        data.FlushBits();
+        SendPacket(&data);
+
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: World closed, denying client (%s).", GetRemoteAddress().c_str());
         return -1;
     }
@@ -1009,7 +1016,14 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // Stop if the account is not found
     if (!result)
     {
-        //SendAuthResponse(AUTH_UNKNOWN_ACCOUNT, false, 0);
+        WorldPacket data(SMSG_AUTH_RESPONSE, 2);
+
+        data << uint8(AUTH_UNKNOWN_ACCOUNT);
+        data.WriteBit(false);   // not queued
+        data.WriteBit(false);   // no account data
+        data.FlushBits();
+        SendPacket(&data);
+
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Sent Auth Response (unknown account).");
         return -1;
     }
@@ -1031,7 +1045,14 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     {
         if (strcmp (fields[2].GetCString(), GetRemoteAddress().c_str()))
         {
-            //SendAuthResponse(AUTH_FAILED, false, 0);
+            WorldPacket data(SMSG_AUTH_RESPONSE, 2);
+
+            data << uint8(AUTH_FAILED);
+            data.WriteBit(false);   // not queued
+            data.WriteBit(false);   // no account data
+            data.FlushBits();
+            SendPacket(&data);
+
             sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Sent Auth Response (Account IP differs).");
             return -1;
         }
@@ -1092,7 +1113,14 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     if (banresult) // if account banned
     {
-        //SendAuthResponse(AUTH_BANNED, false, 0);
+        WorldPacket data(SMSG_AUTH_RESPONSE, 2);
+
+        data << uint8(AUTH_BANNED);
+        data.WriteBit(false);   // not queued
+        data.WriteBit(false);   // no account data
+        data.FlushBits();
+        SendPacket(&data);
+
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Sent Auth Response (Account banned).");
         return -1;
     }
@@ -1102,7 +1130,14 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Allowed Level: %u Player Level %u", allowedAccountType, AccountTypes(security));
     if (allowedAccountType > SEC_PLAYER && AccountTypes(security) < allowedAccountType)
     {
-        //SendAuthResponse(AUTH_UNAVAILABLE, false, 0);
+        WorldPacket data(SMSG_AUTH_RESPONSE, 2);
+
+        data << uint8(AUTH_UNAVAILABLE);
+        data.WriteBit(false);   // not queued
+        data.WriteBit(false);   // no account data
+        data.FlushBits();
+        SendPacket(&data);
+
         sLog->outInfo(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: User tries to login but his security level is not enough");
         return -1;
     }
