@@ -228,8 +228,8 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
     if (m_Crypt.IsInitialized())
     {
         uint32 totalLength = pct->size();
-        totalLength <<= 12;
-        totalLength |= ((uint32)pct->GetOpcode() & 0xFFF);
+        totalLength <<= 13;
+        totalLength |= ((uint32)pct->GetOpcode() & 0x1FFF);
 
         header.header[0] = (uint32)((totalLength & 0xFF));
         header.header[1] = (uint32)((totalLength >> 8) & 0xFF);
@@ -538,8 +538,8 @@ int WorldSocket::handle_input_header (void)
         m_Crypt.DecryptRecv(clientHeader, 4);
 
         uint32 value = *(uint32*)clientHeader;
-        uint32 opcode = value & 0xFFF;
-        uint16 size = (uint16)((value & ~(uint32)0xFFF) >> 12);
+        uint32 opcode = value & 0x1FFF;
+        uint16 size = (uint16)((value & ~(uint32)0x1FFF) >> 13);
 
         header.size = size + 4;
         header.cmd = opcode; 
