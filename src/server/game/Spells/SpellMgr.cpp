@@ -4161,14 +4161,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_JUMP;
                     break;
                 //
+                //Will of the Imperator
                 case 116782:
-                case 116803: //Titan Gase
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8); //5yards
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(8); //5yards
+                case 116803: //Titan Gase (trigger spell)
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //5yards
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //5yards
                     break;
-                case 118327: //Titan Gase
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8); //5yards
+                case 118327: //Titan Gase (trigger spell)
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //5yards
                     break;
+                //
                 case 116000:
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                     break;
