@@ -3284,9 +3284,6 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 124487:
-                    spellInfo->AttributesEx3 |= SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
-                    break;
                 case 115460: // Healing Sphere
                     spellInfo->PreventionType = 1;
                     break;
@@ -3332,6 +3329,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ScalingMultiplier = 1.787f;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
+                case 124487: // Zen Focus
                 case 122013: // Glyph of Incite (Protection)
                     spellInfo->AttributesEx3 = SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
                     break;
