@@ -4068,6 +4068,20 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                 }
                 ExecuteLogEffectInterruptCast(effIndex, unitTarget, curSpellInfo->Id);
                 unitTarget->InterruptSpell(CurrentSpellTypes(i), false);
+
+                switch (m_spellInfo->Id)
+                {
+                    case 6552: // Pummel
+                    {
+                        if (m_caster->HasAura(58372)) // Glyph of Rude Interruption
+                        {
+                            m_caster->CastSpell(m_caster, 86663, true);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
             }
         }
     }

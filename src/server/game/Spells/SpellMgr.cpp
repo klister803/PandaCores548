@@ -3284,6 +3284,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 58372: // Glyph of Rude Interruption
+                    spellInfo->ProcChance = 0;
+                    break;
                 case 115460: // Healing Sphere
                     spellInfo->PreventionType = 1;
                     break;
