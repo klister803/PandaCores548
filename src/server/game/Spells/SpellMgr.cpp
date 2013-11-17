@@ -3284,6 +3284,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 124487:
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
+                    break;
                 case 115460: // Healing Sphere
                     spellInfo->PreventionType = 1;
                     break;
