@@ -129,12 +129,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
         }
         case SPELLFAMILY_DRUID:
         {
-            // Pounce
-            if (spellproto->SpellFamilyFlags[0] & 0x20000)
-                return DIMINISHING_OPENING_STUN;
             // Entangling Roots
             // Nature's Grasp
-            else if (spellproto->SpellFamilyFlags[0] & 0x00000200)
+            if (spellproto->SpellFamilyFlags[0] & 0x00000200)
                 return DIMINISHING_CONTROLLED_ROOT;
             // Faerie Fire and Infected Wounds
             else if (spellproto->SpellFamilyFlags[0] & 0x400 || spellproto->Id == 58180)
