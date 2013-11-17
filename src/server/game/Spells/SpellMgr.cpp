@@ -3281,6 +3281,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 9005: // Pounce
+                    spellInfo->Mechanic = MECHANIC_STUN;
+                    break;
                 case 58372: // Glyph of Rude Interruption
                     spellInfo->ProcChance = 0;
                     break;
