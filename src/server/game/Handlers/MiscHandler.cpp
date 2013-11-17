@@ -370,11 +370,9 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         ++displaycount;
     }
 
-    uint32 count = m.size();
+    uint32 count = 50;
     data.put(0, displaycount);                              // insert right count, count displayed
-    if (count > sWorld->getIntConfig(CONFIG_MAX_WHO))
-    	 count = ceil(sWorld->getRate(RATE_ONLINE)*m.size());
-    data.put( 4, count > sWorld->getIntConfig(CONFIG_MAX_WHO) ? count : displaycount );        // insert right count, online count
+    data.put( 4, count );        // insert right count, online count
 
     SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Send SMSG_WHO Message");
