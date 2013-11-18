@@ -3281,6 +3281,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 1850:   // Dash
+                case 113636: // Cat Form (Passive)
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_SPEED;
+                    break;
                 case 9005: // Pounce
                     spellInfo->Mechanic = MECHANIC_STUN;
                     break;
