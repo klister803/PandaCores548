@@ -1031,6 +1031,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_WORD_FILTER_MUTE_DURATION] = ConfigMgr::GetIntDefault("WordFilter.MuteDuration", 30000);
     m_bool_configs[CONFIG_WORD_FILTER_ENABLE]       = ConfigMgr::GetBoolDefault("WordFilter.Enable", true);
     m_bool_configs[CONFIG_SHARE_ENABLE]             = ConfigMgr::GetBoolDefault("Share.Enable", false);
+    m_bool_configs[CONFIG_IPSET_ENABLE]             = ConfigMgr::GetBoolDefault("Ipset.Enable", false);
 
     m_int_configs[CONFIG_EVENT_ANNOUNCE] = ConfigMgr::GetIntDefault("Event.Announce", 0);
 
