@@ -5508,6 +5508,24 @@ SpellCastResult Spell::CheckCast(bool strict)
         // for effects of spells that have only one target
         switch (m_spellInfo->GetEffect(i, m_diffMode).Effect)
         {
+            case SPELL_EFFECT_APPLY_AURA:
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 106951: // Berserk
+                    case 5217:   // Tiger's Fury
+                    {
+                        if (m_caster->HasAura(5217) || m_caster->HasAura(106951))
+                        {
+                            return SPELL_FAILED_TRY_AGAIN;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELL_EFFECT_DUMMY:
             {
                 // Death Coil and Death Coil (Symbiosis)
