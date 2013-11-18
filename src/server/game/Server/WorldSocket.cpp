@@ -926,7 +926,6 @@ int WorldSocket::HandleSendAuthSession()
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 37);
 
     packet << uint16(0);                                    // crap
-    packet << uint8(1);
 
     BigNumber seed1;
     seed1.SetRand(16 * 8);
@@ -936,6 +935,7 @@ int WorldSocket::HandleSendAuthSession()
     seed2.SetRand(16 * 8);
     packet.append(seed2.AsByteArray(16), 16);               // new encryption seeds
 
+    packet << uint8(1);
     packet << m_Seed;
 
     return SendPacket(&packet);
@@ -954,52 +954,51 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     BigNumber k;
     WorldPacket addonsData;
 
-    //recvPacket.read_skip<uint16>();
     recvPacket.read_skip<uint32>();
-    recvPacket >> digest[14];
-    recvPacket >> digest[8];
-    recvPacket.read_skip<uint32>();
-    recvPacket >> digest[10];
-    recvPacket >> digest[19];
-    recvPacket >> digest[16];
-    recvPacket >> digest[13];
     recvPacket >> digest[4];
-    recvPacket.read_skip<uint8>();
-    recvPacket >> digest[9];
-    recvPacket >> digest[0];
-    recvPacket >> clientSeed;
-    recvPacket >> digest[5];
-    recvPacket >> digest[2];
-    recvPacket >> clientBuild;
-    recvPacket >> digest[12];
     recvPacket.read_skip<uint32>();
+    recvPacket.read_skip<uint8>();
+    recvPacket >> digest[19];
+    recvPacket >> digest[12];
+    recvPacket >> digest[9];
+    recvPacket >> digest[6];
     recvPacket >> digest[18];
     recvPacket >> digest[17];
-    recvPacket >> digest[11];
-    recvPacket.read_skip<uint64>();
-    recvPacket >> digest[7];
+    recvPacket >> digest[8];
+    recvPacket >> digest[13];
     recvPacket >> digest[1];
-    recvPacket >> digest[3];
-    recvPacket.read_skip<uint8>();
-    recvPacket >> digest[6];
-    recvPacket.read_skip<uint32>();
+    recvPacket >> digest[10];
+    recvPacket >> digest[11];
     recvPacket >> digest[15];
+    recvPacket >> clientSeed;
+    recvPacket >> digest[3];
+    recvPacket >> digest[14];
+    recvPacket >> digest[7];
+    recvPacket.read_skip<uint64>();
+    recvPacket.read_skip<uint8>();
+    recvPacket.read_skip<uint32>();
+    recvPacket >> digest[5];
+    recvPacket >> digest[0];
+    recvPacket >> clientBuild;
+    recvPacket >> digest[16];
+    recvPacket >> digest[2];
+    recvPacket.read_skip<uint32>();
 
     recvPacket >> addonSize;
     addonsData.resize(addonSize);
     recvPacket.read((uint8*)addonsData.contents(), addonSize);
 
     uint32 accountNameLength = recvPacket.ReadBits(11);
+    recvPacket.ReadBit();
     account = recvPacket.ReadString(accountNameLength);
 
     if (sWorld->IsClosed())
     {
         WorldPacket data(SMSG_AUTH_RESPONSE, 2);
 
-        data << uint8(AUTH_REJECT);
         data.WriteBit(false);   // not queued
         data.WriteBit(false);   // no account data
-        data.FlushBits();
+        data << uint8(AUTH_REJECT);
         SendPacket(&data);
 
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: World closed, denying client (%s).", GetRemoteAddress().c_str());
@@ -1018,10 +1017,9 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     {
         WorldPacket data(SMSG_AUTH_RESPONSE, 2);
 
-        data << uint8(AUTH_UNKNOWN_ACCOUNT);
         data.WriteBit(false);   // not queued
         data.WriteBit(false);   // no account data
-        data.FlushBits();
+        data << uint8(AUTH_UNKNOWN_ACCOUNT);
         SendPacket(&data);
 
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Sent Auth Response (unknown account).");
@@ -1047,10 +1045,9 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         {
             WorldPacket data(SMSG_AUTH_RESPONSE, 2);
 
-            data << uint8(AUTH_FAILED);
             data.WriteBit(false);   // not queued
             data.WriteBit(false);   // no account data
-            data.FlushBits();
+            data << uint8(AUTH_FAILED);
             SendPacket(&data);
 
             sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Sent Auth Response (Account IP differs).");
@@ -1115,10 +1112,9 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     {
         WorldPacket data(SMSG_AUTH_RESPONSE, 2);
 
-        data << uint8(AUTH_BANNED);
         data.WriteBit(false);   // not queued
         data.WriteBit(false);   // no account data
-        data.FlushBits();
+        data << uint8(AUTH_BANNED);
         SendPacket(&data);
 
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Sent Auth Response (Account banned).");
@@ -1132,10 +1128,9 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     {
         WorldPacket data(SMSG_AUTH_RESPONSE, 2);
 
-        data << uint8(AUTH_UNAVAILABLE);
         data.WriteBit(false);   // not queued
         data.WriteBit(false);   // no account data
-        data.FlushBits();
+        data << uint8(AUTH_UNAVAILABLE);
         SendPacket(&data);
 
         sLog->outInfo(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: User tries to login but his security level is not enough");
@@ -1218,8 +1213,8 @@ int WorldSocket::HandlePing (WorldPacket& recvPacket)
     uint32 latency;
 
     // Get the ping packet content
-    recvPacket >> latency;
     recvPacket >> ping;
+    recvPacket >> latency;
 
     //sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSocket::HandlePing: latency %u ping %u", latency, ping);
 

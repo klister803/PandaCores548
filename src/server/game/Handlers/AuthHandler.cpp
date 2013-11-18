@@ -64,36 +64,30 @@ void WorldSession::SendAuthResponse(uint8 code, bool hasAccountData, bool queued
 {
     WorldPacket packet(SMSG_AUTH_RESPONSE);
 
-    packet << uint8(code);
     packet.WriteBit(queued);
-    if (queued)
-        packet.WriteBit(1);
-
     packet.WriteBit(hasAccountData);
+
     if (hasAccountData)
     {
-        packet.WriteBit(0);
         packet.WriteBits(0, 21);
-        packet.WriteBits(0, 21);
-        packet.WriteBits(MAX_PLAYABLE_RACES, 23);
-        packet.WriteBit(0);
-        packet.WriteBit(0);
         packet.WriteBit(0);
         packet.WriteBits(MAX_CLASSES - 1, 23);
+        packet.WriteBit(0);
+        packet.WriteBit(0);
 
-        packet << uint32(0);
-        packet << uint32(0);
-        packet << uint8(Expansion());
+        packet.WriteBits(0, 21);
+        packet.WriteBit(0);
+        packet.WriteBits(MAX_PLAYABLE_RACES, 23);
+    }
 
-        for (uint8 i = 0; i < MAX_PLAYABLE_RACES; ++i)
-        {
-            packet << uint8(raceExpansionInfo[i].expansion);
-            packet << uint8(raceExpansionInfo[i].raceOrClass);
-        }
+    if (queued)
+    {
+        packet.WriteBit(0);
+        packet << uint32(queuePos);
+    }
 
-        packet << uint8(Expansion());
-        packet << uint32(0);
-
+    if (hasAccountData)
+    {
         for (uint8 i = 0; i < MAX_CLASSES - 1; ++i)
         {
             packet << uint8(classExpansionInfo[i].raceOrClass);
@@ -101,11 +95,24 @@ void WorldSession::SendAuthResponse(uint8 code, bool hasAccountData, bool queued
         }
 
         packet << uint32(0);
+
+        for (uint8 i = 0; i < MAX_PLAYABLE_RACES; ++i)
+        {
+            packet << uint8(raceExpansionInfo[i].expansion);
+            packet << uint8(raceExpansionInfo[i].raceOrClass);
+        }
+
+        packet << uint32(0);
+        packet << uint32(0);
+
+        packet << uint8(Expansion());
+        packet << uint8(Expansion());
+
+        packet << uint32(0);
         packet << uint32(0);
     }
 
-    if (queued)
-        packet << uint32(queuePos);
+    packet << uint8(code);
 
     SendPacket(&packet);
 }

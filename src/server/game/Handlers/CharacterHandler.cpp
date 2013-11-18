@@ -238,6 +238,9 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
     ByteBuffer bitBuffer;
     ByteBuffer dataBuffer;
 
+    bitBuffer.WriteBit(1);
+    bitBuffer.WriteBits(0, 21);
+
     if (result)
     {
         _allowedCharsToLogin.clear();
@@ -263,8 +266,6 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
     else
         bitBuffer.WriteBits(0, 16);
 
-    bitBuffer.WriteBit(1);
-    bitBuffer.WriteBits(0, 21);
     bitBuffer.FlushBits();
 
     data.append(bitBuffer);
