@@ -74,7 +74,6 @@ set(scripts_STAT_SRCS
   Pandaria/valley_of_the_four_winds.cpp
   Pandaria/krasarang_wilds.cpp
   Pandaria/kun_lai_summit.cpp
-  Pandaria/jade_forest.cpp
   Pandaria/vale_of_eternal_blossoms.cpp
 )
 
