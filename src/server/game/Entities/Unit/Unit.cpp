@@ -789,10 +789,14 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
             case OFF_ATTACK:
                 rage /= 2;
             case BASE_ATTACK:
+            {
                 if (ToPlayer() && ToPlayer()->getClass() == CLASS_WARRIOR)
                     rage = 6;
+                if (ToPlayer() && ToPlayer()->getClass() == CLASS_DRUID)
+                    rage = 4;
                 RewardRage(rage, true);
                 break;
+            }
             default:
                 break;
         }
