@@ -11960,10 +11960,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         }
     }
 
-    // Apply Power JcJ healing bonus
+    // Apply Power PvP healing bonus
     if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && (HasAura(74411) || HasAura(74410)))
     {
-        float PowerJcJ;
+        float PowerPvP;
 
         switch (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()))
         {
@@ -11974,17 +11974,17 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
             case SPEC_SHAMAN_RESTORATION:
             case SPEC_MONK_MISTWEAVER:
             {
-                PowerJcJ = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+                PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
                 break;
             }
             default:
             {
-                PowerJcJ = 0;
+                PowerPvP = 0;
                 break;
             }
         }
 
-        AddPct(DoneTotalMod, PowerJcJ);
+        AddPct(DoneTotalMod, PowerPvP);
     }
 
     // done scripted mod (take it from owner)
