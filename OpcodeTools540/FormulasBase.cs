@@ -19,21 +19,22 @@ namespace OpcodeTools
         protected abstract bool SpecialMovementCheck(uint opcode);
         protected abstract bool SpecialQuestCheck(uint opcode);
 
-        protected virtual uint BaseOffset { get { return 1360; } }
+        protected virtual uint BaseOffset { get { return 1376; } }
+        protected virtual uint MaxOpcode { get { return 0xFFFF; } }
 
         public bool IsAuthOpcode(uint opcode)
         {
             return AuthCheck(opcode);
         }
 
-        public bool IsNormalOpcode(uint opcode)
-        {
-            return !IsSpecialOpcode(opcode) && !IsAuthOpcode(opcode) && NormalCheck(opcode);
-        }
-        
         public bool IsSpecialOpcode(uint opcode)
         {
             return !IsAuthOpcode(opcode) && SpecialCheck(opcode);
+        }
+
+        public bool IsNormalOpcode(uint opcode)
+        {
+            return !IsSpecialOpcode(opcode) && !IsAuthOpcode(opcode) && NormalCheck(opcode);
         }
 
         public bool IsSpecialGuildOpcode(uint opcode)
@@ -139,6 +140,20 @@ namespace OpcodeTools
                         return i;
                 }
             }
+            return 0;
+        }
+
+        public uint CalcOpcodeFromCrypted(uint val)
+        {
+            for (uint i = 1; i < 0xFFFF; ++i)
+            {
+                if (IsNormalOpcode(i))
+                {
+                    if (CalcCryptedFromOpcode(i) == val)
+                        return i;
+                }
+            }
+
             return 0;
         }
 

@@ -13,187 +13,77 @@ namespace OpcodeTools
     {
         FormulasBase f;
 
-        bool IgnoreTextChanged = false;
-
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void OpcodeDecBox_TextChanged(object sender, EventArgs e)
-        {
-            if (IgnoreTextChanged)
-                return;
-
-            uint opcode;
-            if(!UInt32.TryParse(opcodeDecBox.Text, out opcode))
-                return;
-
-            opcodeHexBox.Text = String.Format("{0:X}", opcode);
-            updateValuesForOpcode(opcode);
-        }
-
-        private void OpcodeHex_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                opcodeDecBox.Text = Convert.ToUInt32(opcodeHexBox.Text, 16).ToString();
-            }
-            catch (Exception)
-            {
-            }
-        }
-        private void CleanValues()
-        {
-            IgnoreTextChanged = true;
-            cryptedBox.Text = specialBox.Text = offsetBox.Text = authBox.Text = "";
-            IgnoreTextChanged = false;
-        }
-
         void updateValuesForOpcode(uint opcode)
         {
-            // start clean
-            CleanValues();
+            toolStripStatusLabel.Text = "";
 
-            IgnoreTextChanged = true;
+            SetOpcode(opcode);
+
             if (f.IsAuthOpcode(opcode))
             {
                 uint auth = f.CalcAuthFromOpcode(opcode);
                 authBox.Text = auth.ToString();
             }
-            else if (f.IsSpecialOpcode(opcode))
+            else
+                authBox.Text = "";
+            if (f.IsSpecialOpcode(opcode))
             {
                 uint specialHandlerNum = f.CalcSpecialFromOpcode(opcode);
-                specialBox.Text = String.Format("{0:x}", specialHandlerNum);
+                specialBox.Text = String.Format("0x{0:X}", specialHandlerNum);
             }
-            else if (f.IsNormalOpcode(opcode))
+            else
+                specialBox.Text = "";
+            if (f.IsNormalOpcode(opcode))
             {
                 uint crypt = f.CalcCryptedFromOpcode(opcode);
                 uint offset = f.CalcOffsetFromOpcode(opcode);
                 cryptedBox.Text = crypt.ToString();
                 offsetBox.Text = offset.ToString();
             }
-            else if (f.IsSpecialSpellOpcode(opcode))
+            else
+            {
+                cryptedBox.Text = "";
+                offsetBox.Text = "";
+            }
+            if (f.IsSpecialSpellOpcode(opcode))
             {
                 uint nb = f.CalcSpellFromOpcode(opcode);
-                spellBox.Text = String.Format("{0:x}", nb);
+                spellBox.Text = String.Format("0x{0:X}", nb);
             }
-            else if (f.IsSpecialGuildOpcode(opcode))
+            else
+                spellBox.Text = "";
+            if (f.IsSpecialGuildOpcode(opcode))
             {
                 uint nb = f.CalcGuildFromOpcode(opcode);
-                guildBox1.Text = String.Format("{0:x}", nb);
+                guildBox.Text = String.Format("0x{0:X}", nb);
             }
-            else if (f.IsSpecialMovementOpcode(opcode))
+            else
+                guildBox.Text = "";
+            if (f.IsSpecialMovementOpcode(opcode))
             {
                 uint nb = f.CalcMovementFromOpcode(opcode);
-                MovementBox.Text = String.Format("{0}", nb);
+                movementBox.Text = String.Format("0x{0:X}", nb);
             }
-            else if (f.IsSpecialQuestOpcode(opcode))
+            else
+                movementBox.Text = "";
+            if (f.IsSpecialQuestOpcode(opcode))
             {
                 uint nb = f.CalcQuestFromOpcode(opcode);
-                QuestBox.Text = String.Format("{0}", nb);
+                questBox.Text = String.Format("0x{0:X}", nb);
             }
-            IgnoreTextChanged = false;
-        }
-
-        private void specialBox_TextChanged(object sender, EventArgs e)
-        {
-            if (IgnoreTextChanged)
-                return;
-            try
-            {
-                SetOpcode(f.CalcOpcodeFromSpecial(Convert.ToUInt32(specialBox.Text, 16)));
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void spellBox_TextChanged(object sender, EventArgs e)
-        {
-            if (IgnoreTextChanged)
-                return;
-            try
-            {
-                SetOpcode(f.CalcOpcodeFromSpell(Convert.ToUInt32(spellBox.Text, 16)));
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void guildBox1_TextChanged(object sender, EventArgs e)
-        {
-            if (IgnoreTextChanged)
-                return;
-            try
-            {
-                SetOpcode(f.CalcOpcodeFromGuild(Convert.ToUInt32(guildBox1.Text, 16)));
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void offsetBox_TextChanged(object sender, EventArgs e)
-        {
-            if (IgnoreTextChanged)
-                return;
-            try
-            {
-                SetOpcode(f.CalcOpcodeFromOffset(Convert.ToUInt32(offsetBox.Text)));
-
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void authBox_TextChanged(object sender, EventArgs e)
-        {
-            if (IgnoreTextChanged)
-                return;
-            try
-            {
-                SetOpcode(f.CalcOpcodeFromAuth(Convert.ToUInt32(authBox.Text)));
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void MovementBox_TextChanged(object sender, EventArgs e)
-        {
-            if (IgnoreTextChanged)
-                return;
-            try
-            {
-                SetOpcode(f.CalcOpcodeFromMovement(Convert.ToUInt32(MovementBox.Text)));
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void QuestBox_TextChanged(object sender, EventArgs e)
-        {
-            if (IgnoreTextChanged)
-                return;
-            try
-            {
-                SetOpcode(f.CalcOpcodeFromQuest(Convert.ToUInt32(QuestBox.Text)));
-            }
-            catch (Exception)
-            {
-            }
+            else
+                questBox.Text = "";
         }
 
         private void SetOpcode(uint opcode)
         {
-            IgnoreTextChanged = true;
-            opcodeHexBox.Text = String.Format("{0:X}", opcode);
+            opcodeHexBox.Text = String.Format("0x{0:X}", opcode);
             opcodeDecBox.Text = opcode.ToString();
-            IgnoreTextChanged = false;
         }
 
         private void Versions_SelectedIndexChanged(object sender, EventArgs e)
@@ -215,9 +105,155 @@ namespace OpcodeTools
             Versions.SelectedIndex = Versions.Items.Count - 1;
         }
 
-        private void label8_Click(object sender, EventArgs e)
+        private void cryptedBox_KeyDown(object sender, KeyEventArgs e)
         {
+            if (e.KeyCode != Keys.Enter)
+                return;
 
+            try
+            {
+                updateValuesForOpcode(f.CalcOpcodeFromCrypted(Convert.ToUInt32(cryptedBox.Text)));
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void offsetBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            try
+            {
+                updateValuesForOpcode(f.CalcOpcodeFromOffset(Convert.ToUInt32(offsetBox.Text)));
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void specialBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            try
+            {
+                updateValuesForOpcode(f.CalcOpcodeFromSpecial(Convert.ToUInt32(specialBox.Text, 16)));
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void authBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            try
+            {
+                updateValuesForOpcode(f.CalcOpcodeFromAuth(Convert.ToUInt32(authBox.Text)));
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void spellBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            try
+            {
+                updateValuesForOpcode(f.CalcOpcodeFromSpell(Convert.ToUInt32(spellBox.Text, 16)));
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void guildBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            try
+            {
+                updateValuesForOpcode(f.CalcOpcodeFromGuild(Convert.ToUInt32(guildBox.Text, 16)));
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void movementBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            try
+            {
+                updateValuesForOpcode(f.CalcOpcodeFromMovement(Convert.ToUInt32(movementBox.Text, 16)));
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void questBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            try
+            {
+                updateValuesForOpcode(f.CalcOpcodeFromQuest(Convert.ToUInt32(questBox.Text, 16)));
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void opcodeHexBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            try
+            {
+                uint opcode = Convert.ToUInt32(opcodeHexBox.Text, 16);
+                updateValuesForOpcode(opcode);
+            }
+            catch (Exception)
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+            }
+        }
+
+        private void opcodeDecBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            uint opcode;
+            if (!UInt32.TryParse(opcodeDecBox.Text, out opcode))
+            {
+                toolStripStatusLabel.Text = "Failed to parse texbox value.";
+                return;
+            }
+
+            updateValuesForOpcode(opcode);
         }
     }
 }

@@ -459,6 +459,9 @@ namespace OpcodeTools
             return "5.4.0 17399 Windows";
         }
 
+        protected override uint MaxOpcode { get { return 0x1FFF; } }
+        protected override uint BaseOffset { get { return 1360; } }
+
         protected override bool AuthCheck(uint opcode)
         {
             return (opcode & 0x16D6) == 66;
