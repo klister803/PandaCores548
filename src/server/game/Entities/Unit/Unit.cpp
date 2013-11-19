@@ -11073,11 +11073,32 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
 
-    // Apply Power JcJ damage bonus
+    // Apply PowerPvP damage bonus
     if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
     {
-        float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
-        AddPct(DoneTotalMod, PowerJcJ);
+        float PowerPvP;
+
+        switch (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()))
+        {
+            case SPEC_PALADIN_HOLY:
+            case SPEC_DROOD_RESTORATION:
+            case SPEC_PRIEST_DISCIPLINE:
+            case SPEC_PRIEST_HOLY:
+            case SPEC_SHAMAN_RESTORATION:
+            case SPEC_MONK_MISTWEAVER:
+            case SPEC_NONE:
+            {
+                PowerPvP = 0;
+                break;
+            }
+            default:
+            {
+                PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+                break;
+            }
+        }
+
+        AddPct(DoneTotalMod, PowerPvP);
     }
 
     // Chaos Bolt - 116858 and Soul Fire - 6353
@@ -12535,11 +12556,32 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     if (pdamage > 0 && GetTypeId() == TYPEID_PLAYER && HasAura(53503))
         AddPct(DoneTotalMod, 10);
 
-    // Apply Power JcJ damage bonus
+    // Apply PowerPvP damage bonus
     if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && victim->GetGUID() == TYPEID_PLAYER)
     {
-        float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
-        AddPct(DoneTotalMod, PowerJcJ);
+        float PowerPvP;
+
+        switch (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()))
+        {
+            case SPEC_PALADIN_HOLY:
+            case SPEC_DROOD_RESTORATION:
+            case SPEC_PRIEST_DISCIPLINE:
+            case SPEC_PRIEST_HOLY:
+            case SPEC_SHAMAN_RESTORATION:
+            case SPEC_MONK_MISTWEAVER:
+            case SPEC_NONE:
+            {
+                PowerPvP = 0;
+                break;
+            }
+            default:
+            {
+                PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+                break;
+            }
+        }
+
+        AddPct(DoneTotalMod, PowerPvP);
     }
 
     // Sudden Death - 29725
