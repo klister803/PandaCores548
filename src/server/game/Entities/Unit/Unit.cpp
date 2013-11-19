@@ -11963,7 +11963,27 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // Apply Power JcJ healing bonus
     if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && (HasAura(74411) || HasAura(74410)))
     {
-        float PowerJcJ = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+        float PowerJcJ;
+
+        switch (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()))
+        {
+            case SPEC_PALADIN_HOLY:
+            case SPEC_DROOD_RESTORATION:
+            case SPEC_PRIEST_DISCIPLINE:
+            case SPEC_PRIEST_HOLY:
+            case SPEC_SHAMAN_RESTORATION:
+            case SPEC_MONK_MISTWEAVER:
+            {
+                PowerJcJ = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+                break;
+            }
+            default:
+            {
+                PowerJcJ = 0;
+                break;
+            }
+        }
+
         AddPct(DoneTotalMod, PowerJcJ);
     }
 
