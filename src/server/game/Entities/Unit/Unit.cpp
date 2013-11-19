@@ -11076,28 +11076,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Apply PowerPvP damage bonus
     if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
     {
-        float PowerPvP;
-
-        switch (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()))
-        {
-            case SPEC_PALADIN_HOLY:
-            case SPEC_DROOD_RESTORATION:
-            case SPEC_PRIEST_DISCIPLINE:
-            case SPEC_PRIEST_HOLY:
-            case SPEC_SHAMAN_RESTORATION:
-            case SPEC_MONK_MISTWEAVER:
-            case SPEC_NONE:
-            {
-                PowerPvP = 0;
-                break;
-            }
-            default:
-            {
-                PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
-                break;
-            }
-        }
-
+        float PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
         AddPct(DoneTotalMod, PowerPvP);
     }
 
@@ -11984,27 +11963,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // Apply Power PvP healing bonus
     if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && (HasAura(74411) || HasAura(74410)))
     {
-        float PowerPvP;
-
-        switch (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()))
-        {
-            case SPEC_PALADIN_HOLY:
-            case SPEC_DROOD_RESTORATION:
-            case SPEC_PRIEST_DISCIPLINE:
-            case SPEC_PRIEST_HOLY:
-            case SPEC_SHAMAN_RESTORATION:
-            case SPEC_MONK_MISTWEAVER:
-            {
-                PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
-                break;
-            }
-            default:
-            {
-                PowerPvP = 0;
-                break;
-            }
-        }
-
+        float PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
         AddPct(DoneTotalMod, PowerPvP);
     }
 
@@ -12559,28 +12518,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     // Apply PowerPvP damage bonus
     if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
     {
-        float PowerPvP;
-
-        switch (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()))
-        {
-            case SPEC_PALADIN_HOLY:
-            case SPEC_DROOD_RESTORATION:
-            case SPEC_PRIEST_DISCIPLINE:
-            case SPEC_PRIEST_HOLY:
-            case SPEC_SHAMAN_RESTORATION:
-            case SPEC_MONK_MISTWEAVER:
-            case SPEC_NONE:
-            {
-                PowerPvP = 0;
-                break;
-            }
-            default:
-            {
-                PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
-                break;
-            }
-        }
-
+        float PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
         AddPct(DoneTotalMod, PowerPvP);
     }
 
