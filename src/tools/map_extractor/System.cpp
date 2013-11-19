@@ -75,14 +75,12 @@ float CONF_float_to_int16_limit = 2048.0f;   // Max accuracy = val/65536
 float CONF_flat_height_delta_limit = 0.005f; // If max - min less this value - surface is flat
 float CONF_flat_liquid_delta_limit = 0.001f; // If max - min less this value - liquid surface is flat
 
-uint32 CONF_TargetBuild = 16135;              // 5.0.5 16135
+uint32 CONF_TargetBuild = 17345;              // 5.4.0.17345
 
 // List MPQ for extract maps from
 char const* CONF_mpq_list[]=
 {
     "world.MPQ",
-    //"art.MPQ",
-    //"world2.MPQ",
     "expansion1.MPQ",
     "expansion2.MPQ",
     "expansion3.MPQ",
@@ -90,8 +88,9 @@ char const* CONF_mpq_list[]=
     "misc.MPQ"  //LiquiType.dbc
 };
 
-uint32 const Builds[] = {13164, 13205, 13287, 13329, 13596, 13623, 13914, 14007, 14333, 14480, 14545, 15005, 15050, 15211, 15354, 15595, 16016, 16048, 16057, 16135, 0};
+uint32 const Builds[] = {16016, 16048, 16057, 16309, 16357, 16516, 16650, 16844, 16965, 17116, 17266, 17325, 17345, 0};
 #define LAST_DBC_IN_DATA_BUILD 13623    // after this build mpqs with dbc are back to locale folder
+#define NEW_BASE_SET_BUILD  15211
 
 char* const Locales[] = {"enGB", "enUS", "deDE", "esES", "frFR", "koKR", "zhCN", "zhTW", "enCN", "enTW", "esMX", "ruRU"};
 TCHAR* const LocalesT[] =
@@ -305,7 +304,7 @@ void ReadLiquidTypeTableDBC()
 {
     printf("Read LiquidType.dbc file...");
     HANDLE dbcFile;
-    if (!SFileOpenFileEx(LocaleMpq, "DBFilesClient\\LiquidType.dbc", SFILE_OPEN_PATCHED_FILE, &dbcFile))
+    if (!SFileOpenFileEx(WorldMpq, "DBFilesClient\\LiquidType.dbc", SFILE_OPEN_PATCHED_FILE, &dbcFile))
     {
         printf("Fatal error: Cannot find LiquidType.dbc in archive!\n");
         exit(1);
@@ -428,6 +427,8 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
 {
     ADT_file adt;
 
+    //printf("ConvertADT %s\n", filename);
+
     if (!adt.loadFile(WorldMpq, filename))
         return false;
 
@@ -544,7 +545,7 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
             }
             // Get custom height
             adt_MCVT *v = cell->getMCVT();
-            if (!v)
+            //if (!v)
                 continue;
             // get V9 height map
             for (int y=0; y <= ADT_CELL_SIZE; y++)
@@ -553,7 +554,8 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
                 for (int x=0; x <= ADT_CELL_SIZE; x++)
                 {
                     int cx = j*ADT_CELL_SIZE + x;
-                    V9[cy][cx]+=v->height_map[y*(ADT_CELL_SIZE*2+1)+x];
+                    //printf("ConvertADT %f\t", y*(ADT_CELL_SIZE*2+1)+x);
+                    V9[cy][cx]+=v->height_map[y*(ADT_CELL_SIZE*2+1)+x]; //on this crashed extractor
                 }
             }
             // get V8 height map
@@ -1116,6 +1118,11 @@ bool LoadLocaleMPQFile(int locale)
     char const* prefix = NULL;
     for (int i = 0; Builds[i] && Builds[i] <= CONF_TargetBuild; ++i)
     {
+        // Do not attempt to read older MPQ patch archives past this build, they were merged with base
+        // and trying to read them together with new base will not end well
+        if (CONF_TargetBuild >= NEW_BASE_SET_BUILD && Builds[i] < NEW_BASE_SET_BUILD)
+            continue;
+
         memset(buff, 0, sizeof(buff));
         if (Builds[i] > LAST_DBC_IN_DATA_BUILD)
         {
@@ -1135,8 +1142,6 @@ bool LoadLocaleMPQFile(int locale)
             continue;
         }
     }
-    _stprintf(buff, _T("%s/Data/misc.MPQ"), input_path);
-    SFileOpenPatchArchive(LocaleMpq, buff, "", 0);
 
     return true;
 }
@@ -1155,7 +1160,7 @@ void LoadCommonMPQFiles(uint32 build)
     int count = sizeof(CONF_mpq_list) / sizeof(char*);
     for (int i = 1; i < count; ++i)
     {
-        if (build < 15211 && !strcmp("world2.MPQ", CONF_mpq_list[i]))   // 4.3.2 and higher MPQ
+        if (build < NEW_BASE_SET_BUILD && !strcmp("world2.MPQ", CONF_mpq_list[i]))   // 4.3.2 and higher MPQ
             continue;
 
         _stprintf(filename, _T("%s/Data/%s"), input_path, CONF_mpq_list[i]);
@@ -1174,6 +1179,11 @@ void LoadCommonMPQFiles(uint32 build)
     char const* prefix = NULL;
     for (int i = 0; Builds[i] && Builds[i] <= CONF_TargetBuild; ++i)
     {
+        // Do not attempt to read older MPQ patch archives past this build, they were merged with base
+        // and trying to read them together with new base will not end well
+        if (CONF_TargetBuild >= NEW_BASE_SET_BUILD && Builds[i] < NEW_BASE_SET_BUILD)
+            continue;
+
         memset(filename, 0, sizeof(filename));
         if (Builds[i] > LAST_DBC_IN_DATA_BUILD)
         {
