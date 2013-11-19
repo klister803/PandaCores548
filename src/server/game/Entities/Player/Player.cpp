@@ -15490,7 +15490,7 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
     data.WriteBit(guid[7]);
     data.WriteBit(guid[4]);
     data.WriteBit(guid[3]);
-    data.WriteBit(0); //Sometimes 1
+    data.WriteBit(broadcast); // send info about items
 
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[2]);
