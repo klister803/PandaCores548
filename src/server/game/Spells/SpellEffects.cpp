@@ -2207,6 +2207,21 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     int level_diff = 0;
     switch (m_spellInfo->Id)
     {
+        case 1454: // Life Tap
+        {
+            damage = CalculatePct(m_caster->GetMaxHealth(), damage);
+
+            if (m_caster->GetHealth() < damage)
+            {
+                damage = m_caster->GetHealth() - 1;
+                m_caster->SetHealth(1);
+            }
+            else
+            {
+                m_caster->SetHealth(m_caster->GetHealth() - damage);
+            }
+            break;
+        }
         case 9512:                                          // Restore Energy
             level_diff = m_caster->getLevel() - 40;
             level_multiplier = 2;
