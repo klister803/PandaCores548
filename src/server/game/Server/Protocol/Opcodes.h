@@ -390,7 +390,7 @@ enum Opcodes
     CMSG_PING                                         = 0x0784, // 5.4.0 17399
     CMSG_PLAYED_TIME                                  = 0x9B1,  // 5.0.5 16048
     CMSG_PLAYER_DIFFICULTY_CHANGE                     = 0x000,  // Not found in 4.3.4
-    CMSG_PLAYER_LOGIN                                 = 0x203,  // 5.0.5 16048
+    CMSG_PLAYER_LOGIN                                 = 0x1BC7, // 5.4.0 17399
     CMSG_PLAYER_LOGOUT                                = 0x412,  // 5.0.5 16048
     CMSG_PLAYER_VEHICLE_ENTER                         = 0x6B0,  // 5.0.5 16048
     CMSG_PLAY_DANCE                                   = 0x878,  // 5.0.5 16048
@@ -529,7 +529,7 @@ enum Opcodes
     CMSG_TELEPORT_TO_UNIT                             = 0x447,  // 5.0.5 16048
     CMSG_TEXT_EMOTE                                   = 0x86F,  // 5.0.5 16048
     CMSG_TIME_ADJUSTMENT_RESPONSE                     = 0x419,  // 5.0.5 16048
-    CMSG_TIME_SYNC_RESP                               = 0x729,  // 5.0.5 16048
+    CMSG_TIME_SYNC_RESP                               = 0x0203, // 5.4.0 17399
     CMSG_TIME_SYNC_RESP_FAILED                        = 0x751,  // 5.0.5 16048
     CMSG_TOGGLE_PVP                                   = 0x9D2,  // 5.0.5 16048
     CMSG_TOTEM_DESTROYED                              = 0xDBF,  // 5.0.5 16048
@@ -766,7 +766,7 @@ enum Opcodes
     SMSG_CHARACTER_LOGIN_FAILED                       = 0xC6D,  // 5.0.5 16048
     SMSG_CHAR_CREATE                                  = 0xC15,  // 5.0.5 16048
     SMSG_CHAR_CUSTOMIZE                               = 0xD27,  // 5.0.5 16048
-    SMSG_CHAR_DELETE                                  = 0x936,  // 5.0.5 16048
+    SMSG_CHAR_DELETE                                  = 0x0806, // 5.4.0 17399
     SMSG_CHAR_ENUM                                    = 0x0193, // 5.4.0 17399
     SMSG_CHAR_FACTION_CHANGE                          = 0x9E0,  // 5.0.5 16048
     SMSG_CHAR_RENAME                                  = 0x945,  // 5.0.5 16048
@@ -985,8 +985,8 @@ enum Opcodes
     SMSG_JOINED_BATTLEGROUND_QUEUE                    = 0,      // Not found in 4.3.4
     SMSG_KICK_REASON                                  = 0x923,  // 5.0.5 16048
     SMSG_LEARNED_DANCE_MOVES                          = 0x8C4,  // 5.0.5 16048
-    SMSG_SEND_KNOWN_SPELLS                            = 0xEA3,  // 5.0.5 16048
-    SMSG_LEARNED_SPELL                                = 0xBF8,  // 5.0.5 16048
+    SMSG_SEND_KNOWN_SPELLS                            = 0x1534, // 5.4.0 17399
+    SMSG_LEARNED_SPELL                                = 0x0830, // 5.4.0 17399
     SMSG_LEVELUP_INFO                                 = 0x85A,  // 5.0.5 16048
     SMSG_LFG_BOOT_PROPOSAL_UPDATE                     = 0x91F,  // 5.0.5 16048
     SMSG_LFG_DISABLED                                 = 0x90C,  // 5.0.5 16048
@@ -1018,7 +1018,7 @@ enum Opcodes
     SMSG_LIST_INVENTORY                               = 0xFDE,  // 5.0.5 16048
     SMSG_LOAD_CUF_PROFILES                            = 0xFC9,  // 5.0.5 16048
     SMSG_LF_GUILD_SEARCH_RESULT                       = 0,      // Not found in TC
-    SMSG_LOGIN_SETTIMESPEED                           = 0xC33,  // 5.0.5 16048
+    SMSG_LOGIN_SETTIMESPEED                           = 0x01AF, // 5.4.0 17399
     SMSG_LOGIN_VERIFY_WORLD                           = 0xD33,  // 5.0.5 16048
     SMSG_LOGOUT_CANCEL_ACK                            = 0x803,  // 5.0.5 16048
     SMSG_LOGOUT_COMPLETE                              = 0x8DA,  // 5.0.5 16048
@@ -1324,7 +1324,7 @@ enum Opcodes
     SMSG_THREAT_REMOVE                                = 0x9BF,  // 5.0.5 16048
     SMSG_THREAT_UPDATE                                = 0xDB0,  // 5.0.5 16048
     SMSG_TIME_ADJUSTMENT                              = 0xF3A,  // 5.0.5 16048
-    SMSG_TIME_SYNC_REQ                                = 0xAA9,  // 5.0.5 16048
+    SMSG_TIME_SYNC_REQ                                = 0x08A6, // 5.4.0 17399
     SMSG_TITLE_EARNED                                 = 0x94B,  // 5.0.5 16048
     SMSG_TOGGLE_XP_GAIN                               = 0xD62,  // 5.0.5 16048
     SMSG_TOTEM_CREATED                                = 0x918,  // 5.0.5 16048

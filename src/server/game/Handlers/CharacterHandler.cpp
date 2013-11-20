@@ -887,22 +887,18 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
     if (PlayerLoading() || GetPlayer() != NULL)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Player tries to login again, AccountId = %d", GetAccountId());
+        recvData.rfinish();
         return;
     }
 
     m_playerLoading = true;
     ObjectGuid playerGuid;
-    float unk;
 
-    uint8 bitOrder[8] = {3, 5, 7, 0, 6, 2, 1, 4};
-    recvData.ReadBitInOrder(playerGuid, bitOrder);
-
-    uint8 byteOrder[8] = {1, 0, 3, 2, 4, 7, 5, 6};
-    recvData.ReadBytesSeq(playerGuid, byteOrder);
-    recvData >> unk;
+    float unk = recvData.read<float>(); // far clip
+    recvData.ReadGuidMask<2, 3, 7, 4, 0, 1, 5, 6>(playerGuid);
+    recvData.ReadGuidBytes<0, 1, 3, 4, 7, 6, 2, 5>(playerGuid);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd Player Logon Message");
-
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Character (Guid: %u) logging in, unk float: %f", GUID_LOPART(playerGuid), unk);
 
     if (!CharCanLogin(GUID_LOPART(playerGuid)))

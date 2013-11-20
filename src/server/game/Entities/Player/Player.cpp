@@ -3876,7 +3876,7 @@ void Player::SendKnownSpells()
 
         ++spellCount;
     }                          // spell count placeholder
-    bitBuffer.WriteBits(spellCount, 24);
+    bitBuffer.WriteBits(spellCount, 22);
     bitBuffer.WriteBit(1);
     bitBuffer.FlushBits();
     data.append(bitBuffer);
@@ -4509,8 +4509,8 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
     if (learning && IsInWorld())
     {
         WorldPacket data(SMSG_LEARNED_SPELL, 8);
-        data.WriteBits(1, 24); //count of spell_id to send.
-        data << uint8(0); // 0 : auto push spell to action bar , 1 : don't auto push spell to action bar
+        data.WriteBit(0);       // 0 : auto push spell to action bar , 1 : don't auto push spell to action bar
+        data.WriteBits(1, 22);  //count of spell_id to send.
         data << uint32(spell_id);
         GetSession()->SendPacket(&data);
     }
@@ -24179,9 +24179,11 @@ void Player::SendInitialPacketsBeforeAddToMap()
     SendEquipmentSetList();
 
     data.Initialize(SMSG_LOGIN_SETTIMESPEED, 4 + 4 + 4);
-    data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
     data << float(0.01666667f);                             // game speed
+    data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
     data << uint32(0);                                      // added in 3.1.2
+    data << uint32(0);                                      // added in 5.4.0
+    data << uint32(secsToTimeBitFields(time(NULL)));        // local time
     GetSession()->SendPacket(&data);
 
     GetReputationMgr().SendForceReactions();                // SMSG_SET_FORCED_REACTIONS
