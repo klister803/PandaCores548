@@ -34,7 +34,6 @@ mob_nerubar_victim
 npc_keristrasza
 npc_nesingwary_trapper
 npc_lurgglbr
-npc_nexus_drake_hatchling
 EndContentData */
 
 #include "ScriptMgr.h"
@@ -823,110 +822,6 @@ public:
             return true;
         }
         return false;
-    }
-};
-
-/*######
-## npc_nexus_drake_hatchling
-######*/
-
-enum eNexusDrakeHatchling
-{
-    SPELL_DRAKE_HARPOON             = 46607,
-    SPELL_RED_DRAGONBLOOD           = 46620,
-    SPELL_DRAKE_HATCHLING_SUBDUED   = 46691,
-    SPELL_SUBDUED                   = 46675,
-
-    NPC_RAELORASZ                   = 26117,
-
-    QUEST_DRAKE_HUNT                = 11919,
-    QUEST_DRAKE_HUNT_D              = 11940
-};
-
-class npc_nexus_drake_hatchling : public CreatureScript
-{
-public:
-    npc_nexus_drake_hatchling() : CreatureScript("npc_nexus_drake_hatchling") { }
-
-    struct npc_nexus_drake_hatchlingAI : public FollowerAI //The spell who makes the npc follow the player is missing, also we can use FollowerAI!
-    {
-        npc_nexus_drake_hatchlingAI(Creature* creature) : FollowerAI(creature) {}
-
-        uint64 HarpoonerGUID;
-        bool WithRedDragonBlood;
-
-        void Reset()
-        {
-           WithRedDragonBlood = false;
-           HarpoonerGUID = 0;
-        }
-
-        void EnterCombat(Unit* who)
-        {
-            if (me->IsValidAttackTarget(who))
-                AttackStart(who);
-        }
-
-        void SpellHit(Unit* caster, const SpellInfo* spell)
-        {
-            if (spell->Id == SPELL_DRAKE_HARPOON && caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                HarpoonerGUID = caster->GetGUID();
-                DoCast(me, SPELL_RED_DRAGONBLOOD, true);
-            }
-            WithRedDragonBlood = true;
-        }
-
-        void MoveInLineOfSight(Unit* who)
-        {
-            FollowerAI::MoveInLineOfSight(who);
-
-            if (!HarpoonerGUID)
-                return;
-
-            if (me->HasAura(SPELL_SUBDUED) && who->GetEntry() == NPC_RAELORASZ)
-            {
-                if (me->IsWithinDistInMap(who, INTERACTION_DISTANCE))
-                {
-                    if (Player* pHarpooner = Unit::GetPlayer(*me, HarpoonerGUID))
-                    {
-                        pHarpooner->KilledMonsterCredit(26175, 0);
-                        pHarpooner->RemoveAura(SPELL_DRAKE_HATCHLING_SUBDUED);
-                        SetFollowComplete();
-                        HarpoonerGUID = 0;
-                        me->DisappearAndDie();
-                    }
-                }
-            }
-        }
-
-        void UpdateAI(const uint32 /*diff*/)
-        {
-            if (WithRedDragonBlood && HarpoonerGUID && !me->HasAura(SPELL_RED_DRAGONBLOOD))
-            {
-                if (Player* pHarpooner = Unit::GetPlayer(*me, HarpoonerGUID))
-                {
-                    EnterEvadeMode();
-                    StartFollow(pHarpooner, 35, NULL);
-
-                    DoCast(me, SPELL_SUBDUED, true);
-                    pHarpooner->CastSpell(pHarpooner, SPELL_DRAKE_HATCHLING_SUBDUED, true);
-
-                    me->AttackStop();
-                    WithRedDragonBlood = false;
-                }
-            }
-
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_nexus_drake_hatchlingAI(creature);
     }
 };
 
@@ -2565,7 +2460,6 @@ void AddSC_borean_tundra()
     new npc_fezzix_geartwist();
     new npc_nesingwary_trapper();
     new npc_lurgglbr();
-    new npc_nexus_drake_hatchling();
     new npc_thassarian();
     new npc_image_lich_king();
     new npc_counselor_talbot();
