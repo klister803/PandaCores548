@@ -66,6 +66,14 @@ set(scripts_STAT_SRCS
   Pandaria/MogushanVault/boss_elegon.cpp
   Pandaria/MogushanVault/boss_will_of_emperor.cpp
 
+  Pandaria/HeartFear/instance_heart_of_fear.cpp
+  Pandaria/HeartFear/boss_vizier_zorlok.cpp
+  Pandaria/HeartFear/boss_lord_tayak.cpp
+  Pandaria/HeartFear/boss_garalon.cpp
+  Pandaria/HeartFear/boss_lord_meljarak.cpp
+  Pandaria/HeartFear/boss_unsok.cpp
+  Pandaria/HeartFear/boss_empress_shekzeer.cpp
+
   Pandaria/WanderingIsland/WanderingIsland_North.cpp
   Pandaria/WanderingIsland/WanderingIsland_East.cpp
   Pandaria/WanderingIsland/WanderingIsland_West.cpp
