@@ -60,6 +60,7 @@ enum eEvents
     EVENT_CHECK_WIPE                = 14,
     EVENT_SPAWN_IMPERATOR           = 15,
     EVENT_TITAN_GAS                 = 16,
+    EVENT_SPAWN_RANDOM_ADD          = 17,
     EVENT_SPAWN_RAGE                = 60396,
     EVENT_SPAWN_FORCE               = 60397,
     EVENT_SPAWN_COURAGE             = 60398,
@@ -168,11 +169,11 @@ class npc_woi_controller : public CreatureScript
 
             void StartEvent()
             {
-                events.ScheduleEvent(EVENT_CHECK_WIPE,      1500);
-                events.ScheduleEvent(addentry[0],           1000);
-                events.ScheduleEvent(addentry[1],           30000);
-                events.ScheduleEvent(addentry[2],           60000);
-                events.ScheduleEvent(EVENT_SPAWN_IMPERATOR, 90000);
+                events.ScheduleEvent(EVENT_CHECK_WIPE,       1500);
+                events.ScheduleEvent(addentry[0],            1000);
+                events.ScheduleEvent(addentry[1],            30000);
+                events.ScheduleEvent(addentry[2],            60000);
+                events.ScheduleEvent(EVENT_SPAWN_IMPERATOR,  90000);
             }
 
             void DoAction(const int32 action)
@@ -208,20 +209,36 @@ class npc_woi_controller : public CreatureScript
                         break;
                     case EVENT_SPAWN_RAGE:
                         me->SummonCreature(NPC_RAGE, ragepos, TEMPSUMMON_CORPSE_DESPAWN);
-                        events.ScheduleEvent(EVENT_SPAWN_RAGE, 30000);
                         break;
                     case EVENT_SPAWN_FORCE:
                         me->SummonCreature(NPC_FORCE, forcepos[rand()%2], TEMPSUMMON_CORPSE_DESPAWN);
-                        events.ScheduleEvent(EVENT_SPAWN_FORCE, 30000);
                         break;
                     case EVENT_SPAWN_COURAGE:
                         me->SummonCreature(NPC_COURAGE, couragepos[rand()%2], TEMPSUMMON_CORPSE_DESPAWN);
-                        events.ScheduleEvent(EVENT_SPAWN_COURAGE, 30000);
                         break;
+                    case EVENT_SPAWN_RANDOM_ADD:
+                        {
+                            uint8 pos = urand(0, 2);
+                            switch (pos)
+                            {
+                            case 0:
+                                events.ScheduleEvent(EVENT_SPAWN_RAGE, 500);
+                                break;
+                            case 1:
+                                events.ScheduleEvent(EVENT_SPAWN_FORCE, 500);
+                                break;
+                            case 2:
+                                events.ScheduleEvent(EVENT_SPAWN_COURAGE, 500);
+                                break;
+                            }
+                            events.ScheduleEvent(EVENT_SPAWN_RANDOM_ADD, 30000);
+                            break;
+                        }
                     case EVENT_SPAWN_IMPERATOR:
                         me->SummonCreature(NPC_QIN_XI, qinxipos);
                         me->SummonCreature(NPC_JAN_XI, janxipos);
-                        events.ScheduleEvent(EVENT_TITAN_GAS, 120000);
+                        events.ScheduleEvent(EVENT_SPAWN_RANDOM_ADD, 500);
+                        events.ScheduleEvent(EVENT_TITAN_GAS,     120000);
                         break;
                     case EVENT_TITAN_GAS:
                         me->AddAura(SPELL_TITAN_GAS, me);
