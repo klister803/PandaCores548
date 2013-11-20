@@ -1070,9 +1070,11 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         return false;
     }
 
-    uint32 RaceClassGender = (createInfo->Race) | (createInfo->Class << 8) | (createInfo->Gender << 16);
+    uint32 RaceClassGender = (createInfo->Race) | (createInfo->Class << 8) | (createInfo->Gender << 24);
 
-    SetUInt32Value(UNIT_FIELD_BYTES_0, (RaceClassGender | (powertype << 24)));
+    SetUInt32Value(UNIT_FIELD_BYTES_0, RaceClassGender);
+    SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, powertype);
+
     InitDisplayIds();
     if (sWorld->getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || sWorld->getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP)
     {
@@ -1084,7 +1086,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
     SetFloatValue(UNIT_MOD_HASTE, 1.0f);
     SetFloatValue(UNIT_MOD_HASTE_REGEN, 1.0f);
-    SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, 1.0f);
+    SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, 1.0f);
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);            // default for players in 3.0.3
 
                                                             // -1 is default value
@@ -2832,7 +2834,7 @@ void Player::Regenerate(Powers power)
     float addvalue = 0.0f;
 
     // Powers now benefit from haste.
-    float rangedHaste = GetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE);
+    float rangedHaste = GetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE);
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
     float regenmod = 1.0f / GetFloatValue(UNIT_MOD_CAST_HASTE);
@@ -3691,7 +3693,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
     SetFloatValue(UNIT_MOD_HASTE, 1.0f);
     SetFloatValue(UNIT_MOD_HASTE_REGEN, 1.0f);
-    SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, 1.0f);
+    SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, 1.0f);
 
     // reset size before reapply auras
     SetObjectScale(1.0f);
@@ -3822,7 +3824,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     // restore if need some important flags
     SetUInt32Value(PLAYER_FIELD_OVERRIDE_SPELLS_ID, 0);                 // flags empty by default
-    SetUInt32Value(PLAYER_FIELD_AURA_VISION, 0);                        // flags empty by default
+    //SetUInt32Value(PLAYER_FIELD_AURA_VISION, 0);                        // flags empty by default
 
 
     if (reapplyMods)                                        // reapply stats values only on .reset stats (level) command
@@ -5749,7 +5751,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     RemoveAurasDueToSpell(8326);                            // SPELL_AURA_GHOST
 
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
-        SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
+        SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
 
     setDeathState(ALIVE);
 
@@ -5849,7 +5851,7 @@ void Player::KillPlayer()
     setDeathState(CORPSE);
     //SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_IN_PVP);
 
-    SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
+    SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
     ApplyModFlag(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTE_RELEASE_TIMER, !sMapStore.LookupEntry(GetMapId())->Instanceable() && !HasAuraType(SPELL_AURA_PREVENT_RESURRECTION));
 
     // 6 minutes until repop at graveyard
@@ -18161,7 +18163,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     uint32 bytes0 = 0;
     bytes0 |= fields[3].GetUInt8();                         // race
     bytes0 |= fields[4].GetUInt8() << 8;                    // class
-    bytes0 |= Gender << 16;                                 // gender
+    bytes0 |= Gender << 24;                                 // gender
     SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
 
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[6].GetUInt8());
@@ -18788,7 +18790,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_grantableLevels = fields[63].GetUInt8();
 
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
-        SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
+        SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
 
     if (m_grantableLevels > 0)
         SetByteValue(PLAYER_FIELD_BYTES, 1, 0x01);

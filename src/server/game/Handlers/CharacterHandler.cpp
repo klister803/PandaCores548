@@ -320,21 +320,23 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
     uint8 race_, class_;
     // extract other data required for player creating
     uint8 gender, skin, face, hairStyle, hairColor, facialHair, outfitId;
-    outfitId = 0;
+
+    recvData >> face;
     recvData >> gender;
-
-    recvData >> hairColor;
-    recvData >> outfitId; 
-
     recvData >> race_;
-    recvData >> class_;       
-    recvData >> face;      
     recvData >> facialHair;
-    recvData >> skin;       
     recvData >> hairStyle;
+    recvData >> outfitId;
+    recvData >> class_;
+    recvData >> skin;
+    recvData >> hairColor;
 
-    name_length = recvData.ReadBits(7);
+    bool unk = recvData.ReadBit();
+    name_length = recvData.ReadBits(6);
     name = recvData.ReadString(name_length);
+    if (unk)
+        recvData.read_skip<uint32>();
+
     WorldPacket data(SMSG_CHAR_CREATE, 1);                  // returned with diff.values in all cases
 
     if (AccountMgr::IsPlayerAccount(GetSecurity()))
@@ -793,8 +795,12 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
 void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<3, 5>(guid);
+    recvData.ReadBit();
+    recvData.ReadGuidMask<6, 4, 2, 7, 1, 0>(guid);
+
+    recvData.ReadGuidBytes<7, 5, 0, 1, 2, 4, 6, 3>(guid);
 
     // can't delete loaded character
     if (ObjectAccessor::FindPlayer(guid))

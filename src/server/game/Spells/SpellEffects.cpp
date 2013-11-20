@@ -5866,7 +5866,7 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
 
     player->GetMap()->CreatureRelocation(pet, x, y, z, player->GetOrientation());
 
-    pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
+    pet->SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
     pet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
     pet->setDeathState(ALIVE);
     pet->ClearUnitState(uint32(UNIT_STATE_ALL_STATE));

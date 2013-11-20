@@ -785,7 +785,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                         *data << m_uint32Values[index];
                 }
                 // hide lootable animation for unallowed players
-                else if (index == UNIT_DYNAMIC_FLAGS)
+                else if (index == OBJECT_FIELD_DYNAMIC_FLAGS)
                 {
                     uint32 dynamicFlags = m_uint32Values[index];
 

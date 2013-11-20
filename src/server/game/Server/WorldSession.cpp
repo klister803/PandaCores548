@@ -806,7 +806,7 @@ void WorldSession::SendAccountDataTimes(uint32 mask)
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
         if (mask & (1 << i))
             data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
-    data.WriteBit(1);
+    data.WriteBit(0);
     SendPacket(&data);
 }
 

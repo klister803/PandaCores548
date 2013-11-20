@@ -315,7 +315,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
 
     SetDisplayId(displayID);
     SetNativeDisplayId(displayID);
-    SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
+    SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
 
     // Load creature equipment
     if (!data || data->equipmentId == 0)                    // use default from the template
@@ -386,7 +386,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     SetUInt32Value(UNIT_FIELD_FLAGS_2, cInfo->unit_flags2);
     SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER);
 
-    SetUInt32Value(UNIT_DYNAMIC_FLAGS, dynamicflags);
+    SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, dynamicflags);
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 
@@ -850,7 +850,7 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     {
         SetDisplayId(displayID);
         SetNativeDisplayId(displayID);
-        SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
+        SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
     }
 
     LastUsedScriptID = GetCreatureTemplate()->ScriptID;
@@ -1043,7 +1043,7 @@ void Creature::SetLootRecipient(Unit* unit)
     {
         m_lootRecipient = 0;
         m_lootRecipientGroup = 0;
-        RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE|UNIT_DYNFLAG_TAPPED);
+        RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE|UNIT_DYNFLAG_TAPPED);
         return;
     }
 
@@ -1058,7 +1058,7 @@ void Creature::SetLootRecipient(Unit* unit)
     if (Group* group = player->GetGroup())
         m_lootRecipientGroup = group->GetLowGUID();
 
-    SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
+    SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
 }
 
 // return true if this creature is tapped by the player or by a member of his group.
@@ -1098,7 +1098,7 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     uint32 displayId = GetNativeDisplayId();
     uint32 npcflag = GetUInt32Value(UNIT_NPC_FLAGS);
     uint32 unit_flags = GetUInt32Value(UNIT_FIELD_FLAGS);
-    uint32 dynamicflags = GetUInt32Value(UNIT_DYNAMIC_FLAGS);
+    uint32 dynamicflags = GetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS);
 
     // check if it's a custom model and if not, use 0 for displayId
     CreatureTemplate const* cinfo = GetCreatureTemplate();
@@ -1739,7 +1739,7 @@ void Creature::Respawn(bool force)
         {
             SetDisplayId(displayID);
             SetNativeDisplayId(displayID);
-            SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
+            SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
         }
 
         GetMotionMaster()->InitDefault();

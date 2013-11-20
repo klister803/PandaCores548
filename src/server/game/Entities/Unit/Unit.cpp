@@ -9825,7 +9825,7 @@ bool Unit::HandleOverrideClassScriptAuraProc(Unit* victim, uint32 /*damage*/, Au
 
 void Unit::setPowerType(Powers new_powertype)
 {
-    SetByteValue(UNIT_FIELD_BYTES_0, 3, new_powertype);
+    SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, new_powertype);
 
     if (GetTypeId() == TYPEID_PLAYER)
     {
@@ -13176,8 +13176,8 @@ void Unit::ClearInCombat()
             SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC); // set immunity state to the one from db on evade
 
         ClearUnitState(UNIT_STATE_ATTACK_PLAYER);
-        if (HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED))
-            SetUInt32Value(UNIT_DYNAMIC_FLAGS, creature->GetCreatureTemplate()->dynamicflags);
+        if (HasFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED))
+            SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, creature->GetCreatureTemplate()->dynamicflags);
 
         if (creature->isPet())
         {
@@ -17622,7 +17622,7 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
             creature->DeleteThreatList();
             CreatureTemplate const* cInfo = creature->GetCreatureTemplate();
             if (cInfo && (cInfo->lootid || cInfo->maxgold > 0))
-                creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                creature->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
 
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set

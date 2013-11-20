@@ -145,9 +145,9 @@ enum Opcodes
     CMSG_CHANNEL_UNSILENCE_VOICE                      = 0x788,  // 5.0.5 16048
     CMSG_CHANNEL_VOICE_OFF                            = 0x5C8,  // 5.0.5 16048
     CMSG_CHANNEL_VOICE_ON                             = 0x0E8,  // 5.0.5 16048
-    CMSG_CHAR_CREATE                                  = 0x332,  // 5.0.5 16048
+    CMSG_CHAR_CREATE                                  = 0x17CF, // 5.4.0 17399
     CMSG_CHAR_CUSTOMIZE                               = 0xC99,  // 5.0.5 16048
-    CMSG_CHAR_DELETE                                  = 0x944,  // 5.0.5 16048
+    CMSG_CHAR_DELETE                                  = 0x1783, // 5.4.0 17399
     CMSG_CHAR_ENUM                                    = 0x1B9E, // 5.4.0 17399
     CMSG_CHAR_FACTION_CHANGE                          = 0x9B9,  // 5.0.5 16048
     CMSG_CHAR_RACE_CHANGE                             = 0x96C,  // 5.0.5 16048
@@ -426,7 +426,7 @@ enum Opcodes
     CMSG_RANDOMIZE_CHAR_NAME                          = 0x044,  // 5.0.5 16048
     CMSG_READY_FOR_ACCOUNT_DATA_TIMES                 = 0x1A0E, // 5.4.0 17399
     CMSG_READ_ITEM                                    = 0x819,  // 5.0.5 16048
-    CMSG_REALM_NAME_QUERY                             = 0x81B,  // 5.0.5 16048
+    CMSG_REALM_NAME_QUERY                             = 0x13D7, // 5.4.0 17399
     CMSG_REALM_SPLIT                                  = 0x129F, // 5.4.0 17399
     CMSG_RECLAIM_CORPSE                               = 0xCF4,  // 5.0.5 16048
     CMSG_REDIRECTION_AUTH_PROOF                       = 0x68A,  // 5.0.5 16048
@@ -1202,7 +1202,7 @@ enum Opcodes
     SMSG_RATED_BG_STATS                               = 0xB21,  // 5.0.5 16048
     SMSG_READ_ITEM_FAILED                             = 0x86D,  // 5.0.5 16048
     SMSG_READ_ITEM_OK                                 = 0xD80,  // 5.0.5 16048
-    SMSG_REALM_QUERY_RESPONSE                         = 0xC26,  // 5.0.5 16048
+    SMSG_REALM_QUERY_RESPONSE                         = 0x042B, // 5.4.0 17399
     SMSG_REALM_SPLIT                                  = 0x0099, // 5.4.0 17399
     SMSG_REAL_GROUP_UPDATE                            = 0x000,  // 5.0.5 16048 Deprecated
     SMSG_RECEIVED_MAIL                                = 0x8D7,  // 5.0.5 16048

@@ -809,7 +809,7 @@ class npc_injured_patient : public CreatureScript
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     me->setDeathState(JUST_DIED);
-                    me->SetFlag(UNIT_DYNAMIC_FLAGS, 32);
+                    me->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, 32);
 
                     if (DoctorGUID)
                         if (Creature* doctor = Unit::GetCreature((*me), DoctorGUID))

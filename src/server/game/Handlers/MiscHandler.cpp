@@ -1654,14 +1654,6 @@ void WorldSession::HandleRealmSplitOpcode(WorldPacket& recvData)
     //sLog->outDebug("response sent %u", unk);
 }
 
-/* <packet date = "14995627" direction"StoC" opcode = "SMSG_REALM_QUERY_RESPONSE">
-08 00 01 3C realm id 
-00 // code err
-01 // idk
-4D 65 6B 6B 61 74 6F 72 71 75 65 20 28 45 55 29 00 // realm name
-4D 65 6B 6B 61 74 6F 72 71 75 65 28 45 55 29 00 // realm name
-</packet>*/
-
 void WorldSession::HandleRealmQueryNameOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_REALM_QUERY_NAME");
@@ -1671,12 +1663,17 @@ void WorldSession::HandleRealmQueryNameOpcode(WorldPacket& recvData)
     if(realmId != realmID)
         return; // Cheater ?
 
+    std::string realmName = sWorld->GetRealmName();
+
     WorldPacket data(SMSG_REALM_QUERY_RESPONSE);
-    data << realmId;
     data << uint8(0); // ok, realmId exist server-side
-    data << uint8(1); // unk, if it's main realm ?
-    data << sWorld->GetRealmName();
-    data << sWorld->GetRealmName();
+    data << realmId;
+    data.WriteBits(realmName.length(), 8);
+    data.WriteBit(1); // unk, if it's main realm ?
+    data.WriteBits(realmName.length(), 8);
+    data.WriteString(realmName);
+    data.WriteString(realmName);
+
     SendPacket(&data);
 }
 

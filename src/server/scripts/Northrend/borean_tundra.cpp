@@ -133,7 +133,7 @@ public:
                         if (Unit* worm = me->FindNearestCreature(26250, 3))
                         {
                             me->Kill(worm);
-                            worm->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                            worm->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                         }
                         uiPhaseTimer = 2000;
                         Phase = 7;
