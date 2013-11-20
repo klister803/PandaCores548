@@ -53,6 +53,11 @@ class CreatureTextBuilder
             *data << uint32(text.length() + 1);
             *data << text;
             *data << uint16(0);                                       // ChatTag
+            if (_msgType == CHAT_MSG_RAID_BOSS_EMOTE || _msgType == CHAT_MSG_RAID_BOSS_WHISPER)
+            {
+                *data << float(0);
+                *data << uint8(0);
+            }
 
             return whisperGUIDpos;
         }
