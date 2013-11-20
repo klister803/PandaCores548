@@ -824,7 +824,7 @@ enum Opcodes
     SMSG_DEATH_RELEASE_LOC                            = 0x85E,  // 5.0.5 16048
     SMSG_DEBUG_RUNE_REGEN                             = 0xE2E,  // 5.0.5 16048
     SMSG_DEFENSE_MESSAGE                              = 0x9E9,  // 5.0.5 16048
-    SMSG_DESTROY_OBJECT                               = 0xD82,  // 5.0.5 16048
+    SMSG_DESTROY_OBJECT                               = 0x04BD, // 5.4.0 17399
     SMSG_DESTRUCTIBLE_BUILDING_DAMAGE                 = 0xDE5,  // 5.0.5 16048
     SMSG_DIFFERENT_INSTANCE_FROM_PARTY                = 0xE26,  // 5.0.5 16048
     SMSG_DISENCHANT_CREDIT                            = 0xE2D,  // 5.0.5 16048
