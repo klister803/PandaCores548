@@ -251,7 +251,7 @@ bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg
         // loop through the players
         for (std::map<uint64, PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
-            if (!itr)
+            if (itr == 0)
                 break;
             if (itr == ginfo->Players.end())
                 break;
