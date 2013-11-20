@@ -236,7 +236,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             }
             break;
         case HUNTER_PET:
-            SetUInt32Value(UNIT_FIELD_BYTES_0, 0x02020300); // class = warrior, gender = none, power = focus
+            SetUInt32Value(UNIT_FIELD_BYTES_0, 0x02000300); // class = warrior, gender = none
+            SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, 0x2);  // power = focus
             SetSheath(SHEATH_STATE_MELEE);
             SetByteFlag(UNIT_FIELD_BYTES_2, 2, fields[9].GetBool() ? UNIT_CAN_BE_ABANDONED : UNIT_CAN_BE_RENAMED | UNIT_CAN_BE_ABANDONED);
 
@@ -497,7 +498,7 @@ void Pet::setDeathState(DeathState s)                       // overwrite virtual
         if (getPetType() == HUNTER_PET)
         {
             // pet corpse non lootable and non skinnable
-            SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
+            SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
             RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
             //SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
         }
@@ -613,7 +614,7 @@ void Creature::Regenerate(Powers power)
         return;
 
     float addvalue = 0.0f;
-    float rangedHaste = (isHunterPet() && GetOwner()) ? GetOwner()->ToPlayer()->GetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE) : 0.0f;
+    float rangedHaste = (isHunterPet() && GetOwner()) ? GetOwner()->GetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE) : 0.0f;
 
     switch (power)
     {
@@ -769,7 +770,8 @@ bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phas
 
     if (cinfo->type == CREATURE_TYPE_BEAST)
     {
-        SetUInt32Value(UNIT_FIELD_BYTES_0, 0x02020300);
+        SetUInt32Value(UNIT_FIELD_BYTES_0, 0x02000300);
+        SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, 0x2);
         SetSheath(SHEATH_STATE_MELEE);
         SetByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED | UNIT_CAN_BE_ABANDONED);
     }

@@ -894,7 +894,7 @@ void Player::UpdateRangeHastMod()
         ApplyPercentModFloatVar(value, amount, false);
     else
         ApplyPercentModFloatVar(value, -amount, true);
-    SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, value);
+    SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, value);
     SetFloatValue(UNIT_MOD_CAST_HASTE, value);
 
     if (getClass() == CLASS_DEATH_KNIGHT)
