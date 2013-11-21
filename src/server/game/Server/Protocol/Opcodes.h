@@ -360,7 +360,7 @@ enum Opcodes
     CMSG_MOVE_SPLINE_DONE                             = 0x651,  // 5.0.5 16048
     CMSG_MOVE_TIME_SKIPPED                            = 0x351,  // 5.0.5 16048
     CMSG_MOVE_TOGGLE_COLLISION_ACK                    = 0x000,  // Not found in 4.3.4
-    CMSG_NAME_QUERY                                   = 0x884,  // 5.0.5 16048
+    CMSG_NAME_QUERY                                   = 0x16DB, // 5.4.0 17399
     CMSG_NEW_SPELL_SLOT                               = 0x000,  // Not found in 4.3.4
     CMSG_NEXT_CINEMATIC_CAMERA                        = 0xD4F,  // 5.0.5 16048
     CMSG_NPC_TEXT_QUERY                               = 0xD1C,  // 5.0.5 16048
@@ -1095,7 +1095,7 @@ enum Opcodes
     SMSG_MOVE_UPDATE_WALK_SPEED                       = 0xB28,  // 5.0.5 16048
     SMSG_MOVE_WATER_WALK                              = 0xE66,  // 5.0.5 16048
     SMSG_MULTIPLE_PACKETS                             = 0x826,  // 5.0.5 16048
-    SMSG_NAME_QUERY_RESPONSE                          = 0xCF9,  // 5.0.5 16048
+    SMSG_NAME_QUERY_RESPONSE                          = 0x00B7, // 5.4.0 17399
     SMSG_NEW_TAXI_PATH                                = 0x813,  // 5.0.5 16048
     SMSG_NEW_WORLD                                    = 0xF21,  // 5.0.5 16048
     SMSG_NEW_WORLD_ABORT                              = 0xEA0,  // 5.0.5 16048
