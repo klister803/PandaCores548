@@ -24655,7 +24655,7 @@ void Player::SendAurasForTarget(Unit* target)
     if (hasPowerData) { }
     */
 
-    data.WriteGuidMask<0, 4, 3, 7, 5, 6, 2, 1>(targetGuid);
+    data.WriteGuidBytes<0, 4, 3, 7, 5, 6, 2, 1>(targetGuid);
 
     GetSession()->SendPacket(&data);
 }

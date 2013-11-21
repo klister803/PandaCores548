@@ -270,7 +270,7 @@ void AuraApplication::ClientUpdate(bool remove)
     if (hasPowerData) { }
     */
 
-    data.WriteGuidMask<0, 4, 3, 7, 5, 6, 2, 1>(targetGuid);
+    data.WriteGuidBytes<0, 4, 3, 7, 5, 6, 2, 1>(targetGuid);
 
     _target->SendMessageToSet(&data, true);
 }
@@ -299,7 +299,7 @@ void AuraApplication::SendFakeAuraUpdate(uint32 auraId, bool remove)
     if (hasPowerData) { }
     */
 
-    data.WriteGuidMask<0, 4, 3, 7, 5, 6, 2, 1>(targetGuid);
+    data.WriteGuidBytes<0, 4, 3, 7, 5, 6, 2, 1>(targetGuid);
 
     _target->SendMessageToSet(&data, true);
  }
