@@ -395,14 +395,17 @@ enum Difficulty
     MAN25_HEROIC_DIFFICULTY      = 6,                       // difficulty_entry_6 new difficulty_entry_3
     RAID_TOOL_DIFFICULTY         = 7,                       // difficulty_entry_7 new difficulty_entry_4
     CHALLENGE_MODE_DIFFICULTY    = 8,                       // difficulty_entry_8 new difficulty_entry_4
-    MAN40_DIFFICULTY             = 9                        // difficulty_entry_9 new difficulty_entry_4
+    MAN40_DIFFICULTY             = 9,                       // difficulty_entry_9 new difficulty_entry_4
+    HEROIC_SCENARIO_DIFFICULTY   = 11,
+    NORMAL_SCENARIO_DIFFICULTY   = 12,
+    FLEXIBLE_DIFFICULTY          = 14,
 };
 
 #define RAID_DIFFICULTY_MASK_25MAN 1                        // since 25man difficulties are 1 and 3, we can check them like that
 
 #define MAX_DUNGEON_DIFFICULTY     HEROIC_DIFFICULTY+1
 #define MAX_RAID_DIFFICULTY        MAN25_HEROIC_DIFFICULTY+1
-#define MAX_DIFFICULTY             MAN40_DIFFICULTY+1
+#define MAX_DIFFICULTY             FLEXIBLE_DIFFICULTY+1
 
 enum SpawnMask
 {
