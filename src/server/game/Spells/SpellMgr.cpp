@@ -4366,6 +4366,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 74793:// Summoning Ritual
                     spellInfo->AreaGroupId = -1;
                     break;
+                case 75478:// Summon Charbringer
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_RANDOM;
+                    break;
                 default:
                     break;
             }
