@@ -37,37 +37,79 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     CharacterNameData const* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
 
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE);
-    data.appendPackGUID(guid);
-    if (!nameData)
+    data.WriteGuidMask<5, 7, 3, 0, 4, 1, 6, 2>(guid);
+
+    data.WriteGuidBytes<7, 4, 3>(guid);
+    data << uint8(nameData ? 0 : 1);
+    if (nameData)
     {
-        data << uint8(1);                           // name unknown
-        SendPacket(&data);
-        return;
+        data << uint32(0);
+        data << uint8(nameData->m_race);
+        data << uint8(!nameData->m_gender);
+        data << uint8(nameData->m_level);
+        data << uint8(nameData->m_class);
+        data << uint32(realmID);
     }
+    data.WriteGuidBytes<1, 5, 0, 6, 2>(guid);
 
-    data << uint8(0);                               // name known
-    data << nameData->m_name;                       // played name
-    data << uint32(realmID);
-    data << uint8(nameData->m_race);
-    data << uint8(nameData->m_gender);
-    data << uint8(nameData->m_class);
+    ObjectGuid guid2 = 0;
+    ObjectGuid guid3 = guid;
 
-    if (DeclinedName const* names = (player ? player->GetDeclinedNames() : NULL))
+    if (nameData)
     {
-        data << uint8(1);                           // Name is declined
+        data.WriteGuidMask<6>(guid3);
+        data.WriteGuidMask<7>(guid2);
+        data.WriteBits(nameData->m_name.length(), 6);
+        data.WriteGuidMask<1, 7, 2>(guid3);
+        data.WriteGuidMask<4>(guid2);
+        data.WriteGuidMask<4, 0>(guid3);
+        data.WriteGuidMask<1>(guid2);
+
+        DeclinedName const* names = player ? player->GetDeclinedNames() : NULL;
         for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-            data << names->name[i];
+            data.WriteBits(names ? names->name[i].length() : 0, 7);
+
+        data.WriteGuidMask<3>(guid2);
+        data.WriteGuidMask<3>(guid3);
+        data.WriteGuidMask<5, 0>(guid2);
+        data.WriteGuidMask<5>(guid3);
+        data.WriteBit(0);                   // bit20
+        data.WriteGuidMask<2, 6>(guid2);
+
+        data.WriteString(nameData->m_name);
+        data.WriteGuidBytes<4>(guid3);
+        data.WriteGuidBytes<3>(guid2);
+        data.WriteGuidBytes<6>(guid3);
+        data.WriteGuidBytes<2, 4>(guid2);
+        data.WriteGuidBytes<5, 1, 7>(guid3);
+        for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
+            data.WriteString(names ? names->name[i] : "");
+        data.WriteGuidBytes<3>(guid3);
+        data.WriteGuidBytes<7, 1, 6>(guid2);
+        data.WriteGuidBytes<0>(guid3);
+        data.WriteGuidBytes<0>(guid2);
+        data.WriteGuidBytes<2>(guid3);
+        data.WriteGuidBytes<5>(guid2);
     }
-    else
-        data << uint8(0);                           // Name is not declined
 
     SendPacket(&data);
 }
 
 void WorldSession::HandleNameQueryOpcode(WorldPacket& recvData)
 {
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+
+    recvData.ReadGuidMask<5, 7, 0, 1>(guid);
+    bool bit1C = recvData.ReadBit();
+    recvData.ReadGuidMask<6>(guid);
+    bool bit24 = recvData.ReadBit();
+    recvData.ReadGuidMask<3, 2, 4>(guid);
+
+    recvData.ReadGuidBytes<0, 1, 3, 4, 6, 5, 2, 7>(guid);
+    if (bit24)
+        recvData.read_skip<uint32>();
+    if (bit1C)
+        recvData.read_skip<uint32>();
 
     // This is disable by default to prevent lots of console spam
     // sLog->outInfo(LOG_FILTER_NETWORKIO, "HandleNameQueryOpcode %u", guid);
