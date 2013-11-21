@@ -937,7 +937,7 @@ class spell_monk_mana_tea : public SpellScriptLoader
                     if (Aura* manaTeaStacks = _player->GetAura(SPELL_MONK_MANA_TEA_STACKS))
                         stacks = manaTeaStacks->GetStackAmount();
 
-                    int32 newDuration = stacks * IN_MILLISECONDS;
+                    int32 newDuration = stacks * IN_MILLISECONDS - GetSpellInfo()->GetDuration();
 
                     spellMod = new SpellModifier();
                     spellMod->op = SPELLMOD_DURATION;
