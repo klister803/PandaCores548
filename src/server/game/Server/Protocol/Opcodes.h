@@ -674,8 +674,7 @@ enum Opcodes
     SMSG_AUCTION_REMOVED_NOTIFICATION                 = 0x882,  // 5.0.5 16048
     SMSG_AURACASTLOG                                  = 0x000,  // Not found in 4.3.4
     SMSG_AURA_POINTS_DEPLETED                         = 0xBF7,  // 5.0.5 16048
-    SMSG_AURA_UPDATE                                  = 0x8AB,  // 5.0.5 16048
-    SMSG_AURA_UPDATE_ALL                              = 0xDDA,  // 5.0.5 16048
+    SMSG_AURA_UPDATE                                  = 0x19B3, // 5.4.0 17399
     SMSG_AUTH_CHALLENGE                               = 0x016A, // 5.4.0 17399
     SMSG_AUTH_RESPONSE                                = 0x090E, // 5.4.0 17399
     SMSG_AVAILABLE_VOICE_CHANNEL                      = 0x941,  // 5.0.5 16048

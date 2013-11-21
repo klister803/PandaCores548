@@ -24588,15 +24588,29 @@ void Player::SendAurasForTarget(Unit* target)
     if (target->HasAuraType(SPELL_AURA_HOVER))
         target->SendMovementHover();
 
-    WorldPacket data(SMSG_AURA_UPDATE_ALL);
-    data.append(target->GetPackGUID());
-
+    ObjectGuid targetGuid = target->GetObjectGuid();
     Unit::VisibleAuraMap const* visibleAuras = target->GetVisibleAuras();
+
+    WorldPacket data(SMSG_AURA_UPDATE);
+    data.WriteBit(1);   // full update
+    data.WriteGuidMask<6, 1, 0>(targetGuid);
+    data.WriteBits(visibleAuras->size(), 24);
+    data.WriteGuidMask<2, 4>(targetGuid);
+    data.WriteBit(0);   // has power data
+    /*
+    if (hasPowerData) { }
+    */
+    data.WriteGuidMask<7, 3, 5>(targetGuid);
+
     for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
-    {
-        AuraApplication * auraApp = itr->second;
-        auraApp->BuildUpdatePacket(data, false);
-    }
+        itr->second->BuildBitUpdatePacket(data, false);
+    for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
+        itr->second->BuildByteUpdatePacket(data, false);
+    /*
+    if (hasPowerData) { }
+    */
+
+    data.WriteGuidMask<0, 4, 3, 7, 5, 6, 2, 1>(targetGuid);
 
     GetSession()->SendPacket(&data);
 }
