@@ -129,15 +129,7 @@ void SmartScript::ProcessEventsFor(SMART_EVENT e, Unit* unit, uint32 var0, uint3
             continue;
 
         if (eventType == e/* && (!(*i).event.event_phase_mask || IsInPhase((*i).event.event_phase_mask)) && !((*i).event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE && (*i).runOnce)*/)
-        {
-            bool meets = true;
-            ConditionList conds = sConditionMgr->GetConditionsForSmartEvent((*i).entryOrGuid, (*i).event_id, (*i).source_type);
-            ConditionSourceInfo info = ConditionSourceInfo(unit, GetBaseObject());
-            meets = sConditionMgr->IsObjectMeetToConditions(info, conds);
-
-            if (meets)
-                ProcessEvent(*i, unit, var0, var1, bvar, spell, gob);
-        }
+            ProcessEvent(*i, unit, var0, var1, bvar, spell, gob);
     }
 }
 
@@ -1944,7 +1936,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 break;
 
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveJump(e.target.x, e.target.y, e.target.z, (float)e.action.jump.speedxy, (float)e.action.jump.speedz);
+
+            if (e.GetTargetType() == SMART_TARGET_ACTION_INVOKER)
+                me->GetMotionMaster()->MoveJump(unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ(), (float)e.action.jump.speedxy, (float)e.action.jump.speedz);
+            else
+                me->GetMotionMaster()->MoveJump(e.target.x, e.target.y, e.target.z, (float)e.action.jump.speedxy, (float)e.action.jump.speedz);
             // TODO: Resume path when reached jump location
             break;
         }
@@ -2518,6 +2514,11 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
         return;
 
     if ((e.event.event_phase_mask && !IsInPhase(e.event.event_phase_mask)) || ((e.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && e.runOnce))
+        return;
+
+    ConditionList conds = sConditionMgr->GetConditionsForSmartEvent(e.entryOrGuid, e.event_id, e.source_type);
+    ConditionSourceInfo info = ConditionSourceInfo(unit ? unit : GetBaseObject(), GetBaseObject());
+    if(!sConditionMgr->IsObjectMeetToConditions(info, conds))
         return;
 
     switch (e.GetEventType())
