@@ -718,7 +718,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         break;
                     case 100784: // Blackout Kick
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 8.0f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 6.4f, 0.509f, 7);
                         break;
                     case 124335: // Swift Reflexes
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -7086,6 +7086,59 @@ int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultip
     }
 
     return irand(int32(minDamage * coeff), int32(maxDamage * coeff));
+}
+
+int32 Spell::CalculateMonkSpellDamage(Unit* caster, float coeff, float APmultiplier, int32 base)
+{
+    Item* mainItem = caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    Item* offItem = caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+    float MHmin = 0;
+    float MHmax = 0;
+    float OHmin = 0;
+    float OHmax = 0;
+
+    int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK) * APmultiplier;
+    bool dualwield = (mainItem && offItem) ? 1 : 0;
+
+    // Main Hand
+    if (mainItem && coeff > 0)
+    {
+        MHmin = mainItem->GetTemplate()->DamageMin;
+        MHmax = mainItem->GetTemplate()->DamageMax;
+
+        MHmin /= mainItem->GetTemplate()->Delay / 1000.0f;
+        MHmax /= mainItem->GetTemplate()->Delay / 1000.0f;
+
+        if (mainItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
+        {
+            coeff *= 1.1125f;
+        }
+    }
+        // Off Hand
+    if (offItem && coeff > 0)
+    {
+        OHmin += offItem->GetTemplate()->DamageMin / 2;
+        OHmax += offItem->GetTemplate()->DamageMax / 2;
+
+        OHmin /= offItem->GetTemplate()->Delay / 1000.0f;
+        OHmax /= offItem->GetTemplate()->Delay / 1000.0f;
+    }
+
+    // DualWield coefficient
+    if (dualwield)
+    {
+        MHmin += OHmin;
+        MHmax += OHmax;
+    }
+
+    MHmin *= coeff;
+    MHmin += AP - base;
+
+    MHmax *= coeff;
+    MHmax += AP + base;
+
+    return irand(int32(MHmin), int32(MHmax));
 }
 
 void Spell::EffectBuyGuilkBankTab(SpellEffIndex effIndex)
