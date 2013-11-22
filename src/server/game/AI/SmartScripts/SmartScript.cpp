@@ -849,6 +849,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                 if (e.action.removeAura.spell == 0)
                     (*itr)->ToUnit()->RemoveAllAuras();
+                else if(e.action.removeAura.stack > 0 || e.action.removeAura.stack < 0)
+                {
+                    if(Aura* aura = (*itr)->ToUnit()->GetAura(e.action.removeAura.spell))
+                        aura->ModStackAmount(e.action.removeAura.stack);
+                }
                 else
                     (*itr)->ToUnit()->RemoveAurasDueToSpell(e.action.removeAura.spell);
 

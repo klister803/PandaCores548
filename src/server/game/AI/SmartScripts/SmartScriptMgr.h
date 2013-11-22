@@ -652,6 +652,7 @@ struct SmartAction
         struct
         {
             uint32 spell;
+            int32 stack;
         } removeAura;
 
         struct
