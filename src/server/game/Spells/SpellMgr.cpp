@@ -3780,9 +3780,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
                     spellInfo->Effects[0].TargetB = NULL;
                     break;
-                case 115294:// Mana Tea
-                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); // 1s
-                    break;
                 case 44457: // Living Bomb
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                     break;
