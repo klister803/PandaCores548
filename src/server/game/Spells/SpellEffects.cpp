@@ -676,27 +676,27 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         break;
                     case 100780: // Jab
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
                         break;
                     case 108557: // Jab (Staff)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115698: // Jab (Polearm)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115687: // Jab (Axes)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115693: // Jab (Maces)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115695: // Jab (Swords)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115080: // Touch of Death
                         if (Unit* caster = GetCaster())
