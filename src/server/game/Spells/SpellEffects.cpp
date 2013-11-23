@@ -709,7 +709,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         break;
                     case 107270: // Spinning Crane Kick
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 1.59f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 1.573f, 0.125f, 2);
                         break;
                     case 107428: // Rising Sun Kick
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
