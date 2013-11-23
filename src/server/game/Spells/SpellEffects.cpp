@@ -705,7 +705,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         return;
                     case 100787: // Tiger Palm
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 3.0f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 2.697f, 0.214f, 3);
                         break;
                     case 107270: // Spinning Crane Kick
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
