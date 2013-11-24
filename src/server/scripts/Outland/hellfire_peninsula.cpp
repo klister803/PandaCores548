@@ -212,7 +212,8 @@ public:
 
     bool OnGossipHello(Player* /*player*/, GameObject* go)
     {
-        go->SummonCreature(C_AERANAS, -1321.79f, 4043.80f, 116.24f, 1.25f, TEMPSUMMON_TIMED_DESPAWN, 180000);
+        if(!go->FindNearestCreature(C_AERANAS, 100.0f, true))
+            go->SummonCreature(C_AERANAS, -1321.79f, 4043.80f, 116.24f, 1.25f, TEMPSUMMON_TIMED_DESPAWN, 180000);
         return false;
     }
 };
