@@ -15288,29 +15288,6 @@ int32 Unit::GetCreatePowers(Powers power) const
     return 0;
 }
 
-SpellPowerEntry const* Unit::GetSpellPowerEntryBySpell(SpellInfo const* spell) const
-{
-    if (getClass() == CLASS_WARLOCK)
-    {
-        if (spell->Id == 686)
-        {
-            if (GetShapeshiftForm() == FORM_METAMORPHOSIS)
-                return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_DEMONIC_FURY);
-            else
-                return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_MANA);
-        }
-    }
-    else if (getClass() == CLASS_MONK)
-    {
-        if (GetShapeshiftForm() == FORM_WISE_SERPENT)
-            return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_MANA);
-
-        return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_ENERGY);
-    }
-
-    return spell->spellPower;
-}
-
 void Unit::AddToWorld()
 {
     if (!IsInWorld())

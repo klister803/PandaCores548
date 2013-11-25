@@ -38,38 +38,16 @@ class ByteBuffer;
 enum SpellCastFlags
 {
     CAST_FLAG_NONE               = 0x00000000,
-    CAST_FLAG_PENDING            = 0x00000001,              // aoe combat log?
+    CAST_FLAG_PENDING            = 0x00000001,
     CAST_FLAG_HAS_TRAJECTORY     = 0x00000002,
-    CAST_FLAG_UNKNOWN_3          = 0x00000004,
-    CAST_FLAG_UNKNOWN_4          = 0x00000008,              // ignore AOE visual
-    CAST_FLAG_UNKNOWN_5          = 0x00000010,
-    CAST_FLAG_PROJECTILE         = 0x00000020,
-    CAST_FLAG_UNKNOWN_7          = 0x00000040,
-    CAST_FLAG_UNKNOWN_8          = 0x00000080,
-    CAST_FLAG_UNKNOWN_9          = 0x00000100,
-    CAST_FLAG_UNKNOWN_10         = 0x00000200,
-    CAST_FLAG_UNKNOWN_11         = 0x00000400,
-    CAST_FLAG_POWER_LEFT_SELF    = 0x00000800,
-    CAST_FLAG_UNKNOWN_13         = 0x00001000,
-    CAST_FLAG_UNKNOWN_14         = 0x00002000,
-    CAST_FLAG_UNKNOWN_15         = 0x00004000,
-    CAST_FLAG_UNKNOWN_16         = 0x00008000,
-    CAST_FLAG_UNKNOWN_17         = 0x00010000,
-    CAST_FLAG_ADJUST_MISSILE     = 0x00020000,
-    CAST_FLAG_UNKNOWN_19         = 0x00040000,
-    CAST_FLAG_VISUAL_CHAIN       = 0x00080000,
-    CAST_FLAG_UNKNOWN_21         = 0x00100000,
-    CAST_FLAG_RUNE_LIST          = 0x00200000,
-    CAST_FLAG_UNKNOWN_23         = 0x00400000,
-    CAST_FLAG_UNKNOWN_24         = 0x00800000,
-    CAST_FLAG_UNKNOWN_25         = 0x01000000,
-    CAST_FLAG_UNKNOWN_26         = 0x02000000,
-    CAST_FLAG_IMMUNITY           = 0x04000000,
-    CAST_FLAG_UNKNOWN_28         = 0x08000000,
-    CAST_FLAG_UNKNOWN_29         = 0x10000000,
-    CAST_FLAG_UNKNOWN_30         = 0x20000000,
-    CAST_FLAG_HEAL_PREDICTION    = 0x40000000,
-    CAST_FLAG_UNKNOWN_32         = 0x80000000,
+    CAST_FLAG_IGNORE_AOE_VISUAL  = 0x00000004,
+    CAST_FLAG_PROJECTILE         = 0x00000008,
+    CAST_FLAG_POWER_LEFT_SELF    = 0x00000010,
+    CAST_FLAG_ADJUST_MISSILE     = 0x00000020,
+    CAST_FLAG_VISUAL_CHAIN       = 0x00000040,
+    CAST_FLAG_RUNE_LIST          = 0x00000080,
+    CAST_FLAG_IMMUNITY           = 0x00000100,
+    CAST_FLAG_HEAL_PREDICTION    = 0x00000200,
 };
 
 enum SpellRangeFlag
@@ -93,6 +71,8 @@ struct SpellDestination
 
 class SpellCastTargets
 {
+    friend class Spell;
+
     public:
         SpellCastTargets();
         ~SpellCastTargets();
