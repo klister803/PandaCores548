@@ -1206,11 +1206,13 @@ class spell_warl_soul_swap : public SpellScriptLoader
                             // Soul Swap override spell
                             caster->CastSpell(caster, WARLOCK_SOUL_SWAP_AURA, true);
                             caster->RemoveSoulSwapDOT(target);
+                            target->CastSpell(caster, WARLOCK_SOUL_SWAP_VISUAL, true);
+                            caster->m_SoulSwapTarget = target;
                         }
-                        else if (GetSpellInfo()->Id == 86123)
+                        else if (GetSpellInfo()->Id == 86213)
                         {
-                            caster->CastSpell(target, WARLOCK_SOUL_SWAP_VISUAL, true);
                             caster->ApplySoulSwapDOT(target);
+                            caster->RemoveAura(WARLOCK_SOUL_SWAP_AURA);
 
                             if (caster->HasAura(56226) && caster->ToPlayer()) // Glyph of Soul Swap
                                 caster->ToPlayer()->AddSpellCooldown(86121, 0, time(NULL) + 30);

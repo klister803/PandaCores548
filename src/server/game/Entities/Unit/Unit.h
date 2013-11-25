@@ -2309,6 +2309,8 @@ class Unit : public WorldObject
                 SetUInt64Value(UNIT_FIELD_TARGET, guid);
         }
 
+        Unit* m_SoulSwapTarget;
+
         // Handling caster facing during spell cast
         void FocusTarget(Spell const* focusSpell, uint64 target);
         void ReleaseFocus(Spell const* focusSpell);
