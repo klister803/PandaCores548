@@ -423,6 +423,7 @@ void BattlegroundAV::StartingEventOpenDoors()
 
     // Achievement: The Alterac Blitz
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, AV_EVENT_START_BATTLE);
+    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, AV_EVENT_START_BATTLE);
 }
 
 void BattlegroundAV::AddPlayer(Player* player)

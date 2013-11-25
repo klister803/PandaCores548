@@ -212,6 +212,7 @@ void BattlegroundTP::StartingEventOpenDoors()
 
     // players joining later are not eligibles
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, TP_EVENT_START_BATTLE);
+    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, TP_EVENT_START_BATTLE);
 
     UpdateWorldState(BG_TP_STATE_TIMER_ACTIVE, 1);
     UpdateWorldState(BG_TP_STATE_TIMER, 25);

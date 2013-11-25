@@ -115,6 +115,7 @@ void BattlegroundKT::StartingEventOpenDoors()
 
     // Players that join battleground after start are not eligible to get achievement.
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, BG_KT_EVENT_START_BATTLE);
+    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, BG_KT_EVENT_START_BATTLE);
 }
 
 void BattlegroundKT::AddPlayer(Player *plr)

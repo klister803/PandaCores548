@@ -196,8 +196,8 @@ enum AchievementCriteriaTimedTypes
     ACHIEVEMENT_TIMED_TYPE_ITEM             = 9,    // Timer is started by using item with entry in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_CREATURE2        = 10,   // Timer is started by killing creature with entry in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_UNK11            = 11,   // Unknown
-    ACHIEVEMENT_TIMED_TYPE_UNK12            = 12,   // Unknown
-    ACHIEVEMENT_TIMED_TYPE_UNK13            = 13,   // Unknown
+    ACHIEVEMENT_TIMED_TYPE_ITEM2            = 12,   // Timer is started by using item with entry in timerStartEvent
+    ACHIEVEMENT_TIMED_TYPE_EVENT2           = 13,   // Timer is started by internal event with id in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_UNK14            = 14,   // Unknown
 
     ACHIEVEMENT_TIMED_TYPE_MAX,
