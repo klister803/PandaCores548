@@ -722,11 +722,11 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         break;
                     case 124335: // Swift Reflexes
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 0.3f, 14);
+                            damage = CalculateMonkSpellDamage(m_caster, 2.022f, 0.161f, 2);
                         break;
                     case 121253: // Keg Smash
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 8.12f, 11);
+                            damage = CalculateMonkSpellDamage(m_caster, 8.989f, 0.714f, 10);
                         break;
                     default:
                         break;

@@ -73,8 +73,6 @@ enum DruidSpells
     SPELL_DRUID_CLEARCASTING                = 16870,
     SPELL_DRUID_LIFEBLOOM                   = 33763,
     SPELL_DRUID_LIFEBLOOM_FINAL_HEAL        = 33778,
-    SPELL_DRUID_KILLER_INSTINCT             = 108299,
-    SPELL_DRUID_KILLER_INSTINCT_MOD_STAT    = 108300,
     SPELL_DRUID_CAT_FORM                    = 768,
     SPELL_DRUID_BEAR_FORM                   = 5487,
     SPELL_DRUID_BEAR_FORM_RAGE_GAIN         = 17057,
@@ -1485,42 +1483,6 @@ class spell_dru_lifebloom : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_dru_lifebloom_AuraScript();
-        }
-};
-
-// Called by Cat Form - 768 and Bear Form - 5487
-// Killer Instinct - 108299
-class spell_dru_killer_instinct : public SpellScriptLoader
-{
-    public:
-        spell_dru_killer_instinct() : SpellScriptLoader("spell_dru_killer_instinct") { }
-
-        class spell_dru_killer_instinct_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_killer_instinct_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (_player->HasAura(SPELL_DRUID_KILLER_INSTINCT))
-                    {
-                        int32 bp = _player->GetStat(STAT_INTELLECT);
-
-                        _player->CastCustomSpell(_player, SPELL_DRUID_KILLER_INSTINCT_MOD_STAT, &bp, NULL, NULL, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_killer_instinct_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_killer_instinct_SpellScript();
         }
 };
 
@@ -3252,7 +3214,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_rip();
     new spell_dru_bear_hug();
     new spell_dru_lifebloom();
-    new spell_dru_killer_instinct();
     new spell_dru_lifebloom_refresh();
     new spell_dru_omen_of_clarity();
     new spell_dru_mark_of_the_wild();

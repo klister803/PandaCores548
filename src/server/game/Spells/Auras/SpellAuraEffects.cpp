@@ -822,6 +822,20 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             if (GetId() == 55233)
                 amount = GetBase()->GetUnitOwner()->CountPctFromMaxHealth(amount);
             break;
+        case SPELL_AURA_MOD_STAT:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 108300: // Killer Instinct
+                {
+                    amount = CalculatePct(caster->GetStat(STAT_INTELLECT), amount);
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_MOD_INCREASE_HEALTH_2:
         {
             switch (m_spellInfo->Id)
