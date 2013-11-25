@@ -1272,7 +1272,7 @@ enum Opcodes
     SMSG_SPELL_FAILED_OTHER                           = 0xC0E,  // 5.0.5 16048
     SMSG_SPELL_FAILURE                                = 0xD93,  // 5.0.5 16048
     SMSG_SPELL_GO                                     = 0xD42,  // 5.0.5 16048
-    SMSG_SPELL_START                                  = 0x8FC,  // 5.0.5 16048
+    SMSG_SPELL_START                                  = 0x1C17, // 5.4.0 17399
     SMSG_SPELL_UPDATE_CHAIN_TARGETS                   = 0x858,  // 5.0.5 16048
     SMSG_SPIRIT_HEALER_CONFIRM                        = 0xC7F,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_COLLISION_DISABLE                = 0xE81,  // 5.0.5 16048
