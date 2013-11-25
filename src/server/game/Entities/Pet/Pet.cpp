@@ -287,7 +287,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     // Send fake summon spell cast - this is needed for correct cooldown application for spells
     // Example: 46584 - without this cooldown (which should be set always when pet is loaded) isn't set clientside
     // TODO: pets should be summoned from real cast instead of just faking it?
-    if (summon_spell_id)
+    /*if (summon_spell_id)
     {
         WorldPacket data(SMSG_SPELL_GO, (8+8+4+4+2));
         data.append(owner->GetPackGUID());
@@ -297,7 +297,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         data << uint32(256); // CAST_FLAG_UNKNOWN3
         data << uint32(0);
         owner->SendMessageToSet(&data, true);
-    }
+    }*/
 
     owner->SetMinion(this, true, slotID == PET_SLOT_UNK_SLOT ? (PetSlot)fields[7].GetUInt8() : slotID, stampeded);
     map->AddToMap(this->ToCreature());
