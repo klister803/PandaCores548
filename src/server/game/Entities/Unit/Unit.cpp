@@ -2671,8 +2671,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
     //    90        93     15
 
     int32 modHitChance = 94;
-    if (leveldif > 0)
-        modHitChance -= leveldif * 3;
+    modHitChance -= leveldif * 3;
 
     // Spellmod from SPELLMOD_RESIST_MISS_CHANCE
     if (Player* modOwner = GetSpellModOwner())
@@ -18588,12 +18587,9 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, u
     //    90        92      6
     //    90        93     7.5
 
+    int16 level_diff = victim->getLevel() - getLevel();
+    missChance += 1.5f * level_diff;
 
-    if (victim->getLevel() > getLevel())
-    {
-        uint8 level_diff = victim->getLevel() - getLevel();
-        missChance += 1.5f * level_diff;
-    }
 
     if (!spellId && haveOffhandWeapon())
         missChance += 19;
