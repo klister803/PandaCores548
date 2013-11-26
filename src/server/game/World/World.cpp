@@ -1368,9 +1368,6 @@ void World::SetInitialWorldSettings()
     ///- Initialize game event manager
     sGameEventMgr->Initialize();
 
-    //- Initialize TimeDiffMgr
-    sTimeDiffMgr->Initialize();
-
     ///- Loading strings. Getting no records means core load has to be canceled because no error message can be output.
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Trinity strings...");
@@ -2022,7 +2019,7 @@ void World::RecordTimeDiff(const char *text, ...)
         va_start(ap, text);
         vsnprintf(str, 256, text, ap);
         va_end(ap);
-        sLog->outInfo(LOG_FILTER_GENERAL, "Difftime %s: %u.", str, diff);
+        sLog->outDiff("Difftime %s: %u.", str, diff);
     }
 
     m_currentTime = thisTime;
@@ -2065,12 +2062,11 @@ void World::Update(uint32 diff)
 {
     m_updateTime = diff;
 
-    if (m_int_configs[CONFIG_INTERVAL_LOG_UPDATE] && diff > m_int_configs[CONFIG_MIN_LOG_UPDATE])
+    if (m_int_configs[CONFIG_INTERVAL_LOG_UPDATE])
     {
         if (m_updateTimeSum > m_int_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
-        	LoginDatabase.PExecute("UPDATE realmlist set online=%u where id=%u", GetActiveSessionCount(), realmID);
-            sLog->outDebug(LOG_FILTER_GENERAL, "Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
+            sLog->outDiff("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
         }
@@ -2262,8 +2258,6 @@ void World::Update(uint32 diff)
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
-
-    sTimeDiffMgr->Update(diff);
 
     sScriptMgr->OnWorldUpdate(diff);
 }

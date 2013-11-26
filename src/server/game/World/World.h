@@ -30,7 +30,6 @@
 #include "SharedDefines.h"
 #include "QueryResult.h"
 #include "Callback.h"
-#include "TimeDiffMgr.h"
 
 #include <map>
 #include <set>

@@ -32,6 +32,7 @@
 Log::Log() : worker(NULL)
 {
     arenaLogFile = NULL;
+    diffLogFile = NULL;
     spammLogFile = NULL;
     SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
@@ -488,6 +489,9 @@ void Log::Close()
     if (spammLogFile != NULL)
         fclose(spammLogFile);
     spammLogFile = NULL;
+    if (diffLogFile != NULL)
+        fclose(diffLogFile);
+    diffLogFile = NULL;
 
     delete worker;
     worker = NULL;
@@ -513,6 +517,7 @@ void Log::LoadFromConfig()
     ReadLoggersFromConfig();
     arenaLogFile = openLogFile("ArenaLogFile", NULL, "a");
     spammLogFile = openLogFile("SpammLogFile", NULL, "a");
+    diffLogFile = openLogFile("diffLogFile", NULL, "a");
 }
 
 void Log::outArena(const char * str, ...)
@@ -577,5 +582,22 @@ void Log::outSpamm(const char * str, ...)
         fprintf(spammLogFile, "\n");
         va_end(ap);
         fflush(spammLogFile);
+    }
+}
+
+void Log::outDiff(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if (diffLogFile)
+    {
+        va_list ap;
+        outTimestamp(diffLogFile);
+        va_start(ap, str);
+        vfprintf(diffLogFile, str, ap);
+        fprintf(diffLogFile, "\n");
+        va_end(ap);
+        fflush(diffLogFile);
     }
 }
