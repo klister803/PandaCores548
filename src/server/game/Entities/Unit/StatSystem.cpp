@@ -459,16 +459,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
             break;
     }
 
-    float att_speed;
-
-    if (IsInFeralForm())
-    {
-        att_speed = BASE_ATTACK_TIME / 1000;
-    }
-    else
-    {
-        att_speed = GetAPMultiplier(attType, normalized);
-    }
+    float att_speed = GetAPMultiplier(attType, normalized);
 
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / 14.0f * att_speed;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
@@ -480,7 +471,8 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
 
     if (IsInFeralForm())
     {
-        float weaponSpeed = att_speed;
+        float weaponSpeed = BASE_ATTACK_TIME / 1000;
+
         if (Item* weapon = GetWeaponForAttack(BASE_ATTACK, false))
         {
             weaponSpeed = weapon->GetTemplate()->Delay / 1000.0f;

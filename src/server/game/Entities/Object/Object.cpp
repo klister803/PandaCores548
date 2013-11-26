@@ -722,6 +722,10 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                     // Check per caster aura states to not enable using a pell in client if specified aura is not by target
                     *data << ((Unit*)this)->BuildAuraStateUpdateForTarget(target);
                 }
+                else if (index == UNIT_FIELD_MAXDAMAGE || index == UNIT_FIELD_MINDAMAGE)
+                {
+                    *data << (m_floatValues[index] + CalculatePct(m_floatValues[index], ((Unit*)this)->GetTotalAuraModifier(SPELL_AURA_MOD_AUTOATTACK_DAMAGE)));
+                }
                 // FIXME: Some values at server stored in float format but must be sent to client in uint32 format
                 else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
                 {
