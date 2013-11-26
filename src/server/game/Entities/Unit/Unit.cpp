@@ -284,6 +284,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_IsInKillingProcess = false;
     m_VisibilityUpdScheduled = false;
     m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
+    m_SoulSwapTarget = NULL;
 }
 
 ////////////////////////////////////////////////////////////
