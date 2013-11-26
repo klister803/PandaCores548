@@ -3281,6 +3281,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 115834: // Shroud of Concealment
+                    spellInfo->AttributesEx |= SPELL_ATTR1_CANT_TARGET_IN_COMBAT;
+                    break;
                 case 1850:   // Dash
                 case 113636: // Cat Form (Passive)
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_SPEED;
