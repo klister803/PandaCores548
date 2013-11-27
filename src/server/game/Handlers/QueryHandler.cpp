@@ -135,13 +135,10 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recvData)
 {
     uint32 entry;
     recvData >> entry;
-    uint64 guid;
-    recvData >> guid;
 
     CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(entry);
     if (ci)
     {
-
         std::string Name, SubName, Unk505;
         Name = ci->Name;
         SubName = ci->SubName;
@@ -160,41 +157,63 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recvData)
                                                             // guess size
         WorldPacket data(SMSG_CREATURE_QUERY_RESPONSE, 100);
         data << uint32(entry);                              // creature entry
-        data << Name;
+        data.WriteBit(1);
 
-        for (int i = 0; i < 7; i++)
-            data << uint8(0); // name2, ..., name8
+        data.WriteBits(Name.size() ? Name.size() + 1 : 0, 11);
+        for (int i = 0; i < 7; ++i)
+            data.WriteBits(0, 11);
 
-        data << SubName;
-        data << Unk505;
-        data << ci->IconName;                               // "Directions" for guard, string for Icons 2.3.0
+        uint32 itemsCount = 0;
+        for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
+            if (ci->questItems[i])
+                ++itemsCount;
+        data.WriteBits(itemsCount, 22);
+
+        data.WriteBits(ci->IconName.size() ? ci->IconName.size() + 1 : 0, 6);
+        data.WriteBits(SubName.size() ? SubName.size() + 1 : 0, 11);
+        data.WriteBits(Unk505.size() ? Unk505.size() + 1 : 0, 11);
+        data.WriteBit(ci->RacialLeader);
+
+        data << uint32(ci->type);                           // CreatureType.dbc
+        data << uint32(ci->KillCredit[1]);                  // new in 3.1, kill credit
+        data << uint32(ci->Modelid4);                       // Modelid4
+        data << uint32(ci->Modelid3);                       // Modelid3
+
+        for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
+            if (ci->questItems[i])
+                data << uint32(ci->questItems[i]);          // itemId[6], quest drop
+
+        data << uint32(ci->expansionUnknown);               // unknown meaning
+        if (Name.size())
+            data << Name;
+        if (Unk505.size())
+            data << Unk505;
+
+        data << float(ci->ModMana);                         // dmg/mana modifier
+        data << uint32(ci->Modelid1);                       // Modelid1
+        if (ci->IconName.size())
+            data << ci->IconName;
+        data << uint32(ci->KillCredit[0]);                  // new in 3.1, kill credit
+        data << uint32(ci->Modelid2);                       // Modelid2
+        if (SubName.size())
+            data << SubName;
         data << uint32(ci->type_flags);                     // flags
         data << uint32(ci->type_flags2);                    // unknown meaning
-        data << uint32(ci->type);                           // CreatureType.dbc
+        data << float(ci->ModHealth);                       // dmg/hp modifier
         data << uint32(ci->family);                         // CreatureFamily.dbc
         data << uint32(ci->rank);                           // Creature Rank (elite, boss, etc)
-        data << uint32(ci->KillCredit[0]);                  // new in 3.1, kill credit
-        data << uint32(ci->KillCredit[1]);                  // new in 3.1, kill credit
-        data << uint32(ci->Modelid1);                       // Modelid1
-        data << uint32(ci->Modelid2);                       // Modelid2
-        data << uint32(ci->Modelid3);                       // Modelid3
-        data << uint32(ci->Modelid4);                       // Modelid4
-        data << float(ci->ModHealth);                       // dmg/hp modifier
-        data << float(ci->ModMana);                         // dmg/mana modifier
-        data << uint8(ci->RacialLeader);
-        for (uint32 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
-            data << uint32(ci->questItems[i]);              // itemId[6], quest drop
         data << uint32(ci->movementId);                     // CreatureMovementInfo.dbc
-        data << uint32(ci->expansionUnknown);               // unknown meaning
+
         SendPacket(&data);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
     }
     else
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (GUID: %u, ENTRY: %u)",
-            GUID_LOPART(guid), entry);
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (ENTRY: %u)",
+            entry);
         WorldPacket data(SMSG_CREATURE_QUERY_RESPONSE, 4);
-        data << uint32(entry | 0x80000000);
+        data << uint32(entry | 0x80000000);                 // is there that mask?
+        data.WriteBit(0);
         SendPacket(&data);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
     }
@@ -230,19 +249,31 @@ void WorldSession::HandleGameObjectQueryOpcode(WorldPacket & recvData)
         }
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GAMEOBJECT_QUERY '%s' - Entry: %u. ", info->name.c_str(), entry);
         WorldPacket data (SMSG_GAMEOBJECT_QUERY_RESPONSE, 150);
+        data.WriteBit(1);
         data << uint32(entry);
-        data << uint32(info->type);
-        data << uint32(info->displayId);
-        data << Name;
-        data << uint8(0) << uint8(0) << uint8(0);           // name2, name3, name4
-        data << IconName;                                   // 2.0.3, string. Icon name to use instead of default icon for go's (ex: "Attack" makes sword)
-        data << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
-        data << info->unk1;                                 // 2.0.3, string
-        data.append(info->raw.data, MAX_GAMEOBJECT_DATA);
-        data << float(info->size);                          // go size
+
+        ByteBuffer buf;
+        buf << uint32(info->type);
+        buf << uint32(info->displayId);
+        buf << Name;
+        buf << uint32(0);
+        buf << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
+        buf << IconName;                                   // 2.0.3, string. Icon name to use instead of default icon for go's (ex: "Attack" makes sword)
+        buf.append(info->raw.data, MAX_GAMEOBJECT_DATA);
+        buf << float(info->size);                          // go size
+        uint8 itemsCount = 0;
         for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
-            data << uint32(info->questItems[i]);            // itemId[6], quest drop
-        data << int32(info->unkInt32);                      // 4.x, unknown
+            if (info->questItems[i])
+                ++itemsCount;
+        buf << uint8(itemsCount);
+        for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
+            if (info->questItems[i])
+                buf << uint32(info->questItems[i]);        // itemId[6], quest drop
+        buf << int32(info->unkInt32);                      // 4.x, unknown
+
+        data << uint32(buf.size());
+        data.append(buf);
+
         SendPacket(&data);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
     }
@@ -250,9 +281,13 @@ void WorldSession::HandleGameObjectQueryOpcode(WorldPacket & recvData)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (GUID: %u, ENTRY: %u)",
             GUID_LOPART(guid), entry);
+
         WorldPacket data (SMSG_GAMEOBJECT_QUERY_RESPONSE, 4);
         data << uint32(entry | 0x80000000);
+        data.WriteBit(1);
+        data << uint32(0);
         SendPacket(&data);
+
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
     }
 }

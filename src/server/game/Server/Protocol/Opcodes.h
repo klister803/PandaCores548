@@ -122,7 +122,7 @@ enum Opcodes
     CMSG_CANCEL_QUEUED_SPELL                          = 0x6D3,  // 5.0.5 16048
     CMSG_CANCEL_TEMP_ENCHANTMENT                      = 0xC8F,  // 5.0.5 16048
     CMSG_CANCEL_TRADE                                 = 0x321,  // 5.0.5 16048
-    CMSG_CAST_SPELL                                   = 0x911,  // 5.0.5 16048
+    CMSG_CAST_SPELL                                   = 0x1429, // 5.4.0 17399
     CMSG_CHANGEPLAYER_DIFFICULTY                      = 0x20D,  // 5.0.5 16048
     CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE           = 0x676,  // 5.0.5 16048
     CMSG_CHANNEL_ANNOUNCEMENTS                        = 0x389,  // 5.0.5 16048
@@ -173,7 +173,7 @@ enum Opcodes
     CMSG_CONNECT_TO_FAILED                            = 0x50E,  // 5.0.5 16048
     CMSG_CONTACT_LIST                                 = 0xC80,  // 5.0.5 16048
     CMSG_CORPSE_MAP_POSITION_QUERY                    = 0x5B2,  // 5.0.5 16048
-    CMSG_CREATURE_QUERY                               = 0xCA0,  // 5.0.5 16048
+    CMSG_CREATURE_QUERY                               = 0x1585, // 5.4.0 17399
     CMSG_DANCE_QUERY                                  = 0x8F3,  // 5.0.5 16048
     CMSG_DECLINE_CHANNEL_INVITE                       = 0x9CC,  // 5.0.5 16048
     CMSG_DELETEEQUIPMENT_SET                          = 0x9F2,  // 5.0.5 16048
@@ -195,7 +195,7 @@ enum Opcodes
     CMSG_FAR_SIGHT                                    = 0x991,  // 5.0.5 16048
     CMSG_FORCE_MOVE_ROOT_ACK                          = 0x000,  // Deprecated
     CMSG_FORCE_MOVE_UNROOT_ACK                        = 0x000,  // Deprecated
-    CMSG_GAMEOBJECT_QUERY                             = 0xCF8,  // 5.0.5 16048
+    CMSG_GAMEOBJECT_QUERY                             = 0x15A4, // 5.4.0 17399
     CMSG_GAMEOBJ_REPORT_USE                           = 0x838,  // 5.0.5 16048
     CMSG_GAMEOBJ_USE                                  = 0xC92,  // 5.0.5 16048
     CMSG_GAMESPEED_SET                                = 0x000,  // Not found in 4.3.4
@@ -809,7 +809,7 @@ enum Opcodes
     SMSG_CORPSE_MAP_POSITION_QUERY_RESPONSE           = 0x836,  // 5.0.5 16048
     SMSG_CORPSE_NOT_IN_INSTANCE                       = 0xD01,  // 5.0.5 16048
     SMSG_CORPSE_RECLAIM_DELAY                         = 0xC9E,  // 5.0.5 16048
-    SMSG_CREATURE_QUERY_RESPONSE                      = 0xD6C,  // 5.0.5 16048
+    SMSG_CREATURE_QUERY_RESPONSE                      = 0x01B4, // 5.4.0 17399
     SMSG_CRITERIA_DELETED                             = 0xC5B,  // 5.0.5 16048
     SMSG_CRITERIA_UPDATE                              = 0x90D,  // 5.0.5 16048
     SMSG_CROSSED_INEBRIATION_THRESHOLD                = 0xCAA,  // 5.0.5 16048
@@ -869,7 +869,7 @@ enum Opcodes
     SMSG_GAMEOBJECT_CUSTOM_ANIM                       = 0xCDC,  // 5.0.5 16048
     SMSG_GAMEOBJECT_DESPAWN_ANIM                      = 0xD55,  // 5.0.5 16048
     SMSG_GAMEOBJECT_PAGETEXT                          = 0x87D,  // 5.0.5 16048
-    SMSG_GAMEOBJECT_QUERY_RESPONSE                    = 0xD21,  // 5.0.5 16048
+    SMSG_GAMEOBJECT_QUERY_RESPONSE                    = 0x0015, // 5.4.0 17399
     SMSG_GAMEOBJECT_RESET_STATE                       = 0x8C6,  // 5.0.5 16048
     SMSG_GAMESPEED_SET                                = 0xD8F,  // 5.0.5 16048
     SMSG_GAMETIME_SET                                 = 0x82E,  // 5.0.5 16048
