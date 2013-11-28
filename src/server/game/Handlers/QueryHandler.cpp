@@ -224,8 +224,9 @@ void WorldSession::HandleGameObjectQueryOpcode(WorldPacket & recvData)
 {
     uint32 entry;
     recvData >> entry;
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<2, 4, 3, 7, 0, 6, 1, 5>(guid);
+    recvData.ReadGuidBytes<1, 7, 2, 3, 6, 5, 4, 0>(guid);
 
     const GameObjectTemplate* info = sObjectMgr->GetGameObjectTemplate(entry);
     if (info)
