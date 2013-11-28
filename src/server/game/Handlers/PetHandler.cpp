@@ -805,7 +805,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
         return;
 
     SpellCastTargets targets;
-    HandleClientCastFlags(recvPacket, castFlags, targets);
+    //HandleClientCastFlags(recvPacket, castFlags, targets);
 
     caster->ClearUnitState(UNIT_STATE_FOLLOW);
 

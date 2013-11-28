@@ -113,7 +113,7 @@ enum Opcodes
     CMSG_CALENDAR_GUILD_FILTER                        = 0xDB4,  // 5.0.5 16048
     CMSG_CALENDAR_REMOVE_EVENT                        = 0xC3C,  // 5.0.5 16048
     CMSG_CALENDAR_UPDATE_EVENT                        = 0x818,  // 5.0.5 16048
-    CMSG_CANCEL_AURA                                  = 0x895,  // 5.0.5 16048
+    CMSG_CANCEL_AURA                                  = 0x140E, // 5.4.0 17399
     CMSG_CANCEL_AUTO_REPEAT_SPELL                     = 0x903,  // 5.0.5 16048
     CMSG_CANCEL_CAST                                  = 0xC66,  // 5.0.5 16048
     CMSG_CANCEL_CHANNELLING                           = 0x9A7,  // 5.0.5 16048
