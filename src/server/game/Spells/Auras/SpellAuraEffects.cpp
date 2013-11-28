@@ -694,6 +694,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         case SPELL_AURA_DUMMY:
             if (!caster)
                 break;
+
+            switch (GetId())
+            {
+                case 76657: // Mastery: Master of Beasts
+                {
+                    if (Guardian* pet = caster->ToPlayer()->GetPet())
+                    {
+                        if (Aura* aur = pet->GetAura(8875))
+                        {
+                            aur->GetEffect(EFFECT_0)->SetCanBeRecalculated(true);
+                            aur->GetEffect(EFFECT_1)->SetCanBeRecalculated(true);
+                            aur->RecalculateAmountOfEffects();
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
             // Earth Shield
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellFamilyFlags[1] & 0x400)
             {
