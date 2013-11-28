@@ -1593,6 +1593,71 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
     // bg spell checks
     switch (Id)
     {
+        case 105896:
+        case 105900:
+        case 105903:
+        case 105984:
+        case 106224:
+        case 106226:
+        case 106227:
+        case 106080:
+        case 106108:
+        case 105925:
+        case 110070:
+        case 110069:
+        case 110068:
+        case 109075:
+        case 110080:
+        case 110079:
+        case 110078:
+        case 106498:
+        case 106368:
+            if (!player)
+                return SPELL_CAST_OK;
+            return (area_id == 5928) ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 103755: // Twilight Epiphany, Archbishop Benedictus, Hour of Twilight
+            return ((map_id == 940 && area_id == 5845) ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA);
+        case 103534: // Danger, Morchok, Dragon Soul
+        case 103536: // Warning, Morchok, Dragon Soul
+        case 103541: // Safe, Morchok, Dragon Soul
+        {
+            if (player)
+                if (InstanceScript* pInstance = player->GetInstanceScript())
+                    return (pInstance->GetBossState(0) == IN_PROGRESS) ? SPELL_CAST_OK : SPELL_FAILED_DONT_REPORT;
+
+            return (area_id == 5926 || area_id == 5923) ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        }
+        case 105009: // Gift of Sargeras, Well of Eternity
+            return (map_id == 939)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 100713: // Deluge, Ragnaros, Firelands
+        case 101015:
+        case 101110: // Rage of Ragnaros, Ragnaros, Firelands
+            return (area_id == 5770)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 98226: // Balance Bar, Lord Rhyolith, Firelands
+            return (area_id == 5763)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 102668: // Sands of the Hourglass, Murozond, End Time
+            return (area_id == 5795)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 98229: // Concentration, Majordomo Staghelm, Firelands
+        case 98245:
+        case 98252:
+        case 98253:
+        case 98254:
+            return (area_id == 5769)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 99252: // Blaze of Glory, Baleroc
+            return (area_id == 5767)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 99837: // Crystal Prison, Shannox
+            return (map_id == 720)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 45614: // Shroud of the Scourge
+            return (area_id == 4125)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 43820: // Charm of the Witch Doctor
+        case 43822: // Charm of the Raging Defender
+        case 43816: // Charm of the Bloodletter
+        case 43818: // Charm of Mighty Mojo
+            return map_id == 568? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
+        case 99659:
+        case 62857:
+        case 107926:
+            return ((player && player->InBattleground()) ? SPELL_FAILED_NOT_IN_BATTLEGROUND : SPELL_CAST_OK);
         case 29534:                                         // Traces of Silithyst
             return zone_id == 1377 ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         case 23333:                                         // Warsong Flag
