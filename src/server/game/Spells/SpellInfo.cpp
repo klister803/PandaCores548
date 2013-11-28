@@ -1872,6 +1872,10 @@ bool SpellInfo::CheckTargetCreatureType(Unit const* target) const
         else
             return true;
     }
+    if (target->GetEntry() == 5925)
+    {
+        return true;
+    }
     uint32 creatureType = target->GetCreatureTypeMask();
     return !TargetCreatureType || !creatureType || (creatureType & TargetCreatureType);
 }

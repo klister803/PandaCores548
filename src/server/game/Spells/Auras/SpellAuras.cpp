@@ -1568,6 +1568,23 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 if (GetId() == 1784)
                     target->RemoveAurasWithFamily(SPELLFAMILY_ROGUE, 0x0000800, 0, 0, target->GetGUID());
                 break;
+            case SPELLFAMILY_SHAMAN:
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 8178: // Grounding Totem
+                    {
+                        if (caster == target && removeMode != AURA_REMOVE_NONE)
+                        {
+                            caster->setDeathState(JUST_DIED);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_DEATHKNIGHT:
                 // Reaping
                 // Blood Rites
