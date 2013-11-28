@@ -21,6 +21,8 @@
 #include "Spell.h"
 #include "DBCStores.h"
 #include "ConditionMgr.h"
+#include "Vehicle.h"
+#include "InstanceScript.h"
 
 uint32 GetTargetFlagMask(SpellTargetObjectTypes objType)
 {
@@ -1622,7 +1624,7 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
         case 103541: // Safe, Morchok, Dragon Soul
         {
             if (player)
-                if (InstanceScript* pInstance = player->GetInstanceScript())
+                if (InstanceScript* pInstance = ((Unit*)player)->GetInstanceScript())
                     return (pInstance->GetBossState(0) == IN_PROGRESS) ? SPELL_CAST_OK : SPELL_FAILED_DONT_REPORT;
 
             return (area_id == 5926 || area_id == 5923) ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
