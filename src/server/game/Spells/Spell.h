@@ -72,6 +72,7 @@ struct SpellDestination
 class SpellCastTargets
 {
     friend class Spell;
+    friend class WorldSession;
 
     public:
         SpellCastTargets();
