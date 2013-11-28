@@ -130,6 +130,9 @@ World::World()
     m_isClosed = false;
 
     m_CleaningFlags = 0;
+
+    for (uint8 i = 0; i < RECORD_DIFF_MAX; i++)
+        m_recordDiff[i] = 0;
 }
 
 /// World destructor
@@ -2127,8 +2130,11 @@ void World::Update(uint32 diff)
     }
 
     /// <li> Handle session updates when the timer has passed
+    uint32 diffTime = getMSTime();
     RecordTimeDiff(NULL);
     UpdateSessions(diff);
+    SetRecordDiff(RECORD_DIFF_SESSION, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateSessions");
 
     /// <li> Handle weather updates when the timer has passed
@@ -2178,6 +2184,8 @@ void World::Update(uint32 diff)
     ///- Update objects when the timer has passed (maps, transport, creatures, ...)
     RecordTimeDiff(NULL);
     sMapMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_MAP, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateMapMgr");
 
     if (sWorld->getBoolConfig(CONFIG_AUTOBROADCAST))
@@ -2190,12 +2198,18 @@ void World::Update(uint32 diff)
     }
 
     sBattlegroundMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_BATTLEGROUND, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateBattlegroundMgr");
 
     sOutdoorPvPMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_OUTDOORPVP, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateOutdoorPvPMgr");
 
     sBattlefieldMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_BATTLEFIELD, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("BattlefieldMgr");
 
     ///- Delete all characters which have been deleted X days before
@@ -2206,10 +2220,14 @@ void World::Update(uint32 diff)
     }
 
     sLFGMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_LFG, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateLFGMgr");
 
     // execute callbacks from sql queries that were queued recently
     ProcessQueryCallbacks();
+    SetRecordDiff(RECORD_DIFF_CALLBACK, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("ProcessQueryCallbacks");
 
     ///- Erase corpses once every 20 minutes

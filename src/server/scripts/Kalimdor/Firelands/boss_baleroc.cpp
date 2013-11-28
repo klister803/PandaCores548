@@ -107,7 +107,9 @@ class boss_baleroc : public CreatureScript
                      switch (eventId)
                     {
                      case Event_Blaze_of_Glory:
-                         DoCast(Spell_Blaze_of_Glory);
+                        if(Unit* target = me->getVictim())
+                            if(target->GetTypeId() == TYPEID_PLAYER)
+                                DoCast(Spell_Blaze_of_Glory);
                          events.ScheduleEvent(Event_Incendiary_Soul, 1000);
                          break;
                      case Event_Incendiary_Soul:
