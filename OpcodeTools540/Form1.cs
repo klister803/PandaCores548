@@ -67,7 +67,7 @@ namespace OpcodeTools
             if (f.IsSpecialMovementOpcode(opcode))
             {
                 uint nb = f.CalcMovementFromOpcode(opcode);
-                movementBox.Text = String.Format("0x{0:X}", nb);
+                movementBox.Text = nb.ToString();
             }
             else
                 movementBox.Text = "";
@@ -202,7 +202,7 @@ namespace OpcodeTools
 
             try
             {
-                updateValuesForOpcode(f.CalcOpcodeFromMovement(Convert.ToUInt32(movementBox.Text, 16)));
+                updateValuesForOpcode(f.CalcOpcodeFromMovement(Convert.ToUInt32(movementBox.Text)));
             }
             catch (Exception)
             {

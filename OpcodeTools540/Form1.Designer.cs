@@ -237,7 +237,7 @@
             this.opcodeMovementLabel.Name = "opcodeMovementLabel";
             this.opcodeMovementLabel.Size = new System.Drawing.Size(140, 13);
             this.opcodeMovementLabel.TabIndex = 25;
-            this.opcodeMovementLabel.Text = "Movement Special (jam) hex";
+            this.opcodeMovementLabel.Text = "Movement Special (jam) dec";
             // 
             // movementBox
             // 
