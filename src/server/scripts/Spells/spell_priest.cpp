@@ -112,6 +112,7 @@ enum PriestSpells
     PRIEST_SPELL_SOUL_OF_DIAMOND                = 96219,
     PRIEST_SPELL_4P_S12_HEAL                    = 131566,
     PRIEST_SPELL_HOLY_SPARK                     = 131567,
+    PRIEST_SPELL_VOID_TENDRILS                  = 114404,
 };
 
 // Called by Prayer of Mending - 33076
@@ -2223,6 +2224,53 @@ class spell_priest_flash_heal : public SpellScriptLoader
         }
 };
 
+// Void Tendrils - 108920
+class spell_pri_void_tendrils : public SpellScriptLoader
+{
+    public:
+        spell_pri_void_tendrils() : SpellScriptLoader("spell_pri_void_tendrils") { }
+
+        class spell_pri_void_tendrils_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_void_tendrils_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        Position pos;
+                        target->GetPosition(&pos);
+                        SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(3296);
+                        if (TempSummon* summon = caster->GetMap()->SummonCreature(65282, pos, properties, 20000))
+                        {
+                            summon->SetLevel(caster->getLevel());
+                            summon->SetMaxHealth(caster->CountPctFromMaxHealth(20));
+                            summon->SetHealth(summon->GetMaxHealth());
+                            // Set no damage
+                            summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
+                            summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
+                            summon->SetReactState(REACT_AGGRESSIVE);
+                            summon->AddAura(31366, summon);
+                            summon->CastSpell(target, PRIEST_SPELL_VOID_TENDRILS, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_void_tendrils_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_void_tendrils_SpellScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_item_s12_4p_heal();
@@ -2271,4 +2319,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_evangelism();
     new spell_pri_archangel();
     new spell_priest_flash_heal();
+    new spell_pri_void_tendrils();
 }
