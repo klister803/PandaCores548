@@ -1258,6 +1258,9 @@ void Guardian::UpdateMaxHealth()
     if (isHunterPet() && GetOwner())
         value = GetOwner()->GetMaxHealth() * 0.70f;
 
+    if (IsPetGhoul() && GetOwner())
+        value = GetOwner()->CountPctFromMaxHealth(50);
+
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
     SetMaxHealth((uint32)value);

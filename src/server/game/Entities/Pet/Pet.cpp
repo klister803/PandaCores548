@@ -262,7 +262,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     SetReactState(ReactStates(fields[6].GetUInt8()));
     SetCanModifyStats(true);
 
-    if (getPetType() == SUMMON_PET && !current && owner && owner->getClass() != CLASS_WARLOCK)  //all (?) summon pets come with full health when called, but not when they are current
+    if (getPetType() == SUMMON_PET && !current && owner && owner->getClass() != CLASS_WARLOCK && !IsPetGhoul())  //all (?) summon pets come with full health when called, but not when they are current
         SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
     else
     {
@@ -270,12 +270,12 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         uint32 savedmana = fields[11].GetUInt32();
         if (!savedhealth && getPetType() == HUNTER_PET)
             setDeathState(JUST_DIED);
-        else if (owner && owner->getClass() != CLASS_WARLOCK)
+        else if (owner && owner->getClass() != CLASS_WARLOCK && !IsPetGhoul())
         {
             SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
             SetPower(POWER_MANA, savedmana > uint32(GetMaxPower(POWER_MANA)) ? GetMaxPower(POWER_MANA) : savedmana);
         }
-        else
+        else if (!IsPetGhoul())
         {
             SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
             SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
@@ -880,10 +880,10 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetBonusDamage(int32 (val));
 
             // Hardcode : Ghoul Base HP
-            if (IsPetGhoul() && getLevel() > 86)
+            if (IsPetGhoul())
             {
-                SetCreateHealth(GetCreateHealth() / 7);
                 CastSpell(this, 47466, true);
+                setPowerType(POWER_ENERGY);
             }
 
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
@@ -1171,7 +1171,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     SetFullHealth();
     if (GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
         SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
-    else
+    else if (!IsPetGhoul())
         SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
     return true;
 }

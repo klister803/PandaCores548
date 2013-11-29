@@ -2729,9 +2729,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             if (pet->GetOwner()->HasAura(108503))
                 pet->GetOwner()->RemoveAura(108503);
 
-        if (pet->IsPetGhoul())
-            pet->setPowerType(POWER_ENERGY);
-
         if (duration > 0)
             pet->SetDuration(duration);
 
