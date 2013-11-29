@@ -2224,6 +2224,12 @@ class spell_priest_flash_heal : public SpellScriptLoader
         }
 };
 
+enum PsyfiendSpells
+{
+    SPELL_PSYCHIC_HORROR    = 113792,
+    SPELL_ROOT_FOR_EVER     = 31366,
+};
+
 // Void Tendrils - 108920
 class spell_pri_void_tendrils : public SpellScriptLoader
 {
@@ -2242,18 +2248,24 @@ class spell_pri_void_tendrils : public SpellScriptLoader
                     {
                         Position pos;
                         target->GetPosition(&pos);
+                        uint32 duration = 20000;
+                        if(target->GetTypeId() == TYPEID_PLAYER)
+                            duration = 8000;
+
                         SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(3296);
-                        if (TempSummon* summon = caster->GetMap()->SummonCreature(65282, pos, properties, 20000))
+                        if (TempSummon* summon = caster->GetMap()->SummonCreature(65282, pos, properties, duration))
                         {
+                            summon->AddAura(SPELL_ROOT_FOR_EVER, summon);
+                            if(Aura* aura = summon->AddAura(PRIEST_SPELL_VOID_TENDRILS, target))
+                                aura->SetDuration(duration);
+                            if (summon->AI())
+                                summon->AI()->SetGUID(target->GetGUID());
                             summon->SetLevel(caster->getLevel());
                             summon->SetMaxHealth(caster->CountPctFromMaxHealth(20));
                             summon->SetHealth(summon->GetMaxHealth());
                             // Set no damage
                             summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
                             summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
-                            summon->SetReactState(REACT_AGGRESSIVE);
-                            summon->AddAura(31366, summon);
-                            summon->CastSpell(target, PRIEST_SPELL_VOID_TENDRILS, true);
                         }
                     }
                 }
@@ -2268,6 +2280,112 @@ class spell_pri_void_tendrils : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_void_tendrils_SpellScript();
+        }
+};
+
+class spell_pri_psychic_terror : public SpellScriptLoader
+{
+    public:
+        spell_pri_psychic_terror() : SpellScriptLoader("spell_pri_psychic_terror") { }
+
+        class spell_pri_psychic_terror_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_psychic_terror_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                std::list<WorldObject*> unitList;
+                if(Unit* caster = GetCaster())
+                {
+                    for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
+                    {
+                        if(Unit* targer = (*itr)->ToUnit())
+                        if (targer->IsWithinDist(caster, 20) && !targer->HasAura(113792))
+                            unitList.push_back((*itr));
+                    }
+                }
+                targets.clear();
+                targets = unitList;
+
+                Trinity::Containers::RandomResizeList(targets, 1);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_2, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_psychic_terror_SpellScript();
+        }
+};
+
+class spell_pri_psychic_terror : public SpellScriptLoader
+{
+    public:
+        spell_pri_psychic_terror() : SpellScriptLoader("spell_pri_psychic_terror") { }
+
+        class spell_pri_psychic_terror_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_psychic_terror_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                std::list<WorldObject*> unitList;
+                if(Unit* caster = GetCaster())
+                {
+                    if (Unit* owner = caster->GetOwner())
+                    {
+                        Unit::AttackerSet attackers = owner->getAttackers();
+                        for (Unit::AttackerSet::iterator itr = attackers.begin(); itr != attackers.end();)
+                        {
+                            if (Unit* m_target = (*itr))
+                            {
+                                if (m_target->GetDistance2d(caster) <= 20.0f && !m_target->HasAura(SPELL_PSYCHIC_HORROR))
+                                {
+                                    targets.clear();
+                                    targets.push_back(m_target);
+                                    return;
+                                }
+                            }
+                            ++itr;
+                        }
+                    }
+
+                    for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
+                    {
+                        if(Unit* targer = (*itr)->ToUnit())
+                        if (targer->IsWithinDist(caster, 20) && !targer->HasAura(113792))
+                            unitList.push_back((*itr));
+                    }
+                }
+                targets.clear();
+                targets = unitList;
+
+                Trinity::Containers::RandomResizeList(targets, 1);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_2, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_psychic_terror_SpellScript();
         }
 };
 
@@ -2320,4 +2438,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_archangel();
     new spell_priest_flash_heal();
     new spell_pri_void_tendrils();
+    new spell_pri_psychic_terror();
 }

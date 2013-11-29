@@ -5487,6 +5487,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
             if(itr->target == 1 || !target)
                 target = this;
+            if(itr->target == 3 && ToPlayer())
+                if (Pet* pet = ToPlayer()->GetPet())
+                    target = (Unit*)pet;
+            if(itr->target == 4 && target->ToPlayer())
+                if (Pet* pet = target->ToPlayer()->GetPet())
+                    target = (Unit*)pet;
 
             switch (itr->option)
             {

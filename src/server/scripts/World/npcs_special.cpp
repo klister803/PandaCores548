@@ -4403,14 +4403,10 @@ class npc_psyfiend : public CreatureScript
                 me->SetReactState(REACT_AGGRESSIVE);
             }
 
-            uint32 psychicHorrorTimer;
-
             void Reset()
             {
                 if (!me->HasAura(SPELL_ROOT_FOR_EVER))
                     me->AddAura(SPELL_ROOT_FOR_EVER, me);
-
-                psychicHorrorTimer = 1500;
             }
 
             void IsSummonedBy(Unit* owner)
@@ -4432,40 +4428,57 @@ class npc_psyfiend : public CreatureScript
 
             void UpdateAI(uint32 const diff)
             {
-                if (psychicHorrorTimer)
-                {
-                    if (psychicHorrorTimer <= diff)
-                    {
-                        if (Unit* owner = me->GetOwner())
-                        {
-                            Unit::AttackerSet attackers = owner->getAttackers();
-                            for (Unit::AttackerSet::iterator itr = attackers.begin(); itr != attackers.end();)
-                            {
-                                if (Unit* m_target = (*itr))
-                                {
-                                    if (m_target->GetDistance2d(me) <= 20.0f)
-                                    {
-                                        me->AddAura(SPELL_PSYCHIC_HORROR, m_target);
-                                        psychicHorrorTimer = 1500;
-                                        return;
-                                    }
-                                }
-                                ++itr;
-                            }
-                        }
-
-                        me->CastSpell(me, SPELL_PSYCHIC_HORROR, true);
-                        psychicHorrorTimer = 1500;
-                    }
-                    else
-                        psychicHorrorTimer -= diff;
-                }
+                if (!me->HasUnitState(UNIT_STATE_CASTING))
+                    DoCast(me, SPELL_PSYCHIC_HORROR, false);
             }
         };
 
         CreatureAI* GetAI(Creature *creature) const
         {
             return new npc_psyfiendAI(creature);
+        }
+};
+
+/*######
+## npc_void_tendrils -- 65282
+######*/
+
+enum voidTendrilsSpells
+{
+    PRIEST_SPELL_VOID_TENDRILS  = 114404,
+};
+
+class npc_void_tendrils : public CreatureScript
+{
+    public:
+        npc_void_tendrils() : CreatureScript("npc_void_tendrils") { }
+
+        struct npc_void_tendrilsAI : public Scripted_NoMovementAI
+        {
+            npc_void_tendrilsAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_AGGRESSIVE);
+                targetGUID = 0;
+            }
+
+            uint64 targetGUID;
+
+            void SetGUID(uint64 guid, int32)
+            {
+                targetGUID = guid;
+                me->setFaction(14);
+            }
+
+            void JustDied(Unit* killer)
+            {
+                if (Unit* m_target = ObjectAccessor::FindUnit(targetGUID))
+                    m_target->RemoveAura(PRIEST_SPELL_VOID_TENDRILS);
+            }
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_void_tendrilsAI(creature);
         }
 };
 
@@ -4529,4 +4542,5 @@ void AddSC_npcs_special()
     new npc_brewfest_keg_receiver;
     new npc_brewfest_ram_master;
     new npc_psyfiend();
+    new npc_void_tendrils();
 }
