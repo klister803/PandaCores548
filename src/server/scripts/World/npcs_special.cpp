@@ -4381,6 +4381,93 @@ class npc_fungal_growth : public CreatureScript
             return new npc_fungal_growthAI(pCreature);
         }
 };
+/*######
+## npc_psyfiend -- 59190
+######*/
+
+enum PsyfiendSpells
+{
+    SPELL_PSYCHIC_HORROR    = 113792,
+    SPELL_ROOT_FOR_EVER     = 31366,
+};
+
+class npc_psyfiend : public CreatureScript
+{
+    public:
+        npc_psyfiend() : CreatureScript("npc_psyfiend") { }
+
+        struct npc_psyfiendAI : public Scripted_NoMovementAI
+        {
+            npc_psyfiendAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_AGGRESSIVE);
+            }
+
+            uint32 psychicHorrorTimer;
+
+            void Reset()
+            {
+                if (!me->HasAura(SPELL_ROOT_FOR_EVER))
+                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
+
+                psychicHorrorTimer = 1500;
+            }
+
+            void IsSummonedBy(Unit* owner)
+            {
+                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                {
+                    me->SetLevel(owner->getLevel());
+                    me->SetMaxHealth(owner->GetMaxHealth() / 2);
+                    me->SetHealth(me->GetMaxHealth());
+                    // Set no damage
+                    me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
+                    me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
+
+                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
+                }
+                else
+                    me->DespawnOrUnsummon();
+            }
+
+            void UpdateAI(uint32 const diff)
+            {
+                if (psychicHorrorTimer)
+                {
+                    if (psychicHorrorTimer <= diff)
+                    {
+                        if (Unit* owner = me->GetOwner())
+                        {
+                            AttackerSet const& attackers = owner->getAttackers();
+                            for (AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end();)
+                            {
+                                if (Unit* m_target = (*itr))
+                                {
+                                    if (m_target->GetDistance2d(me) <= 20.0f)
+                                    {
+                                        me->AddAura(SPELL_PSYCHIC_HORROR, m_target);
+                                        psychicHorrorTimer = 1500;
+                                        return;
+                                    }
+                                }
+                                ++itr;
+                            }
+                        }
+
+                        me->CastSpell(me, SPELL_PSYCHIC_HORROR, true);
+                        psychicHorrorTimer = 1500;
+                    }
+                    else
+                        psychicHorrorTimer -= diff;
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_psyfiendAI(creature);
+        }
+};
 
 void AddSC_npcs_special()
 {
@@ -4440,5 +4527,6 @@ void AddSC_npcs_special()
     new npc_brewfest_apple_trigger;
     new npc_brewfest_keg_thrower;
     new npc_brewfest_keg_receiver;
-    new npc_brewfest_ram_master;    
+    new npc_brewfest_ram_master;
+    new npc_psyfiend();
 }
