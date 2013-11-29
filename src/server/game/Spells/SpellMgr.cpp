@@ -4399,6 +4399,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ProcChance = 100;
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_MASTER;
                     break;
+                case 112897: // Battle Ring
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(27); // 3s
+                    break;
                 default:
                     break;
             }
