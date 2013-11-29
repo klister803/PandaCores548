@@ -4438,8 +4438,8 @@ class npc_psyfiend : public CreatureScript
                     {
                         if (Unit* owner = me->GetOwner())
                         {
-                            AttackerSet const& attackers = owner->getAttackers();
-                            for (AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end();)
+                            Unit::AttackerSet attackers = owner->getAttackers();
+                            for (Unit::AttackerSet::iterator itr = attackers.begin(); itr != attackers.end();)
                             {
                                 if (Unit* m_target = (*itr))
                                 {
