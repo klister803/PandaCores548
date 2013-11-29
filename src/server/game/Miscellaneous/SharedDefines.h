@@ -1595,28 +1595,28 @@ enum Mechanics
     MECHANIC_FEAR             = 5,
     MECHANIC_GRIP             = 6,
     MECHANIC_ROOT             = 7,
-    MECHANIC_SLOW_ATTACK      = 8,
+    MECHANIC_COMBAT_SLOW      = 8,
     MECHANIC_SILENCE          = 9,
     MECHANIC_SLEEP            = 10,
     MECHANIC_SNARE            = 11,
     MECHANIC_STUN             = 12,
     MECHANIC_FREEZE           = 13,
-    MECHANIC_KNOCKOUT         = 14,
+    MECHANIC_INCAPACITATE     = 14,
     MECHANIC_BLEED            = 15,
-    MECHANIC_BANDAGE          = 16,
+    MECHANIC_PROVOKE          = 16,
     MECHANIC_POLYMORPH        = 17,
     MECHANIC_BANISH           = 18,
     MECHANIC_SHIELD           = 19,
     MECHANIC_SHACKLE          = 20,
     MECHANIC_MOUNT            = 21,
-    MECHANIC_INFECTED         = 22,
+    MECHANIC_ENCOUNTER        = 22,
     MECHANIC_TURN             = 23,
     MECHANIC_HORROR           = 24,
     MECHANIC_INVULNERABILITY  = 25,
     MECHANIC_INTERRUPT        = 26,
     MECHANIC_DAZE             = 27,
     MECHANIC_DISCOVERY        = 28,
-    MECHANIC_IMMUNE_SHIELD    = 29,                         // Divine (Blessing) Shield/Protection and Ice Block
+    MECHANIC_MAGICAL_IMMUNITY = 29,                         // Divine (Blessing) Shield/Protection and Ice Block
     MECHANIC_SAPPED           = 30,
     MECHANIC_ENRAGED          = 31,
     MECHANIC_WOUNDED          = 32
@@ -1626,7 +1626,7 @@ enum Mechanics
 #define IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK (\
     (1<<MECHANIC_CHARM)|(1<<MECHANIC_DISORIENTED)|(1<<MECHANIC_FEAR)| \
     (1<<MECHANIC_ROOT)|(1<<MECHANIC_SLEEP)|(1<<MECHANIC_SNARE)| \
-    (1<<MECHANIC_STUN)|(1<<MECHANIC_FREEZE)|(1<<MECHANIC_SILENCE)|(1<<MECHANIC_DISARM)|(1<<MECHANIC_KNOCKOUT)| \
+    (1<<MECHANIC_STUN)|(1<<MECHANIC_FREEZE)|(1<<MECHANIC_SILENCE)|(1<<MECHANIC_DISARM)|(1<<MECHANIC_INCAPACITATE)| \
     (1<<MECHANIC_POLYMORPH)|(1<<MECHANIC_BANISH)|(1<<MECHANIC_SHACKLE)| \
     (1<<MECHANIC_TURN)|(1<<MECHANIC_HORROR)|(1<<MECHANIC_DAZE)| \
     (1<<MECHANIC_SAPPED))
