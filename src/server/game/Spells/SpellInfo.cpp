@@ -1353,7 +1353,7 @@ bool SpellInfo::CanPierceImmuneAura(SpellInfo const* aura) const
     // these spells (Cyclone for example) can pierce all...
     if ((AttributesEx & SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)
         // ...but not these (Divine shield for example)
-        && !(aura && (aura->Mechanic == MECHANIC_IMMUNE_SHIELD || aura->Mechanic == MECHANIC_INVULNERABILITY)))
+        && !(aura && (aura->Mechanic == MECHANIC_MAGICAL_IMMUNITY || aura->Mechanic == MECHANIC_INVULNERABILITY)))
         return true;
 
     return false;
@@ -2547,7 +2547,7 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
 
     switch (Mechanic)
     {
-        case MECHANIC_IMMUNE_SHIELD:
+        case MECHANIC_MAGICAL_IMMUNITY:
             return true;
         default:
             break;
@@ -2664,7 +2664,7 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                     // non-positive immunities
                     switch (Effects[effIndex].MiscValue)
                     {
-                        case MECHANIC_BANDAGE:
+                        case MECHANIC_PROVOKE:
                         case MECHANIC_SHIELD:
                         case MECHANIC_MOUNT:
                         case MECHANIC_INVULNERABILITY:

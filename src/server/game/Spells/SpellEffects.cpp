@@ -4828,7 +4828,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 if (!unitTarget)
                     return;
                 // remove shields, will still display immune to damage part
-                unitTarget->RemoveAurasWithMechanic(1<<MECHANIC_IMMUNE_SHIELD, AURA_REMOVE_BY_ENEMY_SPELL);
+                unitTarget->RemoveAurasWithMechanic(1<<MECHANIC_MAGICAL_IMMUNITY, AURA_REMOVE_BY_ENEMY_SPELL);
                 return;
             }
             break;
