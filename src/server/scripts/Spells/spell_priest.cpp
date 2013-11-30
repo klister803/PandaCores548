@@ -2300,50 +2300,6 @@ class spell_pri_psychic_terror : public SpellScriptLoader
                 std::list<WorldObject*> unitList;
                 if(Unit* caster = GetCaster())
                 {
-                    for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
-                    {
-                        if(Unit* targer = (*itr)->ToUnit())
-                        if (targer->IsWithinDist(caster, 20) && !targer->HasAura(113792))
-                            unitList.push_back((*itr));
-                    }
-                }
-                targets.clear();
-                targets = unitList;
-
-                Trinity::Containers::RandomResizeList(targets, 1);
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_psychic_terror_SpellScript::FilterTargets, EFFECT_2, TARGET_UNIT_SRC_AREA_ENEMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_psychic_terror_SpellScript();
-        }
-};
-
-class spell_pri_psychic_terror : public SpellScriptLoader
-{
-    public:
-        spell_pri_psychic_terror() : SpellScriptLoader("spell_pri_psychic_terror") { }
-
-        class spell_pri_psychic_terror_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_psychic_terror_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                if (targets.empty())
-                    return;
-
-                std::list<WorldObject*> unitList;
-                if(Unit* caster = GetCaster())
-                {
                     if (Unit* owner = caster->GetOwner())
                     {
                         Unit::AttackerSet attackers = owner->getAttackers();
