@@ -151,9 +151,8 @@ uint32 ReputationMgr::GetDefaultStateFlags(FactionEntry const* factionEntry) con
 
 void ReputationMgr::SendForceReactions()
 {
-    WorldPacket data;
-    data.Initialize(SMSG_SET_FORCED_REACTIONS, 4+_forcedReactions.size()*(4+4));
-    data << uint32(_forcedReactions.size());
+    WorldPacket data(SMSG_SET_FORCED_REACTIONS, 1 + _forcedReactions.size() * (4 + 4));
+    data.WriteBits(_forcedReactions.size(), 6);
     for (ForcedReactions::const_iterator itr = _forcedReactions.begin(); itr != _forcedReactions.end(); ++itr)
     {
         data << uint32(itr->first);                         // faction_id (Faction.dbc)
@@ -198,22 +197,20 @@ void ReputationMgr::SendState(FactionState const* faction)
 void ReputationMgr::SendInitialReputations()
 {
     WorldPacket data(SMSG_INITIALIZE_FACTIONS, (4+256*5));
-    data << uint32(256);    // count
 
     RepListID a = 0;
-
     for (FactionStateList::iterator itr = _factions.begin(); itr != _factions.end(); ++itr)
     {
         // fill in absent fields
         for (; a != itr->first; ++a)
         {
-            data << uint8(0);
             data << uint32(0);
+            data << uint8(0);
         }
 
         // fill in encountered data
-        data << uint8(itr->second.Flags);
         data << uint32(itr->second.Standing);
+        data << uint8(itr->second.Flags);
 
         itr->second.needSend = false;
 
@@ -223,9 +220,12 @@ void ReputationMgr::SendInitialReputations()
     // fill in absent fields
     for (; a != 256; ++a)
     {
-        data << uint8  (0x00);
-        data << uint32 (0x00000000);
+        data << uint32(0);
+        data << uint8(0);
     }
+
+    for (uint32 i = 0; i < 256; ++i)
+        data.WriteBit(0);
 
     _player->SendDirectMessage(&data);
 }
