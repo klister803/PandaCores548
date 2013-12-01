@@ -105,59 +105,6 @@ SpellCastTargets::~SpellCastTargets()
 {
 }
 
-void SpellCastTargets::Read(ByteBuffer& data, Unit* caster)
-{
-    data >> m_targetMask;
-
-    if (m_targetMask == TARGET_FLAG_NONE)
-        return;
-
-    if (m_targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_UNIT_MINIPET | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_CORPSE_ALLY))
-        data.readPackGUID(m_objectTargetGUID);
-
-    if (m_targetMask & (TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM))
-        data.readPackGUID(m_itemTargetGUID);
-
-    if (m_targetMask & TARGET_FLAG_SOURCE_LOCATION)
-    {
-        data.readPackGUID(m_src._transportGUID);
-        if (m_src._transportGUID)
-            data >> m_src._transportOffset.PositionXYZStream();
-        else
-            data >> m_src._position.PositionXYZStream();
-    }
-    else
-    {
-        m_src._transportGUID = caster->GetTransGUID();
-        if (m_src._transportGUID)
-            m_src._transportOffset.Relocate(caster->GetTransOffsetX(), caster->GetTransOffsetY(), caster->GetTransOffsetZ(), caster->GetTransOffsetO());
-        else
-            m_src._position.Relocate(caster);
-    }
-
-    if (m_targetMask & TARGET_FLAG_DEST_LOCATION)
-    {
-        data.readPackGUID(m_dst._transportGUID);
-        if (m_dst._transportGUID)
-            data >> m_dst._transportOffset.PositionXYZStream();
-        else
-            data >> m_dst._position.PositionXYZStream();
-    }
-    else
-    {
-        m_dst._transportGUID = caster->GetTransGUID();
-        if (m_dst._transportGUID)
-            m_dst._transportOffset.Relocate(caster->GetTransOffsetX(), caster->GetTransOffsetY(), caster->GetTransOffsetZ(), caster->GetTransOffsetO());
-        else
-            m_dst._position.Relocate(caster);
-    }
-
-    if (m_targetMask & TARGET_FLAG_STRING)
-        data >> m_strTarget;
-
-    Update(caster);
-}
-
 uint64 SpellCastTargets::GetUnitTargetGUID() const
 {
     switch (GUID_HIPART(m_objectTargetGUID))
