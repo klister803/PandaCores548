@@ -2350,8 +2350,6 @@ void Guild::SendLoginInfo(WorldSession* session)
     SendGuildReputationWeeklyCap(session);
 
     GetAchievementMgr().SendAllAchievementData(session->GetPlayer());
-
-
 }
 
 void Guild::SendGuildReputationWeeklyCap(WorldSession* session) const
