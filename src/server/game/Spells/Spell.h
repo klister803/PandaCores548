@@ -78,8 +78,6 @@ class SpellCastTargets
         SpellCastTargets();
         ~SpellCastTargets();
 
-        void Read(ByteBuffer& data, Unit* caster);
-
         uint32 GetTargetMask() const { return m_targetMask; }
         void SetTargetMask(uint32 newMask) { m_targetMask = newMask; }
 
