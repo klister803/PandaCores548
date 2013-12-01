@@ -1855,7 +1855,7 @@ struct SpellEffectScalingEntry
 };
 
 #define MAX_SPELL_EFFECTS 14
-#define MAX_SPELL_EFFECTS_DIFF 5
+#define MAX_SPELL_EFFECTS_DIFF 14
 #define MAX_EFFECT_MASK 4294967295
 #define MAX_POWERS_FOR_SPELL 2
 

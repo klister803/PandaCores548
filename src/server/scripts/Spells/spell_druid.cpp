@@ -420,10 +420,10 @@ class spell_dru_shattering_blow : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (target->HasAuraWithMechanic(1<<MECHANIC_IMMUNE_SHIELD))
+                        if (target->HasAuraWithMechanic(1<<MECHANIC_MAGICAL_IMMUNITY))
                         {
                             target->RemoveAura(SPELL_DRUID_SHATTERING_BLOW);
-                            target->RemoveAurasWithMechanic(1<<MECHANIC_IMMUNE_SHIELD, AURA_REMOVE_BY_ENEMY_SPELL);
+                            target->RemoveAurasWithMechanic(1<<MECHANIC_MAGICAL_IMMUNITY, AURA_REMOVE_BY_ENEMY_SPELL);
                         }
 
                         _player->CastSpell(_player, SPELL_DRUID_CAT_FORM, true);
