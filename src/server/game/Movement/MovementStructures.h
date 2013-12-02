@@ -145,8 +145,6 @@ MovementStatusElements MovementStartForwardSequence[] =
 
     MSEHasFallDirection,
 
-    MSEFlushBits,
-
     MSEGuidByte3,
     MSEGuidByte4,
     MSEGuidByte7,
