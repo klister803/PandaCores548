@@ -1011,7 +1011,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
                 mi->hasPitch = !data.ReadBit();
                 break;
             case MSEHasFallData:
-                mi->hasFallData = !data.ReadBit();
+                mi->hasFallData = data.ReadBit();
                 break;
             case MSEHasFallDirection:
                 if (mi->hasFallData)
@@ -1265,7 +1265,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                 data.WriteBits(mi->unkCounter.size(), 22);
                 break;
             case MSEBitCounterValues:
-                for (int i = 0; i < mi->unkCounter.size(); ++i)
+                for (uint32 i = 0; i < mi->unkCounter.size(); ++i)
                     data << uint32(mi->unkCounter[i]);
                 break;
             case MSEFlushBits:
@@ -1409,7 +1409,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                     data << mi->unkInt32;
                 break;
             default:
-                ASSERT(false && "Incorrect sequence element detected at ReadMovementInfo");
+                ASSERT(false && "Incorrect sequence element detected at WriteMovementInfo");
                 break;
         }
     }
