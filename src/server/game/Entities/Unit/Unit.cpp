@@ -12934,7 +12934,7 @@ void Unit::UpdateMount()
             if (reqFlags&8 && !(currentMountFlags&8))
                 continue;
 
-            if (m_movementInfo.HavePitch)
+            if (m_movementInfo.hasPitch)
             {
                 if (!(reqFlags & MOUNT_FLAG_CAN_PITCH))
                     continue;
