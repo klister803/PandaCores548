@@ -550,7 +550,7 @@ enum Opcodes
     CMSG_UPDATE_PROJECTILE_POSITION                   = 0,      // 0x0E24 in 4.3.4 @todo : Find me and BACON !
     CMSG_USED_FOLLOW                                  = 0x571,  // 5.0.5 16048
     CMSG_USE_ITEM                                     = 0x9FD,  // 5.0.5 16048
-    CMSG_VIOLENCE_LEVEL                               = 0x4B9,  // 5.0.5 16048
+    CMSG_VIOLENCE_LEVEL                               = 0x1927, // 5.4.0 17399
     CMSG_VOICE_SESSION_ENABLE                         = 0x937,  // 5.0.5 16048
     CMSG_VOID_STORAGE_QUERY                           = 0x378,  // 5.0.5 16048
     CMSG_VOID_STORAGE_TRANSFER                        = 0x699,  // 5.0.5 16048
@@ -565,7 +565,7 @@ enum Opcodes
     CMSG_WORLD_TELEPORT                               = 0x40F,  // 5.0.5 16048
     CMSG_WRAP_ITEM                                    = 0x959,  // 5.0.5 16048
     CMSG_ZONEUPDATE                                   = 0xD3B,  // 5.0.5 16048
-    CMSG_PLAYER_MOVE                                  = 0x3F8,  // 5.0.5 16048 CUSTOM OPCODE, client patch
+    CMSG_PLAYER_MOVE                                  = 0x0717, // 5.4.0 17399 CUSTOM OPCODE, client patch
     CMSG_CORPSE_QUERY                                 = 0x20C,  // 5.0.5 16048
     CMSG_RAID_TARGET_UPDATE                           = 0x396,  // 5.0.5 16048
     MSG_INSPECT_ARENA_TEAMS                           = 0xC75,  // 5.0.5 16048
@@ -1142,7 +1142,7 @@ enum Opcodes
     SMSG_PLAYERBINDERROR                              = 0xC89,  // 5.0.5 16048
     SMSG_PLAYERBOUND                                  = 0xC95,  // 5.0.5 16048
     SMSG_PLAYER_DIFFICULTY_CHANGE                     = 0xCB4,  // 5.0.5 16048
-    SMSG_MOVE_UPDATE                                  = 0xA6F,  // 5.0.5 16048
+    SMSG_MOVE_UPDATE                                  = 0x139F, // 5.4.0 17399
     SMSG_PLAYER_SKINNED                               = 0x8B2,  // 5.0.5 16048
     SMSG_PLAYER_UNK_DEAD_ALIVE                        = 0,      // Not found in 4.3.4
     SMSG_PLAYER_VEHICLE_DATA                          = 0x9C1,  // 5.0.5 16048

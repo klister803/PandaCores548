@@ -542,6 +542,8 @@ struct MovementInfo
     Position pos;
     uint32 time;
     // transport
+    bool hasTransportTime2;
+    bool hasTransportTime3;
     uint64 t_guid;
     Position t_pos;
     int8 t_seat;
@@ -550,17 +552,23 @@ struct MovementInfo
     uint32 t_time3;
     // swimming/flying
     float pitch;
-    uint32 HavePitch;
+    bool hasPitch;
     // falling
     uint32 fallTime;
     // jumping
     float j_zspeed, j_cosAngle, j_sinAngle, j_xyspeed;
     // spline
+    bool hasSplineElevation;
     float splineElevation;
     // BitClientData
     bool hasFallData;
     bool hasFallDirection;
-    uint32 Alive32;
+    bool hasSpline;
+    bool byte95;
+    bool byteAC;
+    bool hasUnkInt32;
+    uint32 unkInt32;
+    std::vector<uint32> unkCounter;
 
     MovementInfo()
     {
@@ -568,15 +576,23 @@ struct MovementInfo
         guid = 0;
         flags = 0;
         flags2 = 0;
+        hasTransportTime2 = false;
+        hasTransportTime3 = false;
         time = t_time = t_time2 = t_time3 = fallTime = 0;
         splineElevation = 0;
+        hasSplineElevation = false;
+        hasPitch = false;
         pitch = j_zspeed = j_sinAngle = j_cosAngle = j_xyspeed = 0.0f;
         t_guid = 0;
         t_pos.Relocate(0, 0, 0, 0);
         t_seat = -1;
         hasFallData = false;
         hasFallDirection = false;
-        Alive32 = 0;
+        hasSpline = false;
+        byte95 = false;
+        byteAC = false;
+        hasUnkInt32 = false;
+        unkInt32 = 0;
     }
 
     uint32 GetMovementFlags() const { return flags; }
