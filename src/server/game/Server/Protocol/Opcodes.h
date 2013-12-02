@@ -312,8 +312,8 @@ enum Opcodes
     CMSG_LF_GUILD_SET_GUILD_POST                      = 0x14F,  // 5.0.5 16048
     CMSG_LIST_INVENTORY                               = 0x853,  // 5.0.5 16048
     CMSG_LOAD_SCREEN                                  = 0x060,  // 5.0.5 16048
-    CMSG_LOGOUT_CANCEL                                = 0x9E7,  // 5.0.5 16048
-    CMSG_LOGOUT_REQUEST                               = 0xCE0,  // 5.0.5 16048
+    CMSG_LOGOUT_CANCEL                                = 0x1B62, // 5.4.0 17399
+    CMSG_LOGOUT_REQUEST                               = 0x16E7, // 5.4.0 17399
     CMSG_LOG_DISCONNECT                               = 0x48F,  // 5.0.5 16048
     CMSG_LOOT                                         = 0x236,  // 5.0.5 16048
     CMSG_LOOT_CURRENCY                                = 0,      // 0x781C in 4.3.4  @todo : find me i give you more bacon !
@@ -1019,9 +1019,9 @@ enum Opcodes
     SMSG_LF_GUILD_SEARCH_RESULT                       = 0,      // Not found in TC
     SMSG_LOGIN_SETTIMESPEED                           = 0x01AF, // 5.4.0 17399
     SMSG_LOGIN_VERIFY_WORLD                           = 0xD33,  // 5.0.5 16048
-    SMSG_LOGOUT_CANCEL_ACK                            = 0x803,  // 5.0.5 16048
-    SMSG_LOGOUT_COMPLETE                              = 0x8DA,  // 5.0.5 16048
-    SMSG_LOGOUT_RESPONSE                              = 0xD86,  // 5.0.5 16048
+    SMSG_LOGOUT_CANCEL_ACK                            = 0x0417, // 5.4.0 17399
+    SMSG_LOGOUT_COMPLETE                              = 0x00A8, // 5.4.0 17399
+    SMSG_LOGOUT_RESPONSE                              = 0x08AD, // 5.4.0 17399
     SMSG_LOG_XPGAIN                                   = 0x98A,  // 5.0.5 16048
     SMSG_LOOT_ALL_PASSED                              = 0xE49,  // 5.0.5 16048
     SMSG_LOOT_CLEAR_MONEY                             = 0xB33,  // 5.0.5 16048
