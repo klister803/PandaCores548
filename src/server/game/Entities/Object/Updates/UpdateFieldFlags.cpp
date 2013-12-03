@@ -2245,4 +2245,4 @@ uint32 UnitDynamicFieldFlags[PLAYER_DYNAMIC_END] =
 uint32 ItemDynamicFieldFlags[ITEM_DYNAMIC_END] =
 {
     UF_FLAG_OWNER,                                          // ITEM_DYNAMIC_MODIFIERS
-}
+};
