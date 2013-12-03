@@ -2379,13 +2379,13 @@ void SpellMgr::LoadTalentSpellLinked()
             continue;
         }
 
-        if (type) //we will find a better way when more types are needed
+        /*if (type) //we will find a better way when more types are needed
         {
             if (talent > 0)
                 talent += SPELL_LINKED_MAX_SPELLS * type;
             else
                 talent -= SPELL_LINKED_MAX_SPELLS * type;
-        }
+        }*/
         SpellTalentLinked templink;
         templink.talent = talent;
         templink.triger = triger;
@@ -3183,6 +3183,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     case SPELL_AURA_MOD_CHARM:
                     case SPELL_AURA_AOE_CHARM:
                     case SPELL_AURA_MOD_FEAR:
+                    case SPELL_AURA_MOD_FEAR_2:
                     case SPELL_AURA_MOD_STUN:
                         spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
                         break;

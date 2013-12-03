@@ -233,16 +233,12 @@ class spell_hun_stampede : public SpellScriptLoader
                                 {
                                     float x, y, z;
                                     _player->GetClosePoint(x, y, z, _player->GetObjectSize());
-                                    Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), true);
-                                    if (!pet)
-                                        return;
-
-                                    pet->SetReactState(REACT_AGGRESSIVE);
-                                    pet->m_Stampeded = true;
-
-                                    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
-                                    pet->AI()->AttackStart(target);
+                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), PetSlot(i + 36)))
+                                    {
+                                        pet->SetReactState(REACT_AGGRESSIVE);
+                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    }
                                 }
                             }
                         }
@@ -254,16 +250,18 @@ class spell_hun_stampede : public SpellScriptLoader
                                 {
                                     float x, y, z;
                                     _player->GetClosePoint(x, y, z, _player->GetObjectSize());
-                                    Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(i), true);
-                                    if (!pet)
-                                        return;
-
-                                    pet->SetReactState(REACT_AGGRESSIVE);
-                                    pet->m_Stampeded = true;
-
-                                    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
-                                    pet->AI()->AttackStart(target);
+                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(i), PetSlot(i + 36)))
+                                    {
+                                        pet->SetReactState(REACT_AGGRESSIVE);
+                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    }
+                                    else if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), PetSlot(currentSlot + 36)))
+                                    {
+                                        pet->SetReactState(REACT_AGGRESSIVE);
+                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    }
                                 }
                             }
                         }
@@ -1237,14 +1235,19 @@ class spell_hun_kill_command : public SpellScriptLoader
 
             SpellCastResult CheckCastMeet()
             {
-                Unit* pet = GetCaster()->GetGuardianPet();
-                Unit* petTarget = pet->getVictim();
+                Unit* caster = GetCaster();
+                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                    return SPELL_FAILED_NO_PET;
+
+                Player* player = caster->ToPlayer();
+                Unit* pet = caster->GetGuardianPet();
+                Unit* target = player->GetSelectedUnit();
 
                 if (!pet || pet->isDead())
                     return SPELL_FAILED_NO_PET;
 
                 // pet has a target and target is within 5 yards
-                if (!petTarget || !pet->IsWithinDist(petTarget, 5.0f, true))
+                if (!target || !pet->IsWithinDist(target, 25.0f, true))
                 {
                     SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_TARGET_TOO_FAR);
                     return SPELL_FAILED_CUSTOM_ERROR;
@@ -1255,12 +1258,15 @@ class spell_hun_kill_command : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
+                Unit* caster = GetCaster();
+                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
                 if (Unit* pet = GetCaster()->GetGuardianPet())
                 {
-                    if (!pet)
-                        return;
-
-                    pet->CastSpell(pet->getVictim(), HUNTER_SPELL_KILL_COMMAND_TRIGGER, true);
+                    Player* player = caster->ToPlayer();
+                    if(Unit* target = player->GetSelectedUnit())
+                        pet->CastSpell(target, HUNTER_SPELL_KILL_COMMAND_TRIGGER, true);
                 }
             }
 

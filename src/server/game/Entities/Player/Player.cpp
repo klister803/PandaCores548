@@ -21517,7 +21517,7 @@ Pet* Player::GetPet() const
     return NULL;
 }
 
-void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampeded)
+void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
 {
     if (!pet)
         pet = GetPet();
@@ -21538,7 +21538,7 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampede
 
     pet->CombatStop();
     // only if current pet in slot
-    pet->SavePetToDB(mode, stampeded);
+    pet->SavePetToDB(mode);
 
     if (pet->getPetType() != HUNTER_PET)
         SetMinion(pet, false, PET_SLOT_UNK_SLOT);
@@ -21548,7 +21548,7 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampede
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
 
-    if (pet->isControlled() && !stampeded)
+    if (pet->isControlled() && !pet->m_Stampeded)
     {
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
@@ -21688,7 +21688,7 @@ void Player::PetSpellInitialize()
 {
     Pet* pet = GetPet();
 
-    if (!pet)
+    if (!pet || pet->m_Stampeded)
         return;
 
     sLog->outDebug(LOG_FILTER_PETS, "Pet Spells Groups");

@@ -238,7 +238,7 @@ void TempSummon::UnSummon(uint32 msTime)
     if (isPet())
     {
         if (((Pet*)this)->getPetType() == HUNTER_PET)
-            ((Pet*)this)->Remove(PET_SLOT_ACTUAL_PET_SLOT, false, ToPet()->m_Stampeded);
+            ((Pet*)this)->Remove(PET_SLOT_ACTUAL_PET_SLOT, false);
         else
             ((Pet*)this)->Remove(PET_SLOT_OTHER_PET);
         ASSERT(!IsInWorld());

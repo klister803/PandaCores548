@@ -1614,7 +1614,7 @@ class Unit : public WorldObject
 
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
-        bool isFeared()  const { return HasAuraType(SPELL_AURA_MOD_FEAR); }
+        bool isFeared()  const { return (HasAuraType(SPELL_AURA_MOD_FEAR) || HasAuraType(SPELL_AURA_MOD_FEAR_2)); }
         bool isInRoots() const { return HasAuraType(SPELL_AURA_MOD_ROOT); }
         bool IsPolymorphed() const;
 

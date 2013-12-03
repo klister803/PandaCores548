@@ -168,6 +168,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     }
 
     uint32 pet_number = fields[0].GetUInt32();
+    if(stampeded)
+        pet_number = sObjectMgr->GeneratePetNumber();
 
     if (current && owner->IsPetNeedBeTemporaryUnsummoned())
     {
@@ -306,6 +308,10 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     uint32 timediff = uint32(time(NULL) - fields[13].GetUInt32());
     _LoadAuras(timediff);
 
+    // Spirit Bond
+    if (owner->HasAura(109212) && !stampeded)
+        AddAura(118694, this);
+
     if (owner->GetTypeId() == TYPEID_PLAYER && owner->ToPlayer()->InArena())
         RemoveArenaAuras();
 
@@ -321,11 +327,13 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         CastPetAuras(current);
     }
 
-    CleanupActionBar();                                     // remove unknown spells from action bar after load
+    if(!stampeded)
+    {
+        CleanupActionBar();                                     // remove unknown spells from action bar after load
+        owner->PetSpellInitialize();
+    }
 
     sLog->outDebug(LOG_FILTER_PETS, "New Pet has guid %u", GetGUIDLow());
-
-    owner->PetSpellInitialize();
 
     if (owner->GetGroup())
         owner->SetGroupUpdateFlag(GROUP_UPDATE_PET);
@@ -358,11 +366,12 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     owner->ProcDamageAndSpell(this, PROC_FLAG_SUM_PET, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, spellInfo);
 
     m_loading = false;
+    m_Stampeded = stampeded;
 
     return true;
 }
 
-void Pet::SavePetToDB(PetSlot mode, bool stampeded)
+void Pet::SavePetToDB(PetSlot mode)
 {
     if (!GetEntry())
         return;
@@ -371,7 +380,7 @@ void Pet::SavePetToDB(PetSlot mode, bool stampeded)
     if (!isControlled())
         return;
 
-    if (stampeded)
+    if (GetUInt32Value(UNIT_CREATED_BY_SPELL) == 121818)
         return;
 
     // not save not player pets
@@ -534,7 +543,7 @@ void Pet::Update(uint32 diff)
         {
             if (getPetType() != HUNTER_PET || m_corpseRemoveTime <= time(NULL))
             {
-                Remove(PET_SLOT_ACTUAL_PET_SLOT, false, m_Stampeded);               //hunters' pets never get removed because of death, NEVER!
+                Remove(PET_SLOT_ACTUAL_PET_SLOT, false);               //hunters' pets never get removed because of death, NEVER!
                 return;
             }
             break;
@@ -565,7 +574,7 @@ void Pet::Update(uint32 diff)
                     m_duration -= diff;
                 else
                 {
-                    Remove(getPetType() != SUMMON_PET ? PET_SLOT_DELETED : PET_SLOT_ACTUAL_PET_SLOT, false, m_Stampeded);
+                    Remove(getPetType() != SUMMON_PET ? PET_SLOT_DELETED : PET_SLOT_ACTUAL_PET_SLOT, false);
                     return;
                 }
             }
@@ -650,9 +659,9 @@ void Creature::Regenerate(Powers power)
     ModifyPower(power, intAddValue);
 }
 
-void Pet::Remove(PetSlot mode, bool returnreagent, bool stampeded)
+void Pet::Remove(PetSlot mode, bool returnreagent)
 {
-    m_owner->RemovePet(this, mode, returnreagent, stampeded);
+    m_owner->RemovePet(this, mode, returnreagent);
 }
 
 void Pet::GivePetXP(uint32 xp)

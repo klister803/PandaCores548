@@ -3659,12 +3659,6 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         }
     }
 
-    // Spirit Bond
-    if (owner->HasAura(109212))
-        pet->AddAura(118694, pet);
-    else
-        pet->RemoveAurasDueToSpell(118694);
-
     // generate new name for summon pet
     if (petentry)
     {

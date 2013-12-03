@@ -6140,6 +6140,7 @@ uint32 Spell::GetSpellDelay(SpellInfo const* _spell)
         SPELL_AURA_MOD_STUN,
         SPELL_AURA_MOD_CONFUSE,
         SPELL_AURA_MOD_FEAR,
+        SPELL_AURA_MOD_FEAR_2,
         SPELL_AURA_MOD_SILENCE,
         SPELL_AURA_MOD_DISARM,
         SPELL_AURA_MOD_POSSESS,
@@ -6296,6 +6297,7 @@ SpellCastResult Spell::CheckCasterAuras() const
                                     return SPELL_FAILED_CONFUSED;
                                 break;
                             case SPELL_AURA_MOD_FEAR:
+                            case SPELL_AURA_MOD_FEAR_2:
                                 if (!(m_spellInfo->AttributesEx5 & SPELL_ATTR5_USABLE_WHILE_FEARED))
                                     return SPELL_FAILED_FLEEING;
                                 break;

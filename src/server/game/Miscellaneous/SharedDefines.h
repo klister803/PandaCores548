@@ -4233,6 +4233,8 @@ enum PetSlot
     PET_SLOT_STABLE_LAST            =  24,
     PET_SLOT_WARLOCK_PET_FIRST      =  25,
     PET_SLOT_WARLOCK_PET_LAST       =  35,
+    PET_SLOT_STAMPED_FIRST          =  36,
+    PET_SLOT_STAMPED_LAST           =  40,
 
     //Non-hunter pet slot
     PET_SLOT_OTHER_PET       = 100,        // PetType != HUNTER_PET

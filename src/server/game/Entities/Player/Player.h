@@ -1348,7 +1348,7 @@ class Player : public Unit, public GridObject<Player>
 
         Pet* GetPet() const;
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime, PetSlot slotID = PET_SLOT_UNK_SLOT, bool stampeded = false);
-        void RemovePet(Pet* pet, PetSlot mode, bool returnreagent = false, bool stampeded = false);
+        void RemovePet(Pet* pet, PetSlot mode, bool returnreagent = false);
 
         PhaseMgr& GetPhaseMgr() { return phaseMgr; }
 

@@ -546,6 +546,7 @@ bool Unit::HasCrowdControlAura(Unit* excludeCasterChannel) const
 
     return (   HasCrowdControlAuraType(SPELL_AURA_MOD_CONFUSE, excludeAura)
             || HasCrowdControlAuraType(SPELL_AURA_MOD_FEAR, excludeAura)
+            || HasCrowdControlAuraType(SPELL_AURA_MOD_FEAR_2, excludeAura)
             || HasCrowdControlAuraType(SPELL_AURA_MOD_STUN, excludeAura)
             || HasCrowdControlAuraType(SPELL_AURA_MOD_ROOT, excludeAura)
             || HasCrowdControlAuraType(SPELL_AURA_TRANSFORM, excludeAura));
@@ -16022,11 +16023,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (Aura* aura = GetAura(53257))
             aura->DropCharge();
 
-    // Hack Fix Frenzy
-    if (GetTypeId() == TYPEID_UNIT && isHunterPet() && GetOwner() && GetOwner()->ToPlayer() && GetOwner()->HasAura(19623) && ToPet()->IsPermanentPetFor(GetOwner()->ToPlayer()) && !procSpell)
-        if (roll_chance_i(40))
-            CastSpell(this, 19615, true);
-
     // Fix Drop charge for Killing Machine
     if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))
         RemoveAura(51124);
@@ -16447,6 +16443,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     // Are there any more auras which need this?
                     case SPELL_AURA_MOD_CONFUSE:
                     case SPELL_AURA_MOD_FEAR:
+                    case SPELL_AURA_MOD_FEAR_2:
                     case SPELL_AURA_MOD_STUN:
                     case SPELL_AURA_MOD_ROOT:
                     case SPELL_AURA_TRANSFORM:

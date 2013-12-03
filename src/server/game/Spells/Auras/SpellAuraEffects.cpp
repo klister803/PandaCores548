@@ -600,6 +600,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         // crowd control auras
         case SPELL_AURA_MOD_CONFUSE:
         case SPELL_AURA_MOD_FEAR:
+        case SPELL_AURA_MOD_FEAR_2:
         case SPELL_AURA_MOD_STUN:
         case SPELL_AURA_MOD_ROOT:
         case SPELL_AURA_TRANSFORM:
