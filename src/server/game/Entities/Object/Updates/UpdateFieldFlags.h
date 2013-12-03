@@ -42,4 +42,7 @@ extern uint32 DynamicObjectUpdateFieldFlags[DYNAMICOBJECT_END];
 extern uint32 CorpseUpdateFieldFlags[CORPSE_END];
 extern uint32 AreaTriggerUpdateFieldFlags[AREATRIGGER_END];
 
+extern uint32 UnitDynamicFieldFlags[PLAYER_DYNAMIC_END];
+extern uint32 ItemDynamicFieldFlags[ITEM_DYNAMIC_END];
+
 #endif // _UPDATEFIELDFLAGS_H
