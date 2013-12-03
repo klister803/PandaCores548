@@ -1066,17 +1066,28 @@ enum EPlayerFields
     PLAYER_END                                       = UNIT_END + 0x71A
 };
 
+enum EObjectDynamicFields
+{
+    OBJECT_DYNAMIC_END                               = 0x0,
+};
+
+enum EUnitDynamicFields
+{
+    UNIT_DYNAMIC_PASSIVE_SPELLS                      = OBJECT_DYNAMIC_END + 0x0,
+    UNIT_DYNAMIC_END                                 = OBJECT_DYNAMIC_END + 0x1,
+};
+
 enum EPlayerDynamicFields
 {
-    PLAYER_DYNAMIC_RESEARCH_SITES                    = 0x1,
-    PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = 0x2, // unused?
-    PLAYER_DYNAMIC_END                               = 0x4
+    PLAYER_DYNAMIC_RESEARCH_SITES                    = UNIT_DYNAMIC_END + 0x0,
+    PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = UNIT_DYNAMIC_END + 0x1,
+    PLAYER_DYNAMIC_END                               = UNIT_DYNAMIC_END + 0x2,
 };
 
 enum ItemDynamicFields
 {
-    ITEM_DYNAMIC_MODIFIERS                           = 0x0,
-    ITEM_DYNAMIC_END                                 = 0x4
+    ITEM_DYNAMIC_MODIFIERS                           = OBJECT_DYNAMIC_END + 0x0,
+    ITEM_DYNAMIC_END                                 = OBJECT_DYNAMIC_END + 0x1,
 };
 
 enum ItemDynamicModifiersOffset

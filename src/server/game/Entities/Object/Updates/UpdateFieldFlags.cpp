@@ -2234,3 +2234,15 @@ uint32 CorpseUpdateFieldFlags[CORPSE_END] =
     UF_FLAG_PUBLIC,                                         // AREATRIGGER_FINAL_POS+1
     UF_FLAG_PUBLIC,                                         // AREATRIGGER_FINAL_POS+2
 };*/
+
+uint32 UnitDynamicFieldFlags[PLAYER_DYNAMIC_END] =
+{
+    UF_FLAG_PUBLIC | UF_FLAG_DYNAMIC,                       // UNIT_DYNAMIC_PASSIVE_SPELLS
+    UF_FLAG_PRIVATE,                                        // PLAYER_DYNAMIC_RESEARCH_SITES
+    UF_FLAG_PRIVATE,                                        // PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED
+};
+
+uint32 ItemDynamicFieldFlags[ITEM_DYNAMIC_END] =
+{
+    UF_FLAG_OWNER,                                          // ITEM_DYNAMIC_MODIFIERS
+}
