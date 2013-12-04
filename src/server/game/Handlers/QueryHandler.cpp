@@ -53,7 +53,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     data.WriteGuidBytes<1, 5, 0, 6, 2>(guid);
 
     ObjectGuid guid2 = 0;
-    ObjectGuid guid3 = guid;
+    ObjectGuid guid3 = 0;//guid;
 
     if (nameData)
     {
@@ -107,9 +107,9 @@ void WorldSession::HandleNameQueryOpcode(WorldPacket& recvData)
 
     recvData.ReadGuidBytes<0, 1, 3, 4, 6, 5, 2, 7>(guid);
     if (bit24)
-        recvData.read_skip<uint32>();
+        recvData.read_skip<uint32>();   // realm id 1
     if (bit1C)
-        recvData.read_skip<uint32>();
+        recvData.read_skip<uint32>();   // realm id 2
 
     // This is disable by default to prevent lots of console spam
     // sLog->outInfo(LOG_FILTER_NETWORKIO, "HandleNameQueryOpcode %u", guid);
