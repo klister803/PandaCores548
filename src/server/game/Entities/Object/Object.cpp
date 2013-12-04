@@ -2434,23 +2434,57 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
 
 void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 targetGuid) const
 {
-    *data << (uint8)msgtype;
-    *data << (uint32)language;
-    *data << (uint64)GetGUID();
-    *data << (uint32)0;                                     // 2.1.0
-    *data << (uint32)(strlen(name)+1);
-    *data << name;
-    *data << (uint64)targetGuid;                            // Unit Target
-    if (targetGuid && !IS_PLAYER_GUID(targetGuid))
-    {
-        *data << (uint32)1;                                 // target name length
-        *data << (uint8)0;                                  // target name
-    }
-    *data << (uint32)(strlen(text)+1);
-    *data << text;
-    *data << (uint16)0;                                      // ChatTag
-    //*data << (float)0.0f;                                   // added in 4.2.0, unk
-    //*data << (uint8)0;                                      // added in 4.2.0, unk
+    ObjectGuid sourceGuid = GetGUID();
+    uint32 textLen = text ? strlen(text) : 0;
+    uint32 nameLen = name ? strlen(name) : 0;
+
+    data->WriteBit(0);      // byte1495
+    data->WriteBit(!textLen);
+    data->WriteBit(1);      // !has achievement
+    data->WriteBit(!nameLen);
+
+    data->WriteBit(!sourceGuid);
+    data->WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(sourceGuid);
+
+    data->WriteBit(1);      // !group guid marker
+    data->WriteBits(0, 8);  // group guid
+
+    data->WriteBit(1);      // !has addon prefix
+    data->WriteBit(0);      // byte1494
+    data->WriteBit(1);      // !has realm id
+
+    data->WriteBit(1);      // !has float1490
+    if (nameLen)
+        data->WriteBits(nameLen, 11);
+
+    data->WriteBit(!targetGuid);
+    data->WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(targetGuid);
+
+    data->WriteBit(1);      // !has target name
+    data->WriteBit(1);      // !has chat tag
+
+    if (textLen)
+        data->WriteBits(textLen, 12);
+
+    data->WriteBit(!language);          // !has language
+    data->WriteBit(1);      // !guild guid marker
+
+    data->WriteBits(0, 8);  // guild guid
+
+    data->WriteBit(1);      // !has channel name
+
+    if (nameLen)
+        data->WriteString(name);
+
+    data->WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(targetGuid);
+
+    *data << uint8(msgtype);
+
+    data->WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(sourceGuid);
+    if (language)
+        *data << uint8(language);
+    if (textLen)
+        data->WriteString(text);
 }
 
 void Unit::BuildHeartBeatMsg(WorldPacket* data) const

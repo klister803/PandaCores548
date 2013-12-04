@@ -2346,17 +2346,46 @@ namespace Trinity
                 {
                     WorldPacket* data = new WorldPacket();
 
-                    uint32 lineLength = (line ? strlen(line) : 0) + 1;
+                    uint32 lineLength = line ? strlen(line) : 0;
 
                     data->Initialize(SMSG_MESSAGECHAT, 100);                // guess size
+
+                    data->WriteBit(0);       // byte1495
+                    data->WriteBit(lineLength == 0);
+                    data->WriteBit(1);       // !has achievement
+                    data->WriteBit(1);       // !has source name
+
+                    data->WriteBit(1);       // !source guid marker
+                    data->WriteBits(0, 8);   // source guid
+
+                    data->WriteBit(1);       // !group guid marker
+                    data->WriteBits(0, 8);   // group guid
+
+                    data->WriteBit(1);       // !has addon prefix
+                    data->WriteBit(0);       // byte1494
+                    data->WriteBit(1);       // !has realm id
+
+                    data->WriteBit(1);       // !has float1490
+
+                    data->WriteBit(1);       // !has target guid
+                    data->WriteBits(0, 8);   // target guid
+
+                    data->WriteBit(1);       // !has target name
+                    data->WriteBit(1);       // !has chat tag
+
+                    if (lineLength)
+                        data->WriteBits(lineLength, 12);
+
+                    data->WriteBit(1);       // !has language
+                    data->WriteBit(1);       // !guild guid marker
+
+                    data->WriteBits(0, 8);   // guild guid
+
+                    data->WriteBit(1);       // !has channel name
+
                     *data << uint8(CHAT_MSG_SYSTEM);
-                    *data << uint32(LANG_UNIVERSAL);
-                    *data << uint64(0);
-                    *data << uint32(0);                                     // can be chat msg group or something
-                    *data << uint64(0);
-                    *data << uint32(lineLength);
-                    *data << line;
-                    *data << uint16(0);
+                    if (lineLength)
+                        data->WriteString(line);
 
                     data_list.push_back(data);
                 }
