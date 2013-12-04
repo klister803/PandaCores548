@@ -48,53 +48,15 @@ class TrinityStringTextBuilder
             if (_msgType != CHAT_MSG_RAID_BOSS_EMOTE && _msgType !=CHAT_MSG_RAID_BOSS_WHISPER)
                 targetGUID = _targetGUID;
 
-            ObjectGuid sourceGuid = _source->GetGUID();
-            std::string text = sObjectMgr->GetTrinityString(_textId, locale);
-            std::string localizedName = _source->GetNameForLocaleIdx(locale);
+            Trinity::ChatData c;
+            c.message = sObjectMgr->GetTrinityString(_textId, locale);;
+            c.sourceName = _source->GetNameForLocaleIdx(locale);
+            c.sourceGuid = _source->GetGUID();
+            c.targetGuid = targetGUID;
+            c.chatType = _msgType;
+            c.language = _language;
 
-            data->WriteBit(0);       // byte1495
-            data->WriteBit(text.size() == 0);
-            data->WriteBit(1);       // !has achievement
-            data->WriteBit(!localizedName.size());       // !has source name
-
-            data->WriteBit(!sourceGuid);    // !source guid marker
-            data->WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(sourceGuid);
-
-            data->WriteBit(1);       // !group guid marker
-            data->WriteBits(0, 8);   // group guid
-
-            data->WriteBit(1);       // !has addon prefix
-            data->WriteBit(0);       // byte1494
-            data->WriteBit(1);       // !has realm id
-
-            data->WriteBit(1);       // !has float1490
-            if (uint32 len = localizedName.size())
-                data->WriteBits(len, 11);
-
-            data->WriteBit(!targetGUID);   // !has target guid
-            data->WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(targetGUID);
-
-            data->WriteBit(1);       // !has target name
-            data->WriteBit(1);       // !has chat tag
-
-            data->WriteBit(!_language);
-
-            data->WriteBit(1);       // !guild guid marker
-
-            data->WriteBits(0, 8);   // guild guid
-
-            data->WriteBit(1);       // !has channel name
-
-            data->WriteString(localizedName);
-
-            data->WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(targetGUID);
-
-            *data << uint8(_msgType);
-
-            data->WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(sourceGuid);
-
-            if (_language)
-                *data << uint8(_language);
+            Trinity::BuildChatPacket(*data, c);
         }
 
         WorldObject* _source;

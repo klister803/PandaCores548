@@ -51,53 +51,14 @@ namespace Trinity
                 : i_player(player), i_msgtype(msgtype), i_textId(textId), i_achievementId(ach_id) {}
             void operator()(WorldPacket& data, LocaleConstant loc_idx)
             {
-                char const* text = sObjectMgr->GetTrinityString(i_textId, loc_idx);
+                Trinity::ChatData c;
+                c.message = sObjectMgr->GetTrinityString(i_textId, loc_idx);
+                c.sourceGuid = i_player.GetGUID();
+                c.targetGuid = i_player.GetGUID();
+                c.chatType = i_msgtype;
+                c.achievementId = i_achievementId;
 
-                ObjectGuid guid = i_player.GetGUID();
-                uint32 textLen = text ? strlen(text) : 0;
-
-                data.WriteBit(0);       // byte1495
-                data.WriteBit(textLen == 0);
-                data.WriteBit(0);       // !has achievement
-                data.WriteBit(1);       // !has source name
-
-                data.WriteBit(!guid);   // !source guid marker
-                data.WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(guid);
-
-                data.WriteBit(1);       // !group guid marker
-                data.WriteBits(0, 8);   // group guid
-
-                data.WriteBit(1);       // !has addon prefix
-                data.WriteBit(0);       // byte1494
-                data.WriteBit(1);       // !has realm id
-
-                data.WriteBit(1);       // !has float1490
-
-                data.WriteBit(!guid);   // !has target guid
-                data.WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(guid);
-
-                data.WriteBit(1);       // !has target name
-                data.WriteBit(1);       // !has chat tag
-
-                if (textLen)
-                    data.WriteBits(textLen, 12);
-
-                data.WriteBit(1);       // !has language
-                data.WriteBit(1);       // !guild guid marker
-
-                data.WriteBits(0, 8);   // guild guid
-
-                data.WriteBit(1);       // !has channel name
-
-                data.WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(guid);
-
-                data << uint8(i_msgtype);
-
-                data.WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(guid);
-
-                data << uint32(i_achievementId);
-                if (textLen)
-                    data.WriteString(text);
+                Trinity::BuildChatPacket(data, c);
             }
 
         private:

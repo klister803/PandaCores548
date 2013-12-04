@@ -638,20 +638,15 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
     ASSERT(type != CHAT_MSG_CHANNEL || channelName);
     ASSERT(type != CHAT_MSG_ADDON || addonPrefix);
 
-    uint32 messageLength = message ? strlen(message) : 0;
+    Trinity::ChatData c;
+    c.channelName = channelName ? channelName : "";
+    c.addonPrefix = addonPrefix ? addonPrefix : "";
+    c.message = message ? message : "";
+    c.chatType = type;
+    c.targetGuid = target_guid;
 
-    data->Initialize(SMSG_MESSAGECHAT, 100);                // guess size
-
-    uint8 lang;
     if ((type != CHAT_MSG_CHANNEL && type != CHAT_MSG_WHISPER) || language == LANG_ADDON)
-        lang = uint8(language);
-    else
-        lang = uint8(LANG_UNIVERSAL);
-
-    ObjectGuid sourceGuid;
-    std::string sourceName;
-    ObjectGuid guildGuid;
-    ObjectGuid groupGuid;
+        c.language = uint8(language);
 
     switch (type)
     {
@@ -661,14 +656,14 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
         case CHAT_MSG_PARTY:
         case CHAT_MSG_PARTY_LEADER:
             if (session && session->GetPlayer()->GetGroup())
-                groupGuid = session->GetPlayer()->GetGroup()->GetGUID();
-            target_guid = session ? session->GetPlayer()->GetGUID() : 0;
+                c.groupGuid = session->GetPlayer()->GetGroup()->GetGUID();
+            c.targetGuid = session ? session->GetPlayer()->GetGUID() : 0;
             break;
         case CHAT_MSG_GUILD:
         case CHAT_MSG_OFFICER:
             if (session)
-                guildGuid = session->GetPlayer()->GetUInt64Value(OBJECT_FIELD_DATA);
-            target_guid = session ? session->GetPlayer()->GetGUID() : 0;
+                c.guildGuid = session->GetPlayer()->GetUInt64Value(OBJECT_FIELD_DATA);
+            c.targetGuid = session ? session->GetPlayer()->GetGUID() : 0;
             break;
         case CHAT_MSG_SAY:
         case CHAT_MSG_YELL:
@@ -679,7 +674,7 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
         case CHAT_MSG_BG_SYSTEM_HORDE:
         case CHAT_MSG_BATTLEGROUND:
         case CHAT_MSG_BATTLEGROUND_LEADER:
-            target_guid = session ? session->GetPlayer()->GetGUID() : 0;
+            c.targetGuid = session ? session->GetPlayer()->GetGUID() : 0;
             break;
         case CHAT_MSG_MONSTER_SAY:
         case CHAT_MSG_MONSTER_PARTY:
@@ -690,85 +685,20 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
         case CHAT_MSG_RAID_BOSS_EMOTE:
         case CHAT_MSG_BATTLENET:
         {
-            sourceGuid = speaker->GetGUID();
-            sourceName = speaker->GetName();
+            c.sourceGuid = speaker->GetGUID();
+            c.sourceName = speaker->GetName();
             return;
         }
         default:
             if (type != CHAT_MSG_WHISPER_INFORM && type != CHAT_MSG_IGNORED && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
-                target_guid = 0;                            // only for CHAT_MSG_WHISPER_INFORM used original value target_guid
+                c.targetGuid = 0;                           // only for CHAT_MSG_WHISPER_INFORM used original value target_guid
             break;
     }
 
-    uint16 chatTag = 0;
     if (session && type != CHAT_MSG_WHISPER_INFORM && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
-        chatTag = session->GetPlayer()->GetChatTag();
+        c.chatTag = session->GetPlayer()->GetChatTag();
 
-    data->WriteBit(0);       // byte1495
-    data->WriteBit(!messageLength);
-    data->WriteBit(1);       // !has achievement
-    data->WriteBit(!sourceName.size());
-
-    data->WriteBit(!sourceGuid);
-    data->WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(sourceGuid);
-
-    data->WriteBit(!groupGuid);
-    data->WriteGuidMask<6, 0, 4, 1, 2, 3, 7, 5>(groupGuid);
-
-    data->WriteBit(!addonPrefix || strlen(addonPrefix) == 0);
-    data->WriteBit(0);       // byte1494
-    data->WriteBit(1);       // !has realm id
-
-    data->WriteBit(1);       // !has float1490
-    if (uint32 len = sourceName.size())
-        data->WriteBits(len, 11);
-
-    data->WriteBit(!target_guid);
-    data->WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(target_guid);
-
-    if (addonPrefix)
-        if (uint32 len = strlen(addonPrefix))
-            data->WriteBits(len, 5);
-
-    data->WriteBit(1);       // !has target name
-    data->WriteBit(!chatTag);
-
-    data->WriteBits(messageLength, 12);
-
-    data->WriteBit(!lang);
-    if (!chatTag)
-        data->WriteBits(chatTag, 9);
-
-    data->WriteBit(!guildGuid);
-
-    data->WriteGuidMask<0, 2, 1, 4, 6, 7, 5, 3>(guildGuid);
-
-    data->WriteBit(!channelName || strlen(channelName) == 0);
-    if (channelName)
-        if (uint32 len = strlen(channelName))
-            data->WriteBits(len, 7);
-    if (channelName)
-        data->WriteString(channelName);
-
-    data->WriteString(sourceName);
-
-    data->WriteGuidBytes<6, 7, 1, 2, 4, 3, 0, 5>(groupGuid);
-
-    data->WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(target_guid);
-
-    *data << uint8(type);
-
-    data->WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(sourceGuid);
-
-    if (addonPrefix)
-        data->WriteString(addonPrefix);
-
-    data->WriteGuidBytes<1, 0, 3, 7, 6, 5, 2, 4>(guildGuid);
-
-    if (lang)
-        *data << uint8(lang);
-
-    data->WriteString(message);
+    Trinity::BuildChatPacket(*data, c);
 }
 
 Player* ChatHandler::getSelectedPlayer()
