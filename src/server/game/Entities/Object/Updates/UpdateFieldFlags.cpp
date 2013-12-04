@@ -24,8 +24,8 @@ uint32 ItemUpdateFieldFlags[CONTAINER_END] =
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA+1
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_TYPE
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_ENTRY
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DYNAMIC_FLAGS
+    UF_FLAG_DYNAMIC,                                        // OBJECT_FIELD_ENTRY
+    UF_FLAG_DYNAMIC | UF_FLAG_UNK_100,                      // OBJECT_FIELD_DYNAMIC_FLAGS
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_SCALE_X
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_OWNER
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_OWNER+1
@@ -35,59 +35,59 @@ uint32 ItemUpdateFieldFlags[CONTAINER_END] =
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_CREATOR+1
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_GIFTCREATOR
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_GIFTCREATOR+1
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_STACK_COUNT
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_DURATION
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_SPELL_CHARGES
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_SPELL_CHARGES+1
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_SPELL_CHARGES+2
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_SPELL_CHARGES+3
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_SPELL_CHARGES+4
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_STACK_COUNT
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_DURATION
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_SPELL_CHARGES
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_SPELL_CHARGES+1
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_SPELL_CHARGES+2
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_SPELL_CHARGES+3
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_SPELL_CHARGES+4
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_FLAGS
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_2_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_2_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_2_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_3_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_3_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_3_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_4_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_4_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_4_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_5_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_5_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_5_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_6_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_6_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_6_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_7_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_7_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_7_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_8_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_8_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_8_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_9_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_9_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_9_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_10_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_10_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_10_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_11_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_11_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_11_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_12_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_12_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_12_3
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_13_1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_13_1+1
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_13_3
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+2
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+3
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+4
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+5
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+6
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+7
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+8
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+9
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+10
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+11
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+12
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+13
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+14
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+15
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+16
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+17
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+18
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+19
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+20
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+21
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+22
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+23
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+24
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+25
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+26
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+27
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+28
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+29
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+30
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+31
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+32
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+33
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+34
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+35
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+36
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+37
+    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_ENCHANTMENT_1_1+38
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_PROPERTY_SEED
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_RANDOM_PROPERTIES_ID
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_DURABILITY
-    UF_FLAG_OWNER | UF_FLAG_ITEM_OWNER,                     // ITEM_FIELD_MAXDURABILITY
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_DURABILITY
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_MAXDURABILITY
     UF_FLAG_PUBLIC,                                         // ITEM_FIELD_CREATE_PLAYED_TIME
-    UF_FLAG_PUBLIC,                                         // ITEM_FIELD_MODIFIERS_MASK
+    UF_FLAG_OWNER,                                          // ITEM_FIELD_MODIFIERS_MASK
     UF_FLAG_PUBLIC,                                         // CONTAINER_FIELD_SLOT_1
     UF_FLAG_PUBLIC,                                         // CONTAINER_FIELD_SLOT_1+1
     UF_FLAG_PUBLIC,                                         // CONTAINER_FIELD_SLOT_1+2
@@ -170,8 +170,8 @@ uint32 UnitUpdateFieldFlags[PLAYER_END] =
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA+1
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_TYPE
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_ENTRY
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DYNAMIC_FLAGS
+    UF_FLAG_DYNAMIC,                                        // OBJECT_FIELD_ENTRY
+    UF_FLAG_DYNAMIC | UF_FLAG_UNK_100,                      // OBJECT_FIELD_DYNAMIC_FLAGS
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_SCALE_X
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_CHARM
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_CHARM+1
@@ -191,25 +191,25 @@ uint32 UnitUpdateFieldFlags[PLAYER_END] =
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_TARGET+1
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_BATTLE_PET_COMPANION_GUID
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_BATTLE_PET_COMPANION_GUID+1
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_CHANNEL_OBJECT
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_CHANNEL_OBJECT+1
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // UNIT_FIELD_CHANNEL_OBJECT
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // UNIT_FIELD_CHANNEL_OBJECT+1
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // UNIT_CHANNEL_SPELL
     UF_FLAG_PUBLIC,                                         // UNIT_SUMMONED_BY_HOME_REALM
-    UF_FLAG_PUBLIC,                                         // UNIT_CHANNEL_SPELL
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_BYTES_0
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_DISPLAY_POWER
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_OVERRIDE_DISPLAY_POWER_ID
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_HEALTH
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER1
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER2
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER3
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER4
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER5
+    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER1+1
+    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER1+2
+    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER1+3
+    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_POWER1+4
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXHEALTH
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER1
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER2
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER3
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER4
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER5
+    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER1+1
+    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER1+2
+    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER1+3
+    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MAXPOWER1+4
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_UNUSED2,      // UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_UNUSED2,      // UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER+1
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_UNUSED2,      // UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER+2
@@ -234,9 +234,9 @@ uint32 UnitUpdateFieldFlags[PLAYER_END] =
     UF_FLAG_PRIVATE,                                        // UNIT_FIELD_RANGEDATTACKTIME
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_BOUNDINGRADIUS
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_COMBATREACH
-    UF_FLAG_DYNAMIC,                                        // UNIT_FIELD_DISPLAYID
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_NATIVEDISPLAYID
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MOUNTDISPLAYID
+    UF_FLAG_DYNAMIC | UF_FLAG_UNK_100,                      // UNIT_FIELD_DISPLAYID
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // UNIT_FIELD_NATIVEDISPLAYID
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // UNIT_FIELD_MOUNTDISPLAYID
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_SPECIAL_INFO, // UNIT_FIELD_MINDAMAGE
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_SPECIAL_INFO, // UNIT_FIELD_MAXDAMAGE
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_SPECIAL_INFO, // UNIT_FIELD_MINOFFHANDDAMAGE
@@ -252,23 +252,24 @@ uint32 UnitUpdateFieldFlags[PLAYER_END] =
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_MOD_RANGED_HASTE
     UF_FLAG_PUBLIC,                                         // UNIT_MOD_HASTE_REGEN
     UF_FLAG_PUBLIC,                                         // UNIT_CREATED_BY_SPELL
-    UF_FLAG_DYNAMIC,                                        // UNIT_NPC_FLAGS
+    UF_FLAG_PUBLIC,                                         // UNIT_NPC_FLAGS
+    UF_FLAG_PUBLIC,                                         // UNIT_NPC_FLAGS+1
     UF_FLAG_PUBLIC,                                         // UNIT_NPC_EMOTESTATE
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_STAT0
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT1
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT2
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT3
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT4
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT0
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT0+1
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT0+2
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT0+3
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_STAT0+4
     UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT0
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT1
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT2
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT3
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT4
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT0+1
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT0+2
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT0+3
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_POSSTAT0+4
     UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT0
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT1
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT2
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT3
-    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT4
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT0+1
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT0+2
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT0+3
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_NEGSTAT0+4
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_SPECIAL_INFO, // UNIT_FIELD_RESISTANCES
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_SPECIAL_INFO, // UNIT_FIELD_RESISTANCES+1
     UF_FLAG_PRIVATE | UF_FLAG_OWNER | UF_FLAG_SPECIAL_INFO, // UNIT_FIELD_RESISTANCES+2
@@ -293,7 +294,7 @@ uint32 UnitUpdateFieldFlags[PLAYER_END] =
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_BASE_MANA
     UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_BASE_HEALTH
     UF_FLAG_PUBLIC,                                         // UNIT_FIELD_BYTES_2
-    UF_FLAG_PUBLIC,                                         // UNIT_FIELD_ATTACK_POWER
+    UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_ATTACK_POWER
     UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_ATTACK_POWER_MOD_POS
     UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_ATTACK_POWER_MOD_NEG
     UF_FLAG_PRIVATE | UF_FLAG_OWNER,                        // UNIT_FIELD_ATTACK_POWER_MULTIPLIER
@@ -336,1815 +337,1821 @@ uint32 UnitUpdateFieldFlags[PLAYER_END] =
     UF_FLAG_PUBLIC,                                         // PLAYER_DUEL_TEAM
     UF_FLAG_PUBLIC,                                         // PLAYER_GUILD_TIMESTAMP
     UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_2_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_2_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_2_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_2_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_2_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_3_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_3_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_3_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_3_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_3_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_4_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_4_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_4_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_4_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_4_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_5_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_5_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_5_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_5_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_5_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_6_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_6_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_6_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_6_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_6_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_7_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_7_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_7_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_7_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_7_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_8_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_8_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_8_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_8_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_8_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_9_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_9_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_9_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_9_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_9_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_10_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_10_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_10_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_10_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_10_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_11_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_11_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_11_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_11_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_11_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_12_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_12_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_12_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_12_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_12_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_13_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_13_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_13_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_13_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_13_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_14_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_14_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_14_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_14_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_14_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_15_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_15_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_15_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_15_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_15_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_16_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_16_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_16_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_16_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_16_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_17_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_17_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_17_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_17_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_17_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_18_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_18_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_18_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_18_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_18_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_19_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_19_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_19_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_19_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_19_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_20_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_20_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_20_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_20_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_20_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_21_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_21_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_21_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_21_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_21_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_22_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_22_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_22_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_22_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_22_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_23_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_23_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_23_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_23_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_23_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_24_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_24_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_24_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_24_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_24_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_25_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_25_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_25_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_25_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_25_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_26_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_26_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_26_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_26_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_26_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_27_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_27_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_27_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_27_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_27_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_28_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_28_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_28_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_28_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_28_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_29_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_29_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_29_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_29_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_29_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_30_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_30_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_30_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_30_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_30_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_31_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_31_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_31_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_31_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_31_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_32_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_32_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_32_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_32_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_32_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_33_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_33_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_33_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_33_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_33_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_34_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_34_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_34_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_34_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_34_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_35_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_35_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_35_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_35_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_35_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_36_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_36_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_36_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_36_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_36_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_37_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_37_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_37_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_37_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_37_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_38_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_38_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_38_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_38_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_38_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_39_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_39_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_39_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_39_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_39_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_40_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_40_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_40_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_40_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_40_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_41_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_41_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_41_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_41_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_41_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_42_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_42_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_42_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_42_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_42_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_43_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_43_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_43_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_43_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_43_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_44_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_44_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_44_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_44_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_44_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_45_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_45_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_45_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_45_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_45_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_46_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_46_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_46_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_46_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_46_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_47_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_47_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_47_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_47_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_47_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_48_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_48_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_48_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_48_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_48_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_49_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_49_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_49_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_49_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_49_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_50_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_50_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_50_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_50_3+1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_50_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_51_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_51_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_51_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_51_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_51_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_52_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_52_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_52_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_52_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_52_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_53_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_53_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_53_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_53_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_53_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_54_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_54_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_54_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_54_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_54_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_55_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_55_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_55_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_55_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_55_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_56_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_56_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_56_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_56_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_56_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_57_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_57_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_57_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_57_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_57_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_58_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_58_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_58_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_58_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_58_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_59_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_59_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_59_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_59_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_59_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_60_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_60_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_60_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_60_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_60_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_61_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_61_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_61_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_61_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_61_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_62_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_62_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_62_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_62_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_62_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_63_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_63_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_63_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_63_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_63_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_64_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_64_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_64_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_64_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_64_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_65_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_65_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_65_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_65_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_65_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_66_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_66_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_66_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_66_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_66_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_67_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_67_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_67_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_67_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_67_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_68_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_68_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_68_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_68_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_68_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_69_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_69_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_69_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_69_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_69_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_70_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_70_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_70_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_70_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_70_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_71_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_71_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_71_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_71_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_71_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_72_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_72_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_72_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_72_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_72_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_73_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_73_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_73_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_73_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_73_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_74_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_74_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_74_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_74_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_74_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_75_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_75_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_75_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_75_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_75_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_76_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_76_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_76_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_76_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_76_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_77_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_77_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_77_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_77_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_77_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_78_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_78_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_78_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_78_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_78_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_79_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_79_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_79_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_79_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_79_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_80_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_80_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_80_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_80_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_80_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_81_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_81_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_81_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_81_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_81_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_82_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_82_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_82_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_82_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_82_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_83_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_83_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_83_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_83_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_83_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_84_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_84_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_84_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_84_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_84_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_85_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_85_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_85_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_85_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_85_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_86_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_86_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_86_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_86_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_86_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_87_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_87_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_87_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_87_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_87_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_88_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_88_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_88_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_88_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_88_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_89_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_89_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_89_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_89_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_89_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_90_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_90_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_90_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_90_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_90_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_91_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_91_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_91_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_91_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_91_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_92_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_92_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_92_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_92_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_92_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_93_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_93_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_93_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_93_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_93_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_94_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_94_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_94_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_94_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_94_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_95_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_95_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_95_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_95_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_95_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_96_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_96_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_96_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_96_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_96_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_97_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_97_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_97_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_97_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_97_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_98_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_98_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_98_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_98_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_98_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_99_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_99_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_99_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_99_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_99_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_100_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_100_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_100_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_100_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_100_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_101_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_101_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_101_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_101_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_101_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_102_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_102_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_102_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_102_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_102_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_103_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_103_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_103_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_103_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_103_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_104_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_104_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_104_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_104_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_104_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_105_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_105_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_105_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_105_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_105_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_106_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_106_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_106_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_106_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_106_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_107_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_107_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_107_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_107_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_107_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_108_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_108_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_108_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_108_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_108_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_109_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_109_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_109_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_109_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_109_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_110_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_110_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_110_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_110_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_110_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_111_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_111_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_111_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_111_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_111_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_112_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_112_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_112_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_112_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_112_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_113_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_113_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_113_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_113_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_113_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_114_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_114_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_114_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_114_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_114_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_115_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_115_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_115_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_115_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_115_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_116_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_116_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_116_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_116_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_116_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_117_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_117_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_117_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_117_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_117_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_118_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_118_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_118_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_118_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_118_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_119_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_119_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_119_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_119_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_119_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_120_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_120_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_120_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_120_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_120_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_121_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_121_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_121_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_121_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_121_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_122_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_122_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_122_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_122_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_122_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_123_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_123_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_123_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_123_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_123_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_124_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_124_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_124_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_124_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_124_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_125_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_125_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_125_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_125_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_125_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_126_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_126_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_126_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_126_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_126_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_127_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_127_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_127_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_127_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_127_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_128_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_128_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_128_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_128_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_128_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_129_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_129_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_129_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_129_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_129_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_130_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_130_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_130_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_130_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_130_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_131_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_131_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_131_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_131_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_131_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_132_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_132_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_132_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_132_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_132_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_133_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_133_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_133_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_133_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_133_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_134_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_134_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_134_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_134_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_134_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_135_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_135_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_135_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_135_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_135_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_136_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_136_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_136_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_136_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_136_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_137_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_137_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_137_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_137_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_137_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_138_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_138_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_138_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_138_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_138_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_139_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_139_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_139_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_139_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_139_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_140_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_140_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_140_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_140_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_140_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_141_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_141_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_141_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_141_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_141_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_142_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_142_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_142_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_142_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_142_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_143_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_143_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_143_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_143_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_143_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_144_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_144_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_144_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_144_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_144_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_145_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_145_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_145_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_145_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_145_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_146_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_146_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_146_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_146_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_146_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_147_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_147_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_147_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_147_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_147_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_148_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_148_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_148_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_148_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_148_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_149_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_149_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_149_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_149_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_149_5
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_150_1
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_150_2
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_150_3
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_150_4
-    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_150_5
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_1_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_1_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_2_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_2_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_3_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_3_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_4_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_4_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_5_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_5_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_6_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_6_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_7_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_7_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_8_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_8_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_9_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_9_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_10_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_10_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_11_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_11_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_12_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_12_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_13_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_13_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_14_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_14_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_15_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_15_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_16_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_16_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_17_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_17_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_18_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_18_ENCHANTMENT
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_19_ENTRYID
-    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_19_ENCHANTMENT
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+1
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+2
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+3
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+4
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+5
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+6
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+7
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+8
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+9
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+10
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+11
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+12
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+13
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+14
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+15
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+16
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+17
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+18
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+19
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+20
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+21
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+22
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+23
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+24
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+25
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+26
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+27
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+28
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+29
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+30
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+31
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+32
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+33
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+34
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+35
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+36
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+37
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+38
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+39
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+40
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+41
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+42
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+43
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+44
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+45
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+46
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+47
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+48
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+49
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+50
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+51
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+52
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+53
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+54
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+55
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+56
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+57
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+58
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+59
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+60
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+61
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+62
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+63
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+64
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+65
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+66
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+67
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+68
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+69
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+70
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+71
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+72
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+73
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+74
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+75
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+76
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+77
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+78
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+79
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+80
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+81
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+82
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+83
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+84
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+85
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+86
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+87
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+88
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+89
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+90
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+91
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+92
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+93
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+94
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+95
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+96
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+97
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+98
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+99
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+100
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+101
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+102
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+103
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+104
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+105
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+106
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+107
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+108
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+109
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+110
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+111
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+112
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+113
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+114
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+115
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+116
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+117
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+118
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+119
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+120
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+121
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+122
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+123
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+124
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+125
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+126
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+127
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+128
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+129
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+130
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+131
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+132
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+133
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+134
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+135
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+136
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+137
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+138
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+139
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+140
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+141
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+142
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+143
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+144
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+145
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+146
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+147
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+148
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+149
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+150
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+151
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+152
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+153
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+154
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+155
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+156
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+157
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+158
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+159
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+160
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+161
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+162
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+163
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+164
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+165
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+166
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+167
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+168
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+169
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+170
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+171
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+172
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+173
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+174
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+175
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+176
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+177
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+178
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+179
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+180
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+181
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+182
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+183
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+184
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+185
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+186
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+187
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+188
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+189
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+190
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+191
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+192
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+193
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+194
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+195
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+196
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+197
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+198
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+199
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+200
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+201
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+202
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+203
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+204
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+205
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+206
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+207
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+208
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+209
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+210
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+211
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+212
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+213
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+214
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+215
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+216
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+217
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+218
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+219
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+220
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+221
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+222
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+223
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+224
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+225
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+226
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+227
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+228
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+229
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+230
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+231
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+232
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+233
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+234
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+235
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+236
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+237
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+238
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+239
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+240
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+241
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+242
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+243
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+244
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+245
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+246
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+247
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+248
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+249
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+250
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+251
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+252
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+253
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+254
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+255
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+256
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+257
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+258
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+259
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+260
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+261
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+262
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+263
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+264
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+265
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+266
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+267
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+268
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+269
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+270
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+271
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+272
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+273
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+274
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+275
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+276
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+277
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+278
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+279
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+280
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+281
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+282
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+283
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+284
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+285
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+286
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+287
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+288
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+289
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+290
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+291
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+292
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+293
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+294
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+295
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+296
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+297
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+298
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+299
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+300
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+301
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+302
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+303
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+304
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+305
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+306
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+307
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+308
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+309
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+310
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+311
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+312
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+313
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+314
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+315
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+316
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+317
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+318
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+319
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+320
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+321
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+322
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+323
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+324
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+325
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+326
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+327
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+328
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+329
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+330
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+331
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+332
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+333
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+334
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+335
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+336
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+337
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+338
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+339
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+340
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+341
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+342
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+343
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+344
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+345
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+346
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+347
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+348
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+349
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+350
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+351
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+352
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+353
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+354
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+355
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+356
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+357
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+358
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+359
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+360
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+361
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+362
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+363
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+364
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+365
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+366
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+367
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+368
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+369
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+370
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+371
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+372
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+373
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+374
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+375
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+376
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+377
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+378
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+379
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+380
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+381
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+382
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+383
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+384
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+385
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+386
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+387
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+388
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+389
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+390
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+391
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+392
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+393
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+394
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+395
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+396
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+397
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+398
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+399
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+400
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+401
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+402
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+403
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+404
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+405
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+406
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+407
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+408
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+409
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+410
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+411
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+412
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+413
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+414
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+415
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+416
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+417
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+418
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+419
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+420
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+421
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+422
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+423
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+424
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+425
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+426
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+427
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+428
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+429
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+430
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+431
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+432
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+433
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+434
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+435
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+436
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+437
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+438
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+439
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+440
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+441
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+442
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+443
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+444
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+445
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+446
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+447
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+448
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+449
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+450
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+451
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+452
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+453
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+454
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+455
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+456
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+457
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+458
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+459
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+460
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+461
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+462
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+463
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+464
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+465
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+466
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+467
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+468
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+469
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+470
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+471
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+472
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+473
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+474
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+475
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+476
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+477
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+478
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+479
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+480
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+481
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+482
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+483
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+484
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+485
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+486
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+487
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+488
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+489
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+490
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+491
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+492
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+493
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+494
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+495
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+496
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+497
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+498
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+499
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+500
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+501
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+502
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+503
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+504
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+505
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+506
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+507
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+508
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+509
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+510
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+511
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+512
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+513
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+514
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+515
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+516
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+517
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+518
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+519
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+520
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+521
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+522
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+523
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+524
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+525
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+526
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+527
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+528
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+529
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+530
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+531
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+532
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+533
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+534
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+535
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+536
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+537
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+538
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+539
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+540
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+541
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+542
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+543
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+544
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+545
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+546
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+547
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+548
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+549
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+550
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+551
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+552
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+553
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+554
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+555
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+556
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+557
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+558
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+559
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+560
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+561
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+562
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+563
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+564
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+565
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+566
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+567
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+568
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+569
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+570
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+571
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+572
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+573
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+574
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+575
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+576
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+577
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+578
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+579
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+580
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+581
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+582
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+583
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+584
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+585
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+586
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+587
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+588
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+589
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+590
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+591
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+592
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+593
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+594
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+595
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+596
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+597
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+598
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+599
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+600
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+601
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+602
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+603
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+604
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+605
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+606
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+607
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+608
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+609
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+610
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+611
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+612
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+613
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+614
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+615
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+616
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+617
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+618
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+619
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+620
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+621
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+622
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+623
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+624
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+625
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+626
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+627
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+628
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+629
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+630
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+631
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+632
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+633
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+634
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+635
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+636
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+637
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+638
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+639
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+640
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+641
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+642
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+643
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+644
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+645
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+646
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+647
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+648
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+649
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+650
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+651
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+652
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+653
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+654
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+655
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+656
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+657
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+658
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+659
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+660
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+661
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+662
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+663
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+664
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+665
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+666
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+667
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+668
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+669
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+670
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+671
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+672
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+673
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+674
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+675
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+676
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+677
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+678
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+679
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+680
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+681
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+682
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+683
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+684
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+685
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+686
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+687
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+688
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+689
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+690
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+691
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+692
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+693
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+694
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+695
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+696
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+697
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+698
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+699
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+700
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+701
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+702
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+703
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+704
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+705
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+706
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+707
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+708
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+709
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+710
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+711
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+712
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+713
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+714
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+715
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+716
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+717
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+718
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+719
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+720
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+721
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+722
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+723
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+724
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+725
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+726
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+727
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+728
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+729
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+730
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+731
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+732
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+733
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+734
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+735
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+736
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+737
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+738
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+739
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+740
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+741
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+742
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+743
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+744
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+745
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+746
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+747
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+748
+    UF_FLAG_PARTY_MEMBER,                                   // PLAYER_QUEST_LOG_1_1+749
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+1
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+2
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+3
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+4
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+5
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+6
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+7
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+8
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+9
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+10
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+11
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+12
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+13
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+14
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+15
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+16
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+17
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+18
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+19
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+20
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+21
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+22
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+23
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+24
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+25
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+26
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+27
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+28
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+29
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+30
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+31
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+32
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+33
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+34
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+35
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+36
+    UF_FLAG_PUBLIC,                                         // PLAYER_VISIBLE_ITEM_X_ENTRYID+37
     UF_FLAG_PUBLIC,                                         // PLAYER_CHOSEN_TITLE
-    UF_FLAG_PUBLIC,                                         // PLAYER_FAKE_INEBRIATION	
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
-    UF_FLAG_PRIVATE,                                   // Autogen POWERRR !! ... OSEF
+    UF_FLAG_PUBLIC,                                         // PLAYER_FAKE_INEBRIATION
+    UF_FLAG_PUBLIC,                                         // PLAYER_HOME_PLAYER_REALM
+    UF_FLAG_PUBLIC,                                         // PLAYER_CURRENT_SPEC_ID
+    UF_FLAG_PUBLIC,                                         // PLAYER_TAXI_MOUNT_ANIM_KIT_ID
+    UF_FLAG_PUBLIC,                                         // PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+8
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+9
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+10
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+11
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+12
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+13
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+14
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+15
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+16
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+17
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+18
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+19
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+20
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+21
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+22
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+23
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+24
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+25
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+26
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+27
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+28
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+29
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+30
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+31
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+32
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+33
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+34
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+35
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+36
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+37
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+38
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+39
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+40
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+41
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+42
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+43
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+44
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+45
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+46
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+47
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+48
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+49
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+50
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+51
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+52
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+53
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+54
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+55
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+56
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+57
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+58
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+59
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+60
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+61
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+62
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+63
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+64
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+65
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+66
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+67
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+68
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+69
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+70
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+71
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+72
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+73
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+74
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+75
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+76
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+77
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+78
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+79
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+80
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+81
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+82
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+83
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+84
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+85
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+86
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+87
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+88
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+89
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+90
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+91
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+92
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+93
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+94
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+95
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+96
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+97
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+98
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+99
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+100
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+101
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+102
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+103
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+104
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+105
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+106
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+107
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+108
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+109
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+110
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+111
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+112
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+113
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+114
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+115
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+116
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+117
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+118
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+119
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+120
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+121
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+122
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+123
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+124
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+125
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+126
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+127
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+128
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+129
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+130
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+131
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+132
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+133
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+134
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+135
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+136
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+137
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+138
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+139
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+140
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+141
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+142
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+143
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+144
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+145
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+146
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+147
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+148
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+149
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+150
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+151
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+152
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+153
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+154
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+155
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+156
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+157
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+158
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+159
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+160
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+161
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+162
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+163
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+164
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+165
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+166
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+167
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+168
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+169
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+170
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_INV_SLOT_HEAD+171
+    UF_FLAG_PRIVATE,                                        // PLAYER_FARSIGHT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FARSIGHT+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+8
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KNOWN_TITLES+9
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COINAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COINAGE+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_XP
+    UF_FLAG_PRIVATE,                                        // PLAYER_NEXT_LEVEL_XP
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+8
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+9
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+10
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+11
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+12
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+13
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+14
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+15
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+16
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+17
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+18
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+19
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+20
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+21
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+22
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+23
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+24
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+25
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+26
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+27
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+28
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+29
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+30
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+31
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+32
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+33
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+34
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+35
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+36
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+37
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+38
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+39
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+40
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+41
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+42
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+43
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+44
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+45
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+46
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+47
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+48
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+49
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+50
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+51
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+52
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+53
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+54
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+55
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+56
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+57
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+58
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+59
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+60
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+61
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+62
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+63
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+64
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+65
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+66
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+67
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+68
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+69
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+70
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+71
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+72
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+73
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+74
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+75
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+76
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+77
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+78
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+79
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+80
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+81
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+82
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+83
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+84
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+85
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+86
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+87
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+88
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+89
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+90
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+91
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+92
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+93
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+94
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+95
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+96
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+97
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+98
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+99
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+100
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+101
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+102
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+103
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+104
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+105
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+106
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+107
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+108
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+109
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+110
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+111
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+112
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+113
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+114
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+115
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+116
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+117
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+118
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+119
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+120
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+121
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+122
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+123
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+124
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+125
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+126
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+127
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+128
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+129
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+130
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+131
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+132
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+133
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+134
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+135
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+136
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+137
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+138
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+139
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+140
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+141
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+142
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+143
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+144
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+145
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+146
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+147
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+148
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+149
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+150
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+151
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+152
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+153
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+154
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+155
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+156
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+157
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+158
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+159
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+160
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+161
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+162
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+163
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+164
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+165
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+166
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+167
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+168
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+169
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+170
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+171
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+172
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+173
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+174
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+175
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+176
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+177
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+178
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+179
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+180
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+181
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+182
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+183
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+184
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+185
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+186
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+187
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+188
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+189
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+190
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+191
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+192
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+193
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+194
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+195
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+196
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+197
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+198
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+199
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+200
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+201
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+202
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+203
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+204
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+205
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+206
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+207
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+208
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+209
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+210
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+211
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+212
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+213
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+214
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+215
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+216
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+217
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+218
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+219
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+220
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+221
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+222
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+223
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+224
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+225
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+226
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+227
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+228
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+229
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+230
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+231
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+232
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+233
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+234
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+235
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+236
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+237
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+238
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+239
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+240
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+241
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+242
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+243
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+244
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+245
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+246
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+247
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+248
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+249
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+250
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+251
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+252
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+253
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+254
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+255
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+256
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+257
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+258
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+259
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+260
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+261
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+262
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+263
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+264
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+265
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+266
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+267
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+268
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+269
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+270
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+271
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+272
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+273
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+274
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+275
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+276
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+277
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+278
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+279
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+280
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+281
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+282
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+283
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+284
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+285
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+286
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+287
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+288
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+289
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+290
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+291
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+292
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+293
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+294
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+295
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+296
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+297
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+298
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+299
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+300
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+301
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+302
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+303
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+304
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+305
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+306
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+307
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+308
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+309
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+310
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+311
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+312
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+313
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+314
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+315
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+316
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+317
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+318
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+319
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+320
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+321
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+322
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+323
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+324
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+325
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+326
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+327
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+328
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+329
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+330
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+331
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+332
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+333
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+334
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+335
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+336
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+337
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+338
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+339
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+340
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+341
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+342
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+343
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+344
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+345
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+346
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+347
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+348
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+349
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+350
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+351
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+352
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+353
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+354
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+355
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+356
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+357
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+358
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+359
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+360
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+361
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+362
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+363
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+364
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+365
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+366
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+367
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+368
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+369
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+370
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+371
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+372
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+373
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+374
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+375
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+376
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+377
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+378
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+379
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+380
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+381
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+382
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+383
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+384
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+385
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+386
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+387
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+388
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+389
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+390
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+391
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+392
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+393
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+394
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+395
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+396
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+397
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+398
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+399
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+400
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+401
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+402
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+403
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+404
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+405
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+406
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+407
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+408
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+409
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+410
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+411
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+412
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+413
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+414
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+415
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+416
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+417
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+418
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+419
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+420
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+421
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+422
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+423
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+424
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+425
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+426
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+427
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+428
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+429
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+430
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+431
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+432
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+433
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+434
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+435
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+436
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+437
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+438
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+439
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+440
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+441
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+442
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+443
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+444
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+445
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+446
+    UF_FLAG_PRIVATE,                                        // PLAYER_SKILL_LINEID_0+447
+    UF_FLAG_PRIVATE,                                        // PLAYER_CHARACTER_POINTS
+    UF_FLAG_PRIVATE,                                        // PLAYER_MAX_TALENT_TIERS
+    UF_FLAG_PRIVATE,                                        // PLAYER_TRACK_CREATURES
+    UF_FLAG_PRIVATE,                                        // PLAYER_TRACK_RESOURCES
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPERTISE
+    UF_FLAG_PRIVATE,                                        // PLAYER_OFFHAND_EXPERTISE
+    UF_FLAG_PRIVATE,                                        // PLAYER_RANGED_EXPERTISE
+    UF_FLAG_PRIVATE,                                        // PLAYER_COMBAT_RATING_EXPERTISE
+    UF_FLAG_PRIVATE,                                        // PLAYER_BLOCK_PERCENTAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_DODGE_PERCENTAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_PARRY_PERCENTAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_CRIT_PERCENTAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_RANGED_CRIT_PERCENTAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_OFFHAND_CRIT_PERCENTAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_SPELL_CRIT_PERCENTAGE1
+    UF_FLAG_PRIVATE,                                        // PLAYER_SPELL_CRIT_PERCENTAGE1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_SPELL_CRIT_PERCENTAGE1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_SPELL_CRIT_PERCENTAGE1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_SPELL_CRIT_PERCENTAGE1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_SPELL_CRIT_PERCENTAGE1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_SPELL_CRIT_PERCENTAGE1+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_SHIELD_BLOCK
+    UF_FLAG_PRIVATE,                                        // PLAYER_SHIELD_BLOCK_CRIT_PERCENTAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_MASTERY
+    UF_FLAG_PRIVATE,                                        // PLAYER_PVP_POWER_DAMAGE
+    UF_FLAG_PRIVATE,                                        // PLAYER_PVP_POWER_HEALING
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+8
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+9
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+10
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+11
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+12
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+13
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+14
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+15
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+16
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+17
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+18
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+19
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+20
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+21
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+22
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+23
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+24
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+25
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+26
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+27
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+28
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+29
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+30
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+31
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+32
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+33
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+34
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+35
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+36
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+37
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+38
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+39
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+40
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+41
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+42
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+43
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+44
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+45
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+46
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+47
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+48
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+49
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+50
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+51
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+52
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+53
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+54
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+55
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+56
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+57
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+58
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+59
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+60
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+61
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+62
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+63
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+64
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+65
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+66
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+67
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+68
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+69
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+70
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+71
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+72
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+73
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+74
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+75
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+76
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+77
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+78
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+79
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+80
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+81
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+82
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+83
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+84
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+85
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+86
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+87
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+88
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+89
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+90
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+91
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+92
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+93
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+94
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+95
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+96
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+97
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+98
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+99
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+100
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+101
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+102
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+103
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+104
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+105
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+106
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+107
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+108
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+109
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+110
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+111
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+112
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+113
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+114
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+115
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+116
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+117
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+118
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+119
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+120
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+121
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+122
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+123
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+124
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+125
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+126
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+127
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+128
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+129
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+130
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+131
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+132
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+133
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+134
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+135
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+136
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+137
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+138
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+139
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+140
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+141
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+142
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+143
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+144
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+145
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+146
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+147
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+148
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+149
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+150
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+151
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+152
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+153
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+154
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+155
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+156
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+157
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+158
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+159
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+160
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+161
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+162
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+163
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+164
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+165
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+166
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+167
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+168
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+169
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+170
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+171
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+172
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+173
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+174
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+175
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+176
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+177
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+178
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+179
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+180
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+181
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+182
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+183
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+184
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+185
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+186
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+187
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+188
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+189
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+190
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+191
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+192
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+193
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+194
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+195
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+196
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+197
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+198
+    UF_FLAG_PRIVATE,                                        // PLAYER_EXPLORED_ZONES_1+199
+    UF_FLAG_PRIVATE,                                        // PLAYER_REST_STATE_EXPERIENCE
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_POS
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_POS+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_POS+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_POS+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_POS+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_POS+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_POS+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_NEG
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_PCT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_HEALING_DONE_POS
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_HEALING_PCT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_HEALING_DONE_PCT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_PERIODIC_HEALING_DONE_PCT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_WEAPON_DMG_MULTIPLIERS
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_WEAPON_DMG_MULTIPLIERS+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_WEAPON_DMG_MULTIPLIERS+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_SPELL_POWER_PCT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_RESILIENCE_PCT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_OVERRIDE_SPELL_POWER_BY_AP_PCT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_TARGET_RESISTANCE
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BYTES
+    UF_FLAG_PRIVATE,                                        // PLAYER_SELF_RES_SPELL
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_PVP_MEDALS
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+8
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+9
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+10
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_PRICE_1+11
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+8
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+9
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+10
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_BUYBACK_TIMESTAMP_1+11
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_KILLS
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_LIFETIME_HONORABLE_KILLS
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_WATCHED_FACTION_INDEX
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+8
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+9
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+10
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+11
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+12
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+13
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+14
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+15
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+16
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+17
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+18
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+19
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+20
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+21
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+22
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+23
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+24
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+25
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_COMBAT_RATING_1+26
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+8
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+9
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+10
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+11
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+12
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+13
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+14
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+15
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+16
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+17
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+18
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+19
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+20
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+21
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+22
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ARENA_TEAM_INFO_1_1+23
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MAX_LEVEL
+    UF_FLAG_PRIVATE,                                        // PLAYER_RUNE_REGEN_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_RUNE_REGEN_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_RUNE_REGEN_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_RUNE_REGEN_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_NO_REAGENT_COST_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_NO_REAGENT_COST_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_NO_REAGENT_COST_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_NO_REAGENT_COST_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPH_SLOTS_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPH_SLOTS_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPH_SLOTS_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPH_SLOTS_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPH_SLOTS_1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPH_SLOTS_1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPHS_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPHS_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPHS_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPHS_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPHS_1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_GLYPHS_1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_GLYPHS_ENABLED
+    UF_FLAG_PRIVATE,                                        // PLAYER_PET_SPELL_POWER
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_RESEARCHING_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_RESEARCHING_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_RESEARCHING_1+2
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_RESEARCHING_1+3
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_RESEARCHING_1+4
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_RESEARCHING_1+5
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_RESEARCHING_1+6
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_RESEARCHING_1+7
+    UF_FLAG_PRIVATE,                                        // PLAYER_PROFESSION_SKILL_LINE_1
+    UF_FLAG_PRIVATE,                                        // PLAYER_PROFESSION_SKILL_LINE_1+1
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_UI_HIT_MODIFIER
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_UI_SPELL_HIT_MODIFIER
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_HOME_REALM_TIME_OFFSET
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_MOD_PET_HASTE
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID+1
+    UF_FLAG_PRIVATE | UF_FLAG_UNK_200,                      // PLAYER_FIELD_OVERRIDE_SPELLS_ID
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_LFG_BONUS_FACTION
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_LOOT_SPEC_ID
+    UF_FLAG_PRIVATE | UF_FLAG_UNK_200,                      // PLAYER_FIELD_OVERRIDE_ZONE_PVP_TYPE
+    UF_FLAG_PRIVATE,                                        // PLAYER_FIELD_ITEM_LEVEL_DELTA
 };
 
 uint32 GameObjectUpdateFieldFlags[GAMEOBJECT_END] =
@@ -2154,24 +2161,22 @@ uint32 GameObjectUpdateFieldFlags[GAMEOBJECT_END] =
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA+1
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_TYPE
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_ENTRY
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DYNAMIC_FLAGS
+    UF_FLAG_DYNAMIC,                                        // OBJECT_FIELD_ENTRY
+    UF_FLAG_DYNAMIC | UF_FLAG_UNK_100,                      // OBJECT_FIELD_DYNAMIC_FLAGS
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_SCALE_X
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_CREATED_BY
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_CREATED_BY+1
+    UF_FLAG_PUBLIC,                                         // GAMEOBJECT_FIELD_CREATED_BY
+    UF_FLAG_PUBLIC,                                         // GAMEOBJECT_FIELD_CREATED_BY+1
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_DISPLAYID
-    UF_FLAG_PUBLIC,                                         // GAMEOBJECT_FLAGS
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // GAMEOBJECT_FLAGS
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_PARENTROTATION
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_PARENTROTATION+1
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_PARENTROTATION+2
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_PARENTROTATION+3
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_FACTION
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_LEVEL
-    UF_FLAG_PUBLIC,                                         // GAMEOBJECT_BYTES_1
-    UF_FLAG_DYNAMIC,                                        // GAMEOBJECT_DYNAMIC
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // GAMEOBJECT_BYTES_1
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // GAMEOBJECT_DYNAMIC
 };
-
-
 
 uint32 DynamicObjectUpdateFieldFlags[DYNAMICOBJECT_END] =
 {
@@ -2180,8 +2185,8 @@ uint32 DynamicObjectUpdateFieldFlags[DYNAMICOBJECT_END] =
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA+1
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_TYPE
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_ENTRY
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DYNAMIC_FLAGS
+    UF_FLAG_DYNAMIC,                                        // OBJECT_FIELD_ENTRY
+    UF_FLAG_DYNAMIC | UF_FLAG_UNK_100,                      // OBJECT_FIELD_DYNAMIC_FLAGS
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_SCALE_X
     UF_FLAG_PUBLIC,                                         // DYNAMICOBJECT_CASTER
     UF_FLAG_PUBLIC,                                         // DYNAMICOBJECT_CASTER+1
@@ -2198,8 +2203,8 @@ uint32 CorpseUpdateFieldFlags[CORPSE_END] =
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA+1
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_TYPE
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_ENTRY
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DYNAMIC_FLAGS
+    UF_FLAG_DYNAMIC,                                        // OBJECT_FIELD_ENTRY
+    UF_FLAG_DYNAMIC | UF_FLAG_UNK_100,                      // OBJECT_FIELD_DYNAMIC_FLAGS
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_SCALE_X
     UF_FLAG_PUBLIC,                                         // CORPSE_FIELD_OWNER
     UF_FLAG_PUBLIC,                                         // CORPSE_FIELD_OWNER+1
@@ -2238,21 +2243,38 @@ uint32 AreaTriggerUpdateFieldFlags[AREATRIGGER_END] =
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA+1
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_TYPE
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_ENTRY
-    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DYNAMIC_FLAGS
+    UF_FLAG_DYNAMIC,                                        // OBJECT_FIELD_ENTRY
+    UF_FLAG_DYNAMIC | UF_FLAG_UNK_100,                      // OBJECT_FIELD_DYNAMIC_FLAGS
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_SCALE_X
     UF_FLAG_PUBLIC,                                         // AREATRIGGER_CASTER
     UF_FLAG_PUBLIC,                                         // AREATRIGGER_CASTER+1
     UF_FLAG_PUBLIC,                                         // AREATRIGGER_DURATION
     UF_FLAG_PUBLIC,                                         // AREATRIGGER_SPELLID
-    UF_FLAG_PUBLIC,                                         // AREATRIGGER_SPELLVISUALID
-    UF_FLAG_PUBLIC,                                         // AREATRIGGER_EXPLICIT_SCALE
+    UF_FLAG_DYNAMIC,                                        // AREATRIGGER_SPELLVISUALID
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // AREATRIGGER_EXPLICIT_SCALE
+};
+
+uint32 SceneObjectUpdateFieldFlags[SCENE_END] =
+{
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_GUID
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_GUID+1
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA+1
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_TYPE
+    UF_FLAG_DYNAMIC,                                        // OBJECT_FIELD_ENTRY
+    UF_FLAG_DYNAMIC | UF_FLAG_UNK_100,                      // OBJECT_FIELD_DYNAMIC_FLAGS
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_SCALE_X
+    UF_FLAG_PUBLIC,                                         // SCENE_SCRIPT_PACKAGE_ID
+    UF_FLAG_PUBLIC,                                         // SCENE_RND_SEED_VAL
+    UF_FLAG_PUBLIC,                                         // SCENE_CREATED_BY
+    UF_FLAG_PUBLIC,                                         // SCENE_CREATED_BY+1
+    UF_FLAG_PUBLIC,                                         // SCENE_SCENE_TYPE
 };
 
 uint32 UnitDynamicFieldFlags[PLAYER_DYNAMIC_END] =
 {
-    UF_FLAG_PUBLIC | UF_FLAG_DYNAMIC,                       // UNIT_DYNAMIC_PASSIVE_SPELLS
-    UF_FLAG_PUBLIC | UF_FLAG_DYNAMIC,                       // UNIT_DYNAMIC_WORLD_EFFECTS
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // UNIT_DYNAMIC_PASSIVE_SPELLS
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // UNIT_DYNAMIC_WORLD_EFFECTS
     UF_FLAG_PRIVATE,                                        // PLAYER_DYNAMIC_RESEARCH_SITES
     UF_FLAG_PRIVATE,                                        // PLAYER_DYNAMIC_RESEARCH_SITE_PROGRESS
     UF_FLAG_PRIVATE,                                        // PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED

@@ -710,10 +710,10 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                     *data << uint32(m_floatValues[index] < 0 ? 0 : m_floatValues[index]);
                 }
                 // there are some float values which may be negative or can't get negative due to other checks
-                else if ((index >= UNIT_FIELD_NEGSTAT0   && index <= UNIT_FIELD_NEGSTAT4) ||
-                    (index >= UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 6)) ||
-                    (index >= UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 6)) ||
-                    (index >= UNIT_FIELD_POSSTAT0   && index <= UNIT_FIELD_POSSTAT4))
+                else if ((index >= UNIT_FIELD_NEGSTAT0 && index <= UNIT_FIELD_NEGSTAT0+4) ||
+                    (index >= UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE && index <= (UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 6)) ||
+                    (index >= UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE && index <= (UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 6)) ||
+                    (index >= UNIT_FIELD_POSSTAT0 && index <= UNIT_FIELD_POSSTAT0 + 4))
                 {
                     *data << uint32(m_floatValues[index]);
                 }
@@ -1060,10 +1060,7 @@ bool Object::IsUpdateFieldVisible(uint32 flags, bool isSelf, bool isOwner, bool 
     if (flags & UF_FLAG_PRIVATE && isSelf)
         return true;
 
-    if (flags & UF_FLAG_OWNER && isOwner)
-        return true;
-
-    if (flags & UF_FLAG_ITEM_OWNER && isItemOwner)
+    if (flags & UF_FLAG_OWNER && (isOwner || isItemOwner))
         return true;
 
     if (flags & UF_FLAG_PARTY_MEMBER && isPartyMember)
