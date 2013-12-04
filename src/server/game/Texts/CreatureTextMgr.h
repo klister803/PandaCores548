@@ -119,54 +119,23 @@ class CreatureTextLocalizer
     public:
         CreatureTextLocalizer(Builder const& builder, ChatMsg msgType) : _builder(builder), _msgType(msgType)
         {
-            _packetCache.resize(TOTAL_LOCALES, NULL);
         }
 
         ~CreatureTextLocalizer()
         {
-            for (size_t i = 0; i < _packetCache.size(); ++i)
-            {
-                if (_packetCache[i])
-                    delete _packetCache[i]->first;
-                delete _packetCache[i];
-            }
         }
 
         void operator()(Player* player)
         {
             LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
-            WorldPacket* messageTemplate;
-            size_t whisperGUIDpos;
 
-            // create if not cached yet
-            if (!_packetCache[loc_idx])
-            {
-                messageTemplate = new WorldPacket(SMSG_MESSAGECHAT, 200);
-                whisperGUIDpos = _builder(messageTemplate, loc_idx);
-                _packetCache[loc_idx] = new std::pair<WorldPacket*, size_t>(messageTemplate, whisperGUIDpos);
-            }
-            else
-            {
-                messageTemplate = _packetCache[loc_idx]->first;
-                whisperGUIDpos = _packetCache[loc_idx]->second;
-            }
-
-            WorldPacket data(*messageTemplate);
-            switch (_msgType)
-            {
-                case CHAT_MSG_MONSTER_WHISPER:
-                case CHAT_MSG_RAID_BOSS_WHISPER:
-                    data.put<uint64>(whisperGUIDpos, player->GetGUID());
-                    break;
-                default:
-                    break;
-            }
+            WorldPacket data;
+            _builder(&data, loc_idx, player->GetGUID());
 
             player->SendDirectMessage(&data);
         }
 
     private:
-        std::vector<std::pair<WorldPacket*, size_t>* > _packetCache;
         Builder const& _builder;
         ChatMsg _msgType;
 };

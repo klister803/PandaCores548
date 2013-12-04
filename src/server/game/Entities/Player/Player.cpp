@@ -21567,19 +21567,63 @@ void Player::StopCastingCharm()
 
 inline void Player::BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std::string& text, uint32 language, const char* addonPrefix /*= NULL*/) const
 {
-    *data << uint8(msgtype);
-    *data << uint32(language);
-    *data << uint64(GetGUID());
-    *data << uint32(0);                                      // constant unknown time
-    if (addonPrefix)
-        *data << addonPrefix;
-    *data << uint64(GetGUID());
+    ObjectGuid guid = GetGUID();
 
-    if(msgtype == 2 || msgtype == 51 || msgtype == 3 || msgtype == 39 || msgtype == 40)
-        *data << uint64(GetGUID());
-    *data << uint32(text.length() + 1);
-    *data << text;
-    *data << uint16(GetChatTag());
+    data->WriteBit(0);       // byte1495
+    data->WriteBit(text.length() == 0);
+    data->WriteBit(1);       // !has achievement
+    data->WriteBit(1);       // !has source name
+
+    data->WriteBit(!guid);   // !source guid marker
+    data->WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(guid);
+
+    data->WriteBit(1);       // !has group guid
+    data->WriteBits(0, 8);   // group guid
+
+    data->WriteBit(!addonPrefix || strlen(addonPrefix) == 0);
+    data->WriteBit(0);       // byte1494
+    data->WriteBit(1);       // !has realm id
+
+    data->WriteBit(1);       // !has float1490
+
+    data->WriteBit(!guid);   // !has target guid
+    data->WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(guid);
+
+    if (addonPrefix)
+        if (uint32 len = strlen(addonPrefix))
+            data->WriteBits(len, 5);
+
+    data->WriteBit(1);       // !has target name
+    data->WriteBit(!GetChatTag());
+
+    if (uint32 len = text.length())
+        data->WriteBits(len, 12);
+
+    data->WriteBit(!language);
+    if (uint16 chatTag = GetChatTag())
+        data->WriteBits(chatTag, 9);
+
+    data->WriteBit(1);       // !guild guid marker
+
+    data->WriteBits(0, 8);   // guild guid
+
+    data->WriteBit(1);       // !has channel name
+
+    data->WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(guid);
+
+    *data << uint8(msgtype);
+
+    data->WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(guid);
+
+    if (addonPrefix)
+        data->WriteString(addonPrefix);
+
+    //if (realmID)
+    //    *data << uint32(realmID);
+
+    if (language)
+        *data << uint8(language);
+    data->WriteString(text);
 }
 
 void Player::Say(const std::string& text, const uint32 language)

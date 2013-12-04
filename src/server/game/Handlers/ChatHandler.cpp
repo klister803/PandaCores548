@@ -69,7 +69,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
     uint32 type = 0;
     uint32 lang;
 
-    switch(recvData.GetOpcode())
+    switch (recvData.GetOpcode())
     {
         case CMSG_MESSAGECHAT_SAY:
             type = CHAT_MSG_SAY;
@@ -236,8 +236,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
         return;
     }
 
-    uint32 textLength = 0;
-    uint32 receiverLength = 0;
     std::string to, channel, msg;
     bool ignoreChecks = false;
     switch (type)
@@ -251,25 +249,27 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
         case CHAT_MSG_RAID:
         case CHAT_MSG_RAID_WARNING:
         case CHAT_MSG_BATTLEGROUND:
-            textLength = recvData.ReadBits(9);
-            msg = recvData.ReadString(textLength);
+            msg = recvData.ReadString(recvData.ReadBits(8));
             break;
         case CHAT_MSG_WHISPER:
-            receiverLength = recvData.ReadBits(10);
-            textLength = recvData.ReadBits(9);
-            msg = recvData.ReadString(textLength);
+        {
+            uint32 receiverLength = recvData.ReadBits(9);
+            uint32 textLength = recvData.ReadBits(8);
             to = recvData.ReadString(receiverLength);
+            msg = recvData.ReadString(textLength);
             break;
+        }
         case CHAT_MSG_CHANNEL:
-            receiverLength = recvData.ReadBits(10);
-            textLength = recvData.ReadBits(9);
+        {
+            uint32 receiverLength = recvData.ReadBits(9);
+            uint32 textLength = recvData.ReadBits(8);
             channel = recvData.ReadString(receiverLength);
             msg = recvData.ReadString(textLength);
             break;
+        }
         case CHAT_MSG_AFK:
         case CHAT_MSG_DND:
-            textLength = recvData.ReadBits(9);
-            msg = recvData.ReadString(textLength);
+            msg = recvData.ReadString(recvData.ReadBits(8));
             ignoreChecks = true;
             break;
     }
