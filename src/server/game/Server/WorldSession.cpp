@@ -957,10 +957,10 @@ void WorldSession::SendAddonsInfo()
         bool hasString = false;                             // has string
 
         data.WriteBit(hasString);
-        data.WriteBit(!itr->UsePublicKeyOrCRC);
+        data.WriteBit(false);//data.WriteBit(!itr->UsePublicKeyOrCRC);
         if (hasString)
             data.WriteBits(0, 8);                           // string length
-        data.WriteBit(itr->Enabled);
+        data.WriteBit(true);//data.WriteBit(itr->Enabled);
     }
 
     data.WriteBits(0, 18);                      // banned count
@@ -973,7 +973,8 @@ void WorldSession::SendAddonsInfo()
 
         if (hasString)
             data.WriteString("");                           // use <Addon>\<Addon>.url file or not
-        if (!itr->UsePublicKeyOrCRC)
+        //if (!itr->UsePublicKeyOrCRC)
+        if (false)
         {
             sLog->outInfo(LOG_FILTER_GENERAL, "ADDON: CRC (0x%x) for addon %s is wrong (does not match expected 0x%x), sending pubkey",
                 itr->CRC, itr->Name.c_str(), STANDARD_ADDON_CRC);
@@ -1237,13 +1238,13 @@ void WorldSession::SendAddonsInfo()
             data << uint8(addonPublicKey[8]);
 #pragma endregion
         }
-        if (itr->Enabled)
+        //if (itr->Enabled)
         {
-            data << uint8(itr->Enabled);
+            data << uint8(1);//data << uint8(itr->Enabled);
             data << uint32(0);
         }
 
-        data << uint8(itr->State);
+        data << uint8(2);//data << uint8(itr->State);
     }
     /*if (bannedAddons)
     {
