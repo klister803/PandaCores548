@@ -68,52 +68,14 @@ namespace Trinity
         private:
             void do_helper(WorldPacket& data, char const* text)
             {
-                uint64 target_guid = _source ? _source->GetGUID() : 0;
-                uint16 chat_tag = _source ? _source->GetChatTag() : 0;
+                Trinity::ChatData c;
+                c.targetGuid = _source ? _source->GetGUID() : 0;
+                c.sourceGuid = _source ? _source->GetGUID() : 0;
+                c.chatTag = _source ? _source->GetChatTag() : 0;
+                c.message = text;
+                c.chatType = _msgtype;
 
-                data.WriteBit(0);       // byte1495
-                data.WriteBit(strlen(text) == 0);
-                data.WriteBit(1);       // !has achievement
-                data.WriteBit(1);       // !has source name
-
-                data.WriteBit(!target_guid);    // !source guid marker
-                data.WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(target_guid);
-
-                data.WriteBit(1);       // !group guid marker
-                data.WriteBits(0, 8);   // group guid
-
-                data.WriteBit(1);       // !has addon prefix
-                data.WriteBit(0);       // byte1494
-                data.WriteBit(1);       // !has realm id
-
-                data.WriteBit(1);       // !has float1490
-
-                data.WriteBit(!target_guid);    // !has target guid
-                data.WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(target_guid);
-
-                data.WriteBit(1);       // !has target name
-                data.WriteBit(!chat_tag);       // !has chat tag
-
-                if (uint32 len = strlen(text))
-                    data.WriteBits(strlen(text), 12);
-
-                data.WriteBit(1);       // !has language
-                if (chat_tag)
-                    data.WriteBits(chat_tag, 9);
-
-                data.WriteBit(1);       // !guild guid marker
-
-                data.WriteBits(0, 8);   // guild guid
-
-                data.WriteBit(1);       // !has channel name
-
-                data.WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(target_guid);
-
-                data << uint8(_msgtype);
-
-                data.WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(target_guid);
-
-                data.WriteString(text);
+                Trinity::BuildChatPacket(data, c);
             }
 
             ChatMsg _msgtype;
@@ -137,52 +99,14 @@ namespace Trinity
                 char str[2048];
                 snprintf(str, 2048, text, arg1str, arg2str);
 
-                uint64 target_guid = _source  ? _source->GetGUID() : 0;
-                uint16 chat_tag = _source ? _source->GetChatTag() : 0;
+                Trinity::ChatData c;
+                c.targetGuid = _source ? _source->GetGUID() : 0;
+                c.sourceGuid = _source ? _source->GetGUID() : 0;
+                c.chatTag = _source ? _source->GetChatTag() : 0;
+                c.message = text;
+                c.chatType = _msgtype;
 
-                data.WriteBit(0);       // byte1495
-                data.WriteBit(strlen(text) == 0);
-                data.WriteBit(1);       // !has achievement
-                data.WriteBit(1);       // !has source name
-
-                data.WriteBit(!target_guid);    // !source guid marker
-                data.WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(target_guid);
-
-                data.WriteBit(1);       // !group guid marker
-                data.WriteBits(0, 8);   // group guid
-
-                data.WriteBit(1);       // !has addon prefix
-                data.WriteBit(0);       // byte1494
-                data.WriteBit(1);       // !has realm id
-
-                data.WriteBit(1);       // !has float1490
-
-                data.WriteBit(!target_guid);    // !has target guid
-                data.WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(target_guid);
-
-                data.WriteBit(1);       // !has target name
-                data.WriteBit(!chat_tag);       // !has chat tag
-
-                if (uint32 len = strlen(text))
-                    data.WriteBits(strlen(text), 12);
-
-                data.WriteBit(1);       // !has language
-                if (chat_tag)
-                    data.WriteBits(chat_tag, 9);
-
-                data.WriteBit(1);       // !guild guid marker
-
-                data.WriteBits(0, 8);   // guild guid
-
-                data.WriteBit(1);       // !has channel name
-
-                data.WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(target_guid);
-
-                data << uint8(_msgtype);
-
-                data.WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(target_guid);
-
-                data.WriteString(text);
+                Trinity::BuildChatPacket(data, c);
             }
 
         private:
@@ -1951,42 +1875,13 @@ void Battleground::SendWarningToAll(int32 entry, ...)
     va_end(ap);
     std::string msg(str);
 
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
+    WorldPacket data;
 
-    data.WriteBit(0);       // byte1495
-    data.WriteBit(msg.size() == 0);
-    data.WriteBit(1);       // !has achievement
-    data.WriteBit(1);       // !has source name
+    Trinity::ChatData c;
+    c.chatType = CHAT_MSG_RAID_BOSS_EMOTE;
+    c.message = msg;
 
-    data.WriteBit(1);       // !source guid marker
-    data.WriteBits(0, 8);   // source guid
-
-    data.WriteBit(1);       // !group guid marker
-    data.WriteBits(0, 8);   // group guid
-
-    data.WriteBit(1);       // !has addon prefix
-    data.WriteBit(0);       // byte1494
-    data.WriteBit(1);       // !has realm id
-
-    data.WriteBit(1);       // !has float1490
-
-    data.WriteBit(1);       // !has target guid
-    data.WriteBits(0, 8);   // target guid
-
-    data.WriteBit(1);       // !has target name
-    data.WriteBit(1);       // !has chat tag
-
-    data.WriteBits(msg.size(), 12);
-
-    data.WriteBit(1);       // !has language
-    data.WriteBit(1);       // !guild guid marker
-
-    data.WriteBits(0, 8);   // guild guid
-
-    data.WriteBit(1);       // !has channel name
-
-    data << uint8(CHAT_MSG_RAID_BOSS_EMOTE);
-    data.WriteString(msg);
+    Trinity::BuildChatPacket(data, c);
 
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER)))

@@ -20493,3 +20493,84 @@ bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
     return true;
 }
 
+void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c)
+{
+    data.Initialize(SMSG_MESSAGECHAT);
+
+    data.WriteBit(c.byte1495);
+    data.WriteBit(!c.message.size());
+    data.WriteBit(!c.achievementId);
+    data.WriteBit(!c.sourceName.size());
+
+    data.WriteBit(!c.sourceGuid);
+    data.WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(c.sourceGuid);
+
+    data.WriteBit(!c.groupGuid);
+    data.WriteGuidMask<6, 0, 4, 1, 2, 3, 7, 5>(c.groupGuid);
+
+    data.WriteBit(!c.addonPrefix.size());
+    data.WriteBit(c.byte1494);
+    data.WriteBit(!c.realmId);
+
+    data.WriteBit(c.float1490 == 0.0f);
+    if (uint32 len = c.sourceName.size())
+        data.WriteBits(len, 11);
+
+    data.WriteBit(!c.targetGuid);
+    data.WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(c.targetGuid);
+
+    if (uint32 len = c.addonPrefix.size())
+        data.WriteBits(len, 5);
+
+    data.WriteBit(!c.targetName.size());
+    data.WriteBit(!c.chatTag);
+
+    if (uint32 len = c.message.size())
+        data.WriteBits(len, 12);
+
+    data.WriteBit(!c.language);
+    if (c.chatTag)
+        data.WriteBits(c.chatTag, 9);
+
+    data.WriteBit(!c.guildGuid);
+    if (uint32 len = c.targetName.size())
+        data.WriteBits(len, 11);
+
+    data.WriteGuidMask<0, 2, 1, 4, 6, 7, 5, 3>(c.guildGuid);
+
+    data.WriteBit(!c.channelName.size());
+    if (uint32 len = c.channelName.size())
+        data.WriteBits(len, 7);
+
+    data.WriteString(c.channelName);
+    data.WriteString(c.sourceName);
+
+    data.WriteGuidBytes<6, 7, 1, 2, 4, 3, 0, 5>(c.groupGuid);
+
+    data.WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(c.targetGuid);
+
+    data << uint8(c.chatType);
+
+    data.WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(c.sourceGuid);
+
+    data.WriteString(c.addonPrefix);
+
+    if (c.realmId)
+        data << uint32(c.realmId);
+
+    data.WriteGuidBytes<1, 0, 3, 7, 6, 5, 2, 4>(c.guildGuid);
+
+    data.WriteString(c.targetName);
+
+    if (c.achievementId)
+        data << uint32(c.achievementId);
+
+    if (c.language)
+        data << uint32(c.language);
+
+    data.WriteString(c.message);
+
+    if (c.float1490 != 0.0f)
+        data << float(c.float1490);
+}
+

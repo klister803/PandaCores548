@@ -670,59 +670,17 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
     }
     else
     {
-        uint32 messageLength = strlen(what);
+        Trinity::ChatData c;
+        c.message = what;
+        c.channelName = m_name;
+        c.sourceGuid = p;
+        c.targetGuid = p;
+        c.chatTag = player ? player->GetChatTag() : 0;
+        c.language = lang;
+        c.chatType = CHAT_MSG_CHANNEL;
 
-        WorldPacket data(SMSG_MESSAGECHAT, 1+4+8+4+m_name.size()+1+8+4+messageLength+1);
-        ObjectGuid guid = p;
-
-        data.WriteBit(0);       // byte1495
-        data.WriteBit(messageLength == 0);
-        data.WriteBit(1);       // !has achievement
-        data.WriteBit(1);       // !has source name
-
-        data.WriteBit(!guid);   // !source guid marker
-        data.WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(guid);
-
-        data.WriteBit(1);       // !has group guid
-        data.WriteBits(0, 8);   // group guid
-
-        data.WriteBit(1);       // !has addon prefix
-        data.WriteBit(0);       // byte1494
-        data.WriteBit(1);       // !has realm id
-
-        data.WriteBit(1);       // !has float1490
-
-        data.WriteBit(!guid);   // !has target guid
-        data.WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(guid);
-
-        data.WriteBit(1);       // !has target name
-        data.WriteBit(!player || !player->GetChatTag());
-
-        data.WriteBits(messageLength, 12);
-
-        data.WriteBit(!lang);   // !has language
-        if (player && player->GetChatTag())
-            data.WriteBits(player->GetChatTag(), 9);
-
-        data.WriteBit(1);       // !guild guid marker
-
-        data.WriteBits(0, 8);   // guild guid
-
-        data.WriteBit(m_name.size() == 0);
-        if (uint32 len = m_name.size())
-            data.WriteBits(len, 7);
-
-        data.WriteString(m_name);
-
-        data.WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(guid);
-
-        data << uint8(CHAT_MSG_CHANNEL);
-
-        data.WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(guid);
-
-        if (lang)
-            data << uint8(lang);
-        data.WriteString(what);
+        WorldPacket data;
+        Trinity::BuildChatPacket(data, c);
 
         SendToAll(&data, !players[p].IsModerator() ? p : false);
     }

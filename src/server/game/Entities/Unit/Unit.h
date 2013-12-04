@@ -2484,6 +2484,46 @@ class Unit : public WorldObject
 
 namespace Trinity
 {
+    struct ChatData
+    {
+        ChatData()
+        {
+            byte1494 = false;
+            byte1495 = false;
+            realmId = 0;
+            chatTag = 0;
+            chatType = 0;
+            achievementId = 0;
+            language = 0;
+            float1490 = 0.0f;
+        }
+
+        bool byte1494;
+        bool byte1495;
+        ObjectGuid sourceGuid;
+        ObjectGuid targetGuid;
+        ObjectGuid groupGuid;
+        ObjectGuid guildGuid;
+
+        std::string addonPrefix;
+        std::string targetName;
+        std::string sourceName;
+        std::string channelName;
+        std::string message;
+
+        uint32 realmId;
+        uint16 chatTag;
+        uint8 chatType;
+        uint32 achievementId;
+        uint8 language;
+        float float1490;
+    };
+
+    void BuildChatPacket(WorldPacket& data, ChatData& c);
+}
+
+namespace Trinity
+{
     // Binary predicate for sorting Units based on percent value of a power
     class PowerPctOrderPred
     {

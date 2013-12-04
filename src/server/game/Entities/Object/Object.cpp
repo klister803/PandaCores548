@@ -2434,57 +2434,15 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
 
 void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 targetGuid) const
 {
-    ObjectGuid sourceGuid = GetGUID();
-    uint32 textLen = text ? strlen(text) : 0;
-    uint32 nameLen = name ? strlen(name) : 0;
+    Trinity::ChatData c;
+    c.sourceGuid = GetGUID();
+    c.targetGuid = targetGuid;
+    c.message = text;
+    c.sourceName = name;
+    c.language = language;
+    c.chatType = msgtype;
 
-    data->WriteBit(0);      // byte1495
-    data->WriteBit(!textLen);
-    data->WriteBit(1);      // !has achievement
-    data->WriteBit(!nameLen);
-
-    data->WriteBit(!sourceGuid);
-    data->WriteGuidMask<2, 4, 0, 6, 1, 3, 5, 7>(sourceGuid);
-
-    data->WriteBit(1);      // !group guid marker
-    data->WriteBits(0, 8);  // group guid
-
-    data->WriteBit(1);      // !has addon prefix
-    data->WriteBit(0);      // byte1494
-    data->WriteBit(1);      // !has realm id
-
-    data->WriteBit(1);      // !has float1490
-    if (nameLen)
-        data->WriteBits(nameLen, 11);
-
-    data->WriteBit(!targetGuid);
-    data->WriteGuidMask<4, 0, 6, 7, 5, 1, 3, 2>(targetGuid);
-
-    data->WriteBit(1);      // !has target name
-    data->WriteBit(1);      // !has chat tag
-
-    if (textLen)
-        data->WriteBits(textLen, 12);
-
-    data->WriteBit(!language);          // !has language
-    data->WriteBit(1);      // !guild guid marker
-
-    data->WriteBits(0, 8);  // guild guid
-
-    data->WriteBit(1);      // !has channel name
-
-    if (nameLen)
-        data->WriteString(name);
-
-    data->WriteGuidBytes<0, 4, 1, 3, 5, 7, 2, 6>(targetGuid);
-
-    *data << uint8(msgtype);
-
-    data->WriteGuidBytes<7, 6, 5, 4, 0, 2, 1, 3>(sourceGuid);
-    if (language)
-        *data << uint8(language);
-    if (textLen)
-        data->WriteString(text);
+    Trinity::BuildChatPacket(*data, c);
 }
 
 void Unit::BuildHeartBeatMsg(WorldPacket* data) const
