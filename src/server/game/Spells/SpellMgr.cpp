@@ -286,6 +286,9 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
             // Wyvern Sting
             if (spellproto->SpellFamilyFlags[1] & 0x1000)
                 return 6 * IN_MILLISECONDS;
+            // Wyvern Sting
+            if (spellproto->Id == 117526)
+                return 3 * IN_MILLISECONDS;
             // Hunter's Mark
             if (spellproto->SpellFamilyFlags[0] & 0x400)
                 return 120 * IN_MILLISECONDS;
@@ -2286,8 +2289,8 @@ void SpellMgr::LoadSpellLinked()
 
     mSpellLinkedMap.clear();    // need for reload case
 
-    //                                                0              1             2        3        4          5        7         8
-    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, hastalent, hastalent2, chance, cooldown, type2 FROM spell_linked_spell");
+    //                                                0              1             2        3        4          5        6         7        8
+    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, hastalent, hastalent2, chance, cooldown, type2, learnspell FROM spell_linked_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked spells. DB table `spell_linked_spell` is empty.");
@@ -2307,6 +2310,7 @@ void SpellMgr::LoadSpellLinked()
         int32 chance = fields[5].GetInt32();
         int32 cooldown = fields[6].GetUInt8();
         int32 type2 = fields[7].GetUInt8();
+        int32 learnspell = fields[8].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(trigger));
         if (!spellInfo)
@@ -2335,6 +2339,7 @@ void SpellMgr::LoadSpellLinked()
         templink.chance = chance;
         templink.cooldown = cooldown;
         templink.type2 = type2;
+        templink.learnspell = learnspell;
         mSpellLinkedMap[trigger].push_back(templink);
 
         ++count;
@@ -2454,8 +2459,8 @@ void SpellMgr::LoadSpellPrcoCheck()
 
     mSpellPrcoCheckMap.clear();    // need for reload case
 
-    //                                                0        1       2      3             4         5      6          7
-    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask FROM spell_proc_check");
+    //                                                0        1       2      3             4         5      6          7           8         9
+    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass FROM spell_proc_check");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 proc check spells. DB table `spell_proc_check` is empty.");
@@ -2475,6 +2480,8 @@ void SpellMgr::LoadSpellPrcoCheck()
         int32 chance = fields[5].GetInt32();
         int32 target = fields[6].GetInt32();
         int32 effectmask = fields[7].GetInt32();
+        int32 powertype = fields[8].GetInt32();
+        int32 dmgclass = fields[9].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(entry));
         if (!spellInfo)
@@ -2488,6 +2495,8 @@ void SpellMgr::LoadSpellPrcoCheck()
         templink.hastalent = hastalent;
         templink.chance = chance;
         templink.target = target;
+        templink.powertype = powertype;
+        templink.dmgclass = dmgclass;
         templink.effectmask = effectmask;
         mSpellPrcoCheckMap[entry].push_back(templink);
         if(entry2)

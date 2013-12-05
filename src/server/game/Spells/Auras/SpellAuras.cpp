@@ -1237,7 +1237,15 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                 {
                     if (itr->effect < 0)
-                        target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), true);
+                    {
+                        if(itr->learnspell)
+                        {
+                            if(Player* _lplayer = target->ToPlayer())
+                                _lplayer->removeSpell(-(itr->effect));
+                        }
+                        else
+                            target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), true);
+                    }
                     else if (caster)
                     {
                         if(itr->type2)
@@ -1259,7 +1267,13 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->HasSpellCooldown(itr->effect))
                             continue;
 
-                        caster->AddAura(itr->effect, target);
+                        if(itr->learnspell)
+                        {
+                            if(Player* _lplayer = caster->ToPlayer())
+                                _lplayer->learnSpell(itr->effect, false);
+                        }
+                        else
+                            caster->AddAura(itr->effect, target);
 
                         if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
                             target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
@@ -1275,7 +1289,15 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                 {
                     if (itr->effect < 0)
-                        target->RemoveAurasDueToSpell(-(itr->effect));
+                    {
+                        if(itr->learnspell)
+                        {
+                            if(Player* _lplayer = target->ToPlayer())
+                                _lplayer->removeSpell(-(itr->effect));
+                        }
+                        else
+                            target->RemoveAurasDueToSpell(-(itr->effect));
+                    }
                     else if (removeMode != AURA_REMOVE_BY_DEATH)
                     {
                         if(itr->type2 && caster)
@@ -1297,7 +1319,13 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->HasSpellCooldown(itr->effect))
                             continue;
 
-                        target->CastSpell(target, itr->effect, true, NULL, NULL, GetCasterGUID());
+                        if(itr->learnspell)
+                        {
+                            if(Player* _lplayer = target->ToPlayer())
+                                _lplayer->learnSpell(itr->effect, false);
+                        }
+                        else
+                            target->CastSpell(target, itr->effect, true, NULL, NULL, GetCasterGUID());
 
                         if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
                             target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
@@ -1309,7 +1337,15 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                 {
                     if (itr->effect < 0)
-                        target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), false);
+                    {
+                        if(itr->learnspell)
+                        {
+                            if(Player* _lplayer = target->ToPlayer())
+                                _lplayer->removeSpell(-(itr->effect));
+                        }
+                        else
+                            target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), false);
+                    }
                     else
                         target->RemoveAura(itr->effect, GetCasterGUID(), 0, removeMode);
                 }
@@ -1343,8 +1379,14 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->HasSpellCooldown(itr->effect))
                         continue;
 
-                    if (Aura* triggeredAura = target->GetAura(itr->effect, GetCasterGUID()))
-                        triggeredAura->ModStackAmount(GetStackAmount() - triggeredAura->GetStackAmount());
+                    if(itr->learnspell)
+                    {
+                        if(Player* _lplayer = target->ToPlayer())
+                            _lplayer->learnSpell(itr->effect, false);
+                    }
+                    else
+                        if (Aura* triggeredAura = target->GetAura(itr->effect, GetCasterGUID()))
+                            triggeredAura->ModStackAmount(GetStackAmount() - triggeredAura->GetStackAmount());
 
                     if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
                         target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
@@ -2464,6 +2506,7 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
                         break;
                     }
                     case SPELL_EFFECT_APPLY_AREA_AURA_PET:
+                    case SPELL_EFFECT_APPLY_AURA_ON_PET:
                         targetList.push_back(GetUnitOwner());
                     case SPELL_EFFECT_APPLY_AREA_AURA_OWNER:
                     {

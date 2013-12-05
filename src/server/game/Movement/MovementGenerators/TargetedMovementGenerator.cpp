@@ -150,6 +150,13 @@ void TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >
 }
 
 template<>
+void TargetedMovementGeneratorMedium<Creature,FetchMovementGenerator<Creature> >::UpdateFinalDistance(float fDistance)
+{
+    i_offset = fDistance;
+    i_recalculateTravel = true;
+}
+
+template<>
 void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::UpdateFinalDistance(float fDistance)
 {
     i_offset = fDistance;
@@ -266,6 +273,75 @@ void ChaseMovementGenerator<Creature>::MovementInform(Creature &unit)
 }
 
 //-----------------------------------------------//
+template<class T>
+void FetchMovementGenerator<T>::_reachTarget(T &owner)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "FetchMovementGenerator _reachTarget i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+}
+
+template<>
+void FetchMovementGenerator<Creature>::Initialize(Creature &owner)
+{
+    owner.SetWalk(false);
+    owner.AddUnitState(UNIT_STATE_CHASE|UNIT_STATE_CHASE_MOVE);
+    _setTargetLocation(owner);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "FetchMovementGenerator Initialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+}
+
+template<class T>
+void FetchMovementGenerator<T>::Finalize(T &owner)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "FetchMovementGenerator Finalize i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+
+    owner.ClearUnitState(UNIT_STATE_CHASE|UNIT_STATE_CHASE_MOVE);
+}
+
+template<class T>
+void FetchMovementGenerator<T>::Reset(T &owner)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "FetchMovementGenerator Reset i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+    Initialize(owner);
+}
+
+template<class T>
+void FetchMovementGenerator<T>::MovementInform(T & /*unit*/)
+{
+}
+
+template<>
+void FetchMovementGenerator<Creature>::MovementInform(Creature &unit)
+{
+
+    if(Unit* _petowner = unit.GetOwner())
+    {
+        if (Player* _player = _petowner->ToPlayer())
+        {
+            if(Pet* pet = _player->GetPet())
+            {
+                _player->SendLoot(i_target.getTarget()->GetGUID(), LOOT_CORPSE, true, 1);
+                pet->CastSpell(i_target.getTarget(), 125056, false);
+
+                pet->AttackStop();
+                pet->InterruptNonMeleeSpells(false);
+                pet->GetMotionMaster()->Clear(false);
+                pet->GetMotionMaster()->MoveFollow(_petowner, PET_FOLLOW_DIST, pet->GetFollowAngle());
+                if (CharmInfo* charmInfo = pet->GetCharmInfo())
+                {
+                    charmInfo->SetCommandState(COMMAND_FOLLOW);
+                    charmInfo->SetIsCommandAttack(false);
+                    charmInfo->SetIsAtStay(false);
+                    charmInfo->SetIsReturning(true);
+                    charmInfo->SetIsFollowing(false);
+                }
+            }
+        }
+    }
+    // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
+    if (unit.AI())
+        unit.AI()->MovementInform(CHASE_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+}
+
+//-----------------------------------------------//
 template<>
 bool FollowMovementGenerator<Creature>::EnableWalking() const
 {
@@ -343,10 +419,12 @@ template void TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Play
 template void TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::_setTargetLocation(Player &);
 template void TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >::_setTargetLocation(Creature &);
 template void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::_setTargetLocation(Creature &);
+template void TargetedMovementGeneratorMedium<Creature,FetchMovementGenerator<Creature> >::_setTargetLocation(Creature &);
 template bool TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::Update(Player &, const uint32 &);
 template bool TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::Update(Player &, const uint32 &);
 template bool TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >::Update(Creature &, const uint32 &);
 template bool TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::Update(Creature &, const uint32 &);
+template bool TargetedMovementGeneratorMedium<Creature,FetchMovementGenerator<Creature> >::Update(Creature &, const uint32 &);
 
 template void ChaseMovementGenerator<Player>::_reachTarget(Player &);
 template void ChaseMovementGenerator<Creature>::_reachTarget(Creature &);
@@ -355,6 +433,10 @@ template void ChaseMovementGenerator<Creature>::Finalize(Creature &);
 template void ChaseMovementGenerator<Player>::Reset(Player &);
 template void ChaseMovementGenerator<Creature>::Reset(Creature &);
 template void ChaseMovementGenerator<Player>::MovementInform(Player &unit);
+
+template void FetchMovementGenerator<Creature>::_reachTarget(Creature &);
+template void FetchMovementGenerator<Creature>::Finalize(Creature &);
+template void FetchMovementGenerator<Creature>::Reset(Creature &);
 
 template void FollowMovementGenerator<Player>::Finalize(Player &);
 template void FollowMovementGenerator<Creature>::Finalize(Creature &);

@@ -16198,6 +16198,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         continue;
                     if(itr->target == 1 && target)
                         _checkTarget = target;
+                    //if this spell exist not proc
                     if (itr->checkspell < 0)
                     {
                         if (-(itr->checkspell) == procSpell->Id)
@@ -16220,6 +16221,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             break;
                         }
                     }
+                    //if this spell not exist not proc
                     else if (itr->checkspell == procSpell->Id)
                     {
                         if(itr->hastalent != 0)
@@ -16245,6 +16247,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         procCheck = false;
                         break;
                     }
+                    //other check
                     else if (itr->checkspell == 0)
                     {
                         procCheck = true;
@@ -16266,11 +16269,30 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             procCheck = false;
                             break;
                         }
+                        if(itr->powertype != 0 && itr->dmgclass != 0)
+                        {
+                            if(itr->powertype == procSpell->PowerType && itr->dmgclass == procSpell->DmgClass)
+                            {
+                                procCheck = false;
+                                break;
+                            }
+                        }
+                        else if(itr->dmgclass != 0 && itr->dmgclass == procSpell->DmgClass)
+                        {
+                            procCheck = false;
+                            break;
+                        }
+                        else if(itr->powertype != 0 && itr->powertype == procSpell->PowerType)
+                        {
+                            procCheck = false;
+                            break;
+                        }
                     }
                     else
                         procCheck = true;
                 }
             }
+            //if check true false proc
             if(procCheck)
                 continue;
         }

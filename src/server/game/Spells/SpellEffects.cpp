@@ -243,7 +243,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //171 SPELL_EFFECT_171
     &Spell::EffectResurrectWithAura,                        //172 SPELL_EFFECT_RESURRECT_WITH_AURA
     &Spell::EffectBuyGuilkBankTab,                          //173 SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB
-    &Spell::EffectNULL,                                     //174 SPELL_EFFECT_APPLY_AURA_ON_PET
+    &Spell::EffectApplyAreaAura,                            //174 SPELL_EFFECT_APPLY_AURA_ON_PET
     &Spell::EffectUnused,                                   //175 SPELL_EFFECT_175
     &Spell::EffectSanctuary,                                //176 SPELL_EFFECT_SANCTUARY_2
     &Spell::EffectNULL,                                     //177 SPELL_EFFECT_177
@@ -615,6 +615,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     // Glaive Toss
                     case 121414:
                         damage += m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2f;
+                        break;
+                    // A Murder of Crows
+                    case 131900:
+                        damage += m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.288f;
                         break;
                     default:
                         break;
@@ -1893,19 +1897,40 @@ void Spell::EffectHealPct(SpellEffIndex /*effIndex*/)
     if (!m_originalCaster)
         return;
 
-    // Rune Tap - Party
-    if (m_spellInfo->Id == 59754 && unitTarget == m_caster)
-        return;
+    switch (m_spellInfo->Id)
+    {
+        case 6262:  // Healthstone
+            if (m_caster->HasAura(56224)) // Glyph of Healthstone
+                return;
+            break;
+        case 59754: // Rune Tap - Party
+            if (unitTarget == m_caster)
+                return;
+            break;
+        case 53353: // Chimera Shot - Heal
+            if (m_caster->HasAura(119447)) // Glyph of Chimera Shot
+                damage += 2;
+            break;
+        case 114635:  // Ember Tap
+        {
+            // Mastery: Emberstorm
+            if (AuraEffect const* aurEff = m_caster->GetAuraEffect(77220, EFFECT_0))
+                AddPct(damage, aurEff->GetAmount());
+            break;
+        }
+        case 118340:// Impending Victory - Heal
+            // Victorious State causes your next Impending Victory to heal for 20% of your maximum health.
+            if (m_caster->HasAura(32216))
+            {
+                damage = 20;
+                m_caster->RemoveAurasDueToSpell(32216);
+            }
+            break;
+        default:
+            break;
+    }
 
     uint32 heal = uint32(damage);
-
-    // Ember Tap
-    if (m_spellInfo->Id == 114635)
-    {
-        // Mastery: Emberstorm
-        if (AuraEffect const* aurEff = m_caster->GetAuraEffect(77220, EFFECT_0))
-            AddPct(damage, aurEff->GetAmount());
-    }
 
     heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(heal), HEAL);
     heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL);

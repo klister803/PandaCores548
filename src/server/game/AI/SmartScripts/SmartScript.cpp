@@ -1206,12 +1206,20 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 delete targets;
             }
 
-            if (e.GetTargetType() != SMART_TARGET_POSITION)
-                break;
+            if (e.GetTargetType() == SMART_TARGET_RANDOM_POSITION)
+            {
+                float angle = float(rand_norm())*static_cast<float>(2*M_PI);
+                float objSize = me->GetObjectSize();
+                float dist = objSize + (e.target.randomPos.range - objSize) * (float)rand_norm();
+                Position pos;
+                me->GetFirstCollisionPosition(pos, dist, angle);
+                GetBaseObject()->SummonCreature(e.action.summonCreature.creature, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), angle, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration);
+            }
 
-            if (Creature* summon = GetBaseObject()->SummonCreature(e.action.summonCreature.creature, e.target.x, e.target.y, e.target.z, e.target.o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
-                if (unit && e.action.summonCreature.attackInvoker)
-                    summon->AI()->AttackStart(unit);
+            if (e.GetTargetType() == SMART_TARGET_POSITION)
+                if (Creature* summon = GetBaseObject()->SummonCreature(e.action.summonCreature.creature, e.target.x, e.target.y, e.target.z, e.target.o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
+                    if (unit && e.action.summonCreature.attackInvoker)
+                        summon->AI()->AttackStart(unit);
             break;
         }
         case SMART_ACTION_SUMMON_GO:
@@ -1239,10 +1247,18 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 delete targets;
             }
 
-            if (e.GetTargetType() != SMART_TARGET_POSITION)
-                break;
+            if (e.GetTargetType() == SMART_TARGET_RANDOM_POSITION)
+            {
+                float angle = float(rand_norm())*static_cast<float>(2*M_PI);
+                float objSize = me->GetObjectSize();
+                float dist = objSize + (e.target.randomPos.range - objSize) * (float)rand_norm();
+                Position pos;
+                me->GetFirstCollisionPosition(pos, dist, angle);
+                GetBaseObject()->SummonGameObject(e.action.summonGO.entry, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), angle, 0, 0, 0, 0, e.action.summonGO.despawnTime);
+            }
 
-            GetBaseObject()->SummonGameObject(e.action.summonGO.entry, e.target.x, e.target.y, e.target.z, e.target.o, 0, 0, 0, 0, e.action.summonGO.despawnTime);
+            if (e.GetTargetType() == SMART_TARGET_POSITION)
+                GetBaseObject()->SummonGameObject(e.action.summonGO.entry, e.target.x, e.target.y, e.target.z, e.target.o, 0, 0, 0, 0, e.action.summonGO.despawnTime);
             break;
         }
         case SMART_ACTION_KILL_UNIT:
@@ -2487,6 +2503,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
             break;
         }
         case SMART_TARGET_POSITION:
+        case SMART_TARGET_RANDOM_POSITION:
         default:
             break;
     }

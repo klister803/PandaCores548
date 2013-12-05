@@ -614,6 +614,7 @@ struct SpellLinked
     int32 target;
     int32 cooldown;
     int32 type2;
+    int32 learnspell;
 };
 
 struct SpellTalentLinked
@@ -629,6 +630,8 @@ struct SpellPrcoCheck
     int32 hastalent;
     int32 chance;
     int32 target;
+    int32 powertype;
+    int32 dmgclass;
     int32 effectmask;
 };
 

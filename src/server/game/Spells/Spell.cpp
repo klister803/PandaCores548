@@ -2982,7 +2982,15 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         for (std::vector<SpellLinked>::const_iterator i = spellTriggered->begin(); i != spellTriggered->end(); ++i)
         {
             if (i->effect < 0)
-                unit->RemoveAurasDueToSpell(-(i->effect));
+            {
+                if(i->learnspell)
+                {
+                    if(Player* _lplayer = unit->ToPlayer())
+                        _lplayer->removeSpell(-(i->effect));
+                }
+                else
+                    unit->RemoveAurasDueToSpell(-(i->effect));
+            }
             else
             {
                 if(i->type2)
@@ -3004,7 +3012,13 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
                 if(i->cooldown != 0 && unit->GetTypeId() == TYPEID_PLAYER && unit->ToPlayer()->HasSpellCooldown(i->effect))
                     continue;
 
-                unit->CastSpell(unit, i->effect, true, 0, 0, m_caster->GetGUID());
+                if(i->learnspell)
+                {
+                    if(Player* _lplayer = unit->ToPlayer())
+                        _lplayer->learnSpell(i->effect, false);
+                }
+                else
+                    unit->CastSpell(unit, i->effect, true, 0, 0, m_caster->GetGUID());
 
                 if(i->cooldown != 0 && unit->GetTypeId() == TYPEID_PLAYER)
                     unit->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
@@ -3512,7 +3526,15 @@ void Spell::cast(bool skipCheck)
     {
         for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
             if (i->effect < 0)
-                m_caster->RemoveAurasDueToSpell(-(i->effect));
+            {
+                if(i->learnspell)
+                {
+                    if(Player* _lplayer = m_caster->ToPlayer())
+                        _lplayer->removeSpell(-(i->effect));
+                }
+                else
+                    m_caster->RemoveAurasDueToSpell(-(i->effect));
+            }
             else
             {
                 if(i->type2 && m_targets.GetUnitTarget())
@@ -3534,7 +3556,13 @@ void Spell::cast(bool skipCheck)
                 if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->HasSpellCooldown(i->effect))
                     continue;
 
-                m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
+                if(i->learnspell)
+                {
+                    if(Player* _lplayer = m_caster->ToPlayer())
+                        _lplayer->learnSpell(i->effect, false);
+                }
+                else
+                    m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
 
                 if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
                     m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
