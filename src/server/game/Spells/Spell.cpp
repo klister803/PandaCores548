@@ -4124,7 +4124,7 @@ void Spell::SendSpellStart()
 
     data.WriteBit(m_targets.HasDst());
     data.WriteGuidMask<6, 7>(itemCasterGuid);
-    data.WriteBit(!casterGuid);
+    data.WriteBit(!targetGuid);
     data.WriteGuidMask<2, 6, 0, 3, 4, 1, 7, 5>(targetGuid);
     data.WriteGuidMask<4>(casterGuid);
     data.WriteGuidMask<1>(itemCasterGuid);
@@ -4140,7 +4140,8 @@ void Spell::SendSpellStart()
         data.WriteGuidMask<4, 7, 5, 3, 6, 2, 1, 0>(destTransportGuid);
     }
 
-    data.WriteBit(1);               // !unk bit 2
+    data.WriteBit(1);               // Guid1D0 marker
+    data.WriteBits(0, 8);           // Guid1D0
     data.WriteBit((targetMask & TARGET_FLAG_STRING) == 0);
     data.WriteBit(1);               // !dword19C
     data.WriteBit(1);               // !byte180
@@ -4193,11 +4194,12 @@ void Spell::SendSpellStart()
     data.WriteGuidMask<1>(casterGuid);
     data.WriteGuidMask<5>(itemCasterGuid);
     data.WriteGuidMask<6>(casterGuid);
+
     data.WriteBits(0, 25);          // dword84
     data.WriteGuidMask<0>(casterGuid);
     if (targetMask & TARGET_FLAG_STRING)
         data.WriteBits(m_targets.m_strTarget.length(), 7);
-    data.WriteBit(1);               // dword1C4
+    data.WriteBit(1);               // !dword1C4
     data.WriteBit(0);               // byte1AC
 
     data.WriteGuidBytes<5, 3, 4, 2, 0, 1, 7, 6>(itemTargetGuid);
@@ -4213,13 +4215,13 @@ void Spell::SendSpellStart()
         ObjectGuid srcTransportGuid = m_targets.GetSrc()->_transportGUID;
         Position const& pos = srcTransportGuid ? m_targets.GetSrc()->_transportOffset : m_targets.GetSrc()->_position;
 
-        data.WriteGuidMask<6, 7, 3, 0>(srcTransportGuid);
+        data.WriteGuidBytes<6, 7, 3, 0>(srcTransportGuid);
         data << float(pos.GetPositionY());
-        data.WriteGuidMask<1>(srcTransportGuid);
+        data.WriteGuidBytes<1>(srcTransportGuid);
         data << float(pos.GetPositionZ());
-        data.WriteGuidMask<4, 2>(srcTransportGuid);
+        data.WriteGuidBytes<4, 2>(srcTransportGuid);
         data << float(pos.GetPositionX());
-        data.WriteGuidMask<5>(srcTransportGuid);
+        data.WriteGuidBytes<5>(srcTransportGuid);
     }
 
     if (m_targets.HasDst())
@@ -4366,6 +4368,7 @@ void Spell::SendSpellGo()
     data.WriteBit(1);                                       // !dword198
     data.WriteBit(1);                                       // !byte170
     data.WriteBit((castFlags & CAST_FLAG_ADJUST_MISSILE) == 0); // has elevation
+    data.WriteBit(!itemTargetGuid);
     data.WriteGuidMask<7>(itemCasterGuid);
 
     data.WriteGuidMask<2, 5, 6, 1, 0, 3, 7, 4>(targetGuid);
@@ -4422,7 +4425,8 @@ void Spell::SendSpellGo()
     }
 
     data.WriteBit(m_targets.HasDst());
-    data.WriteBit(0);
+    data.WriteBit(1);       // "Guid 1A0 marker"
+    data.WriteBits(0, 8);   // guid1A0
 
     data.WriteBit((castFlags & CAST_FLAG_ADJUST_MISSILE) == 0);
 
@@ -4514,7 +4518,7 @@ void Spell::SendSpellGo()
     counter = 0;
     for (std::list<TargetInfo>::const_iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end() && counter <= 255; ++ihit)
     {
-        if ((*ihit).missCondition != SPELL_MISS_NONE)
+        if (ihit->missCondition != SPELL_MISS_NONE)
         {
             data.WriteGuidBytes<7, 1, 0, 4, 2, 5, 6, 3>(ihit->targetGUID);
             ++counter;
@@ -4541,7 +4545,7 @@ void Spell::SendSpellGo()
     // hits
     for (std::list<TargetInfo>::const_iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end() && counter <= 255; ++ihit)
     {
-        if ((*ihit).missCondition == SPELL_MISS_NONE)
+        if (ihit->missCondition == SPELL_MISS_NONE)
         {
             data.WriteGuidBytes<6, 0, 7, 1, 2, 5, 3, 4>(ihit->targetGUID);
             ++counter;
