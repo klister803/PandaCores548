@@ -20566,7 +20566,7 @@ void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c)
         data << uint32(c.achievementId);
 
     if (c.language)
-        data << uint32(c.language);
+        data << uint8(c.language);
 
     data.WriteString(c.message);
 

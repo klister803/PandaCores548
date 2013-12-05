@@ -1669,7 +1669,7 @@ void WorldSession::HandleRealmQueryNameOpcode(WorldPacket& recvData)
     data << uint8(0); // ok, realmId exist server-side
     data << realmId;
     data.WriteBits(realmName.length(), 8);
-    data.WriteBit(1); // unk, if it's main realm ?
+    data.WriteBit(0); // unk, if it's main realm ?
     data.WriteBits(realmName.length(), 8);
     data.WriteString(realmName);
     data.WriteString(realmName);
