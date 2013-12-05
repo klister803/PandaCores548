@@ -106,14 +106,13 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSEPositionZ,
     MSEPositionX,
     MSEPositionY,
-
     MSEHasGuidByte1,
     MSEHasGuidByte3,
     MSEHasMovementFlags,
     MSEHasGuidByte0,
     MSEHasOrientation,
     MSEHasGuidByte4,
-    MSEHasPitch,
+    MSEHasSplineElevation,
     MSEHasGuidByte2,
     MSEBit95,
     MSEHasSpline,
@@ -121,14 +120,13 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSEHasFallData,
     MSEHasGuidByte5,
     MSEHasGuidByte7,
-    MSEHasSplineElevation,
+    MSEHasPitch,
     MSEHasTransportData,
     MSEBitAC,
     MSEHasUnkInt32,
     MSEHasTimestamp,
     MSEHasMovementFlags2,
     MSEHasGuidByte6,
-
     MSEHasTransportGuidByte1,
     MSEHasTransportGuidByte2,
     MSEHasTransportGuidByte6,
@@ -139,24 +137,18 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSEHasTransportGuidByte7,
     MSEHasTransportGuidByte4,
     MSEHasTransportGuidByte5,
-
-    MSEMovementFlags,
-    MSEMovementFlags2,
-
+    MSEHasMovementFlags,
+    MSEHasMovementFlags2,
     MSEHasFallDirection,
-
-    MSEGuidByte3,
+    MSEHasGuidByte3,
     MSEGuidByte4,
     MSEGuidByte7,
     MSEGuidByte1,
     MSEGuidByte2,
     MSEGuidByte0,
     MSEGuidByte5,
-
     MSEBitCounterValues,
-
     MSEGuidByte6,
-
     MSETransportGuidByte6,
     MSETransportGuidByte2,
     MSETransportPositionY,
@@ -173,20 +165,16 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSETransportOrientation,
     MSETransportTime2,
     MSETransportSeat,
-
-    MSESplineElevation,
-
+    MSEPitch,
     MSEFallTime,
     MSEFallHorizontalSpeed,
     MSEFallSinAngle,
     MSEFallCosAngle,
     MSEFallVerticalSpeed,
-
-    MSEPitch,
+    MSESplineElevation,
     MSETimestamp,
     MSEUnkInt32,
     MSEOrientation,
-
     MSEEnd,
 };
 
@@ -203,7 +191,7 @@ MovementStatusElements PlayerMoveSequence[] =
     MSEBitCounter,
     MSEHasGuidByte5,
     MSEHasGuidByte3,
-    MSEHasTimestamp,
+    MSEHasUnkInt32,
     MSEHasTransportData,
 
     MSEHasTransportGuidByte1,
@@ -221,7 +209,7 @@ MovementStatusElements PlayerMoveSequence[] =
     MSEMovementFlags,
 
     MSEHasOrientation,
-    MSEHasUnkInt32,
+    MSEHasTimestamp,
     MSEHasFallDirection,
     MSEHasMovementFlags2,
     MSEHasGuidByte6,
@@ -267,9 +255,9 @@ MovementStatusElements PlayerMoveSequence[] =
     MSEPositionY,
     MSEPositionZ,
     MSEGuidByte4,
-    MSEUnkInt32,
-    MSESplineElevation,
     MSETimestamp,
+    MSESplineElevation,
+    MSEUnkInt32,
     MSEGuidByte0,
     MSEGuidByte5,
     MSEGuidByte7,
