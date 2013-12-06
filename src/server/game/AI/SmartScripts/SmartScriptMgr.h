@@ -554,6 +554,10 @@ struct SmartAction
         struct
         {
             uint32 quest;
+            uint32 prequest;
+            uint32 check;
+            uint32 queststate;
+            uint32 prequeststate;
         } quest;
 
         struct

@@ -359,13 +359,23 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
-                if (IsPlayer(*itr))
+                if (Player* player = (*itr)->ToPlayer())
                 {
                     if (Quest const* q = sObjectMgr->GetQuestTemplate(e.action.quest.quest))
                     {
-                        (*itr)->ToPlayer()->AddQuest(q, NULL);
-                        sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_ADD_QUEST: Player guidLow %u add quest %u",
-                            (*itr)->GetGUIDLow(), e.action.quest.quest);
+                        if(e.action.quest.check)
+                        {
+                            if(player->GetQuestStatus(e.action.quest.quest) == e.action.quest.queststate && player->GetQuestStatus(e.action.quest.prequest) == e.action.quest.prequeststate)
+                                player->AddQuest(q, NULL);
+                            sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_ADD_QUEST: Player guidLow %u add quest %u, queststate %u, prequeststate %u",
+                                (*itr)->GetGUIDLow(), e.action.quest.quest, player->GetQuestStatus(e.action.quest.quest), player->GetQuestStatus(e.action.quest.prequest));
+                        }
+                        else
+                        {
+                            player->AddQuest(q, NULL);
+                            sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_ADD_QUEST: Player guidLow %u add quest %u",
+                                (*itr)->GetGUIDLow(), e.action.quest.quest);
+                        }
                     }
                 }
             }
