@@ -3877,7 +3877,7 @@ void Player::SendKnownSpells()
 
         ++spellCount;
     }                          // spell count placeholder
-    }
+
     data.WriteBits(spellCount, 22);
     data.WriteBit(0);       // unk
     data.FlushBits();
