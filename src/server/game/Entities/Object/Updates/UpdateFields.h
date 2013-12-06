@@ -282,22 +282,22 @@ enum EObjectDynamicFields
 
 enum EUnitDynamicFields
 {
-    UNIT_DYNAMIC_PASSIVE_SPELLS                      = OBJECT_DYNAMIC_END + 0x0,
-    UNIT_DYNAMIC_WORLD_EFFECTS                       = OBJECT_DYNAMIC_END + 0x1,
+    UNIT_DYNAMIC_PASSIVE_SPELLS                      = OBJECT_DYNAMIC_END + 0x0, // Size: 0x1
+    UNIT_DYNAMIC_WORLD_EFFECTS                       = OBJECT_DYNAMIC_END + 0x1, // Size: 0x1
     UNIT_DYNAMIC_END                                 = OBJECT_DYNAMIC_END + 0x2,
 };
 
 enum EPlayerDynamicFields
 {
-    PLAYER_DYNAMIC_RESEARCH_SITES                    = UNIT_DYNAMIC_END + 0x0,
-    PLAYER_DYNAMIC_RESEARCH_SITE_PROGRESS            = UNIT_DYNAMIC_END + 0x1,
-    PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = UNIT_DYNAMIC_END + 0x2,
+    PLAYER_DYNAMIC_RESEARCH_SITES                    = UNIT_DYNAMIC_END + 0x0, // Size: 0x1
+    PLAYER_DYNAMIC_RESEARCH_SITE_PROGRESS            = UNIT_DYNAMIC_END + 0x1, // Size: 0x1
+    PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = UNIT_DYNAMIC_END + 0x2, // Size: 0x1
     PLAYER_DYNAMIC_END                               = UNIT_DYNAMIC_END + 0x3
 };
 
 enum EItemDynamicFields
 {
-    ITEM_DYNAMIC_MODIFIERS                           = OBJECT_DYNAMIC_END + 0x0,
+    ITEM_DYNAMIC_MODIFIERS                           = OBJECT_DYNAMIC_END + 0x0, // Size: 0x1
     ITEM_DYNAMIC_END                                 = OBJECT_DYNAMIC_END + 0x1
 };
 
