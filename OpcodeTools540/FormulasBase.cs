@@ -65,7 +65,7 @@ namespace OpcodeTools
 
         public uint CalcOpcodeFromSpecial(uint offset)
         {
-            for (uint i = 1; i < 0xFFFF; ++i)
+            for (uint i = 1; i < MaxOpcode; ++i)
             {
                 if (IsSpecialOpcode(i))
                 {
@@ -78,7 +78,7 @@ namespace OpcodeTools
 
         public uint CalcOpcodeFromSpell(uint spell)
         {
-            for (uint i = 1; i < 0xFFFF; ++i)
+            for (uint i = 1; i < MaxOpcode; ++i)
             {
                 if (IsSpecialSpellOpcode(i))
                 {
@@ -92,7 +92,7 @@ namespace OpcodeTools
 
         public uint CalcOpcodeFromMovement(uint movement)
         {
-            for (uint i = 1; i < 0xFFFF; ++i)
+            for (uint i = 1; i < MaxOpcode; ++i)
             {
                 if (IsSpecialMovementOpcode(i))
                 {
@@ -105,7 +105,7 @@ namespace OpcodeTools
 
         public uint CalcOpcodeFromQuest(uint quest)
         {
-            for (uint i = 1; i < 0xFFFF; ++i)
+            for (uint i = 1; i < MaxOpcode; ++i)
             {
                 if (IsSpecialQuestOpcode(i))
                 {
@@ -118,7 +118,7 @@ namespace OpcodeTools
 
         public uint CalcOpcodeFromGuild(uint guild)
         {
-            for (uint i = 1; i < 0xFFFF; ++i)
+            for (uint i = 1; i < MaxOpcode; ++i)
             {
                 if (IsSpecialGuildOpcode(i))
                 {
@@ -132,7 +132,7 @@ namespace OpcodeTools
 
         public uint CalcOpcodeFromOffset(uint offset)
         {
-            for (uint i = 1; i < 0xFFFF; ++i)
+            for (uint i = 1; i < MaxOpcode; ++i)
             {
                 if (IsNormalOpcode(i))
                 {
@@ -145,7 +145,7 @@ namespace OpcodeTools
 
         public uint CalcOpcodeFromCrypted(uint val)
         {
-            for (uint i = 1; i < 0xFFFF; ++i)
+            for (uint i = 1; i < MaxOpcode; ++i)
             {
                 if (IsNormalOpcode(i))
                 {
@@ -159,7 +159,7 @@ namespace OpcodeTools
 
         public uint CalcOpcodeFromAuth(uint auth)
         {
-            for (uint i = 1; i < 0xFFFF; ++i)
+            for (uint i = 1; i < MaxOpcode; ++i)
             {
                 if (IsAuthOpcode(i) &&
                     CalcAuthFromOpcode(i) == auth)
