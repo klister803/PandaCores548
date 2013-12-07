@@ -105,6 +105,15 @@ bool Player::UpdateStats(Stats stat)
                 ApplyRatingMod(CombatRating(rating), 0, true);
     }
 
+    if (Aura* aura = GetAura(108300))
+    {
+        if (stat == STAT_INTELLECT)
+        {
+            aura->GetEffect(EFFECT_0)->SetCanBeRecalculated(true);
+            aura->GetEffect(EFFECT_0)->RecalculateAmount();
+        }
+    }
+
     if (stat == STAT_STAMINA || stat == STAT_INTELLECT || stat == STAT_STRENGTH)
     {
         Pet* pet = GetPet();
