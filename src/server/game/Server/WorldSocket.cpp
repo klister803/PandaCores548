@@ -954,7 +954,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     BigNumber k;
     WorldPacket addonsData;
 
-    //recvPacket.read_skip<uint16>();
     recvPacket.read_skip<uint32>();
     recvPacket >> digest[14];
     recvPacket >> digest[8];
