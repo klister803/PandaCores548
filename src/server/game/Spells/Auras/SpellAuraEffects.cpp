@@ -848,7 +848,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             {
                 case 108300: // Killer Instinct
                 {
-                    amount = CalculatePct(caster->GetStat(STAT_INTELLECT), amount);
+                    amount = CalculatePct(caster->GetStat(STAT_INTELLECT), m_baseAmount);
                     break;
                 }
                 default:
