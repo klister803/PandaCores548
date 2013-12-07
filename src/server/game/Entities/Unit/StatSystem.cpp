@@ -105,9 +105,9 @@ bool Player::UpdateStats(Stats stat)
                 ApplyRatingMod(CombatRating(rating), 0, true);
     }
 
-    if (Aura* aura = GetAura(108300))
+    if (stat == STAT_INTELLECT)
     {
-        if (stat == STAT_INTELLECT)
+        if (Aura* aura = GetAura(108300))
         {
             aura->GetEffect(EFFECT_0)->SetCanBeRecalculated(true);
             aura->GetEffect(EFFECT_0)->RecalculateAmount();
