@@ -3324,7 +3324,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115450: // Detox
                     spellInfo->Effects[2].BasePoints = 0;
                     break;
-                case 65148: // Sacred Shield
+                case 65148:  // Sacred Shield
+                case 113092: // Frost Bomb
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 79136: // Venomous Wound
