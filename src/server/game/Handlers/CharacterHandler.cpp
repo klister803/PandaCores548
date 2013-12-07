@@ -306,7 +306,7 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & recvData)
 void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
 {
     time_t now = time(NULL);
-    timeCharEnumOpcode = now + 5;
+    timeCharEnumOpcode = now - 5;
     if (now - timeAddIgnoreOpcode < 3)
     {
         recvData.rfinish();
