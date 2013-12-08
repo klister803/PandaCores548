@@ -24176,13 +24176,13 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_UPDATE_AURA_DURATION
 
     data.Initialize(SMSG_WORLD_SERVER_INFO, 4 + 4 + 1 + 1);
-    data << uint32(GetMap()->GetDifficulty());
     data << uint32(sWorld->GetNextWeeklyQuestsResetTime() -  WEEK);
     data << uint8(0);                                       // is on tournament realm
-    data.WriteBit(false);                                   // ineligible for loot?
-    data.WriteBit(false);                                   // ineligible for loot?
-    data.WriteBit(false);                                   // has trial level or trial money
-    data.WriteBit(false);                                   // has trial level or trial money
+    data << uint32(GetMap()->GetDifficulty());
+    data.WriteBit(false);                                   // has trial money
+    data.WriteBit(false);                                   // unk
+    data.WriteBit(false);                                   // has trial level
+    data.WriteBit(false);                                   // is ineligible for loot
 
     GetSession()->SendPacket(&data);
 

@@ -1324,7 +1324,7 @@ enum Opcodes
     SMSG_THREAT_REMOVE                                = 0x9BF,  // 5.0.5 16048
     SMSG_THREAT_UPDATE                                = 0xDB0,  // 5.0.5 16048
     SMSG_TIME_ADJUSTMENT                              = 0xF3A,  // 5.0.5 16048
-    SMSG_TIME_SYNC_REQ                                = 0xAA9,  // 5.0.5 16048
+    SMSG_TIME_SYNC_REQ                                = 0x1197, // 5.4.1 17538
     SMSG_TITLE_EARNED                                 = 0x94B,  // 5.0.5 16048
     SMSG_TOGGLE_XP_GAIN                               = 0xD62,  // 5.0.5 16048
     SMSG_TOTEM_CREATED                                = 0x918,  // 5.0.5 16048
@@ -1352,7 +1352,7 @@ enum Opcodes
     SMSG_UPDATE_LAST_INSTANCE                         = 0xDDC,  // 5.0.5 16048
     SMSG_UPDATE_OBJECT                                = 0x0C22, // 5.4.1 17538
     SMSG_UPDATE_SERVER_PLAYER_POSITION                = 0,      // 0x74A3  in 4.3.4 @todo find me 
-    SMSG_UPDATE_TALENT_DATA                           = 0xCEC,  // 5.0.5 16048
+    SMSG_UPDATE_TALENT_DATA                           = 0x0494, // 5.4.1 17538
     SMSG_UPDATE_WORLD_STATE                           = 0x847,  // 5.0.5 16048
     //SMSG_USERLIST_ADD                                 = 0x95A,  // 5.0.5 16048
     SMSG_USERLIST_REMOVE                              = 0xD6E,  // 5.0.5 16048
@@ -1380,7 +1380,7 @@ enum Opcodes
     SMSG_WEEKLY_SPELL_USAGE_UPDATE                    = 0,      //
     SMSG_WHO                                          = 0x933,  // 5.0.5 16048
     SMSG_WHOIS                                        = 0x943,  // 5.0.5 16048
-    SMSG_WORLD_SERVER_INFO                            = 0xA6D,  // 5.0.5 16048
+    SMSG_WORLD_SERVER_INFO                            = 0x0427, // 5.4.1 17538
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0xD83,  // 5.0.5 16048
     SMSG_XP_GAIN_ABORTED                              = 0xB76,  // 5.0.5 16048
     SMSG_ZONE_UNDER_ATTACK                            = 0x8BD,  // 5.0.5 16048
