@@ -3878,8 +3878,8 @@ void Player::SendKnownSpells()
         ++spellCount;
     }                          // spell count placeholder
 
-    data.WriteBits(spellCount, 22);
     data.WriteBit(0);       // unk
+    data.WriteBits(spellCount, 22);
     data.FlushBits();
     data.append(dataBuffer);
 
@@ -4510,8 +4510,8 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
     if (learning && IsInWorld())
     {
         WorldPacket data(SMSG_LEARNED_SPELL, 8);
-        data.WriteBits(1, 24); //count of spell_id to send.
-        data << uint8(0); // 0 : auto push spell to action bar , 1 : don't auto push spell to action bar
+        data.WriteBit(0); // 0 : auto push spell to action bar , 1 : don't auto push spell to action bar
+        data.WriteBits(1, 22); //count of spell_id to send.
         data << uint32(spell_id);
         GetSession()->SendPacket(&data);
     }
@@ -7159,44 +7159,44 @@ void Player::SendActionButtons(uint32 state) const
     {
         ActionButtonList::const_iterator itr = m_actionButtons.find(i);
         if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED)
-            buttons[i] = uint32(itr->second.GetType()) << 32 | itr->second.GetAction();
+            buttons[i] = uint64(itr->second.GetType()) << 32 | itr->second.GetAction();
         else
             buttons[i] = 0;
     }
 
     for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteBit(buttons[i][7]);
-    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteBit(buttons[i][2]);
+        data.WriteBit(buttons[i][0]);
     for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
         data.WriteBit(buttons[i][1]);
-    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteBit(buttons[i][6]);
     for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
         data.WriteBit(buttons[i][3]);
     for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
         data.WriteBit(buttons[i][4]);
     for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
+        data.WriteBit(buttons[i][6]);
+    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
+        data.WriteBit(buttons[i][7]);
+    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
+        data.WriteBit(buttons[i][2]);
+    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
         data.WriteBit(buttons[i][5]);
-    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteBit(buttons[i][0]);
 
-    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteByteSeq(buttons[i][3]);
-    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteByteSeq(buttons[i][1]);
-    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteByteSeq(buttons[i][4]);
     for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
         data.WriteByteSeq(buttons[i][5]);
     for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteByteSeq(buttons[i][6]);
-    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
         data.WriteByteSeq(buttons[i][2]);
     for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
-        data.WriteByteSeq(buttons[i][7]);
-    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
         data.WriteByteSeq(buttons[i][0]);
+    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
+        data.WriteByteSeq(buttons[i][1]);
+    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
+        data.WriteByteSeq(buttons[i][3]);
+    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
+        data.WriteByteSeq(buttons[i][6]);
+    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
+        data.WriteByteSeq(buttons[i][4]);
+    for (uint8 i = 0; i < MAX_ACTION_BUTTONS; ++i)
+        data.WriteByteSeq(buttons[i][7]);
 
     data << uint8(state);
     GetSession()->SendPacket(&data);
@@ -24202,9 +24202,12 @@ void Player::SendInitialPacketsBeforeAddToMap()
     SendEquipmentSetList();
 
     data.Initialize(SMSG_LOGIN_SETTIMESPEED, 4 + 4 + 4);
-    data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
+    data << uint32(0);
+    data << uint32(0);
     data << float(0.01666667f);                             // game speed
-    data << uint32(0);                                      // added in 3.1.2
+    data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
+    data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
+
     GetSession()->SendPacket(&data);
 
     GetReputationMgr().SendForceReactions();                // SMSG_SET_FORCED_REACTIONS

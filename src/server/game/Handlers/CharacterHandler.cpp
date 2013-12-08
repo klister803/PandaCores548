@@ -319,21 +319,20 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
     uint8 race_, class_;
     // extract other data required for player creating
     uint8 gender, skin, face, hairStyle, hairColor, facialHair, outfitId;
-    outfitId = 0;
-    recvData >> gender;
 
-    recvData >> hairColor;
-    recvData >> outfitId; 
-
-    recvData >> race_;
-    recvData >> class_;       
-    recvData >> face;      
-    recvData >> facialHair;
-    recvData >> skin;       
     recvData >> hairStyle;
+    recvData >> gender;
+    recvData >> race_;
+    recvData >> hairColor;
+    recvData >> class_;
+    recvData >> facialHair;
+    recvData >> outfitId;
+    recvData >> skin;
+    recvData >> face;
+    name = recvData.ReadString(recvData.ReadBits(7));
+    if (recvData.ReadBit())
+        recvData.read_skip<uint32>();
 
-    name_length = recvData.ReadBits(7);
-    name = recvData.ReadString(name_length);
     WorldPacket data(SMSG_CHAR_CREATE, 1);                  // returned with diff.values in all cases
 
     if (AccountMgr::IsPlayerAccount(GetSecurity()))
@@ -792,8 +791,9 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
 void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<1, 4, 7, 5, 3, 2, 0, 6>(guid);
+    recvData.ReadGuidBytes<2, 0, 4, 1, 5, 3, 7, 6>(guid);
 
     // can't delete loaded character
     if (ObjectAccessor::FindPlayer(guid))
@@ -868,8 +868,7 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
        timeLastHandlePlayerLogin = now;
 
     // Prevent flood of CMSG_PLAYER_LOGIN
-    playerLoginCounter++;
-    if (playerLoginCounter > 10)
+    if (++playerLoginCounter > 10)
     {
         sLog->outError(LOG_FILTER_OPCODES, "Player kicked due to flood of CMSG_PLAYER_LOGIN");
         KickPlayer();
@@ -887,15 +886,11 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
     ObjectGuid playerGuid;
     float unk;
 
-    uint8 bitOrder[8] = {3, 5, 7, 0, 6, 2, 1, 4};
-    recvData.ReadBitInOrder(playerGuid, bitOrder);
-
-    uint8 byteOrder[8] = {1, 0, 3, 2, 4, 7, 5, 6};
-    recvData.ReadBytesSeq(playerGuid, byteOrder);
     recvData >> unk;
+    recvData.ReadGuidMask<6, 7, 1, 5, 2, 4, 3, 0>(playerGuid);
+    recvData.ReadGuidBytes<7, 6, 0, 1, 4, 3, 2, 5>(playerGuid);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd Player Logon Message");
-
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Character (Guid: %u) logging in, unk float: %f", GUID_LOPART(playerGuid), unk);
 
     if (!CharCanLogin(GUID_LOPART(playerGuid)))

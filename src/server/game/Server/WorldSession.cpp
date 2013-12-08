@@ -804,8 +804,7 @@ void WorldSession::SendAccountDataTimes(uint32 mask)
     data << uint32(time(NULL));                             // Server time
     data << uint32(mask);                                   // type mask
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
-        if (mask & (1 << i))
-            data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
+        data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
     data.WriteBit(1);
     SendPacket(&data);
 }
@@ -960,8 +959,8 @@ void WorldSession::SendAddonsInfo()
     ByteBuffer buffer;
     for (AddonsList::iterator itr = m_addonsList.begin(); itr != m_addonsList.end(); ++itr)
     {
-        bool bit0 = itr->UsePublicKeyOrCRC;
-        bool bit1 = itr->UsePublicKeyOrCRC && itr->CRC != STANDARD_ADDON_CRC;
+        bool bit0 = true;//itr->UsePublicKeyOrCRC;
+        bool bit1 = false;//itr->UsePublicKeyOrCRC && itr->CRC != STANDARD_ADDON_CRC;
         bool bit2 = false;
 
         data.WriteBit(bit0);                                // data.WriteBit(itr->CRC != 0x4c1c776d);
@@ -1240,11 +1239,11 @@ void WorldSession::SendAddonsInfo()
         }
         if (bit0)
         {
-            buffer << uint8(0);
+            buffer << uint8(1);
             buffer << uint32(0);
         }
 
-        buffer << uint8(itr->State);
+        buffer << uint8(2);//uint8(itr->State);
     }
 
     /*if (bannedAddons)

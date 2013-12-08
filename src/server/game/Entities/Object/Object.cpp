@@ -307,12 +307,12 @@ void Object::DestroyForPlayer(Player* target, bool onDeath) const
     ObjectGuid guid = GetObjectGuid();
 
     WorldPacket data(SMSG_DESTROY_OBJECT, 8 + 1);
-    data.WriteGuidMask<3, 5, 4, 6, 7, 2, 0>(guid);
+    data.WriteGuidMask<7, 2, 6, 3, 1, 4>(guid);
     //! If the following bool is true, the client will call "void CGUnit_C::OnDeath()" for this object.
     //! OnDeath() does for eg trigger death animation and interrupts certain spells/missiles/auras/sounds...
     data.WriteBit(onDeath);
-    data.WriteGuidMask<1>(guid);
-    data.WriteGuidBytes<4, 2, 0, 3, 7, 1, 5, 6>(guid);
+    data.WriteGuidMask<5, 0>(guid);
+    data.WriteGuidBytes<4, 3, 2, 7, 0, 1, 6, 5>(guid);
     target->GetSession()->SendPacket(&data);
 }
 
