@@ -1924,8 +1924,15 @@ class npc_snake_trap : public CreatureScript
                 // Start attacking attacker of owner on first ai update after spawn - move in line of sight may choose better target
                 if (!me->getVictim() && me->isSummon())
                     if (Unit* Owner = me->ToTempSummon()->GetSummoner())
+                    {
+                        if(Owner->HasAura(56849)) // Glyph of Snake Trap
+                        {
+                            me->AddAura(65220, me);
+                            me->AddAura(111323, me);
+                        }
                         if (Owner->getAttackerForHelper())
                             AttackStart(Owner->getAttackerForHelper());
+                    }
             }
 
             //Redefined for random target selection:
@@ -4482,6 +4489,386 @@ class npc_void_tendrils : public CreatureScript
         }
 };
 
+/*######
+## npc_spectral_guise -- 59607
+######*/
+
+enum spectralGuiseSpells
+{
+    SPELL_INITIALIZE_IMAGES         = 102284,
+    SPELL_CLONE_CASTER              = 102288,
+    SPELL_SPECTRAL_GUISE_CLONE      = 119012,
+    SPELL_SPECTRAL_GUISE_CHARGES    = 119030,
+    SPELL_SPECTRAL_GUISE_STEALTH    = 119032,
+};
+
+class npc_spectral_guise : public CreatureScript
+{
+    public:
+        npc_spectral_guise() : CreatureScript("npc_spectral_guise") { }
+
+        struct npc_spectral_guiseAI : public Scripted_NoMovementAI
+        {
+            npc_spectral_guiseAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void Reset()
+            {
+                if (!me->HasAura(SPELL_ROOT_FOR_EVER))
+                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
+                if (Unit* owner = me->GetOwner())
+                {
+                    me->SetLevel(owner->getLevel());
+                    me->SetMaxHealth(owner->GetMaxHealth() / 2);
+                    me->SetHealth(me->GetMaxHealth());
+
+                    owner->CastSpell(me, SPELL_CLONE_CASTER, true);
+                    owner->CastSpell(me, SPELL_INITIALIZE_IMAGES, true);
+                    me->CastSpell(me, SPELL_SPECTRAL_GUISE_CHARGES, true);
+                    owner->CastSpell(me, 41055, true);
+                    owner->AddAura(SPELL_SPECTRAL_GUISE_STEALTH, owner);
+
+                    std::list<HostileReference*> threatList = owner->getThreatManager().getThreatList();
+                    for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+                        if (Unit* unit = (*itr)->getTarget())
+                            if (unit->GetTypeId() == TYPEID_UNIT)
+                                if (Creature* creature = unit->ToCreature())
+                                    if (creature->canStartAttack(me, false))
+                                        creature->Attack(me, true);
+
+                    // Set no damage
+                    me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
+                    me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
+
+                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
+                    me->DespawnOrUnsummon(6000);
+                }
+            }
+
+            void UpdateAI(uint32 const diff) {}
+
+            void EnterCombat(Unit* /*who*/) {}
+
+            void EnterEvadeMode() {}
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_spectral_guiseAI(creature);
+        }
+};
+
+/*######
+## npc_bloodworm
+######*/
+
+#define BLOODWORM_BLOOD_GORGED  50453
+#define BLOODWORM_BLOOD_STACKS  81277
+#define BLOODWORM_BLOOD_BURST   81280
+
+class npc_bloodworm : public CreatureScript
+{
+    public:
+        npc_bloodworm() : CreatureScript("npc_bloodworm") { }
+
+        struct npc_bloodwormAI : public ScriptedAI
+        {
+            npc_bloodwormAI(Creature* c) : ScriptedAI(c)
+            {
+            }
+
+            uint32 uiBurstTimer;
+            uint32 uiCheckBloodChargesTimer;
+
+            void Burst()
+            {
+                if (Aura* bloodGorged = me->GetAura(BLOODWORM_BLOOD_STACKS))
+                {
+                    uint32 stacks = std::min<uint32>(bloodGorged->GetStackAmount(), 10);
+                    int32 damage = stacks *  10;
+                    me->CastCustomSpell(me, BLOODWORM_BLOOD_BURST, &damage, NULL, NULL, true);
+                    me->DespawnOrUnsummon(500);
+                }
+            }
+
+            void JustDied(Unit* killer)
+            {
+                Burst();
+            }
+
+            void Reset()
+            {
+                DoCast(me, BLOODWORM_BLOOD_GORGED, true);
+
+                uiBurstTimer = 19000;
+                uiCheckBloodChargesTimer = 1500;
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (uiBurstTimer <= diff)
+                    Burst();
+                else
+                    uiBurstTimer -= diff;
+
+                if (uiCheckBloodChargesTimer <= diff)
+                {
+                    if (me->GetOwner())
+                    {
+                        if (Aura* bloodGorged = me->GetAura(BLOODWORM_BLOOD_STACKS))
+                        {
+                            // 10% per stack
+                            int32 stacks = bloodGorged->GetStackAmount() * 10;
+                            int32 masterPct = int32(100.0f - me->GetOwner()->GetHealthPct());
+                            AddPct(stacks, masterPct);
+
+                            if (stacks > 100)
+                                stacks = 100;
+
+                            if (roll_chance_i(stacks))
+                                Burst();
+                            else
+                                uiCheckBloodChargesTimer = 1500;
+                        }
+                    }
+                }
+                else
+                    uiCheckBloodChargesTimer -= diff;
+
+                if (!UpdateVictim())
+                {
+                    if (Unit* target = me->SelectVictim())
+                        me->Attack(target, true);
+                    return;
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_bloodwormAI(creature);
+        }
+};
+
+/*######
+## npc_past_self
+######*/
+
+enum PastSelfSpells
+{
+    SPELL_FADING                    = 107550,
+    SPELL_ALTER_TIME                = 110909,
+    SPELL_ENCHANTED_REFLECTION      = 102284,
+    SPELL_ENCHANTED_REFLECTION_2    = 102288,
+};
+
+struct auraData
+{
+    auraData(uint32 id, int32 duration) : m_id(id), m_duration(duration) {}
+    uint32 m_id;
+    int32 m_duration;
+};
+
+#define ACTION_ALTER_TIME   1
+
+class npc_past_self : public CreatureScript
+{
+    public:
+        npc_past_self() : CreatureScript("npc_past_self") { }
+
+        struct npc_past_selfAI : public Scripted_NoMovementAI
+        {
+            npc_past_selfAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetMaxHealth(500);
+                me->SetHealth(me->GetMaxHealth());
+                mana = 0;
+                health = 0;
+                auras.clear();
+            }
+
+            int32 mana;
+            int32 health;
+            std::set<auraData*> auras;
+
+            void Reset()
+            {
+                if (!me->HasAura(SPELL_FADING))
+                    me->AddAura(SPELL_FADING, me);
+            }
+
+            void IsSummonedBy(Unit* owner)
+            {
+                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                {
+                    Unit::AuraApplicationMap const& appliedAuras = owner->GetAppliedAuras();
+                    for (Unit::AuraApplicationMap::const_iterator itr = appliedAuras.begin(); itr != appliedAuras.end(); ++itr)
+                    {
+                        if (Aura* aura = itr->second->GetBase())
+                        {
+                            SpellInfo const* auraInfo = aura->GetSpellInfo();
+                            if (!auraInfo)
+                                continue;
+
+                            if (auraInfo->Id == SPELL_ALTER_TIME)
+                                continue;
+
+                            if (auraInfo->IsPassive())
+                                continue;
+
+                            auras.insert(new auraData(auraInfo->Id, aura->GetDuration()));
+                        }
+                    }
+
+                    mana = owner->GetPower(POWER_MANA);
+                    health = owner->GetHealth();
+
+                    owner->AddAura(SPELL_ENCHANTED_REFLECTION, me);
+                    owner->AddAura(SPELL_ENCHANTED_REFLECTION_2, me);
+                }
+                else
+                    me->DespawnOrUnsummon();
+            }
+
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_ALTER_TIME)
+                {
+                    if (TempSummon* pastSelf = me->ToTempSummon())
+                    {
+                        if (Unit* m_owner = pastSelf->GetSummoner())
+                        {
+                            if (m_owner->ToPlayer())
+                            {
+                                if (!m_owner->isAlive())
+                                    return;
+
+                                //m_owner->RemoveNonPassivesAuras();
+
+                                for (std::set<auraData*>::iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                                {
+                                    Aura* aura = !m_owner->HasAura((*itr)->m_id) ? m_owner->AddAura((*itr)->m_id, m_owner) : m_owner->GetAura((*itr)->m_id);
+                                    if (aura)
+                                    {
+                                        aura->SetDuration((*itr)->m_duration);
+                                        aura->SetNeedClientUpdateForTargets();
+                                    }
+
+                                    delete (*itr);
+                                }
+
+                                auras.clear();
+
+                                m_owner->SetPower(POWER_MANA, mana);
+                                m_owner->SetHealth(health);
+
+                                m_owner->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), true);
+                                me->DespawnOrUnsummon(100);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_past_selfAI(creature);
+        }
+};
+
+/*######
+## npc_transcendence_spirit -- 54569
+######*/
+
+enum TranscendenceSpiritSpells
+{
+    SPELL_VISUAL_SPIRIT     = 119053,
+    SPELL_MEDITATE          = 124416,
+};
+
+enum transcendenceActions
+{
+    ACTION_TELEPORT     = 1,
+};
+
+class npc_transcendence_spirit : public CreatureScript
+{
+    public:
+        npc_transcendence_spirit() : CreatureScript("npc_transcendence_spirit") { }
+
+        struct npc_transcendence_spiritAI : public Scripted_NoMovementAI
+        {
+            npc_transcendence_spiritAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void Reset()
+            {
+                if (!me->HasAura(SPELL_MEDITATE))
+                    me->AddAura(SPELL_MEDITATE, me);
+            }
+
+            void IsSummonedBy(Unit* owner)
+            {
+                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                {
+                    me->SetMaxHealth(owner->GetMaxHealth() / 2);
+                    me->SetHealth(me->GetMaxHealth());
+
+                    me->CastSpell(me, SPELL_VISUAL_SPIRIT, true);
+                    owner->CastSpell(me, SPELL_INITIALIZE_IMAGES, true);
+                    owner->CastSpell(me, SPELL_CLONE_CASTER, true);
+                    owner->AddAura(SPELL_MEDITATE, me);
+                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
+                }
+                else
+                    me->DespawnOrUnsummon();
+            }
+
+            void MovementInform(uint32 type, uint32 id)
+            {
+                if (type != POINT_MOTION_TYPE)
+                    return;
+
+                if (id == 0)
+                    me->SetSpeed(MOVE_RUN, 0.0f);
+            }
+
+            void DoAction(int32 const action)
+            {
+                switch (action)
+                {
+                    case ACTION_TELEPORT:
+                        if (!me->GetOwner())
+                        {
+                            me->DespawnOrUnsummon(500);
+                            break;
+                        }
+
+                        me->SetSpeed(MOVE_RUN, 10.0f);
+                        me->GetMotionMaster()->MovePoint(0, me->GetOwner()->GetPositionX(), me->GetOwner()->GetPositionY(), me->GetOwner()->GetPositionZ());
+                        me->SetOrientation(me->GetOwner()->GetOrientation());
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_transcendence_spiritAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -4543,4 +4930,8 @@ void AddSC_npcs_special()
     new npc_brewfest_ram_master;
     new npc_psyfiend();
     new npc_void_tendrils();
+    new npc_spectral_guise();
+    new npc_bloodworm();
+    new npc_transcendence_spirit();
+    new npc_past_self();
 }

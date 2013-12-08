@@ -597,6 +597,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
+                    case 13812: // Explosive Trap
+                        if (m_caster->HasAura(119403)) // Glyph of Explosive Trap
+                        {
+                            damage = 0;
+                            m_damage = 0;
+                            return;
+                        }
+                        break;
                     // Claw, Bite
                     case 16827:
                     case 17253:

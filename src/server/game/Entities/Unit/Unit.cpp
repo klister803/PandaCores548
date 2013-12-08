@@ -350,7 +350,9 @@ void Unit::Update(uint32 p_time)
 
     // If this is set during update SetCantProc(false) call is missing somewhere in the code
     // Having this would prevent spells from being proced, so let's crash
-    ASSERT(!m_procDeep);
+    //ASSERT(!m_procDeep);
+    if(m_procDeep)
+        return;
 
     if (CanHaveThreatList() && getThreatManager().isNeedUpdateToClient(p_time))
         SendThreatListUpdate();
@@ -4145,6 +4147,27 @@ void Unit::RemoveAllAuras()
     }
 }
 
+void Unit::RemoveNonPassivesAuras()
+{
+    // this may be a dead loop if some events on aura remove will continiously apply aura on remove
+    // we want to have all auras removed, so use your brain when linking events
+    for (AuraApplicationMap::iterator aurAppIter = m_appliedAuras.begin(); aurAppIter != m_appliedAuras.end();)
+    {
+        if (!aurAppIter->second->GetBase()->IsPassive())
+            _UnapplyAura(aurAppIter, AURA_REMOVE_BY_DEFAULT);
+        else
+            ++aurAppIter;
+    }
+
+    for (AuraMap::iterator aurIter = m_ownedAuras.begin(); aurIter != m_ownedAuras.end();)
+    {
+        if (!aurIter->second->IsPassive())
+            RemoveOwnedAura(aurIter);
+        else
+            ++aurIter;
+    }
+}
+
 void Unit::RemoveArenaAuras()
 {
     // in join, remove positive buffs, on end, remove negative
@@ -5486,15 +5509,21 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
-            if(itr->target == 1 || !target)
+            if(itr->target == 1 || !target) //get target self
                 target = this;
-            if(itr->target == 3 && ToPlayer())
+            if(itr->target == 3 && ToPlayer()) //get target owner
                 if (Pet* pet = ToPlayer()->GetPet())
                     target = (Unit*)pet;
-            if(itr->target == 4 && target->ToPlayer())
+            if(itr->target == 4 && target->ToPlayer()) //get target pet
                 if (Pet* pet = target->ToPlayer()->GetPet())
                     target = (Unit*)pet;
+            if(itr->target == 5) //get target owner
+                if (Unit* owner = GetOwner())
+                    target = owner;
 
+            int32 bp0 = int32(itr->bp0);
+            int32 bp1 = int32(itr->bp1);
+            int32 bp2 = int32(itr->bp2);
             switch (itr->option)
             {
                 case SPELL_TRIGGER_BP:
@@ -5513,7 +5542,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 case SPELL_TRIGGER_BP_CUSTOM:
                 {
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &itr->bp0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     check = true;
                     continue;
                 }
@@ -5526,7 +5555,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     basepoints0 = CalculatePct(cost, itr->bp0);
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     check = true;
                     continue;
                 }
@@ -5536,7 +5565,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     basepoints0 = CalculatePct(damage, triggerAmount);
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     check = true;
                     continue;
                 }
@@ -5546,7 +5575,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if(Player* player = target->ToPlayer())
                     {
                         uint32 spellid = abs(itr->spell_trigger);
-                        if(itr->bp0 == 0)
+                        if(itr->bp0 == 0.0f)
                             player->RemoveSpellCooldown(spellid, true);
                         else
                         {
@@ -5584,7 +5613,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if(basepoints0)
                     {
                         triggered_spell_id = abs(itr->spell_trigger);
-                        CastCustomSpell(this, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                        CastCustomSpell(this, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     }
                     check = true;
                     continue;
@@ -5601,7 +5630,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if (roll_chance_i(chance))
                     {
                         triggered_spell_id = abs(itr->spell_trigger);
-                        CastCustomSpell(target, triggered_spell_id, &itr->bp0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                        CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     }
                     check = true;
                     continue;
@@ -5620,37 +5649,53 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     basepoints0 = CalculatePct(damage, itr->bp0);
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     check = true;
                     continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_MAX_MANA:
                 {
-                    basepoints0 = CountPctFromMaxMana(itr->bp0);
+                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetMaxPower(POWER_MANA));
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
                     check = true;
                     continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_BASE_MANA:
                 {
-                    basepoints0 = CalculatePct(GetCreateMana(), itr->bp0);;
+                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetCreateMana());
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
                     check = true;
                     continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_CUR_MANA:
                 {
-                    basepoints0 = CountPctFromCurMana(itr->bp0);
+                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetPower(POWER_MANA));
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &itr->bp1, &itr->bp2, true, castItem, triggeredByAura, originalCaster);
+                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_CHECK_PROCK:
+                {
+                    if(!procSpell)
+                    {
+                        check = true;
+                        continue;
+                    }
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    if(itr->aura == procSpell->Id)
+                        CastSpell(target, triggered_spell_id, true);
+
                     check = true;
                     continue;
                 }
@@ -5879,23 +5924,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     }
 
                     target = this;
-                    break;
-                }
-                // Mana Leech (Passive) (Priest Pet Aura)
-                case 28305:
-                {
-                    // Cast on owner
-                    target = GetOwner();
-                    if (!target)
-                        return false;
-
-                    if (GetEntry() == 62982 || GetEntry() == 67236) // Mindbender
-                    {
-                        target->EnergizeBySpell(target, 123051, int32(0.013f * target->GetPower(POWER_MANA)), POWER_MANA);
-                        return false;
-                    }
-
-                    triggered_spell_id = 34650;
                     break;
                 }
                 // Mark of Malice
@@ -9030,6 +9058,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 5118: // Aspect of the Cheetah
+        {
+            if (HasAura(119462) && ToPlayer())
+            {
+                ToPlayer()->AddSpellCooldown(5118, 0, time(NULL) + 4);
+                ToPlayer()->AddSpellCooldown(13165, 0, time(NULL) + 4);
+                ToPlayer()->AddSpellCooldown(13159, 0, time(NULL) + 4);
+                ToPlayer()->AddSpellCooldown(82661, 0, time(NULL) + 4);
+                RemoveAura(5118);
+                return true;
+            }
+            break;
+        }
         case 49509: // Scent of Blood
         {
             if (GetTypeId() != TYPEID_PLAYER)
@@ -9281,17 +9322,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             break;
         }
-        // Divine Insight
-        case 109175:
-        {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->Id != 34914)
-                return false;
-
-            break;
-        }
         // Ultimatum
         case 122509:
         {
@@ -9366,7 +9396,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         case 58410:     // Master Poisoner
         case 79147:     // Sanguinary Vein
         case 91023:     // Find Weakness
-        case 108942:    // Phantasm
         case 113043:    // Omen of Clarity (new)
         case 122464:    // Dematerialize
             return false;
@@ -16098,7 +16127,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (procSpell && !(procSpell->AuraInterruptFlags & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2)))
             // time for hardcode! Some spells can proc on absorb
             if (triggerData.aura && triggerData.aura->GetSpellInfo() && (triggerData.aura->GetSpellInfo()->Id == 33757 ||
-                triggerData.aura->GetSpellInfo()->Id == 28305 || triggerData.aura->GetSpellInfo()->Id == 2823 ||
+                triggerData.aura->GetSpellInfo()->Id == 2823 ||
                 triggerData.aura->GetSpellInfo()->Id == 3408 || triggerData.aura->GetSpellInfo()->Id == 5761 ||
                 triggerData.aura->GetSpellInfo()->Id == 8679 || triggerData.aura->GetSpellInfo()->Id == 108211 ||
                 triggerData.aura->GetSpellInfo()->Id == 108215 || triggerData.aura->GetSpellInfo()->GetSpellSpecific() == SPELL_SPECIFIC_SEAL ||
@@ -16146,7 +16175,23 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             }
         }
         if (triggerData.effMask)
-            procTriggered.push_front(triggerData);
+        {
+            // If set trigger always but only one time
+            if(triggerData.spellProcEvent && (triggerData.spellProcEvent->procEx & PROC_EX_EX_ONE_TIME_TRIGGER))
+            {
+                bool foundProc = false;
+                for (ProcTriggeredList::const_iterator i = procTriggered.begin(); i != procTriggered.end(); ++i)
+                    if(i->aura->GetId() == triggerData.aura->GetId())
+                    {
+                        foundProc = true;
+                        break;
+                    }
+                if(!foundProc)
+                    procTriggered.push_front(triggerData);
+            }
+            else
+                procTriggered.push_front(triggerData);
+        }
     }
 
     // Nothing found
@@ -17618,26 +17663,20 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
     bool spiritOfRedemption = false;
     if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_PRIEST)
     {
-        AuraEffectList const& dummyAuras = victim->GetAuraEffectsByType(SPELL_AURA_DUMMY);
-        for (AuraEffectList::const_iterator itr = dummyAuras.begin(); itr != dummyAuras.end(); ++itr)
+        if(AuraEffect const* aurEff = victim->GetAuraEffect(20711, 0))
         {
-            if ((*itr)->GetSpellInfo()->SpellIconID == 1654)
-            {
-                AuraEffect const* aurEff = *itr;
-                // save value before aura remove
-                uint32 ressSpellId = victim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
-                if (!ressSpellId)
-                    ressSpellId = victim->ToPlayer()->GetResurrectionSpellId();
-                // Remove all expected to remove at death auras (most important negative case like DoT or periodic triggers)
-                victim->RemoveAllAurasOnDeath();
-                // restore for use at real death
-                victim->SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
+            // save value before aura remove
+            uint32 ressSpellId = victim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
+            if (!ressSpellId)
+                ressSpellId = victim->ToPlayer()->GetResurrectionSpellId();
+            // Remove all expected to remove at death auras (most important negative case like DoT or periodic triggers)
+            victim->RemoveAllAurasOnDeath();
+            // restore for use at real death
+            victim->SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
 
-                // FORM_SPIRITOFREDEMPTION and related auras
-                victim->CastSpell(victim, 27827, true, NULL, aurEff);
-                spiritOfRedemption = true;
-                break;
-            }
+            // FORM_SPIRITOFREDEMPTION and related auras
+            victim->CastSpell(victim, 27827, true, NULL, aurEff);
+            spiritOfRedemption = true;
         }
     }
 

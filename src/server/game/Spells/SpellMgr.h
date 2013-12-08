@@ -115,6 +115,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_PERC_MAX_MANA     = 10,           // Percent from max mana
     SPELL_TRIGGER_PERC_BASE_MANA    = 11,           // Percent from base mana
     SPELL_TRIGGER_PERC_CUR_MANA     = 12,           // Percent from curent mana
+    SPELL_TRIGGER_CHECK_PROCK       = 13,           // Check proc from spell to trigger
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -237,7 +238,7 @@ enum ProcFlagsExLegacy
     PROC_EX_RESERVED2           = 0x0004000,
     PROC_EX_NOT_ACTIVE_SPELL    = 0x0008000,                 // Spell mustn't do damage/heal to proc
     PROC_EX_EX_TRIGGER_ALWAYS   = 0x0010000,                 // If set trigger always no matter of hit result
-    PROC_EX_EX_ONE_TIME_TRIGGER = 0x0020000,                 // If set trigger always but only one time (not implemented yet)
+    PROC_EX_EX_ONE_TIME_TRIGGER = 0x0020000,                 // If set trigger always but only one time
     PROC_EX_ONLY_ACTIVE_SPELL   = 0x0040000,                 // Spell has to do damage/heal to proc
 
     // Flags for internal use - do not use these in db!
@@ -641,9 +642,9 @@ struct SpellTriggered
     int32 spell_trigger;
     int32 target;
     int32 option;
-    int32 bp0;
-    int32 bp1;
-    int32 bp2;
+    float bp0;
+    float bp1;
+    float bp2;
     int32 effectmask;
     int32 aura;
 };

@@ -2533,9 +2533,9 @@ void SpellMgr::LoadSpellTriggered()
         int32 spell_trigger = fields[1].GetInt32();
         int32 option = fields[2].GetInt32();
         int32 target = fields[3].GetInt32();
-        int32 bp0 = fields[4].GetInt32();
-        int32 bp1 = fields[5].GetInt32();
-        int32 bp2 = fields[6].GetInt32();
+        float bp0 = fields[4].GetFloat();
+        float bp1 = fields[5].GetFloat();
+        float bp2 = fields[6].GetFloat();
         int32 effectmask = fields[7].GetInt32();
         int32 aura = fields[8].GetInt32();
 
@@ -4413,6 +4413,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 112897: // Battle Ring
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(27); // 3s
+                    break;
+                case 20711:
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[0].BasePoints = 1;
+                    spellInfo->Effects[0].MiscValue = 0;
                     break;
                 default:
                     break;

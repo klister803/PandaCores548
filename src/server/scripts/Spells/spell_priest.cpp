@@ -44,7 +44,8 @@ enum PriestSpells
     PRIEST_INNER_WILL                           = 73413,
     PRIEST_INNER_FIRE                           = 588,
     PRIEST_NPC_SHADOWY_APPARITION               = 61966,
-    PRIEST_SPELL_HALO_HEAL                      = 120696,
+    PRIEST_SPELL_HALO_HEAL_SHADOW               = 120696,
+    PRIEST_SPELL_HALO_HEAL_HOLY                 = 120692,
 
     // Cascade
     PRIEST_CASCADE_HOLY_DAMAGE                  = 120785,
@@ -64,13 +65,12 @@ enum PriestSpells
     PRIEST_SHADOW_WORD_PAIN                     = 589,
     PRIEST_DEVOURING_PLAGUE                     = 2944,
     PRIEST_VAMPIRIC_TOUCH                       = 34914,
-    PRIEST_PHANTASM_AURA                        = 108942,
-    PRIEST_PHANTASM_PROC                        = 114239,
     PRIEST_SPIRIT_SHELL_AURA                    = 109964,
     PRIEST_SPIRIT_SHELL_ABSORPTION              = 114908,
     PRIEST_ATONEMENT_AURA                       = 81749,
     PRIEST_ATONEMENT_HEAL                       = 81751,
     PRIEST_RAPTURE_ENERGIZE                     = 47755,
+    PRIEST_RAPTURE_AURA                         = 47536,
     PRIEST_TRAIN_OF_THOUGHT                     = 92297,
     PRIEST_INNER_FOCUS                          = 89485,
     PRIEST_GRACE_AURA                           = 47517,
@@ -113,6 +113,8 @@ enum PriestSpells
     PRIEST_SPELL_4P_S12_HEAL                    = 131566,
     PRIEST_SPELL_HOLY_SPARK                     = 131567,
     PRIEST_SPELL_VOID_TENDRILS                  = 114404,
+    PRIEST_SPELL_SHADOWFIEND_TRIGGERED          = 28305,
+    PRIEST_SPELL_MINDBENDER_TRIGGERED           = 123050,
 };
 
 // Called by Prayer of Mending - 33076
@@ -364,11 +366,21 @@ class spell_pri_shadowfiend : public SpellScriptLoader
                 {
                     if (Unit* target = GetExplTargetUnit())
                     {
-                        if (Guardian* pet = _player->GetGuardianPet())
+                        if (Unit* pet = _player->GetGuardianPet())
                         {
-                            pet->InitCharmInfo();
-                            pet->SetReactState(REACT_DEFENSIVE);
-                            pet->ToCreature()->AI()->AttackStart(target);
+                            if(pet->GetEntry() == 62982 || pet->GetEntry() == 67236)
+                                pet->CastSpell(pet, PRIEST_SPELL_MINDBENDER_TRIGGERED, true);
+                            else
+                                pet->CastSpell(pet, PRIEST_SPELL_SHADOWFIEND_TRIGGERED, true);
+
+                            if (pet->IsValidAttackTarget(target))
+                                pet->ToCreature()->AI()->AttackStart(target);
+                            else
+                            {
+                                Unit* victim = _player->GetSelectedUnit();
+                                if (victim && pet->IsValidAttackTarget(target))
+                                    pet->ToCreature()->AI()->AttackStart(target);
+                            }
                         }
                     }
                 }
@@ -402,10 +414,7 @@ class spell_pri_surge_of_light : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Aura* surgeOfLight = _player->GetAura(PRIEST_SURGE_OF_LIGHT))
-                    {
-                        surgeOfLight->SetUsingCharges(true);
-                        surgeOfLight->DropCharge();
-                    }
+                        surgeOfLight->ModStackAmount(-1);
                 }
             }
 
@@ -418,37 +427,6 @@ class spell_pri_surge_of_light : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_surge_of_light_SpellScript();
-        }
-};
-
-// Called by Smite - 585, Heal - 2050, Flash Heal - 2061, Binding Heal - 32546 and Greater Heal - 2060 (Surge of Darkness)
-// From Darkness, Comes Light - 109186
-class spell_pri_from_darkness_comes_light : public SpellScriptLoader
-{
-    public:
-        spell_pri_from_darkness_comes_light() : SpellScriptLoader("spell_pri_from_darkness_comes_light") { }
-
-        class spell_pri_from_darkness_comes_light_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_from_darkness_comes_light_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(PRIEST_FROM_DARKNESS_COMES_LIGHT_AURA))
-                        if (roll_chance_i(15))
-                            _player->CastSpell(_player, PRIEST_SURGE_OF_LIGHT, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pri_from_darkness_comes_light_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_from_darkness_comes_light_SpellScript();
         }
 };
 
@@ -1077,36 +1055,6 @@ class spell_pri_devouring_plague : public SpellScriptLoader
         }
 };
 
-// Called by Fade - 586
-// Phantasm - 108942
-class spell_pri_phantasm : public SpellScriptLoader
-{
-    public:
-        spell_pri_phantasm() : SpellScriptLoader("spell_pri_phantasm") { }
-
-        class spell_pri_phantasm_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_phantasm_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(PRIEST_PHANTASM_AURA))
-                        _player->CastSpell(_player, PRIEST_PHANTASM_PROC, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pri_phantasm_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_phantasm_SpellScript;
-        }
-};
-
 // Mind Spike - 73510
 class spell_pri_mind_spike : public SpellScriptLoader
 {
@@ -1139,8 +1087,7 @@ class spell_pri_mind_spike : public SpellScriptLoader
                         {
                             SetHitDamage(int32(GetHitDamage() * (1.5f * surgeOfDarkness->GetStackAmount())));
 
-                            surgeOfDarkness->SetUsingCharges(true);
-                            surgeOfDarkness->DropCharge();
+                            surgeOfDarkness->ModStackAmount(-1);
                         }
                     }
                 }
@@ -1525,34 +1472,42 @@ class spell_pri_halo_damage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pri_halo_damage_SpellScript);
 
-            void HandleOnHit()
+            void HandleDamage(SpellEffIndex eff)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        float Distance = _player->GetDistance(target);
-                        float var1 = pow((((Distance - 25) / 2)), 4);
-                        float var2 = pow(1.01f, (- 1 * var1));
-                        float percentage = 2 * (0.5f * var2 + 0.1f + 0.015f * Distance);
-                        int32 damage = int32(GetHitDamage() * percentage);
+                        int32 damage = GetHitDamage();
+                        damage += int32(_player->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()) * 1.95f);
 
-                        if (target->GetGUID() == _player->GetGUID())
-                            SetHitDamage(0);
-                        if (!_player->IsValidAttackTarget(target))
-                        {
-                            SetHitDamage(0);
-                            _player->CastSpell(target, PRIEST_SPELL_HALO_HEAL, true);
-                        }
+                        float Distance = _player->GetDistance(target);
+                        float pct = Distance / 25.0f;
+                        damage = int32(damage * pct);
 
                         SetHitDamage(damage);
                     }
                 }
             }
 
+            void HandleScript(SpellEffIndex eff)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (GetSpellInfo()->Id == 120517)
+                            caster->CastSpell(target, PRIEST_SPELL_HALO_HEAL_SHADOW, true);
+                        else
+                            caster->CastSpell(target, PRIEST_SPELL_HALO_HEAL_HOLY, true);
+                    }
+                }
+            }
+
             void Register()
             {
-                OnHit += SpellHitFn(spell_pri_halo_damage_SpellScript::HandleOnHit);
+                OnEffectHitTarget += SpellEffectFn(spell_pri_halo_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+                OnEffectHitTarget += SpellEffectFn(spell_pri_halo_damage_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
             }
         };
 
@@ -2074,14 +2029,7 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
             void OnTick(AuraEffect const* aurEff)
             {
                 if (GetCaster())
-                {
                     GetCaster()->EnergizeBySpell(GetCaster(), GetSpellInfo()->Id, GetCaster()->CountPctFromMaxMana(2), POWER_MANA);
-
-                    // From Darkness, Comes Light
-                    if (GetCaster()->HasAura(PRIEST_FROM_DARKNESS_COMES_LIGHT_AURA))
-                        if (roll_chance_i(15))
-                            GetCaster()->CastSpell(GetCaster(), PRIEST_SURGE_OF_DARKNESS, true);
-                }
             }
 
             void HandleDispel(DispelInfo* dispelInfo)
@@ -2356,7 +2304,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_shadow_word_insanity_allowing();
     new spell_pri_shadowfiend();
     new spell_pri_surge_of_light();
-    new spell_pri_from_darkness_comes_light();
     new spell_pri_body_and_soul();
     new spell_pri_prayer_of_mending_divine_insight();
     new spell_pri_divine_insight_holy();
@@ -2371,7 +2318,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_atonement();
     new spell_pri_spirit_shell();
     new spell_pri_devouring_plague();
-    new spell_pri_phantasm();
     new spell_pri_mind_spike();
     new spell_pri_cascade_second();
     new spell_pri_cascade_trigger();

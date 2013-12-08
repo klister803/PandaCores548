@@ -1091,7 +1091,6 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(((petlevel * 4 + petlevel) + bonus_dmg) * 1.8f));
 
                     CastSpell(this, 107903, true); // Shadowform visual
-                    CastSpell(this, 28305, true); // Mana Leech (passive)
 
                     break;
                 }
