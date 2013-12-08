@@ -1622,6 +1622,26 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 }
                 break;
             }
+            case SPELLFAMILY_ROGUE:
+            {
+                switch (GetId())
+                {
+                    case 11327: // Vanish
+                    {
+                        uint32 spellid = caster->HasAura(108208) ? 115191: 1784;
+
+                        if (Player* player =  caster->ToPlayer())
+                        {
+                            player->RemoveSpellCooldown(spellid, false);
+                            caster->CastSpell(caster, spellid, true);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_DEATHKNIGHT:
                 // Reaping
                 // Blood Rites

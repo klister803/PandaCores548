@@ -1098,9 +1098,6 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
             {
                 unitTarget->RemoveMovementImpairingAuras();
                 unitTarget->RemoveAurasByType(SPELL_AURA_MOD_STALKED);
-                if (Player* player =  m_caster->ToPlayer())
-                    player->RemoveSpellCooldown(1784, false);
-
                 unitTarget->CastSpell(unitTarget, 11327, true);
                 return;
             }
