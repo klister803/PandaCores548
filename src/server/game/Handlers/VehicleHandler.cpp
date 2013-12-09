@@ -44,7 +44,7 @@ void WorldSession::HandleDismissControlledVehicle(WorldPacket &recvData)
     mi.pos.m_positionY = recvData.read<float>();
     mi.time = getMSTime();
 
-    WorldPacket data(SMSG_MOVE_UPDATE);
+    WorldPacket data(SMSG_PLAYER_MOVE);
     WorldSession::WriteMovementInfo(data, &mi);
     _player->SendMessageToSet(&data, _player);
 

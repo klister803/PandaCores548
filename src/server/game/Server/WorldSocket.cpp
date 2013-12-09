@@ -823,7 +823,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
         sPacketLog->LogPacket(*new_pct, CLIENT_TO_SERVER);
 
     std::string opcodeName = GetOpcodeNameForLogging(opcode);
-    if (opcode != CMSG_PLAYER_MOVE)
+    if (opcode != CMSG_MOVE_START_FORWARD)
         sLog->outInfo(LOG_FILTER_OPCODES, "C->S: %s", opcodeName.c_str());
 
     try

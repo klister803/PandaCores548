@@ -123,7 +123,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     GetPlayer()->SendInitialPacketsAfterAddToMap();
 
     // Update position client-side to avoid undermap
-    WorldPacket data(SMSG_MOVE_UPDATE);
+    WorldPacket data(SMSG_PLAYER_MOVE);
     _player->m_movementInfo.time = getMSTime();
     _player->m_movementInfo.pos.m_positionX = loc.m_positionX;
     _player->m_movementInfo.pos.m_positionY = loc.m_positionY;
@@ -267,7 +267,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 
     if(Unit* mover = _player->m_mover)
     {
-        WorldPacket data(SMSG_MOVE_UPDATE);
+        WorldPacket data(SMSG_PLAYER_MOVE);
         mover->m_movementInfo.time = getMSTime();
         mover->m_movementInfo.pos.m_positionX = mover->GetPositionX();
         mover->m_movementInfo.pos.m_positionY = mover->GetPositionY();
@@ -693,7 +693,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     /* process position-change */
     if (check_passed)
     {
-        WorldPacket data(SMSG_MOVE_UPDATE, recvPacket.size());
+        WorldPacket data(SMSG_PLAYER_MOVE, recvPacket.size());
         movementInfo.time = getMSTime();
         movementInfo.guid = mover->GetGUID();
         WorldSession::WriteMovementInfo(data, &movementInfo);

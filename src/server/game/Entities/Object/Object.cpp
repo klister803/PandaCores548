@@ -357,7 +357,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteGuidMask<5>(guid);
         data->WriteBit(G3D::fuzzyEq(self->GetOrientation(), 0.0f));         // has orientation
         data->WriteGuidMask<7>(guid);
-        data->WriteBits(0, 19);                     // dword90
+        data->WriteBits(0, 22);                     // dword90
         data->WriteBit(self->IsSplineEnabled());    // has spline data
         data->WriteBit(!((movementFlags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) ||
             (movementFlagsExtra & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)));   // has pitch
@@ -2397,7 +2397,7 @@ void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const*
 
 void Unit::BuildHeartBeatMsg(WorldPacket* data) const
 {
-    data->Initialize(SMSG_MOVE_UPDATE);
+    data->Initialize(SMSG_PLAYER_MOVE);
     WriteMovementUpdate(*data);
 }
 
