@@ -1692,6 +1692,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             }
             break;
         case SPELLFAMILY_ROGUE:
+        {
             // Stealth
             if (GetSpellInfo()->SpellFamilyFlags[0] & 0x00400000)
             {
@@ -1706,9 +1707,34 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         target->CastCustomSpell(target, 31665, &basepoints0, NULL, NULL, true);
                     }
                 }
-                break;
+            }
+
+            switch (GetId())
+            {
+                case 1784:  // Stealth
+                case 11327: // Vanish
+                {
+                    if (caster->HasAura(108209)) // Shadow Focus
+                    {
+                        if (apply)
+                        {
+                            caster->CastSpell(caster, 112942, true);
+                        }
+                        else
+                        {
+                            if (!caster->HasAura(1784) && !caster->HasAura(11327))
+                            {
+                                caster->RemoveAura(112942);
+                            }
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
             }
             break;
+        }
         case SPELLFAMILY_HUNTER:
             switch (GetId())
             {
