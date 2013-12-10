@@ -1073,7 +1073,7 @@ enum Opcodes
     SMSG_MIRRORIMAGE_DATA                             = 0xDC1,  // 5.0.5 16048
     SMSG_MISSILE_CANCEL                               = 0xFD1,  // 5.0.5 16048
     SMSG_MODIFY_COOLDOWN                              = 0x9C7,  // 5.0.5 16048
-    SMSG_MONSTER_MOVE                                 = 0x942,  // 5.0.5 16048
+    SMSG_MONSTER_MOVE                                 = 0x0216, // 5.4.1 17538
     SMSG_MONSTER_MOVE_TRANSPORT                       = 0xC35,  // 5.0.5 16048
     SMSG_MOTD                                         = 0x952,  // 5.0.5 16048
     SMSG_MOUNTRESULT                                  = 0x9D9,  // 5.0.5 16048
