@@ -1693,26 +1693,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             break;
         case SPELLFAMILY_ROGUE:
         {
-            // Stealth
-            if (GetSpellInfo()->SpellFamilyFlags[0] & 0x00400000)
-            {
-                // Master of subtlety
-                if (AuraEffect const* aurEff = target->GetAuraEffect(31223, 0))
-                {
-                    if (!apply)
-                        target->CastSpell(target, 31666, true);
-                    else
-                    {
-                        int32 basepoints0 = aurEff->GetAmount();
-                        target->CastCustomSpell(target, 31665, &basepoints0, NULL, NULL, true);
-                    }
-                }
-            }
-
             switch (GetId())
             {
-                case 1784:  // Stealth
-                case 11327: // Vanish
+                case 1784:   // Stealth
+                case 11327:  // Vanish
+                case 115191: // Subterfuge (Stealth)
                 {
                     if (caster->HasAura(108209)) // Shadow Focus
                     {
@@ -1725,6 +1710,24 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             if (!caster->HasAura(1784) && !caster->HasAura(11327))
                             {
                                 caster->RemoveAura(112942);
+                            }
+                        }
+                    }
+
+                    if (caster->HasAura(31223)) // Master of subtlety
+                    {
+                        if (apply)
+                        {
+                            caster->CastSpell(caster, 31665, true);
+                        }
+                        else
+                        {
+                            if (!caster->HasAura(1784) && !caster->HasAura(11327) && !caster->HasAura(115191))
+                            {
+                                if (Aura * aur = caster->GetAura(31665))
+                                {
+                                    aur->SetAuraTimer(6000);
+                                }
                             }
                         }
                     }
@@ -2791,5 +2794,16 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
             else
                 targets[*itr] = 1<<effIndex;
         }
+    }
+}
+
+void Aura::SetAuraTimer(int32 time, uint64 guid)
+{
+    if(GetDuration() == -1 || GetDuration() > time)
+    {
+        SetDuration(time);
+        SetMaxDuration(time);
+        if(AuraApplication *aur = GetApplicationOfTarget(guid ? guid : m_casterGuid))
+            aur->ClientUpdate();
     }
 }

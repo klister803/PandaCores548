@@ -3291,6 +3291,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 31665: // Master of subtlety
+                    spellInfo->Effects[0].BasePoints = 10;
+                    break;
                 case 115834: // Shroud of Concealment
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_TARGET_IN_COMBAT;
                     break;
