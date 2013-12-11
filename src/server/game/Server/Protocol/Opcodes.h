@@ -1068,7 +1068,7 @@ enum Opcodes
     SMSG_MEETINGSTONE_IN_PROGRESS                     = 0xD5A,  // 5.0.5 16048
     SMSG_MEETINGSTONE_MEMBER_ADDED                    = 0,      // Not found in 4.3.4
     SMSG_MEETINGSTONE_SETQUEUE                        = 0,      // Not found in 4.3.4
-    SMSG_MESSAGECHAT                                  = 0xC9F,  // 5.0.5 16048
+    SMSG_MESSAGECHAT                                  = 0x14AC, // 5.4.1 17538
     SMSG_MESSAGE_BOX                                  = 0xB2F,  // 5.0.5 16048
     SMSG_MINIGAME_SETUP                               = 0x9D3,  // 5.0.5 16048
     SMSG_MINIGAME_STATE                               = 0xC57,  // 5.0.5 16048
@@ -1297,8 +1297,8 @@ enum Opcodes
     SMSG_SPELL_DELAYED                                = 0xC17,  // 5.0.5 16048
     SMSG_SPELL_FAILED_OTHER                           = 0xC0E,  // 5.0.5 16048
     SMSG_SPELL_FAILURE                                = 0xD93,  // 5.0.5 16048
-    SMSG_SPELL_GO                                     = 0xD42,  // 5.0.5 16048
-    SMSG_SPELL_START                                  = 0x8FC,  // 5.0.5 16048
+    SMSG_SPELL_GO                                     = 0x14EC, // 5.4.1 17538
+    SMSG_SPELL_START                                  = 0x0CCC, // 5.4.1 17538
     SMSG_SPELL_UPDATE_CHAIN_TARGETS                   = 0x858,  // 5.0.5 16048
     SMSG_SPIRIT_HEALER_CONFIRM                        = 0xC7F,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_COLLISION_DISABLE                = 0xE81,  // 5.0.5 16048
