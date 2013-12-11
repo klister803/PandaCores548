@@ -699,7 +699,7 @@ enum Opcodes
     SMSG_AUCTION_REMOVED_NOTIFICATION                 = 0x882,  // 5.0.5 16048
     SMSG_AURACASTLOG                                  = 0x000,  // Not found in 4.3.4
     SMSG_AURA_POINTS_DEPLETED                         = 0xBF7,  // 5.0.5 16048
-    SMSG_AURA_UPDATE                                  = 0x8AB,  // 5.0.5 16048
+    SMSG_AURA_UPDATE                                  = 0x0165, // 5.4.1 17538
     SMSG_AURA_UPDATE_ALL                              = 0xDDA,  // 5.0.5 16048
     SMSG_AUTH_CHALLENGE                               = 0x0C5D, // 5.4.1 17538
     SMSG_AUTH_RESPONSE                                = 0x0D05, // 5.4.1 17538
