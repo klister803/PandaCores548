@@ -526,12 +526,8 @@ void WorldSession::HandleReturnToGraveyard(WorldPacket& /*recvPacket*/)
 void WorldSession::HandleSetSelectionOpcode(WorldPacket& recvData)
 {
     ObjectGuid guid;
-
-    uint8 bitOrder[8] = {7, 4, 0, 5, 6, 2, 1, 3};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {4, 3, 2, 0, 6, 5, 7, 1};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<4, 3, 2, 0, 5, 7, 6, 1>(guid);
+    recvData.ReadGuidBytes<1, 2, 3, 0, 7, 5, 4, 6>(guid);
 
     _player->SetSelection(guid);
 }

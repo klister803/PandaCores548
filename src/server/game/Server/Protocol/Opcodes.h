@@ -494,7 +494,7 @@ enum Opcodes
     CMSG_SET_PRIMARY_TALENT_TREE                      = 0x000,  // 5.0.5 16048 deprecated
     CMSG_SET_RELATIVE_POSITION                        = 0x3B5,  // 5.0.5 16048
     CMSG_SET_SAVED_INSTANCE_EXTEND                    = 0x81D,  // 5.0.5 16048
-    CMSG_SET_SELECTION                                = 0x2B1,  // 5.0.5 16048
+    CMSG_SET_SELECTION                                = 0x07CD, // 5.4.1 17538
     CMSG_SET_SKILL_CHEAT                              = 0x000,  // Not found in 4.3.4
     CMSG_SET_SPECIALIZATION                           = 0x5D8,  // 5.0.5 16048
     CMSG_SET_TAXI_BENCHMARK_MODE                      = 0xCFA,  // 5.0.5 16048
