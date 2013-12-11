@@ -110,7 +110,7 @@ namespace Movement
         uint32 last_idx = spline.getPointCount() - 3;
         const Vector3 * real_path = &spline.getPoint(1);
 
-        if (last_idx > 0)
+        if (last_idx > 1)
         {
             Vector3 middle = (real_path[0] + real_path[last_idx]) / 2.f;
             Vector3 offset;
@@ -163,15 +163,22 @@ namespace Movement
         data.WriteBit(0);                                       // sets/unsets MOVEMENTFLAG2_UNK7 (0x40)
         data.WriteGuidMask<0>(guid);
         data.WriteBit(!transportGuid);                          // has transport seat
-        data.WriteBit(splineflags.animation);
-        data.WriteBit(1);                                       // byte64
+        data.WriteBit(!splineflags.animation);
+        data.WriteBit(1);                                       // !byte64
+
         data.WriteBit(!transportGuid);                          // transport guid marker
         data.WriteGuidMask<1, 5, 6, 2, 3, 7, 4, 0>(transportGuid);
         data.WriteGuidMask<4>(guid);
         data.WriteBit(!move_spline.Duration());
 
-        int32 splineWpCount = move_spline.splineflags & MoveSplineFlag::UncompressedPath ? 1 : move_spline.spline.getPointCount() - 3;
-        data.WriteBits(splineWpCount, 22);                      // WP count
+        // compressed wp count
+        if (splineflags & MoveSplineFlag::UncompressedPath)
+            data.WriteBits(0, 22);
+        else
+        {
+            int32 cnt = spline.getPointCount() - 4;
+            data.WriteBits(cnt > 0 ? cnt : 0, 22);
+        }
 
         data.WriteGuidMask<3, 7, 6, 5>(guid);
         data.WriteBit(0);                                       // byteA8
@@ -179,8 +186,18 @@ namespace Movement
         data.WriteBit(!splineflags.parabolic);
         data.WriteBit(!splineflags.raw());
 
-        data.WriteBit(1);
-        data.WriteBits(!splineWpCount ? move_spline.spline.getPointCount() - 2 : 1, 20);
+        data.WriteBit(1);                                       // dword44
+        // uncompressed wp count
+        if (splineflags & MoveSplineFlag::UncompressedPath)
+        {
+            if (splineflags.cyclic)
+                data.WriteBits(spline.getPointCount() - 2, 20);
+            else
+                data.WriteBits(spline.getPointCount() - 3, 20);
+        }
+        else
+            data.WriteBits(1, 20);
+
         data.WriteBit(!splineflags.animation && !splineflags.parabolic);    // has effect start time
         data.WriteBits(type, 3);
 
@@ -202,9 +219,9 @@ namespace Movement
         }
         else
         {
-            uint32 last_idx = move_spline.spline.getPointCount() - 2;
-            const Vector3 * real_path = &move_spline.spline.getPoint(1);
-            data << real_path[last_idx].x << real_path[last_idx].y << real_path[last_idx].z; // destination
+            uint32 last_idx = spline.getPointCount() - 2;
+            const Vector3 * real_path = &spline.getPoint(1);
+            data << real_path[last_idx]; // destination
         }
 
         data << uint32(unit.movespline->GetId());
@@ -222,7 +239,8 @@ namespace Movement
         if (splineflags.animation || splineflags.parabolic)     // has effect start time
             data << uint32(move_spline.effect_start_time);
 
-        WriteLinearPath(move_spline.spline, data);
+        if ((splineflags & MoveSplineFlag::UncompressedPath) == 0)
+            WriteLinearPath(move_spline.spline, data);
 
         data << float(0.0f);                                    // float28
 
@@ -240,12 +258,14 @@ namespace Movement
         if (type == MonsterMoveFacingAngle)
             data << float(move_spline.facing.angle);
 
+        Vector3 const& pos = move_spline.spline.getPoint(move_spline.spline.first());
+
         data << float(0.0f);
         if (move_spline.Duration())
             data << uint32(move_spline.Duration());
         data.WriteGuidBytes<4, 2>(guid);
-        data << float(unit.GetPositionY());
-        data << float(unit.GetPositionZ());
+        data << float(pos.y);
+        data << float(pos.z);
         data.WriteGuidBytes<3>(guid);
         if (splineflags.parabolic)
             data << float(move_spline.vertical_acceleration);
@@ -253,7 +273,7 @@ namespace Movement
         data.WriteGuidBytes<7>(guid);
         if (splineflags.animation)
             data << uint8(splineflags.getAnimationId());
-        data << float(unit.GetPositionX());
+        data << float(pos.x);
         data.WriteGuidBytes<1>(guid);
         if (transportGuid)
             data << uint8(unit.GetTransSeat());
