@@ -122,7 +122,7 @@ enum Opcodes
     CMSG_CANCEL_QUEUED_SPELL                          = 0x6D3,  // 5.0.5 16048
     CMSG_CANCEL_TEMP_ENCHANTMENT                      = 0xC8F,  // 5.0.5 16048
     CMSG_CANCEL_TRADE                                 = 0x321,  // 5.0.5 16048
-    CMSG_CAST_SPELL                                   = 0x911,  // 5.0.5 16048
+    CMSG_CAST_SPELL                                   = 0x127D, // 5.4.1 17538
     CMSG_CHANGEPLAYER_DIFFICULTY                      = 0x20D,  // 5.0.5 16048
     CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE           = 0x676,  // 5.0.5 16048
     CMSG_CHANNEL_ANNOUNCEMENTS                        = 0x389,  // 5.0.5 16048
