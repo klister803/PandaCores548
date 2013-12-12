@@ -1873,7 +1873,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     uint32 playerClass      = uint32(fields[1].GetUInt8());
     uint32 level            = uint32(fields[2].GetUInt8());
     uint32 at_loginFlags    = fields[3].GetUInt16();
-    uint32 used_loginFlag   = ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
+    uint32 used_loginFlag   = ((recvData.GetOpcode() == CMSG_CHAR_RACE_FACTION_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
     char const* knownTitlesStr = fields[4].GetCString();
 
     BattlegroundTeamId oldTeam = BG_TEAM_ALLIANCE;
@@ -1898,7 +1898,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     // Because client always send neutral ID
     if (race == RACE_PANDAREN_NEUTRAL)
     {
-    	if ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE))
+    	if ((recvData.GetOpcode() == CMSG_CHAR_RACE_FACTION_CHANGE))
     		race = oldTeam == BG_TEAM_ALLIANCE ? RACE_PANDAREN_ALLI : RACE_PANDAREN_HORDE;
     	else
     		race = oldTeam == BG_TEAM_ALLIANCE ? RACE_PANDAREN_HORDE : RACE_PANDAREN_ALLI;
