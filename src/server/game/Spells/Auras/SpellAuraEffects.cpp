@@ -869,6 +869,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 }
+                case 126588: // Item - Qin-xi's Polarizing Seal
                 case 126554: // Item - Bottle of Infinite Stars
                 case 126577: // Item - Light of the Cosmos
                 case 126582: // Item - Lei Shen's Final Orders
