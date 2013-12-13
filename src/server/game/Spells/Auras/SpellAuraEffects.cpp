@@ -869,6 +869,24 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 }
+                case 126683: // Call of Dominance
+                case 126690: // Call of Conquest
+                case 126679: // Call of Victory	
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    {
+                        switch (item->GetTemplate()->ItemLevel)
+                        {
+                            case 464: amount = 4275; break;
+                            case 483: amount = 5105; break;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
                 case 126588: // Item - Qin-xi's Polarizing Seal
                 case 126554: // Item - Bottle of Infinite Stars
                 case 126577: // Item - Light of the Cosmos
