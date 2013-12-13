@@ -894,6 +894,34 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             }
             break;
         }
+        case SPELL_AURA_MOD_RATING:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 126597: // Items - Jade Warlord Figurine, Lao-Chin's Liquid Courage
+                case 126599: // Items - Jade Charioteer Figurine, Jade Bandit Figurine, Hawkmaster's Talon
+                case 129812: // Item  - Iron Belly Wok
+                case 126605: // Item  - Blossom of Pure Snow, Jade Magistrate Figurine
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    {
+                        switch (item->GetTemplate()->ItemLevel)
+                        {
+                            case 476: amount = 3185; break; // Raid Finder
+                            case 489: amount = 3595; break; // Normal
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_MOD_INCREASE_HEALTH_2:
         {
             switch (m_spellInfo->Id)
