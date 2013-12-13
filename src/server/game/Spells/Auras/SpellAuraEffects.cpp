@@ -889,6 +889,22 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 }
+                case 126606: // Items - Jade Courtesan Figurine, Scroll of Revered Ancestors
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    {
+                        switch (item->GetTemplate()->ItemLevel)
+                        {
+                            case 476: amount = 3185; break; // Raid Finder
+                            case 489: amount = 3595; break; // Normal
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -919,6 +935,23 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 }
                 default:
                     break;
+            }
+            case 126533: // Item - Vial of Dragon's Blood
+            {
+                uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                {
+                    switch (item->GetTemplate()->ItemLevel)
+                    {
+                        case 476: amount = 2866; break; // Raid Finder
+                        case 489: amount = 3236; break; // Normal
+                        case 502: amount = 3653; break; // Heroic
+                        default:
+                            break;
+                    }
+                }
+                break;
             }
             break;
         }
