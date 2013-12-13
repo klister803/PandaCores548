@@ -851,6 +851,24 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     amount = CalculatePct(caster->GetStat(STAT_INTELLECT), m_baseAmount);
                     break;
                 }
+                case 126707: // Surge of Conquest
+                case 126700: // Surge of Victory
+                case 126705: // Surge of Dominance	
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    {
+                        switch (item->GetTemplate()->ItemLevel)
+                        {
+                            case 464: amount = 3017; break;
+                            case 483: amount = 3603; break;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
                 default:
                     break;
             }
