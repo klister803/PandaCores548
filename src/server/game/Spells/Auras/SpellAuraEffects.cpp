@@ -869,6 +869,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 }
+                case 126554: // Item - Bottle of Infinite Stars
+                case 126577: // Item - Light of the Cosmos
+                case 126582: // Item - Lei Shen's Final Orders
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    {
+                        switch (item->GetTemplate()->ItemLevel)
+                        {
+                            case 476: amount = 2866; break; // Raid Finder
+                            case 489: amount = 3236; break; // Normal
+                            case 502: amount = 3653; break; // Heroic
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
                 default:
                     break;
             }
