@@ -3558,20 +3558,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 6203:  // Soulstone
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
                     break;
-                case 105622:// Clemency
-                    spellInfo->Effects[4].Effect = 0;
-                    spellInfo->Effects[4].BasePoints = 0;
-                    spellInfo->Effects[4].ApplyAuraName = 0;
-                    spellInfo->Effects[5].Effect = 0;
-                    spellInfo->Effects[5].BasePoints = 0;
-                    spellInfo->Effects[5].ApplyAuraName = 0;
-                    spellInfo->Effects[6].Effect = 0;
-                    spellInfo->Effects[6].BasePoints = 0;
-                    spellInfo->Effects[6].ApplyAuraName = 0;
-                    spellInfo->Effects[7].Effect = 0;
-                    spellInfo->Effects[7].BasePoints = 0;
-                    spellInfo->Effects[8].ApplyAuraName = 0;
-                    break;
                 case 118291:// Greater Fire Elemental
                 case 118323:// Greater Earth Elemental
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_SUMMON_PET;
