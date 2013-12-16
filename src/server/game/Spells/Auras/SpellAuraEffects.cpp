@@ -857,6 +857,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 {
                     uint64 itmGuid = GetBase()->GetCastItemGUID();
 
+                    if (!caster)
+                        break;
+
                     if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
                     {
                         switch (item->GetTemplate()->ItemLevel)
@@ -874,6 +877,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 case 126679: // Call of Victory	
                 {
                     uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
 
                     if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
                     {
@@ -894,6 +900,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 {
                     uint64 itmGuid = GetBase()->GetCastItemGUID();
 
+                    if (!caster)
+                        break;
+
                     if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
                     {
                         switch (item->GetTemplate()->ItemLevel)
@@ -910,6 +919,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 case 126606: // Items - Jade Courtesan Figurine, Scroll of Revered Ancestors
                 {
                     uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
 
                     if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
                     {
@@ -939,6 +951,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 {
                     uint64 itmGuid = GetBase()->GetCastItemGUID();
 
+                    if (!caster)
+                        break;
+
                     if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
                     {
                         switch (item->GetTemplate()->ItemLevel)
@@ -957,6 +972,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             case 126533: // Item - Vial of Dragon's Blood
             {
                 uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                if (!caster)
+                    break;
 
                 if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
                 {
