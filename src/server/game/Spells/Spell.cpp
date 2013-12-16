@@ -7420,7 +7420,7 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
 
                 else if (m_spellInfo->Id == 82327)
                 {
-                    if (targetInfo.targetGUID != (*m_UniqueTargetInfo.begin()).targetGUID)
+                    if (targetInfo.targetGUID != m_targets.GetUnitTargetGUID())
                     {
                         m_damage = CalculatePct(m_damage, m_spellInfo->Effects[0].BasePoints);
                     }
