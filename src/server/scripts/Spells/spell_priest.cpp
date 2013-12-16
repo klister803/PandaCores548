@@ -1085,7 +1085,7 @@ class spell_pri_mind_spike : public SpellScriptLoader
                         // ... and deals 50% additional damage.
                         else if (Aura* surgeOfDarkness = _player->GetAura(PRIEST_SURGE_OF_DARKNESS))
                         {
-                            SetHitDamage(int32(GetHitDamage() * (1.5f * surgeOfDarkness->GetStackAmount())));
+                            SetHitDamage(int32(GetHitDamage() * 1.5f));
 
                             surgeOfDarkness->ModStackAmount(-1);
                         }
