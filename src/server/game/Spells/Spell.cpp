@@ -7417,6 +7417,14 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
                             m_damage = (m_damage * 6) / int32(targetAmount);
                     }
                 }
+
+                else if (m_spellInfo->Id == 82327)
+                {
+                    if (targetInfo.targetGUID != (*m_UniqueTargetInfo.begin()).targetGUID)
+                    {
+                        m_damage = CalculatePct(m_damage, m_spellInfo->Effects[0].BasePoints);
+                    }
+                }
             }
 
             if (m_applyMultiplierMask & (1 << i))
