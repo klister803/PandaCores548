@@ -860,14 +860,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     if (!caster)
                         break;
 
-                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    if (Player * player = caster->ToPlayer())
                     {
-                        switch (item->GetTemplate()->ItemLevel)
+                        if (Item * item = player->GetItemByGuid(itmGuid))
                         {
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
                             case 464: amount = 3017; break;
                             case 483: amount = 3603; break;
                             default:
                                 break;
+                            }
                         }
                     }
                     break;
@@ -881,14 +884,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     if (!caster)
                         break;
 
-                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    if (Player * player = caster->ToPlayer())
                     {
-                        switch (item->GetTemplate()->ItemLevel)
+                        if (Item * item = player->GetItemByGuid(itmGuid))
                         {
-                            case 464: amount = 4275; break;
-                            case 483: amount = 5105; break;
-                            default:
-                                break;
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 464: amount = 4275; break;
+                                case 483: amount = 5105; break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                     break;
@@ -903,15 +909,18 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     if (!caster)
                         break;
 
-                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    if (Player * player = caster->ToPlayer())
                     {
-                        switch (item->GetTemplate()->ItemLevel)
+                        if (Item * item = player->GetItemByGuid(itmGuid))
                         {
-                            case 476: amount = 2866; break; // Raid Finder
-                            case 489: amount = 3236; break; // Normal
-                            case 502: amount = 3653; break; // Heroic
-                            default:
-                                break;
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 476: amount = 2866; break; // Raid Finder
+                                case 489: amount = 3236; break; // Normal
+                                case 502: amount = 3653; break; // Heroic
+                                default:
+                                    break;
+                            }
                         }
                     }
                     break;
@@ -923,14 +932,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     if (!caster)
                         break;
 
-                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    if (Player * player = caster->ToPlayer())
                     {
-                        switch (item->GetTemplate()->ItemLevel)
+                        if (Item * item = player->GetItemByGuid(itmGuid))
                         {
-                            case 476: amount = 3185; break; // Raid Finder
-                            case 489: amount = 3595; break; // Normal
-                            default:
-                                break;
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 476: amount = 3185; break; // Raid Finder
+                                case 489: amount = 3595; break; // Normal
+                                default:
+                                    break;
+                            }
                         }
                     }
                     break;
@@ -954,14 +966,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     if (!caster)
                         break;
 
-                    if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                    if (Player * player = caster->ToPlayer())
                     {
-                        switch (item->GetTemplate()->ItemLevel)
+                        if (Item * item = player->GetItemByGuid(itmGuid))
                         {
-                            case 476: amount = 3185; break; // Raid Finder
-                            case 489: amount = 3595; break; // Normal
-                            default:
-                                break;
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 476: amount = 3185; break; // Raid Finder
+                                case 489: amount = 3595; break; // Normal
+                                default:
+                                    break;
+                            }
                         }
                     }
                     break;
@@ -976,15 +991,18 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 if (!caster)
                     break;
 
-                if (Item * item = caster->ToPlayer()->GetItemByGuid(itmGuid))
+                if (Player * player = caster->ToPlayer())
                 {
-                    switch (item->GetTemplate()->ItemLevel)
+                    if (Item * item = player->GetItemByGuid(itmGuid))
                     {
-                        case 476: amount = 2866; break; // Raid Finder
-                        case 489: amount = 3236; break; // Normal
-                        case 502: amount = 3653; break; // Heroic
-                        default:
-                            break;
+                        switch (item->GetTemplate()->ItemLevel)
+                        {
+                            case 476: amount = 2866; break; // Raid Finder
+                            case 489: amount = 3236; break; // Normal
+                            case 502: amount = 3653; break; // Heroic
+                            default:
+                                break;
+                        }
                     }
                 }
                 break;
