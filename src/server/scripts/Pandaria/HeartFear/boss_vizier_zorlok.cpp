@@ -186,6 +186,15 @@ class boss_vizier_zorlok : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+                Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                if (!players.isEmpty())
+                {
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                    {
+                        if (Player* pPlayer = itr->getSource())
+                            me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
+                    }
+                }
             }
 
             void UpdateAI(const uint32 diff)
