@@ -20626,8 +20626,16 @@ bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, uint32 /*damage*/, AuraE
     {
         case 108507:        // Kil'jaeden's Cunning
         {
-            if (!procSpell || HasAura(119049) || procSpell->CastTimeEntry == 1)
+            if (!procSpell || HasAura(119049))
                 return false;
+            if(SpellCastTimesEntry const* CastTimeEntry = procSpell->CastTimeEntry)
+            {
+                if(!CastTimeEntry->CastTime)
+                    return false;
+            }
+            else
+                return false;
+
             triggered_spell_id = 119050;
             break;
         }
