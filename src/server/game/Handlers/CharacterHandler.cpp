@@ -2084,7 +2084,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         trans->Append(stmt);
     }
 
-    if (recvData.GetOpcode() == CMSG_CHAR_FACTION_CHANGE)
+    if (recvData.GetOpcode() == CMSG_CHAR_RACE_FACTION_CHANGE)
     {
         // Delete all Flypaths
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_TAXI_PATH);

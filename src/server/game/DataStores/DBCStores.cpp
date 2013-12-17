@@ -355,7 +355,7 @@ void LoadDBCStores(const std::string& dataPath)
         }
     }
 
-    LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementStore,            dbcPath, "Achievement.dbc", &CustomAchievementfmt, &CustomAchievementIndex);//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementStore,            dbcPath, "Achievement.dbc"/*, &CustomAchievementfmt, &CustomAchievementIndex*/);//14545
     //LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementCriteriaStore,    dbcPath, "Achievement_Criteria.dbc", &CustomAchievementCriteriafmt, &CustomAchievementCriteriaIndex);//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementCriteriaStore,    dbcPath, "Criteria.dbc");//16048
     LoadDBC(availableDbcLocales, bad_dbc_files, sCriteriaTreeStore,           dbcPath, "CriteriaTree.dbc");//16048
@@ -820,7 +820,7 @@ void LoadDBCStores(const std::string& dataPath)
     // Check loaded DBC files proper version
     if (!sAreaStore.LookupEntry(5491)          ||     // last area (areaflag) added in 5.4.1 (17538)
         !sCharTitlesStore.LookupEntry(389)     ||     // last char title added in 5.4.1 (17538)
-        !sGemPropertiesStore.LookupEntry(2467) ||     // last gem property added in 5.4.1 (17538)
+        !sGemPropertiesStore.LookupEntry(2402) ||     // last gem property added in 5.4.1 (17538)
         !sMapStore.LookupEntry(1173)           ||     // last map added in 5.4.1 (17538)
         !sSpellStore.LookupEntry(152028)       )      // last spell added in 5.4.1 (17538)
     {

@@ -96,7 +96,7 @@ void LoadDB2Stores(const std::string& dataPath)
     LoadDB2(bad_db2_files, sItemStore, db2Path, "Item.db2");
     LoadDB2(bad_db2_files, sItemCurrencyCostStore, db2Path, "ItemCurrencyCost.db2");
     LoadDB2(bad_db2_files, sItemSparseStore, db2Path, "Item-sparse.db2");
-    LoadDB2(bad_db2_files, sItemExtendedCostStore, db2Path, "ItemExtendedCost.db2", &CustomItemExtendedCostEntryfmt, &CustomItemExtendedCostEntryIndex);
+    LoadDB2(bad_db2_files, sItemExtendedCostStore, db2Path, "ItemExtendedCost.db2"/*, &CustomItemExtendedCostEntryfmt, &CustomItemExtendedCostEntryIndex*/);
     LoadDB2(bad_db2_files, sQuestPackageItemStore, db2Path, "QuestPackageItem.db2");
     for (uint32 i = 0; i < sQuestPackageItemStore.GetNumRows(); ++i)
     {
