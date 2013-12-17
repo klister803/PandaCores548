@@ -848,7 +848,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             {
                 case 108300: // Killer Instinct
                 {
-                    amount = CalculatePct(caster->GetStat(STAT_INTELLECT), m_baseAmount);
+                    if (caster)
+                    {
+                        amount = caster->GetStat(STAT_INTELLECT);
+                    }
                     break;
                 }
                 case 126707: // Surge of Conquest
