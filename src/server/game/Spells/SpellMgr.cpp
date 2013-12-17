@@ -1021,13 +1021,10 @@ SkillLineAbilityMapBounds SpellMgr::GetSkillLineAbilityMapBounds(uint32 spell_id
     return SkillLineAbilityMapBounds(mSkillLineAbilityMap.lower_bound(spell_id), mSkillLineAbilityMap.upper_bound(spell_id));
 }
 
-PetAura const* SpellMgr::GetPetAura(uint32 spell_id, uint8 eff)
+const std::vector<PetAura>* SpellMgr::GetPetAura(uint32 entry) const
 {
-    SpellPetAuraMap::const_iterator itr = mSpellPetAuraMap.find((spell_id<<8) + eff);
-    if (itr != mSpellPetAuraMap.end())
-        return &itr->second;
-    else
-        return NULL;
+    SpellPetAuraMap::const_iterator itr = mSpellPetAuraMap.find(entry);
+    return itr != mSpellPetAuraMap.end() ? &(itr->second) : NULL;
 }
 
 SpellEnchantProcEntry const* SpellMgr::GetSpellEnchantProcEvent(uint32 enchId) const
@@ -1088,6 +1085,12 @@ const std::vector<SpellTriggered>* SpellMgr::GetSpellTriggered(int32 spell_id) c
 {
     SpellTriggeredMap::const_iterator itr = mSpellTriggeredMap.find(spell_id);
     return itr != mSpellTriggeredMap.end() ? &(itr->second) : NULL;
+}
+
+const std::vector<SpellTriggered>* SpellMgr::GetSpellTriggeredDummy(int32 spell_id) const
+{
+    SpellTriggeredMap::const_iterator itr = mSpellTriggeredDummyMap.find(spell_id);
+    return itr != mSpellTriggeredDummyMap.end() ? &(itr->second) : NULL;
 }
 
 PetLevelupSpellSet const* SpellMgr::GetPetLevelupSpellList(uint32 petFamily) const
@@ -2147,8 +2150,8 @@ void SpellMgr::LoadSpellPetAuras()
 
     mSpellPetAuraMap.clear();                                  // need for reload case
 
-    //                                                  0       1       2    3
-    QueryResult result = WorldDatabase.Query("SELECT spell, effectId, pet, aura FROM spell_pet_auras");
+    //                                                  0         1       2       3      4    5    6    7
+    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `bp0`, `bp1`, `bp2`, `aura` FROM `spell_pet_auras`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell pet auras. DB table `spell_pet_auras` is empty.");
@@ -2160,40 +2163,32 @@ void SpellMgr::LoadSpellPetAuras()
     {
         Field* fields = result->Fetch();
 
-        uint32 spell = fields[0].GetUInt32();
-        uint8 eff = fields[1].GetUInt8();
-        uint32 pet = fields[2].GetUInt32();
-        uint32 aura = fields[3].GetUInt32();
+        int32 petEntry = fields[0].GetInt32();
+        int32 spellId = fields[1].GetInt32();
+        int32 option = fields[2].GetInt32();
+        int32 target = fields[3].GetInt32();
+        float bp0 = fields[4].GetFloat();
+        float bp1 = fields[5].GetFloat();
+        float bp2 = fields[6].GetFloat();
+        int32 aura = fields[7].GetInt32();
 
-        SpellPetAuraMap::iterator itr = mSpellPetAuraMap.find((spell<<8) + eff);
-        if (itr != mSpellPetAuraMap.end())
-            itr->second.AddAura(pet, aura);
-        else
+        SpellInfo const* spellInfo = GetSpellInfo(abs(spellId));
+        if (!spellInfo)
         {
-            SpellInfo const* spellInfo = GetSpellInfo(spell);
-            if (!spellInfo)
-            {
-                sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_pet_auras` does not exist", spell);
-                continue;
-            }
-            if (spellInfo->Effects[eff].Effect != SPELL_EFFECT_DUMMY &&
-                (spellInfo->Effects[eff].Effect != SPELL_EFFECT_APPLY_AURA ||
-                spellInfo->Effects[eff].ApplyAuraName != SPELL_AURA_DUMMY))
-            {
-                sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell %u listed in `spell_pet_auras` does not have dummy aura or dummy effect", spell);
-                continue;
-            }
-
-            SpellInfo const* spellInfo2 = GetSpellInfo(aura);
-            if (!spellInfo2)
-            {
-                sLog->outError(LOG_FILTER_SQL, "Aura %u listed in `spell_pet_auras` does not exist", aura);
-                continue;
-            }
-
-            PetAura pa(pet, aura, spellInfo->Effects[eff].TargetA.GetTarget() == TARGET_UNIT_PET, spellInfo->Effects[eff].CalcValue());
-            mSpellPetAuraMap[(spell<<8) + eff] = pa;
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spellId` does not exist", abs(spellId));
+            continue;
         }
+
+        PetAura tempPetAura;
+        tempPetAura.petEntry = petEntry;
+        tempPetAura.spellId = spellId;
+        tempPetAura.option = option;
+        tempPetAura.target = target;
+        tempPetAura.bp0 = bp0;
+        tempPetAura.bp1 = bp1;
+        tempPetAura.bp2 = bp2;
+        tempPetAura.aura = aura;
+        mSpellPetAuraMap[petEntry].push_back(tempPetAura);
 
         ++count;
     } while (result->NextRow());
@@ -2515,6 +2510,7 @@ void SpellMgr::LoadSpellTriggered()
     uint32 oldMSTime = getMSTime();
 
     mSpellTriggeredMap.clear();    // need for reload case
+    mSpellTriggeredDummyMap.clear();    // need for reload case
 
     //                                                    0           1             2           3       4      5      6         7           8
     QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger`");
@@ -2563,6 +2559,51 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.effectmask = effectmask;
         temptrigger.aura = aura;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
+
+        ++count;
+    } while (result->NextRow());
+
+
+    //                                                    0           1             2           3       4      5      6         7           8
+    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger_dummy`");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
+        return;
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 spell_id = fields[0].GetInt32();
+        int32 spell_trigger = fields[1].GetInt32();
+        int32 option = fields[2].GetInt32();
+        int32 target = fields[3].GetInt32();
+        float bp0 = fields[4].GetFloat();
+        float bp1 = fields[5].GetFloat();
+        float bp2 = fields[6].GetFloat();
+        int32 effectmask = fields[7].GetInt32();
+        int32 aura = fields[8].GetInt32();
+
+        SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_id` does not exist", abs(spell_id));
+            continue;
+        }
+
+        SpellTriggered temptrigger;
+        temptrigger.spell_id = spell_id;
+        temptrigger.spell_trigger = spell_trigger;
+        temptrigger.option = option;
+        temptrigger.target = target;
+        temptrigger.bp0 = bp0;
+        temptrigger.bp1 = bp1;
+        temptrigger.bp2 = bp2;
+        temptrigger.effectmask = effectmask;
+        temptrigger.aura = aura;
+        mSpellTriggeredDummyMap[spell_id].push_back(temptrigger);
 
         ++count;
     } while (result->NextRow());
@@ -3801,11 +3842,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ANY;
                     spellInfo->Effects[1].TargetB = 0;
                     break;
-                case 122128:// Divine Star (shadow)
-                case 110745:// Divine Star (other)
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
-                    break;
                 case 122507:// Rallying Cry
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
@@ -3881,7 +3917,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 48108: // Hot Streak
                 case 57761: // Brain Freeze
                 case 132158:// Nature's Swiftness
-                case 74434: // Soul Burn
                 case 34936: // Backlash
                 //case 50334: // Berserk (bear)
                 case 23920: // Spell Reflection
@@ -4407,6 +4442,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->Effects[0].BasePoints = 1;
                     spellInfo->Effects[0].MiscValue = 0;
+                    break;
+                case 110745: // Divine Star
+                case 122128: // Divine Star
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[1].TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4m
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4m
+                    break;
+                case 119914: //Felstorm
+                case 119915: //Felstorm
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     break;
                 default:
                     break;

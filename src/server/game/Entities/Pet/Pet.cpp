@@ -324,7 +324,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         _LoadSpellCooldowns();
         LearnPetPassives();
         InitLevelupSpellsForLevel();
-        CastPetAuras(current);
+        CastPetAuras(true);
     }
 
     if(!stampeded)
@@ -513,20 +513,17 @@ void Pet::setDeathState(DeathState s)                       // overwrite virtual
     }
     else if (getDeathState() == ALIVE)
     {
+        CastPetAuras(true);
+
         if (getPetType() == HUNTER_PET)
         {
-            CastPetAuras(true);
-
             if (Unit* owner = GetOwner())
                 if (Player* player = owner->ToPlayer())
                     player->StopCastingCharm();
         }
-        else
-        {
-            //RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-            CastPetAuras(true);
-        }
     }
+    else if (getDeathState() == JUST_DIED)
+        CastPetAuras(false);
 }
 
 void Pet::Update(uint32 diff)
@@ -927,10 +924,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
                     // Hardcode : Ghoul Base HP
                     if (IsPetGhoul() && getLevel() > 86)
-                    {
                         SetCreateHealth(GetCreateHealth() / 7);
-                        CastSpell(this, 47466, true);
-                    }
 
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
@@ -941,6 +935,11 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                 case ENTRY_SUCCUBUS:
                 case ENTRY_FELHUNTER:
                 case ENTRY_FELGUARD:
+                case ENTRY_FEL_IMP:
+                case ENTRY_VOIDLORD:
+                case ENTRY_SHIVARRA:
+                case ENTRY_OBSERVER:
+                case ENTRY_WRATHGUARD:
                 {
                     if (getPowerType() != POWER_ENERGY)
                         setPowerType(POWER_ENERGY);
@@ -1890,8 +1889,10 @@ void Pet::LearnPetPassives()
     }
 }
 
-void Pet::CastPetAuras(bool current)
+void Pet::CastPetAuras(bool apply, uint32 spellId)
 {
+    //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras guid %u, apply %u, GetEntry() %u", GetGUIDLow(), apply, GetEntry());
+
     Unit* owner = GetOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
@@ -1899,45 +1900,88 @@ void Pet::CastPetAuras(bool current)
     if (!IsPermanentPetFor(owner->ToPlayer()))
         return;
 
-    for (PetAuraSet::const_iterator itr = owner->m_petAuras.begin(); itr != owner->m_petAuras.end();)
+    if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(GetEntry()))
     {
-        PetAura const* pa = *itr;
-        ++itr;
+        Unit* _target = this;
+        Unit* _caster = this;
+        //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras GetPetAura");
 
-        if (!current && pa->IsRemovedOnChangePet())
-            owner->RemovePetAura(pa);
-        else
-            CastPetAura(pa);
+        for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)
+        {
+            //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras GetPetAura");
+
+            if(itr->target == 1) //get target owner
+                _target = owner;
+
+            if(itr->target == 2) //set caster owner
+                _caster = owner;
+
+            if(itr->aura > 0 && spellId != 0 && !_caster->HasAura(itr->aura))
+                continue;
+            if(itr->aura < 0 && spellId != 0 && _caster->HasAura(abs(itr->aura)))
+                continue;
+            if(spellId != 0 && spellId != abs(itr->aura))
+                continue;
+
+            int32 bp0 = int32(itr->bp0);
+            int32 bp1 = int32(itr->bp1);
+            int32 bp2 = int32(itr->bp2);
+
+            //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras PetAura bp0 %i, bp1 %i, bp2 %i, target %i", bp0, bp1, bp2, itr->target);
+
+            if(itr->spellId > 0)
+            {
+                if (!apply)
+                {
+                    RemoveAurasDueToSpell(itr->spellId);
+                    continue;
+                }
+                switch (itr->option)
+                {
+                    case 0: //cast spell without option
+                        _caster->CastSpell(_target, itr->spellId, true);
+                        break;
+                    case 1: //cast custom spell option
+                        _caster->CastCustomSpell(_target, itr->spellId, &bp0, &bp1, &bp2, true);
+                        break;
+                    case 2: //add aura
+                        _caster->AddAura(itr->spellId, _target);
+                        break;
+                }
+            }
+            else
+            {
+                if (apply)
+                {
+                    RemoveAurasDueToSpell(abs(itr->spellId));
+                    continue;
+                }
+                switch (itr->option)
+                {
+                    case 0: //cast spell without option
+                        _caster->CastSpell(_target, abs(itr->spellId), true);
+                        break;
+                    case 1: //cast custom spell option
+                        _caster->CastCustomSpell(_target, abs(itr->spellId), &bp0, &bp1, &bp2, true);
+                        break;
+                    case 2: //add aura
+                        _caster->AddAura(abs(itr->spellId), _target);
+                        break;
+                }
+            }
+        }
     }
-}
-
-void Pet::CastPetAura(PetAura const* aura)
-{
-    uint32 auraId = aura->GetAura(GetEntry());
-    if (!auraId)
-        return;
-
-    if (auraId == 35696)                                      // Demonic Knowledge
-    {
-        int32 basePoints = CalculatePct(aura->GetDamage(), GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT));
-        CastCustomSpell(this, auraId, &basePoints, NULL, NULL, true);
-    }
-    else
-        CastSpell(this, auraId, true);
 }
 
 bool Pet::IsPetAura(Aura const* aura)
 {
-    Unit* owner = GetOwner();
-
-    if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
-        return false;
-
     // if the owner has that pet aura, return true
-    for (PetAuraSet::const_iterator itr = owner->m_petAuras.begin(); itr != owner->m_petAuras.end(); ++itr)
+    // pet auras
+    if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(GetEntry()))
     {
-        if ((*itr)->GetAura(GetEntry()) == aura->GetId())
-            return true;
+        for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)
+            if (itr->spellId == aura->GetId())
+                return true;
     }
     return false;
 }

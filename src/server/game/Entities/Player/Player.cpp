@@ -4623,11 +4623,6 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
 
     RemoveAurasDueToSpell(spell_id);
 
-    // remove pet auras
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (PetAura const* petSpell = sSpellMgr->GetPetAura(spell_id, i))
-            RemovePetAura(petSpell);
-
     uint32 talentCosts = sSpellMgr->IsTalent(spell_id) ? 1 : 0;
 
     // free talent points

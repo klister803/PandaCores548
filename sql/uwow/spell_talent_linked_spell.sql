@@ -25,3 +25,21 @@ insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `commen
 insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-118424','-19884','1','Выслеживание нежити');
 insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('118424','19885','1','Выслеживание скрытых');
 insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-118424','-19885','1','Выслеживание скрытых');
+
+
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('108499','112866','1','Вызов беса Скверны');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-108499','-112866','1','Вызов беса Скверны');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('108499','112867','1','Призыв повелителя Бездны');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-108499','-112867','1','Призыв повелителя Бездны');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('108499','112868','1','Призыв шиварры');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-108499','-112868','1','Призыв шиварры');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('108499','112869','1','Призыв наблюдателя');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-108499','-112869','1','Призыв наблюдателя');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('108499','112921','1','Призыв абиссала');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-108499','-112921','1','Призыв абиссала');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('108499','112927','1','Призыв стражника жути');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-108499','-112927','1','Призыв стражника жути');
+
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('-119049','-108507','0','Коварство Кил\'джедена ');
+insert into `spell_talent_linked_spell` (`spellid`, `spelllink`, `type`, `comment`) values('119049','108507','0','Коварство Кил\'джедена ');
+

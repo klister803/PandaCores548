@@ -35,6 +35,7 @@ enum PriestSpells
     PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED    = 33619,
     PRIEST_SPELL_REFLECTIVE_SHIELD_R1           = 33201,
     PRIEST_SHADOW_WORD_DEATH                    = 32409,
+    PRIEST_ICON_ID_PAIN_AND_SUFFERING           = 2874,
     PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH      = 107903,
     PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH         = 107904,
     PRIEST_GLYPH_OF_SHADOW                      = 107906,
@@ -64,6 +65,7 @@ enum PriestSpells
     PRIEST_SHADOWFORM_STANCE                    = 15473,
     PRIEST_SHADOW_WORD_PAIN                     = 589,
     PRIEST_DEVOURING_PLAGUE                     = 2944,
+    PRIEST_DEVOURING_PLAGUE_HEAL                = 127626,
     PRIEST_VAMPIRIC_TOUCH                       = 34914,
     PRIEST_SPIRIT_SHELL_AURA                    = 109964,
     PRIEST_SPIRIT_SHELL_ABSORPTION              = 114908,
@@ -1049,6 +1051,36 @@ class spell_pri_devouring_plague : public SpellScriptLoader
             }
         };
 
+        class spell_pri_devouring_plague_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_devouring_plague_AuraScript);
+
+            int32 orbCount;
+
+            bool Load()
+            {
+                if(Unit* caster = GetCaster())
+                    orbCount = caster->GetPower(POWER_SHADOW_ORB) + 1;
+                return true;
+            }
+
+            void OnPereodic(AuraEffect const* /*aurEff*/)
+            {
+                if(Unit* caster = GetCaster())
+                    caster->CastCustomSpell(caster, PRIEST_DEVOURING_PLAGUE_HEAL, &orbCount, 0, 0, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_devouring_plague_AuraScript::OnPereodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_devouring_plague_AuraScript();
+        }
+
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_devouring_plague_SpellScript;
@@ -1705,7 +1737,7 @@ class spell_pri_void_shift : public SpellScriptLoader
         }
 };
 
-// 8092 - Mind Blast, 32379 - Shadow Word : Death and 64044 - Psychic Horror
+// 32379 - Shadow Word : Death
 class spell_pri_shadow_orb : public SpellScriptLoader
 {
     public:
@@ -1715,12 +1747,45 @@ class spell_pri_shadow_orb : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pri_shadow_orb_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            void HandleDamage()
             {
-                if (!sSpellMgr->GetSpellInfo(8092) || !sSpellMgr->GetSpellInfo(32379) || !sSpellMgr->GetSpellInfo(2944) || !sSpellMgr->GetSpellInfo(64044))
-                    return false;
-                return true;
+                if(Unit* caster = GetCaster())
+                {
+                    int32 damage = GetFinalHitDamage();
+
+                    // Pain and Suffering reduces damage
+                    if (AuraEffect* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_PAIN_AND_SUFFERING, EFFECT_1))
+                        AddPct(damage, aurEff->GetAmount());
+
+                    // Item - Priest T13 Shadow 2P Bonus (Shadow Word: Death)
+                    if (AuraEffect *auraEff = caster->GetAuraEffect(105843, 1))
+                        AddPct(damage, -auraEff->GetAmount());
+
+                    caster->CastCustomSpell(caster, PRIEST_SHADOW_WORD_DEATH, &damage, 0, 0, true);
+                }
             }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_pri_shadow_orb_SpellScript::HandleDamage);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_shadow_orb_SpellScript();
+        }
+};
+
+// Psychic Horror - 64044
+class spell_pri_psychic_horror : public SpellScriptLoader
+{
+    public:
+        spell_pri_psychic_horror() : SpellScriptLoader("spell_pri_psychic_horror") { }
+
+        class spell_pri_psychic_horror_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_psychic_horror_SpellScript);
 
             void HandleOnHit()
             {
@@ -1728,55 +1793,21 @@ class spell_pri_shadow_orb : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (caster->ToPlayer() && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                        Player* _player = caster->ToPlayer();
+                        if (_player && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
                         {
                             int32 currentPower = caster->GetPower(POWER_SHADOW_ORB);
+                            caster->ModifyPower(POWER_SHADOW_ORB, -currentPower);
 
-                            switch (GetSpellInfo()->Id)
+                            // +1s per Shadow Orb consumed
+                            if (Aura* psychicHorror = target->GetAura(64044))
                             {
-                                // 8092 - Mind Blast
-                                case 8092:
-                                    if (!caster->HasAura(77487) && !caster->HasAura(57985))
-                                        caster->CastSpell(caster, 77487, true);
-                                    // Glyph of Shadow Ravens
-                                    else if (!caster->HasAura(77487) && caster->HasAura(57985))
-                                        caster->CastSpell(caster, 127850, true);
-                                    break;
-                                // 32379 - Shadow Word : Death
-                                case 32379:
-                                    caster->SetPower(POWER_SHADOW_ORB, (currentPower + 1));
-                                    // Shadow Orb visual
-                                    if (!caster->HasAura(77487) && !caster->HasAura(57985))
-                                        caster->CastSpell(caster, 77487, true);
-                                    // Glyph of Shadow Ravens
-                                    else if (!caster->HasAura(77487) && caster->HasAura(57985))
-                                        caster->CastSpell(caster, 127850, true);
-                                    break;
-                                // 64044 - Psychic Horror
-                                case 64044:
-                                {
-                                    caster->SetPower(POWER_SHADOW_ORB, 0);
-                                    // Shadow Orb visual
-                                    if (caster->HasAura(77487))
-                                        caster->RemoveAura(77487);
-                                    // Glyph of Shadow Ravens
-                                    else if (caster->HasAura(127850))
-                                        caster->RemoveAura(127850);
-                                    // +1s per Shadow Orb consumed
-                                    if (AuraApplication* aura = target->GetAuraApplication(64044))
-                                    {
-                                        Aura* psychicHorror = aura->GetBase();
-                                        int32 maxDuration = psychicHorror->GetMaxDuration();
-                                        int32 newDuration = maxDuration + currentPower * IN_MILLISECONDS;
-                                        psychicHorror->SetDuration(newDuration);
+                                int32 maxDuration = psychicHorror->GetMaxDuration();
+                                int32 newDuration = maxDuration + currentPower * IN_MILLISECONDS;
+                                psychicHorror->SetDuration(newDuration);
 
-                                        if (newDuration > maxDuration)
-                                            psychicHorror->SetMaxDuration(newDuration);
-                                    }
-                                    break;
-                                }
-                                default:
-                                    break;
+                                if (newDuration > maxDuration)
+                                    psychicHorror->SetMaxDuration(newDuration);
                             }
                         }
                     }
@@ -1785,13 +1816,13 @@ class spell_pri_shadow_orb : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_pri_shadow_orb_SpellScript::HandleOnHit);
+                OnHit += SpellHitFn(spell_pri_psychic_horror_SpellScript::HandleOnHit);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
-            return new spell_pri_shadow_orb_SpellScript();
+            return new spell_pri_psychic_horror_SpellScript();
         }
 };
 
@@ -2293,6 +2324,109 @@ class spell_pri_psychic_terror : public SpellScriptLoader
         }
 };
 
+// Divine Star 110745 122128
+class spell_pri_divine_star : public SpellScriptLoader
+{
+    public:
+        spell_pri_divine_star() : SpellScriptLoader("spell_pri_divine_star") { }
+
+        class spell_pri_divine_star_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_divine_star_AuraScript)
+
+            Position pos;
+            bool check;
+            float distance2d, _angle;
+            Unit* target;
+
+            bool Load()
+            {
+                pos.Relocate(0, 0, 0, 0);
+                check = false;
+                distance2d = 0.0f;
+                _angle = 0.0f;
+                target = NULL;
+                return true;
+            }
+
+            void OnPereodic(AuraEffect const* aurEff)
+            {
+                PreventDefaultAction();
+
+                if(Unit* caster = GetCaster())
+                {
+                    if(check)
+                    {
+                        float x, y, z;
+                        uint32 tick = aurEff->GetTickNumber() - 1;
+                        float _delay = distance2d / 24.0f * 1000.0f;
+                        uint32 _countTick = uint32(_delay / 250);
+                        float distanceintick = (distance2d / _countTick) * tick;
+                        z = pos.GetPositionZ();
+
+                        if(distanceintick > distance2d)
+                            distanceintick = (distance2d * 2) - distanceintick;
+                        if(distanceintick < 0.0f)
+                            return;
+
+                        if(distanceintick == distance2d && target)
+                            target->CastSpell(caster, GetSpellInfo()->Effects[1].TriggerSpell, true);
+
+                        if(distanceintick == 0.0f || distance2d < 6.0f)
+                        {
+                            x = caster->GetPositionX();
+                            y = caster->GetPositionY();
+                            z = caster->GetPositionZ();
+                        }
+                        else
+                            caster->GetNearPoint2D(x, y, distanceintick, _angle);
+
+                        uint32 triggerSpellId = GetSpellInfo()->Effects[0].TriggerSpell;
+                        caster->CastSpell(x, y, z, triggerSpellId, true);
+                    }
+                }
+            }
+
+            void HandleApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    if(Player* _player = caster->ToPlayer())
+                    {
+                        if(target = _player->GetSelectedUnit())
+                        {
+                            check = true;
+                            target->GetPosition(&pos);
+                            distance2d = caster->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
+                            float _delay = distance2d / 24.0f * 1000.0f;
+                            _angle = caster->GetAngle(pos.GetPositionX(), pos.GetPositionY());
+                            GetAura()->SetDuration(uint32(_delay * 2));
+                        }
+                        else
+                        {
+                            check = true;
+                            float x,y;
+                            caster->GetNearPoint2D(x, y, 24.0f, caster->GetOrientation());
+                            pos.Relocate(x, y, caster->GetPositionZ(), caster->GetOrientation());
+                            GetAura()->SetDuration(uint32(1000.0f * 2));
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_divine_star_AuraScript::OnPereodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+                OnEffectApply += AuraEffectApplyFn(spell_pri_divine_star_AuraScript::HandleApplyEffect, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_divine_star_AuraScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_item_s12_4p_heal();
@@ -2329,6 +2463,7 @@ void AddSC_priest_spell_scripts()
     new spell_pri_leap_of_faith();
     new spell_pri_void_shift();
     new spell_pri_shadow_orb();
+    new spell_pri_psychic_horror();
     new spell_pri_guardian_spirit();
     new spell_pri_penance();
     new spell_pri_reflective_shield_trigger();
@@ -2341,4 +2476,5 @@ void AddSC_priest_spell_scripts()
     new spell_priest_flash_heal();
     new spell_pri_void_tendrils();
     new spell_pri_psychic_terror();
+    new spell_pri_divine_star();
 }

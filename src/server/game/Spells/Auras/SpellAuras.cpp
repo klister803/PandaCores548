@@ -1099,6 +1099,7 @@ bool Aura::CanBeSentToClient() const
     || HasEffectType(SPELL_AURA_ABILITY_IGNORE_AURASTATE)
     || HasEffectType(SPELL_AURA_MOD_IGNORE_SHAPESHIFT)
     || HasEffectType(SPELL_AURA_CAST_WHILE_WALKING)
+    || HasEffectType(SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING)
     || HasEffectType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_HASTE)
     || HasEffectType(SPELL_AURA_WORGEN_ALTERED_FORM)
     || HasEffectType(SPELL_AURA_MOD_CHARGES)
@@ -1248,7 +1249,14 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     }
                     else if (caster)
                     {
-                        if(itr->type2)
+                        if(itr->type2 == 2 && caster)
+                        {
+                            if(itr->hastalent != 0 && !caster->HasSpell(itr->hastalent))
+                                continue;
+                            if(itr->hastalent2 != 0 && !caster->HasSpell(itr->hastalent2))
+                                continue;
+                        }
+                        else if(itr->type2)
                         {
                             if(itr->hastalent != 0 && !caster->HasAura(itr->hastalent))
                                 continue;
@@ -1283,71 +1291,84 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
         }
         else
         {
+            bool loginOut = false;
+            if(caster && caster->ToPlayer() && caster->ToPlayer()->GetSession() && caster->ToPlayer()->GetSession()->isLogingOut())
+                loginOut = true;
             // remove linked auras
-            if (std::vector<SpellLinked> const* spellTriggered = sSpellMgr->GetSpellLinked(-(int32)GetId()))
+            if(!loginOut)
             {
-                for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
+                if (std::vector<SpellLinked> const* spellTriggered = sSpellMgr->GetSpellLinked(-(int32)GetId()))
                 {
-                    if (itr->effect < 0)
+                    for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                     {
-                        if(itr->learnspell)
+                        if (itr->effect < 0)
                         {
-                            if(Player* _lplayer = target->ToPlayer())
-                                _lplayer->removeSpell(-(itr->effect));
+                            if(itr->learnspell)
+                            {
+                                if(Player* _lplayer = target->ToPlayer())
+                                    _lplayer->removeSpell(-(itr->effect));
+                            }
+                            else
+                                target->RemoveAurasDueToSpell(-(itr->effect));
                         }
-                        else
-                            target->RemoveAurasDueToSpell(-(itr->effect));
-                    }
-                    else if (removeMode != AURA_REMOVE_BY_DEATH)
-                    {
-                        if(itr->type2 && caster)
+                        else if (removeMode != AURA_REMOVE_BY_DEATH)
                         {
-                            if(itr->hastalent != 0 && !caster->HasAura(itr->hastalent))
+                            if(itr->type2 == 2 && caster)
+                            {
+                                if(itr->hastalent != 0 && !caster->HasSpell(itr->hastalent))
+                                    continue;
+                                if(itr->hastalent2 != 0 && !caster->HasSpell(itr->hastalent2))
+                                    continue;
+                            }
+                            else if(itr->type2 && caster)
+                            {
+                                if(itr->hastalent != 0 && !caster->HasAura(itr->hastalent))
+                                    continue;
+                                if(itr->hastalent2 != 0 && !caster->HasAura(itr->hastalent2))
+                                    continue;
+                            }
+                            else
+                            {
+                                if(itr->hastalent != 0 && !target->HasAura(itr->hastalent))
+                                    continue;
+                                if(itr->hastalent2 != 0 && !target->HasAura(itr->hastalent2))
+                                    continue;
+                            }
+                            if(itr->chance != 0 && !roll_chance_i(itr->chance))
                                 continue;
-                            if(itr->hastalent2 != 0 && !caster->HasAura(itr->hastalent2))
+                            if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->HasSpellCooldown(itr->effect))
                                 continue;
-                        }
-                        else
-                        {
-                            if(itr->hastalent != 0 && !target->HasAura(itr->hastalent))
-                                continue;
-                            if(itr->hastalent2 != 0 && !target->HasAura(itr->hastalent2))
-                                continue;
-                        }
-                        if(itr->chance != 0 && !roll_chance_i(itr->chance))
-                            continue;
-                        if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->HasSpellCooldown(itr->effect))
-                            continue;
 
-                        if(itr->learnspell)
-                        {
-                            if(Player* _lplayer = target->ToPlayer())
-                                _lplayer->learnSpell(itr->effect, false);
-                        }
-                        else
-                            target->CastSpell(target, itr->effect, true, NULL, NULL, GetCasterGUID());
+                            if(itr->learnspell)
+                            {
+                                if(Player* _lplayer = target->ToPlayer())
+                                    _lplayer->learnSpell(itr->effect, false);
+                            }
+                            else
+                                target->CastSpell(target, itr->effect, true, NULL, NULL, GetCasterGUID());
 
-                        if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
-                            target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
+                            if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
+                                target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
+                        }
                     }
                 }
-            }
-            if (std::vector<SpellLinked> const* spellTriggered = sSpellMgr->GetSpellLinked(GetId() + SPELL_LINK_AURA))
-            {
-                for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
+                if (std::vector<SpellLinked> const* spellTriggered = sSpellMgr->GetSpellLinked(GetId() + SPELL_LINK_AURA))
                 {
-                    if (itr->effect < 0)
+                    for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                     {
-                        if(itr->learnspell)
+                        if (itr->effect < 0)
                         {
-                            if(Player* _lplayer = target->ToPlayer())
-                                _lplayer->removeSpell(-(itr->effect));
+                            if(itr->learnspell)
+                            {
+                                if(Player* _lplayer = target->ToPlayer())
+                                    _lplayer->removeSpell(-(itr->effect));
+                            }
+                            else
+                                target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), false);
                         }
                         else
-                            target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), false);
+                            target->RemoveAura(itr->effect, GetCasterGUID(), 0, removeMode);
                     }
-                    else
-                        target->RemoveAura(itr->effect, GetCasterGUID(), 0, removeMode);
                 }
             }
         }
@@ -1360,7 +1381,14 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                 if (itr->effect > 0)
                 {
-                    if(itr->type2 && caster)
+                    if(itr->type2 == 2 && caster)
+                    {
+                        if(itr->hastalent != 0 && !caster->HasSpell(itr->hastalent))
+                            continue;
+                        if(itr->hastalent2 != 0 && !caster->HasSpell(itr->hastalent2))
+                            continue;
+                    }
+                    else if(itr->type2 && caster)
                     {
                         if(itr->hastalent != 0 && !caster->HasAura(itr->hastalent))
                             continue;

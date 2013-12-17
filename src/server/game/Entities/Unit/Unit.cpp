@@ -1672,7 +1672,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
         {
             SpellInfo const* i_spellProto = (*dmgShieldItr)->GetSpellInfo();
             // Damage shield can be resisted...
-            if (SpellMissInfo missInfo = victim->SpellHitResult(this, i_spellProto, false))
+            if (SpellMissInfo missInfo = victim->SpellHitResult(this, i_spellProto, false, 1 << (*dmgShieldItr)->GetEffIndex()))
             {
                 victim->SendSpellMiss(this, i_spellProto->Id, missInfo);
                 continue;
@@ -2737,7 +2737,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
 //   Parry
 // For spells
 //   Resist
-SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool CanReflect)
+SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool CanReflect, uint32 effectMask)
 {
     // Check for immune
     if (victim->IsImmunedToSpell(spell))
@@ -2745,9 +2745,14 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
 
     // All positive spells can`t miss
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
-    if (spell->IsPositive()
-        &&(!IsHostileTo(victim)))  // prevent from affecting enemy by "positive" spell
+    bool positive = false;
+    for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+        if (effectMask & (1 << effIndex))
+            positive = spell->IsPositiveEffect(effIndex);
+
+    if (positive && !IsHostileTo(victim))  // prevent from affecting enemy by "positive" spell
         return SPELL_MISS_NONE;
+
     // Check for immune
     if (victim->IsImmunedToDamage(spell))
         return SPELL_MISS_IMMUNE;
@@ -2779,25 +2784,15 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
     {
         case SPELL_DAMAGE_CLASS_RANGED:
         case SPELL_DAMAGE_CLASS_MELEE:
-            if (isTotem() || isGuardian() || isPet() || isHunterPet())
-            {
-                if (Unit* owner = GetOwner())
-                    return owner->MeleeSpellHitResult(victim, spell);
-                else
-                    return MeleeSpellHitResult(victim, spell);
-            }
+            if (Unit* owner = GetOwner())
+                return owner->MeleeSpellHitResult(victim, spell);
             else
                 return MeleeSpellHitResult(victim, spell);
         case SPELL_DAMAGE_CLASS_NONE:
             return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
-            if (isTotem() || isGuardian() || isPet() || isHunterPet())
-            {
-                if (Unit* owner = GetOwner())
-                    return owner->MagicSpellHitResult(victim, spell);
-                else
-                    return MagicSpellHitResult(victim, spell);
-            }
+            if (Unit* owner = GetOwner())
+                return owner->MagicSpellHitResult(victim, spell);
             else
                 return MagicSpellHitResult(victim, spell);
     }
@@ -3008,7 +3003,7 @@ void Unit::_UpdateAutoRepeatSpell()
     // check "real time" interrupts
     // don't cancel spells which are affected by a SPELL_AURA_CAST_WHILE_WALKING effect
     if (((GetTypeId() == TYPEID_PLAYER && ToPlayer()->isMoving()) || IsNonMeleeSpellCasted(false, false, true, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == 75)) && 
-        !HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo))
+        !HasAuraCastWhileWalking(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo))
     {
         // cancel wand shoot
         if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id != 75)
@@ -4037,7 +4032,7 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
         Aura* aura = (*iter)->GetBase();
         ++iter;
         if ((aura->GetSpellInfo()->AuraInterruptFlags & flag) && (!except || aura->GetId() != except) &&
-            ((flag & AURA_INTERRUPT_FLAG_MOVING) == 0 || !HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, aura->GetSpellInfo())))
+            ((flag & AURA_INTERRUPT_FLAG_MOVING) == 0 || !HasAuraCastWhileWalking(aura->GetSpellInfo())))
         {
             uint32 removedAuras = m_removedAurasCount;
             RemoveAura(aura);
@@ -4052,7 +4047,7 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
             && (spell->m_spellInfo->ChannelInterruptFlags & flag)
             && spell->m_spellInfo->Id != except
             && !(spell->m_spellInfo->Id == 120360 && flag == AURA_INTERRUPT_FLAG_MOVE)
-            && ((flag & AURA_INTERRUPT_FLAG_MOVING) == 0 || !HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, spell->m_spellInfo)))
+            && ((flag & AURA_INTERRUPT_FLAG_MOVING) == 0 || !HasAuraCastWhileWalking(spell->m_spellInfo)))
             InterruptNonMeleeSpells(false);
 
     UpdateInterruptMask();
@@ -4554,6 +4549,11 @@ bool Unit::HasAuraWithMechanic(uint32 mechanicMask)
     }
 
     return false;
+}
+
+bool Unit::HasAuraCastWhileWalking(SpellInfo const* spellInfo)
+{
+    return HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, spellInfo) || HasAuraTypeWithAffectMask(SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING, spellInfo);
 }
 
 AuraEffect* Unit::IsScriptOverriden(SpellInfo const* spell, int32 script) const
@@ -5509,7 +5509,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
-            if(itr->target == 1 || !target) //get target self
+            if(itr->target == 1 || itr->target == 6 || !target) //get target self
                 target = this;
             if(itr->target == 3 && ToPlayer()) //get target owner
                 if (Pet* pet = ToPlayer()->GetPet())
@@ -5526,8 +5526,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             int32 bp2 = int32(itr->bp2);
             switch (itr->option)
             {
-                case SPELL_TRIGGER_BP:
+                case SPELL_TRIGGER_BP: //0
                 {
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
                     if(itr->spell_trigger > 0)
                         basepoints0 = triggerAmount;
                     else
@@ -5535,42 +5545,94 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
                     check = true;
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_BP_CUSTOM:
+                case SPELL_TRIGGER_BP_CUSTOM: //1
                 {
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
                     triggered_spell_id = abs(itr->spell_trigger);
                     CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
                     check = true;
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_MANA_COST:
+                case SPELL_TRIGGER_MANA_COST: //2
                 {
                     if(!procSpell)
                         continue;
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
                     int32 cost = int32(procSpell->ManaCost + CalculatePct(GetCreateMana(), procSpell->ManaCostPercentage));
-                    basepoints0 = CalculatePct(cost, itr->bp0);
+                    basepoints0 = CalculatePct(cost, bp0);
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
                     check = true;
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_DAM_HEALTH:
+                case SPELL_TRIGGER_DAM_HEALTH: //3
                 {
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
                     basepoints0 = CalculatePct(damage, triggerAmount);
+                    if(bp0)
+                        basepoints0 *= bp0;
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
                     check = true;
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_COOLDOWN:
+                case SPELL_TRIGGER_COOLDOWN: //4
                 {
                     if(Player* player = target->ToPlayer())
                     {
@@ -5598,7 +5660,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_UPDATE_DUR:
+                case SPELL_TRIGGER_UPDATE_DUR: //5
                 {
                     if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
                         aura->RefreshDuration();
@@ -5606,7 +5668,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_GET_DUR_AURA:
+                case SPELL_TRIGGER_GET_DUR_AURA: //6
                 {
                     if(Aura* aura = target->GetAura(itr->aura, GetGUID()))
                         basepoints0 = int32(aura->GetDuration() / 1000);
@@ -5614,14 +5676,29 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     {
                         triggered_spell_id = abs(itr->spell_trigger);
                         CastCustomSpell(this, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                        if(itr->target == 6)
+                        {
+                            if (Guardian* pet = GetGuardianPet())
+                                CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                        }
                     }
                     check = true;
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_NEED_COMBOPOINTS:
+                case SPELL_TRIGGER_NEED_COMBOPOINTS: //7
                 {
                     if(!procSpell || !procSpell->NeedsComboPoints())
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5631,12 +5708,17 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     {
                         triggered_spell_id = abs(itr->spell_trigger);
                         CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                        if(itr->target == 6)
+                        {
+                            if (Guardian* pet = GetGuardianPet())
+                                CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                        }
                     }
                     check = true;
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_UPDATE_DUR_TO_MAX:
+                case SPELL_TRIGGER_UPDATE_DUR_TO_MAX: //8
                 {
                     if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
                         aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration(), true);
@@ -5644,18 +5726,43 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_PERC_FROM_DAMGE:
+                case SPELL_TRIGGER_PERC_FROM_DAMGE: //9
                 {
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
                     basepoints0 = CalculatePct(damage, itr->bp0);
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
                     check = true;
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_PERC_MAX_MANA:
+                case SPELL_TRIGGER_PERC_MAX_MANA: //10
                 {
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
                     basepoints0 = int32((itr->bp0 / 100.0f) * target->GetMaxPower(POWER_MANA));
 
                     triggered_spell_id = abs(itr->spell_trigger);
@@ -5664,8 +5771,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_PERC_BASE_MANA:
+                case SPELL_TRIGGER_PERC_BASE_MANA: //11
                 {
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
                     basepoints0 = int32((itr->bp0 / 100.0f) * target->GetCreateMana());
 
                     triggered_spell_id = abs(itr->spell_trigger);
@@ -5674,8 +5791,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_PERC_CUR_MANA:
+                case SPELL_TRIGGER_PERC_CUR_MANA: //12
                 {
+                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
                     basepoints0 = int32((itr->bp0 / 100.0f) * target->GetPower(POWER_MANA));
 
                     triggered_spell_id = abs(itr->spell_trigger);
@@ -5684,7 +5811,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     continue;
                 }
                 break;
-                case SPELL_TRIGGER_CHECK_PROCK:
+                case SPELL_TRIGGER_CHECK_PROCK: //13
                 {
                     if(!procSpell)
                     {
@@ -9943,9 +10070,7 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
     if (GetCharmerOrOwnerOrSelf() == target->GetCharmerOrOwnerOrSelf())
         return REP_FRIENDLY;
 
-    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
-    {
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) || target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
         {
             Player const* selfPlayerOwner = GetAffectingPlayer();
             Player const* targetPlayerOwner = target->GetAffectingPlayer();
@@ -9965,6 +10090,10 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
                     return REP_FRIENDLY; // return true to allow config option AllowTwoSide.Interaction.Group to work
                     // however client seems to allow mixed group parties, because in 13850 client it works like:
                     // return GetFactionReactionTo(getFactionTemplateEntry(), target);
+
+                if (selfPlayerOwner->GetByteValue(UNIT_FIELD_BYTES_2, 1) & UNIT_BYTE2_FLAG_FFA_PVP
+                    && targetPlayerOwner->GetByteValue(UNIT_FIELD_BYTES_2, 1) & UNIT_BYTE2_FLAG_FFA_PVP)
+                    return REP_HOSTILE;
             }
 
             // check FFA_PVP
@@ -9999,7 +10128,7 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
                 }
             }
         }
-    }
+
     // do checks dependant only on our faction
     return GetFactionReactionTo(getFactionTemplateEntry(), target);
 }
@@ -15345,7 +15474,7 @@ int32 Unit::GetCreatePowers(Powers power) const
                 return 100;
             return (GetTypeId() == TYPEID_PLAYER || !((Creature const*)this)->isPet() || ((Pet const*)this)->getPetType() != HUNTER_PET ? 0 : 100);
         case POWER_ENERGY:
-            return ((isPet() && GetEntry() == 416 || GetEntry() == 417 || GetEntry() == 1860 || GetEntry() == 1863 || GetEntry() == 17252) ? 200 : 100);
+            return ((ToPet() && ToPet()->IsWarlockPet()) ? 200 : 100);
         case POWER_RUNIC_POWER:
             return 1000;
         case POWER_RUNES:
@@ -15858,6 +15987,7 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_MOD_SPELL_CRIT_CHANCE] = true;
     isTriggerAura[SPELL_AURA_ABILITY_IGNORE_AURASTATE] = true;
     isTriggerAura[SPELL_AURA_CAST_WHILE_WALKING] = true;
+    isTriggerAura[SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING] = true;
     isTriggerAura[SPELL_AURA_ADD_PCT_MODIFIER] = true;
     isTriggerAura[SPELL_AURA_ADD_FLAT_MODIFIER] = true;
 
@@ -15873,6 +16003,7 @@ bool InitTriggerAuraData()
     isAlwaysTriggeredAura[SPELL_AURA_SCHOOL_ABSORB] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_STEALTH] = true;
     isAlwaysTriggeredAura[SPELL_AURA_CAST_WHILE_WALKING] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING] = true;
 
     return true;
 }
@@ -16134,14 +16265,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH) || triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_INVISIBILITY)))
                 active = true;
 
-        if (triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH))
-        {
-            if (procSpell && !procSpell->HasAura(SPELL_AURA_MOD_STUN) && !procSpell->HasAura(SPELL_AURA_MOD_CONFUSE) &&
-                !procSpell->HasAura(SPELL_AURA_MOD_FEAR) && !procSpell->HasAura(SPELL_AURA_MOD_ROOT) && procSpell->Id != 12323)
-                continue;
-
-            active = true;
-        }
         // do checks using conditions table
         ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_PROC, spellProto->Id);
         ConditionSourceInfo condInfo = ConditionSourceInfo(eventInfo.GetActor(), eventInfo.GetActionTarget());
@@ -16548,6 +16671,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                                 takeCharges = false;
                                 break;
                             }
+
                             if (!HasAura(115192))
                                 CastSpell(this, 115192, true);
                             takeCharges = false;
@@ -16557,6 +16681,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         break;
                     }
                     case SPELL_AURA_CAST_WHILE_WALKING:
+                    case SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING:
                     {
                         if (HandleCastWhileWalkingAuraProc(target, damage, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
@@ -16583,8 +16708,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 i->aura->CallScriptAfterEffectProcHandlers(triggeredByAura, aurApp, eventInfo);
             } // for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         } // if (!handled)
-
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: casting spell %u end", spellInfo->Id);
 
         // Remove charge (aura can be removed by triggers)
         if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
@@ -17231,26 +17354,6 @@ void Unit::SetContestedPvP(Player* attackedPlayer)
         // call MoveInLineOfSight for nearby contested guards
         UpdateObjectVisibility();
     }
-}
-
-void Unit::AddPetAura(PetAura const* petSpell)
-{
-    if (GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    m_petAuras.insert(petSpell);
-    if (Pet* pet = ToPlayer()->GetPet())
-        pet->CastPetAura(petSpell);
-}
-
-void Unit::RemovePetAura(PetAura const* petSpell)
-{
-    if (GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    m_petAuras.erase(petSpell);
-    if (Pet* pet = ToPlayer()->GetPet())
-        pet->RemoveAurasDueToSpell(petSpell->GetAura(pet->GetEntry()));
 }
 
 Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget, uint32 spell_id)
@@ -20516,9 +20619,9 @@ bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, uint32 /*damage*/, AuraE
 
     switch (triggeredByAuraSpell->Id)
     {
-        case 119049:        // Kil'jaeden's Cunning
+        case 108507:        // Kil'jaeden's Cunning
         {
-            if (!procSpell)
+            if (!procSpell || HasAura(119049) || procSpell->CastTimeEntry == 1)
                 return false;
             triggered_spell_id = 119050;
             break;

@@ -2236,7 +2236,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     // Calculate hit result
     if (m_originalCaster)
     {
-        targetInfo.missCondition = m_originalCaster->SpellHitResult(target, m_spellInfo, m_canReflect);
+        targetInfo.missCondition = m_originalCaster->SpellHitResult(target, m_spellInfo, m_canReflect, effectMask);
         if (m_skipCheck && targetInfo.missCondition != SPELL_MISS_IMMUNE)
             targetInfo.missCondition = SPELL_MISS_NONE;
     }
@@ -2274,7 +2274,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
             m_caster->ProcDamageAndSpell(target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, m_spellInfo);
 
         // Calculate reflected spell result on caster
-        targetInfo.reflectResult = m_caster->SpellHitResult(m_caster, m_spellInfo, m_canReflect);
+        targetInfo.reflectResult = m_caster->SpellHitResult(m_caster, m_spellInfo, m_canReflect, effectMask);
 
         if (targetInfo.reflectResult == SPELL_MISS_REFLECT)     // Impossible reflect again, so simply deflect spell
             targetInfo.reflectResult = SPELL_MISS_PARRY;
@@ -2618,6 +2618,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         m_damage = damageInfo.damage;
 
         caster->DealSpellDamage(&damageInfo, true);
+        m_final_damage = damageInfo.damage;
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
     else
@@ -2738,9 +2739,13 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         }
         else if (m_caster->IsFriendlyTo(unit))
         {
+            bool positive = false;
+            for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+                if (effectMask & (1 << effIndex))
+                    positive = m_spellInfo->IsPositiveEffect(effIndex);
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // TODO: this cause soul transfer bugged
-            if (m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !m_spellInfo->IsPositive())
+            if (m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !positive)
                 return SPELL_MISS_EVADE;
 
             // assisting case, healing and resurrection
@@ -2993,7 +2998,14 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
             }
             else
             {
-                if(i->type2)
+                if(i->type2 == 2)
+                {
+                    if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
+                        continue;
+                    if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
+                        continue;
+                }
+                else if(i->type2)
                 {
                     if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
                         continue;
@@ -3238,7 +3250,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     // (even if they are interrupted on moving, spells with almost immediate effect get to have their effect processed before movement interrupter kicks in)
     // don't cancel spells which are affected by a SPELL_AURA_CAST_WHILE_WALKING effect
     if (((m_spellInfo->IsChanneled() || m_casttime) && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->isMoving() && 
-        m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && !m_caster->HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, m_spellInfo))
+        m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && !m_caster->HasAuraCastWhileWalking(m_spellInfo))
     {
         SendCastResult(SPELL_FAILED_MOVING);
         finish(false);
@@ -3537,7 +3549,14 @@ void Spell::cast(bool skipCheck)
             }
             else
             {
-                if(i->type2 && m_targets.GetUnitTarget())
+                if(i->type2 == 2)
+                {
+                    if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
+                        continue;
+                    if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
+                        continue;
+                }
+                else if(i->type2 && m_targets.GetUnitTarget())
                 {
                     if(i->hastalent != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent))
                         continue;
@@ -3836,7 +3855,7 @@ void Spell::update(uint32 difftime)
     if ((m_caster->GetTypeId() == TYPEID_PLAYER && m_timer != 0) &&
         m_caster->isMoving() && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) &&
         (m_spellInfo->Effects[0].Effect != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING_FAR)) &&
-        !m_caster->HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, m_spellInfo))
+        !m_caster->HasAuraCastWhileWalking(m_spellInfo))
     {
         // don't cancel for melee, autorepeat, triggered and instant spells
         if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !IsTriggered())
@@ -4019,6 +4038,28 @@ void Spell::finish(bool ok)
 
     switch (m_spellInfo->Id)
     {
+        case 32379: // Shadow Word: Death
+        {
+            if (Player* _player = m_caster->ToPlayer())
+            {
+                if (_player->GetSpecializationId(_player->GetActiveSpec()) != SPEC_PRIEST_SHADOW)
+                    break;
+
+                if (m_caster->HasAura(95652))
+                    break;
+
+                if (!unitTarget || !unitTarget->isAlive() || unitTarget->GetHealthPct() >= 20.0f)
+                {
+                    m_caster->CastSpell(m_caster, 125927, true); // Shadow Orb energize
+                    break;
+                }
+
+                m_caster->CastSpell(m_caster, 125927, true); // Shadow Orb energize
+                m_caster->CastSpell(m_caster, 95652, true); // Effect cooldown marker
+                _player->RemoveSpellCooldown(m_spellInfo->Id, true);
+            }
+            break;
+        }
         case 53351: // Kill Shot
         {
             if (!unitTarget || !unitTarget->isAlive() || unitTarget->GetHealthPct() >= 20.0f || m_caster->HasAura(90967))
@@ -5250,7 +5291,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     // cancel autorepeat spells if cast start when moving
     // (not wand currently autorepeat cast delayed to moving stop anyway in spell update code)
     // Do not cancel spells which are affected by a SPELL_AURA_CAST_WHILE_WALKING effect
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->isMoving() && !m_caster->HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, m_spellInfo))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->isMoving() && !m_caster->HasAuraCastWhileWalking(m_spellInfo))
     {
         // skip stuck spell to allow use it in falling case and apply spell limitations at movement
         if ((!m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING_FAR) || m_spellInfo->Effects[0].Effect != SPELL_EFFECT_STUCK) &&

@@ -116,6 +116,8 @@ enum SpellTriggeredType
     SPELL_TRIGGER_PERC_BASE_MANA    = 11,           // Percent from base mana
     SPELL_TRIGGER_PERC_CUR_MANA     = 12,           // Percent from curent mana
     SPELL_TRIGGER_CHECK_PROCK       = 13,           // Check proc from spell to trigger
+    SPELL_TRIGGER_DUMMY             = 14,           // spell to trigger without option for bp
+    SPELL_TRIGGER_CAST_DEST         = 15,           // spell to trigger without option for bp
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -468,55 +470,19 @@ enum EffectRadiusIndex
 typedef UNORDERED_MAP<uint32, SpellTargetPosition> SpellTargetPositionMap;
 
 // Spell pet auras
-class PetAura
+struct PetAura
 {
-    private:
-        typedef UNORDERED_MAP<uint32, uint32> PetAuraMap;
-
-    public:
-        PetAura() : removeOnChangePet(false), damage(0)
-        {
-            auras.clear();
-        }
-
-        PetAura(uint32 petEntry, uint32 aura, bool _removeOnChangePet, int _damage) :
-        removeOnChangePet(_removeOnChangePet), damage(_damage)
-        {
-            auras[petEntry] = aura;
-        }
-
-        uint32 GetAura(uint32 petEntry) const
-        {
-            PetAuraMap::const_iterator itr = auras.find(petEntry);
-            if (itr != auras.end())
-                return itr->second;
-            PetAuraMap::const_iterator itr2 = auras.find(0);
-            if (itr2 != auras.end())
-                return itr2->second;
-            return 0;
-        }
-
-        void AddAura(uint32 petEntry, uint32 aura)
-        {
-            auras[petEntry] = aura;
-        }
-
-        bool IsRemovedOnChangePet() const
-        {
-            return removeOnChangePet;
-        }
-
-        int32 GetDamage() const
-        {
-            return damage;
-        }
-
-    private:
-        PetAuraMap auras;
-        bool removeOnChangePet;
-        int32 damage;
+    int32 petEntry;
+    int32 spellId;
+    int32 target;
+    int32 option;
+    float bp0;
+    float bp1;
+    float bp2;
+    int32 aura;
 };
-typedef std::map<uint32, PetAura> SpellPetAuraMap;
+
+typedef UNORDERED_MAP<int32, std::vector<PetAura> > SpellPetAuraMap;
 
 struct SpellArea
 {
@@ -658,6 +624,7 @@ struct SpellMountList
 };
 
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
+typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
 typedef std::map<int32, std::vector<SpellLinked> > SpellLinkedMap;
 typedef std::map<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
 typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
@@ -762,7 +729,7 @@ class SpellMgr
 
         SkillLineAbilityMapBounds GetSkillLineAbilityMapBounds(uint32 spell_id) const;
 
-        PetAura const* GetPetAura(uint32 spell_id, uint8 eff);
+        const std::vector<PetAura>* GetPetAura(uint32 entry) const;
 
         SpellEnchantProcEntry const* GetSpellEnchantProcEvent(uint32 enchId) const;
         bool IsArenaAllowedEnchancment(uint32 ench_id) const;
@@ -772,6 +739,7 @@ class SpellMgr
         const uint32 GetMountListId(uint32 spell_id, uint32 teamid) const;
         const std::vector<SpellPrcoCheck> *GetSpellPrcoCheck(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggered(int32 spell_id) const;
+        const std::vector<SpellTriggered> *GetSpellTriggeredDummy(int32 spell_id) const;
 
         PetLevelupSpellSet const* GetPetLevelupSpellList(uint32 petFamily) const;
         PetDefaultSpellsEntry const* GetPetDefaultSpellsEntry(int32 id) const;
@@ -851,6 +819,7 @@ class SpellMgr
         SpellTalentLinkedMap       mSpellTalentLinkedMap;
         SpellPrcoCheckMap          mSpellPrcoCheckMap;
         SpellTriggeredMap          mSpellTriggeredMap;
+        SpellTriggeredDummyMap     mSpellTriggeredDummyMap;
         SpellEnchantProcEventMap   mSpellEnchantProcEventMap;
         EnchantCustomAttribute     mEnchantCustomAttr;
         SpellAreaMap               mSpellAreaMap;

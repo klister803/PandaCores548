@@ -313,13 +313,19 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || (!unitTarget->isAlive() && m_spellInfo->Id != 108503))
+    if (!unitTarget)
         return;
 
-    if (m_spellInfo->Id == 108503 && (!unitTarget->GetHealth() || !unitTarget->isAlive()))
+    if (m_spellInfo->Id == 108503)
     {
-        unitTarget->ToPet()->Remove(PET_SLOT_ACTUAL_PET_SLOT);
-        return;
+        if(Pet* pet = unitTarget->ToPet())
+            pet->CastPetAuras(false, m_spellInfo->Id);
+
+        if (!unitTarget->GetHealth() || !unitTarget->isAlive())
+        {
+            unitTarget->ToPet()->Remove(PET_SLOT_ACTUAL_PET_SLOT);
+            return;
+        }
     }
 
     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
@@ -759,16 +765,313 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
 void Spell::EffectDummy(SpellEffIndex effIndex)
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET
+        && effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH)
         return;
 
-    if (!unitTarget && !gameObjTarget && !itemTarget)
-        return;
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "EffectDummy end %i, m_diffMode %i, effIndex %i, spellId %u, damage %i, effectHandleMode %u, GetExplicitTargetMask %u", m_damage, m_diffMode, effIndex, m_spellInfo->Id, damage, effectHandleMode, m_spellInfo->GetExplicitTargetMask());
 
     uint32 spell_id = 0;
     int32 bp = 0;
     bool triggered = true;
     SpellCastTargets targets;
+
+    if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggeredDummy(m_spellInfo->Id))
+    {
+        bool check = false;
+        Unit* triggerTarget = unitTarget;
+        Unit* triggerCaster = m_caster;
+        int32 basepoints0 = damage;
+        int32 triggered_spell_id = damage;
+
+        for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
+        {
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target);
+
+            if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != 15)
+                continue;
+
+            if (!(itr->effectmask & (1<<effIndex)))
+                continue;
+
+            if(itr->target == 1) //get target caster
+                triggerTarget = triggerCaster;
+
+            if(itr->target == 2 && triggerCaster->ToPlayer()) //set caster to pet from owner caster
+                if (Pet* pet = triggerCaster->ToPlayer()->GetPet())
+                    triggerCaster = (Unit*)pet;
+
+            if(itr->target == 3 && triggerCaster->ToPlayer()) //get target pet from caster
+                if (Pet* pet = triggerCaster->ToPlayer()->GetPet())
+                    triggerTarget = (Unit*)pet;
+
+            if(itr->target == 4 && triggerTarget->ToPlayer()) //get target pet from target
+                if (Pet* pet = triggerTarget->ToPlayer()->GetPet())
+                    triggerTarget = (Unit*)pet;
+
+            if(itr->target == 5) //get target owner
+                if (Unit* owner = triggerCaster->GetOwner())
+                    triggerTarget = owner;
+
+            int32 bp0 = int32(itr->bp0);
+            int32 bp1 = int32(itr->bp1);
+            int32 bp2 = int32(itr->bp2);
+            int32 spell_trigger = itr->spell_trigger;
+
+            if(itr->spell_trigger == 0)
+                spell_trigger = damage;
+
+            switch (itr->option)
+            {
+                case SPELL_TRIGGER_BP: //0
+                {
+                    if(spell_trigger < 0)
+                        basepoints0 *= -1;
+
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, m_CastItem, NULL, m_originalCasterGUID);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = triggerCaster->GetGuardianPet())
+                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_BP_CUSTOM: //1
+                {
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &bp0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = triggerCaster->GetGuardianPet())
+                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_MANA_COST: //2
+                {
+                    int32 cost = int32(m_spellInfo->ManaCost + CalculatePct(triggerCaster->GetCreateMana(), m_spellInfo->ManaCostPercentage));
+                    basepoints0 = CalculatePct(cost, bp0);
+
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = triggerCaster->GetGuardianPet())
+                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_DAM_HEALTH: //3
+                {
+                    basepoints0 = CalculatePct(basepoints0, bp0);
+
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = triggerCaster->GetGuardianPet())
+                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_COOLDOWN: //4
+                {
+                    if(Player* player = triggerTarget->ToPlayer())
+                    {
+                        uint32 spellid = abs(spell_trigger);
+                        if(itr->bp0 == 0.0f)
+                            player->RemoveSpellCooldown(spellid, true);
+                        else
+                        {
+                            float delay = float(itr->bp0 / 1000);
+                            if(delay > -1.0f)
+                            {
+                                if(roll_chance_i(50))
+                                    player->ChangeSpellCooldown(spellid, -1.0f);
+                            }
+                            else
+                                player->ChangeSpellCooldown(spellid, delay);
+                        }
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_UPDATE_DUR: //5
+                {
+                    if(Aura* aura = triggerTarget->GetAura(abs(spell_trigger), triggerCaster->GetGUID()))
+                        aura->RefreshDuration();
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_GET_DUR_AURA: //6
+                {
+                    if(Aura* aura = triggerTarget->GetAura(itr->aura, triggerCaster->GetGUID()))
+                        basepoints0 = int32(aura->GetDuration() / 1000);
+                    if(basepoints0)
+                    {
+                        triggered_spell_id = abs(spell_trigger);
+                        triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                        if(itr->target == 6)
+                        {
+                            if (Guardian* pet = triggerCaster->GetGuardianPet())
+                                triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                        }
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_NEED_COMBOPOINTS: //7
+                {
+                    int32 chance = 20 * triggerCaster->ToPlayer()->GetComboPoints();
+                    if (roll_chance_i(chance))
+                    {
+                        triggered_spell_id = abs(spell_trigger);
+                        triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &bp0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                        if(itr->target == 6)
+                        {
+                            if (Guardian* pet = triggerCaster->GetGuardianPet())
+                                triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                        }
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_UPDATE_DUR_TO_MAX: //8
+                {
+                    if(Aura* aura = triggerTarget->GetAura(abs(spell_trigger), triggerCaster->GetGUID()))
+                        aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration(), true);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_FROM_DAMGE: //9
+                {
+                    basepoints0 = CalculatePct(basepoints0, itr->bp0);
+
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = triggerCaster->GetGuardianPet())
+                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_MAX_MANA: //10
+                {
+                    basepoints0 = int32((itr->bp0 / 100.0f) * triggerTarget->GetMaxPower(POWER_MANA));
+
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_BASE_MANA: //11
+                {
+                    basepoints0 = int32((itr->bp0 / 100.0f) * triggerTarget->GetCreateMana());
+
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_CUR_MANA: //12
+                {
+                    basepoints0 = int32((itr->bp0 / 100.0f) * triggerTarget->GetPower(POWER_MANA));
+
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_CHECK_PROCK: //13
+                {
+                    triggered_spell_id = abs(spell_trigger);
+                    if(m_caster->HasAura(itr->aura))
+                        triggerCaster->CastSpell(triggerTarget, triggered_spell_id, true);
+
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_DUMMY: //14
+                {
+                    triggered_spell_id = abs(spell_trigger);
+                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id))
+                    {
+                        if (Unit* owner = triggerCaster->GetOwner())
+                        {
+                            if (Player* _player = owner->ToPlayer())
+                            {
+                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4); //visual cd
+                                data << uint64(_player->GetGUID());
+                                data << uint8(0x0);
+                                data << uint32(m_spellInfo->Id);
+                                data << uint32(spellInfo->RecoveryTime);
+                                _player->GetSession()->SendPacket(&data);
+                            }
+                        }
+                    }
+                    triggerCaster->CastSpell(triggerTarget, triggered_spell_id, false);
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_CAST_DEST: //15
+                {
+                    triggered_spell_id = abs(spell_trigger);
+                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id))
+                    {
+                        if (Unit* owner = triggerCaster->GetOwner())
+                        {
+                            if (Player* _player = owner->ToPlayer())
+                            {
+                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4); //visual cd
+                                data << uint64(_player->GetGUID());
+                                data << uint8(0x0);
+                                data << uint32(m_spellInfo->Id);
+                                data << uint32(spellInfo->RecoveryTime);
+                                _player->GetSession()->SendPacket(&data);
+                            }
+                        }
+
+                        targets.SetDst(m_targets);
+                        CustomSpellValues values;
+                        triggerCaster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
+                    }
+                    check = true;
+                    continue;
+                }
+                break;
+            }
+        }
+        if(check)
+            return;
+    }
+
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!unitTarget && !gameObjTarget && !itemTarget)
+        return;
 
     // Fishing dummy
     if (m_spellInfo->Id == 131474)
@@ -1063,13 +1366,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         Spell* spell = new Spell(m_caster, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, m_originalCasterGUID, true);
         if (bp) spell->SetSpellValue(SPELLVALUE_BASE_POINT0, bp);
         spell->prepare(&targets);
-    }
-
-    // pet auras
-    if (PetAura const* petSpell = sSpellMgr->GetPetAura(m_spellInfo->Id, effIndex))
-    {
-        m_caster->AddPetAura(petSpell);
-        return;
     }
 
     // normal DB scripted effect

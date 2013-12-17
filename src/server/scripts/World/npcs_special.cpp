@@ -3789,42 +3789,78 @@ class npc_guardian_of_ancient_kings : public CreatureScript
 
 class npc_power_word_barrier : public CreatureScript
 {
-    public:
-        npc_power_word_barrier() : CreatureScript("npc_power_word_barrier") { }
+public:
+    npc_power_word_barrier() : CreatureScript("npc_power_word_barrier") { }
 
-        struct npc_power_word_barrierAI : public ScriptedAI
+    struct npc_power_word_barrierAI : public ScriptedAI
+    {
+        npc_power_word_barrierAI(Creature *pCreature) : ScriptedAI(pCreature) {}
+
+        bool checker;
+        uint32 cron; // Duration
+
+        void Reset()
         {
-            uint32 frozenOrbTimer;
-
-            npc_power_word_barrierAI(Creature* creature) : ScriptedAI(creature)
-            {
-                Unit* owner = creature->GetOwner();
-
-                if (owner)
-                {
-                    creature->CastSpell(creature, 115725, true); // Barrier visual
-                    creature->CastSpell(creature, 81781, true);  // Periodic Trigger Spell
-                }
-            }
-
-            void UpdateAI(const uint32 diff)
-            {
-                Unit* owner = me->GetOwner();
-
-                if (!owner)
-                    return;
-
-                if (!me->HasAura(115725))
-                    me->CastSpell(me, 115725, true);
-                if (!me->HasAura(81781))
-                    me->CastSpell(me, 81781, true);
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_power_word_barrierAI(creature);
+            checker = false;
+            cron = 10000;
+            DoCast(me, 81781);
         }
+
+        void InitializeAI()
+        {
+            ScriptedAI::InitializeAI();
+            Unit * owner = me->GetOwner();
+            if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        }
+
+        void BarrierChecker(Unit *who)
+        {
+            if (who->isAlive() && !who->HasAura(81782))
+            {
+                me->CastSpell(who, 81782, true);
+            }
+            if (who->isAlive() && who->HasAura(81782))
+            {
+                if (AuraEffect const* aur = who->GetAuraEffect(81782, 0))
+                    aur->GetBase()->SetDuration(aur->GetSpellInfo()->GetMaxDuration(), true);
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (cron <= diff)
+            {
+                if (!checker)
+                {
+                    checker = true;
+                    cron = 10000;   //10 seconds
+                }
+                else
+                    me->DisappearAndDie();
+            }
+            else
+                cron -= diff;
+
+           //Check friendly entities
+           std::list<Unit*> targets;
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(me, me, 7.0f);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
+
+            me->VisitNearbyObject(7.0f, searcher);
+            for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                BarrierChecker(*iter);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_power_word_barrierAI(pCreature);
+    }
 };
 
 /*######
@@ -3862,14 +3898,25 @@ class npc_demonic_gateway_green : public CreatureScript
     public:
         npc_demonic_gateway_green() : CreatureScript("npc_demonic_gateway_green") { }
 
-        struct npc_demonic_gateway_greenAI : public ScriptedAI
+        struct npc_demonic_gateway_greenAI : public Scripted_NoMovementAI
         {
-            npc_demonic_gateway_greenAI(Creature* creature) : ScriptedAI(creature)
+            npc_demonic_gateway_greenAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
-                Unit* owner = creature->GetOwner();
+            }
 
-                if (owner)
-                    creature->CastSpell(creature, 113901, true); // Periodic add charges
+            void IsSummonedBy(Unit* owner)
+            {
+                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                {
+                    me->SetLevel(owner->getLevel());
+                    me->SetMaxHealth(owner->GetMaxHealth() / 2);
+                    me->SetHealth(me->GetMaxHealth());
+                    // Set no damage
+                    me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
+                    me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
+                }
+                me->SetReactState(REACT_PASSIVE);
+                me->CastSpell(me, 113901, true); // Periodic add charges
             }
         };
 

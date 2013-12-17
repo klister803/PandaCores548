@@ -350,7 +350,6 @@ class DynamicObject;
 class GameObject;
 class Item;
 class Pet;
-class PetAura;
 class Minion;
 class Guardian;
 class UnitAI;
@@ -1546,7 +1545,7 @@ class Unit : public WorldObject
         float MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, uint32 spellId) const;
         SpellMissInfo MeleeSpellHitResult(Unit* victim, SpellInfo const* spell);
         SpellMissInfo MagicSpellHitResult(Unit* victim, SpellInfo const* spell);
-        SpellMissInfo SpellHitResult(Unit* victim, SpellInfo const* spell, bool canReflect = false);
+        SpellMissInfo SpellHitResult(Unit* victim, SpellInfo const* spell, bool canReflect = false, uint32 effectMask = 0);
 
         float GetUnitDodgeChance()    const;
         float GetUnitParryChance()    const;
@@ -1894,6 +1893,7 @@ class Unit : public WorldObject
         bool HasNegativeAuraWithInterruptFlag(uint32 flag, uint64 guid = 0);
         bool HasNegativeAuraWithAttribute(uint32 flag, uint64 guid = 0);
         bool HasAuraWithMechanic(uint32 mechanicMask);
+        bool HasAuraCastWhileWalking(SpellInfo const* spellInfo);
 
         void RemoveSoulSwapDOT(Unit* target);
         void ApplySoulSwapDOT(Unit* target);
@@ -2230,12 +2230,6 @@ class Unit : public WorldObject
                 --m_procDeep;
             }
         }
-
-        // pet auras
-        typedef std::set<PetAura const*> PetAuraSet;
-        PetAuraSet m_petAuras;
-        void AddPetAura(PetAura const* petSpell);
-        void RemovePetAura(PetAura const* petSpell);
 
         uint32 GetModelForForm(ShapeshiftForm form);
         uint32 GetModelForTotem(PlayerTotemType totemType);
