@@ -12341,6 +12341,11 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
             if (spellProto->GetEffect(i, GetSpawnMode()).TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY && spellProto->GetEffect(i, GetSpawnMode()).TargetB.GetTarget() == 0)
                 singleTarget = true;
 
+        if (spellProto->Id == 77472)
+        {
+            singleTarget = true;
+        }
+
         if (singleTarget)
             AddPct(TakenTotalMod, 50);
     }
