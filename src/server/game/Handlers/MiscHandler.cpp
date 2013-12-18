@@ -815,7 +815,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket& recvData)
     if (GetPlayer()->isAlive())
         return;
 
-    if (status == 0)
+    if (status != 0)
     {
         GetPlayer()->ClearResurrectRequestData();           // reject
         return;

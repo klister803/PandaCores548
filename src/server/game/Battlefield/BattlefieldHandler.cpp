@@ -360,14 +360,14 @@ void WorldSession::HandleReportPvPAFK(WorldPacket & recvData)
     reportedPlayer->ReportedAfkBy(_player);
 }
 
-void WorldSession::HandleRequestRatedBgInfo(WorldPacket & recvData)
+void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_BG_INFO");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_INFO");
 
     uint8 unk;
     recvData >> unk;
 
-    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "WorldSession::HandleRequestRatedBgInfo: get unk = %u", unk);
+    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "WorldSession::HandleRequestRatedInfo: get unk = %u", unk);
 
     /// @Todo: perfome research in this case
     WorldPacket data(SMSG_RATED_BG_STATS, 72);
