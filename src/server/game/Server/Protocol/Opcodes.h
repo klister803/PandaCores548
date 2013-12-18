@@ -546,6 +546,7 @@ enum Opcodes
     CMSG_UNLEARN_SKILL                                = 0x03F7, // 5.4.1 17538
     CMSG_UNLEARN_SPECIALIZATION                       = 0x1A7E, // 5.4.1 17538
     CMSG_UNREGISTER_ALL_ADDON_PREFIXES                = 0x0C59, // 5.4.1 17538
+    CMSG_UPGRADE_ITEM                                 = 0x1B5F, // 5.4.1 17538
     CMSG_UPDATE_ACCOUNT_DATA                          = 0x104C, // 5.4.1 17538
     CMSG_UPDATE_MISSILE_TRAJECTORY                    = 0,      // 0x781E in 4.3.4 @todo : Find me and BACON !
     CMSG_UPDATE_PROJECTILE_POSITION                   = 0,      // 0x0E24 in 4.3.4 @todo : Find me and BACON !
