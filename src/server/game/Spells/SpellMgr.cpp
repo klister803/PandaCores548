@@ -3609,9 +3609,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 108283:// Echo of the Elements
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
                     break;
-                case 62099: // Shamanism
-                    spellInfo->Effects[0].SpellClassMask[2] |= 0x8000;
-                    break;
                 case 116943:// Earthgrab
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
                     spellInfo->Effects[0].TargetB = 0;
@@ -4341,7 +4338,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CategoryRecoveryTime = 0;
                     break;
                 case 45284: //Lightning Bolt
-                case 117014: //Elemental Blast
                     spellInfo->SpellFamilyFlags[0] = 0x00000001;
                     spellInfo->SpellFamilyFlags[2] = 0;
                     break;
