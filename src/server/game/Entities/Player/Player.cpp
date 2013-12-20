@@ -2218,9 +2218,8 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
                 break;
         }
 
-        //The 2 next lines may be swaped.
-        *dataBuffer << uint32(enchant ? enchant->aura_id : 0);
         *dataBuffer << uint32(proto->DisplayInfoID);
+        *dataBuffer << uint32(enchant ? enchant->aura_id : 0);
         *dataBuffer << uint8(proto->InventoryType);
     }
 

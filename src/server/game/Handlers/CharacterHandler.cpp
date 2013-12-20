@@ -329,8 +329,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
     recvData >> outfitId;
     recvData >> skin;
     recvData >> face;
-    name = recvData.ReadString(recvData.ReadBits(7));
-    if (recvData.ReadBit())
+    uint8 unk = recvData.ReadBit();
+    name = recvData.ReadString(recvData.ReadBits(6));
+    if (unk)
         recvData.read_skip<uint32>();
 
     WorldPacket data(SMSG_CHAR_CREATE, 1);                  // returned with diff.values in all cases

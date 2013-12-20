@@ -791,7 +791,7 @@ enum Opcodes
     SMSG_CHARACTER_LOGIN_FAILED                       = 0xC6D,  // 5.0.5 16048
     SMSG_CHAR_CREATE                                  = 0x1007, // 5.4.1 17399
     SMSG_CHAR_CUSTOMIZE                               = 0xD27,  // 5.0.5 16048
-    SMSG_CHAR_DELETE                                  = 0x936,  // 5.0.5 16048
+    SMSG_CHAR_DELETE                                  = 0x017,  // 5.4.1 17538
     SMSG_CHAR_ENUM                                    = 0x40E,  // 5.4.1 17538
     SMSG_CHAR_FACTION_CHANGE                          = 0x9E0,  // 5.0.5 16048
     SMSG_CHAR_RENAME                                  = 0x945,  // 5.0.5 16048

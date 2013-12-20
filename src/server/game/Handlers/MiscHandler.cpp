@@ -978,20 +978,21 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
 
-    uint32 type, timestamp, decompressedSize;
-    recvData >> type >> timestamp >> decompressedSize;
+    uint32 mask, timestamp, decompressedSize;
+    // first login - mask 0x60
+    recvData >> mask >> timestamp >> decompressedSize;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "UAD: type %u, time %u, decompressedSize %u", type, timestamp, decompressedSize);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "UAD: type mask %u, time %u, decompressedSize %u", mask, timestamp, decompressedSize);
 
-    if (type > NUM_ACCOUNT_DATA_TYPES)
-        return;
+    //if (type > NUM_ACCOUNT_DATA_TYPES)
+        //return;
 
     if (decompressedSize == 0)                               // erase
     {
-        SetAccountData(AccountDataType(type), 0, "");
+        SetAccountData(AccountDataType(mask), 0, "");
 
         WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
-        data << uint32(type);
+        data << uint32(mask);
         data << uint32(0);
         SendPacket(&data);
 
@@ -1016,17 +1017,18 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
         return;
     }
 
-    recvData.rfinish();                       // uncompress read (recvData.size() - recvData.rpos())
-
     std::string adata;
     dest >> adata;
 
-    SetAccountData(AccountDataType(type), timestamp, adata);
+    // unk always 3, need sniffs
+    uint32 unk = recvData.ReadBits(3);
 
-    WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
-    data << uint32(type);
-    data << uint32(0);
-    SendPacket(&data);
+    //SetAccountData(AccountDataType(mask), timestamp, adata);
+
+    //WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
+    //data << uint32(mask);
+    //data << uint32(0);
+    //SendPacket(&data);
 }
 
 void WorldSession::HandleRequestAccountData(WorldPacket& recvData)
