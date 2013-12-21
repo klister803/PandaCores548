@@ -1420,9 +1420,20 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
 void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<5, 1, 3, 0, 6, 4>(guid);
 
-    recvData >> guid;
+    uint32 unk[5];
+    for (int i = 0; i < 5; i++)
+        unk[i] = recvData.ReadBits(7);
+
+    recvData.ReadGuidMask<2, 7>(guid);
+    recvData.ReadGuidBytes<6, 1, 2>(guid);
+
+    for (int i = 0; i < 5; i++)
+        recvData.read_skip(unk[i]);
+
+    recvData.ReadGuidBytes<3, 4, 0, 5, 7>(guid);
 
     // not accept declined names for unsupported languages
     std::string name;
