@@ -1024,13 +1024,23 @@ class spell_pal_judgment : public SpellScriptLoader
                 {
                     if (Unit* unitTarget = GetHitUnit())
                     {
+                        uint8 addholypower = 1;
+
+                        if (_player->HasAura(105809))
+                        {
+                            addholypower = 3;
+                        }
+
                         if (_player->HasAura(PALADIN_SPELL_JUDGMENTS_OF_THE_BOLD))
                         {
-                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + 1);
+                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + addholypower);
                             _player->CastSpell(unitTarget, PALADIN_SPELL_PHYSICAL_VULNERABILITY, true);
                         }
+
                         else if (_player->HasAura(PALADIN_SPELL_JUDGMENTS_OF_THE_WISE))
-                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + 1);
+                        {
+                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + addholypower);
+                        }
 
                         if (_player->HasAura(PALADIN_SPELL_LONG_ARM_OF_THE_LAW))
                             _player->CastSpell(_player, PALADIN_SPELL_LONG_ARM_OF_THE_LAW_RUN_SPEED, true);

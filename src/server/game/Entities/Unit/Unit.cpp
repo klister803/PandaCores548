@@ -2740,8 +2740,11 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
 SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool CanReflect, uint32 effectMask)
 {
     // Check for immune
-    if (victim->IsImmunedToSpell(spell))
-        return SPELL_MISS_IMMUNE;
+    if (this != victim)
+    {
+        if (victim->IsImmunedToSpell(spell))
+            return SPELL_MISS_IMMUNE;
+    }
 
     // All positive spells can`t miss
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
@@ -12340,6 +12343,11 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (spellProto->GetEffect(i, GetSpawnMode()).TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY && spellProto->GetEffect(i, GetSpawnMode()).TargetB.GetTarget() == 0)
                 singleTarget = true;
+
+        if (spellProto->Id == 77472)
+        {
+            singleTarget = true;
+        }
 
         if (singleTarget)
             AddPct(TakenTotalMod, 50);

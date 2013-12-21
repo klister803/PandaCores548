@@ -1,5 +1,5 @@
 //UWoWCore
-//Hear of Fear
+//Heart of Fear
 
 #include "ScriptPCH.h"
 #include "VMapFactory.h"
@@ -21,9 +21,13 @@ public:
         instance_heart_of_fear_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         //GameObjects
+        uint64 vizierentdoorGuid;
+        uint64 vizierexdoorGuid;
+        uint64 tayakexdoorGuid;
 
         //Creature
         uint64 zorlokGuid;
+        uint64 gascontrollerGuid;
         uint64 tayakGuid;
         uint64 garalonGuid;
         uint64 merjalakGuid;
@@ -37,14 +41,18 @@ public:
             SetBossNumber(7);
 
             //GameObject
+            vizierentdoorGuid = 0;
+            vizierexdoorGuid  = 0;
+            tayakexdoorGuid   = 0;
 
             //Creature
-            zorlokGuid      = 0;
-            tayakGuid       = 0;
-            garalonGuid     = 0;
-            merjalakGuid    = 0;
-            unsokGuid       = 0;
-            shekzeerGuid    = 0;
+            zorlokGuid        = 0;
+            gascontrollerGuid = 0;
+            tayakGuid         = 0;
+            garalonGuid       = 0;
+            merjalakGuid      = 0;
+            unsokGuid         = 0;
+            shekzeerGuid      = 0;
 
             //Arrays
         }
@@ -55,6 +63,9 @@ public:
             { 
             case NPC_VIZIER_ZORLOK:
                 zorlokGuid = creature->GetGUID();
+                break;
+            case NPC_GAS_CONTROLLER:
+                gascontrollerGuid = creature->GetGUID();
                 break;
             case NPC_LORD_TAYAK:
                 tayakGuid = creature->GetGUID();
@@ -73,10 +84,19 @@ public:
             }
         }
 
-       /* void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
+            case GO_VIZIER_ENT_DOOR:
+                vizierentdoorGuid = go->GetGUID();
+                break;
+            case GO_VIZIER_EX_DOOR:
+                vizierexdoorGuid = go->GetGUID();
+                break;
+            case GO_TAYAK_EX_DOOR:
+                tayakexdoorGuid = go->GetGUID();
+                break;
             }
         }
 
@@ -87,9 +107,43 @@ public:
 
             switch (id)
             {
+            case DATA_VIZIER_ZORLOK:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(vizierentdoorGuid, true);
+                        break;
+                    case DONE:
+                        HandleGameObject(vizierentdoorGuid, true);
+                        HandleGameObject(vizierexdoorGuid, true); 
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(vizierentdoorGuid, false);
+                        break;
+                    }
+                    break;
+                }
+            case DATA_LORD_TAYAK:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(vizierexdoorGuid, true);
+                        break;
+                    case DONE:
+                        HandleGameObject(vizierexdoorGuid, true);
+                        //HandleGameObject(tayakexdoorGuid, true); next boss not ready...
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(vizierexdoorGuid, false);
+                        break;
+                    }
+                    break;
+                }
             }
             return true;
-        }*/
+        }
 
         void SetData(uint32 type, uint32 data){}
 
@@ -104,6 +158,8 @@ public:
             {
                 case NPC_VIZIER_ZORLOK:
                     return zorlokGuid;
+                case NPC_GAS_CONTROLLER:
+                    return gascontrollerGuid;
                 case NPC_LORD_TAYAK:
                     return tayakGuid;
                 case NPC_GAROLON:
