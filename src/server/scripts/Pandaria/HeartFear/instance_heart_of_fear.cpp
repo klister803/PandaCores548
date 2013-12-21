@@ -1,5 +1,5 @@
 //UWoWCore
-//Hear of Fear
+//Heart of Fear
 
 #include "ScriptPCH.h"
 #include "VMapFactory.h"
@@ -23,6 +23,7 @@ public:
         //GameObjects
         uint64 vizierentdoorGuid;
         uint64 vizierexdoorGuid;
+        uint64 tayakexdoorGuid;
 
         //Creature
         uint64 zorlokGuid;
@@ -42,6 +43,7 @@ public:
             //GameObject
             vizierentdoorGuid = 0;
             vizierexdoorGuid  = 0;
+            tayakexdoorGuid   = 0;
 
             //Creature
             zorlokGuid        = 0;
@@ -92,6 +94,9 @@ public:
             case GO_VIZIER_EX_DOOR:
                 vizierexdoorGuid = go->GetGUID();
                 break;
+            case GO_TAYAK_EX_DOOR:
+                tayakexdoorGuid = go->GetGUID();
+                break;
             }
         }
 
@@ -111,14 +116,31 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(vizierentdoorGuid, true);
-                        //HandleGameObject(vizierexdoorGuid, true); Next boss not ready
+                        HandleGameObject(vizierexdoorGuid, true); 
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(vizierentdoorGuid, false);
                         break;
                     }
+                    break;
                 }
-                break;
+            case DATA_LORD_TAYAK:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(vizierexdoorGuid, true);
+                        break;
+                    case DONE:
+                        HandleGameObject(vizierexdoorGuid, true);
+                        //HandleGameObject(tayakexdoorGuid, true); next boss not ready...
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(vizierexdoorGuid, false);
+                        break;
+                    }
+                    break;
+                }
             }
             return true;
         }

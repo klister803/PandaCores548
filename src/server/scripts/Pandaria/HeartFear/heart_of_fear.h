@@ -34,6 +34,7 @@ enum eGameObjects
 {   
     GO_VIZIER_ENT_DOOR   = 214485,
     GO_VIZIER_EX_DOOR    = 214486,
+    GO_TAYAK_EX_DOOR     = 214487,
 };
 
 enum eActions
