@@ -2279,6 +2279,16 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                 if (Unit* u = me->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1))
                     l->push_back(u);
             break;
+        case SMART_TARGET_HOSTILE_RANDOM_PLAYER:
+            if (me)
+                if (Unit* u = me->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                    l->push_back(u);
+            break;
+        case SMART_TARGET_HOSTILE_RANDOM_NOT_TOP_PLAYER:
+            if (me)
+                if (Unit* u = me->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                    l->push_back(u);
+            break;
         case SMART_TARGET_HOSTILE_RANDOM_AURA:
             if (me)
                 if (Unit* u = me->AI()->SelectTarget(SELECT_TARGET_RANDOM, e.target.spell.topornot, (float)e.target.spell.dist, true, e.target.spell.entry))
