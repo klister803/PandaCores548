@@ -30,8 +30,8 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
 
     recvPacket >> channelId;
     recvPacket.ReadBit();   // silent
-    channelLength = recvPacket.ReadBits(8);
-    passLength = recvPacket.ReadBits(8);
+    channelLength = recvPacket.ReadBits(7);
+    passLength = recvPacket.ReadBits(7);
     recvPacket.ReadBit();   // by zone update
 
     pass = recvPacket.ReadString(passLength);
@@ -68,8 +68,8 @@ void WorldSession::HandleLeaveChannel(WorldPacket& recvPacket)
 
     uint32 unk;
     std::string channelname;
-    recvPacket >> unk;                                      // channel id?
-    uint32 length = recvPacket.ReadBits(8);
+    recvPacket >> unk;
+    uint32 length = recvPacket.ReadBits(7);
     channelname = recvPacket.ReadString(length);
 
     if (channelname.empty())
@@ -87,7 +87,7 @@ void WorldSession::HandleChannelList(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
 
-    uint32 length = recvPacket.ReadBits(8);
+    uint32 length = recvPacket.ReadBits(7);
     std::string channelname = recvPacket.ReadString(length);
 
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))

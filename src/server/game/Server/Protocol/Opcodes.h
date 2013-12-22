@@ -682,7 +682,7 @@ enum Opcodes
     SMSG_ARENA_TEAM_QUERY_RESPONSE                    = 0x9D6,  // 5.0.5 16048
     SMSG_ARENA_TEAM_ROSTER                            = 0xCA4,  // 5.0.5 16048
     SMSG_ARENA_TEAM_STATS                             = 0xDD6,  // 5.0.5 16048
-    SMSG_ATTACKERSTATEUPDATE                          = 0x856,  // 5.0.5 16048
+    SMSG_ATTACKERSTATEUPDATE                          = 0x182B, // 5.4.1 17538
     SMSG_ATTACKSTART                                  = 0x992,  // 5.0.5 16048
     SMSG_ATTACKSTOP                                   = 0x848,  // 5.0.5 16048
     SMSG_ATTACKSWING_BADFACING                        = 0x898,  // 5.0.5 16048
@@ -787,7 +787,7 @@ enum Opcodes
     SMSG_CAST_FAILED                                  = 0x91C,  // 5.0.5 16048
     SMSG_CHANNEL_LIST                                 = 0xCC3,  // 5.0.5 16048
     SMSG_CHANNEL_MEMBER_COUNT                         = 0x8D4,  // 5.0.5 16048
-    SMSG_CHANNEL_NOTIFY                               = 0x91D,  // 5.0.5 16048
+    SMSG_CHANNEL_NOTIFY                               = 0x1490, // 5.4.1 17538
     SMSG_CHARACTER_LOGIN_FAILED                       = 0xC6D,  // 5.0.5 16048
     SMSG_CHAR_CREATE                                  = 0x1007, // 5.4.1 17399
     SMSG_CHAR_CUSTOMIZE                               = 0xD27,  // 5.0.5 16048
@@ -869,7 +869,7 @@ enum Opcodes
     SMSG_DUMP_RIDE_TICKETS_RESPONSE                   = 0xBF9,  // 5.0.5 16048
     SMSG_DURABILITY_DAMAGE_DEATH                      = 0xD0C,  // 5.0.5 16048
     SMSG_ECHO_PARTY_SQUELCH                           = 0,      // 0x0814 in 4.3.4 @todo : Find me and BACON !
-    SMSG_EMOTE                                        = 0xC3E,  // 5.0.5 16048
+    SMSG_EMOTE                                        = 0xD8B,  // 5.4.1 17538
     SMSG_ENABLE_BARBER_SHOP                           = 0xC19,  // 5.0.5 16048
     SMSG_ENCHANTMENTLOG                               = 0xC49,  // 5.0.5 16048
     SMSG_ENVIRONMENTALDAMAGELOG                       = 0x951,  // 5.0.5 16048
@@ -1406,7 +1406,7 @@ enum Opcodes
     SMSG_WHO                                          = 0x933,  // 5.0.5 16048
     SMSG_WHOIS                                        = 0x943,  // 5.0.5 16048
     SMSG_WORLD_SERVER_INFO                            = 0x0427, // 5.4.1 17538
-    SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0xD83,  // 5.0.5 16048
+    SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x05AC, // 5.4.1 17538
     SMSG_XP_GAIN_ABORTED                              = 0xB76,  // 5.0.5 16048
     SMSG_ZONE_UNDER_ATTACK                            = 0x8BD,  // 5.0.5 16048
 };

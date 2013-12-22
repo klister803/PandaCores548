@@ -190,13 +190,35 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
 
     recvData >> level_min;                                 // maximal player level, default 0
     recvData >> level_max;                                 // minimal player level, default 100 (MAX_LEVEL)
-    recvData >> player_name;                               // player name, case sensitive...
-
-    recvData >> guild_name;                                // guild name, case sensitive...
-
     recvData >> racemask;                                  // race mask
     recvData >> classmask;                                 // class mask
-    recvData >> zones_count;                               // zones count, client limit = 10 (2.0.10)
+
+    uint32 some_count = recvData.ReadBits(3);
+    uint32 unk1 = recvData.ReadBits(8);
+    recvData.ReadBit();
+    uint32 unk2 = recvData.ReadBits(4);
+    recvData.ReadBit();
+    uint32 unk3 = recvData.ReadBits(7);
+    recvData.ReadBit();
+    recvData.ReadBit();
+    uint32 unk4 = recvData.ReadBits(8);
+    recvData.ReadBit();
+    recvData.ReadBit();
+    uint32 unk5 = recvData.ReadBits(6);
+
+    if (some_count)
+    {
+        for (int i = 0; i < some_count; i++)
+            uint32 unk6 = recvData.ReadBits(7);
+    }
+
+    return;
+
+    if (some_count)
+    {
+        for (int i = 0; i < some_count; i++)
+            uint32 unk6 = recvData.ReadBits(7);
+    }
 
     if (zones_count > 10)
         return;                                             // can't be received from real client or broken packet
@@ -2075,27 +2097,20 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
     uint32 type, count;
     recvPacket >> type;
 
-    count = recvPacket.ReadBits(23);
+    count = recvPacket.ReadBits(21);
 
     ObjectGuid* guids = new ObjectGuid[count];
 
-    uint8 order[8] = { 5, 6, 1, 2, 4, 7, 3, 0 };
     for (uint32 i = 0; i < count; ++i)
-        recvPacket.ReadBitInOrder(guids[i], order);
+        recvPacket.ReadGuidMask<1, 7, 2, 5, 0, 6, 3, 4>(guids[i]);
 
     uint32 entry;
     bool needBreak = false;
     for (uint32 i = 0; i < count; ++i)
     {
-        recvPacket.ReadByteSeq(guids[i][1]);
-        recvPacket.ReadByteSeq(guids[i][5]);
-        recvPacket.ReadByteSeq(guids[i][7]);
-        recvPacket.ReadByteSeq(guids[i][2]);
-        recvPacket.ReadByteSeq(guids[i][3]);
-        recvPacket.ReadByteSeq(guids[i][4]);
-        recvPacket.ReadByteSeq(guids[i][0]);
+        recvPacket.ReadGuidBytes<4, 7, 6, 0, 2, 3>(guids[i]);
         recvPacket >> entry;
-        recvPacket.ReadByteSeq(guids[i][6]);
+        recvPacket.ReadGuidBytes<5, 1>(guids[i]);
 
         switch (type)
         {
