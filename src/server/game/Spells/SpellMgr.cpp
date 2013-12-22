@@ -3562,6 +3562,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72293: // Mark of the Fallen Champion (Deathbringer Saurfang)
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                     break;
+                case 21847: // Snowman
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF1;
+                    break;
                 // Custom MoP Script
                 case 82691: // Ring of Frost
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
