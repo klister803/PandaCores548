@@ -2854,7 +2854,7 @@ void Player::Regenerate(Powers power)
         case POWER_ENERGY:
         {
             float defaultreg = 0.01f * m_regenTimer;
-            addvalue += defaultreg * regenmod * sWorld->getRate(RATE_POWER_ENERGY);
+            addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
             break;
         }
         // Regenerate Runic Power
@@ -2990,7 +2990,7 @@ void Player::Regenerate(Powers power)
         else
             m_powerFraction[powerIndex] = addvalue - integerValue;
     }
-    if (m_regenTimerCount >= 2000 || power == POWER_HOLY_POWER)
+    if (m_regenTimerCount >= 2000 && power != POWER_ENERGY || power == POWER_HOLY_POWER)
         SetPower(power, curValue);
     else
         UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
