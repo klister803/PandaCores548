@@ -980,40 +980,37 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     pCurrChar->SendDungeonDifficulty();
 
     WorldPacket data(SMSG_LOGIN_VERIFY_WORLD, 20);
-    data << pCurrChar->GetMapId();
-    data << pCurrChar->GetPositionX();
-    data << pCurrChar->GetPositionY();
     data << pCurrChar->GetPositionZ();
+    data << pCurrChar->GetPositionY();
+    data << pCurrChar->GetMapId();
     data << pCurrChar->GetOrientation();
+    data << pCurrChar->GetPositionX();
     SendPacket(&data);
 
     // load player specific part before send times
     LoadAccountData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTDATA), PER_CHARACTER_CACHE_MASK);
     SendAccountDataTimes(PER_CHARACTER_CACHE_MASK);
 
-    bool featureBit4 = true;
-    data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 7);         // sent in 5.0.5
-    uint8 fss[18] = {0x02, 0xCA, 0x03, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x2C};
-    for (int i = 0; i < 18; i++)
-        data << fss[i];
+    //data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 7);
+    //data.WriteBit(
    
-    SendPacket(&data);
+    //SendPacket(&data);
 
     // Send MOTD
     {
-        data.Initialize(SMSG_MOTD, 50);                     // new in 2.0.1
-        data << (uint32)0;
-
+        // parsing
+        ByteBuffer bitbuffer;
         uint32 linecount=0;
         std::string str_motd = sWorld->GetMotd();
         std::string::size_type pos, nextpos;
 
         pos = 0;
+        bitbuffer.reserve(str_motd.length());
         while ((nextpos= str_motd.find('@', pos)) != std::string::npos)
         {
             if (nextpos != pos)
             {
-                data << str_motd.substr(pos, nextpos-pos);
+                bitbuffer.WriteBits(nextpos-pos, 7);
                 ++linecount;
             }
             pos = nextpos+1;
@@ -1021,11 +1018,16 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 
         if (pos<str_motd.length())
         {
-            data << str_motd.substr(pos);
+            bitbuffer.WriteBits(str_motd.length()-pos, 7);
             ++linecount;
         }
 
-        data.put(0, linecount);
+        // send to client
+        data.Initialize(SMSG_MOTD, 50);
+        data.WriteBits(linecount, 4);                    // linecount
+        data.FlushBits();
+        data.append(bitbuffer);                          // str length
+        data << str_motd;                                // mess
 
         SendPacket(&data);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent motd (SMSG_MOTD)");

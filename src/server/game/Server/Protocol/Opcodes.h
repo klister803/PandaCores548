@@ -752,7 +752,7 @@ enum Opcodes
     SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0xAD3,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0x000,  // 5.0.5 16048 Deprecated
     SMSG_BINDER_CONFIRM                               = 0x8CC,  // 5.0.5 16048
-    SMSG_BINDPOINTUPDATE                              = 0xC0B,  // 5.0.5 16048
+    SMSG_BINDPOINTUPDATE                              = 0x0517, // 5.4.1 17538
     SMSG_BINDZONEREPLY                                = 0x000,  // Not found in 4.3.4
     SMSG_BREAK_TARGET                                 = 0x969,  // 5.0.5 16048
     SMSG_BUY_BANK_SLOT_RESULT                         = 0,      // Not found in 4.3.4
@@ -879,7 +879,7 @@ enum Opcodes
     SMSG_EXPECTED_SPAM_RECORDS                        = 0xC4D,  // 5.0.5 16048
     SMSG_EXPLORATION_EXPERIENCE                       = 0xC38,  // 5.0.5 16048
     SMSG_FAILED_PLAYER_CONDITION                      = 0xA46,  // 5.0.5 16048
-    SMSG_FEATURE_SYSTEM_STATUS                        = 0xB5B,  // 5.0.5 16048
+    SMSG_FEATURE_SYSTEM_STATUS                        = 0x142C, // 5.4.1 17538
     SMSG_FEIGN_DEATH_RESISTED                         = 0xD7D,  // 5.0.5 16048
     SMSG_FISH_ESCAPED                                 = 0x875,  // 5.0.5 16048
     SMSG_FISH_NOT_HOOKED                              = 0x8E2,  // 5.0.5 16048
@@ -977,7 +977,7 @@ enum Opcodes
     SMSG_GUILD_XP_UPDATE                              = 0,      // Not found in 4.3.4
     SMSG_HEALTH_UPDATE                                = 0x841,  // 5.0.5 16048
     SMSG_HIGHEST_THREAT_UPDATE                        = 0xD1A,  // 5.0.5 16048
-    SMSG_HOTFIX_INFO                                  = 0xF86,  // 5.0.5 16048
+    SMSG_HOTFIX_INFO                                  = 0x0C27, // 5.4.1 17538
     SMSG_HOTFIX_NOTIFY                                = 0xEE0,  // 5.0.5 16048
     SMSG_INITIALIZE_FACTIONS                          = 0x824,  // 5.0.5 16048
     SMSG_INIT_CURRENCY                                = 0xAE5,  // 5.0.5 16048
@@ -1044,7 +1044,7 @@ enum Opcodes
     SMSG_LOAD_CUF_PROFILES                            = 0xFC9,  // 5.0.5 16048
     SMSG_LF_GUILD_SEARCH_RESULT                       = 0,      // Not found in TC
     SMSG_LOGIN_SETTIMESPEED                           = 0x0D17, // 5.4.1 17538
-    SMSG_LOGIN_VERIFY_WORLD                           = 0xD33,  // 5.0.5 16048
+    SMSG_LOGIN_VERIFY_WORLD                           = 0x0C24, // 5.4.1 17538
     SMSG_LOGOUT_CANCEL_ACK                            = 0x0417, // 5.4.0 17399
     SMSG_LOGOUT_COMPLETE                              = 0x0D95, // 5.4.1 17538
     SMSG_LOGOUT_RESPONSE                              = 0x08B5, // 5.4.1 17538
@@ -1077,7 +1077,7 @@ enum Opcodes
     SMSG_MODIFY_COOLDOWN                              = 0x9C7,  // 5.0.5 16048
     SMSG_MONSTER_MOVE                                 = 0x0216, // 5.4.1 17538
     SMSG_MONSTER_MOVE_TRANSPORT                       = 0xC35,  // 5.0.5 16048
-    SMSG_MOTD                                         = 0x952,  // 5.0.5 16048
+    SMSG_MOTD                                         = 0x04AC, // 5.4.1 17538
     SMSG_MOUNTRESULT                                  = 0x9D9,  // 5.0.5 16048
     SMSG_MOUNTSPECIAL_ANIM                            = 0x976,  // 5.0.5 16048
     SMSG_MOVE_COLLISION_DISABLE                       = 0xA16,  // 5.0.5 16048

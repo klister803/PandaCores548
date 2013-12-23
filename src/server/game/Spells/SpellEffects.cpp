@@ -6832,11 +6832,11 @@ void Spell::EffectBind(SpellEffIndex effIndex)
     player->SetHomebind(loc, area_id);
 
     // binding
-    WorldPacket data(SMSG_BINDPOINTUPDATE, (4+4+4+4+4));
-    data << float(loc.m_positionX);
-    data << float(loc.m_positionY);
+    WorldPacket data(SMSG_BINDPOINTUPDATE, 20);
     data << float(loc.m_positionZ);
+    data << float(loc.m_positionY);
     data << uint32(loc.m_mapId);
+    data << float(loc.m_positionX);
     data << uint32(area_id);
     player->SendDirectMessage(&data);
 
