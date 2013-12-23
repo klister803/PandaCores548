@@ -746,6 +746,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
+    m_baseMHastRatingPct = 0;
     m_weaponChangeTimer = 0;
 
     m_zoneUpdateId = 0;

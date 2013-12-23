@@ -778,6 +778,14 @@ void Player::ApplyHealthRegenBonus(int32 amount, bool apply)
     _ModifyUInt32(apply, m_baseHealthRegen, amount);
 }
 
+void Player::UpdateEnergyRegen()
+{
+    float auramod = GetTotalAuraMultiplier(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
+    float val = 1.0f / m_baseMHastRatingPct / auramod;
+
+    SetFloatValue(UNIT_MOD_HASTE_REGEN, val);
+}
+
 void Player::UpdateManaRegen()
 {
     // Mana regen from spirit
@@ -838,6 +846,8 @@ void Player::UpdateMeleeHastMod()
 {
     float amount = GetRatingBonusValue(CR_HASTE_MELEE);
 
+    m_baseMHastRatingPct = amount / 100.0f + 1.0f;
+
     std::list<AuraType> auratypelist;
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE);
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE_2);
@@ -859,6 +869,9 @@ void Player::UpdateMeleeHastMod()
 
     if (getClass() == CLASS_DEATH_KNIGHT)
         UpdateAllRunesRegen();
+
+    if (GetPower(POWER_ENERGY))
+        UpdateEnergyRegen();
 }
 
 
