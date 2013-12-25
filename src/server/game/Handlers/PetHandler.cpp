@@ -904,7 +904,7 @@ void WorldSession::HandleLearnPetSpecialization(WorldPacket & recvData)
         return;
 
     Pet* pet = _player->GetPet();
-    if (!pet)
+    if (!pet || !pet->isAlive())
         return;
 
     if(pet->GetSpecializationId())
