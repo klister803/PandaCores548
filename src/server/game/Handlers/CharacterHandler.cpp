@@ -991,42 +991,53 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     LoadAccountData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTDATA), PER_CHARACTER_CACHE_MASK);
     SendAccountDataTimes(PER_CHARACTER_CACHE_MASK);
 
-    //data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 7);
-    //data.WriteBit(
+    data.Initialize(SMSG_FEATURE_SYSTEM_STATUS);
+    // send whole packet because blizz features are not used in private servers
+    uint8 fss[35] = {0x82, 0xE0, 0x59, 0x06, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x00, 0x00,
+        0x60, 0xEA, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xB7, 0x37, 0x21, 0x01, 0x2B, 0x00, 0x00, 0x00, 0x02};
+    for (int i = 0; i < 35; i++)
+        data << fss[i];
    
-    //SendPacket(&data);
+    SendPacket(&data);
 
     // Send MOTD
     {
-        // parsing
-        ByteBuffer bitbuffer;
+        data.Initialize(SMSG_MOTD);
+        uint32 bit_pos = data.bitwpos();
+        data.WriteBits(0, 4);                    // placeholder
+
         uint32 linecount=0;
         std::string str_motd = sWorld->GetMotd();
         std::string::size_type pos, nextpos;
 
         pos = 0;
-        bitbuffer.reserve(str_motd.length());
+        bool first = false;
         while ((nextpos= str_motd.find('@', pos)) != std::string::npos)
         {
             if (nextpos != pos)
             {
-                bitbuffer.WriteBits(nextpos-pos, 7);
+                if (!first)
+                {
+                    first = true;
+                    data.WriteBits(nextpos-pos, 7);
+                }
+                else
+                    data.WriteBits(nextpos-pos+1, 7);
                 ++linecount;
             }
+
+            str_motd.replace(nextpos, 1, "");
             pos = nextpos+1;
         }
 
         if (pos<str_motd.length())
         {
-            bitbuffer.WriteBits(str_motd.length()-pos, 7);
+            data.WriteBits(str_motd.length()-pos+1, 7);
             ++linecount;
         }
 
-        // send to client
-        data.Initialize(SMSG_MOTD, 50);
-        data.WriteBits(linecount, 4);                    // linecount
+        data.PutBits<uint32>(bit_pos, linecount, 4);
         data.FlushBits();
-        data.append(bitbuffer);                          // str length
         data << str_motd;                                // mess
 
         SendPacket(&data);

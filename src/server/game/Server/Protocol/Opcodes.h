@@ -668,11 +668,11 @@ enum Opcodes
     SMSG_ADDON_INFO                                   = 0x1136, // 5.4.1 17538
     SMSG_ADD_RUNE_POWER                               = 0x86A,  // 5.0.5 16048
     SMSG_AI_REACTION                                  = 0x828,  // 5.0.5 16048
-    SMSG_ALL_ACHIEVEMENT_DATA                         = 0xB64,  // 5.0.5 16048
+    SMSG_ALL_ACHIEVEMENT_DATA                         = 0x005,  // 5.4.1 17538
     SMSG_AREA_SPIRIT_HEALER_TIME                      = 0xD1D,  // 5.0.5 16048
     SMSG_AREA_TRIGGER_MESSAGE                         = 0xC31,  // 5.0.5 16048
     SMSG_AREA_TRIGGER_MOVEMENT_UPDATE                 = 0xFB8,  // 5.0.5 16048
-    SMSG_AREA_TRIGGER_RESET                           = 0xB9B, // 5.0.5 16048
+    SMSG_AREA_TRIGGER_RESET                           = 0xB9B,  // 5.0.5 16048
     SMSG_ARENA_ERROR                                  = 0xCA5,  // 5.0.5 16048
     SMSG_ARENA_OPPONENT_UPDATE                        = 0xDA7,  // 5.0.5 16048
     SMSG_ARENA_TEAM_CHANGE_FAILED_QUEUED              = 0x9C2,  // 5.0.5 16048
@@ -684,7 +684,7 @@ enum Opcodes
     SMSG_ARENA_TEAM_STATS                             = 0xDD6,  // 5.0.5 16048
     SMSG_ATTACKERSTATEUPDATE                          = 0x182B, // 5.4.1 17538
     SMSG_ATTACKSTART                                  = 0x992,  // 5.0.5 16048
-    SMSG_ATTACKSTOP                                   = 0x848,  // 5.0.5 16048
+    SMSG_ATTACKSTOP                                   = 0xD3C,  // 5.4.1 17538
     SMSG_ATTACKSWING_BADFACING                        = 0x898,  // 5.0.5 16048
     SMSG_ATTACKSWING_CANT_ATTACK                      = 0x8AC,  // 5.0.5 16048
     SMSG_ATTACKSWING_DEADTARGET                       = 0xC2B,  // 5.0.5 16048
@@ -837,7 +837,7 @@ enum Opcodes
     SMSG_CORPSE_RECLAIM_DELAY                         = 0xC9E,  // 5.0.5 16048
     SMSG_CREATURE_QUERY_RESPONSE                      = 0x011C, // 5.4.1 17538
     SMSG_CRITERIA_DELETED                             = 0xC5B,  // 5.0.5 16048
-    SMSG_CRITERIA_UPDATE                              = 0x90D,  // 5.0.5 16048
+    SMSG_CRITERIA_UPDATE                              = 0x837,  // 5.4.1 17538
     SMSG_CROSSED_INEBRIATION_THRESHOLD                = 0xCAA,  // 5.0.5 16048
     SMSG_CURRENCY_LOOT_REMOVED                        = 0xE01,  // 5.0.5 16048
     SMSG_CURRENCY_LOOT_RESTORED                       = 0x000,  // 5.0.5 16048 Deprecated
@@ -976,7 +976,7 @@ enum Opcodes
     SMSG_GUILD_XP_GAIN                                = 0xEF8,  // 5.0.5 16048
     SMSG_GUILD_XP_UPDATE                              = 0,      // Not found in 4.3.4
     SMSG_HEALTH_UPDATE                                = 0x841,  // 5.0.5 16048
-    SMSG_HIGHEST_THREAT_UPDATE                        = 0xD1A,  // 5.0.5 16048
+    SMSG_HIGHEST_THREAT_UPDATE                        = 0x1436, // 5.4.1 17538
     SMSG_HOTFIX_INFO                                  = 0x0C27, // 5.4.1 17538
     SMSG_HOTFIX_NOTIFY                                = 0xEE0,  // 5.0.5 16048
     SMSG_INITIALIZE_FACTIONS                          = 0x824,  // 5.0.5 16048
@@ -1140,7 +1140,7 @@ enum Opcodes
     SMSG_PARTY_MEMBER_STATS                           = 0xCBA,  // 5.0.5 16048
     SMSG_PARTY_MEMBER_STATS_FULL                      = 0x912,  // 5.0.5 16048
     SMSG_PAUSE_MIRROR_TIMER                           = 0x8E9,  // 5.0.5 16048 
-    SMSG_PERIODICAURALOG                              = 0xCCF,  // 5.0.5 16048
+    SMSG_PERIODICAURALOG                              = 0x449,  // 5.4.1 17538
     SMSG_PETGODMODE                                   = 0x9E4,  // 5.0.5 16048
     SMSG_PETITION_ALREADY_SIGNED                      = 0xAA8,  // 5.0.5 16048
     SMSG_PETITION_QUERY_RESPONSE                      = 0xC62,  // 5.0.5 16048
@@ -1199,7 +1199,7 @@ enum Opcodes
     SMSG_QUESTGIVER_QUEST_INVALID                     = 0x8C0,  // 5.0.5 16048
     SMSG_QUESTGIVER_QUEST_LIST                        = 0x877,  // 5.0.5 16048
     SMSG_QUESTGIVER_REQUEST_ITEMS                     = 0x8EE,  // 5.0.5 16048
-    SMSG_QUESTGIVER_STATUS                            = 0xDB8,  // 5.0.5 16048
+    SMSG_QUESTGIVER_STATUS                            = 0x25D,  // 5.4.1 17538
     SMSG_QUESTGIVER_STATUS_MULTIPLE                   = 0xD6D,  // 5.0.5 16048
     SMSG_QUESTLOG_FULL                                = 0xC54,  // 5.0.5 16048
     SMSG_QUESTUPDATE_ADD_ITEM                         = 0,      // Not found in 4.3.4
@@ -1289,7 +1289,7 @@ enum Opcodes
     SMSG_SPELLINTERRUPTLOG                            = 0xF8A,  // 5.0.5 16048
     SMSG_SPELLLOGEXECUTE                              = 0xC72,  // 5.0.5 16048
     SMSG_SPELLLOGMISS                                 = 0x854,  // 5.0.5 16048
-    SMSG_SPELLNONMELEEDAMAGELOG                       = 0x9F4,  // 5.0.5 16048
+    SMSG_SPELLNONMELEEDAMAGELOG                       = 0x9E0,  // 5.4.1 17538
     SMSG_SPELLORDAMAGE_IMMUNE                         = 0X977,  // 5.0.5 16048
     SMSG_SPELLSTEALLOG                                = 0xDAC,  // 5.0.5 16048
     SMSG_SPELL_CATEGORY_COOLDOWN                      = 0x000,  // 5.0.5 16048 Unused
@@ -1347,7 +1347,7 @@ enum Opcodes
     SMSG_TEXT_EMOTE                                   = 0x880,  // 5.0.5 16048
     SMSG_THREAT_CLEAR                                 = 0xC9B,  // 5.0.5 16048
     SMSG_THREAT_REMOVE                                = 0x9BF,  // 5.0.5 16048
-    SMSG_THREAT_UPDATE                                = 0xDB0,  // 5.0.5 16048
+    SMSG_THREAT_UPDATE                                = 0x118D, // 5.4.1 17538
     SMSG_TIME_ADJUSTMENT                              = 0xF3A,  // 5.0.5 16048
     SMSG_TIME_SYNC_REQ                                = 0x1197, // 5.4.1 17538
     SMSG_TITLE_EARNED                                 = 0x94B,  // 5.0.5 16048
@@ -1398,7 +1398,7 @@ enum Opcodes
     SMSG_WARDEN_DATA                                  = 0xEA8,  // 5.0.5 16048
     SMSG_WARGAME_CHECK_ENTRY                          = 0xBE6,  // 5.0.5 16048
     SMSG_WARGAME_REQUEST_SENT                         = 0xF48,  // 5.0.5 16048
-    SMSG_WEATHER                                      = 0x814,  // 5.0.5 16048
+    SMSG_WEATHER                                      = 0x485,  // 5.4.1 17538
     SMSG_WEEKLY_LAST_RESET                            = 0xB2D,  // 5.0.5 16048
     SMSG_WEEKLY_RESET_CURRENCY                        = 0xEBB,  // 5.0.5 16048
     SMSG_WEEKLY_SPELL_USAGE                           = 0xB6D,  // 5.0.5 16048 //unused
