@@ -1007,6 +1007,29 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 }
+                case 126646: // Item - Stuff of Nightmares
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
+                    {
+                        if (Item * item = player->GetItemByGuid(itmGuid))
+                        {
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 483: amount = 6121; break; // Raid Finder
+                                case 496: amount = 6908; break; // Normal
+                                case 509: amount = 7796; break; // Heroic
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                }
                 default:
                     break;
             }
