@@ -2410,8 +2410,12 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
                 if (form != FORM_BEAR)
                     target->RemoveAurasDueToSpell(76691);
 
-                // remove snare affects
-                target->RemoveAurasWithMechanic(1<<MECHANIC_SNARE);
+                // remove movement affects
+                uint32 mechanicMask = (1 << MECHANIC_SNARE);
+                if (target->HasAura(96429) || form == FORM_MOONKIN)
+                    mechanicMask |= (1 << MECHANIC_ROOT);
+
+                target->RemoveAurasWithMechanic(mechanicMask);
 
                 // and polymorphic affects
                 if (target->IsPolymorphed())
@@ -2456,8 +2460,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             if (target->getClass() == CLASS_DRUID)
             {
                 target->setPowerType(POWER_MANA);
-                // Remove snare effects also when shifting out
-                target->RemoveAurasWithMechanic(1<<MECHANIC_SNARE);
+                // Remove movement impairing effects also when shifting out
+                target->RemoveMovementImpairingAuras();
             }
         }
 
