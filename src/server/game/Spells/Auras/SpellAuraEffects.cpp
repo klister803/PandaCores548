@@ -984,31 +984,31 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 }
-                default:
-                    break;
-            }
-            case 126533: // Item - Vial of Dragon's Blood
-            {
-                uint64 itmGuid = GetBase()->GetCastItemGUID();
-
-                if (!caster)
-                    break;
-
-                if (Player * player = caster->ToPlayer())
+                case 126533: // Item - Vial of Dragon's Blood
                 {
-                    if (Item * item = player->GetItemByGuid(itmGuid))
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
                     {
-                        switch (item->GetTemplate()->ItemLevel)
+                        if (Item * item = player->GetItemByGuid(itmGuid))
                         {
-                            case 476: amount = 2866; break; // Raid Finder
-                            case 489: amount = 3236; break; // Normal
-                            case 502: amount = 3653; break; // Heroic
-                            default:
-                                break;
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 476: amount = 2866; break; // Raid Finder
+                                case 489: amount = 3236; break; // Normal
+                                case 502: amount = 3653; break; // Heroic
+                                default:
+                                    break;
+                            }
                         }
                     }
+                    break;
                 }
-                break;
+                default:
+                    break;
             }
             break;
         }
