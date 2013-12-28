@@ -984,31 +984,54 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 }
-                default:
-                    break;
-            }
-            case 126533: // Item - Vial of Dragon's Blood
-            {
-                uint64 itmGuid = GetBase()->GetCastItemGUID();
-
-                if (!caster)
-                    break;
-
-                if (Player * player = caster->ToPlayer())
+                case 126533: // Item - Vial of Dragon's Blood
                 {
-                    if (Item * item = player->GetItemByGuid(itmGuid))
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
                     {
-                        switch (item->GetTemplate()->ItemLevel)
+                        if (Item * item = player->GetItemByGuid(itmGuid))
                         {
-                            case 476: amount = 2866; break; // Raid Finder
-                            case 489: amount = 3236; break; // Normal
-                            case 502: amount = 3653; break; // Heroic
-                            default:
-                                break;
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 476: amount = 2866; break; // Raid Finder
+                                case 489: amount = 3236; break; // Normal
+                                case 502: amount = 3653; break; // Heroic
+                                default:
+                                    break;
+                            }
                         }
                     }
+                    break;
                 }
-                break;
+                case 126646: // Item - Stuff of Nightmares
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
+                    {
+                        if (Item * item = player->GetItemByGuid(itmGuid))
+                        {
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 483: amount = 6121; break; // Raid Finder
+                                case 496: amount = 6908; break; // Normal
+                                case 509: amount = 7796; break; // Heroic
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
             }
             break;
         }

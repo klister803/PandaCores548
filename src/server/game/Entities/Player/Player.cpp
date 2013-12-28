@@ -747,6 +747,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_burningEmbersRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_baseMHastRatingPct = 0;
+    m_doLastUpdate = false;
     m_weaponChangeTimer = 0;
 
     m_zoneUpdateId = 0;
@@ -2820,6 +2821,7 @@ void Player::Regenerate(Powers power)
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
     float regenmod = 1.0f / GetFloatValue(UNIT_MOD_CAST_HASTE);
+    bool  needUpdate = false;
 
     switch (power)
     {
@@ -2855,6 +2857,7 @@ void Player::Regenerate(Powers power)
         {
             float defaultreg = 0.01f * m_regenTimer;
             addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
+            needUpdate = true;
             break;
         }
         // Regenerate Runic Power
@@ -2956,7 +2959,7 @@ void Player::Regenerate(Powers power)
     }
     else if (addvalue > 0.0f)
     {
-        if (curValue == maxValue)
+        if (curValue == maxValue && !needUpdate)
             return;
     }
     else
@@ -2990,10 +2993,56 @@ void Player::Regenerate(Powers power)
         else
             m_powerFraction[powerIndex] = addvalue - integerValue;
     }
-    if (m_regenTimerCount >= 2000 && power != POWER_ENERGY || power == POWER_HOLY_POWER)
-        SetPower(power, curValue);
-    else
-        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+
+    switch (power)
+    {
+        case POWER_ENERGY:
+        {
+            if (GetPower(POWER_ENERGY) != maxValue || m_doLastUpdate)
+            {
+                if (m_regenTimerCount >= 2000)
+                {
+                    UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+
+                    if (IsInWorld())
+                    {
+                        WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
+                        data.append(GetPackGUID());
+                        data << uint32(1);
+                        data << uint8(power);
+                        data << int32(curValue);
+                        SendMessageToSet(&data, false);
+                    }
+                    m_doLastUpdate = false;
+                }
+                else
+                {
+                    if (!m_doLastUpdate)
+                    {
+                        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+                        if (curValue == maxValue)
+                        {
+                            m_doLastUpdate = true;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case POWER_HOLY_POWER:
+        {
+            SetPower(power, curValue);
+            break;
+        }
+        default:
+        {
+            if (m_regenTimerCount >= 2000)
+                SetPower(power, curValue);
+            else
+                UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+            break;
+        }
+    }
 }
 
 void Player::RegenerateHealth()

@@ -7428,6 +7428,8 @@ int32 Spell::CalculateMonkSpellDamage(Unit* caster, float coeff, float APmultipl
     MHmin *= coeff;
     MHmin += AP - base;
 
+    if (MHmin <= 0) MHmin = 1.0f;
+
     MHmax *= coeff;
     MHmax += AP + base;
 
