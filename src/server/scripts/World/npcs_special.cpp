@@ -3864,32 +3864,6 @@ public:
 };
 
 /*######
-# npc_demonic_gateway_purple
-######*/
-
-class npc_demonic_gateway_purple : public CreatureScript
-{
-    public:
-        npc_demonic_gateway_purple() : CreatureScript("npc_demonic_gateway_purple") { }
-
-        struct npc_demonic_gateway_purpleAI : public ScriptedAI
-        {
-            npc_demonic_gateway_purpleAI(Creature* creature) : ScriptedAI(creature)
-            {
-                Unit* owner = creature->GetOwner();
-
-                if (owner)
-                    creature->CastSpell(creature, 113901, true); // Periodic add charge
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_demonic_gateway_purpleAI(creature);
-        }
-};
-
-/*######
 # new npc_demonic_gateway_green
 ######*/
 
@@ -3902,27 +3876,101 @@ class npc_demonic_gateway_green : public CreatureScript
         {
             npc_demonic_gateway_greenAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
+                me->SetReactState(REACT_PASSIVE);
             }
 
-            void IsSummonedBy(Unit* owner)
+            void OnSpellClick(Unit* who)
             {
-                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                if (who && who->GetTypeId() == TYPEID_PLAYER)
                 {
-                    me->SetLevel(owner->getLevel());
-                    me->SetMaxHealth(owner->GetMaxHealth() / 2);
-                    me->SetHealth(me->GetMaxHealth());
-                    // Set no damage
-                    me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
-                    me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
+                    if(!who->HasAura(113942))
+                    {
+                        if (me->ToTempSummon())
+                        if (Unit* owner = me->ToTempSummon()->GetSummoner())
+                        {
+                            Player* ownerPlayer = owner->ToPlayer();
+                            Player* whoPlayer = who->ToPlayer();
+                            if(!ownerPlayer || !whoPlayer)
+                                return;
+
+                            if (ownerPlayer->IsGroupVisibleFor(whoPlayer))
+                            if (Aura* aurastack = owner->GetAura(113901))
+                            {
+                                uint32 stacks = aurastack->GetCharges();
+                                if(stacks > 1 && owner->m_SummonSlot[3])
+                                {
+                                    if(Unit* gate = ObjectAccessor::GetUnit(*me, owner->m_SummonSlot[3]))
+                                    {
+                                        aurastack->ModCharges(-1);
+                                        aurastack->GetEffect(0)->ChangeAmount(stacks - 1);
+                                        who->CastSpell(gate, 113896, true);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                me->SetReactState(REACT_PASSIVE);
-                me->CastSpell(me, 113901, true); // Periodic add charges
             }
         };
 
         CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_demonic_gateway_greenAI(creature);
+        }
+};
+/*######
+# new npc_demonic_gateway_purge
+######*/
+
+class npc_demonic_gateway_purge : public CreatureScript
+{
+    public:
+        npc_demonic_gateway_purge() : CreatureScript("npc_demonic_gateway_purge") { }
+
+        struct npc_demonic_gateway_purgeAI : public Scripted_NoMovementAI
+        {
+            npc_demonic_gateway_purgeAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void OnSpellClick(Unit* who)
+            {
+                if (who && who->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if(!who->HasAura(113942))
+                    {
+                        if (me->ToTempSummon())
+                        if (Unit* owner = me->ToTempSummon()->GetSummoner())
+                        {
+                            Player* ownerPlayer = owner->ToPlayer();
+                            Player* whoPlayer = who->ToPlayer();
+                            if(!ownerPlayer || !whoPlayer)
+                                return;
+
+                            if (ownerPlayer->IsGroupVisibleFor(whoPlayer))
+                            if (Aura* aurastack = owner->GetAura(113901))
+                            {
+                                uint32 stacks = aurastack->GetCharges();
+                                if(stacks > 1 && owner->m_SummonSlot[1])
+                                {
+                                    if(Unit* gate = ObjectAccessor::GetUnit(*me, owner->m_SummonSlot[1]))
+                                    {
+                                        aurastack->ModCharges(-1);
+                                        aurastack->GetEffect(0)->ChangeAmount(stacks - 1);
+                                        who->CastSpell(gate, 120729, true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_demonic_gateway_purgeAI(creature);
         }
 };
 
@@ -4958,8 +5006,8 @@ void AddSC_npcs_special()
     new npc_frozen_orb();
     new npc_guardian_of_ancient_kings();
     new npc_power_word_barrier();
-    new npc_demonic_gateway_purple();
     new npc_demonic_gateway_green();
+    new npc_demonic_gateway_purge();
     new npc_xuen_the_white_tiger();
     new npc_murder_of_crows();
     new npc_dire_beast();

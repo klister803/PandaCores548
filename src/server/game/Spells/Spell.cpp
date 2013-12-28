@@ -568,6 +568,7 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
     m_preCastSpell = 0;
     m_triggeredByAuraSpell  = NULL;
     m_spellAura = NULL;
+    find_target = false;
 
     //Auto Shot & Shoot (wand)
     m_autoRepeat = m_spellInfo->IsAutoRepeatRangedSpell();
@@ -1639,6 +1640,27 @@ void Spell::SelectImplicitChainTargets(SpellEffIndex effIndex, SpellImplicitTarg
     uint32 maxTargets = m_spellInfo->GetEffect(effIndex, m_diffMode).ChainTarget;
     if (Player* modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_JUMP_TARGETS, maxTargets, this);
+
+    // Havoc
+    if (Aura* _aura = m_caster->GetAura(80240))
+    {
+        std::list<Unit*> _targetUnitList;
+        Trinity::AnyUnitHavingBuffInObjectRangeCheck u_check(m_caster, m_caster, 45, 80240, false);
+        Trinity::UnitListSearcher<Trinity::AnyUnitHavingBuffInObjectRangeCheck> searcher(m_caster, _targetUnitList, u_check);
+        m_caster->VisitNearbyObject(40, searcher);
+
+        if ((m_spellInfo->Id == 116858 && _aura->GetStackAmount() > 2) || m_spellInfo->Id != 116858)
+        {
+            for (std::list<Unit*>::const_iterator itr = _targetUnitList.begin(); itr != _targetUnitList.end(); ++itr)
+            {
+                if (Unit* unitTarget = (*itr)->ToUnit())
+                {
+                    AddUnitTarget(unitTarget, effMask, false);
+                    find_target = true;
+                }
+            }
+        }
+    }
 
     if (maxTargets > 1)
     {
@@ -4036,6 +4058,7 @@ void Spell::finish(bool ok)
             if (item->IsEquipable() && !item->IsEquipped())
                 m_caster->ToPlayer()->ApplyItemEquipSpell(item, false);
 
+    // Hack codes
     switch (m_spellInfo->Id)
     {
         case 32379: // Shadow Word: Death
@@ -4068,6 +4091,30 @@ void Spell::finish(bool ok)
             m_caster->CastSpell(m_caster, 90967, true); // Effect cooldown marker
             m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
 
+            break;
+        }
+        case 348:
+        case 29722:
+        case 6789:
+        case 17877:
+        case 77799:
+        case 17962:
+        case 109466:
+        case 116858:
+        {
+            if (find_target)
+            {
+                // Havoc
+                if (Aura* _aura = m_caster->GetAura(80240))
+                {
+                    // Allow only one Chaos Bolt to be duplicated ...
+                    if (m_spellInfo->Id == 116858)
+                        _aura->ModStackAmount(-3);
+                    // ... or allow three next single target spells to be duplicated
+                    else
+                        _aura->ModStackAmount(-1);
+                }
+            }
             break;
         }
         default:
@@ -5279,7 +5326,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_CASTER_AURASTATE;
 
         // Note: spell 62473 requres casterAuraSpell = triggering spell
-        if (!(m_spellInfo->Id == 48020 && m_spellInfo->CasterAuraSpell == 62388) && m_spellInfo->CasterAuraSpell && !m_caster->HasAura(sSpellMgr->GetSpellIdForDifficulty(m_spellInfo->CasterAuraSpell, m_caster)))
+        if (!((m_spellInfo->Id == 48020 || m_spellInfo->Id == 114794) && m_spellInfo->CasterAuraSpell == 62388) && m_spellInfo->CasterAuraSpell && !m_caster->HasAura(sSpellMgr->GetSpellIdForDifficulty(m_spellInfo->CasterAuraSpell, m_caster)))
             return SPELL_FAILED_CASTER_AURASTATE;
         if (m_spellInfo->ExcludeCasterAuraSpell && m_caster->HasAura(sSpellMgr->GetSpellIdForDifficulty(m_spellInfo->ExcludeCasterAuraSpell, m_caster)))
             return SPELL_FAILED_CASTER_AURASTATE;

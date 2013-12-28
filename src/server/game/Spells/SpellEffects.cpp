@@ -1005,8 +1005,13 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 case SPELL_TRIGGER_CHECK_PROCK: //13
                 {
                     triggered_spell_id = abs(spell_trigger);
-                    if(m_caster->HasAura(itr->aura))
-                        triggerCaster->CastSpell(triggerTarget, triggered_spell_id, true);
+                    if(triggerCaster->HasAura(itr->aura))
+                    {
+                        if(spell_trigger > 0)
+                            triggerCaster->CastSpell(triggerTarget, triggered_spell_id, true);
+                        else
+                            triggerCaster->RemoveAura(triggered_spell_id);
+                    }
 
                     check = true;
                     continue;
@@ -1014,6 +1019,23 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 break;
                 case SPELL_TRIGGER_DUMMY: //14
                 {
+                    if(itr->aura > 0)
+                    {
+                        if(!triggerCaster->HasAura(abs(itr->aura)))
+                        {
+                            check = true;
+                            continue;
+                        }
+                    }
+                    else if(itr->aura < 0)
+                    {
+                        if(triggerCaster->HasAura(abs(itr->aura)))
+                        {
+                            check = true;
+                            continue;
+                        }
+                    }
+
                     triggered_spell_id = abs(spell_trigger);
                     if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id))
                     {
@@ -2051,6 +2073,16 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         if (!caster)
             return;
 
+        if (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_SHARE_DAMAGE)
+        {
+            uint32 count = 0;
+            for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+                if (ihit->effectMask & (1<<effIndex))
+                    ++count;
+
+            damage /= count;                    // divide to all targets
+        }
+
         int32 addhealth = damage;
 
         switch (m_spellInfo->Id)
@@ -3011,66 +3043,6 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
         }
     }
 
-    // Demonic Gateway : Remove old summon when cast an other gate
-    if (m_spellInfo->Id == 113890 || m_spellInfo->Id == 113886)
-    {
-        if (m_spellInfo->Id == 113890)
-        {
-            std::list<Creature*> tempList;
-            std::list<Creature*> gatewayList;
-
-            m_caster->GetCreatureListWithEntryInGrid(tempList, 59271, 500.0f);
-
-            if (!tempList.empty())
-            {
-                for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
-                    gatewayList.push_back(*itr);
-
-                // Remove other players mushrooms
-                for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-                {
-                    Unit* owner = (*i)->GetOwner();
-                    if (owner && owner == m_caster && (*i)->isSummon())
-                        continue;
-
-                    gatewayList.remove((*i));
-                }
-
-                // 1 gateway max
-                if ((int32)gatewayList.size() >= 1)
-                    gatewayList.back()->ToTempSummon()->UnSummon();
-            }
-        }
-        else
-        {
-            std::list<Creature*> tempList;
-            std::list<Creature*> gatewayList;
-
-            m_caster->GetCreatureListWithEntryInGrid(tempList, 59262, 500.0f);
-
-            if (!tempList.empty())
-            {
-                for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
-                    gatewayList.push_back(*itr);
-
-                // Remove other players mushrooms
-                for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-                {
-                    Unit* owner = (*i)->GetOwner();
-                    if (owner && owner == m_caster && (*i)->isSummon())
-                        continue;
-
-                    gatewayList.remove((*i));
-                }
-
-                // 1 gateway max
-                if ((int32)gatewayList.size() >= 1)
-                    gatewayList.back()->ToTempSummon()->UnSummon();
-            }
-
-        }
-    }
-
     // Primal Elementalist
     if (m_spellInfo->Id == 33663 || m_spellInfo->Id == 117663)
     {
@@ -3145,6 +3117,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 // Summons a vehicle, but doesn't force anyone to enter it (see SUMMON_CATEGORY_VEHICLE)
                 case SUMMON_TYPE_VEHICLE:
                 case SUMMON_TYPE_VEHICLE2:
+                case SUMMON_TYPE_GATE:
                     summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id);
                     break;
                 case SUMMON_TYPE_TOTEM:

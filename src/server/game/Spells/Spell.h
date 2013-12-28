@@ -460,6 +460,7 @@ class Spell
         int8 m_comboPointGain;
         SpellCustomErrors m_customError;
         uint8 m_diffMode;
+        bool find_target;
 
         UsedSpellMods m_appliedMods;
 

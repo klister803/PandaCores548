@@ -3986,7 +3986,12 @@ enum SummonType
     SUMMON_TYPE_VEHICLE2    = 10,
     SUMMON_TYPE_OBJECT      = 11,
     SUMMON_TYPE_UNK12       = 12,
-    SUMMON_TYPE_UNK13       = 13
+    SUMMON_TYPE_UNK13       = 13,
+    SUMMON_TYPE_GATE        = 14,
+    SUMMON_TYPE_UNK15       = 15,
+    SUMMON_TYPE_UNK16       = 16,
+    SUMMON_TYPE_UNK17       = 17,
+    SUMMON_TYPE_UNK18       = 18,
 };
 
 enum EventId

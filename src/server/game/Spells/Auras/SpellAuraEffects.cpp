@@ -438,7 +438,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModManaRegen,                              //379 SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT
     &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
     &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT
-    &AuraEffect::HandleNULL,                                      //382 SPELL_AURA_MODE_PET_HEALTH_PCT
+    &AuraEffect::HandleAuraModPetHealthPercent,                   //382 SPELL_AURA_MODE_PET_HEALTH_PCT
     &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
     &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
     &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
@@ -4717,6 +4717,33 @@ void AuraEffect::HandleAuraModIncreaseHealthPercent(AuraApplication const* aurAp
         target->SetHealth(target->CountPctFromMaxHealth(int32(percent)));
 }
 
+void AuraEffect::HandleAuraModPetHealthPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+        return;
+
+    if(Unit* target = aurApp->GetTarget())
+    {
+        Guardian* pet = NULL;
+        if (Player* _player = target->ToPlayer())
+            pet = _player->GetGuardianPet();
+
+        pet = target->ToPet();
+        if (pet)
+        {
+            float percent = GetAmount() / 100.0f;
+            if(apply)
+            {
+                int32 health = int32(pet->GetMaxHealth() + int32(pet->GetMaxHealth() * percent));
+                pet->SetMaxHealth(health);
+                pet->SetHealth(health);
+            }
+            else
+                pet->UpdateMaxHealth();
+        }
+    }
+}
+
 void AuraEffect::HandleAuraIncreaseBaseHealthPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
@@ -7006,16 +7033,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
                 caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
             }
-            // Seed of Corruption ...
-            if (Aura* seedOfCorruption = target->GetAura(27243, caster->GetGUID()))
-            {
-                afflictionSpell = sSpellMgr->GetSpellInfo(27243);
-                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
-                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
-                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
-
-                caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
-            }
             // Agony ...
             if (Aura* agony = target->GetAura(980, caster->GetGUID()))
             {
@@ -7070,18 +7087,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                         AddPct(afflictionDamage, 50);
 
                     caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
-                }
-                // Seed of Corruption ...
-                if (Aura* seedOfCorruption = target->GetAura(27243, caster->GetGUID()))
-                {
-                    afflictionSpell = sSpellMgr->GetSpellInfo(27243);
-                    afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
-                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
-
-                    if (grimoireOfSacrifice)
-                        AddPct(afflictionDamage, 50);
-
-                    caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
                 }
                 // Agony ...
                 if (Aura* agony = target->GetAura(980, caster->GetGUID()))

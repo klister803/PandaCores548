@@ -785,6 +785,9 @@ enum UnitTypeMask
     UNIT_MASK_HUNTER_PET            = 0x00000080,
     UNIT_MASK_CONTROLABLE_GUARDIAN  = 0x00000100,
     UNIT_MASK_ACCESSORY             = 0x00000200,
+    UNIT_MASK_UNK                   = 0x00000400,
+    UNIT_MASK_UNK2                  = 0x00000800,
+    UNIT_MASK_UNK3                  = 0x000001000,
 };
 
 namespace Movement{

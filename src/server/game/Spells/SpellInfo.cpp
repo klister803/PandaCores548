@@ -1525,7 +1525,6 @@ bool SpellInfo::IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInf
         case SPELL_SPECIFIC_BANE:
         case SPELL_SPECIFIC_ASPECT:
         case SPELL_SPECIFIC_JUDGEMENT:
-        case SPELL_SPECIFIC_WARLOCK_CORRUPTION:
         case SPELL_SPECIFIC_CHAKRA:
             return spellSpec == spellInfo->GetSpellSpecific();
         default:
@@ -2210,13 +2209,13 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
         }
         case SPELLFAMILY_WARLOCK:
         {
-            // only warlock curses have this
-            if (Dispel == DISPEL_CURSE && Id != 980)
-                return SPELL_SPECIFIC_CURSE;
+            // Agony, Doom (Metamorphosis) and Havoc are no longer curses
+            if (Id == 980 || Id == 603 || Id == 80240)
+                return SPELL_SPECIFIC_BANE;
 
-            // seed of corruption and corruption
-            if (SpellFamilyFlags[1] & 0x10 || SpellFamilyFlags[0] & 0x2)
-                return SPELL_SPECIFIC_WARLOCK_CORRUPTION;
+            // only warlock curses have this
+            if (Dispel == DISPEL_CURSE)
+                return SPELL_SPECIFIC_CURSE;
             break;
         }
         case SPELLFAMILY_PRIEST:

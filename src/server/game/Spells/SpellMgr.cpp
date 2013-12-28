@@ -875,11 +875,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
         }
     }
 
-    if (procExtra & (PROC_EX_INTERNAL_REQ_FAMILY))
-    {
-        if (!hasFamilyMask)
-            return false;
-    }
+
 
     // Check for extra req (if none) and hit/crit
     if (procEvent_procEx == PROC_EX_NONE)
@@ -2512,8 +2508,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTriggeredMap.clear();    // need for reload case
     mSpellTriggeredDummyMap.clear();    // need for reload case
 
-    //                                                    0           1             2           3       4      5      6         7           8
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger`");
+    //                                                    0           1             2           3         4          5          6      7      8         9          10
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2529,11 +2525,13 @@ void SpellMgr::LoadSpellTriggered()
         int32 spell_trigger = fields[1].GetInt32();
         int32 option = fields[2].GetInt32();
         int32 target = fields[3].GetInt32();
-        float bp0 = fields[4].GetFloat();
-        float bp1 = fields[5].GetFloat();
-        float bp2 = fields[6].GetFloat();
-        int32 effectmask = fields[7].GetInt32();
-        int32 aura = fields[8].GetInt32();
+        int32 caster = fields[4].GetInt32();
+        int32 targetaura = fields[5].GetInt32();
+        float bp0 = fields[6].GetFloat();
+        float bp1 = fields[7].GetFloat();
+        float bp2 = fields[8].GetFloat();
+        int32 effectmask = fields[9].GetInt32();
+        int32 aura = fields[10].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2553,6 +2551,8 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.spell_trigger = spell_trigger;
         temptrigger.option = option;
         temptrigger.target = target;
+        temptrigger.caster = caster;
+        temptrigger.targetaura = targetaura;
         temptrigger.bp0 = bp0;
         temptrigger.bp1 = bp1;
         temptrigger.bp2 = bp2;
@@ -2564,8 +2564,8 @@ void SpellMgr::LoadSpellTriggered()
     } while (result->NextRow());
 
 
-    //                                                    0           1             2           3       4      5      6         7           8
-    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger_dummy`");
+    //                                        0             1             2         3         4          5          6      7      8         9          10
+    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger_dummy`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2580,11 +2580,13 @@ void SpellMgr::LoadSpellTriggered()
         int32 spell_trigger = fields[1].GetInt32();
         int32 option = fields[2].GetInt32();
         int32 target = fields[3].GetInt32();
-        float bp0 = fields[4].GetFloat();
-        float bp1 = fields[5].GetFloat();
-        float bp2 = fields[6].GetFloat();
-        int32 effectmask = fields[7].GetInt32();
-        int32 aura = fields[8].GetInt32();
+        int32 caster = fields[4].GetInt32();
+        int32 targetaura = fields[5].GetInt32();
+        float bp0 = fields[6].GetFloat();
+        float bp1 = fields[7].GetFloat();
+        float bp2 = fields[8].GetFloat();
+        int32 effectmask = fields[9].GetInt32();
+        int32 aura = fields[10].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2598,6 +2600,8 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.spell_trigger = spell_trigger;
         temptrigger.option = option;
         temptrigger.target = target;
+        temptrigger.caster = caster;
+        temptrigger.targetaura = targetaura;
         temptrigger.bp0 = bp0;
         temptrigger.bp1 = bp1;
         temptrigger.bp2 = bp2;
@@ -3849,24 +3853,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                     break;
                 case 111771:// Demonic Gateway
+                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[1].TriggerSpell = 0;
                     spellInfo->Effects[2].Effect = 0;
                     spellInfo->Effects[2].TriggerSpell = 0;
-                    break;
-                case 117828:// Backdraft
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
-                    spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
-                    spellInfo->Effects[0].BasePoints = -30;
-                    spellInfo->Effects[0].SpellClassMask[1] |= 0x2000;
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
-                    spellInfo->Effects[1].MiscValue = SPELLMOD_COST;
-                    spellInfo->Effects[1].BasePoints = -30;
-                    spellInfo->Effects[1].SpellClassMask[1] |= 0x80;
-                    spellInfo->Effects[1].SpellClassMask[0] |= 0x1000;
-                    spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
-                    spellInfo->Effects[2].MiscValue = SPELLMOD_CASTING_TIME;
-                    spellInfo->Effects[2].BasePoints = -30;
-                    spellInfo->Effects[2].SpellClassMask[1] |= 0x80;
-                    spellInfo->Effects[2].SpellClassMask[0] |= 0x1000;
                     break;
                 case 109259:// Powershot
                     spellInfo->Effects[1].BasePoints = 60;
@@ -3902,6 +3892,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                     break;
                 case 117418:// Fists of Fury (damage)
+                case 114083:// Ascendance
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
                 case 113656:// Fists of Fury
@@ -4454,6 +4445,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 119915: //Felstorm
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
                     spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
+                case 70781: // Light's Hammer Teleport
+                case 70856: // Oratory of the Damned Teleport
+                case 70857: // Rampart of Skulls Teleport
+                case 70858: // Deathbringer's Rise Teleport
+                case 70859: // Upper Spire Teleport
+                case 70860: // Frozen Throne Teleport
+                case 70861: // Sindragosa's Lair Teleport
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_DB;
+                    break;
+                case 113901: // Demonic Gateway
+                    spellInfo->ProcCharges = 6;
                     break;
                 default:
                     break;

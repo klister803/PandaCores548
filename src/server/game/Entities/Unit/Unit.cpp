@@ -5508,12 +5508,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
     if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggered(dummySpell->Id))
     {
         bool check = false;
-        cooldown_spell_id = dummySpell->Id;
-        if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
-            return false;
-
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
+            cooldown_spell_id = abs(itr->spell_trigger);
+            if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
+                return false;
+
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
@@ -5528,6 +5528,27 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             if(itr->target == 5) //get target owner
                 if (Unit* owner = GetOwner())
                     target = owner;
+            if(itr->target == 7) //get target self
+                target = triggeredByAura->GetCaster();
+
+            Unit* _caster = this;
+            Unit* _targetAura = this;
+
+            if(itr->caster == 1) //get caster aura
+                _caster = triggeredByAura->GetCaster();
+            if(itr->caster == 3 && ToPlayer()) //get caster owner
+                if (Pet* pet = ToPlayer()->GetPet())
+                    _caster = (Unit*)pet;
+            if(itr->caster == 4) //get caster owner
+                if (Unit* owner = GetOwner())
+                    _caster = owner;
+            if(!_caster)
+                _caster = this;
+
+            if(itr->targetaura == 1) //get caster aura
+                _targetAura = triggeredByAura->GetCaster();
+            if(itr->targetaura == 2) //get target aura
+                _targetAura = victim;
 
             int32 bp0 = int32(itr->bp0);
             int32 bp1 = int32(itr->bp1);
@@ -5536,12 +5557,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             {
                 case SPELL_TRIGGER_BP: //0
                 {
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5552,11 +5573,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         basepoints0 = -(triggerAmount);
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
                     {
                         if (Guardian* pet = GetGuardianPet())
-                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
                     continue;
@@ -5564,22 +5585,22 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 break;
                 case SPELL_TRIGGER_BP_CUSTOM: //1
                 {
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
                     }
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
                     {
                         if (Guardian* pet = GetGuardianPet())
-                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
                     continue;
@@ -5589,12 +5610,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 {
                     if(!procSpell)
                         continue;
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5603,11 +5624,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     basepoints0 = CalculatePct(cost, bp0);
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
                     {
                         if (Guardian* pet = GetGuardianPet())
-                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
                     continue;
@@ -5615,12 +5636,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 break;
                 case SPELL_TRIGGER_DAM_HEALTH: //3
                 {
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5630,11 +5651,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         basepoints0 *= bp0;
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
                     {
                         if (Guardian* pet = GetGuardianPet())
-                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
                     continue;
@@ -5683,11 +5704,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if(basepoints0)
                     {
                         triggered_spell_id = abs(itr->spell_trigger);
-                        CastCustomSpell(this, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                        _caster->CastCustomSpell(this, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                         if(itr->target == 6)
                         {
                             if (Guardian* pet = GetGuardianPet())
-                                CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                                _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                         }
                     }
                     check = true;
@@ -5701,12 +5722,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         check = true;
                         continue;
                     }
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5715,11 +5736,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if (roll_chance_i(chance))
                     {
                         triggered_spell_id = abs(itr->spell_trigger);
-                        CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                        _caster->CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                         if(itr->target == 6)
                         {
                             if (Guardian* pet = GetGuardianPet())
-                                CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                                _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                         }
                     }
                     check = true;
@@ -5736,12 +5757,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 break;
                 case SPELL_TRIGGER_PERC_FROM_DAMGE: //9
                 {
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5749,11 +5770,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     basepoints0 = CalculatePct(damage, itr->bp0);
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
                     {
                         if (Guardian* pet = GetGuardianPet())
-                            CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
                     continue;
@@ -5761,12 +5782,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 break;
                 case SPELL_TRIGGER_PERC_MAX_MANA: //10
                 {
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5781,12 +5802,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 break;
                 case SPELL_TRIGGER_PERC_BASE_MANA: //11
                 {
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5801,12 +5822,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 break;
                 case SPELL_TRIGGER_PERC_CUR_MANA: //12
                 {
-                    if(itr->aura > 0 && !HasAura(itr->aura))
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
                         check = true;
                         continue;
                     }
-                    if(itr->aura < 0 && HasAura(abs(itr->aura)))
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                     {
                         check = true;
                         continue;
@@ -5829,7 +5850,35 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     triggered_spell_id = abs(itr->spell_trigger);
 
                     if(itr->aura == procSpell->Id)
-                        CastSpell(target, triggered_spell_id, true);
+                        _caster->CastSpell(target, triggered_spell_id, true);
+
+                    check = true;
+                    continue;
+                }
+                break;
+                case SPELL_TRIGGER_CHECK_DAMAGE: //16
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    if(damage >= triggerAmount)
+                    {
+                        _caster->CastSpell(target, triggered_spell_id, true);
+                        triggeredByAura->GetBase()->Remove(AURA_REMOVE_BY_DEFAULT);
+                        check = true;
+                        continue;
+                    }
+
+                    triggeredByAura->SetAmount(triggerAmount - damage);
 
                     check = true;
                     continue;
@@ -5854,28 +5903,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 case 98229:
                     SetPower(POWER_ALTERNATE_POWER, 0);
                     break;
-                // Bane of Havoc
-                case 85466:
-                {
-                    bool found = false;
-                    // find target of bane
-                    AuraList & scAuras = GetSingleCastAuras();
-                    for (AuraList::iterator iter = scAuras.begin(); iter != scAuras.end(); ++iter)
-                        if( (*iter)->GetId() == 80240)
-                        {
-                            if (target == (*iter)->GetUnitOwner())
-                                return false;
-                            target = (*iter)->GetUnitOwner();
-                            basepoints0 = int32(CalculatePct(damage, (*iter)->GetEffect(0)->GetAmount()));
-                            found = true;
-                        }
-                    // no target found, break
-                    if (!found)
-                        return false;
-
-                    triggered_spell_id = 85455;
-                    break;
-                }
                 case 97138: // Matrix Restabilizer (391)
                 case 96976: // Matrix Restabilizer (384)
                 {
@@ -6762,32 +6789,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         }
         case SPELLFAMILY_WARLOCK:
         {
-            // Seed of Corruption
-            if (dummySpell->SpellFamilyFlags[1] & 0x00000010)
-            {
-                if (procSpell && procSpell->SpellFamilyFlags[1] & 0x8000)
-                    return false;
-                // if damage is more than need or target die from damage deal finish spell
-                if (triggeredByAura->GetAmount() <= int32(damage) || GetHealth() <= damage)
-                {
-                    // remember guid before aura delete
-                    uint64 casterGuid = triggeredByAura->GetCasterGUID();
-
-                    // Remove aura (before cast for prevent infinite loop handlers)
-                    RemoveAurasDueToSpell(triggeredByAura->GetId());
-
-                    uint32 spell = sSpellMgr->GetSpellWithRank(27285, dummySpell->GetRank());
-
-                    // Cast finish spell (triggeredByAura already not exist!)
-                    if (Unit* caster = GetUnit(*this, casterGuid))
-                        caster->CastSpell(this, spell, true, castItem);
-                    return true;                            // no hidden cooldown
-                }
-
-                // Damage counting
-                triggeredByAura->SetAmount(triggeredByAura->GetAmount() - damage);
-                return true;
-            }
             // Seed of Corruption (Mobs cast) - no die req
             if (dummySpell->SpellFamilyFlags.IsEqual(0, 0, 0) && dummySpell->SpellIconID == 1932)
             {
@@ -12264,24 +12265,6 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
         AddPct(heal, (100 * (holyPower + 1)));
     }
-    // Ascendance - 114052 : Water Ascendant - Healing done is duplicated and distribued evenly among all nearby (15 yards) allies
-    if (GetTypeId() == TYPEID_PLAYER && heal != 0 && HasAura(114052) && spellProto->Id != 114083)
-    {
-        std::list<Unit*> nearbyUnits;
-        std::list<Unit*> nearbyAllies;
-        ToPlayer()->GetAttackableUnitListInRange(nearbyUnits, 15.0f);
-
-        for (std::list<Unit*>::const_iterator itr = nearbyUnits.begin(); itr != nearbyUnits.end(); ++itr)
-            if (!(*itr)->IsHostileTo(this))
-                nearbyAllies.push_back(*itr);
-
-        // Heal amount distribued for all allies, caster included
-        int32 bp = heal / nearbyAllies.size();
-
-        for (std::list<Unit*>::const_iterator itr = nearbyAllies.begin(); itr != nearbyAllies.end(); ++itr)
-            if (bp > 0)
-                CastCustomSpell(*itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
-    }
 
     return uint32(std::max(heal, 0.0f));
 }
@@ -15963,6 +15946,7 @@ bool InitTriggerAuraData()
     }
     isTriggerAura[SPELL_AURA_PROC_ON_POWER_AMOUNT] = true;
     isTriggerAura[SPELL_AURA_DUMMY] = true;
+    isTriggerAura[SPELL_AURA_PERIODIC_DUMMY] = true;
     isTriggerAura[SPELL_AURA_MOD_CONFUSE] = true;
     isTriggerAura[SPELL_AURA_MOD_THREAT] = true;
     isTriggerAura[SPELL_AURA_MOD_STUN] = true; // Aura does not have charges but needs to be removed on trigger
@@ -16535,6 +16519,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     }
                     case SPELL_AURA_MANA_SHIELD:
                     case SPELL_AURA_DUMMY:
+                    case SPELL_AURA_PERIODIC_DUMMY:
                     {
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: casting spell id %u (triggered by %s dummy aura of spell %u)", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
                         if (HandleDummyAuraProc(target, damage, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
@@ -20638,7 +20623,7 @@ bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, uint32 /*damage*/, AuraE
                 return false;
             if(SpellCastTimesEntry const* CastTimeEntry = procSpell->CastTimeEntry)
             {
-                if(!CastTimeEntry->CastTime)
+                if(!CastTimeEntry->CastTime && !procSpell->IsChanneled())
                     return false;
             }
             else

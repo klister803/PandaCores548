@@ -118,6 +118,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_CHECK_PROCK       = 13,           // Check proc from spell to trigger
     SPELL_TRIGGER_DUMMY             = 14,           // spell to trigger without option for bp
     SPELL_TRIGGER_CAST_DEST         = 15,           // spell to trigger without option for bp
+    SPELL_TRIGGER_CHECK_DAMAGE      = 16,           // spell to trigger if damage > amount
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -607,6 +608,8 @@ struct SpellTriggered
     int32 spell_id;
     int32 spell_trigger;
     int32 target;
+    int32 caster;
+    int32 targetaura;
     int32 option;
     float bp0;
     float bp1;

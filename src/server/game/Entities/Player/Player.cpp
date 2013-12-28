@@ -28327,9 +28327,6 @@ void Player::RemovePassiveTalentSpell(uint32 spellId)
         case 96268: // Death's Advance
             RemoveAura(124285);
             break;
-        case 108415:// Soul Link
-            RemoveAura(108446);
-            break;
         case 108505:// Archimonde's Vengeance
             RemoveAura(116403);
             break;
