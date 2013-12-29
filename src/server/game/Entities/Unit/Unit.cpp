@@ -16676,7 +16676,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         // chargeable mods are breaking on hit
                         if (spellInfo->Id == 115191)
                         {
-                            if(procSpell && (!procSpell->IsBreakingStealth() || (procSpell->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO) || (procSpell->AttributesEx  & SPELL_ATTR1_NO_THREAT)))
+                            if (procSpell && (!procSpell->IsBreakingStealth()) && !isVictim)
                             {
                                 takeCharges = false;
                                 break;
