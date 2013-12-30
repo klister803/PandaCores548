@@ -4312,7 +4312,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TriggerSpell = 0;
                     break;
                 case 115191:
-                    spellInfo->AuraInterruptFlags = 0x08020C00;
+                    spellInfo->AuraInterruptFlags = 0;
                     break;
                 case 50371: // Improved Blood Presence disable not need efect
                     spellInfo->Effects[1].BasePoints = 0;
