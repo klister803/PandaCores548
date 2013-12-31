@@ -14871,7 +14871,7 @@ DiminishingLevels Unit::GetDiminishing(DiminishingGroup group)
             return DIMINISHING_LEVEL_1;
 
         // If last spell was casted more than 15 seconds ago - reset the count.
-        if (i->stack == 0 && getMSTimeDiff(i->hitTime, getMSTime()) > 15000)
+        if (i->stack == 0 && getMSTimeDiff(i->hitTime, getMSTime()) > DiminishingDuration())
         {
             i->hitCount = DIMINISHING_LEVEL_1;
             return DIMINISHING_LEVEL_1;
@@ -14881,6 +14881,20 @@ DiminishingLevels Unit::GetDiminishing(DiminishingGroup group)
             return DiminishingLevels(i->hitCount);
     }
     return DIMINISHING_LEVEL_1;
+}
+
+uint32 Unit::DiminishingDuration() const
+{
+    uint32 MSTime = getMSTime();
+    if (MSTime > 5000)
+    {
+        uint32 checktime = MSTime / 5000;
+        checktime *= 5000;
+
+        return MSTime - checktime + 15000;
+    }
+    else
+        return MSTime + 15000;
 }
 
 void Unit::IncrDiminishing(DiminishingGroup group)
