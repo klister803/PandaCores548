@@ -16282,6 +16282,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         {
             if (triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH))
             {
+                if (procSpell && procSpell->IsPositive())
+                    continue;
+
                 if (!damage && procSpell && !procSpell->HasAura(SPELL_AURA_MOD_STUN) && !procSpell->HasAura(SPELL_AURA_MOD_CONFUSE) &&
                     !procSpell->HasAura(SPELL_AURA_MOD_FEAR) && procSpell->Id != 12323)
                     continue;
