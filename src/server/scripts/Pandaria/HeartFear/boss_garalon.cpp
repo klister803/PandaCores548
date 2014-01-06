@@ -21,14 +21,16 @@
 
 enum eSpells
 {
+    SPELL_FURIOUS_SWIPE     = 122735, //Cleave
+    SPELL_PHEROMONES        = 122835,
+    SPELL_FURY              = 122754,
+    SPELL_CRUSH             = 122774,
 };
 
 enum eEvents
 {
-};
-
-enum Actions
-{
+    EVENT_FURIOUS_SWIPE     = 1,
+    EVENT_CHECK_HIT_SWIPE   = 2,
 };
 
 class boss_garalon : public CreatureScript
@@ -36,33 +38,65 @@ class boss_garalon : public CreatureScript
     public:
         boss_garalon() : CreatureScript("boss_garalon") {}
 
-        struct boss_garalonAI : public ScriptedAI
+        struct boss_garalonAI : public BossAI
         {
-            boss_garalonAI(Creature* creature) : ScriptedAI(creature)
+            boss_garalonAI(Creature* creature) : BossAI(creature, DATA_GAROLON)
             {
                 instance = creature->GetInstanceScript();
             }
 
             InstanceScript* instance;
+            uint8 hitcount;
 
             void Reset()
             {
+                _Reset();
+                hitcount = 0;
+                me->SetReactState(REACT_DEFENSIVE);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(Unit* who)
             {
+                _EnterCombat();
+                events.ScheduleEvent(EVENT_FURIOUS_SWIPE, urand(20000, 30000));
             }
-
-            void UpdateAI(const uint32 diff)
+            
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
             {
-                if (!UpdateVictim())
-                    return;
-
-                DoMeleeAttackIfReady();
+                if (target->GetTypeId() == TYPEID_PLAYER && spell->Id == SPELL_FURIOUS_SWIPE)
+                    hitcount++;
             }
 
             void JustDied(Unit* /*killer*/)
             {
+                _JustDied();
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventid = events.ExecuteEvent())
+                {
+                    switch (eventid)
+                    {
+                    case EVENT_FURIOUS_SWIPE:
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_FURIOUS_SWIPE);
+                        events.ScheduleEvent(EVENT_CHECK_HIT_SWIPE, 3000);
+                        events.ScheduleEvent(EVENT_FURIOUS_SWIPE, urand(20000, 30000));
+                        break;
+                    case EVENT_CHECK_HIT_SWIPE:
+                        if (hitcount < 2)
+                            DoCast(me, SPELL_FURY);
+                        hitcount = 0;
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
             }
         };
 

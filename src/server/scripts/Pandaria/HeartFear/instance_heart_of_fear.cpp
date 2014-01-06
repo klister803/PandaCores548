@@ -24,6 +24,7 @@ public:
         uint64 vizierentdoorGuid;
         uint64 vizierexdoorGuid;
         uint64 tayakexdoorGuid;
+        uint64 garolonentdoorGuid;
 
         //Creature
         uint64 zorlokGuid;
@@ -35,26 +36,33 @@ public:
         uint64 shekzeerGuid;
         
         //Arrays
+        std::vector<uint64> vizierarenadoorGuids;
+        std::vector<uint64> garoloncdoorGuids;
+        std::vector<uint64> garolonexdoorGuids;
        
         void Initialize()
         {
             SetBossNumber(7);
 
             //GameObject
-            vizierentdoorGuid = 0;
-            vizierexdoorGuid  = 0;
-            tayakexdoorGuid   = 0;
+            vizierentdoorGuid   = 0;
+            vizierexdoorGuid    = 0;
+            tayakexdoorGuid     = 0;
+            garolonentdoorGuid  = 0;
 
             //Creature
-            zorlokGuid        = 0;
-            gascontrollerGuid = 0;
-            tayakGuid         = 0;
-            garalonGuid       = 0;
-            merjalakGuid      = 0;
-            unsokGuid         = 0;
-            shekzeerGuid      = 0;
+            zorlokGuid          = 0;
+            gascontrollerGuid   = 0;
+            tayakGuid           = 0;
+            garalonGuid         = 0;
+            merjalakGuid        = 0;
+            unsokGuid           = 0;
+            shekzeerGuid        = 0;
 
             //Arrays
+            vizierarenadoorGuids.clear();
+            garoloncdoorGuids.clear();
+            garolonexdoorGuids.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -91,11 +99,23 @@ public:
             case GO_VIZIER_ENT_DOOR:
                 vizierentdoorGuid = go->GetGUID();
                 break;
+            case GO_VIZIER_ARENA_DOOR:
+                vizierarenadoorGuids.push_back(go->GetGUID());
+                break;
             case GO_VIZIER_EX_DOOR:
                 vizierexdoorGuid = go->GetGUID();
                 break;
             case GO_TAYAK_EX_DOOR:
                 tayakexdoorGuid = go->GetGUID();
+                break;
+            case GO_GAROLON_ENT_DOOR:
+                garolonentdoorGuid = go->GetGUID();
+                break;
+            case GO_GAROLON_COMBAT_DOOR:
+                garoloncdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_GAROLON_EX_DOOR:
+                garolonexdoorGuids.push_back(go->GetGUID());
                 break;
             }
         }
@@ -113,13 +133,19 @@ public:
                     {
                     case NOT_STARTED:
                         HandleGameObject(vizierentdoorGuid, true);
+                        for (std::vector<uint64>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
                         break;
                     case DONE:
                         HandleGameObject(vizierentdoorGuid, true);
                         HandleGameObject(vizierexdoorGuid, true); 
+                        for (std::vector<uint64>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(vizierentdoorGuid, false);
+                        for (std::vector<uint64>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
                         break;
                     }
                     break;
@@ -133,10 +159,33 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(vizierexdoorGuid, true);
-                        //HandleGameObject(tayakexdoorGuid, true); next boss not ready...
+                        HandleGameObject(tayakexdoorGuid, true);
+                        HandleGameObject(garolonentdoorGuid, true);
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(vizierexdoorGuid, false);
+                        break;
+                    }
+                    break;
+                }
+            case DATA_GAROLON:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guid = garoloncdoorGuids.begin(); guid != garoloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator guid = garoloncdoorGuids.begin(); guid != garoloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+
+                      //for (std::vector<uint64>::const_iterator guids = garolonexdoorGuids.begin(); guids != garolonexdoorGuids.end(); guids++)
+                          //HandleGameObject(*guids, true); Next boss not ready
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator guid = garoloncdoorGuids.begin(); guid != garoloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
                         break;
                     }
                     break;
