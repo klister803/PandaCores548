@@ -4243,6 +4243,20 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Speed = 25.f;
                     break;
 
+
+                //Heart of Fear
+                //Lord Meljarak
+                case 122193: //Heal
+                    spellInfo->TargetAuraSpell = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    break;
+                case 122147: //Heal trigger
+                    spellInfo->TargetAuraSpell = 0;
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
+
+                    
                 //World Boss
                 //Sha of Anger
                 case 119487: //Anger
