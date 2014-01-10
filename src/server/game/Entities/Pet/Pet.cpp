@@ -888,12 +888,17 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             // Hardcode : Ghoul Base HP
             if (IsPetGhoul())
             {
+                float basedmg = petlevel * 3.63f * (BASE_ATTACK_TIME / 1000);
                 CastSpell(this, 47466, true);
                 setPowerType(POWER_ENERGY);
+                SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, basedmg);
+                SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, basedmg + 1.0f);
             }
-
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+            else
+            {
+                SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+                SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+            }
             break;
         }
         case HUNTER_PET:
