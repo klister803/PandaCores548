@@ -1367,8 +1367,8 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
         }
         else if (IsPetGhoul()) // ghouls benefit from deathknight's attack power (may be summon pet or not)
         {
-            AP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.22f;
-            SPD = uint32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f);
+            AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+            SPD = uint32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.7f);
         }
         else if (IsWarlockPet()) // demons benefit from warlocks shadow or fire damage
         {
