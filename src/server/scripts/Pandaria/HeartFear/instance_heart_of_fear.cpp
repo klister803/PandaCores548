@@ -275,7 +275,7 @@ public:
                         }
                         break;
                     case DONE:
-                        HandleGameObject(meljarakexdoorGuid, true);
+                        //HandleGameObject(meljarakexdoorGuid, true); next boss not ready
                         for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
                             HandleGameObject(*guids, true);
                         break;

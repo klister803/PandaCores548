@@ -23,6 +23,7 @@ enum eSpells
 {
     //Lord Meljarak
     SPELL_RECKLESSNESS    = 122354,
+    SPELL_RAIN_OF_BLADES  = 122406,
 
     //Zarthik spells
     SPELL_HEAL            = 122193,
@@ -30,13 +31,17 @@ enum eSpells
     SPELL_HASTE           = 122149,
 
     //Korthik spells
-    SPELL_KORTHIK_STRIKE  = 122409,
+    SPELL_KORTHIK_STRIKE  = 122409, //not work 
 };
 
 enum eEvents
 {
+    //Lord Meljarak
+    EVENT_RAIN_BLADES     = 1,
+
     //Soldiers
-    EVENT_HEAL            = 1,
+    EVENT_HEAL            = 2,
+    EVENT_HASTE           = 3,
 };
 
 class boss_lord_meljarak : public CreatureScript
@@ -49,6 +54,7 @@ class boss_lord_meljarak : public CreatureScript
             boss_lord_meljarakAI(Creature* creature) : BossAI(creature, DATA_MELJARAK)
             {
                 instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_AGGRESSIVE);
             }
 
             InstanceScript* instance;
@@ -57,18 +63,34 @@ class boss_lord_meljarak : public CreatureScript
             {
                 _Reset();
                 me->RemoveAurasDueToSpell(SPELL_RECKLESSNESS);
+                me->RemoveAurasDueToSpell(SPELL_HASTE);
             }
 
             void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
+                events.ScheduleEvent(EVENT_RAIN_BLADES, 30000);
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_RAIN_BLADES:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                            DoCast(target, SPELL_RAIN_OF_BLADES);
+                        events.ScheduleEvent(EVENT_RAIN_BLADES, urand(30000, 90000));
+                        break;
+                    //In future must be more events
+                    }
+                }
                 DoMeleeAttackIfReady();
             }
 
@@ -217,19 +239,20 @@ class npc_generic_soldier : public CreatureScript
 
         struct npc_generic_soldierAI : public ScriptedAI
         {
-            npc_generic_soldierAI(Creature* creature) : ScriptedAI(creature), summons(creature)
+            npc_generic_soldierAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
+                me->SetReactState(REACT_AGGRESSIVE);
             }
 
             InstanceScript* pInstance;
             EventMap events;
-            SummonList summons;
 
             void Reset()
             {
+                me->RemoveAurasDueToSpell(SPELL_HASTE);
             }
-
+            
             void EnterCombat(Unit* attacker)
             {
                 if (pInstance)
@@ -246,7 +269,8 @@ class npc_generic_soldier : public CreatureScript
                 case NPC_SRATHIK:
                     break;
                 case NPC_ZARTHIK:
-                    events.ScheduleEvent(EVENT_HEAL, urand(60000, 120000));
+                    events.ScheduleEvent(EVENT_HEAL, urand(60000,  120000));
+                    events.ScheduleEvent(EVENT_HASTE, urand(50000, 110000));
                     break;
                 case NPC_KORTHIK:
                     break;
@@ -291,7 +315,7 @@ class npc_generic_soldier : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -303,6 +327,10 @@ class npc_generic_soldier : public CreatureScript
                     case EVENT_HEAL:
                         if (pInstance)
                             FindSoldierWithLowHealt();
+                        break;
+                    case EVENT_HASTE:
+                        DoCast(me, SPELL_HASTE);
+                        events.ScheduleEvent(EVENT_HASTE, urand(50000, 110000));
                         break;
                     }
                 }
