@@ -888,7 +888,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             // Hardcode : Ghoul Base HP
             if (IsPetGhoul())
             {
-                float basedmg = petlevel * 3.63f;
+                float basedmg = petlevel * 3.06f * (BASE_ATTACK_TIME / 1000);
                 CastSpell(this, 47466, true);
                 setPowerType(POWER_ENERGY);
                 SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, basedmg);

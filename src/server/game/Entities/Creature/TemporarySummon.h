@@ -75,6 +75,7 @@ class Guardian : public Minion
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
         void UpdateResistances(uint32 school);
+        void UpdatePetMeleeHastMod();
         void UpdateArmor();
         void UpdateMaxHealth();
         void UpdateMaxPower(Powers power);
