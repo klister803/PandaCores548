@@ -3336,6 +3336,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 125883: // Zen Flight
+                    spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_MELEE_ATTACK;
+                    break;
                 case 31665: // Master of subtlety
                     spellInfo->Effects[0].BasePoints = 10;
                     break;
