@@ -1265,7 +1265,13 @@ void Guardian::UpdateArmor()
     float value = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    value = isHunterPet() ? m_owner->GetArmor() * 1.69f : m_owner->GetArmor();
+    if (isHunterPet())
+        value = m_owner->GetArmor() * 1.69f;
+    else if (IsPetGhoul() || IsPetGargoyle())
+        value = m_owner->GetArmor() * 1.25f;
+    else
+        value = m_owner->GetArmor();
+
     value *= GetModifierValue(unitMod, BASE_PCT);
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
