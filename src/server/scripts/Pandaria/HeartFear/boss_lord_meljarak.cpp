@@ -44,6 +44,16 @@ enum eEvents
     EVENT_HASTE           = 3,
 };
 
+const AuraType auratype[6] = 
+{
+    SPELL_AURA_MOD_STUN,
+    SPELL_AURA_MOD_FEAR,
+    SPELL_AURA_MOD_CHARM,
+    SPELL_AURA_MOD_CONFUSE,
+    SPELL_AURA_MOD_SILENCE,
+    SPELL_AURA_TRANSFORM,
+};
+
 class boss_lord_meljarak : public CreatureScript
 {
     public:
@@ -285,6 +295,16 @@ class npc_generic_soldier : public CreatureScript
                     SendDamageSoldiers(pInstance, me, me->GetEntry(), me->GetGUID(), damage);
             }
 
+            bool CheckMeIsInControl()
+            {
+                for (uint8 n = 0; n < 6; n++)
+                {
+                    if (me->HasAuraType(auratype[n]))
+                        return true;
+                }
+                return false;
+            }
+
             void SpellHit(Unit* caster, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_HEAL_TR_EF)
@@ -296,16 +316,19 @@ class npc_generic_soldier : public CreatureScript
 
             void FindSoldierWithLowHealt()
             {
-                for (uint32 n = NPC_SRATHIK_1; n <= NPC_KORTHIK_3; n++)
+                if (!CheckMeIsInControl())
                 {
-                    if (Creature* soldier = me->GetCreature(*me, pInstance->GetData64(n)))
+                    for (uint32 n = NPC_SRATHIK_1; n <= NPC_KORTHIK_3; n++)
                     {
-                        if (soldier->GetGUID() != me->GetGUID())
+                        if (Creature* soldier = me->GetCreature(*me, pInstance->GetData64(n)))
                         {
-                            if (soldier->isAlive() && soldier->HealthBelowPct(75))
+                            if (soldier->GetGUID() != me->GetGUID())
                             {
-                                DoCast(soldier, SPELL_HEAL);
-                                break;
+                                if (soldier->isAlive() && soldier->HealthBelowPct(75))
+                                {
+                                    DoCast(soldier, SPELL_HEAL);
+                                    break;
+                                }
                             }
                         }
                     }
@@ -329,7 +352,8 @@ class npc_generic_soldier : public CreatureScript
                             FindSoldierWithLowHealt();
                         break;
                     case EVENT_HASTE:
-                        DoCast(me, SPELL_HASTE);
+                        if (!CheckMeIsInControl())
+                            DoCast(me, SPELL_HASTE);
                         events.ScheduleEvent(EVENT_HASTE, urand(50000, 110000));
                         break;
                     }
