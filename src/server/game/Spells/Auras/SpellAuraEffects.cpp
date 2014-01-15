@@ -880,28 +880,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 }
                 case 126683: // Call of Dominance
                 case 126690: // Call of Conquest
-                case 126679: // Call of Victory	
-                {
-                    uint64 itmGuid = GetBase()->GetCastItemGUID();
-
-                    if (!caster)
-                        break;
-
-                    if (Player * player = caster->ToPlayer())
-                    {
-                        if (Item * item = player->GetItemByGuid(itmGuid))
-                        {
-                            switch (item->GetTemplate()->ItemLevel)
-                            {
-                                case 464: amount = 4275; break;
-                                case 483: amount = 5105; break;
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                    break;
-                }
+                case 126679: // Call of Victory
                 case 126588: // Item - Qin-xi's Polarizing Seal
                 case 126554: // Item - Bottle of Infinite Stars
                 case 126577: // Item - Light of the Cosmos
@@ -918,7 +897,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         {
                             switch (item->GetTemplate()->ItemLevel)
                             {
+                                case 464: amount = 4275; break;
                                 case 476: amount = 2866; break; // Raid Finder
+                                case 483: amount = 5105; break;
                                 case 489: amount = 3236; break; // Normal
                                 case 502: amount = 3653; break; // Heroic
                                 default:
@@ -929,27 +910,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     break;
                 }
                 case 126606: // Items - Jade Courtesan Figurine, Scroll of Revered Ancestors
-                {
-                    uint64 itmGuid = GetBase()->GetCastItemGUID();
-
-                    if (!caster)
-                        break;
-
-                    if (Player * player = caster->ToPlayer())
-                    {
-                        if (Item * item = player->GetItemByGuid(itmGuid))
-                        {
-                            switch (item->GetTemplate()->ItemLevel)
-                            {
-                                case 476: amount = 3185; break; // Raid Finder
-                                case 489: amount = 3595; break; // Normal
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                    break;
-                }
                 case 126640: // Item - Spirits of the Sun
                 {
                     uint64 itmGuid = GetBase()->GetCastItemGUID();
@@ -963,7 +923,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         {
                             switch (item->GetTemplate()->ItemLevel)
                             {
+                                case 476: amount = 3185; break; // Raid Finder
                                 case 483: amount = 6121; break; // Raid Finder
+                                case 489: amount = 3595; break; // Normal
                                 case 496: amount = 6908; break; // Normal
                                 case 509: amount = 7796; break; // Heroic
                                 default:
@@ -1008,28 +970,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     break;
                 }
                 case 126533: // Item - Vial of Dragon's Blood
-                {
-                    uint64 itmGuid = GetBase()->GetCastItemGUID();
-
-                    if (!caster)
-                        break;
-
-                    if (Player * player = caster->ToPlayer())
-                    {
-                        if (Item * item = player->GetItemByGuid(itmGuid))
-                        {
-                            switch (item->GetTemplate()->ItemLevel)
-                            {
-                                case 476: amount = 2866; break; // Raid Finder
-                                case 489: amount = 3236; break; // Normal
-                                case 502: amount = 3653; break; // Heroic
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                    break;
-                }
                 case 126649: // Item - Terror in the Mists
                 case 126646: // Item - Stuff of Nightmares
                 case 126659: // Item - Essence of Terror
@@ -1046,8 +986,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         {
                             switch (item->GetTemplate()->ItemLevel)
                             {
+                                case 476: amount = 2866; break; // Raid Finder
                                 case 483: amount = 6121; break; // Raid Finder
+                                case 489: amount = 3236; break; // Normal
                                 case 496: amount = 6908; break; // Normal
+                                case 502: amount = 3653; break; // Heroic
                                 case 509: amount = 7796; break; // Heroic
                                 default:
                                     break;
