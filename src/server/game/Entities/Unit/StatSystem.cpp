@@ -870,10 +870,12 @@ void Player::UpdateMeleeHastMod()
     if (getClass() == CLASS_DEATH_KNIGHT)
         UpdateAllRunesRegen();
 
+    if (Guardian * pet = GetPet())
+        pet->UpdatePetMeleeHastMod();
+
     if (GetPower(POWER_ENERGY))
         UpdateEnergyRegen();
 }
-
 
 void Player::UpdateHastMod()
 {
@@ -1206,6 +1208,36 @@ bool Guardian::UpdateAllStats()
     return true;
 }
 
+void Guardian::UpdatePetMeleeHastMod()
+{
+    if (!m_owner->ToPlayer())
+        return;
+
+    float amount = m_owner->ToPlayer()->GetRatingBonusValue(CR_HASTE_MELEE);
+
+    std::list<AuraType> auratypelist;
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE_2);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE_3);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
+
+    amount += GetTotalForAurasModifier(&auratypelist);
+
+    float value = BASE_ATTACK_TIME;
+
+    if (amount > 0)
+    {
+        ApplyPercentModFloatVar(value, amount, false);
+    }
+    else
+    {
+        ApplyPercentModFloatVar(value, amount, true);
+    }
+
+    SetFloatValue(UNIT_FIELD_BASEATTACKTIME+BASE_ATTACK, value);
+}
+
 void Guardian::UpdateResistances(uint32 school)
 {
     if (school > SPELL_SCHOOL_NORMAL)
@@ -1233,7 +1265,13 @@ void Guardian::UpdateArmor()
     float value = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    value = isHunterPet() ? m_owner->GetArmor() * 1.69f : m_owner->GetArmor();
+    if (isHunterPet())
+        value = m_owner->GetArmor() * 1.69f;
+    else if (IsPetGhoul() || IsPetGargoyle())
+        value = m_owner->GetArmor() * 1.25f;
+    else
+        value = m_owner->GetArmor();
+
     value *= GetModifierValue(unitMod, BASE_PCT);
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
@@ -1367,8 +1405,8 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
         }
         else if (IsPetGhoul()) // ghouls benefit from deathknight's attack power (may be summon pet or not)
         {
-            AP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.22f;
-            SPD = uint32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f);
+            AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+            SPD = uint32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.7f);
         }
         else if (IsWarlockPet()) // demons benefit from warlocks shadow or fire damage
         {
@@ -1511,7 +1549,7 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
 
     UnitMods unitMod = UNIT_MOD_DAMAGE_MAINHAND;
 
-    float att_speed = float(GetAttackTime(BASE_ATTACK))/1000.0f;
+    float att_speed = BASE_ATTACK_TIME / 1000.0f;
 
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / APCoefficient * att_speed  + bonusDamage;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);

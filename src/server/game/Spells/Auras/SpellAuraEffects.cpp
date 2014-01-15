@@ -1007,7 +1007,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 }
+                case 126649: // Item - Terror in the Mists
                 case 126646: // Item - Stuff of Nightmares
+                case 126659: // Item - Essence of Terror
                 {
                     uint64 itmGuid = GetBase()->GetCastItemGUID();
 

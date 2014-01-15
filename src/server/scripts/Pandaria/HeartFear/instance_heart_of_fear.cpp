@@ -24,37 +24,57 @@ public:
         uint64 vizierentdoorGuid;
         uint64 vizierexdoorGuid;
         uint64 tayakexdoorGuid;
+        uint64 garalonentdoorGuid;
+        uint64 meljarakexdoorGuid;
+
+        std::vector<uint64> vizierarenadoorGuids;
+        std::vector<uint64> garaloncdoorGuids;
+        std::vector<uint64> garalonexdoorGuids;
 
         //Creature
         uint64 zorlokGuid;
         uint64 gascontrollerGuid;
         uint64 tayakGuid;
         uint64 garalonGuid;
-        uint64 merjalakGuid;
+        uint64 meljarakGuid;
         uint64 unsokGuid;
         uint64 shekzeerGuid;
+
+        uint64 srathik[3];
+        uint64 zarthik[3];
+        uint64 korthik[3];
+        std::vector<uint64> meljaraksoldiersGuids;
         
-        //Arrays
-       
         void Initialize()
         {
             SetBossNumber(7);
 
             //GameObject
-            vizierentdoorGuid = 0;
-            vizierexdoorGuid  = 0;
-            tayakexdoorGuid   = 0;
+            vizierentdoorGuid   = 0;
+            vizierexdoorGuid    = 0;
+            tayakexdoorGuid     = 0;
+            garalonentdoorGuid  = 0;
+            meljarakexdoorGuid  = 0;
+
+            vizierarenadoorGuids.clear();
+            garaloncdoorGuids.clear();
+            garalonexdoorGuids.clear();
 
             //Creature
-            zorlokGuid        = 0;
-            gascontrollerGuid = 0;
-            tayakGuid         = 0;
-            garalonGuid       = 0;
-            merjalakGuid      = 0;
-            unsokGuid         = 0;
-            shekzeerGuid      = 0;
+            zorlokGuid          = 0;
+            gascontrollerGuid   = 0;
+            tayakGuid           = 0;
+            garalonGuid         = 0;
+            meljarakGuid        = 0;
+            unsokGuid           = 0;
+            shekzeerGuid        = 0;
 
-            //Arrays
+            for (uint8 n = 0; n < 3; n++)
+            {
+                srathik[n] = 0;
+                zarthik[n] = 0;
+                korthik[n] = 0;
+            }
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -70,10 +90,44 @@ public:
             case NPC_LORD_TAYAK:
                 tayakGuid = creature->GetGUID();
                 break;
-            case NPC_GAROLON:
+            case NPC_GARALON:
                 garalonGuid = creature->GetGUID();
-            case NPC_MERJALAK:
-                merjalakGuid = creature->GetGUID();
+                break;
+            case NPC_MELJARAK:
+                meljarakGuid = creature->GetGUID();
+                break;
+            case NPC_SRATHIK:
+                for (uint8 n = 0; n < 3; n++)
+                {
+                    if (srathik[n] == 0)
+                    {
+                        srathik[n] = creature->GetGUID();
+                        meljaraksoldiersGuids.push_back(srathik[n]);
+                        break;
+                    }
+                }
+                break;
+            case NPC_ZARTHIK:
+                for (uint8 n = 0; n < 3; n++)
+                {
+                    if (zarthik[n] == 0)
+                    {
+                        zarthik[n] = creature->GetGUID();
+                        meljaraksoldiersGuids.push_back(zarthik[n]);
+                        break;
+                    }
+                }
+                break;
+            case NPC_KORTHIK:
+                for (uint8 n = 0; n < 3; n++)
+                {
+                    if (korthik[n] == 0)
+                    {
+                        korthik[n] = creature->GetGUID();
+                        meljaraksoldiersGuids.push_back(korthik[n]);
+                        break;
+                    }
+                }
                 break;
             case NPC_UNSOK:
                 unsokGuid = creature->GetGUID();
@@ -91,11 +145,26 @@ public:
             case GO_VIZIER_ENT_DOOR:
                 vizierentdoorGuid = go->GetGUID();
                 break;
+            case GO_VIZIER_ARENA_DOOR:
+                vizierarenadoorGuids.push_back(go->GetGUID());
+                break;
             case GO_VIZIER_EX_DOOR:
                 vizierexdoorGuid = go->GetGUID();
                 break;
             case GO_TAYAK_EX_DOOR:
                 tayakexdoorGuid = go->GetGUID();
+                break;
+            case GO_GARALON_ENT_DOOR:
+                garalonentdoorGuid = go->GetGUID();
+                break;
+            case GO_GARALON_COMBAT_DOOR:
+                garaloncdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_GARALON_EX_DOOR:
+                garalonexdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_MELJARAK_EX_DOOR:
+                meljarakexdoorGuid = go->GetGUID();
                 break;
             }
         }
@@ -113,13 +182,19 @@ public:
                     {
                     case NOT_STARTED:
                         HandleGameObject(vizierentdoorGuid, true);
+                        for (std::vector<uint64>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
                         break;
                     case DONE:
                         HandleGameObject(vizierentdoorGuid, true);
                         HandleGameObject(vizierexdoorGuid, true); 
+                        for (std::vector<uint64>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(vizierentdoorGuid, false);
+                        for (std::vector<uint64>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
                         break;
                     }
                     break;
@@ -133,7 +208,8 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(vizierexdoorGuid, true);
-                        //HandleGameObject(tayakexdoorGuid, true); next boss not ready...
+                        HandleGameObject(tayakexdoorGuid, true);
+                        HandleGameObject(garalonentdoorGuid, true);
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(vizierexdoorGuid, false);
@@ -141,6 +217,71 @@ public:
                     }
                     break;
                 }
+            case DATA_GARALON:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        
+                        for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        break;
+                    }
+                    break;
+                }
+            case DATA_MELJARAK:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
+
+                        for (std::vector<uint64>::const_iterator guid = meljaraksoldiersGuids.begin(); guid != meljaraksoldiersGuids.end(); guid++)
+                        {
+                            if (Creature* soldier = instance->GetCreature(*guid))
+                            {
+                                if (!soldier->isAlive())
+                                {
+                                    soldier->Respawn();
+                                    soldier->GetMotionMaster()->MoveTargetedHome();
+                                }
+                                else if (soldier->isAlive() && soldier->isInCombat())
+                                    soldier->AI()->EnterEvadeMode();
+                            }
+                        }
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, false);
+
+                        for (std::vector<uint64>::const_iterator guid = meljaraksoldiersGuids.begin(); guid != meljaraksoldiersGuids.end(); guid++)
+                        {
+                            if (Creature* soldier = instance->GetCreature(*guid))
+                            {
+                                if (soldier->isAlive() && !soldier->isInCombat())
+                                    soldier->AI()->DoZoneInCombat(soldier, 100.0f);
+                            }
+                        }
+                        break;
+                    case DONE:
+                        //HandleGameObject(meljarakexdoorGuid, true); next boss not ready
+                        for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
+                        break;
+                    }
+                }
+                break;
             }
             return true;
         }
@@ -162,10 +303,30 @@ public:
                     return gascontrollerGuid;
                 case NPC_LORD_TAYAK:
                     return tayakGuid;
-                case NPC_GAROLON:
+                case NPC_GARALON:
                     return garalonGuid;
-                case NPC_MERJALAK:
-                    return merjalakGuid;
+                case NPC_MELJARAK:
+                    return meljarakGuid;
+                //Merjalak Soldiers
+                case NPC_SRATHIK_1:
+                    return srathik[0];
+                case NPC_SRATHIK_2:
+                    return srathik[1];
+                case NPC_SRATHIK_3:
+                    return srathik[2];
+                case NPC_ZARTHIK_1:
+                    return zarthik[0];
+                case NPC_ZARTHIK_2:
+                    return zarthik[1];
+                case NPC_ZARTHIK_3:
+                    return zarthik[2];
+                case NPC_KORTHIK_1:
+                    return korthik[0];
+                case NPC_KORTHIK_2:
+                    return korthik[1];
+                case NPC_KORTHIK_3:
+                    return korthik[2];
+                //
                 case NPC_UNSOK:
                     return unsokGuid;
                 case NPC_SHEKZEER:

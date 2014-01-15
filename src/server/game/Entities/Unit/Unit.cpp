@@ -17185,6 +17185,9 @@ void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply
         ApplyPercentModFloatValue(UNIT_FIELD_BASEATTACKTIME+att, -val, apply);
     }
 
+    if (ToPet() && att == BASE_ATTACK)
+        ToPet()->UpdatePetMeleeHastMod();
+
     if (val && isPet())
         UpdateDamagePhysical(att);
 

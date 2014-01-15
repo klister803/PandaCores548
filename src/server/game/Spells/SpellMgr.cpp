@@ -3336,6 +3336,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 125883: // Zen Flight
+                    spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_MELEE_ATTACK;
+                    break;
                 case 31665: // Master of subtlety
                     spellInfo->Effects[0].BasePoints = 10;
                     break;
@@ -3560,6 +3563,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
                 case 64422: // Sonic Screech (Auriaya)
+                case 122994: // Unseen Strike
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
@@ -4243,6 +4247,20 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Speed = 25.f;
                     break;
 
+
+                //Heart of Fear
+                //Lord Meljarak
+                case 122193: //Heal
+                    spellInfo->TargetAuraSpell = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    break;
+                case 122147: //Heal trigger
+                    spellInfo->TargetAuraSpell = 0;
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
+
+                    
                 //World Boss
                 //Sha of Anger
                 case 119487: //Anger
