@@ -201,15 +201,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 {
-    time_t now = time(NULL);
-    if (now - timeMoveTeleportAck < 3)
-    {
-        recvPacket.rfinish();
-        return;
-    }
-    else
-       timeMoveTeleportAck = now;
-
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_TELEPORT_ACK");
 
     ObjectGuid guid;
