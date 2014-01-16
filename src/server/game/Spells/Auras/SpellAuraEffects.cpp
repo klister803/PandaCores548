@@ -722,21 +722,29 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             }
             break;
         case SPELL_AURA_PERIODIC_DAMAGE:
+        {
             if (!caster)
                 break;
-            // Rupture
-            if (GetSpellInfo()->Id == 1943)
+
+            switch (GetId())
             {
-                m_canBeRecalculated = false;
-
-                if (caster->GetTypeId() != TYPEID_PLAYER)
-                    break;
-
-                uint8 cp = caster->ToPlayer()->GetComboPoints();
-                float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
-
-                switch (cp)
+                case 109076: // Incendiary Fireworks Launcher
                 {
+                    amount = irand(6000, 9000);
+                    break;
+                }
+                case 1943: // Rupture
+                {
+                    m_canBeRecalculated = false;
+
+                    if (caster->GetTypeId() != TYPEID_PLAYER)
+                        break;
+
+                    uint8 cp = caster->ToPlayer()->GetComboPoints();
+                    float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+                    switch (cp)
+                    {
                     case 1:
                         amount += int32(ap * 0.1f / 4);
                         break;
@@ -754,45 +762,50 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         break;
                     default:
                         break;
-                }
-            }
-            // Rip
-            if (m_spellInfo->Id == 1079)
-            {
-                m_canBeRecalculated = false;
-
-                if (caster->GetTypeId() != TYPEID_PLAYER)
+                    }
                     break;
+                }
+                case 1079: // Rip
+                {
+                    m_canBeRecalculated = false;
 
-                // Basepoint hotfix
-                amount *= 10;
+                    if (caster->GetTypeId() != TYPEID_PLAYER)
+                        break;
 
-                uint8 cp = caster->ToPlayer()->GetComboPoints();
-                int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    // Basepoint hotfix
+                    amount *= 10;
 
-                // In feral spec : 0.484 * $AP * cp
-                if (caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_DROOD_CAT)
-                    amount += int32(cp * AP * 0.484f);
-                // In other spec : 0.387 * $AP * cp
-                else
-                    amount += int32(cp * AP * 0.387f);
+                    uint8 cp = caster->ToPlayer()->GetComboPoints();
+                    int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
 
-                amount /= int32(GetBase()->GetMaxDuration() / GetBase()->GetEffect(0)->GetAmplitude());
-            }
-            // Unholy Blight damage over time effect
-            else if (GetId() == 50536)
-            {
-                m_canBeRecalculated = false;
-                // we're getting total damage on aura apply, change it to be damage per tick
-                amount = int32((float)amount / GetTotalTicks());
-            }
-            // Death and Decay
-            else if (GetId() == 43265)
-            {
-                int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                amount += int32(AP * 0.064f);
+                    // In feral spec : 0.484 * $AP * cp
+                    if (caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_DROOD_CAT)
+                        amount += int32(cp * AP * 0.484f);
+                    // In other spec : 0.387 * $AP * cp
+                    else
+                        amount += int32(cp * AP * 0.387f);
+
+                    amount /= int32(GetBase()->GetMaxDuration() / GetBase()->GetEffect(0)->GetAmplitude());
+                    break;
+                }
+                case 50536: // Unholy Blight damage over time effect
+                {
+                    m_canBeRecalculated = false;
+                    // we're getting total damage on aura apply, change it to be damage per tick
+                    amount = int32((float)amount / GetTotalTicks());
+                    break;
+                }
+                case 43265: // Death and Decay
+                {
+                    int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    amount += int32(AP * 0.064f);
+                    break;
+                }
+                default:
+                    break;
             }
             break;
+        }
         case SPELL_AURA_PERIODIC_ENERGIZE:
             switch (m_spellInfo->Id)
             {
