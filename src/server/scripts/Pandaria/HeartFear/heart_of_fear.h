@@ -27,6 +27,7 @@ enum eCreatures
     NPC_GARALON            = 62164,
     NPC_MELJARAK           = 62397,
     NPC_UNSOK              = 62511,
+    NPC_AMBER_MONSTER      = 62711,
     NPC_SHEKZEER           = 62837,
 
     //Merjalak soldiers
@@ -60,6 +61,8 @@ enum eGameObjects
     GO_GARALON_COMBAT_DOOR = 212695,
     GO_GARALON_EX_DOOR     = 214634,
     GO_MELJARAK_EX_DOOR    = 214489,
+    GO_UNSOK_EN_DOOR       = 214492,
+    GO_UNSOK_EX_DOOR       = 214493,
 };
 
 #endif HEARTOFFEAR

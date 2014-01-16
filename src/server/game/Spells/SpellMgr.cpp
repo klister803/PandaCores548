@@ -4259,6 +4259,24 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
+                //
+                //Unsok
+                case 122408: //Massive Stomp
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(18);//15 yards
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(18);
+                    break;
+                case 121995: //Amber Scalpel trigger spell
+                    spellInfo->TargetAuraSpell = 0;
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(15);//3yards
+                    break;
+                case 122532: //Explose
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
+
 
                     
                 //World Boss

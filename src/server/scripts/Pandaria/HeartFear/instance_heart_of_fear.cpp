@@ -26,6 +26,8 @@ public:
         uint64 tayakexdoorGuid;
         uint64 garalonentdoorGuid;
         uint64 meljarakexdoorGuid;
+        uint64 unsokendoorGuid;
+        uint64 unsokexdoorGuid;
 
         std::vector<uint64> vizierarenadoorGuids;
         std::vector<uint64> garaloncdoorGuids;
@@ -38,6 +40,7 @@ public:
         uint64 garalonGuid;
         uint64 meljarakGuid;
         uint64 unsokGuid;
+        uint64 ambermonsterGuid;
         uint64 shekzeerGuid;
 
         uint64 srathik[3];
@@ -55,6 +58,8 @@ public:
             tayakexdoorGuid     = 0;
             garalonentdoorGuid  = 0;
             meljarakexdoorGuid  = 0;
+            unsokendoorGuid     = 0;
+            unsokexdoorGuid     = 0;
 
             vizierarenadoorGuids.clear();
             garaloncdoorGuids.clear();
@@ -67,6 +72,7 @@ public:
             garalonGuid         = 0;
             meljarakGuid        = 0;
             unsokGuid           = 0;
+            ambermonsterGuid    = 0;
             shekzeerGuid        = 0;
 
             for (uint8 n = 0; n < 3; n++)
@@ -132,6 +138,9 @@ public:
             case NPC_UNSOK:
                 unsokGuid = creature->GetGUID();
                 break;
+            case NPC_AMBER_MONSTER:
+                ambermonsterGuid = creature->GetGUID();
+                break;
             case NPC_SHEKZEER:
                 shekzeerGuid = creature->GetGUID();
                 break;
@@ -165,6 +174,12 @@ public:
                 break;
             case GO_MELJARAK_EX_DOOR:
                 meljarakexdoorGuid = go->GetGUID();
+                break;
+            case GO_UNSOK_EN_DOOR:
+                unsokendoorGuid = go->GetGUID();
+                break;
+            case GO_UNSOK_EX_DOOR:
+                unsokexdoorGuid = go->GetGUID();
                 break;
             }
         }
@@ -275,13 +290,32 @@ public:
                         }
                         break;
                     case DONE:
-                        //HandleGameObject(meljarakexdoorGuid, true); next boss not ready
+                        HandleGameObject(meljarakexdoorGuid, true);
+                        HandleGameObject(unsokendoorGuid, true);
                         for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
                             HandleGameObject(*guids, true);
                         break;
                     }
+                    break;
                 }
-                break;
+            case DATA_UNSOK:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(unsokendoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(unsokendoorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(unsokendoorGuid, true);
+                        //HandleGameObject(unsokexdoorGuid, true); next boss not ready
+                        break;
+                    }
+                    break;
+                }
+                
             }
             return true;
         }
