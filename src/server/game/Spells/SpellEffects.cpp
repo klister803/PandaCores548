@@ -1106,6 +1106,20 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                case 126734: // Synapse Springs (Mod II)
+                {
+                    uint32 spellid;
+                    uint32 Agi = m_caster->GetStat(STAT_AGILITY);
+                    uint32 Str = m_caster->GetStat(STAT_STRENGTH);
+                    uint32 Int = m_caster->GetStat(STAT_INTELLECT);
+
+                    if      (Agi > Str && Agi > Int) spellid = 96228;
+                    else if (Str > Agi && Str > Int) spellid = 96229;
+                    else if (Int > Str && Int > Agi) spellid = 96230;
+
+                    m_caster->CastCustomSpell(m_caster, spellid, &damage, 0, 0, true);
+                    break;
+                }
                 case 105617: // Alchemist's Flask
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
