@@ -5231,6 +5231,23 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
     if (damage <= 0)
         return;
 
+    if (m_spellInfo->Id == 51723)
+    {
+        if (uint64 combotarget = m_caster->m_movedPlayer->GetComboTarget())
+        {
+            if (unitTarget->GetGUID() != combotarget)
+                return;
+        }
+        else
+        {
+            if (Unit * target = m_caster->m_movedPlayer->GetSelectedUnit())
+            {
+                if (unitTarget->GetGUID() != target->GetGUID())
+                    return;
+            }
+        }
+    }
+
     m_caster->ProcDamageAndSpell(m_caster, PROC_FLAG_ADD_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NORMAL_HIT, damage, BASE_ATTACK, m_spellInfo);
     m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
 }
