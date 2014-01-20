@@ -225,7 +225,7 @@ void ReputationMgr::SendInitialReputations()
     }
 
     for (uint32 i = 0; i < 256; ++i)
-        data.WriteBit(0);
+        data.WriteBit(0);               // has bonus rep gain unlocked
 
     _player->SendDirectMessage(&data);
 }

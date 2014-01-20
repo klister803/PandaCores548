@@ -10916,7 +10916,7 @@ void Player::SendTalentWipeConfirm(uint64 guid, bool specialization)
     data.WriteByteSeq(Guid[5]);
     data.WriteByteSeq(Guid[1]);
 
-    data << uint8(specialization); // 0 : talent 1 : specialization
+    data << uint8(specialization); // 0: talent, 1: specialization, 2: glyph, 3: pet speciazlization
 
     data.WriteByteSeq(Guid[0]);
     data.WriteByteSeq(Guid[2]);

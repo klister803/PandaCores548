@@ -121,7 +121,8 @@ enum GuildCommandError
     ERR_GUILD_TRIAL_ACCOUNT             = 0x24,
     ERR_GUILD_UNDELETABLE_DUE_TO_LEVEL  = 0x25,
     ERR_GUILD_MOVE_STARTING             = 0x26,
-    ERR_GUILD_REP_TOO_LOW               = 0x27
+    ERR_GUILD_REP_TOO_LOW               = 0x27,
+    ERR_GUILD_INVITE_SELF               = 0x28,
 };
 
 enum GuildEvents

@@ -192,8 +192,8 @@ enum Opcodes
     CMSG_EQUIPMENT_SET_SAVE                           = 0x0345, // 5.4.1 17538
     CMSG_EQUIPMENT_SET_USE                            = 0x0426, // 5.4.1 17538
     CMSG_FAR_SIGHT                                    = 0x0374, // 5.4.1 17538
-    CMSG_FORCE_MOVE_ROOT_ACK                          = 0x000,  // Deprecated
-    CMSG_FORCE_MOVE_UNROOT_ACK                        = 0x000,  // Deprecated
+    CMSG_FORCE_MOVE_ROOT_ACK                          = 0x13E8, // 5.4.1 17538
+    CMSG_FORCE_MOVE_UNROOT_ACK                        = 0x0F49, // 5.4.1 17538
     CMSG_GAMEOBJECT_QUERY                             = 0x1677, // 5.4.1 17538
     CMSG_GAMEOBJ_REPORT_USE                           = 0x065F, // 5.4.1 17538
     CMSG_GAMEOBJ_USE                                  = 0x02E5, // 5.4.1 17538
@@ -648,7 +648,7 @@ enum Opcodes
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x1D33, // 5.4.1 17538
     MSG_QUEST_PUSH_RESULT                             = 0x06C4, // 5.4.1 17538
     CMSG_RANDOM_ROLL                                  = 0x0DEC, // 5.4.1 17538
-    SMSG_RANDOM_ROLL                                  = 0xEDB,  // 5.0.5 16135
+    SMSG_RANDOM_ROLL                                  = 0x08B4, // 5.4.1 17538
     MSG_SAVE_GUILD_EMBLEM                             = 0x16D4, // 5.4.1 17538
     MSG_SET_DUNGEON_DIFFICULTY                        = 0x0C69, // 5.4.1 17538
     MSG_SET_RAID_DIFFICULTY                           = 0x04B3, // 5.4.1 17538
@@ -1045,7 +1045,7 @@ enum Opcodes
     SMSG_LF_GUILD_SEARCH_RESULT                       = 0,      // Not found in TC
     SMSG_LOGIN_SETTIMESPEED                           = 0x0D17, // 5.4.1 17538
     SMSG_LOGIN_VERIFY_WORLD                           = 0x0C24, // 5.4.1 17538
-    SMSG_LOGOUT_CANCEL_ACK                            = 0x0417, // 5.4.0 17399
+    SMSG_LOGOUT_CANCEL_ACK                            = 0x0825, // 5.4.1 17538
     SMSG_LOGOUT_COMPLETE                              = 0x0D95, // 5.4.1 17538
     SMSG_LOGOUT_RESPONSE                              = 0x08B5, // 5.4.1 17538
     SMSG_LOG_XPGAIN                                   = 0x98A,  // 5.0.5 16048
@@ -1088,7 +1088,7 @@ enum Opcodes
     SMSG_MOVE_KNOCK_BACK                              = 0xA79,  // 5.0.5 16048
     SMSG_MOVE_LAND_WALK                               = 0xB1C,  // 5.0.5 16048
     SMSG_MOVE_NORMAL_FALL                             = 0xF42,  // 5.0.5 16048
-    SMSG_MOVE_ROOT                                    = 0xF61,  // 5.0.5 16048
+    SMSG_MOVE_ROOT                                    = 0x0608, // 5.4.1 17538
     SMSG_MOVE_SET_ACTIVE_MOVER                        = 0xA67,  // 5.0.5 16048
     SMSG_MOVE_SET_CAN_FLY                             = 0xB90,  // 5.0.5 16048
     SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0xBA7,  // 5.0.5 16048
@@ -1104,7 +1104,7 @@ enum Opcodes
     SMSG_MOVE_SET_SWIM_SPEED                          = 0xE46,  // 5.0.5 16048
     SMSG_MOVE_SET_TURN_RATE                           = 0xE44,  // 5.0.5 16048
     SMSG_MOVE_SET_WALK_SPEED                          = 0xA23,  // 5.0.5 16048
-    SMSG_MOVE_UNROOT                                  = 0xB11,  // 5.0.5 16048
+    SMSG_MOVE_UNROOT                                  = 0x0618, // 5.4.1 17538
     SMSG_MOVE_UNSET_CAN_FLY                           = 0xBC9,  // 5.0.5 16048
     SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0xA28,// 5.0.5 16048
     SMSG_MOVE_UNSET_HOVER                             = 0xF75,  // 5.0.5 16048
@@ -1395,7 +1395,7 @@ enum Opcodes
     SMSG_VOID_TRANSFER_RESULT                         = 0xE02,  // 5.0.5 16048
     SMSG_WAIT_QUEUE_FINISH                            = 0xF17,  // 5.0.5 16048
     SMSG_WAIT_QUEUE_UPDATE                            = 0xAC8,  // 5.0.5 16048
-    SMSG_WARDEN_DATA                                  = 0xEA8,  // 5.0.5 16048
+    SMSG_WARDEN_DATA                                  = 0x09AC, // 5.4.1 17538
     SMSG_WARGAME_CHECK_ENTRY                          = 0xBE6,  // 5.0.5 16048
     SMSG_WARGAME_REQUEST_SENT                         = 0xF48,  // 5.0.5 16048
     SMSG_WEATHER                                      = 0x485,  // 5.4.1 17538

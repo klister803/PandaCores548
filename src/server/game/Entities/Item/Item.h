@@ -131,6 +131,7 @@ enum InventoryResult
     EQUIP_ERR_ITEM_INVENTORY_FULL_SATCHEL                  = 91, // Your inventory is full. Your satchel has been delivered to your mailbox.
     EQUIP_ERR_SCALING_STAT_ITEM_LEVEL_TOO_LOW              = 92, // Your level is too low to use that item
     EQUIP_ERR_CANT_BUY_QUANTITY                            = 93, // You can't buy the specified quantity of that item.
+    EQUIP_ERR_ITEM_IS_BATTLE_PAY_LOCKED                    = 94,
 };
 
 enum BuyResult
