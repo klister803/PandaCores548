@@ -20299,48 +20299,24 @@ void Unit::SendTeleportPacket(Position &oldPos)
     ObjectGuid transGuid = GetTransGUID();
 
     WorldPacket data(SMSG_MOVE_TELEPORT, 38);
-    data.WriteBit(uint64(transGuid));
-    data.WriteBit(guid[5]);
+    data.WriteGuidMask<7>(guid);
+    data.WriteBit(0);       // byte33
+    data.WriteGuidMask<2, 0>(guid);
+    data.WriteBit(transGuid != 0);
     if (transGuid)
-    {
-        uint8 bitOrder[8] = {5, 6, 2, 0, 1, 4, 7, 3};
-        data.WriteBitInOrder(transGuid, bitOrder);
-    }
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(0);       // unknown
-    //if (unk bit)
-    //{
-    //    data.WriteBit(unk1);
-    //    data.WriteBit(unk2);
-    //}
-    data.WriteBit(guid[2]);
-    data.FlushBits();
+        data.WriteGuidMask<4, 3, 5, 7, 0, 2, 6, 1>(transGuid);
+    data.WriteGuidMask<5, 1, 3, 6, 4>(guid);
 
-    //if (unk bit)
-    //    data << uint8(unk);
-
+    data.WriteGuidBytes<0>(guid);
     if (transGuid)
-    {
-        uint8 byteOrder[8] = {2, 7, 1, 5, 6, 0, 4, 3};
-        data.WriteBytesSeq(transGuid, byteOrder);
-    }
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data << float(GetOrientation());
-    data << float(GetPositionX());
-    data << float(GetPositionY());
+        data.WriteGuidBytes<7, 6, 0, 2, 3, 1, 5, 4>(transGuid);
+    data.WriteGuidBytes<6, 1>(guid);
     data << uint32(0);  // counter
+    data.WriteGuidBytes<7, 5>(guid);
+    data << float(GetPositionX());
+    data.WriteGuidBytes<4, 3, 2>(guid);
+    data << float(GetPositionY());
+    data << float(GetOrientation());
     data << float(GetPositionZMinusOffset());
 
     Relocate(&oldPos);

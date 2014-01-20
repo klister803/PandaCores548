@@ -64,7 +64,7 @@ void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
 
 void WorldSession::HandleLearnTalents(WorldPacket& recvData)
 {
-    uint32 count = recvData.ReadBits(25);
+    uint32 count = recvData.ReadBits(23);
 
     // Cheat - Hack check
     if (count > 6)
@@ -73,7 +73,7 @@ void WorldSession::HandleLearnTalents(WorldPacket& recvData)
     if (count > _player->GetFreeTalentPoints())
         return;
 
-    for (uint32 i = 0; i < count; i++)
+    for (uint32 i = 0; i < count; ++i)
     {
         uint16 talentId = recvData.read<uint16>();
         _player->LearnTalent(talentId);

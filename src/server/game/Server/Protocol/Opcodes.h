@@ -628,7 +628,7 @@ enum Opcodes
     MSG_MOVE_START_BACKWARD                           = 0,      // Client patched
     MSG_MOVE_START_DESCEND                            = 0,      // Client patched
     MSG_MOVE_STOP                                     = 0x455,  // 5.0.5 16048 Used ?
-    SMSG_MOVE_TELEPORT                                = 0xA95,  // 5.0.5 16048
+    SMSG_MOVE_TELEPORT                                = 0x0A2E, // 5.4.1 17538
     CMSG_MOVE_TELEPORT_ACK                            = 0x0AE9, // 5.4.1 17538
     MSG_MOVE_TELEPORT_CHEAT                           = 0,
     MSG_MOVE_TIME_SKIPPED                             = 0xA52,  // 5.0.5 16048 Used ?
@@ -785,7 +785,7 @@ enum Opcodes
     SMSG_CANCEL_AUTO_REPEAT                           = 0xDBB,  // 5.0.5 16048
     SMSG_CANCEL_COMBAT                                = 0x9D5,  // 5.0.5 16048
     SMSG_CAST_FAILED                                  = 0x91C,  // 5.0.5 16048
-    SMSG_CHANNEL_LIST                                 = 0xCC3,  // 5.0.5 16048
+    SMSG_CHANNEL_LIST                                 = 0x142B, // 5.4.1 17538
     SMSG_CHANNEL_MEMBER_COUNT                         = 0x8D4,  // 5.0.5 16048
     SMSG_CHANNEL_NOTIFY                               = 0x1490, // 5.4.1 17538
     SMSG_CHARACTER_LOGIN_FAILED                       = 0xC6D,  // 5.0.5 16048
@@ -810,7 +810,7 @@ enum Opcodes
     SMSG_CLEAR_FAR_SIGHT_IMMEDIATE                    = 0xCDE,  // 5.0.5 16048
     SMSG_CLEAR_TARGET                                 = 0xD0B,  // 5.0.5 16048
     SMSG_CLIENTCACHE_VERSION                          = 0x1037, // 5.4.1 17538
-    SMSG_CLIENT_CONTROL_UPDATE                        = 0,      // 0x2837 in 4.3.4 @todo : Find me and BACON !
+    SMSG_CLIENT_CONTROL_UPDATE                        = 0x0987, // 5.4.1 17538
     SMSG_COMBAT_EVENT_FAILED                          = 0x9EF,  // 5.0.5 16048
     SMSG_COMBAT_LOG_MULTIPLE                          = 0,      // Not found in 4.3.4
     SMSG_COMMENTATOR_MAP_INFO                         = 0xC11,  // 5.0.5 16048
@@ -979,7 +979,7 @@ enum Opcodes
     SMSG_HIGHEST_THREAT_UPDATE                        = 0x1436, // 5.4.1 17538
     SMSG_HOTFIX_INFO                                  = 0x0C27, // 5.4.1 17538
     SMSG_HOTFIX_NOTIFY                                = 0xEE0,  // 5.0.5 16048
-    SMSG_INITIALIZE_FACTIONS                          = 0x824,  // 5.0.5 16048
+    SMSG_INITIALIZE_FACTIONS                          = 0x0CAC, // 5.4.1 17538
     SMSG_INIT_CURRENCY                                = 0xAE5,  // 5.0.5 16048
     SMSG_INIT_WORLD_STATES                            = 0x0D94, // 5.4.1 17538
     SMSG_INSPECT                                      = 0,      // Not found in 4.3.4
@@ -1122,8 +1122,8 @@ enum Opcodes
     SMSG_MULTIPLE_PACKETS                             = 0x826,  // 5.0.5 16048
     SMSG_NAME_QUERY_RESPONSE                          = 0x1407, // 5.4.1 17538
     SMSG_NEW_TAXI_PATH                                = 0x813,  // 5.0.5 16048
-    SMSG_NEW_WORLD                                    = 0xF21,  // 5.0.5 16048
-    SMSG_NEW_WORLD_ABORT                              = 0xEA0,  // 5.0.5 16048
+    SMSG_NEW_WORLD                                    = 0x010F, // 5.4.1 17538
+    SMSG_NEW_WORLD_ABORT                              = 0x0DB6, // 5.4.1 17538
     SMSG_NOTIFICATION                                 = 0xE0F,  // 5.0.5 16048
     SMSG_NOTIFY_DANCE                                 = 0x917,  // 5.0.5 16048
     SMSG_NOTIFY_DEST_LOC_SPELL_CAST                   = 0x8FA,  // 5.0.5 16048
@@ -1154,11 +1154,11 @@ enum Opcodes
     SMSG_PET_CAST_FAILED                              = 0x9C9,  // 5.0.5 16048
     SMSG_PET_DISMISS_SOUND                            = 0xD84,  // 5.0.5 16048
     SMSG_PET_GUIDS                                    = 0,      // 0x2D26 in 4.3.4 @todo : Find me and BACON !
-    SMSG_PET_LEARNED_SPELL                            = 0xE63,  // 5.0.5 16048
+    SMSG_PET_LEARNED_SPELL                            = 0x0597, // 5.4.1 17538
     SMSG_PET_MODE                                     = 0xD2C,  // 5.0.5 16048
     SMSG_PET_NAME_INVALID                             = 0x85B,  // 5.0.5 16048
     SMSG_PET_NAME_QUERY_RESPONSE                      = 0x88E,  // 5.0.5 16048
-    SMSG_PET_REMOVED_SPELL                            = 0xEBE,  // 5.0.5 16048
+    SMSG_PET_REMOVED_SPELL                            = 0x048D, // 5.4.1 17538
     SMSG_PET_RENAMEABLE                               = 0x9EB,  // 5.0.5 16048
     SMSG_PET_SLOT_UPDATED                             = 0xA1B,  // 5.0.5 16048
     SMSG_PET_SPELLS                                   = 0xD79,  // 5.0.5 16048
@@ -1235,7 +1235,7 @@ enum Opcodes
     SMSG_REFER_A_FRIEND_EXPIRED                       = 0xC01,  // 5.0.5 16048
     SMSG_REFER_A_FRIEND_FAILURE                       = 0x8C5,  // 5.0.5 16048
     SMSG_REFORGE_RESULT                               = 0xBA6,  // 5.0.5 16048
-    SMSG_REMOVED_SPELL                                = 0xBB0,  // 5.0.5 16048
+    SMSG_REMOVED_SPELL                                = 0x049E, // 5.4.1 17538
     SMSG_REPORT_PVP_AFK_RESULT                        = 0x897,  // 5.0.5 16048
     SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0xBB7,  // 5.0.5 16048
     SMSG_REQUEST_PVP_REWARDS_RESPONSE                 = 0xE30,  // 5.0.5 16048
@@ -1252,7 +1252,7 @@ enum Opcodes
     SMSG_RWHOIS                                       = 0xDCA,  // 5.0.5 16048
     SMSG_SELL_ITEM                                    = 0xC76,  // 5.0.5 16048
     SMSG_SEND_MAIL_RESULT                             = 0xA4F,  // 5.0.5 16048
-    SMSG_SEND_UNLEARN_SPELLS                          = 0xFD7,  // 5.0.5 16048
+    SMSG_SEND_UNLEARN_SPELLS                          = 0x14C4, // 5.4.1 17538
     SMSG_SERVERTIME                                   = 0x999,  // 5.0.5 16048
     SMSG_SERVER_FIRST_ACHIEVEMENT                     = 0x8A6,  // 5.0.5 16048
     SMSG_SERVER_INFO_RESPONSE                         = 0xA5C,  // 5.0.5 16048
@@ -1269,7 +1269,7 @@ enum Opcodes
     SMSG_SET_MELEE_ANIM_KIT                           = 0,      // Not found in 4.3.4
     SMSG_SET_MOVEMENT_ANIM_KIT                        = 0,      // Not found in 4.3.4
     SMSG_SET_PCT_SPELL_MODIFIER                       = 0x802,  // 5.0.5 16048
-    SMSG_SET_PET_SPECIALIZATION                       = 0xE17,  // 5.0.5 16048
+    SMSG_SET_PET_SPECIALIZATION                       = 0x1115, // 5.4.1 17538
     SMSG_SET_PHASE_SHIFT                              = 0xA93,  // 5.0.5 16048
     SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0xD26,  // 5.0.5 16048
     SMSG_SET_PLAY_HOVER_ANIM                          = 0xE84,  // 5.0.5 16048
@@ -1337,7 +1337,7 @@ enum Opcodes
     SMSG_STREAMING_MOVIE                              = 0xB4C,  // 5.0.5 16048
     SMSG_SUMMON_CANCEL                                = 0xCD0,  // 5.0.5 16048
     SMSG_SUMMON_REQUEST                               = 0x82D,  // 5.0.5 16048
-    SMSG_SUPERCEDED_SPELL                             = 0xA6B,  // 5.0.5 16048
+    SMSG_SUPERCEDED_SPELL                             = 0x008D, // 5.4.1 17538
     SMSG_SUPPRESS_NPC_GREETINGS                       = 0xA2A,  // 5.0.5 16048
     SMSG_SUSPEND_COMMS                                = 0x662,  // 5.0.5 16048
     SMSG_SUSPEND_TOKEN_RESPONSE                       = 0xB4F,  // 5.0.5 16048
@@ -1372,13 +1372,13 @@ enum Opcodes
     SMSG_UPDATE_CURRENCY_WEEK_LIMIT                   = 0xAEA,  // 5.0.5 16048
     SMSG_UPDATE_DUNGEON_ENCOUNTER_FOR_LOOT            = 0xA53,  // 5.0.5 16048
     SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT               = 0xCA3,  // 5.0.5 16048
-    SMSG_UPDATE_INSTANCE_OWNERSHIP                    = 0xC8C,  // 5.0.5 16048
+    SMSG_UPDATE_INSTANCE_OWNERSHIP                    = 0x01BF, // 5.4.1 17538
     SMSG_UPDATE_ITEM_ENCHANTMENTS                     = 0x98E,  // 5.0.5 16048
-    SMSG_UPDATE_LAST_INSTANCE                         = 0xDDC,  // 5.0.5 16048
+    SMSG_UPDATE_LAST_INSTANCE                         = 0x112E, // 5.4.1 17538
     SMSG_UPDATE_OBJECT                                = 0x0C22, // 5.4.1 17538
     SMSG_UPDATE_SERVER_PLAYER_POSITION                = 0,      // 0x74A3  in 4.3.4 @todo find me 
     SMSG_UPDATE_TALENT_DATA                           = 0x0494, // 5.4.1 17538
-    SMSG_UPDATE_WORLD_STATE                           = 0x847,  // 5.0.5 16048
+    SMSG_UPDATE_WORLD_STATE                           = 0x1437, // 5.4.1 17538
     //SMSG_USERLIST_ADD                                 = 0x95A,  // 5.0.5 16048
     SMSG_USERLIST_REMOVE                              = 0xD6E,  // 5.0.5 16048
     SMSG_USERLIST_UPDATE                              = 0x95A,  // 5.0.5 16048

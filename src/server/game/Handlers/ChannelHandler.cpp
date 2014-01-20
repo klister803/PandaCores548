@@ -34,8 +34,8 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
     passLength = recvPacket.ReadBits(7);
     recvPacket.ReadBit();   // by zone update
 
-    pass = recvPacket.ReadString(passLength);
     channelName = recvPacket.ReadString(channelLength);
+    pass = recvPacket.ReadString(passLength);
 
     if (channelId)
     {

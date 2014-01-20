@@ -888,19 +888,19 @@ void WorldSession::HandleLearnPetSpecialization(WorldPacket & recvData)
     switch(index)
     {
         case 0:
-            specializationId = SPEC_PET_FEROCITY; // Férocité
+            specializationId = SPEC_PET_FEROCITY;   // Ferocity
             break;
         case 1:
-            specializationId = SPEC_PET_TENACITY; // Ténacité
+            specializationId = SPEC_PET_TENACITY;   // Tenacity
             break;
         case 2:
-            specializationId = SPEC_PET_CUNNING; // Ruse
+            specializationId = SPEC_PET_CUNNING;    // Cunning
             break;
         default:
             break;
     }
 
-    if(!specializationId)
+    if (!specializationId)
         return;
 
     Pet* pet = _player->GetPet();
