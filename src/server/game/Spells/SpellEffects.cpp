@@ -1341,6 +1341,11 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
+        // Lunar Invitation
+        case 26373:
+            if(m_caster->ToPlayer())
+                m_caster->ToPlayer()->TeleportTo(1, 7581.144531f, -2211.47900f, 473.639771f, 0, 0);
+        break;
         // Death Coil (Symbiosis)
         case 122282:
         {
