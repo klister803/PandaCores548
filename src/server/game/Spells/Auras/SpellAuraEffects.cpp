@@ -5053,6 +5053,12 @@ void AuraEffect::HandleModRating(AuraApplication const* aurApp, uint8 mode, bool
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
 
+    if (GetMiscValue() == 33554432) // Mastery
+    {
+        target->ToPlayer()->UpdateRating(CR_MASTERY);
+        return;
+    }
+
     for (uint32 rating = 0; rating < MAX_COMBAT_RATING; ++rating)
         if (GetMiscValue() & (1 << rating))
             target->ToPlayer()->ApplyRatingMod(CombatRating(rating), GetAmount(), apply);
