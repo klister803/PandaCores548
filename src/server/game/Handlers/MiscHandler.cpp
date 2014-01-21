@@ -587,7 +587,6 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
     std::string friendNote;
 
     recvData >> friendName;
-
     recvData >> friendNote;
 
     if (!normalizePlayerName(friendName))
@@ -722,10 +721,10 @@ void WorldSession::HandleAddIgnoreOpcodeCallBack(PreparedQueryResult result)
             if (IgnoreGuid == GetPlayer()->GetGUID())              //not add yourself
                 ignoreResult = FRIEND_IGNORE_SELF;
             else if (GetPlayer()->GetSocial()->HasIgnore(GUID_LOPART(IgnoreGuid)))
-                ignoreResult = FRIEND_IGNORE_ALREADY;
+                ignoreResult = FRIEND_IGNORE_ALREADY_S;
             else
             {
-                ignoreResult = FRIEND_IGNORE_ADDED;
+                ignoreResult = FRIEND_IGNORE_ADDED_S;
 
                 // ignore list full
                 if (!GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(IgnoreGuid), true))
@@ -870,6 +869,8 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
 {
     uint32 triggerId;
     recvData >> triggerId;
+    recvData.ReadBit();
+    recvData.ReadBit();
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_AREATRIGGER. Trigger ID: %u", triggerId);
 
@@ -2013,8 +2014,9 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode(WorldPacket& recv_data)
 
     Battleground* bg = _player->GetBattleground();
 
-    uint64 guid;
-    recv_data >> guid;
+    ObjectGuid guid;
+    recv_data.ReadGuidMask<0, 6, 2, 4, 5, 7, 1, 3>(guid);
+    recv_data.ReadGuidBytes<6, 2, 5, 7, 3, 4, 0, 1>(guid);
 
     Creature* unit = GetPlayer()->GetMap()->GetCreature(guid);
     if (!unit)
@@ -2036,8 +2038,9 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode(WorldPacket& recv_data)
 
     Battleground* bg = _player->GetBattleground();
 
-    uint64 guid;
-    recv_data >> guid;
+    ObjectGuid guid;
+    recv_data.ReadGuidMask<4, 1, 7, 0, 5, 6, 2, 3>(guid);
+    recv_data.ReadGuidBytes<5, 7, 1, 2, 6, 0, 3, 4>(guid);
 
     Creature* unit = GetPlayer()->GetMap()->GetCreature(guid);
     if (!unit)

@@ -67,8 +67,9 @@ void WorldSession::HandleAcceptGrantLevel(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_ACCEPT_LEVEL_GRANT");
 
-    uint64 guid;
-    recvData.readPackGUID(guid);
+    ObjectGuid guid;
+    recvData.ReadGuidMask<0, 6, 5, 1, 4, 7, 2, 3>(guid);
+    recvData.ReadGuidBytes<4, 2, 3, 0, 6, 1, 7, 5>(guid);
 
     Player* other = ObjectAccessor::GetObjectInWorld(guid, _player);
     if (!(other && other->GetSession()))

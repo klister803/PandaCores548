@@ -664,7 +664,7 @@ enum Opcodes
     SMSG_ACHIEVEMENT_DELETED                          = 0x920,  // 5.0.5 16048
     SMSG_ACHIEVEMENT_EARNED                           = 0xAF4,  // 5.0.5 16048
     SMSG_ACTION_BUTTONS                               = 0x0406, // 5.4.1 17538
-    SMSG_ACTIVATETAXIREPLY                            = 0x9DE,  // 5.0.5 16048
+    SMSG_ACTIVATETAXIREPLY                            = 0x0816, // 5.4.1 17538
     SMSG_ADDON_INFO                                   = 0x1136, // 5.4.1 17538
     SMSG_ADD_RUNE_POWER                               = 0x86A,  // 5.0.5 16048
     SMSG_AI_REACTION                                  = 0x828,  // 5.0.5 16048
@@ -705,7 +705,7 @@ enum Opcodes
     SMSG_AUTH_RESPONSE                                = 0x0D05, // 5.4.1 17538
     SMSG_AVAILABLE_VOICE_CHANNEL                      = 0x941,  // 5.0.5 16048
     SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,  // 5.0.5 16048
-    SMSG_BARBER_SHOP_RESULT                           = 0x835,  // 5.0.5 16048
+    SMSG_BARBER_SHOP_RESULT                           = 0x0126, // 5.4.1 17538
     SMSG_BATTLE_PET_BATTLE_FINISHED                   = 0xBC8,  // 5.0.5 16048
     SMSG_BATTLE_PET_CHAT_RESTRICTED                   = 0xB68,  // 5.0.5 16048
     SMSG_BATTLE_PET_DELETED                           = 0xF49,  // 5.0.5 16048
@@ -794,7 +794,7 @@ enum Opcodes
     SMSG_CHAR_DELETE                                  = 0x017,  // 5.4.1 17538
     SMSG_CHAR_ENUM                                    = 0x40E,  // 5.4.1 17538
     SMSG_CHAR_FACTION_CHANGE                          = 0x9E0,  // 5.0.5 16048
-    SMSG_CHAR_RENAME                                  = 0x945,  // 5.0.5 16048
+    SMSG_CHAR_RENAME                                  = 0x05BD, // 5.4.1 17538
     SMSG_CHAT_IGNORED_ACCOUNT_MUTED                   = 0x000,  // 5.0.5 16048
     SMSG_CHAT_NOT_IN_PARTY                            = 0xD98,  // 5.0.5 16048
     SMSG_CHAT_PLAYER_AMBIGUOUS                        = 0x989,  // 5.0.5 16048
@@ -828,7 +828,7 @@ enum Opcodes
     SMSG_COMSAT_CONNECT_FAIL                          = 0x832,  // 5.0.5 16048
     SMSG_COMSAT_DISCONNECT                            = 0x9BC,  // 5.0.5 16048
     SMSG_COMSAT_RECONNECT_TRY                         = 0x961,  // 5.0.5 16048
-    SMSG_CONTACT_LIST                                 = 0xDC6,  // 5.0.5 16048
+    SMSG_CONTACT_LIST                                 = 0x05B8, // 5.4.1 17538
     SMSG_CONVERT_RUNE                                 = 0xCE9,  // 5.0.5 16048
     SMSG_COOLDOWN_CHEAT                               = 0x8AD,  // 5.0.5 16048
     SMSG_COOLDOWN_EVENT                               = 0x879,  // 5.0.5 16048
@@ -891,7 +891,7 @@ enum Opcodes
     SMSG_FORCE_SEND_QUEUED_PACKETS                    = 0x626,  // 5.0.5 16048
     SMSG_FORCE_SET_VEHICLE_REC_ID                     = 0xAA7,  // 5.0.5 16048
     SMSG_FORGE_MASTER_SET                             = 0xF8F,  // 5.0.5 16048
-    SMSG_FRIEND_STATUS                                = 0xDD4,  // 5.0.5 16048
+    SMSG_FRIEND_STATUS                                = 0x180B, // 5.4.1 17538
     SMSG_GAMEOBJECT_CUSTOM_ANIM                       = 0xCDC,  // 5.0.5 16048
     SMSG_GAMEOBJECT_DESPAWN_ANIM                      = 0xD55,  // 5.0.5 16048
     SMSG_GAMEOBJECT_PAGETEXT                          = 0x87D,  // 5.0.5 16048
@@ -995,7 +995,7 @@ enum Opcodes
     SMSG_INVALIDATE_DANCE                             = 0xD7E,  // 5.0.5 16048
     SMSG_INVALIDATE_PLAYER                            = 0x8CA,  // 5.0.5 16048
     SMSG_INVALID_PROMOTION_CODE                       = 0xC2F,  // 5.0.5 16048
-    SMSG_INVENTORY_CHANGE_FAILURE                     = 0x98F,  // 5.0.5 16048
+    SMSG_INVENTORY_CHANGE_FAILURE                     = 0x119E, // 5.4.1 17538
     SMSG_ITEM_ADD_PASSIVE                             = 0xF6A,  // 5.0.5 16048
     SMSG_ITEM_COOLDOWN                                = 0x96D,  // 5.0.5 16048
     SMSG_ITEM_ENCHANT_TIME_UPDATE                     = 0x99E,  // 5.0.5 16048
@@ -1055,8 +1055,8 @@ enum Opcodes
     SMSG_LOOT_LIST                                    = 0xC37,  // 5.0.5 16048
     SMSG_LOOT_MASTER_LIST                             = 0xA5A,  // 5.0.5 16048
     SMSG_LOOT_MONEY_NOTIFY                            = 0xF18,  // 5.0.5 16048
-    SMSG_LOOT_RELEASE_RESPONSE                        = 0xB8A,  // 5.0.5 16048
-    SMSG_LOOT_REMOVED                                 = 0xE6A,  // 5.0.5 16048
+    SMSG_LOOT_RELEASE_RESPONSE                        = 0x008F, // 5.4.1 17538
+    SMSG_LOOT_REMOVED                                 = 0x01BD, // 5.4.1 17538
     SMSG_LOOT_RESPONSE                                = 0xA75,  // 5.0.5 16048
     SMSG_LOOT_ROLL                                    = 0xB59,  // 5.0.5 16048
     SMSG_LOOT_ROLL_WON                                = 0xF32,  // 5.0.5 16048
@@ -1244,7 +1244,7 @@ enum Opcodes
     SMSG_RESET_COMPRESSION_CONTEXT                    = 0x627,  // 5.0.5 16048
     SMSG_RESET_FAILED_NOTIFY                          = 0xD3E,  // 5.0.5 16048
     SMSG_RESISTLOG                                    = 0,      // Not found in 4.3.4
-    SMSG_RESPEC_WIPE_CONFIRM                          = 0xE83,  // 5.0.5 16048
+    SMSG_RESPEC_WIPE_CONFIRM                          = 0x099F, // 5.4.1 17538
     SMSG_RESPOND_INSPECT_ACHIEVEMENTS                 = 0xE4C,  // 5.0.5 16048
     SMSG_RESURRECT_REQUEST                            = 0x966,  // 5.0.5 16048
     SMSG_RESYNC_RUNES                                 = 0xC05,  // 5.0.5 16048

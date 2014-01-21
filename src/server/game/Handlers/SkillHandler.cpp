@@ -87,12 +87,14 @@ void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "MSG_TALENT_WIPE_CONFIRM");
 
     uint8 specializationReset = recvData.read<uint8>();
+    ObjectGuid guid;
+    recvData.ReadGuidMask<7, 4, 0, 5, 2, 6, 3, 1>(guid);
+    recvData.ReadGuidBytes<5, 1, 7, 0, 3, 6, 4, 2>(guid);
 
-    //Hack
+    // Hack
     if (GetPlayer()->HasAura(33786))
         return;
 
-    recvData.rfinish();
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
@@ -103,8 +105,8 @@ void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
         {
             WorldPacket data(SMSG_RESPEC_WIPE_CONFIRM, 8+4);    //you have not any talent
             data << uint8(0); // 0 guid bit
-            data << uint8(0);
             data << uint32(0);
+            data << uint8(0);
             SendPacket(&data);
             return;
         }

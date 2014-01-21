@@ -94,9 +94,31 @@ void WorldSession::HandleSwapInvItemOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleAutoEquipItemSlotOpcode(WorldPacket& recvData)
 {
-    uint64 itemguid;
+    ObjectGuid itemguid;
     uint8 dstslot;
-    recvData >> itemguid >> dstslot;
+
+    recvData >> dstslot;
+    uint32 count = recvData.ReadBits(2);
+    recvData.ReadGuidMask<0>(itemguid);
+
+    std::vector<bool> bits[2];
+    for (uint32 i = 0; i < count; ++i)
+    {
+        bits[1].push_back(!recvData.ReadBit());
+        bits[0].push_back(!recvData.ReadBit());
+    }
+
+    recvData.ReadGuidMask<4, 3, 1, 6, 2, 5, 7>(itemguid);
+
+    recvData.ReadGuidBytes<4, 6, 1, 3, 0, 2, 7, 5>(itemguid);
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        if (bits[1][i])
+            recvData.read_skip<uint8>();
+        if (bits[0][i])
+            recvData.read_skip<uint8>();
+    }
 
     // cheating attempt, client should never send opcode in that case
     if (!Player::IsEquipmentPos(INVENTORY_SLOT_BAG_0, dstslot))
@@ -147,6 +169,22 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recvData)
     uint8 srcbag, srcslot;
 
     recvData >> srcbag >> srcslot;
+
+    uint32 count = recvData.ReadBits(2);
+    std::vector<bool> bits[2];
+    for (uint32 i = 0; i < count; ++i)
+    {
+        bits[0].push_back(!recvData.ReadBit());
+        bits[1].push_back(!recvData.ReadBit());
+    }
+    for (uint32 i = 0; i < count; ++i)
+    {
+        if (bits[0][i])
+            recvData.read_skip<uint8>();
+        if (bits[1][i])
+            recvData.read_skip<uint8>();
+    }
+
     //sLog->outDebug("STORAGE: receive srcbag = %u, srcslot = %u", srcbag, srcslot);
 
     Item* pSrcItem  = _player->GetItemByPos(srcbag, srcslot);
@@ -1023,7 +1061,22 @@ void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket& recvData)
     //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_AUTOSTORE_BAG_ITEM");
     uint8 srcbag, srcslot, dstbag;
 
-    recvData >> srcbag >> srcslot >> dstbag;
+    recvData >> srcbag >> dstbag >> srcslot;
+    uint32 count = recvPacket.ReadBits(2);
+    std::vector<bool> bits[2];
+    for (uint32 i = 0; i < count; ++i)
+    {
+        bits[0].push_back(!recvPacket.ReadBit());
+        bits[1].push_back(!recvPacket.ReadBit());
+    }
+    for (uint32 i = 0; i < count; ++i)
+    {
+        if (bits[1][i])
+            recvPacket.read_skip<uint8>();
+        if (bits[0][i])
+            recvPacket.read_skip<uint8>();
+    }
+
     //sLog->outDebug("STORAGE: receive srcbag = %u, srcslot = %u, dstbag = %u", srcbag, srcslot, dstbag);
 
     Item* pItem = _player->GetItemByPos(srcbag, srcslot);
@@ -1127,7 +1180,22 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_AUTOBANK_ITEM");
     uint8 srcbag, srcslot;
 
-    recvPacket >> srcbag >> srcslot;
+    recvPacket >> srcslot >> srcbag;
+    uint32 count = recvPacket.ReadBits(2);
+    std::vector<bool> bits[2];
+    for (uint32 i = 0; i < count; ++i)
+    {
+        bits[1].push_back(!recvPacket.ReadBit());
+        bits[0].push_back(!recvPacket.ReadBit());
+    }
+    for (uint32 i = 0; i < count; ++i)
+    {
+        if (bits[1][i])
+            recvPacket.read_skip<uint8>();
+        if (bits[0][i])
+            recvPacket.read_skip<uint8>();
+    }
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "STORAGE: receive srcbag = %u, srcslot = %u", srcbag, srcslot);
 
     Item* pItem = _player->GetItemByPos(srcbag, srcslot);
@@ -1158,7 +1226,22 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_AUTOSTORE_BANK_ITEM");
     uint8 srcbag, srcslot;
 
-    recvPacket >> srcbag >> srcslot;
+    recvPacket >> srcslot >> srcbag;
+    uint32 count = recvPacket.ReadBits(2);
+    std::vector<bool> bits[2];
+    for (uint32 i = 0; i < count; ++i)
+    {
+        bits[0].push_back(!recvPacket.ReadBit());
+        bits[1].push_back(!recvPacket.ReadBit());
+    }
+    for (uint32 i = 0; i < count; ++i)
+    {
+        if (bits[0][i])
+            recvPacket.read_skip<uint8>();
+        if (bits[1][i])
+            recvPacket.read_skip<uint8>();
+    }
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "STORAGE: receive srcbag = %u, srcslot = %u", srcbag, srcslot);
 
     Item* pItem = _player->GetItemByPos(srcbag, srcslot);

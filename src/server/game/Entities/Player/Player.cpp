@@ -9809,13 +9809,24 @@ void Player::RemovedInsignia(Player* looterPlr)
 void Player::SendLootRelease(uint64 guid)
 {
     WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE);
-    ObjectGuid guidd(guid);
 
-    uint8 bitOrder[8] = {6, 0, 3, 1, 4, 7, 2, 5};
-    data.WriteBitInOrder(guidd, bitOrder);
+    ObjectGuid guid2 = 0;
 
-    uint8 byteOrder[8] = {6, 0, 2, 7, 4, 1, 5, 3};
-    data.WriteBytesSeq(guidd, byteOrder);
+    data.WriteGuidMask<1>(guid2);
+    data.WriteGuidMask<7, 1, 6>(guid);
+    data.WriteGuidMask<0>(guid2);
+    data.WriteGuidMask<2, 3, 5>(guid);
+    data.WriteGuidMask<5>(guid2);
+    data.WriteGuidMask<0>(guid);
+    data.WriteGuidMask<4, 6, 3, 2, 7>(guid2);
+    data.WriteGuidMask<4>(guid);
+
+    data.WriteGuidBytes<4, 0, 3, 2, 6>(guid);
+    data.WriteGuidBytes<5, 2>(guid2);
+    data.WriteGuidBytes<5>(guid);
+    data.WriteGuidBytes<0, 6, 7, 1, 4>(guid2);
+    data.WriteGuidBytes<7, 1>(guid);
+    data.WriteGuidBytes<3>(guid2);
 
     SendDirectMessage(&data);
 }
@@ -10188,29 +10199,37 @@ void Player::SendNotifyLootItemRemoved(uint8 lootSlot, uint64 lguid)
 {
     WorldPacket data(SMSG_LOOT_REMOVED);
     ObjectGuid guid;
-    if(lguid)
+    if (lguid)
         guid = lguid;
     else
         guid = GetLootGUID();
 
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[5]);
+    ObjectGuid guid2 = guid;    // aoeguid
 
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
+    data.WriteGuidMask<5>(guid);
+    data.WriteGuidMask<7>(guid2);
+    data.WriteGuidMask<6>(guid);
+    data.WriteGuidMask<0>(guid2);
+    data.WriteGuidMask<7, 2>(guid);
+    data.WriteGuidMask<1, 2>(guid2);
+    data.WriteGuidMask<2, 3>(guid);
+    data.WriteGuidMask<5>(guid2);
+    data.WriteGuidMask<0>(guid);
+    data.WriteGuidMask<3>(guid2);
+    data.WriteGuidMask<1>(guid);
+    data.WriteGuidMask<6, 4>(guid2);
+
+    data.WriteGuidBytes<5>(guid);
+    data.WriteGuidBytes<7, 5>(guid2);
+    data.WriteGuidBytes<0, 3, 6, 2>(guid);
+    data.WriteGuidBytes<4>(guid2);
+
     data << uint8(lootSlot);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
+
+    data.WriteGuidBytes<1>(guid2);
+    data.WriteGuidBytes<7, 4, 1>(guid);
+    data.WriteGuidBytes<0, 3, 6, 2>(guid2);
+
 
     GetSession()->SendPacket(&data);
 }
@@ -10908,25 +10927,11 @@ void Player::SendTalentWipeConfirm(uint64 guid, bool specialization)
         cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetSpecializationCost();
 
     WorldPacket data(SMSG_RESPEC_WIPE_CONFIRM);
-
-    uint8 bitOrder[8] = {6, 3, 5, 2, 0, 7, 1, 4};
-    data.WriteBitInOrder(Guid, bitOrder);
-    data.FlushBits();
-
-    data.WriteByteSeq(Guid[3]);
-    data.WriteByteSeq(Guid[5]);
-    data.WriteByteSeq(Guid[1]);
-
-    data << uint8(specialization); // 0: talent, 1: specialization, 2: glyph, 3: pet speciazlization
-
-    data.WriteByteSeq(Guid[0]);
-    data.WriteByteSeq(Guid[2]);
-    data.WriteByteSeq(Guid[4]);
-    data.WriteByteSeq(Guid[7]);
-
+    data.WriteGuidMask<7, 4, 2, 3, 5, 6, 1, 0>(Guid);
     data << uint32(cost);
-
-    data.WriteByteSeq(Guid[6]);
+    data.WriteGuidBytes<1, 6, 7, 5, 0, 4, 3>(Guid);
+    data << uint8(specialization); // 0: talent, 1: specialization, 2: glyph, 3: pet speciazlization
+    data.WriteGuidBytes<2>(Guid);
 
     GetSession()->SendPacket(&data);
 }
@@ -14503,42 +14508,54 @@ void Player::SendEquipError(InventoryResult msg, Item* pItem, Item* pItem2, uint
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_INVENTORY_CHANGE_FAILURE (%u)", msg);
     WorldPacket data(SMSG_INVENTORY_CHANGE_FAILURE, (msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I ? 22 : 18));
+
+    ObjectGuid itemGuid1 = pItem ? pItem->GetGUID() : 0;
+    ObjectGuid itemGuid2 = pItem2 ? pItem2->GetGUID() : 0;
+
+    data.WriteGuidMask<3, 0>(itemGuid2);
+    data.WriteGuidMask<2, 3>(itemGuid1);
+    data.WriteGuidMask<2, 6, 7>(itemGuid2);
+    data.WriteGuidMask<0, 1, 6>(itemGuid1);
+    data.WriteGuidMask<4>(itemGuid2);
+    data.WriteGuidMask<5, 7, 4>(itemGuid1);
+    data.WriteGuidMask<5, 1>(itemGuid2);
+
+    data.FlushBits();
+
+    data.WriteGuidBytes<0, 7>(itemGuid2);
+    data.WriteGuidBytes<7, 0>(itemGuid1);
+    data.WriteGuidBytes<2, 4, 5, 1>(itemGuid2);
+    data.WriteGuidBytes<1, 6>(itemGuid1);
     data << uint8(msg);
+    data.WriteGuidBytes<6>(itemGuid2);
+    data.WriteGuidBytes<5, 2, 3>(itemGuid1);
 
-    if (msg != EQUIP_ERR_OK)
+    if (msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I || msg == EQUIP_ERR_PURCHASE_LEVEL_TOO_LOW)
     {
-        data << uint64(pItem ? pItem->GetGUID() : 0);
-        data << uint64(pItem2 ? pItem2->GetGUID() : 0);
-        data << uint8(0);                                   // bag type subclass, used with EQUIP_ERR_EVENT_AUTOEQUIP_BIND_CONFIRM and EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG2
-
-        switch (msg)
-        {
-            case EQUIP_ERR_CANT_EQUIP_LEVEL_I:
-            case EQUIP_ERR_PURCHASE_LEVEL_TOO_LOW:
-            {
-                ItemTemplate const* proto = pItem ? pItem->GetTemplate() : sObjectMgr->GetItemTemplate(itemid);
-                data << uint32(proto ? proto->RequiredLevel : 0);
-                break;
-            }
-            case EQUIP_ERR_NO_OUTPUT:    // no idea about this one...
-            {
-                data << uint64(0); // item guid
-                data << uint32(0); // slot
-                data << uint64(0); // container
-                break;
-            }
-            case EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_COUNT_EXCEEDED_IS:
-            case EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_SOCKETED_EXCEEDED_IS:
-            case EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_EQUIPPED_EXCEEDED_IS:
-            {
-                ItemTemplate const* proto = pItem ? pItem->GetTemplate() : sObjectMgr->GetItemTemplate(itemid);
-                data << uint32(proto ? proto->ItemLimitCategory : 0);
-                break;
-            }
-            default:
-                break;
-        }
+        ItemTemplate const* proto = pItem ? pItem->GetTemplate() : sObjectMgr->GetItemTemplate(itemid);
+        data << uint32(proto ? proto->RequiredLevel : 0);
     }
+
+    data.WriteGuidBytes<3>(itemGuid2);
+
+    if (msg == EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_COUNT_EXCEEDED_IS ||
+        msg == EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_SOCKETED_EXCEEDED_IS ||
+        msg == EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_EQUIPPED_EXCEEDED_IS)
+    {
+        ItemTemplate const* proto = pItem ? pItem->GetTemplate() : sObjectMgr->GetItemTemplate(itemid);
+        data << uint32(proto ? proto->ItemLimitCategory : 0);
+    }
+
+    if (msg == EQUIP_ERR_NO_OUTPUT)
+        data << uint32(0); // slot
+
+    data << uint8(0);                                   // bag type subclass, used with EQUIP_ERR_EVENT_AUTOEQUIP_BIND_CONFIRM and EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG2
+
+    data.WriteGuidBytes<4>(itemGuid1);
+
+    if (msg == EQUIP_ERR_NO_OUTPUT)
+        data.WriteBits(0, 16);                          // item and container guids
+
     GetSession()->SendPacket(&data);
 }
 

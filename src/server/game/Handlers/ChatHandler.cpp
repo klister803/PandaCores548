@@ -816,11 +816,8 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData)
 
     recvData >> unk;                                       // probably related to spam reporting
 
-    uint8 bitOrder[8] = {5, 7, 3, 1, 4, 0, 6, 2};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {3, 7, 0, 5, 2, 6, 1, 4};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<0, 6, 7, 3, 2, 1, 4, 5>(guid);
+    recvData.ReadGuidBytes<7, 5, 2, 6, 0, 1, 3, 4>(guid);
 
     Player* player = ObjectAccessor::FindPlayer(guid);
     if (!player || !player->GetSession())
@@ -833,6 +830,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)
 {
+    recvPacket.rfinish();
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
 }
 

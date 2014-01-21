@@ -1328,16 +1328,20 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
     else
        timeAddIgnoreOpcode = now;
 
-    uint64 guid;
+    ObjectGuid guid;
     std::string newName;
 
-    recvData >> guid;
-    recvData >> newName;
+    uint32 len = recvData.ReadBits(6);
+    recvData.ReadGuidMask<0, 5, 7, 2, 4, 1, 6, 3>(guid);
+    recvData.ReadGuidBytes<3, 6, 7, 2, 4, 5, 0, 1>(guid);
+    newName = recvData.ReadString(len);
 
     // prevent character rename to invalid name
     if (!normalizePlayerName(newName))
     {
-        WorldPacket data(SMSG_CHAR_RENAME, 1);
+        WorldPacket data(SMSG_CHAR_RENAME, 2);
+        data.WriteBit(0);
+        data.WriteBit(1);
         data << uint8(CHAR_NAME_NO_NAME);
         SendPacket(&data);
         return;
@@ -1347,9 +1351,13 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
     if (res != CHAR_NAME_SUCCESS)
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1+8+(newName.size()+1));
+        data.WriteBit(1);
+        data.WriteGuidMask<5, 2, 7, 0, 6, 1, 3, 4>(guid);
+        data.WriteBit(0);
+        data.WriteBits(newName.length(), 6);
+        data.WriteString(newName);
+        data.WriteGuidBytes<1, 3, 4, 6, 0, 7, 2, 5>(guid);
         data << uint8(res);
-        data << uint64(guid);
-        data << newName;
         SendPacket(&data);
         return;
     }
@@ -1357,7 +1365,9 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
     // check name limitations
     if (AccountMgr::IsPlayerAccount(GetSecurity()) && sObjectMgr->IsReservedName(newName))
     {
-        WorldPacket data(SMSG_CHAR_RENAME, 1);
+        WorldPacket data(SMSG_CHAR_RENAME, 2);
+        data.WriteBit(0);
+        data.WriteBit(1);
         data << uint8(CHAR_NAME_RESERVED);
         SendPacket(&data);
         return;
@@ -1382,7 +1392,9 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 {
     if (!result)
     {
-        WorldPacket data(SMSG_CHAR_RENAME, 1);
+        WorldPacket data(SMSG_CHAR_RENAME, 2);
+        data.WriteBit(0);
+        data.WriteBit(1);
         data << uint8(CHAR_CREATE_ERROR);
         SendPacket(&data);
         return;
@@ -1423,9 +1435,13 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
     sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s", GetAccountId(), GetRemoteAddress().c_str(), oldName.c_str(), guidLow, newName.c_str());
 
     WorldPacket data(SMSG_CHAR_RENAME, 1+8+(newName.size()+1));
+    data.WriteBit(1);
+    data.WriteGuidMask<5, 2, 7, 0, 6, 1, 3, 4>(guid);
+    data.WriteBit(0);
+    data.WriteBits(newName.length(), 6);
+    data.WriteString(newName);
+    data.WriteGuidBytes<1, 3, 4, 6, 0, 7, 2, 5>(guid);
     data << uint8(RESPONSE_SUCCESS);
-    data << uint64(guid);
-    data << newName;
     SendPacket(&data);
 
     sWorld->UpdateCharacterNameData(guidLow, newName);
@@ -1544,7 +1560,7 @@ void WorldSession::HandleAlterAppearance(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_ALTER_APPEARANCE");
 
     uint32 Hair, Color, FacialHair, SkinColor;
-    recvData >> Hair >> Color >> FacialHair >> SkinColor;
+    recvData >> FacialHair >> Color >> SkinColor >> Hair;
 
     BarberShopStyleEntry const* bs_hair = sBarberShopStyleStore.LookupEntry(Hair);
 
@@ -1803,8 +1819,9 @@ void WorldSession::HandleEquipmentSetDelete(WorldPacket &recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_EQUIPMENT_SET_DELETE");
 
-    uint64 setGuid;
-    recvData.readPackGUID(setGuid);
+    ObjectGuid setGuid;
+    recvData.ReadGuidMask<4, 6, 7, 3, 5, 1, 2, 0>(setGuid);
+    recvData.ReadGuidBytes<3, 1, 2, 4, 5, 7, 0, 6>(setGuid);
 
     _player->DeleteEquipmentSet(setGuid);
 }

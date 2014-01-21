@@ -167,24 +167,28 @@ void WorldSession::HandleActivateTaxiExpressOpcode (WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_ACTIVATETAXIEXPRESS");
 
-    uint64 guid;
+    ObjectGuid guid;
     uint32 node_count;
 
-    recvData >> guid >> node_count;
+    node_count = recvData.ReadBits(22);
+    recvData.ReadGuidMask<3, 2, 5, 4, 0, 7, 1, 6>(guid);
+    recvData.ReadGuidBytes<7, 2, 4, 3, 5, 1, 6>(guid);
+
+    std::vector<uint32> nodes;
+    for (uint32 i = 0; i < node_count; ++i)
+    {
+        uint32 node;
+        recvData >> node;
+        nodes.push_back(node);
+    }
+
+    recvData.ReadGuidBytes<0>(guid);
 
     Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!npc)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleActivateTaxiExpressOpcode - Unit (GUID: %u) not found or you can't interact with it.", uint32(GUID_LOPART(guid)));
         return;
-    }
-    std::vector<uint32> nodes;
-
-    for (uint32 i = 0; i < node_count; ++i)
-    {
-        uint32 node;
-        recvData >> node;
-        nodes.push_back(node);
     }
 
     if (nodes.empty())
@@ -270,11 +274,14 @@ void WorldSession::HandleActivateTaxiOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_ACTIVATETAXI");
 
-    uint64 guid;
+    ObjectGuid guid;
     std::vector<uint32> nodes;
     nodes.resize(2);
 
-    recvData >> guid >> nodes[0] >> nodes[1];
+    recvData >> nodes[0] >> nodes[1];
+    recvData.ReadGuidMask<3, 7, 0, 2, 1, 4, 6, 5>(guid);
+    recvData.ReadGuidBytes<1, 2, 4, 5, 6, 3, 7, 0>(guid);
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_ACTIVATETAXI from %d to %d", nodes[0], nodes[1]);
     Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!npc)
@@ -289,7 +296,7 @@ void WorldSession::HandleActivateTaxiOpcode(WorldPacket & recvData)
 void WorldSession::SendActivateTaxiReply(ActivateTaxiReply reply)
 {
     WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
-    data << uint32(reply);
+    data.WriteBits(reply, 4);
     SendPacket(&data);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_ACTIVATETAXIREPLY");
