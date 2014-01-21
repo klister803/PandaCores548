@@ -707,10 +707,12 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
 void WorldSession::HandleBuybackItem(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_BUYBACK_ITEM");
-    uint64 vendorguid;
+    ObjectGuid vendorguid;
     uint32 slot;
 
-    recvData >> vendorguid >> slot;
+    recvData >> slot;
+    recvData.ReadGuidMask<7, 1, 2, 6, 4, 3, 0, 5>(vendorguid);
+    recvData.ReadGuidBytes<7, 1, 6, 5, 3, 2, 4, 0>(vendorguid);
 
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!creature)
@@ -788,12 +790,35 @@ void WorldSession::HandleBuyItemInSlotOpcode(WorldPacket & recvData)
 void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_BUY_ITEM");
-    uint64 vendorguid, bagGuid;
-    uint32 item, slot, count;
+    ObjectGuid vendorguid, bagGuid;
+    uint32 item, slot, count, bagSlot;
     uint8 itemType; // 1 = item, 2 = currency
-    uint8 bagSlot;
 
-    recvData >> vendorguid >> itemType >> item >> slot >> count >> bagGuid >> bagSlot;
+    recvData >> bagSlot >> count >> item >> slot;
+
+    recvData.ReadGuidMask<4>(vendorguid);
+    recvData.ReadGuidMask<5>(bagGuid);
+    recvData.ReadGuidMask<5>(vendorguid);
+    recvData.ReadGuidMask<6>(bagGuid);
+    recvData.ReadGuidMask<6, 1, 3, 7>(vendorguid);
+    itemType = recvData.ReadBits(2);
+    recvData.ReadGuidMask<0>(vendorguid);
+    recvData.ReadGuidMask<7, 4>(bagGuid);
+    recvData.ReadGuidMask<2>(vendorguid);
+    recvData.ReadGuidMask<1, 2, 3, 0>(bagGuid);
+
+    recvData.ReadGuidBytes<5>(bagGuid);
+    recvData.ReadGuidBytes<1>(vendorguid);
+    recvData.ReadGuidBytes<1, 6>(bagGuid);
+    recvData.ReadGuidBytes<3>(vendorguid);
+    recvData.ReadGuidBytes<2>(bagGuid);
+    recvData.ReadGuidBytes<0>(vendorguid);
+    recvData.ReadGuidBytes<0>(bagGuid);
+    recvData.ReadGuidBytes<5, 2>(vendorguid);
+    recvData.ReadGuidBytes<4, 7>(bagGuid);
+    recvData.ReadGuidBytes<4, 6>(vendorguid);
+    recvData.ReadGuidBytes<3>(bagGuid);
+    recvData.ReadGuidBytes<7>(vendorguid);
 
     // client expects count starting at 1, and we send vendorslot+1 to client already
     if (slot > 0)
@@ -1126,8 +1151,9 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_BUY_BANK_SLOT");
 
-    uint64 guid;
-    recvPacket >> guid;
+    ObjectGuid guid;
+    recvPacket.ReadGuidMask<0, 6, 5, 2, 4, 1, 7, 3>(guid);
+    recvPacket.ReadGuidBytes<7, 5, 2, 6, 1, 4, 0, 3>(guid);
 
     // cheating protection
     /* not critical if "cheated", and check skip allow by slots in bank windows open by .bank command.
@@ -1148,12 +1174,12 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& recvPacket)
 
     BankBagSlotPricesEntry const* slotEntry = sBankBagSlotPricesStore.LookupEntry(slot);
 
-    WorldPacket data(SMSG_BUY_BANK_SLOT_RESULT, 4);
+    //WorldPacket data(SMSG_BUY_BANK_SLOT_RESULT, 4);
 
     if (!slotEntry)
     {
-        data << uint32(ERR_BANKSLOT_FAILED_TOO_MANY);
-        SendPacket(&data);
+        //data << uint32(ERR_BANKSLOT_FAILED_TOO_MANY);
+        //SendPacket(&data);
         return;
     }
 
@@ -1161,16 +1187,16 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& recvPacket)
 
     if (!_player->HasEnoughMoney(uint64(price)))
     {
-        data << uint32(ERR_BANKSLOT_INSUFFICIENT_FUNDS);
-        SendPacket(&data);
+        //data << uint32(ERR_BANKSLOT_INSUFFICIENT_FUNDS);
+        //SendPacket(&data);
         return;
     }
 
     _player->SetBankBagSlotCount(slot);
     _player->ModifyMoney(-int64(price));
 
-     data << uint32(ERR_BANKSLOT_OK);
-     SendPacket(&data);
+     //data << uint32(ERR_BANKSLOT_OK);
+     //SendPacket(&data);
 
     _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BUY_BANK_SLOT);
 }

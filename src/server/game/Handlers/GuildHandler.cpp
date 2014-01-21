@@ -686,8 +686,7 @@ void WorldSession::HandleGuildRequestMaxDailyXP(WorldPacket& recvPacket)
 
 void WorldSession::HandleAutoDeclineGuildInvites(WorldPacket& recvPacket)
 {
-    uint8 enable;
-    recvPacket >> enable;
+    bool enable = recvPacket.ReadBit();
 
     GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_AUTO_DECLINE_GUILD, enable);
 }

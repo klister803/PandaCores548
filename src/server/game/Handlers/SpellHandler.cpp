@@ -852,8 +852,15 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
 {
     uint32 spellId;
 
-    recvPacket.read_skip<uint8>();                          // counter, increments with every CANCEL packet, don't use for now
-    recvPacket >> spellId;
+    bool hasSpell = !recvPacket.ReadBit();
+    bool hasCastCount = !recvPacket.ReadBit();
+    if (hasCastCount)
+        recvPacket.read_skip<uint8>();                      // counter, increments with every CANCEL packet, don't use for now
+    if (hasSpell)
+        recvPacket >> spellId;
+
+    if (!spellId)
+        return;
 
     if (_player->IsNonMeleeSpellCasted(false))
         _player->InterruptNonMeleeSpells(false, spellId, false);
@@ -866,8 +873,8 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     recvPacket >> spellId;
 
     recvPacket.ReadBit();   // guid marker
-    recvPacket.ReadGuidMask<0, 2, 4, 1, 3, 7, 5, 6>(guid);
-    recvPacket.ReadGuidBytes<5, 1, 4, 6, 0, 7, 3, 2>(guid);
+    recvPacket.ReadGuidMask<0, 4, 7, 1, 6, 2, 3, 5>(guid);
+    recvPacket.ReadGuidBytes<4, 2, 7, 1, 5, 0, 3, 6>(guid);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)

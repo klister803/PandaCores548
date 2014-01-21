@@ -79,11 +79,11 @@ void WorldSession::SendTabardVendorActivate(uint64 guid)
 
 void WorldSession::HandleBankerActivateOpcode(WorldPacket& recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<1, 4, 2, 7, 5, 0, 3, 6>(guid);
+    recvData.ReadGuidBytes<4, 2, 5, 7, 0, 6, 3, 1>(guid);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_BANKER_ACTIVATE");
-
-    recvData >> guid;
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_BANKER);
     if (!unit)
@@ -101,8 +101,9 @@ void WorldSession::HandleBankerActivateOpcode(WorldPacket& recvData)
 
 void WorldSession::SendShowBank(uint64 guid)
 {
-    WorldPacket data(SMSG_SHOW_BANK, 8);
-    data << guid;
+    WorldPacket data(SMSG_SHOW_BANK, 8 + 1);
+    data.WriteGuidMask<6, 0, 4, 3, 2, 1, 7, 5>(guid);
+    data.WriteGuidBytes<7, 2, 0, 1, 6, 5, 3, 4>(guid);
     SendPacket(&data);
 }
 
@@ -317,8 +318,9 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvData)
 void WorldSession::SendTrainerService(uint64 guid, uint32 spellId, uint32 result)
 { 
     WorldPacket data(SMSG_TRAINER_SERVICE, 16);
-    data << uint64(guid);
+    data.WriteGuidMask<5, 3, 4, 2, 0, 6, 7, 1>(guid);
     data << uint32(spellId);        // should be same as in packet from client
+    data.WriteGuidBytes<7, 4, 6, 5, 0, 1, 2, 3>(guid);
     data << uint32(result);         // 2 == Success. 1 == "Not enough money for trainer service." 0 == "Trainer service %d unavailable."
     SendPacket(&data);
 }
@@ -468,8 +470,9 @@ void WorldSession::SendSpiritResurrect()
 
 void WorldSession::HandleBinderActivateOpcode(WorldPacket& recvData)
 {
-    uint64 npcGUID;
-    recvData >> npcGUID;
+    ObjectGuid npcGUID;
+    recvData.ReadGuidMask<3, 5, 4, 7, 0, 6, 2, 1>(npcGUID);
+    recvData.ReadGuidBytes<3, 2, 6, 5, 1, 7, 0, 4>(npcGUID);
 
     if (!GetPlayer()->IsInWorld() || !GetPlayer()->isAlive())
         return;

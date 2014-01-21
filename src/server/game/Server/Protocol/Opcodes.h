@@ -127,7 +127,7 @@ enum Opcodes
     CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE           = 0x13C0, // 5.4.1 17538
     CMSG_CHANNEL_ANNOUNCEMENTS                        = 0x10F4, // 5.4.1 17538
     CMSG_CHANNEL_BAN                                  = 0x117C, // 5.4.1 17538
-    CMSG_CHANNEL_DISPLAY_LIST                         = 0x00F0, // 5.4.1 17538
+    CMSG_CHANNEL_DISPLAY_LIST                         = 0x00F9, // 5.4.1 17538
     CMSG_CHANNEL_INVITE                               = 0x0079, // 5.4.1 17538
     CMSG_CHANNEL_KICK                                 = 0x14D4, // 5.4.1 17538
     CMSG_CHANNEL_LIST                                 = 0x00F9, // 5.4.1 17538
@@ -756,7 +756,7 @@ enum Opcodes
     SMSG_BINDZONEREPLY                                = 0x000,  // Not found in 4.3.4
     SMSG_BREAK_TARGET                                 = 0x969,  // 5.0.5 16048
     SMSG_BUY_BANK_SLOT_RESULT                         = 0,      // Not found in 4.3.4
-    SMSG_BUY_FAILED                                   = 0xD16,  // 5.0.5 16048
+    SMSG_BUY_FAILED                                   = 0x08B7, // 5.4.1 17538
     SMSG_BUY_ITEM                                     = 0x8E1,  // 5.0.5 16048
     SMSG_CALENDAR_ACTION_PENDING                      = 0,      // Not found in 4.3.4
     SMSG_CALENDAR_ARENA_TEAM                          = 0x8F6,  // 5.0.5 16048
@@ -914,7 +914,7 @@ enum Opcodes
     SMSG_GM_PLAYER_INFO                               = 0xD99,  // 5.0.5 16048
     SMSG_GM_TICKET_STATUS_UPDATE                      = 0x821,  // 5.0.5 16048
     SMSG_GODMODE                                      = 0x9F3,  // 5.0.5 16048
-    SMSG_GOSSIP_COMPLETE                              = 0xCB6,  // 5.0.5 16048
+    SMSG_GOSSIP_COMPLETE                              = 0x0AD6, // 5.4.1 17538
     SMSG_GOSSIP_MESSAGE                               = 0xDE4,  // 5.0.5 16048
     SMSG_GOSSIP_POI                                   = 0xD70,  // 5.0.5 16048
     SMSG_GROUPACTION_THROTTLED                        = 0x994,  // 5.0.5 16048
@@ -1000,7 +1000,7 @@ enum Opcodes
     SMSG_ITEM_COOLDOWN                                = 0x96D,  // 5.0.5 16048
     SMSG_ITEM_ENCHANT_TIME_UPDATE                     = 0x99E,  // 5.0.5 16048
     SMSG_ITEM_EXPIRE_PURCHASE_REFUND                  = 0xFC6,  // 5.0.5 16048
-    SMSG_ITEM_PUSH_RESULT                             = 0xF64,  // 5.0.5 16048
+    SMSG_ITEM_PUSH_RESULT                             = 0x0D1F, // 5.4.1 17538
     SMSG_ITEM_REFUND_INFO_RESPONSE                    = 0xE80,  // 5.0.5 16048
     SMSG_ITEM_REFUND_RESULT                           = 0xB43,  // 5.0.5 16048
     SMSG_ITEM_REMOVE_PASSIVE                          = 0xA19,  // 5.0.5 16048
@@ -1276,7 +1276,7 @@ enum Opcodes
     SMSG_SET_PROFICIENCY                              = 0x823,  // 5.0.5 16048
     SMSG_SET_PROJECTILE_POSITION                      = 0x8BC,  // 5.0.5 16048
     SMSG_SHOWTAXINODES                                = 0xD49,  // 5.0.5 16048
-    SMSG_SHOW_BANK                                    = 0x9C8,  // 5.0.5 16048
+    SMSG_SHOW_BANK                                    = 0x008E, // 5.4.1 17538
     SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI       = 0xAC0,  // 5.0.5 16048
     SMSG_SHOW_RATINGS                                 = 0xB99,  // 5.0.5 16048
     SMSG_SOR_START_EXPERIENCE_INCOMPLETE              = 0xAB4,  // 5.0.5 16048
@@ -1356,7 +1356,7 @@ enum Opcodes
     SMSG_TRADE_STATUS                                 = 0xF85,  // 5.0.5 16048
     SMSG_TRADE_STATUS_EXTENDED                        = 0xAFB,  // 5.0.5 16048
     SMSG_TRAINER_LIST                                 = 0xC65,  // 5.0.5 16048
-    SMSG_TRAINER_SERVICE                              = 0xD31,  // 5.0.5 16048
+    SMSG_TRAINER_SERVICE                              = 0x04AD, // 5.4.1 17538
     SMSG_TRANSFER_ABORTED                             = 0x889,  // 5.0.5 16048
     SMSG_TRANSFER_PENDING                             = 0xF79,  // 5.0.5 16048
     SMSG_TRIGGER_CINEMATIC                            = 0xC18,  // 5.0.5 16048
