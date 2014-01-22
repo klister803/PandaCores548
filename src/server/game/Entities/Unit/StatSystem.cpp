@@ -1179,10 +1179,13 @@ bool Guardian::UpdateStats(Stats stat)
             UpdateMaxHealth();
             break;
         case STAT_INTELLECT:
-            UpdateMaxPower(POWER_MANA);
+        {
+            if (getPowerType() == POWER_MANA)
+                UpdateMaxPower(POWER_MANA);
             if (owner->getClass() == CLASS_MAGE)
                 UpdateAttackPowerAndDamage();
             break;
+        }
         case STAT_SPIRIT:
         default:
             break;
@@ -1351,20 +1354,6 @@ void Guardian::UpdateMaxPower(Powers power)
 
     switch (GetEntry())
     {
-        case ENTRY_IMP:
-        case ENTRY_FEL_IMP:
-            multiplicator = 4.95f;
-            break;
-        case ENTRY_VOIDWALKER:
-        case ENTRY_SUCCUBUS:
-        case ENTRY_FELHUNTER:
-        case ENTRY_FELGUARD:
-        case ENTRY_VOIDLORD:
-        case ENTRY_SHIVARRA:
-        case ENTRY_OBSERVER:
-        case ENTRY_WRATHGUARD:
-            multiplicator = 11.5f;
-            break;
         case ENTRY_WATER_ELEMENTAL:
             multiplicator = 1.0f;
             addValue = 0.0f;
