@@ -1097,13 +1097,25 @@ void WorldSession::HandleRequestAccountData(WorldPacket& recvData)
 
     dest.resize(destSize);
 
+    ObjectGuid playerGuid = _player ? _player->GetGUID() : 0;
+
     WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA, 8+4+4+4+destSize);
-    data << uint64(_player ? _player->GetGUID() : 0);       // player guid
-    data << uint32(type);                                   // type (0-7)
+
+    data.WriteBits(type, 3);                                // type (0-7)
+    data.WriteGuidMask<2, 6, 0, 5, 7, 1, 3, 4>(playerGuid);
+
+    data.FlushBits();
+
+    data.WriteGuidBytes<3, 2, 7>(playerGuid);
     data << uint32(adata->Time);                            // unix time
-    data << uint32(size);                                   // decompressed length
+    data.WriteGuidBytes<1>(playerGuid);
+    data << uint32(dest.size());                            // compressed length
     data.append(dest);                                      // compressed data
+    data.WriteGuidBytes<0>(playerGuid);  
+    data << uint32(size);                                   // decompressed length
+    data.WriteGuidBytes<5, 4, 6>(playerGuid); 
     SendPacket(&data);
+
 }
 
 int32 WorldSession::HandleEnableNagleAlgorithm()

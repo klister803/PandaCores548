@@ -1366,7 +1366,7 @@ enum Opcodes
     SMSG_TUTORIAL_FLAGS                               = 0x0D1B, // 5.4.1 17538
     SMSG_UNIT_HEALTH_FREQUENT                         = 0x8D1,  // 5.0.5 16048
     SMSG_UNIT_SPELLCAST_START                         = 0xC12,  // 5.0.5 16048
-    SMSG_UPDATE_ACCOUNT_DATA                          = 0x860,  // 5.0.5 16048
+    SMSG_UPDATE_ACCOUNT_DATA                          = 0x0196, // 5.4.1 17538
     SMSG_UPDATE_ACCOUNT_DATA_COMPLETE                 = 0xD35,  // 5.0.5 16048
     SMSG_UPDATE_COMBO_POINTS                          = 0x9A5,  // 5.0.5 16048
     SMSG_UPDATE_CURRENCY                              = 0xE55,  // 5.0.5 16048
