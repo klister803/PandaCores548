@@ -214,7 +214,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
 
         if (sAuctionMgr->GetAItem(item->GetGUIDLow()) || !item->CanBeTraded() || item->IsNotEmptyBag() ||
             item->GetTemplate()->Flags & ITEM_PROTO_FLAG_CONJURED || item->GetUInt32Value(ITEM_FIELD_DURATION) ||
-            item->GetCount() < count[i])
+            item->GetCount() < count[i] || _player->GetItemCount(item->GetEntry(), false) < count[i])
         {
             SendAuctionCommandResult(NULL, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
             return;
