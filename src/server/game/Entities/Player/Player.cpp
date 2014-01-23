@@ -2119,7 +2119,11 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
     if (fields[20].GetUInt32())
         charFlags |= CHARACTER_FLAG_LOCKED_BY_BILLING;
 
-    if (sWorld->getBoolConfig(CONFIG_DECLINED_NAMES_USED) && !fields[22].GetString().empty())
+    if (sWorld->getBoolConfig(CONFIG_DECLINED_NAMES_USED))
+    {
+        if (!fields[22].GetString().empty())
+            charFlags |= CHARACTER_FLAG_DECLINED;
+    }else
         charFlags |= CHARACTER_FLAG_DECLINED;
 
     uint32 customizationFlag = 0;
