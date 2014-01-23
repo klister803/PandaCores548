@@ -662,7 +662,7 @@ enum Opcodes
     SMSG_ACCOUNT_INFO_RESPONSE                        = 0xF05,  // 5.0.5 16048
     SMSG_ACCOUNT_RESTRICTED_WARNING                   = 0xB66,  // 5.0.5 16048
     SMSG_ACHIEVEMENT_DELETED                          = 0x920,  // 5.0.5 16048
-    SMSG_ACHIEVEMENT_EARNED                           = 0xAF4,  // 5.0.5 16048
+    SMSG_ACHIEVEMENT_EARNED                           = 0x089E, // 5.4.1 17538
     SMSG_ACTION_BUTTONS                               = 0x0406, // 5.4.1 17538
     SMSG_ACTIVATETAXIREPLY                            = 0x0816, // 5.4.1 17538
     SMSG_ADDON_INFO                                   = 0x1136, // 5.4.1 17538
@@ -1245,7 +1245,7 @@ enum Opcodes
     SMSG_RESET_FAILED_NOTIFY                          = 0xD3E,  // 5.0.5 16048
     SMSG_RESISTLOG                                    = 0,      // Not found in 4.3.4
     SMSG_RESPEC_WIPE_CONFIRM                          = 0x099F, // 5.4.1 17538
-    SMSG_RESPOND_INSPECT_ACHIEVEMENTS                 = 0xE4C,  // 5.0.5 16048
+    SMSG_RESPOND_INSPECT_ACHIEVEMENTS                 = 0x04AF, // 5.4.1 17538
     SMSG_RESURRECT_REQUEST                            = 0x966,  // 5.0.5 16048
     SMSG_RESYNC_RUNES                                 = 0xC05,  // 5.0.5 16048
     SMSG_ROLE_POLL_BEGIN                              = 0,      // 0x70B0 in 4.3.4 @todo : Find me and BACON !
