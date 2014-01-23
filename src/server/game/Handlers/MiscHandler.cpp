@@ -208,7 +208,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
 
     if (some_count)
     {
-        for (int i = 0; i < some_count; i++)
+        for (uint32 i = 0; i < some_count; i++)
             uint32 unk6 = recvData.ReadBits(7);
     }
 
@@ -216,7 +216,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
 
     if (some_count)
     {
-        for (int i = 0; i < some_count; i++)
+        for (uint32 i = 0; i < some_count; i++)
             uint32 unk6 = recvData.ReadBits(7);
     }
 

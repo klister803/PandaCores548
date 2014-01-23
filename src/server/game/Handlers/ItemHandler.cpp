@@ -1081,12 +1081,12 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     SendPacket(&data);
 }
 
-void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket& recvData)
+void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket& recvPacket)
 {
     //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_AUTOSTORE_BAG_ITEM");
     uint8 srcbag, srcslot, dstbag;
 
-    recvData >> srcbag >> dstbag >> srcslot;
+    recvPacket >> srcbag >> dstbag >> srcslot;
     uint32 count = recvPacket.ReadBits(2);
     std::vector<bool> bits[2];
     for (uint32 i = 0; i < count; ++i)
