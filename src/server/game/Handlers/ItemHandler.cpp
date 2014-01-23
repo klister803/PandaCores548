@@ -1037,9 +1037,6 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             hasExtendedCost[slot] = true;
             itemsData << uint32(vendorItem->ExtendedCost);
 
-            enablers.push_back(1);                    // unk bit
-            enablers.push_back(0);                    // unk bit
-
             itemsData << uint32(0);                   // displayId
             itemsData << uint32(vendorItem->maxcount * precision);
             itemsData << uint32(count);               // client expects counting to start at 1
@@ -1082,7 +1079,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     if (!itemsData.empty())
         data.append(itemsData);
 
-    recvData.ReadGuidBytes<0, 2, 1, 3, 5, 7, 4, 6>(guid);
+    data.WriteGuidBytes<0, 2, 1, 3, 5, 7, 4, 6>(guid);
     SendPacket(&data);
 }
 

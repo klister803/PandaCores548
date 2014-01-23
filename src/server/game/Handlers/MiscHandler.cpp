@@ -2221,7 +2221,7 @@ void WorldSession::HandleViolenceLevel(WorldPacket& recvPacket)
     // do something?
 }
 
-void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
+void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvData)
 {
     ObjectGuid guid;
 
