@@ -89,15 +89,24 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GOSSIP_SELECT_OPTION");
 
+    ObjectGuid guid;
     uint32 gossipListId;
     uint32 menuId;
-    uint64 guid;
+    uint8 boxTextLength = 0;
     std::string code = "";
 
-    recvData >> guid >> menuId >> gossipListId;
+    recvData >> menuId >> gossipListId;
+
+    recvData.ReadGuidMask<4, 0, 6, 3, 2, 7, 1>(guid);
+    boxTextLength = recvData.ReadBits(8);
+    recvData.ReadGuidMask<5>(guid);
+
+    recvData.ReadGuidBytes<5, 6, 3, 0, 1>(guid);
 
     if (_player->PlayerTalkClass->IsGossipOptionCoded(gossipListId))
-        recvData >> code;
+        code = recvData.ReadString(boxTextLength);
+
+    recvData.ReadGuidBytes<2, 7, 4>(guid);
 
     Creature* unit = NULL;
     GameObject* go = NULL;
@@ -1281,11 +1290,9 @@ void WorldSession::HandlePlayedTime(WorldPacket& recvData)
 void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 {
     ObjectGuid guid;
-    uint8 bitOrder[8] = {2, 0, 6, 1, 5, 7, 3, 4};
-    recvData.ReadBitInOrder(guid, bitOrder);
 
-    uint8 byteOrder[8] = {3, 6, 5, 0, 4, 7, 1, 2};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<5, 4, 0, 6, 2, 7, 3, 1>(guid);
+    recvData.ReadGuidBytes<6, 1, 5, 0, 3, 7, 4, 2>(guid);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_INSPECT");
 
