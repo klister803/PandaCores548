@@ -276,10 +276,10 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recvData)
 void WorldSession::HandleDestroyItemOpcode(WorldPacket & recvData)
 {
     //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_DESTROY_ITEM");
-    int32 count;
-    int8 bag, slot;
+    uint8 bag, slot;
+    uint32 count;
 
-    recvData >> count;
+    recvData >> count >> bag >> slot;
     recvData >> bag >> slot;
     //sLog->outDebug("STORAGE: receive bag = %u, slot = %u, count = %u", bag, slot, count);
 

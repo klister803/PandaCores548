@@ -1664,14 +1664,20 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recvData)
 
 void WorldSession::HandleCharCustomize(WorldPacket& recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
     std::string newName;
-
-    recvData >> guid;
-    recvData >> newName;
-
     uint8 gender, skin, face, hairStyle, hairColor, facialHair;
-    recvData >> gender >> skin >> hairColor >> hairStyle >> facialHair >> face;
+
+    recvData >> skin >> face >> gender >> facialHair >> hairStyle >> hairColor;
+    recvData.ReadGuidMask<6, 2, 1>(guid);
+    uint32 nameLen = recvData.ReadBits(6);
+    recvData.ReadGuidMask<3, 5, 4, 0, 7>(guid);
+
+    recvData.ReadGuidBytes<0, 3, 5, 7>(guid);
+    newName = recvData.ReadString(nameLen);
+    recvData.ReadGuidBytes<4, 6, 1, 2>(guid);
+
+    return;
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_AT_LOGIN);
     stmt->setUInt32(0, GUID_LOPART(guid));
@@ -1680,6 +1686,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     if (!result)
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data.WriteBits(0, 8);
         data << uint8(CHAR_CREATE_ERROR);
         SendPacket(&data);
         return;
@@ -1691,6 +1698,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     if (!(at_loginFlags & AT_LOGIN_CUSTOMIZE))
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data.WriteBits(0, 8);
         data << uint8(CHAR_CREATE_ERROR);
         SendPacket(&data);
         return;
@@ -1700,6 +1708,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     if (!normalizePlayerName(newName))
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data.WriteBits(0, 8);
         data << uint8(CHAR_NAME_NO_NAME);
         SendPacket(&data);
         return;
@@ -1709,6 +1718,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     if (res != CHAR_NAME_SUCCESS)
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data.WriteBits(0, 8);
         data << uint8(res);
         SendPacket(&data);
         return;
@@ -1718,6 +1728,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     if (AccountMgr::IsPlayerAccount(GetSecurity()) && sObjectMgr->IsReservedName(newName))
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data.WriteBits(0, 8);
         data << uint8(CHAR_NAME_RESERVED);
         SendPacket(&data);
         return;
@@ -1729,6 +1740,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
         if (newguid != guid)
         {
             WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+            data.WriteBits(0, 8);
             data << uint8(CHAR_CREATE_NAME_IN_USE);
             SendPacket(&data);
             return;
@@ -1764,15 +1776,18 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     sWorld->UpdateCharacterNameData(GUID_LOPART(guid), newName, gender);
 
     WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1+8+(newName.size()+1)+6);
+    data.WriteGuidMask<5, 4, 2, 3, 1, 7, 0, 6>(guid);
+    data.WriteGuidBytes<0, 4, 5>(guid);
     data << uint8(RESPONSE_SUCCESS);
-    data << uint64(guid);
-    data << newName;
-    data << uint8(gender);
     data << uint8(skin);
-    data << uint8(face);
     data << uint8(hairStyle);
-    data << uint8(hairColor);
+    data << uint8(face);
     data << uint8(facialHair);
+    data << uint8(gender);
+    data << uint8(hairColor);
+    data.WriteGuidBytes<6, 3, 2, 1, 7>(guid);
+    data.WriteBits(newName.length(), 6);
+    data.WriteString(newName);
     SendPacket(&data);
 }
 
@@ -1780,34 +1795,36 @@ void WorldSession::HandleEquipmentSetSave(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_EQUIPMENT_SET_SAVE");
 
-    uint64 setGuid;
-    recvData.readPackGUID(setGuid);
-
     uint32 index;
     recvData >> index;
     if (index >= MAX_EQUIPMENT_SET_INDEX)                    // client set slots amount
+    {
+        recvData.rfinish();
         return;
-
-    std::string name;
-    recvData >> name;
-
-    std::string iconName;
-    recvData >> iconName;
+    }
 
     EquipmentSet eqSet;
+    eqSet.state = EQUIPMENT_SET_NEW;
 
-    eqSet.Guid      = setGuid;
-    eqSet.Name      = name;
-    eqSet.IconName  = iconName;
-    eqSet.state     = EQUIPMENT_SET_NEW;
+    ObjectGuid setGuid;
+    ObjectGuid itemGuids[EQUIPMENT_SLOT_END];
+    for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        recvData.ReadGuidMask<1, 5, 2, 0, 3, 6, 4, 7>(itemGuids[i]);
 
+    recvData.ReadGuidMask<3, 7, 4, 6, 5>(setGuid);
+    uint32 nameLen = recvData.ReadBits(8);
+    recvData.ReadGuidMask<0>(setGuid);
+    uint32 iconLen = recvData.ReadBits(9);
+    recvData.ReadGuidMask<2, 1>(setGuid);
+
+    recvData.ReadGuidBytes<6>(setGuid);
+    eqSet.IconName = recvData.ReadString(iconLen);
     for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {
-        uint64 itemGuid;
-        recvData.readPackGUID(itemGuid);
+        recvData.ReadGuidBytes<1, 3, 7, 2, 0, 5, 4, 6>(itemGuids[i]);
 
         // equipment manager sends "1" (as raw GUID) for slots set to "ignore" (don't touch slot at equip set)
-        if (itemGuid == 1)
+        if (itemGuids[i] == 1)
         {
             // ignored slots saved as bit mask because we have no free special values for Items[i]
             eqSet.IgnoreMask |= 1 << i;
@@ -1816,14 +1833,20 @@ void WorldSession::HandleEquipmentSetSave(WorldPacket& recvData)
 
         Item* item = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
 
-        if (!item && itemGuid)                               // cheating check 1
+        if (!item && itemGuids[i])                          // cheating check 1
             return;
 
-        if (item && item->GetGUID() != itemGuid)             // cheating check 2
+        if (item && item->GetGUID() != itemGuids[i])        // cheating check 2
             return;
 
-        eqSet.Items[i] = GUID_LOPART(itemGuid);
+        eqSet.Items[i] = GUID_LOPART(itemGuids[i]);
     }
+
+    recvData.ReadGuidBytes<0, 4, 1>(setGuid);
+    eqSet.Name = recvData.ReadString(nameLen);
+    recvData.ReadGuidBytes<7, 2, 5, 3>(setGuid);
+
+    eqSet.Guid = setGuid;
 
     _player->SetEquipmentSet(index, eqSet);
 }

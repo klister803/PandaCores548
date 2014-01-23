@@ -26859,39 +26859,39 @@ void Player::SendEquipmentSetList()
         if (set.state == EQUIPMENT_SET_DELETED)
             continue;
 
+        buf.WriteGuidMask<2, 0>(itr->second.Guid);
+
         for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
             // ignored slots stored in IgnoreMask, client wants "1" as raw GUID, so no HIGHGUID_ITEM
-            buf.WriteGuidMask<0, 6, 5, 4, 2, 7, 1, 3>(set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM));
+            buf.WriteGuidMask<2, 6, 3, 1, 4, 7, 5, 0>(set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM));
 
-        buf.WriteGuidMask<6, 0, 2, 5>(itr->second.Guid);
         buf.WriteBits(set.Name.size(), 8);
-        buf.WriteGuidMask<3>(set.Guid);
+        buf.WriteGuidMask<4, 1, 7, 3, 5>(itr->second.Guid);
         buf.WriteBits(set.IconName.size(), 9);
-        buf.WriteGuidMask<4, 7, 1>(set.Guid);
+        buf.WriteGuidMask<6>(set.Guid);
 
         for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
-            dataBuf.WriteGuidBytes<4, 6, 3, 5, 0, 2, 1, 7>(set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM));
+            dataBuf.WriteGuidBytes<3, 5, 1, 2, 0, 7, 6, 4>(set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM));
 
-        dataBuf.WriteString(set.Name);
-        dataBuf.WriteGuidBytes<5, 0, 3, 6, 1>(set.Guid);
-        dataBuf.WriteString(set.IconName);
-        dataBuf.WriteGuidBytes<7, 4, 2>(set.Guid);
+        dataBuf.WriteGuidBytes<6>(set.Guid);
         dataBuf << uint32(itr->first);
+        dataBuf.WriteGuidBytes<1, 5>(set.Guid);
+        dataBuf.WriteString(set.IconName);
+        dataBuf.WriteString(set.Name);
+        dataBuf.WriteGuidBytes<2, 7, 0, 3, 4>(set.Guid);
 
         ++count;                                            // client has limit but it's checked at loading a set
     }
 
     data.WriteBits(count, 19);
+    data.FlushBits();
     if (!buf.empty())
     {
-        data.FlushBits();
+        buf.FlushBits();
         data.append(buf);
     }
     if (!dataBuf.empty())
-    {
-        data.FlushBits();
         data.append(dataBuf);
-    }
 
     GetSession()->SendPacket(&data);
 }

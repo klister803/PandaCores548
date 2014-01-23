@@ -39,9 +39,9 @@ void WorldSession::HandleDismissControlledVehicle(WorldPacket &recvData)
     MovementInfo mi;
     mi.guid = _player->GetGUID();
     mi.flags2 = MOVEMENTFLAG2_INTERPOLATED_PITCHING;
-    mi.pos.m_positionX = recvData.read<float>();
-    mi.pos.m_positionZ = recvData.read<float>();
     mi.pos.m_positionY = recvData.read<float>();
+    mi.pos.m_positionZ = recvData.read<float>();
+    mi.pos.m_positionX = recvData.read<float>();
     mi.time = getMSTime();
 
     WorldPacket data(SMSG_PLAYER_MOVE);
