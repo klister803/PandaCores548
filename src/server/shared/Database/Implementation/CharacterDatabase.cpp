@@ -301,7 +301,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     "VALUES (?, ?, ?, ?, ?)",  CONNECTION_ASYNC)
 
     // Currency
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_CURRENCY, "SELECT currency, week_count, total_count, season_total, flags FROM character_currency WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_CURRENCY, "SELECT currency, week_count, total_count, season_total, flags, curentcap FROM character_currency WHERE guid = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_UPD_PLAYER_CURRENCY, "UPDATE character_currency SET week_count = ?, total_count = ?, season_total = ?, flags = ? WHERE guid = ? AND currency = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_REP_PLAYER_CURRENCY, "REPLACE INTO character_currency (guid, currency, week_count, total_count, season_total, flags) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 

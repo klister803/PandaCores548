@@ -7999,6 +7999,7 @@ void Player::_LoadCurrency(PreparedQueryResult result)
         cur.totalCount  = fields[2].GetUInt32();
         cur.seasonTotal = fields[3].GetUInt32();
         uint8 flags     = fields[4].GetUInt8();
+        cur.curentCap   = fields[5].GetUInt32();
 
         cur.flags = flags & PLAYERCURRENCY_MASK_USED_BY_CLIENT;
         cur.currencyEntry = currency;
@@ -8047,7 +8048,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
     }
 }
 
-void Player::SendNewCurrency(uint32 id) const
+void Player::SendNewCurrency(uint32 id)
 {
     PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
     if (itr == _currencyStorage.end())
@@ -8085,7 +8086,7 @@ void Player::SendNewCurrency(uint32 id) const
     GetSession()->SendPacket(&packet);
 }
 
-void Player::SendCurrencies() const
+void Player::SendCurrencies()
 {
     ByteBuffer currencyData;
     WorldPacket packet(SMSG_INIT_CURRENCY, 4 + _currencyStorage.size()*(5*4 + 1));
@@ -8136,7 +8137,7 @@ void Player::ModifyCurrencyFlag(uint32 id, uint8 flag)
         _currencyStorage[id].state = PLAYERCURRENCY_CHANGED;
 }
 
-void Player::SendPvpRewards() const
+void Player::SendPvpRewards()
 {
     WorldPacket packet(SMSG_REQUEST_PVP_REWARDS_RESPONSE, 24);
     packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_POINTS, true);
@@ -8329,7 +8330,7 @@ void Player::SetCurrency(uint32 id, uint32 count, bool printLog /*= true*/)
    ModifyCurrency(id, int32(count) - GetCurrency(id, true), printLog);
 }
 
-uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision) const
+uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision)
 {
     CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(id);
     if (!entry)
@@ -8357,6 +8358,7 @@ void Player::ResetCurrencyWeekCap()
     for (PlayerCurrenciesMap::iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
     {
         itr->second.weekCount = 0;
+        itr->second.curentCap = 0;
         itr->second.state = PLAYERCURRENCY_CHANGED;
     }
 
@@ -8364,27 +8366,55 @@ void Player::ResetCurrencyWeekCap()
     SendDirectMessage(&data);
 }
 
-uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
+uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
 {
     if(!currency)
         return 0;
 
     uint32 cap = currency->WeekCap;
+    uint32 curentCap = 0;
+
+    PlayerCurrenciesMap::iterator itr = _currencyStorage.find(currency->ID);
+    if (itr != _currencyStorage.end())
+        curentCap = itr->second.curentCap;
 
     switch (currency->ID)
     {
             //original conquest not have week cap
         case CURRENCY_TYPE_CONQUEST_POINTS:
-            cap = std::max(GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_ARENA, false), GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RBG, false));
+            if(curentCap == 0)
+            {
+                cap = std::max(GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_ARENA, false), GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RBG, false));
+                if (itr != _currencyStorage.end())
+                    itr->second.curentCap = cap;
+            }
+            else
+                cap = curentCap;
             break;
         case CURRENCY_TYPE_CONQUEST_META_ARENA:
             // should add precision mod = 100
-            cap = Trinity::Currency::ConquestRatingCalculator(_maxPersonalArenaRate) * currency->GetPrecision();
+            if(curentCap == 0)
+            {
+                cap = Trinity::Currency::ConquestRatingCalculator(_maxPersonalArenaRate) * currency->GetPrecision();
+                if (itr != _currencyStorage.end())
+                    itr->second.curentCap = cap;
+            }
+            else
+                cap = curentCap;
             break;
         case CURRENCY_TYPE_CONQUEST_META_RBG:
             // should add precision mod = 100
-            if(getRBG())
-                cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
+            if(curentCap == 0)
+            {
+                if(getRBG())
+                {
+                    cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
+                    if (itr != _currencyStorage.end())
+                        itr->second.curentCap = cap;
+                }
+            }
+            else
+                cap = curentCap;
             break;
     }
 
