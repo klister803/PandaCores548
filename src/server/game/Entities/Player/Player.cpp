@@ -746,6 +746,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
+    m_baseMHastRatingPct = 0;
+    m_doLastUpdate = false;
     m_weaponChangeTimer = 0;
 
     m_zoneUpdateId = 0;
@@ -1382,32 +1384,6 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
     // item can't be added
     sLog->outError(LOG_FILTER_PLAYER_ITEMS, "STORAGE: Can't equip or store initial item %u for race %u class %u, error msg = %u", titem_id, getRace(), getClass(), msg);
     return false;
-}
-
-void Player::RewardCurrencyAtKill(Unit* victim)
-{
-    if (!victim || victim->GetTypeId() == TYPEID_PLAYER)
-        return;
-
-    if (!victim->ToCreature())
-        return;
-
-    if (!victim->ToCreature()->GetEntry())
-        return;
-
-    CurrencyOnKillEntry const* Curr = sObjectMgr->GetCurrencyOnKillEntry(victim->ToCreature()->GetEntry());
-
-    if (!Curr)
-        return;
-
-    if (Curr->currencyId1 && Curr->currencyCount1)
-        ModifyCurrency(Curr->currencyId1, Curr->currencyCount1);
-
-    if (Curr->currencyId2 && Curr->currencyCount2)
-        ModifyCurrency(Curr->currencyId2, Curr->currencyCount2);
-
-    if (Curr->currencyId3 && Curr->currencyCount3)
-        ModifyCurrency(Curr->currencyId3, Curr->currencyCount3);
 }
 
 void Player::SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen)
@@ -2840,6 +2816,7 @@ void Player::Regenerate(Powers power)
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
     float regenmod = 1.0f / GetFloatValue(UNIT_MOD_CAST_HASTE);
+    bool  needUpdate = false;
 
     switch (power)
     {
@@ -2874,7 +2851,8 @@ void Player::Regenerate(Powers power)
         case POWER_ENERGY:
         {
             float defaultreg = 0.01f * m_regenTimer;
-            addvalue += defaultreg * regenmod * sWorld->getRate(RATE_POWER_ENERGY);
+            addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
+            needUpdate = true;
             break;
         }
         // Regenerate Runic Power
@@ -2976,7 +2954,7 @@ void Player::Regenerate(Powers power)
     }
     else if (addvalue > 0.0f)
     {
-        if (curValue == maxValue)
+        if (curValue == maxValue && !needUpdate)
             return;
     }
     else
@@ -3010,10 +2988,56 @@ void Player::Regenerate(Powers power)
         else
             m_powerFraction[powerIndex] = addvalue - integerValue;
     }
-    if (m_regenTimerCount >= 2000)
-        SetPower(power, curValue);
-    else
-        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+
+    switch (power)
+    {
+        case POWER_ENERGY:
+        {
+            if (GetPower(POWER_ENERGY) != maxValue || m_doLastUpdate)
+            {
+                if (m_regenTimerCount >= 2000)
+                {
+                    UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+
+                    if (IsInWorld())
+                    {
+                        WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
+                        data.append(GetPackGUID());
+                        data << uint32(1);
+                        data << uint8(power);
+                        data << int32(curValue);
+                        SendMessageToSet(&data, false);
+                    }
+                    m_doLastUpdate = false;
+                }
+                else
+                {
+                    if (!m_doLastUpdate)
+                    {
+                        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+                        if (curValue == maxValue)
+                        {
+                            m_doLastUpdate = true;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case POWER_HOLY_POWER:
+        {
+            SetPower(power, curValue);
+            break;
+        }
+        default:
+        {
+            if (m_regenTimerCount >= 2000)
+                SetPower(power, curValue);
+            else
+                UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+            break;
+        }
+    }
 }
 
 void Player::RegenerateHealth()
@@ -4066,6 +4090,20 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         return false;
     }
 
+    // Validate profession
+    if (loading)
+    {
+        SkillLineAbilityMapBounds spellBounds = sSpellMgr->GetSkillLineAbilityMapBounds(spellInfo->Id);
+        for (SkillLineAbilityMap::const_iterator spell_idx = spellBounds.first; spell_idx != spellBounds.second; ++spell_idx)
+        {
+            if (!IsProfessionSkill(spell_idx->second->skillId))
+                continue;
+
+            if (!HasSkill(spell_idx->second->skillId))
+                disabled = true;
+        }
+    }
+
     PlayerSpellState state = learning ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
 
     bool dependent_set = false;
@@ -4499,10 +4537,25 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
     {
         for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
-            if (i->triger < 0)
-                RemoveAurasDueToSpell(-(i->triger));
-            else
-                CastSpell(this, i->triger, true);
+            switch (i->type)
+            {
+                case 0: //remove or add auras
+                {
+                    if (i->triger < 0)
+                        RemoveAurasDueToSpell(-(i->triger));
+                    else
+                        CastSpell(this, i->triger, true);
+                        break;
+                }
+                case 1: //remove or add spell
+                {
+                    if (i->triger < 0)
+                        removeSpell(-(i->triger));
+                    else
+                        learnSpell(i->triger, false);
+                        break;
+                }
+            }
         }
     }
 
@@ -4568,10 +4621,25 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     {
         for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
-            if (i->triger < 0)
-                RemoveAurasDueToSpell(-(i->triger));
-            else
-                CastSpell(this, i->triger, true);
+            switch (i->type)
+            {
+                case 0: //remove or add auras
+                {
+                    if (i->triger < 0)
+                        RemoveAurasDueToSpell(-(i->triger));
+                    else
+                        CastSpell(this, i->triger, true);
+                        break;
+                }
+                case 1: //remove or add spell
+                {
+                    if (i->triger < 0)
+                        removeSpell(-(i->triger));
+                    else
+                        learnSpell(i->triger, false);
+                        break;
+                }
+            }
         }
     }
 
@@ -4598,11 +4666,6 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     }
 
     RemoveAurasDueToSpell(spell_id);
-
-    // remove pet auras
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (PetAura const* petSpell = sSpellMgr->GetPetAura(spell_id, i))
-            RemovePetAura(petSpell);
 
     uint32 talentCosts = sSpellMgr->IsTalent(spell_id) ? 1 : 0;
 
@@ -6568,8 +6631,13 @@ void Player::UpdateRating(CombatRating cr)
     for (AuraEffectList::const_iterator i = modRatingFromStat.begin(); i != modRatingFromStat.end(); ++i)
         if ((*i)->GetMiscValue() & (1<<cr))
             amount += int32(CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount()));
+
+    if (cr == CR_MASTERY)
+        amount += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_RATING, 33554432);
+
     if (amount < 0)
         amount = 0;
+
     SetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr, uint32(amount));
 
     bool affectStats = CanModifyStats();
@@ -17434,6 +17502,7 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
     }
 
     GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_CREATURE, real_entry);   // MUST BE CALLED FIRST
+    GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_CREATURE2, real_entry);   // MUST BE CALLED FIRST
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, real_entry, addkillcount, guid ? GetMap()->GetCreature(guid) : NULL);
 
     for (uint8 i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
@@ -20148,6 +20217,14 @@ bool Player::CheckInstanceLoginValid()
             return false;
     }
 
+    // and do one more check before InstanceMap::CanEnte
+    // instance full don't checks in CanPlayerEnter due ignore login case.
+    if (GetMap()->GetPlayersCountExceptGMs() > ((InstanceMap*)GetMap())->GetMaxPlayers())
+    {
+        SendTransferAborted(GetMap()->GetId(), TRANSFER_ABORT_MAX_PLAYERS);
+        return false;
+    }
+
     // do checks for satisfy accessreqs, instance full, encounter in progress (raid), perm bind group != perm bind player
     return sMapMgr->CanPlayerEnter(GetMap()->GetId(), this, true);
 }
@@ -21536,7 +21613,7 @@ Pet* Player::GetPet() const
     return NULL;
 }
 
-void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampeded)
+void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
 {
     if (!pet)
         pet = GetPet();
@@ -21557,7 +21634,7 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampede
 
     pet->CombatStop();
     // only if current pet in slot
-    pet->SavePetToDB(mode, stampeded);
+    pet->SavePetToDB(mode);
 
     if (pet->getPetType() != HUNTER_PET)
         SetMinion(pet, false, PET_SLOT_UNK_SLOT);
@@ -21567,7 +21644,7 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampede
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
 
-    if (pet->isControlled() && !stampeded)
+    if (pet->isControlled() && !pet->m_Stampeded)
     {
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
@@ -21704,7 +21781,7 @@ void Player::PetSpellInitialize()
 {
     Pet* pet = GetPet();
 
-    if (!pet)
+    if (!pet || pet->m_Stampeded)
         return;
 
     sLog->outDebug(LOG_FILTER_PETS, "Pet Spells Groups");
@@ -22005,6 +22082,10 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
             if (opcode == SMSG_SET_PCT_SPELL_MODIFIER)
             {
                 float val = 1;
+
+                if (!apply)
+                    val += float(mod->value) / 100;
+
                 for (SpellModList::iterator itr = m_spellMods[mod->op].begin(); itr != m_spellMods[mod->op].end(); ++itr)
                     if ((*itr)->type == mod->type && (*itr)->mask & _mask)
                         val += (*itr)->value/100;
@@ -25166,21 +25247,6 @@ bool Player::GetsRecruitAFriendBonus(bool forXP)
 
 void Player::RewardPlayerAndGroupAtKill(Unit* victim, bool isBattleGround)
 {
-     //currency reward
-    if (sMapStore.LookupEntry(GetMapId())->IsDungeon())
-    {
-        if (Group *pGroup = GetGroup())
-        {
-            for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-            {
-                Player* pGroupGuy = itr->getSource();
-                if (IsInMap(pGroupGuy))
-                    pGroupGuy->RewardCurrencyAtKill(victim);
-            }
-        }
-        else
-            RewardCurrencyAtKill(victim);
-    }
     KillRewarder(this, victim, isBattleGround).Reward();
 }
 
@@ -28389,9 +28455,6 @@ void Player::RemovePassiveTalentSpell(uint32 spellId)
             break;
         case 96268: // Death's Advance
             RemoveAura(124285);
-            break;
-        case 108415:// Soul Link
-            RemoveAura(108446);
             break;
         case 108505:// Archimonde's Vengeance
             RemoveAura(116403);

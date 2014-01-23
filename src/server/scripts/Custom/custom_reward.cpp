@@ -167,6 +167,7 @@ public:
                 uint32 bonus8 = fields[8].GetBool();
                 uint32 bonus9 = fields[9].GetBool();
                 uint32 bonus10 = fields[10].GetBool();
+                uint32 bonus11 = fields[11].GetBool();
 
                 if (sWorld->getBoolConfig(CONFIG_SHARE_ENABLE))
                 {
@@ -199,7 +200,7 @@ public:
 
                 if(!bonus5 && totaltime >= (100 * HOUR))
                 {
-                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 76755);
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 49663);
                     update = true;
                     bonus5 = true;
                 }
@@ -209,17 +210,44 @@ public:
                     update = true;
                     bonus6 = true;
                 }
-                if(!bonus7 && totaltime >= (1 * HOUR) && realmID == 43)
+                if(!bonus7 && totaltime >= (1000 * HOUR))
                 {
-                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 49665);
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 68385);
                     update = true;
                     bonus7 = true;
                 }
+                if(!bonus8 && totaltime >= (2500 * HOUR))
+                {
+                    if(player->GetTeam() == HORDE)
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 76902);
+                    else
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 76889);
+                    update = true;
+                    bonus8 = true;
+                }
+                if(!bonus9 && totaltime >= (5000 * HOUR))
+                {
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 69846);
+                    update = true;
+                    bonus9 = true;
+                }
+                if(!bonus10 && totaltime >= (9000 * HOUR))
+                {
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 21176);
+                    update = true;
+                    bonus10 = true;
+                }
+                if(!bonus11 && totaltime >= (250 * HOUR))
+                {
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 72068);
+                    update = true;
+                    bonus11 = true;
+                }
                 if(update)
-                    CharacterDatabase.PQuery("UPDATE `character_share` SET `bonus1` = '%u', `bonus2` = '%u', `bonus3` = '%u', `bonus4` = '%u', `bonus5` = '%u', `bonus6` = '%u', `bonus7` = '%u', `bonus8` = '%u', `bonus9` = '%u', `bonus10` = '%u' WHERE guid = '%u'", bonus1, bonus2, bonus3, bonus4, bonus5, bonus6, bonus7, bonus8, bonus9, bonus10, owner_guid);
+                    CharacterDatabase.PQuery("UPDATE `character_share` SET `bonus1` = '%u', `bonus2` = '%u', `bonus3` = '%u', `bonus4` = '%u', `bonus5` = '%u', `bonus6` = '%u', `bonus7` = '%u', `bonus8` = '%u', `bonus9` = '%u', `bonus10` = '%u', `bonus11` = '%u' WHERE guid = '%u'", bonus1, bonus2, bonus3, bonus4, bonus5, bonus6, bonus7, bonus8, bonus9, bonus10, bonus11, owner_guid);
             }
             else
-                CharacterDatabase.PQuery("INSERT INTO `character_share` (`guid`, `bonus1`, `bonus2`, `bonus3`, `bonus4`, `bonus5`, `bonus6`, `bonus7`, `bonus8`, `bonus9`, `bonus10`) values('%u','0','0','0','0','0','0','0','0','0','0')", owner_guid);
+                CharacterDatabase.PQuery("INSERT INTO `character_share` (`guid`, `bonus1`, `bonus2`, `bonus3`, `bonus4`, `bonus5`, `bonus6`, `bonus7`, `bonus8`, `bonus9`, `bonus10`, `bonus11`) values('%u','0','0','0','0','0','0','0','0','0','0','0')", owner_guid);
         }
     }
 

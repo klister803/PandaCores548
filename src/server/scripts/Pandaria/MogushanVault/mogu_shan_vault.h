@@ -77,14 +77,18 @@ enum eCreatures
 
     // Elegon
     NPC_ELEGON                      = 60410,
+
+    // Woi Controller
+    NPC_WOI_CONTROLLER              = 90787, //New trigger
     
     // Will of Emperor
     NPC_QIN_XI                      = 60399,
     NPC_JAN_XI                      = 60400,
-    
-    NPC_EMPEROR_RAGE                = 60396,
-    NPC_EMPEROR_STRENGHT            = 60397,
-    NPC_EMPEROR_COURAGE             = 60398,
+
+    // Imperator adds
+    NPC_RAGE                        = 60396,
+    NPC_FORCE                       = 60397,
+    NPC_COURAGE                     = 60398,
 };
 
 enum eGameObjects
@@ -118,14 +122,6 @@ enum eGameObjects
 
     GOB_MOGU_RUNE_FIRST             = 213937,
     GOB_MOGU_RUNE_END               = 213955,
-};
-
-enum ePhases
-{
-    PHASE_WOE_RAGE                  = 1, // WOE = Will Of Emperor
-    PHASE_WOE_COURAGE               = 2,
-    PHASE_WOE_STRENGHT              = 3,
-    PHASE_WOE_GAZ                   = 4
 };
 
 #endif // MOGUSHAN_VAULT_H_

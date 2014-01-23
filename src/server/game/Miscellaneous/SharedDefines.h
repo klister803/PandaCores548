@@ -1809,7 +1809,7 @@ enum Targets
     TARGET_UNK_135                     = 135,
     TARGET_UNK_136                     = 136,
     TARGET_UNK_137                     = 137,
-    TARGET_UNK_138                     = 138,
+    TARGET_UNIT_TARGET_SELECT          = 138,
     TOTAL_SPELL_TARGETS
 };
 
@@ -4004,7 +4004,12 @@ enum SummonType
     SUMMON_TYPE_VEHICLE2    = 10,
     SUMMON_TYPE_OBJECT      = 11,
     SUMMON_TYPE_UNK12       = 12,
-    SUMMON_TYPE_UNK13       = 13
+    SUMMON_TYPE_UNK13       = 13,
+    SUMMON_TYPE_GATE        = 14,
+    SUMMON_TYPE_UNK15       = 15,
+    SUMMON_TYPE_UNK16       = 16,
+    SUMMON_TYPE_UNK17       = 17,
+    SUMMON_TYPE_UNK18       = 18,
 };
 
 enum EventId
@@ -4252,6 +4257,8 @@ enum PetSlot
     PET_SLOT_STABLE_LAST            =  24,
     PET_SLOT_WARLOCK_PET_FIRST      =  25,
     PET_SLOT_WARLOCK_PET_LAST       =  35,
+    PET_SLOT_STAMPED_FIRST          =  36,
+    PET_SLOT_STAMPED_LAST           =  40,
 
     //Non-hunter pet slot
     PET_SLOT_OTHER_PET       = 100,        // PetType != HUNTER_PET

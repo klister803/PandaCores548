@@ -52,8 +52,6 @@ enum ShamanSpells
     SPELL_SHA_FLAME_SHOCK                   = 8050,
     SPELL_SHA_STORMSTRIKE                   = 17364,
     SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE   = 26364,
-    SPELL_SHA_HEALING_STREAM                = 52042,
-    SPELL_SHA_GLYPH_OF_HEALING_STREAM       = 119423,
     SPELL_SHA_LAVA_SURGE_CAST_TIME          = 77762,
     SPELL_SHA_FULMINATION                   = 88766,
     SPELL_SHA_FULMINATION_TRIGGERED         = 88767,
@@ -348,66 +346,6 @@ class spell_sha_conductivity : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_sha_conductivity_SpellScript();
-        }
-};
-
-// Ancestral Guidance - 108281
-class spell_sha_ancestral_guidance : public SpellScriptLoader
-{
-    public:
-        spell_sha_ancestral_guidance() : SpellScriptLoader("spell_sha_ancestral_guidance") { }
-
-        class spell_sha_ancestral_guidance_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_sha_ancestral_guidance_AuraScript);
-
-            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-            {
-                PreventDefaultAction();
-
-                if (!GetCaster())
-                    return;
-
-                Player* _player = GetCaster()->ToPlayer();
-                if (!_player)
-                    return;
-
-                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
-                    return;
-
-                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
-                    return;
-
-                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_SHA_ANCESTRAL_GUIDANCE)
-                    return;
-
-                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
-                    return;
-
-                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
-                    return;
-
-                if (Unit* target = eventInfo.GetActionTarget())
-                {
-                    int32 bp = eventInfo.GetDamageInfo()->GetDamage() > eventInfo.GetHealInfo()->GetHeal() ? eventInfo.GetDamageInfo()->GetDamage() : eventInfo.GetHealInfo()->GetHeal();
-                    if (!bp)
-                        return;
-
-                    bp = int32(bp * 0.40f);
-
-                    _player->CastCustomSpell(target, SPELL_SHA_ANCESTRAL_GUIDANCE, &bp, NULL, NULL, true);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectProc += AuraEffectProcFn(spell_sha_ancestral_guidance_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_ancestral_guidance_AuraScript();
         }
 };
 
@@ -1034,44 +972,6 @@ class spell_sha_lava_surge : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_sha_lava_surge_AuraScript();
-        }
-};
-
-// Healing Stream - 52042
-class spell_sha_healing_stream : public SpellScriptLoader
-{
-    public:
-        spell_sha_healing_stream() : SpellScriptLoader("spell_sha_healing_stream") { }
-
-        class spell_sha_healing_stream_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_healing_stream_SpellScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_HEALING_STREAM))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        // Glyph of Healing Stream Totem
-                        if (target->GetGUID() != _player->GetGUID() && _player->HasAura(55456))
-                            _player->CastSpell(target, SPELL_SHA_GLYPH_OF_HEALING_STREAM, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_sha_healing_stream_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_healing_stream_SpellScript();
         }
 };
 
@@ -1869,7 +1769,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_glyph_of_lakestrider();
     new spell_sha_call_of_the_elements();
     new spell_sha_conductivity();
-    new spell_sha_ancestral_guidance();
     new spell_sha_echo_of_the_elements();
     new spell_sha_earthgrab();
     new spell_sha_mail_specialization();
@@ -1881,7 +1780,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_rolling_thunder();
     new spell_sha_fulmination();
     new spell_sha_lava_surge();
-    new spell_sha_healing_stream();
     new spell_sha_static_shock();
     new spell_sha_elemental_blast();
     new spell_sha_earthquake_tick();

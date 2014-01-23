@@ -1,28 +1,9 @@
-/*
-    Dungeon : Template of Mogu'shan Palace 87-89
-    Instance General Script
-    Jade servers
-*/
+//UWoWCore
+//Mogushan Vault
 
 #include "ScriptPCH.h"
 #include "VMapFactory.h"
 #include "mogu_shan_vault.h"
-
-DoorData const doorData[] =
-{
-    {GOB_STONE_GUARD_DOOR_ENTRANCE,          DATA_STONE_GUARD,          DOOR_TYPE_ROOM,       BOUNDARY_S   },
-    {GOB_STONE_GUARD_DOOR_EXIT,              DATA_STONE_GUARD,          DOOR_TYPE_PASSAGE,    BOUNDARY_N   },
-    {GOB_FENG_DOOR_FENCE,                    DATA_FENG,                 DOOR_TYPE_ROOM,       BOUNDARY_NONE},
-    {GOB_FENG_DOOR_EXIT,                     DATA_FENG,                 DOOR_TYPE_PASSAGE,    BOUNDARY_N   },
-    {GOB_GARAJAL_FENCE,                      DATA_GARAJAL,              DOOR_TYPE_ROOM,       BOUNDARY_NONE},
-    //{GOB_GARAJAL_EXIT,                       DATA_GARAJAL,              DOOR_TYPE_PASSAGE,    BOUNDARY_W   },
-    //{GOB_SPIRIT_KINGS_WIND_WALL,             DATA_SPIRIT_KINGS          DOOR_TYPE_ROOM,       BOUNDARY_NONE},
-    //{GOB_SPIRIT_KINGS_EXIT,                  DATA_SPIRIT_KINGS,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-    //{GOB_ELEGON_DOOR_ENTRANCE,               DATA_SPIRIT_KINGS,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-    //{GOB_ELEGON_CELESTIAL_DOOR,              DATA_ELEGON,               DOOR_TYPE_ROOM,       BOUNDARY_E   },
-    //{GOB_WILL_OF_EMPEROR_ENTRANCE,           DATA_ELEGON,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-    {0,                                      0,                         DOOR_TYPE_ROOM,       BOUNDARY_NONE},// END
-};
 
 class instance_mogu_shan_vault : public InstanceMapScript
 {
@@ -40,10 +21,6 @@ public:
         instance_mogu_shan_vault_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         int8   randomDespawnStoneGuardian;
-        uint8  willOfEmperorPhase;
-        uint32 actualPetrifierEntry;
-        uint32 StoneGuardPetrificationTimer;
-        uint32 willOfEmperorTimer;
 
         //GameObject
         uint64 stoneexitdoorGuid;
@@ -54,6 +31,7 @@ public:
         uint64 elegonentdoorGuid;
         uint64 elegonceldoorGuid;
         uint64 elegonplatformGuid;
+        uint64 imperatorentdoorGuid;
 
         //Creature
         uint64 stoneGuardControlerGuid;
@@ -67,23 +45,19 @@ public:
         uint64 mengGuid;
         uint64 janxiGuid;
         uint64 qinxiGuid;
+        uint64 woicontrollerGuid;
 
+        //Arrays
         std::vector<uint64> stoneGuardGUIDs;
         std::vector<uint64> fengdoorGUIDs;
         std::vector<uint64> garajaldoorGUIDs;
         std::vector<uint64> fengStatuesGUIDs;
         std::vector<uint64> kingsdoorGUIDs;
 
-        
         void Initialize()
         {
             SetBossNumber(DATA_MAX_BOSS_DATA);
-            LoadDoorData(doorData);
             randomDespawnStoneGuardian      = urand(1,4);
-            willOfEmperorPhase              = 0;
-            actualPetrifierEntry            = 0;
-            StoneGuardPetrificationTimer    = 10000;
-            willOfEmperorTimer  = 0;
 
             //GameObject
             stoneexitdoorGuid               = 0;
@@ -94,6 +68,7 @@ public:
             elegonentdoorGuid               = 0;
             elegonceldoorGuid               = 0;
             elegonplatformGuid              = 0;
+            imperatorentdoorGuid            = 0;
 
             //Creature
             stoneGuardControlerGuid         = 0;
@@ -105,7 +80,9 @@ public:
             subetaiGuid                     = 0;
             zianGuid                        = 0;
             mengGuid                        = 0;
+            woicontrollerGuid               = 0;
 
+            //Arrays
             stoneGuardGUIDs.clear();
             fengStatuesGUIDs.clear();
             garajaldoorGUIDs.clear();
@@ -164,6 +141,9 @@ public:
                 case NPC_JAN_XI:
                     janxiGuid = creature->GetGUID();
                     break;
+                case NPC_WOI_CONTROLLER:
+                    woicontrollerGuid = creature->GetGUID();
+                    break;
                 default:
                     break;
             }
@@ -217,6 +197,9 @@ public:
                     break;
                 case GOB_ENERGY_PLATFORM:
                     elegonplatformGuid = go->GetGUID();
+                    break;
+                case GOB_WILL_OF_EMPEROR_ENTRANCE:
+                    imperatorentdoorGuid = go->GetGUID();
                     break;
             }
         }
@@ -324,7 +307,23 @@ public:
                             break;
                         case DONE:
                             HandleGameObject(elegonceldoorGuid, true);
-                            //TODO: here must be door for next boss
+                            HandleGameObject(imperatorentdoorGuid, true);
+                            break;
+                        }
+                        break;
+                    }
+                case DATA_WILL_OF_EMPEROR:
+                    {
+                        switch (state)
+                        {
+                        case NOT_STARTED:
+                            HandleGameObject(imperatorentdoorGuid, true);
+                            break;
+                        case IN_PROGRESS:
+                            HandleGameObject(imperatorentdoorGuid, false);
+                            break;
+                        case DONE:
+                            HandleGameObject(imperatorentdoorGuid, true);
                             break;
                         }
                         break;
@@ -333,9 +332,7 @@ public:
             return true;
         }
 
-        void SetData(uint32 type, uint32 data)
-        {
-        }
+        void SetData(uint32 type, uint32 data){}
 
         uint32 GetData(uint32 type)
         {
@@ -392,6 +389,8 @@ public:
                     return qinxiGuid;
                 case NPC_JAN_XI:
                     return janxiGuid;
+                case NPC_WOI_CONTROLLER:
+                    return woicontrollerGuid;
             }
             return 0;
         }
@@ -431,34 +430,7 @@ public:
             for (uint32 i=0; i < DATA_MAX_BOSS_DATA; ++i)
                 loadStream >> buff;
         }
-
-        void Update(uint32 diff)
-        {
-            if (GetBossState(DATA_WILL_OF_EMPEROR) != IN_PROGRESS)
-                return;
-
-            if (willOfEmperorTimer)
-            {
-                if (willOfEmperorTimer <= diff)
-                {
-                    switch (willOfEmperorPhase)
-                    {
-                        case PHASE_WOE_RAGE:
-                            break;
-                        case PHASE_WOE_COURAGE:
-                            break;
-                        case PHASE_WOE_STRENGHT:
-                            break;
-                        case PHASE_WOE_GAZ:
-                            break;
-                    }
-                }
-                else
-                    willOfEmperorTimer -= diff;
-            }
-        }
     };
-
 };
 
 void AddSC_instance_mogu_shan_vault()

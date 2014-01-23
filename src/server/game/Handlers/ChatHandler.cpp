@@ -127,6 +127,14 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
 
     //sLog->outDebug(LOG_FILTER_GENERAL, "CHAT: packet received. type %u, lang %u", type, lang);
 
+    if (!sender->CanSpeak() && type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
+    {
+        std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
+        SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING), timeStr.c_str());
+        recvData.rfinish(); // Prevent warnings
+        return;
+    }
+
     // no language sent with emote packet.
     if (type != CHAT_MSG_EMOTE && type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
     {
@@ -215,14 +223,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
                 Unit::AuraEffectList const& ModLangAuras = sender->GetAuraEffectsByType(SPELL_AURA_MOD_LANGUAGE);
                 if (!ModLangAuras.empty())
                     lang = ModLangAuras.front()->GetMiscValue();
-            }
-
-            if (!sender->CanSpeak())
-            {
-                std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
-                SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING), timeStr.c_str());
-                recvData.rfinish(); // Prevent warnings
-                return;
             }
         }
     }

@@ -29,14 +29,6 @@
 enum PaladinSpells
 {
     PALADIN_SPELL_DIVINE_PLEA                    = 54428,
-    PALADIN_SPELL_JUDGMENT                       = 20271,
-    PALADIN_SPELL_JUDGMENTS_OF_THE_BOLD          = 111529,
-    PALADIN_SPELL_JUDGMENTS_OF_THE_WISE          = 105424,
-    PALADIN_SPELL_PHYSICAL_VULNERABILITY         = 81326,
-    PALADIN_SPELL_LONG_ARM_OF_THE_LAW            = 87172,
-    PALADIN_SPELL_LONG_ARM_OF_THE_LAW_RUN_SPEED  = 87173,
-    PALADIN_SPELL_BURDEN_OF_GUILT                = 110301,
-    PALADIN_SPELL_BURDEN_OF_GUILT_DECREASE_SPEED = 110300,
     PALADIN_SPELL_HOLY_SHOCK_R1                  = 20473,
     PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE           = 25912,
     PALADIN_SPELL_HOLY_SHOCK_R1_HEALING          = 25914,
@@ -1001,58 +993,6 @@ class spell_pal_word_of_glory : public SpellScriptLoader
         }
 };
 
-// Judgment - 20271
-class spell_pal_judgment : public SpellScriptLoader
-{
-    public:
-        spell_pal_judgment() : SpellScriptLoader("spell_pal_judgment") { }
-
-        class spell_pal_judgment_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_judgment_SpellScript);
-
-            bool Validate()
-            {
-                if (!sSpellMgr->GetSpellInfo(PALADIN_SPELL_JUDGMENT))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        if (_player->HasAura(PALADIN_SPELL_JUDGMENTS_OF_THE_BOLD))
-                        {
-                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + 1);
-                            _player->CastSpell(unitTarget, PALADIN_SPELL_PHYSICAL_VULNERABILITY, true);
-                        }
-                        else if (_player->HasAura(PALADIN_SPELL_JUDGMENTS_OF_THE_WISE))
-                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + 1);
-
-                        if (_player->HasAura(PALADIN_SPELL_LONG_ARM_OF_THE_LAW))
-                            _player->CastSpell(_player, PALADIN_SPELL_LONG_ARM_OF_THE_LAW_RUN_SPEED, true);
-
-                        if (_player->HasAura(PALADIN_SPELL_BURDEN_OF_GUILT))
-                            _player->CastSpell(unitTarget, PALADIN_SPELL_BURDEN_OF_GUILT_DECREASE_SPEED, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pal_judgment_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_judgment_SpellScript();
-        }
-};
-
 // Ardent Defender - 31850
 class spell_pal_ardent_defender : public SpellScriptLoader
 {
@@ -1422,7 +1362,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_consecration();
     new spell_pal_consecration_area();
     new spell_pal_word_of_glory();
-    new spell_pal_judgment();
     new spell_pal_ardent_defender();
     new spell_pal_blessing_of_faith();
     new spell_pal_holy_shock_damage();

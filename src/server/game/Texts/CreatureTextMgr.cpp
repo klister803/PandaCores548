@@ -44,6 +44,11 @@ class CreatureTextBuilder
             c.targetGuid = targetGuid;
             c.language = _language;
             c.chatType = _msgType;
+            if (_msgType == CHAT_MSG_RAID_BOSS_EMOTE || _msgType == CHAT_MSG_RAID_BOSS_WHISPER)
+            {
+                *data << float(0);
+                *data << uint8(0);
+            }
 
             Trinity::BuildChatPacket(*data, c);
         }

@@ -238,7 +238,7 @@ void TempSummon::UnSummon(uint32 msTime)
     if (isPet())
     {
         if (((Pet*)this)->getPetType() == HUNTER_PET)
-            ((Pet*)this)->Remove(PET_SLOT_ACTUAL_PET_SLOT, false, ToPet()->m_Stampeded);
+            ((Pet*)this)->Remove(PET_SLOT_ACTUAL_PET_SLOT, false);
         else
             ((Pet*)this)->Remove(PET_SLOT_OTHER_PET);
         ASSERT(!IsInWorld());
@@ -311,7 +311,30 @@ bool Minion::IsGuardianPet() const
 
 bool Minion::IsWarlockPet() const
 {
-    return isPet() && (GetEntry() == ENTRY_INFERNAL || GetEntry() == ENTRY_IMP || GetEntry() == ENTRY_VOIDWALKER || GetEntry() == ENTRY_SUCCUBUS || GetEntry() == ENTRY_FELHUNTER || GetEntry() == ENTRY_FELGUARD);
+    if(isPet())
+    {
+        switch (GetEntry())
+        {
+            case ENTRY_INFERNAL:
+            case ENTRY_IMP:
+            case ENTRY_VOIDWALKER:
+            case ENTRY_SUCCUBUS:
+            case ENTRY_FELHUNTER:
+            case ENTRY_FELGUARD:
+            case ENTRY_WRATHGUARD:
+            case ENTRY_OBSERVER:
+            case ENTRY_SHIVARRA:
+            case ENTRY_VOIDLORD:
+            case ENTRY_FEL_IMP:
+            case ENTRY_TERRORGUARD:
+            case ENTRY_ABYSSAL:
+                return true;
+            default:
+                return false;
+        }
+    }
+    else
+        return false;
 }
 
 Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) : Minion(properties, owner, isWorldObject)

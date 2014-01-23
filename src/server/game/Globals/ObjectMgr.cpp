@@ -1487,39 +1487,6 @@ void ObjectMgr::LoadCreatures()
         ++count;
 
     } while (result->NextRow());
-
-    //Load data for spawn from grid data
-    //                                               0        1     2       3
-    /*result = WorldDatabase.Query("SELECT entry, zone, grid_x, grid_y FROM creature_spawn");
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-            uint32 entry       = fields[0].GetUInt32();
-            uint32 zoneId      = fields[1].GetUInt32();
-            float x            = fields[2].GetFloat();
-            float y            = fields[3].GetFloat();
-
-            AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(zoneId);
-            if(!areaEntry)
-                continue;
-            AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
-            if(!zoneEntry)
-                continue;
-
-            Map const* map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
-            Zone2MapCoordinates(x, y, zoneEntry->ID);
-            if(!map)
-                continue;
-
-            float z = std::max(map->GetVmapHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
-
-            WorldDatabase.PExecute("REPLACE INTO `creature_spawn_coord` SET `id`='%u', `map`='%u',`zoneId`='%u',`position_x`='%f',`position_y`='%f', `position_z`='%f';", entry, zoneEntry->mapid, zoneId, x, y, z);
-            //WorldDatabase.PExecute("DELETE FROM creature_spawn WHERE `entry` = '%u' AND `zone` = '%u' AND `grid_x` = '%f' AND `grid_y`='%f';", entry, zoneId, grid_x, grid_y);
-
-        } while (result->NextRow());
-    }*/
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creatures in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
@@ -6763,77 +6730,6 @@ void ObjectMgr::LoadReputationRewardRate()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u reputation_reward_rate in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-void ObjectMgr::LoadCurrencyOnKill()
-{
-    uint32 oldMSTime = getMSTime();
-
-    _curOnKillStore.clear();
-
-    uint32 count = 0;
-
-    QueryResult result = WorldDatabase.Query("SELECT `creature_id`, `CurrencyId1`,  `CurrencyId2`,  `CurrencyId3`, `CurrencyCount1`, `CurrencyCount2`, `CurrencyCount3` FROM `creature_loot_currency`");
-
-    if (!result)
-    {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 creature currency definitions. DB table `creature_currency` is empty.");
-        return;
-    }
-
-    do
-    {
-        Field *fields = result->Fetch();
-
-        uint32 creature_id = fields[0].GetUInt32();
-
-        CurrencyOnKillEntry currOnKill;
-        currOnKill.currencyId1          = fields[1].GetUInt16();
-        currOnKill.currencyId2          = fields[2].GetUInt16();
-        currOnKill.currencyId3          = fields[3].GetUInt16();
-        currOnKill.currencyCount1       = fields[4].GetInt32();
-        currOnKill.currencyCount2       = fields[5].GetInt32();
-        currOnKill.currencyCount3       = fields[6].GetInt32();
-
-        if (!GetCreatureTemplate(creature_id))
-        {
-            sLog->outError(LOG_FILTER_SQL, "Table `creature_creature` have data for not existed creature entry (%u), skipped", creature_id);
-            continue;
-        }
-
-        if (currOnKill.currencyId1)
-        {
-            if (!sCurrencyTypesStore.LookupEntry(currOnKill.currencyId1))
-            {
-                sLog->outError(LOG_FILTER_SQL, "CurrencyType (CurrencyTypes.dbc) %u does not exist but is used in `creature_currency`", currOnKill.currencyId1);
-                continue;
-            }
-        }
-
-        if (currOnKill.currencyId2)
-        {
-            if (!sCurrencyTypesStore.LookupEntry(currOnKill.currencyId2))
-            {
-                sLog->outError(LOG_FILTER_SQL, "CurrencyType (CurrencyTypes.dbc) %u does not exist but is used in `creature_currency`", currOnKill.currencyId2);
-                continue;
-            }
-        }
-
-        if (currOnKill.currencyId3)
-        {
-            if (!sCurrencyTypesStore.LookupEntry(currOnKill.currencyId3))
-            {
-                sLog->outError(LOG_FILTER_SQL, "CurrencyType (CurrencyTypes.dbc) %u does not exist but is used in `creature_currency`", currOnKill.currencyId3);
-                continue;
-            }
-        }
-
-        _curOnKillStore[creature_id] = currOnKill;
-
-        ++count;
-    } while (result->NextRow());
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature currency definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-}
-
 void ObjectMgr::LoadReputationOnKill()
 {
     uint32 oldMSTime = getMSTime();
@@ -7194,18 +7090,6 @@ void ObjectMgr::LoadNPCSpellClickSpells()
         ++count;
     }
     while (result->NextRow());
-
-    // all spellclick data loaded, now we check if there are creatures with NPC_FLAG_SPELLCLICK but with no data
-    // NOTE: It *CAN* be the other way around: no spellclick flag but with spellclick data, in case of creature-only vehicle accessories
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
-    for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
-    {
-        if ((itr->second.npcflag & UNIT_NPC_FLAG_SPELLCLICK) && _spellClickInfoStore.find(itr->second.Entry) == _spellClickInfoStore.end())
-        {
-            sLog->outError(LOG_FILTER_SQL, "npc_spellclick_spells: Creature template %u has UNIT_NPC_FLAG_SPELLCLICK but no data in spellclick table! Removing flag", itr->second.Entry);
-            const_cast<CreatureTemplate*>(&itr->second)->npcflag &= ~UNIT_NPC_FLAG_SPELLCLICK;
-        }
-    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u spellclick definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }

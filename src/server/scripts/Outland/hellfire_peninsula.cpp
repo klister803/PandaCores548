@@ -26,7 +26,6 @@ EndScriptData */
 /* ContentData
 npc_aeranas
 npc_ancestral_wolf
-go_haaleshi_altar
 npc_naladu
 npc_tracy_proudwell
 npc_trollbane
@@ -199,22 +198,6 @@ public:
             }
         }
     };
-};
-
-/*######
-## go_haaleshi_altar
-######*/
-
-class go_haaleshi_altar : public GameObjectScript
-{
-public:
-    go_haaleshi_altar() : GameObjectScript("go_haaleshi_altar") { }
-
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
-    {
-        go->SummonCreature(C_AERANAS, -1321.79f, 4043.80f, 116.24f, 1.25f, TEMPSUMMON_TIMED_DESPAWN, 180000);
-        return false;
-    }
 };
 
 /*######
@@ -529,7 +512,6 @@ void AddSC_hellfire_peninsula()
 {
     new npc_aeranas();
     new npc_ancestral_wolf();
-    new go_haaleshi_altar();
     new npc_naladu();
     new npc_tracy_proudwell();
     new npc_trollbane();

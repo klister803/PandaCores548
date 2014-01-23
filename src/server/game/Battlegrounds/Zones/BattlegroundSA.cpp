@@ -314,6 +314,7 @@ void BattlegroundSA::PostUpdateImpl(uint32 diff)
             DemolisherStartState(false);
             Status = BG_SA_ROUND_ONE;
             StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, (Attackers == TEAM_ALLIANCE)?23748:21702);
+            StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, (Attackers == TEAM_ALLIANCE)?23748:21702);
         }
         if (TotalTime >= BG_SA_BOAT_START)
             StartShips();
@@ -334,6 +335,7 @@ void BattlegroundSA::PostUpdateImpl(uint32 diff)
             DemolisherStartState(false);
             Status = BG_SA_ROUND_TWO;
             StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, (Attackers == TEAM_ALLIANCE)?23748:21702);
+            StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, (Attackers == TEAM_ALLIANCE)?23748:21702);
         }
         if (TotalTime >= 30000)
         {

@@ -175,7 +175,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_WHO Message");
 
     time_t now = time(NULL);
-    if (now - timeLastWhoCommand < 5)
+    if (now - timeLastWhoCommand < 15)
     {
         recvData.rfinish();
         return;
@@ -392,11 +392,9 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         ++displaycount;
     }
 
-    uint32 count = m.size();
+    uint32 count = 50;
     data.put(0, displaycount);                              // insert right count, count displayed
-    if (count > sWorld->getIntConfig(CONFIG_MAX_WHO))
-    	 count = ceil(sWorld->getRate(RATE_ONLINE)*m.size());
-    data.put( 4, count > sWorld->getIntConfig(CONFIG_MAX_WHO) ? count : displaycount );        // insert right count, online count
+    data.put( 4, count );        // insert right count, online count
 
     SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Send SMSG_WHO Message");
@@ -1293,9 +1291,10 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         return;
     }
 
+    uint8 activeSpec = player->GetActiveSpec();
     uint32 talent_points = 41;
     WorldPacket data(SMSG_INSPECT_TALENT, 8 + 4 + 1 + 1 + talent_points + 8 + 4 + 8 + 4);
-    data << uint32(player->GetSpecializationId(0));
+    data << uint32(player->GetSpecializationId(activeSpec));
 
     ObjectGuid playerGuid = player->GetGUID();
     data.WriteBit(playerGuid[6]);
@@ -1334,9 +1333,9 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         for (uint32 j = 0; j < MAX_ENCHANTMENT_SLOT; ++j)
         {
             uint32 enchId = item->GetEnchantmentId(EnchantmentSlot(j));
-
             if (!enchId)
                 continue;
+
             ++enchantmentCount;
         }
         data.WriteBits(enchantmentCount, 23);
@@ -1414,7 +1413,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         data << uint8(i);
     }
 
-    if (guild != NULL)
+    if (guild)
     {
         ObjectGuid guildGuid = guild->GetGUID();
 
@@ -1431,7 +1430,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         data.WriteByteSeq(guildGuid[0]);
     }
 
-    PlayerTalentMap* Talents = player->GetTalentMap(player->GetActiveSpec());
+    PlayerTalentMap* Talents = player->GetTalentMap(activeSpec);
     for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
     {
         SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
@@ -1449,10 +1448,11 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
     for (uint8 i = 0; i < MAX_GLYPH_SLOT_INDEX; ++i)
     {
-        if (player->GetGlyph(0, i) == 0)
+        uint32 glyph = player->GetGlyph(activeSpec, i);
+        if (!glyph)
             continue;
 
-        data << uint16(player->GetGlyph(0, i));               // GlyphProperties.dbc
+        data << uint16(glyph);                  // GlyphProperties.dbc
         ++glyphCount;
     }
     data.PutBits<uint32>(glyphPos, glyphCount, 25);

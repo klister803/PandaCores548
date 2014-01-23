@@ -261,6 +261,23 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
     }
 }
 
+void MotionMaster::MoveFetch(Unit* target, float dist, float angle, MovementSlot slot)
+{
+    // ignore movement request if target not exist
+    if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+        return;
+
+    //_owner->AddUnitState(UNIT_STATE_FOLLOW);
+    if (_owner->GetTypeId() != TYPEID_PLAYER)
+    {
+        sLog->outDebug(LOG_FILTER_GENERAL, "Creature (Entry: %u GUID: %u) follow to %s (GUID: %u)",
+            _owner->GetEntry(), _owner->GetGUIDLow(),
+            target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature",
+            target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : target->ToCreature()->GetDBTableGUIDLow());
+        Mutate(new FetchMovementGenerator<Creature>(*target,dist,angle), slot);
+    }
+}
+
 void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlot slot)
 {
     // ignore movement request if target not exist

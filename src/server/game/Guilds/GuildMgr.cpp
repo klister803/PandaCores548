@@ -439,7 +439,7 @@ void GuildMgr::LoadGuilds()
     }
 
     // 10. Loading Guild news
-    sLog->outInfo(LOG_FILTER_GENERAL, "Loading Guild News");
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Guild News");
     {
          for (GuildContainer::const_iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
          {
@@ -450,7 +450,7 @@ void GuildMgr::LoadGuilds()
     }
     
     // 11. Validate loaded guild data
-    sLog->outInfo(LOG_FILTER_GENERAL, "Validating data of loaded guilds...");
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Validating data of loaded guilds...");
     {
         uint32 oldMSTime = getMSTime();
 
@@ -459,6 +459,7 @@ void GuildMgr::LoadGuilds()
             Guild* guild = itr->second;
             if (guild)
             {
+                guild->Validate();
                 /*if (!guild->Validate())
                 {
                     volatile uint32 _guildId = guild->GetId();

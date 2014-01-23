@@ -349,17 +349,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, co
                 if (m_session)
                 {
                     Player* p = m_session->GetPlayer();
-                    Player* selected = p->GetSelectedPlayer();
-                    uint32 sel_guid = 0;
-                    std::string sel_name = "ERROR";
-                    uint32 sel_acc_guid = 0;
-
-                    if(selected)
-                    {
-                        sel_guid = selected->GetGUIDLow();
-                        sel_name = selected->GetName();
-                        sel_acc_guid = selected->GetSession()->GetAccountId();
-                    }
+                    uint64 sel_guid = p->GetSelection();
 
                     sLog->outCommand(m_session->GetAccountId(), "Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected %s: %s (GUID: %u)]",
                         fullcmd.c_str(), p->GetName(), m_session->GetAccountId(), p->GetPositionX(), p->GetPositionY(), p->GetPositionZ(), p->GetMapId(),

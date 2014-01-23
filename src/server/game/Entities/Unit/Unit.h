@@ -350,7 +350,6 @@ class DynamicObject;
 class GameObject;
 class Item;
 class Pet;
-class PetAura;
 class Minion;
 class Guardian;
 class UnitAI;
@@ -787,6 +786,9 @@ enum UnitTypeMask
     UNIT_MASK_HUNTER_PET            = 0x00000080,
     UNIT_MASK_CONTROLABLE_GUARDIAN  = 0x00000100,
     UNIT_MASK_ACCESSORY             = 0x00000200,
+    UNIT_MASK_UNK                   = 0x00000400,
+    UNIT_MASK_UNK2                  = 0x00000800,
+    UNIT_MASK_UNK3                  = 0x000001000,
 };
 
 namespace Movement{
@@ -1309,6 +1311,7 @@ class Unit : public WorldObject
         float ApplyDiminishingToDuration(DiminishingGroup  group, int32 &duration, Unit* caster, DiminishingLevels Level, int32 limitduration);
         void ApplyDiminishingAura(DiminishingGroup  group, bool apply);
         void ClearDiminishings() { m_Diminishing.clear(); }
+        uint32 DiminishingDuration() const;
 
         // target dependent range checks
         float GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
@@ -1546,7 +1549,7 @@ class Unit : public WorldObject
         float MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, uint32 spellId) const;
         SpellMissInfo MeleeSpellHitResult(Unit* victim, SpellInfo const* spell);
         SpellMissInfo MagicSpellHitResult(Unit* victim, SpellInfo const* spell);
-        SpellMissInfo SpellHitResult(Unit* victim, SpellInfo const* spell, bool canReflect = false);
+        SpellMissInfo SpellHitResult(Unit* victim, SpellInfo const* spell, bool canReflect = false, uint32 effectMask = 0);
 
         float GetUnitDodgeChance()    const;
         float GetUnitParryChance()    const;
@@ -1614,7 +1617,7 @@ class Unit : public WorldObject
 
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
-        bool isFeared()  const { return HasAuraType(SPELL_AURA_MOD_FEAR); }
+        bool isFeared()  const { return (HasAuraType(SPELL_AURA_MOD_FEAR) || HasAuraType(SPELL_AURA_MOD_FEAR_2)); }
         bool isInRoots() const { return HasAuraType(SPELL_AURA_MOD_ROOT); }
         bool IsPolymorphed() const;
 
@@ -1852,6 +1855,7 @@ class Unit : public WorldObject
 
         void RemoveAreaAurasDueToLeaveWorld();
         void RemoveAllAuras();
+        void RemoveNonPassivesAuras();
         void RemoveArenaAuras();
         void RemoveAllAurasOnDeath();
         void RemoveAllAurasRequiringDeadTarget();
@@ -1893,6 +1897,7 @@ class Unit : public WorldObject
         bool HasNegativeAuraWithInterruptFlag(uint32 flag, uint64 guid = 0);
         bool HasNegativeAuraWithAttribute(uint32 flag, uint64 guid = 0);
         bool HasAuraWithMechanic(uint32 mechanicMask);
+        bool HasAuraCastWhileWalking(SpellInfo const* spellInfo);
 
         void RemoveSoulSwapDOT(Unit* target);
         void ApplySoulSwapDOT(Unit* target);
@@ -2230,12 +2235,6 @@ class Unit : public WorldObject
             }
         }
 
-        // pet auras
-        typedef std::set<PetAura const*> PetAuraSet;
-        PetAuraSet m_petAuras;
-        void AddPetAura(PetAura const* petSpell);
-        void RemovePetAura(PetAura const* petSpell);
-
         uint32 GetModelForForm(ShapeshiftForm form);
         uint32 GetModelForTotem(PlayerTotemType totemType);
 
@@ -2308,6 +2307,8 @@ class Unit : public WorldObject
             if (!_focusSpell)
                 SetUInt64Value(UNIT_FIELD_TARGET, guid);
         }
+
+        Unit* m_SoulSwapTarget;
 
         // Handling caster facing during spell cast
         void FocusTarget(Spell const* focusSpell, uint64 target);

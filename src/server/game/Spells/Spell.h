@@ -322,6 +322,7 @@ class Spell
         void EffectBuyGuilkBankTab(SpellEffIndex effIndex);
         void EffectCreateAreatrigger(SpellEffIndex effIndex);
         int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
+        int32 CalculateMonkSpellDamage(Unit* caster, float coeff, float APmultiplier, int32 base);
         void EffectResurrectWithAura(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;
@@ -436,6 +437,7 @@ class Spell
         int8 m_comboPointGain;
         SpellCustomErrors m_customError;
         uint8 m_diffMode;
+        bool find_target;
 
         UsedSpellMods m_appliedMods;
 
@@ -539,6 +541,7 @@ class Spell
         // Damage and healing in effects need just calculate
         int32 m_damage;           // Damge   in effects count here
         int32 m_healing;          // Healing in effects count here
+        int32 m_final_damage;     // Final damage in effects count here
 
         // ******************************************
         // Spell trigger system
@@ -592,6 +595,7 @@ class Spell
         void AddGOTarget(GameObject* target, uint32 effectMask);
         void AddItemTarget(Item* item, uint32 effectMask);
         void AddDestTarget(SpellDestination const& dest, uint32 effIndex);
+        WorldLocation* GetDestTarget(uint32 effIndex) { return &m_destTargets[effIndex]._position; }
 
         void DoAllEffectOnTarget(TargetInfo* target);
         SpellMissInfo DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleAura);

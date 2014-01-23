@@ -64,8 +64,6 @@ enum RogueSpells
     ROGUE_SPELL_SANGUINARY_VEIN_DEBUFF           = 124271,
     ROGUE_SPELL_NIGHTSTALKER_AURA                = 14062,
     ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE         = 130493,
-    ROGUE_SPELL_SHADOW_FOCUS_AURA                = 108209,
-    ROGUE_SPELL_SHADOW_FOCUS_COST_PCT            = 112942,
     ROGUE_SPELL_NERVE_STRIKE_AURA                = 108210,
     ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE  = 112947,
     ROGUE_SPELL_COMBAT_READINESS                 = 74001,
@@ -356,9 +354,6 @@ class spell_rog_nightstalker : public SpellScriptLoader
                 {
                     if (_player->HasAura(ROGUE_SPELL_NIGHTSTALKER_AURA))
                         _player->CastSpell(_player, ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE, true);
-
-                    if (_player->HasAura(ROGUE_SPELL_SHADOW_FOCUS_AURA))
-                        _player->CastSpell(_player, ROGUE_SPELL_SHADOW_FOCUS_COST_PCT, true);
                 }
             }
 
@@ -383,9 +378,6 @@ class spell_rog_nightstalker : public SpellScriptLoader
                 {
                     if (GetCaster()->HasAura(ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE))
                         GetCaster()->RemoveAura(ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE);
-
-                    if (GetCaster()->HasAura(ROGUE_SPELL_SHADOW_FOCUS_COST_PCT))
-                        GetCaster()->RemoveAura(ROGUE_SPELL_SHADOW_FOCUS_COST_PCT);
                 }
             }
 

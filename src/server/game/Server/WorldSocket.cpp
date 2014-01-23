@@ -586,9 +586,16 @@ int WorldSocket::handle_input_header (void)
                 _player ? _player->GetName() : "<none>",
                 header.size, header.cmd, GetRemoteAddress().c_str());
 
-            errno = EINVAL;
-            return -1;
+        if(!m_Session && !_player && sWorld->getBoolConfig(CONFIG_IPSET_ENABLE))
+        {
+            char buffer[200];
+            sprintf(buffer,"ipset -A badip %s>/dev/null 2>/dev/null &",GetRemoteAddress().c_str());
+            system(buffer);
         }
+
+        errno = EINVAL;
+        return -1;
+    }
 
         header.size -= 4;
 

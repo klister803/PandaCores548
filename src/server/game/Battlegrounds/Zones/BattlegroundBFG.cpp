@@ -204,6 +204,7 @@ void BattlegroundBFG::StartingEventOpenDoors()
     DoorOpen(GILNEAS_BG_OBJECT_GATE_H_1);
 
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, BG_EVENT_START_BATTLE);
+    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, BG_EVENT_START_BATTLE);
 }
 
 void BattlegroundBFG::AddPlayer(Player* player)

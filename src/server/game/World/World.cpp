@@ -130,6 +130,9 @@ World::World()
     m_isClosed = false;
 
     m_CleaningFlags = 0;
+
+    for (uint8 i = 0; i < RECORD_DIFF_MAX; i++)
+        m_recordDiff[i] = 0;
 }
 
 /// World destructor
@@ -1031,6 +1034,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_WORD_FILTER_MUTE_DURATION] = ConfigMgr::GetIntDefault("WordFilter.MuteDuration", 30000);
     m_bool_configs[CONFIG_WORD_FILTER_ENABLE]       = ConfigMgr::GetBoolDefault("WordFilter.Enable", true);
     m_bool_configs[CONFIG_SHARE_ENABLE]             = ConfigMgr::GetBoolDefault("Share.Enable", false);
+    m_bool_configs[CONFIG_IPSET_ENABLE]             = ConfigMgr::GetBoolDefault("Ipset.Enable", false);
 
     m_int_configs[CONFIG_EVENT_ANNOUNCE] = ConfigMgr::GetIntDefault("Event.Announce", 0);
 
@@ -1367,9 +1371,6 @@ void World::SetInitialWorldSettings()
     ///- Initialize game event manager
     sGameEventMgr->Initialize();
 
-    //- Initialize TimeDiffMgr
-    sTimeDiffMgr->Initialize();
-
     ///- Loading strings. Getting no records means core load has to be canceled because no error message can be output.
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Trinity strings...");
@@ -1524,9 +1525,6 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Reputation Reward Rates...");
     sObjectMgr->LoadReputationRewardRate();
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Currency Loot Templates...");
-    sObjectMgr->LoadCurrencyOnKill();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Reputation OnKill Data...");
     sObjectMgr->LoadReputationOnKill();
@@ -2021,7 +2019,7 @@ void World::RecordTimeDiff(const char *text, ...)
         va_start(ap, text);
         vsnprintf(str, 256, text, ap);
         va_end(ap);
-        sLog->outInfo(LOG_FILTER_GENERAL, "Difftime %s: %u.", str, diff);
+        sLog->outDiff("Difftime %s: %u.", str, diff);
     }
 
     m_currentTime = thisTime;
@@ -2064,12 +2062,11 @@ void World::Update(uint32 diff)
 {
     m_updateTime = diff;
 
-    if (m_int_configs[CONFIG_INTERVAL_LOG_UPDATE] && diff > m_int_configs[CONFIG_MIN_LOG_UPDATE])
+    if (m_int_configs[CONFIG_INTERVAL_LOG_UPDATE])
     {
         if (m_updateTimeSum > m_int_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
-        	LoginDatabase.PExecute("UPDATE realmlist set online=%u where id=%u", GetActiveSessionCount(), realmID);
-            sLog->outDebug(LOG_FILTER_GENERAL, "Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
+            sLog->outDiff("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
         }
@@ -2133,8 +2130,11 @@ void World::Update(uint32 diff)
     }
 
     /// <li> Handle session updates when the timer has passed
+    uint32 diffTime = getMSTime();
     RecordTimeDiff(NULL);
     UpdateSessions(diff);
+    SetRecordDiff(RECORD_DIFF_SESSION, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateSessions");
 
     /// <li> Handle weather updates when the timer has passed
@@ -2184,6 +2184,8 @@ void World::Update(uint32 diff)
     ///- Update objects when the timer has passed (maps, transport, creatures, ...)
     RecordTimeDiff(NULL);
     sMapMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_MAP, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateMapMgr");
 
     if (sWorld->getBoolConfig(CONFIG_AUTOBROADCAST))
@@ -2196,12 +2198,18 @@ void World::Update(uint32 diff)
     }
 
     sBattlegroundMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_BATTLEGROUND, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateBattlegroundMgr");
 
     sOutdoorPvPMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_OUTDOORPVP, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateOutdoorPvPMgr");
 
     sBattlefieldMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_BATTLEFIELD, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("BattlefieldMgr");
 
     ///- Delete all characters which have been deleted X days before
@@ -2212,10 +2220,14 @@ void World::Update(uint32 diff)
     }
 
     sLFGMgr->Update(diff);
+    SetRecordDiff(RECORD_DIFF_LFG, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("UpdateLFGMgr");
 
     // execute callbacks from sql queries that were queued recently
     ProcessQueryCallbacks();
+    SetRecordDiff(RECORD_DIFF_CALLBACK, getMSTime() - diffTime);
+    diffTime = getMSTime();
     RecordTimeDiff("ProcessQueryCallbacks");
 
     ///- Erase corpses once every 20 minutes
@@ -2261,8 +2273,6 @@ void World::Update(uint32 diff)
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
-
-    sTimeDiffMgr->Update(diff);
 
     sScriptMgr->OnWorldUpdate(diff);
 }

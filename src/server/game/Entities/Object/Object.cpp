@@ -656,6 +656,10 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                     // Check per caster aura states to not enable using a pell in client if specified aura is not by target
                     *data << ((Unit*)this)->BuildAuraStateUpdateForTarget(target);
                 }
+                else if (index == UNIT_FIELD_MAXDAMAGE || index == UNIT_FIELD_MINDAMAGE)
+                {
+                    *data << (m_floatValues[index] + CalculatePct(m_floatValues[index], ((Unit*)this)->GetTotalAuraModifier(SPELL_AURA_MOD_AUTOATTACK_DAMAGE)));
+                }
                 // FIXME: Some values at server stored in float format but must be sent to client in uint32 format
                 else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
                 {
@@ -2516,6 +2520,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                     break;
                 case SUMMON_TYPE_VEHICLE:
                 case SUMMON_TYPE_VEHICLE2:
+                case SUMMON_TYPE_GATE:
                     mask = UNIT_MASK_SUMMON;
                     break;
                 case SUMMON_TYPE_MINIPET:
@@ -2619,6 +2624,13 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
 {
     if (Map* map = FindMap())
     {
+        if(!ToUnit())
+        {
+            std::list<Creature*> creatures;
+            GetAliveCreatureListWithEntryInGrid(creatures, entry, 110.0f);
+            if(creatures.size() > 50)
+                return NULL;
+        }
         if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, 0, 0, viewerGuid, viewersList))
         {
             summon->SetTempSummonType(spwtype);
@@ -2643,9 +2655,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         if (pet->GetOwner() && pet->GetOwner()->getClass() == CLASS_WARLOCK)
             if (pet->GetOwner()->HasAura(108503))
                 pet->GetOwner()->RemoveAura(108503);
-
-        if (pet->IsPetGhoul())
-            pet->setPowerType(POWER_ENERGY);
 
         if (duration > 0)
             pet->SetDuration(duration);
@@ -2684,6 +2693,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, getFaction());
 
     pet->setPowerType(POWER_MANA);
+    pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
     pet->SetUInt32Value(UNIT_NPC_FLAGS, 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
     pet->InitStatsForLevel(getLevel());
@@ -2696,11 +2706,9 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         case SUMMON_PET:
             // this enables pet details window (Shift+P)
             pet->GetCharmInfo()->SetPetNumber(pet_number, true);
-            pet->SetUInt32Value(UNIT_FIELD_BYTES_0, 2048);
             pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
             pet->SetFullHealth();
-            pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
             pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped in this case
             break;
         default:

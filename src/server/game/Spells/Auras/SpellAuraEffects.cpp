@@ -438,7 +438,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModManaRegen,                              //379 SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT
     &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
     &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT
-    &AuraEffect::HandleNULL,                                      //382 SPELL_AURA_MODE_PET_HEALTH_PCT
+    &AuraEffect::HandleAuraModPetHealthPercent,                   //382 SPELL_AURA_MODE_PET_HEALTH_PCT
     &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
     &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
     &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
@@ -600,6 +600,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         // crowd control auras
         case SPELL_AURA_MOD_CONFUSE:
         case SPELL_AURA_MOD_FEAR:
+        case SPELL_AURA_MOD_FEAR_2:
         case SPELL_AURA_MOD_STUN:
         case SPELL_AURA_MOD_ROOT:
         case SPELL_AURA_TRANSFORM:
@@ -640,19 +641,19 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 case SPELLFAMILY_MAGE:
-                    // Ice Barrier
-                    if (GetSpellInfo()->SpellFamilyFlags[1] & 0x1 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
+                {
+                    switch (m_spellInfo->Id)
                     {
-                        // +330% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.30f;
-                    }
-                    // Mage Ward
-                    else if (GetSpellInfo()->SpellFamilyFlags[0] & 0x8 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
-                    {
-                        // +80.68% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.8068f;
+                        case 11426: // Ice Barrier
+                        {
+                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 4.401f;
+                            break;
+                        }
+                        default:
+                            break;
                     }
                     break;
+                }
                 case SPELLFAMILY_WARLOCK:
                     // Twilight Ward
                     if (m_spellInfo->Id == 6229 || m_spellInfo->Id == 104048 || m_spellInfo->Id == 131623 || m_spellInfo->Id == 131624)
@@ -662,31 +663,20 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 case SPELLFAMILY_PRIEST:
-                    // Power Word : Shield
-                    if (GetSpellInfo()->Id == 17 || GetSpellInfo()->Id == 123258)
+                {    
+                    switch (m_spellInfo->Id)
                     {
-                        if (Player* _plr = caster->ToPlayer())
+                        case 17:     // Power Word : Shield
+                        case 123258:
                         {
-                            switch (_plr->GetSpecializationId(_plr->GetActiveSpec()))
-                            {
-                                case SPEC_PRIEST_DISCIPLINE:
-                                    // +263.8% from sp bonus
-                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 2.638f;
-                                    break;
-                                case SPEC_PRIEST_HOLY:
-                                    // +233.9% from sp bonus
-                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 2.339f;
-                                    break;
-                                case SPEC_PRIEST_SHADOW:
-                                    // +187.1% from sp bonus
-                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 1.871f;
-                                    break;
-                                default:
-                                    break;
-                            }
+                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 1.871f;
+                            break;
                         }
+                        default:
+                            break;
                     }
                     break;
+                }
                 default:
                     break;
             }
@@ -705,6 +695,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         case SPELL_AURA_DUMMY:
             if (!caster)
                 break;
+
+            switch (GetId())
+            {
+                case 76657: // Mastery: Master of Beasts
+                {
+                    if (Guardian* pet = caster->ToPlayer()->GetPet())
+                    {
+                        if (Aura* aur = pet->GetAura(8875))
+                        {
+                            aur->GetEffect(EFFECT_0)->SetCanBeRecalculated(true);
+                            aur->GetEffect(EFFECT_1)->SetCanBeRecalculated(true);
+                            aur->RecalculateAmountOfEffects();
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
             // Earth Shield
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellFamilyFlags[1] & 0x400)
             {
@@ -713,21 +722,29 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             }
             break;
         case SPELL_AURA_PERIODIC_DAMAGE:
+        {
             if (!caster)
                 break;
-            // Rupture
-            if (GetSpellInfo()->Id == 1943)
+
+            switch (GetId())
             {
-                m_canBeRecalculated = false;
-
-                if (caster->GetTypeId() != TYPEID_PLAYER)
-                    break;
-
-                uint8 cp = caster->ToPlayer()->GetComboPoints();
-                float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
-
-                switch (cp)
+                case 109076: // Incendiary Fireworks Launcher
                 {
+                    amount = irand(6000, 9000);
+                    break;
+                }
+                case 1943: // Rupture
+                {
+                    m_canBeRecalculated = false;
+
+                    if (caster->GetTypeId() != TYPEID_PLAYER)
+                        break;
+
+                    uint8 cp = caster->ToPlayer()->GetComboPoints();
+                    float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+                    switch (cp)
+                    {
                     case 1:
                         amount += int32(ap * 0.1f / 4);
                         break;
@@ -745,52 +762,50 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         break;
                     default:
                         break;
-                }
-            }
-            // Rip
-            if (m_spellInfo->Id == 1079)
-            {
-                m_canBeRecalculated = false;
-
-                if (caster->GetTypeId() != TYPEID_PLAYER)
+                    }
                     break;
+                }
+                case 1079: // Rip
+                {
+                    m_canBeRecalculated = false;
 
-                // Basepoint hotfix
-                amount *= 10;
+                    if (caster->GetTypeId() != TYPEID_PLAYER)
+                        break;
 
-                uint8 cp = caster->ToPlayer()->GetComboPoints();
-                int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    // Basepoint hotfix
+                    amount *= 10;
 
-                // In feral spec : 0.484 * $AP * cp
-                if (caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_DROOD_CAT)
-                    amount += int32(cp * AP * 0.484f);
-                // In other spec : 0.387 * $AP * cp
-                else
-                    amount += int32(cp * AP * 0.387f);
+                    uint8 cp = caster->ToPlayer()->GetComboPoints();
+                    int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
 
-                // Idol of Feral Shadows. Cant be handled as SpellMod in SpellAura:Dummy due its dependency from CPs
-                if (AuraEffect const* aurEff = caster->GetAuraEffect(34241, EFFECT_0))
-                    amount += cp * aurEff->GetAmount();
-                // Idol of Worship. Cant be handled as SpellMod in SpellAura:Dummy due its dependency from CPs
-                else if (AuraEffect const* aurEff = caster->GetAuraEffect(60774, EFFECT_0))
-                    amount += cp * aurEff->GetAmount();
+                    // In feral spec : 0.484 * $AP * cp
+                    if (caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_DROOD_CAT)
+                        amount += int32(cp * AP * 0.484f);
+                    // In other spec : 0.387 * $AP * cp
+                    else
+                        amount += int32(cp * AP * 0.387f);
 
-                amount /= int32(GetBase()->GetMaxDuration() / GetBase()->GetEffect(0)->GetAmplitude());
-            }
-            // Unholy Blight damage over time effect
-            else if (GetId() == 50536)
-            {
-                m_canBeRecalculated = false;
-                // we're getting total damage on aura apply, change it to be damage per tick
-                amount = int32((float)amount / GetTotalTicks());
-            }
-            // Death and Decay
-            else if (GetId() == 43265)
-            {
-                int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                amount += int32(AP * 0.064f);
+                    amount /= int32(GetBase()->GetMaxDuration() / GetBase()->GetEffect(0)->GetAmplitude());
+                    break;
+                }
+                case 50536: // Unholy Blight damage over time effect
+                {
+                    m_canBeRecalculated = false;
+                    // we're getting total damage on aura apply, change it to be damage per tick
+                    amount = int32((float)amount / GetTotalTicks());
+                    break;
+                }
+                case 43265: // Death and Decay
+                {
+                    int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    amount += int32(AP * 0.064f);
+                    break;
+                }
+                default:
+                    break;
             }
             break;
+        }
         case SPELL_AURA_PERIODIC_ENERGIZE:
             switch (m_spellInfo->Id)
             {
@@ -840,6 +855,184 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             if (GetId() == 55233)
                 amount = GetBase()->GetUnitOwner()->CountPctFromMaxHealth(amount);
             break;
+        case SPELL_AURA_MOD_STAT:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 108300: // Killer Instinct
+                {
+                    if (caster)
+                    {
+                        amount = caster->GetStat(STAT_INTELLECT);
+                    }
+                    break;
+                }
+                case 126707: // Surge of Conquest
+                case 126700: // Surge of Victory
+                case 126705: // Surge of Dominance	
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
+                    {
+                        if (Item * item = player->GetItemByGuid(itmGuid))
+                        {
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                            case 464: amount = 3017; break;
+                            case 483: amount = 3603; break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 126683: // Call of Dominance
+                case 126690: // Call of Conquest
+                case 126679: // Call of Victory
+                case 126588: // Item - Qin-xi's Polarizing Seal
+                case 126554: // Item - Bottle of Infinite Stars
+                case 126577: // Item - Light of the Cosmos
+                case 126582: // Item - Lei Shen's Final Orders
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
+                    {
+                        if (Item * item = player->GetItemByGuid(itmGuid))
+                        {
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 464: amount = 4275; break;
+                                case 476: amount = 2866; break; // Raid Finder
+                                case 483: amount = 5105; break;
+                                case 489: amount = 3236; break; // Normal
+                                case 502: amount = 3653; break; // Heroic
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 126606: // Items - Jade Courtesan Figurine, Scroll of Revered Ancestors
+                case 126640: // Item - Spirits of the Sun
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
+                    {
+                        if (Item * item = player->GetItemByGuid(itmGuid))
+                        {
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 476: amount = 3185; break; // Raid Finder
+                                case 483: amount = 6121; break; // Raid Finder
+                                case 489: amount = 3595; break; // Normal
+                                case 496: amount = 6908; break; // Normal
+                                case 509: amount = 7796; break; // Heroic
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
+        case SPELL_AURA_MOD_RATING:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 126597: // Items - Jade Warlord Figurine, Lao-Chin's Liquid Courage
+                case 126599: // Items - Jade Charioteer Figurine, Jade Bandit Figurine, Hawkmaster's Talon
+                case 129812: // Item  - Iron Belly Wok
+                case 126605: // Item  - Blossom of Pure Snow, Jade Magistrate Figurine
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
+                    {
+                        if (Item * item = player->GetItemByGuid(itmGuid))
+                        {
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 476: amount = 3185; break; // Raid Finder
+                                case 489: amount = 3595; break; // Normal
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 126533: // Item - Vial of Dragon's Blood
+                case 126649: // Item - Terror in the Mists
+                case 126646: // Item - Stuff of Nightmares
+                case 126659: // Item - Essence of Terror
+                case 126657: // Item - Darkmist Vortex
+                {
+                    uint64 itmGuid = GetBase()->GetCastItemGUID();
+
+                    if (!caster)
+                        break;
+
+                    if (Player * player = caster->ToPlayer())
+                    {
+                        if (Item * item = player->GetItemByGuid(itmGuid))
+                        {
+                            switch (item->GetTemplate()->ItemLevel)
+                            {
+                                case 476: amount = 2866; break; // Raid Finder
+                                case 483: amount = 6121; break; // Raid Finder
+                                case 489: amount = 3236; break; // Normal
+                                case 496: amount = 6908; break; // Normal
+                                case 502: amount = 3653; break; // Heroic
+                                case 509: amount = 7796; break; // Heroic
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
+        case SPELL_AURA_MOD_INCREASE_HEALTH_2:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 12975:// Last Stand
+                case 106922:// Might of Ursoc
+                case 113072:// Might of Ursoc (Symbiosis)
+                {
+                    amount = CalculatePct(caster->GetMaxHealth(), amount);
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_MOD_INCREASE_SPEED:
             // Dash - do not set speed if not in cat form
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellInfo()->SpellFamilyFlags[2] & 0x00000008)
@@ -881,8 +1074,102 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
         default:
             break;
-        
     }
+
+    // Mixology - Effect value mod
+    if (caster && caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_POTION && (
+            sSpellMgr->IsSpellMemberOfSpellGroup(GetId(), SPELL_GROUP_ELIXIR_BATTLE) ||
+            sSpellMgr->IsSpellMemberOfSpellGroup(GetId(), SPELL_GROUP_ELIXIR_GUARDIAN)))
+        {
+            if (caster->HasAura(53042) && caster->HasSpell(GetSpellInfo()->Effects[0].TriggerSpell))
+            {
+                switch (GetId())
+                {
+                    case 53749: // Guru's Elixir
+                        amount += 8;
+                        break;
+                    case 11328: // Elixir of Agility
+                        amount += 10;
+                        break;
+                    case 28497: // Elixir of Mighty Agility
+                    case 53747: // Elixir of Spirit
+                    case 54212: // Flask of Pure Mojo
+                    case 60340: // Elixir of Accuracy
+                    case 60341: // Elixir of Deadly Strikes
+                    case 60343: // Elixir of Mighty Defense
+                    case 60344: // Elixir of Expertise
+                    case 60345: // Elixir of Armor Piercing
+                    case 60346: // Elixir of Lightning Speed
+                    case 60347: // Elixir of Mighty Thoughts
+                        amount += 20;
+                        break;
+                    case 53752: // Lesser Flask of Toughness
+                    case 62380: // Lesser Flask of Resistance
+                        amount += 40;
+                        break;
+                    case 53755: // Flask of the Frost Wyrm
+                        amount += 47;
+                        break;
+                    case 53760: // Flask of Endless Rage
+                        amount += 64;
+                        break;
+                    case 53751: // Elixir of Mighty Fortitude
+                        amount += 200;
+                        break;
+                    case 53763: // Elixir of Protection
+                        amount += 280;
+                        break;
+                    case 53758: // Flask of Stoneblood
+                        amount += 320;
+                        break;
+                    // Cataclysm
+                    case 79469: // Flask of Steelskin
+                    case 79470: // Flask of the Draconic Mind
+                    case 79471: // Flask of the Winds
+                    case 79472: // Flask of Titanic Strength
+                    case 94160: // Flask of Flowing Water
+                        amount += 80;
+                        break;
+                    case 79635: // Flask of the Master
+                    case 79632: // Elixir of Mighty Speed
+                    case 79481: // Elixir of Impossible Accuracy
+                    case 79477: // Elixir of the Cobra
+                    case 79474: // Elixir of the Naga
+                    case 79468: // Ghost Elixir
+                        amount += 40;
+                        break;
+                    case 79480: // Elixir of Deep Earth
+                        amount += 345;
+                        break;
+                    case 79631: // Prismatic Elixir
+                        amount += 45;
+                        break;
+                    // Pandaria
+                    case 105689: // Flask of Spring Blossoms
+                    case 105691: // Flask of the Warm Sun
+                    case 105696: // Flask of Winter's Bite
+                        amount += 320;
+                        break;
+                    case 105694: // Flask of the Earth
+                    case 105693: // Flask of Falling Leaves
+                        amount += 480;
+                        break;
+                    //need info    
+                  // case 105686: // Elixir of Perfection
+                  // case 105687: // Elixir of Mirrors
+                  // case 105685: // Elixir of Peace
+                  // case 105684: // Elixir of the Rapids
+                  // case 105682: // Mad Hozen Elixir
+                  // case 105681: // Mantid Elixir
+                  // case 105683: // Elixir of Weaponry
+                  // case 105688: // Monk's Elixir
+                }
+            }
+        }
+    }
+    
     if (DoneActualBenefit != 0.0f)
     {
         DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellInfo());
@@ -4223,7 +4510,6 @@ void AuraEffect::HandleModTotalPercentStat(AuraApplication const* aurApp, uint8 
 
     // save current health state
     float healthPct = target->GetHealthPct();
-    bool alive = target->isAlive();
 
     for (int32 i = STAT_STRENGTH; i < MAX_STATS; i++)
     {
@@ -4237,8 +4523,11 @@ void AuraEffect::HandleModTotalPercentStat(AuraApplication const* aurApp, uint8 
 
     // recalculate current HP/MP after applying aura modifications (only for spells with SPELL_ATTR0_UNK4 0x00000010 flag)
     // this check is total bullshit i think
-    if (GetMiscValueB() & 1 << STAT_STAMINA && (m_spellInfo->Attributes & SPELL_ATTR0_ABILITY))
-        target->SetHealth(std::max<uint32>(uint32(healthPct * target->GetMaxHealth() * 0.01f), (alive ? 1 : 0)));
+    if (target->isAlive())
+    {
+        if (GetMiscValueB() & 1 << STAT_STAMINA && (m_spellInfo->Attributes & SPELL_ATTR0_ABILITY))
+            target->SetHealth(std::max<uint32>(uint32(healthPct * target->GetMaxHealth() * 0.01f), 1));
+    }
 }
 
 void AuraEffect::HandleAuraModResistenceOfStatPercent(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
@@ -4290,12 +4579,16 @@ void AuraEffect::HandleModPowerRegen(AuraApplication const* aurApp, uint8 mode, 
 
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
-
+    
+    switch (GetMiscValue())
+    {
+        case POWER_MANA:   target->ToPlayer()->UpdateManaRegen();     break;
+        case POWER_RUNES:  target->ToPlayer()->UpdateAllRunesRegen(); break;
+        case POWER_ENERGY: target->ToPlayer()->UpdateEnergyRegen();   break;
+        default:
+            break;
+    }
     // Update manaregen value
-    if (GetMiscValue() == POWER_MANA)
-        target->ToPlayer()->UpdateManaRegen();
-    else if (GetMiscValue() == POWER_RUNES)
-        target->ToPlayer()->UpdateAllRunesRegen();
     // other powers are not immediate effects - implemented in Player::Regenerate, Creature::Regenerate
 }
 
@@ -4421,20 +4714,37 @@ void AuraEffect::HandleAuraModIncreaseHealthPercent(AuraApplication const* aurAp
     Unit* target = aurApp->GetTarget();
 
     // Unit will keep hp% after MaxHealth being modified if unit is alive.
-    float saveamount = apply ? target->CountPctFromMaxHealth(GetAmount()): target->GetHealth();
+    float percent = target->GetHealthPct();
 
     target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(GetAmount()), apply);
 
     if (target->isAlive())
+        target->SetHealth(target->CountPctFromMaxHealth(int32(percent)));
+}
+
+void AuraEffect::HandleAuraModPetHealthPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+        return;
+
+    if(Unit* target = aurApp->GetTarget())
     {
-        if (apply)
+        Guardian* pet = NULL;
+        if (Player* _player = target->ToPlayer())
+            pet = _player->GetGuardianPet();
+
+        pet = target->ToPet();
+        if (pet)
         {
-            target->SetHealth(target->GetHealth() + saveamount);
-        }
-        else
-        {
-            float val = saveamount - target->CountPctFromMaxHealth(GetAmount());
-            target->SetHealth(val > 1 ? val: 1);
+            float percent = GetAmount() / 100.0f;
+            if(apply)
+            {
+                int32 health = int32(pet->GetMaxHealth() + int32(pet->GetMaxHealth() * percent));
+                pet->SetMaxHealth(health);
+                pet->SetHealth(health);
+            }
+            else
+                pet->UpdateMaxHealth();
         }
     }
 }
@@ -4742,6 +5052,12 @@ void AuraEffect::HandleModRating(AuraApplication const* aurApp, uint8 mode, bool
 
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
+
+    if (GetMiscValue() == 33554432) // Mastery
+    {
+        target->ToPlayer()->UpdateRating(CR_MASTERY);
+        return;
+    }
 
     for (uint32 rating = 0; rating < MAX_COMBAT_RATING; ++rating)
         if (GetMiscValue() & (1 << rating))
@@ -5110,18 +5426,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
     Unit* target = aurApp->GetTarget();
 
     Unit* caster = GetCaster();
-
-    if (mode & AURA_EFFECT_HANDLE_REAL)
-    {
-        // pet auras
-        if (PetAura const* petSpell = sSpellMgr->GetPetAura(GetId(), m_effIndex))
-        {
-            if (apply)
-                target->AddPetAura(petSpell);
-            else
-                target->RemovePetAura(petSpell);
-        }
-    }
 
     if (mode & (AURA_EFFECT_HANDLE_REAL | AURA_EFFECT_HANDLE_REAPPLY))
     {
@@ -6658,7 +6962,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
     // Consecrate ticks can miss and will not show up in the combat log
     if (GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA &&
-        caster->SpellHitResult(target, GetSpellInfo(), false) != SPELL_MISS_NONE)
+        caster->SpellHitResult(target, GetSpellInfo(), false, 1 << GetEffIndex()) != SPELL_MISS_NONE)
         return;
 
     // some auras remove at specific health level or more
@@ -6666,11 +6970,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     {
         switch (GetSpellInfo()->Id)
         {
-            // Custom MoP Script
-            // Devouring Plague - Heal 1% of caster's health per tick
-            case 2944:
-                caster->CastSpell(caster, 127626, true);
-                break;
             case 43093: case 31956: case 38801:  // Grievous Wound
             case 35321: case 38363: case 39215:  // Gushing Wound
                 if (target->IsFullHealth())
@@ -6745,16 +7044,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
                 caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
             }
-            // Seed of Corruption ...
-            if (Aura* seedOfCorruption = target->GetAura(27243, caster->GetGUID()))
-            {
-                afflictionSpell = sSpellMgr->GetSpellInfo(27243);
-                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
-                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
-                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
-
-                caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
-            }
             // Agony ...
             if (Aura* agony = target->GetAura(980, caster->GetGUID()))
             {
@@ -6809,18 +7098,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                         AddPct(afflictionDamage, 50);
 
                     caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
-                }
-                // Seed of Corruption ...
-                if (Aura* seedOfCorruption = target->GetAura(27243, caster->GetGUID()))
-                {
-                    afflictionSpell = sSpellMgr->GetSpellInfo(27243);
-                    afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
-                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
-
-                    if (grimoireOfSacrifice)
-                        AddPct(afflictionDamage, 50);
-
-                    caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
                 }
                 // Agony ...
                 if (Aura* agony = target->GetAura(980, caster->GetGUID()))
@@ -6911,6 +7188,18 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     if (damage)
         procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
+    if (damage > 0)
+    {
+        if (GetSpellInfo()->Effects[m_effIndex].IsTargetingArea() || GetSpellInfo()->Effects[m_effIndex].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+        {
+            resist += damage;
+            damage = int32(float(damage) * target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE, GetSpellInfo()->GetSchoolMask()));
+            if (GetCaster() && GetCaster()->GetTypeId() == TYPEID_UNIT)
+                damage = int32(float(damage) * target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_CREATURE_AOE_DAMAGE_AVOIDANCE, GetSpellInfo()->GetSchoolMask()));
+                resist -= damage;
+        }
+    }
+
     int32 overkill = damage - target->GetHealth();
     if (overkill < 0)
         overkill = 0;
@@ -6939,7 +7228,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
     }
 
     if (GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA &&
-        caster->SpellHitResult(target, GetSpellInfo(), false) != SPELL_MISS_NONE)
+        caster->SpellHitResult(target, GetSpellInfo(), false, 1 << GetEffIndex()) != SPELL_MISS_NONE)
         return;
 
     uint32 absorb = 0;
@@ -7172,7 +7461,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster) con
     }
 
     if (GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA &&
-        caster->SpellHitResult(target, GetSpellInfo(), false) != SPELL_MISS_NONE)
+        caster->SpellHitResult(target, GetSpellInfo(), false, 1 << GetEffIndex()) != SPELL_MISS_NONE)
         return;
 
     // ignore negative values (can be result apply spellmods to aura damage

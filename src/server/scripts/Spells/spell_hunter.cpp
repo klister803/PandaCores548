@@ -81,7 +81,7 @@ enum HunterSpells
     HUNTER_SPELL_FRENZY_STACKS                   = 19615,
     HUNTER_SPELL_FOCUS_FIRE_READY                = 88843,
     HUNTER_SPELL_FOCUS_FIRE_AURA                 = 82692,
-    HUNTER_SPELL_A_MURDER_OF_CROWS_SUMMON        = 129179,
+    HUNTER_SPELL_A_MURDER_OF_CROWS_SUMMON        = 131900,
     HUNTER_NPC_MURDER_OF_CROWS                   = 61994,
     HUNTER_SPELL_DIRE_BEAST                      = 120679,
     DIRE_BEAST_JADE_FOREST                       = 121118,
@@ -217,11 +217,11 @@ class spell_hun_stampede : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_stampede_SpellScript);
 
-            void HandleOnHit()
+            void HandleOnHit(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (Unit* target = GetHitUnit())
+                    //if (Unit* target = GetHitUnit())
                     {
                         uint32 currentSlot = uint32(_player->m_currentPetSlot);
 
@@ -233,16 +233,12 @@ class spell_hun_stampede : public SpellScriptLoader
                                 {
                                     float x, y, z;
                                     _player->GetClosePoint(x, y, z, _player->GetObjectSize());
-                                    Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), true);
-                                    if (!pet)
-                                        return;
-
-                                    pet->SetReactState(REACT_AGGRESSIVE);
-                                    pet->m_Stampeded = true;
-
-                                    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
-                                    pet->AI()->AttackStart(target);
+                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), PetSlot(i + 36)))
+                                    {
+                                        pet->SetReactState(REACT_AGGRESSIVE);
+                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    }
                                 }
                             }
                         }
@@ -254,16 +250,18 @@ class spell_hun_stampede : public SpellScriptLoader
                                 {
                                     float x, y, z;
                                     _player->GetClosePoint(x, y, z, _player->GetObjectSize());
-                                    Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(i), true);
-                                    if (!pet)
-                                        return;
-
-                                    pet->SetReactState(REACT_AGGRESSIVE);
-                                    pet->m_Stampeded = true;
-
-                                    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
-                                    pet->AI()->AttackStart(target);
+                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(i), PetSlot(i + 36)))
+                                    {
+                                        pet->SetReactState(REACT_AGGRESSIVE);
+                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    }
+                                    else if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), PetSlot(currentSlot + 36)))
+                                    {
+                                        pet->SetReactState(REACT_AGGRESSIVE);
+                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    }
                                 }
                             }
                         }
@@ -273,7 +271,7 @@ class spell_hun_stampede : public SpellScriptLoader
 
             void Register()
             {
-               OnHit += SpellHitFn(spell_hun_stampede_SpellScript::HandleOnHit);
+                OnEffectHit += SpellEffectFn(spell_hun_stampede_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_STAMPEDE);
             }
         };
 
@@ -376,36 +374,12 @@ class spell_hun_a_murder_of_crows : public SpellScriptLoader
             {
                 if (Unit* target = GetTarget())
                 {
-                    if (!GetCaster())
-                        return;
-
-                    if (aurEff->GetTickNumber() > 15)
-                        return;
-
-                    if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* caster = GetCaster())
                     {
-                        _player->CastSpell(target, HUNTER_SPELL_A_MURDER_OF_CROWS_SUMMON, true);
-
-                        std::list<Creature*> tempList;
-                        std::list<Creature*> crowsList;
-
-                        _player->GetCreatureListWithEntryInGrid(tempList, HUNTER_NPC_MURDER_OF_CROWS, 100.0f);
-
-                        for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
-                            crowsList.push_back(*itr);
-
-                        // Remove other players mushrooms
-                        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-                        {
-                            Unit* owner = (*i)->GetOwner();
-                            if (owner && owner == _player && (*i)->isSummon())
-                                continue;
-
-                            crowsList.remove((*i));
-                        }
-
-                        for (std::list<Creature*>::const_iterator itr = crowsList.begin(); itr != crowsList.end(); ++itr)
-                            (*itr)->AI()->AttackStart(target);
+                        caster->CastSpell(target, HUNTER_SPELL_A_MURDER_OF_CROWS_SUMMON, true);
+                        target->CastSpell(target, 131637, true);
+                        target->CastSpell(target, 131951, true);
+                        target->CastSpell(target, 131952, true);
                     }
                 }
             }
@@ -867,7 +841,7 @@ class spell_hun_binding_shot : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_binding_shot_zone_AuraScript);
 
-            void OnUpdate(uint32 diff, AuraEffect* aurEff)
+            /*void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -909,11 +883,30 @@ class spell_hun_binding_shot : public SpellScriptLoader
                         }
                     }
                 }
+            }*/
+
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    Unit* target = GetTarget();
+                    if(!target)
+                        return;
+                    if(DynamicObject* dynObj = caster->GetDynObject(HUNTER_SPELL_BINDING_SHOT_AREA))
+                    {
+                        if (target->GetDistance(dynObj) > 5.0f)
+                        {
+                            target->CastSpell(target, HUNTER_SPELL_BINDING_SHOT_STUN, true);
+                            target->CastSpell(target, HUNTER_SPELL_BINDING_SHOT_IMMUNE, true);
+                        }
+                    }
+                }
             }
 
             void Register()
             {
-                OnEffectUpdate += AuraEffectUpdateFn(spell_hun_binding_shot_zone_AuraScript::OnUpdate, EFFECT_1, SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
+                OnEffectRemove += AuraEffectApplyFn(spell_hun_binding_shot_zone_AuraScript::HandleRemove, EFFECT_1, SPELL_AURA_MOD_DAMAGE_FROM_CASTER, AURA_EFFECT_HANDLE_REAL);
+                //OnEffectUpdate += AuraEffectUpdateFn(spell_hun_binding_shot_zone_AuraScript::OnUpdate, EFFECT_1, SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
             }
         };
 
@@ -1237,14 +1230,19 @@ class spell_hun_kill_command : public SpellScriptLoader
 
             SpellCastResult CheckCastMeet()
             {
-                Unit* pet = GetCaster()->GetGuardianPet();
-                Unit* petTarget = pet->getVictim();
+                Unit* caster = GetCaster();
+                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                    return SPELL_FAILED_NO_PET;
+
+                Player* player = caster->ToPlayer();
+                Unit* pet = caster->GetGuardianPet();
+                Unit* target = player->GetSelectedUnit();
 
                 if (!pet || pet->isDead())
                     return SPELL_FAILED_NO_PET;
 
                 // pet has a target and target is within 5 yards
-                if (!petTarget || !pet->IsWithinDist(petTarget, 5.0f, true))
+                if (!target || !pet->IsWithinDist(target, 25.0f, true))
                 {
                     SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_TARGET_TOO_FAR);
                     return SPELL_FAILED_CUSTOM_ERROR;
@@ -1255,12 +1253,15 @@ class spell_hun_kill_command : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
+                Unit* caster = GetCaster();
+                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
                 if (Unit* pet = GetCaster()->GetGuardianPet())
                 {
-                    if (!pet)
-                        return;
-
-                    pet->CastSpell(pet->getVictim(), HUNTER_SPELL_KILL_COMMAND_TRIGGER, true);
+                    Player* player = caster->ToPlayer();
+                    if(Unit* target = player->GetSelectedUnit())
+                        pet->CastSpell(target, HUNTER_SPELL_KILL_COMMAND_TRIGGER, true);
                 }
             }
 
@@ -2088,6 +2089,87 @@ class spell_hun_Toss : public SpellScriptLoader
         }
 };
 
+// Fetch - 125050
+class spell_hun_fetch : public SpellScriptLoader
+{
+    public:
+        spell_hun_fetch() : SpellScriptLoader("spell_hun_fetch") { }
+
+        class spell_hun_fetch_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_fetch_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                        if(Unit* target = _player->GetSelectedUnit())
+                        if (Pet* pet = _player->GetPet())
+                        {
+                            pet->StopMoving();
+                            pet->GetMotionMaster()->Clear(false);
+                            pet->GetMotionMaster()->MoveFetch(target, PET_FOLLOW_DIST, pet->GetFollowAngle());
+                        }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_hun_fetch_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_fetch_SpellScript();
+        }
+};
+
+// Fireworks - 127933
+class spell_hun_fireworks : public SpellScriptLoader
+{
+    public:
+        spell_hun_fireworks() : SpellScriptLoader("spell_hun_fireworks") { }
+
+        class spell_hun_fireworks_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_fireworks_SpellScript);
+
+            void HandleEffect(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    switch(urand(0, 3))
+                    {
+                        case 0:
+                            caster->CastSpell(caster, 127936, true);
+                            break;
+                        case 1:
+                            caster->CastSpell(caster, 127937, true);
+                            break;
+                        case 2:
+                            caster->CastSpell(caster, 127951, true);
+                            break;
+                        case 3:
+                            caster->CastSpell(caster, 127961, true);
+                            break;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_hun_fireworks_SpellScript::HandleEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_fireworks_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2130,4 +2212,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_tame_beast();
     new spell_hun_spirit_bond();
     new spell_hun_Toss();
+    new spell_hun_fetch();
+    new spell_hun_fireworks();
 }

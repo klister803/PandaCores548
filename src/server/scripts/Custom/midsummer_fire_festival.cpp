@@ -375,12 +375,11 @@ class spell_turkey_tracker : public SpellScriptLoader
 
             void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                Unit* caster = GetCaster();
-                // caster may be not avalible (logged out for example)
-                if (caster)
-                    if(GetStackAmount() >= 39)
-                        if (AchievementEntry const *Achiev = sAchievementStore.LookupEntry(3578))
-                            caster->ToPlayer()->CompletedAchievement(Achiev);
+                if(GetStackAmount() >= 39)
+                    if(Unit* caster = GetCaster())
+                        if (Player* player = caster->ToPlayer())
+                            if (AchievementEntry const *Achiev = sAchievementStore.LookupEntry(3578))
+                                player->CompletedAchievement(Achiev);
             }
 
             // function registering
@@ -410,18 +409,10 @@ class spell_pass_the_turkey : public SpellScriptLoader
             {
                 PreventHitDefaultEffect(EFFECT_0);
 
-                Player* pPlayer;
-                Unit* caster = GetCaster();
-                if(!caster)
-                    return;
-                if(caster->GetTypeId() == TYPEID_PLAYER)
-                    pPlayer = caster->ToPlayer();
-                else if (caster->GetCharmerOrOwner())
-                    pPlayer = caster->GetCharmerOrOwner()->ToPlayer();
-
-                if(pPlayer)
-                    if (AchievementEntry const *Achiev = sAchievementStore.LookupEntry(3579))
-                        pPlayer->CompletedAchievement(Achiev);
+                if(Unit* caster = GetCaster())
+                    if (Player* player = caster->GetCharmerOrOwnerPlayerOrPlayerItself())
+                        if (AchievementEntry const *Achiev = sAchievementStore.LookupEntry(3579))
+                            player->CompletedAchievement(Achiev);
             }
 
             void Register()
@@ -449,19 +440,14 @@ class spell_achiev_snow : public SpellScriptLoader
             {
                 PreventHitDefaultEffect(EFFECT_0);
 
-                Player* pPlayer;
-                Unit* caster = GetCaster();
                 Unit* target = GetHitUnit();
-                if(!caster || !target || target->GetEntry() != 42928)
+                if(!target || target->GetEntry() != 42928)
                     return;
-                if(caster->GetTypeId() == TYPEID_PLAYER)
-                    pPlayer = caster->ToPlayer();
-                else if (caster->GetCharmerOrOwner())
-                    pPlayer = caster->GetCharmerOrOwner()->ToPlayer();
 
-                if(pPlayer)
-                    if (AchievementEntry const *Achiev = sAchievementStore.LookupEntry(1255))
-                        pPlayer->CompletedAchievement(Achiev);
+                if(Unit* caster = GetCaster())
+                    if (Player* player = caster->GetCharmerOrOwnerPlayerOrPlayerItself())
+                        if (AchievementEntry const *Achiev = sAchievementStore.LookupEntry(1255))
+                            player->CompletedAchievement(Achiev);
             }
 
             void Register()

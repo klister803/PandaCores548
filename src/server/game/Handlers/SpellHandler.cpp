@@ -646,41 +646,86 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // are most of these still needed?
     switch (spellInfo->Id)
     {
-        case 1490:          // Curse of the Elements - 1490 and Curse of the Elements : Soulburn - 104225
+        case 18540: //Summon Terrorguard
         {
-            if (_player->HasAura(74434))
+            if (_player->HasSpell(112927))
             {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104225))
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112927))
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
-                    _player->RemoveAura(74434);
                 }
             }
             break;
         }
-        case 5697:          // Unending Breath - 5697 and Unending Breath : Soulburn - 104242
+        case 1122: //Summon Abyssal
         {
-            if (_player->HasAura(74434))
+            if (_player->HasSpell(112921))
             {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104242))
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112921))
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
-                    _player->RemoveAura(74434);
                 }
             }
             break;
         }
-        case 18223:         // Curse of Exhaustion - 18223 and Curse of Exhaustion : Soulburn - 104242
+        case 30146: //Summon Wrathguard
         {
-            if (_player->HasAura(74434))
+            if (_player->HasSpell(112870))
             {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104223))
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112870))
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
-                    _player->RemoveAura(74434);
+                }
+            }
+            break;
+        }
+        case 712: //Summon Shivarra
+        {
+            if (_player->HasSpell(112868))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112868))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
+        case 691: //Summon Observer
+        {
+            if (_player->HasSpell(112869))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112869))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
+        case 697: //Summon Voidlord
+        {
+            if (_player->HasSpell(112867))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112867))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                }
+            }
+            break;
+        }
+        case 688: //Summon Fel Imp
+        {
+            if (_player->HasSpell(112866))
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112866))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
                 }
             }
             break;
@@ -693,41 +738,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
-                }
-            }
-            break;
-        }
-        case 86121:         // Soul Swap - 86121 and Soul Swap : Exhale - 86213
-        {                   // Soul Swap - 86121 and Soul Swap : Soulburn - 119678
-            if (_player->HasAura(74434))
-            {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(119678))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                    _player->RemoveAura(74434);
-                }
-            }
-            if (_player->HasAura(86211))
-            {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(86213))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                    _player->RemoveAura(86211);
-                }
-            }
-            break;
-        }
-        case 109466:        // Curse of Enfeeblement - 109466 and Curse of Enfeeblement : Soulburn - 109468
-        {
-            if (_player->HasAura(74434))
-            {
-                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(109468))
-                {
-                    spellInfo = newSpellInfo;
-                    spellId = newSpellInfo->Id;
-                    _player->RemoveAura(74434);
                 }
             }
             break;
@@ -1009,6 +1019,15 @@ void WorldSession::HandleSelfResOpcode(WorldPacket& /*recvData*/)
 
 void WorldSession::HandleSpellClick(WorldPacket& recvData)
 {
+    time_t now = time(NULL);
+    if (now - timeLastHandleSpellClick < 2)
+    {
+        recvData.rfinish();
+        return;
+    }
+    else
+       timeLastHandleSpellClick = now;
+
     uint64 guid;
     recvData >> guid;
 

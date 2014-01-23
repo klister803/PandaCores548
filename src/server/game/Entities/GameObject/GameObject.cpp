@@ -894,6 +894,13 @@ bool GameObject::IsAlwaysVisibleFor(WorldObject const* seer) const
     if (!seer)
         return false;
 
+    if (GetGoType() == GAMEOBJECT_TYPE_TRAP)
+    {
+        GameObjectTemplate const* goInfo = GetGOInfo();
+        if (goInfo->trap.type == 2)
+            return true;
+    }
+
     // Always seen by owner and friendly units
     if (uint64 guid = GetOwnerGUID())
     {
@@ -1089,9 +1096,6 @@ void GameObject::Use(Unit* user)
     if (Player* playerUser = user->ToPlayer())
     {
         if (sScriptMgr->OnGossipHello(playerUser, this))
-            return;
-
-        if (AI()->GossipHello(playerUser))
             return;
     }
 
@@ -1686,6 +1690,11 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
         return;
 
     bool self = false;
+
+    GameObjectTemplate const* goInfo = GetGOInfo();
+    if (goInfo->type != GAMEOBJECT_TYPE_TRAP && target && target->HasAuraType(SPELL_AURA_MOD_STEALTH))
+        self = true;
+
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER)
@@ -1700,6 +1709,21 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
         if (target)
             target->CastSpell(target, spellInfo, true);
         return;
+    }
+
+    if (goInfo->type == GAMEOBJECT_TYPE_TRAP && GetOwner() && target && target->HasAuraType(SPELL_AURA_MOD_STEALTH))
+    {
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
+            {
+                self = true;
+                break;
+            }
+        }
+
+        if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->SpellIconID != 27)
+            target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
     }
 
     //summon world trigger

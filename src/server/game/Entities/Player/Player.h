@@ -438,14 +438,13 @@ enum PlayerFlags
     PLAYER_FLAGS_UNK21                  = 0x00200000,
     PLAYER_FLAGS_COMMENTATOR2           = 0x00400000,
     PLAYER_ALLOW_ONLY_ABILITY           = 0x00800000,       // used by bladestorm and killing spree, allowed only spells with SPELL_ATTR0_REQ_AMMO, SPELL_EFFECT_ATTACK, checked only for active player
-    PLAYER_FLAGS_UNK24                  = 0x01000000,       // disabled all melee ability on tab include autoattack
+    PLAYER_FLAGS_PET_BATTLES_UNLOCKED   = 0x01000000,       // pet battles
     PLAYER_FLAGS_NO_XP_GAIN             = 0x02000000,
     PLAYER_FLAGS_UNK26                  = 0x04000000,
     PLAYER_FLAGS_AUTO_DECLINE_GUILD     = 0x08000000,       // Automatically declines guild invites
     PLAYER_FLAGS_GUILD_LEVEL_ENABLED    = 0x10000000,       // Lua_GetGuildLevelEnabled() - enables guild leveling related UI
     PLAYER_FLAGS_VOID_UNLOCKED          = 0x20000000,       // void storage
-    PLAYER_FLAGS_UNK30                  = 0x40000000,
-    PLAYER_FLAGS_UNK31                  = 0x80000000,   
+    PLAYER_FLAGS_UNK30                  = 0x40000000, 
 };
 
 // used for PLAYER_FIELD_KNOWN_TITLES field (uint64), (1<<bit_index) without (-1)
@@ -1348,7 +1347,7 @@ class Player : public Unit, public GridObject<Player>
 
         Pet* GetPet() const;
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime, PetSlot slotID = PET_SLOT_UNK_SLOT, bool stampeded = false);
-        void RemovePet(Pet* pet, PetSlot mode, bool returnreagent = false, bool stampeded = false);
+        void RemovePet(Pet* pet, PetSlot mode, bool returnreagent = false);
 
         PhaseMgr& GetPhaseMgr() { return phaseMgr; }
 
@@ -2342,6 +2341,7 @@ class Player : public Unit, public GridObject<Player>
         void ApplyHealthRegenBonus(int32 amount, bool apply);
         void UpdateMasteryAuras();
         void UpdateManaRegen();
+        void UpdateEnergyRegen();
         void UpdateRuneRegen(RuneType rune);
         void UpdateAllRunesRegen();
         void UpdateMeleeHastMod();
@@ -2464,7 +2464,6 @@ class Player : public Unit, public GridObject<Player>
 
         bool IsAtGroupRewardDistance(WorldObject const* pRewardSource) const;
         bool IsAtRecruitAFriendDistance(WorldObject const* pOther) const;
-        void RewardCurrencyAtKill(Unit* victim);
         void RewardPlayerAndGroupAtKill(Unit* victim, bool isBattleGround);
         void RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewardSource);
         bool isHonorOrXPTarget(Unit* victim);
@@ -3079,6 +3078,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_burningEmbersRegenTimerCount;
         uint32 m_soulShardsRegenTimerCount;
         uint32 m_focusRegenTimerCount;
+        float  m_baseMHastRatingPct;
+        bool   m_doLastUpdate;
         uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;

@@ -119,8 +119,8 @@ class Pet : public Guardian
         bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
         bool LoadPetFromDB(Player* owner, uint32 petentry = 0, uint32 petnumber = 0, bool current = false, PetSlot slotID = PET_SLOT_UNK_SLOT, bool stampeded = false);
         bool isBeingLoaded() const { return m_loading;}
-        void SavePetToDB(PetSlot mode, bool stampeded = false);
-        void Remove(PetSlot mode, bool returnreagent = false, bool stampeded = false);
+        void SavePetToDB(PetSlot mode);
+        void Remove(PetSlot mode, bool returnreagent = false);
         static void DeleteFromDB(uint32 guidlow);
 
         void setDeathState(DeathState s);                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
@@ -162,8 +162,7 @@ class Pet : public Guardian
         bool HasSpell(uint32 spell) const;
 
         void LearnPetPassives();
-        void CastPetAuras(bool current);
-        void CastPetAura(PetAura const* aura);
+        void CastPetAuras(bool current, uint32 spellId = 0);
         bool IsPetAura(Aura const* aura);
 
         void _LoadSpellCooldowns();

@@ -746,10 +746,16 @@ void AddSC_boss_garajal();
 void AddSC_boss_spirit_kings();
 void AddSC_boss_elegon();
 void AddSC_boss_will_of_emperor();
+void AddSC_instance_heart_of_fear();                //Heart of Fear
+void AddSC_boss_vizier_zorlok();
+void AddSC_boss_lord_tayak();
+void AddSC_boss_garalon();
+void AddSC_boss_lord_meljarak();
+void AddSC_boss_unsok();
+void AddSC_boss_empress_shekzeer();
 
 void AddSC_valley_of_the_four_winds();
 void AddSC_krasarang_wilds();
-void AddSC_jade_forest();
 void AddSC_vale_of_eternal_blossoms();
 void AddSC_kun_lai_summit();
 
@@ -1539,10 +1545,16 @@ void AddPandarieScripts()
     AddSC_boss_spirit_kings();
     AddSC_boss_elegon();
     AddSC_boss_will_of_emperor();
+    AddSC_instance_heart_of_fear();                //Heart of Fear
+    AddSC_boss_vizier_zorlok();
+    AddSC_boss_lord_tayak();
+    AddSC_boss_garalon();
+    AddSC_boss_lord_meljarak();
+    AddSC_boss_unsok();
+    AddSC_boss_empress_shekzeer();
 
 	AddSC_valley_of_the_four_winds();
 	AddSC_krasarang_wilds();
-    AddSC_jade_forest();
     AddSC_kun_lai_summit();
     AddSC_vale_of_eternal_blossoms();
 

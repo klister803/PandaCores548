@@ -3674,6 +3674,33 @@ class spell_gen_tricky_treat : public SpellScriptLoader
         }
 };
 
+class spell_gen_leviroth_self_impale : public SpellScriptLoader
+{
+public:
+    spell_gen_leviroth_self_impale() : SpellScriptLoader("spell_gen_leviroth_self_impale") { }
+
+    class spell_gen_leviroth_self_impale_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gen_leviroth_self_impale_SpellScript);
+
+        void HandleDamageCalc(SpellEffIndex /*effIndex*/)
+        {
+            uint32 bp = GetCaster()->CountPctFromCurHealth(93);
+            SetHitDamage(bp);
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_gen_leviroth_self_impale_SpellScript::HandleDamageCalc, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gen_leviroth_self_impale_SpellScript();
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3754,4 +3781,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_ds_flush_knockback();
     new spell_brewfest_speed();
     new spell_gen_tricky_treat();
+    new spell_gen_leviroth_self_impale();
 }

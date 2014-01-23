@@ -87,6 +87,30 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
 };
 
 template<class T>
+class FetchMovementGenerator : public TargetedMovementGeneratorMedium<T, FetchMovementGenerator<T> >
+{
+    public:
+        FetchMovementGenerator(Unit &target)
+            : TargetedMovementGeneratorMedium<T, FetchMovementGenerator<T> >(target) {}
+        FetchMovementGenerator(Unit &target, float offset, float angle)
+            : TargetedMovementGeneratorMedium<T, FetchMovementGenerator<T> >(target, offset, angle) {}
+        ~FetchMovementGenerator() {}
+
+        MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }
+
+        void Initialize(T &);
+        void Finalize(T &);
+        void Reset(T &);
+        void MovementInform(T &);
+
+        static void _clearUnitStateMove(T &u) { u.ClearUnitState(UNIT_STATE_FOLLOW_MOVE); }
+        static void _addUnitStateMove(T &u)  { u.AddUnitState(UNIT_STATE_FOLLOW_MOVE); }
+        bool EnableWalking() const { return false;}
+        bool _lostTarget(T &u) const { return false; }
+        void _reachTarget(T &);
+};
+
+template<class T>
 class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >
 {
     public:
