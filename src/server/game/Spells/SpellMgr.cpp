@@ -4396,9 +4396,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 37062: // To Catch A Thistlehead
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(4); // 120s
                     break;
-                case 76856: // Mastery: Unshackled Fury
-                    spellInfo->CasterAuraState = 0;
-                    break;
                 case 114714:// Grilled Plainshawk Leg
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     break;
