@@ -653,7 +653,7 @@ class WorldSession
         void HandleStableRevivePet(WorldPacket& recvPacket);
         void SendTrainerService(uint64 guid, uint32 spellId, uint32 trainState);
 
-        void HandleDuelAcceptedOpcode(WorldPacket& recvPacket);
+        void HandleDuelAcceptResultOpcode(WorldPacket& recvPacket);
         void HandleDuelCancelledOpcode(WorldPacket& recvPacket);
 
         void HandleAcceptTradeOpcode(WorldPacket& recvPacket);

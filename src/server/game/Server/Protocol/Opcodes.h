@@ -869,11 +869,11 @@ enum Opcodes
     SMSG_DUMP_RIDE_TICKETS_RESPONSE                   = 0xBF9,  // 5.0.5 16048
     SMSG_DURABILITY_DAMAGE_DEATH                      = 0xD0C,  // 5.0.5 16048
     SMSG_ECHO_PARTY_SQUELCH                           = 0,      // 0x0814 in 4.3.4 @todo : Find me and BACON !
-    SMSG_EMOTE                                        = 0xD8B,  // 5.4.1 17538
+    SMSG_EMOTE                                        = 0x0D8B, // 5.4.1 17538
     SMSG_ENABLE_BARBER_SHOP                           = 0xC19,  // 5.0.5 16048
     SMSG_ENCHANTMENTLOG                               = 0xC49,  // 5.0.5 16048
     SMSG_ENVIRONMENTALDAMAGELOG                       = 0x951,  // 5.0.5 16048
-    SMSG_EQUIPMENT_SET_LIST                           = 0x980,  // 5.0.5 16048
+    SMSG_EQUIPMENT_SET_LIST                           = 0x0CBF, // 5.4.1 17538
     SMSG_EQUIPMENT_SET_SAVED                          = 0x990,  // 5.0.5 16048
     SMSG_EQUIPMENT_SET_USE_RESULT                     = 0xC52,  // 5.0.5 16048
     SMSG_EXPECTED_SPAM_RECORDS                        = 0xC4D,  // 5.0.5 16048
@@ -1121,7 +1121,7 @@ enum Opcodes
     SMSG_MOVE_WATER_WALK                              = 0xE66,  // 5.0.5 16048
     SMSG_MULTIPLE_PACKETS                             = 0x826,  // 5.0.5 16048
     SMSG_NAME_QUERY_RESPONSE                          = 0x1407, // 5.4.1 17538
-    SMSG_NEW_TAXI_PATH                                = 0x813,  // 5.0.5 16048
+    SMSG_NEW_TAXI_PATH                                = 0x1135, // 5.4.1 17538
     SMSG_NEW_WORLD                                    = 0x010F, // 5.4.1 17538
     SMSG_NEW_WORLD_ABORT                              = 0x0DB6, // 5.4.1 17538
     SMSG_NOTIFICATION                                 = 0xE0F,  // 5.0.5 16048
@@ -1343,7 +1343,7 @@ enum Opcodes
     SMSG_SUSPEND_COMMS                                = 0x662,  // 5.0.5 16048
     SMSG_SUSPEND_TOKEN_RESPONSE                       = 0xB4F,  // 5.0.5 16048
     SMSG_TALENTS_INVOLUNTARILY_RESET                  = 0x9E1,  // 5.0.5 16048
-    SMSG_TAXINODE_STATUS                              = 0xDC4,  // 5.0.5 16048
+    SMSG_TAXINODE_STATUS                              = 0x141D, // 5.4.1 17538
     SMSG_TEST_DROP_RATE_RESULT                        = 0x000,  // 5.0.5 16048 Unused
     SMSG_TEXT_EMOTE                                   = 0x880,  // 5.0.5 16048
     SMSG_THREAT_CLEAR                                 = 0xC9B,  // 5.0.5 16048
