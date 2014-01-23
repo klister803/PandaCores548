@@ -1451,83 +1451,92 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
 void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 {
+    if (!sWorld->getBoolConfig(CONFIG_DECLINED_NAMES_USED))
+    {
+        recvData.rfinish();
+        //! 5.4.1
+        WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
+        data << uint32(0);                                      // OK
+        data.WriteBits(0, 9);   //epmpty guid + unk bit
+        data.FlushBits();
+        SendPacket(&data);
+        return;
+    }
+
     ObjectGuid guid;
+    DeclinedName declinedname;
+
     recvData.ReadGuidMask<5, 1, 3, 0, 6, 4>(guid);
 
-    uint32 unk[5];
-    for (int i = 0; i < 5; i++)
-        unk[i] = recvData.ReadBits(7);
+    uint32 declinedNamesLength[5];
+    for (int i = 0; i != 5; i++)
+        declinedNamesLength[i] = recvData.ReadBits(7);
 
     recvData.ReadGuidMask<2, 7>(guid);
+    recvData.ReadFlush();
     recvData.ReadGuidBytes<6, 1, 2>(guid);
-
-    for (int i = 0; i < 5; i++)
-        recvData.read_skip(unk[i]);
+    
+    bool decl_checl = true;
+    for (int i = 0; i != 5; i++)
+    {
+        declinedname.name[i] = recvData.ReadString(declinedNamesLength[i]);
+        if (!normalizePlayerName(declinedname.name[i]))
+            decl_checl = false;
+    }
 
     recvData.ReadGuidBytes<3, 4, 0, 5, 7>(guid);
+
+    if (!decl_checl)
+    {
+        //! 5.4.1
+        WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
+        data << uint32(1);
+        data.WriteBit(guid);
+        data.WriteGuidMask<0, 1, 3, 7, 5, 4, 2, 6>(guid);
+        data.FlushBits();
+        data.WriteGuidBytes<6, 4, 5, 0, 2, 7, 1, 3>(guid);
+        SendPacket(&data);
+        return;
+    }
 
     // not accept declined names for unsupported languages
     std::string name;
     if (!sObjectMgr->GetPlayerNameByGUID(guid, name))
     {
+        //! 5.4.1
         WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
         data << uint32(1);
-        data << uint64(guid);
+        data.WriteBit(guid);
+        data.WriteGuidMask<0, 1, 3, 7, 5, 4, 2, 6>(guid);
+        data.FlushBits();
+        data.WriteGuidBytes<6, 4, 5, 0, 2, 7, 1, 3>(guid);
         SendPacket(&data);
         return;
     }
 
     std::wstring wname;
-    if (!Utf8toWStr(name, wname))
+    if (!Utf8toWStr(name, wname) || !isCyrillicCharacter(wname[0]))
     {
+        //! 5.4.1
         WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
         data << uint32(1);
-        data << uint64(guid);
+        data.WriteBit(guid);
+        data.WriteGuidMask<0, 1, 3, 7, 5, 4, 2, 6>(guid);
+        data.FlushBits();
+        data.WriteGuidBytes<6, 4, 5, 0, 2, 7, 1, 3>(guid);
         SendPacket(&data);
         return;
-    }
-
-    if (!isCyrillicCharacter(wname[0]))                      // name already stored as only single alphabet using
-    {
-        WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
-        data << uint32(1);
-        data << uint64(guid);
-        SendPacket(&data);
-        return;
-    }
-
-    std::string name2;
-    DeclinedName declinedname;
-
-    recvData >> name2;
-
-    if (name2 != name)                                       // character have different name
-    {
-        WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
-        data << uint32(1);
-        data << uint64(guid);
-        SendPacket(&data);
-        return;
-    }
-
-    for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-    {
-        recvData >> declinedname.name[i];
-        if (!normalizePlayerName(declinedname.name[i]))
-        {
-            WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
-            data << uint32(1);
-            data << uint64(guid);
-            SendPacket(&data);
-            return;
-        }
     }
 
     if (!ObjectMgr::CheckDeclinedNames(wname, declinedname))
     {
+        //5.4.1
         WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
         data << uint32(1);
-        data << uint64(guid);
+        data.WriteBit(guid);
+        data.WriteGuidMask<0, 1, 3, 7, 5, 4, 2, 6>(guid);
+        data.FlushBits();
+        data.WriteGuidBytes<6, 4, 5, 0, 2, 7, 1, 3>(guid);
         SendPacket(&data);
         return;
     }
@@ -1551,9 +1560,11 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 
     CharacterDatabase.CommitTransaction(trans);
 
+    //! 5.4.1
     WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
     data << uint32(0);                                      // OK
-    data << uint64(guid);
+    data.WriteBits(0, 9);   //epmpty guid + unk bit
+    data.FlushBits();
     SendPacket(&data);
 }
 
