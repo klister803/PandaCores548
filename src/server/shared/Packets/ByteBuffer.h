@@ -244,6 +244,15 @@ class ByteBuffer
             _bitpos = 8;
         }
 
+        void ReadFlush()
+        {
+            if (_bitpos == 8)
+                return;
+
+            _curbitval = 0;
+            _bitpos = 8;
+        }
+
         void WriteBitInOrder(ObjectGuid guid, uint8 order[8])
         {
             for (uint8 i = 0; i < 8; ++i)

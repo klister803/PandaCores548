@@ -92,7 +92,7 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
     uint32 unk_count = 3;       // unk counter, may be related to battle pet slot
     data->WriteBits(unk_count, 20);
 
-    for (int i = 0; i < unk_count; i++)
+    for (uint32 i = 0; i < unk_count; i++)
         data->WriteBit(0);           // unk bit
 
     GetBattlePetList(petList);

@@ -5872,7 +5872,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     }
                     triggered_spell_id = abs(itr->spell_trigger);
 
-                    if(damage >= triggerAmount)
+                    if(int32(damage) >= triggerAmount)
                     {
                         _caster->CastSpell(target, triggered_spell_id, true);
                         triggeredByAura->GetBase()->Remove(AURA_REMOVE_BY_DEFAULT);

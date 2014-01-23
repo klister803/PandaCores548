@@ -1275,6 +1275,7 @@ enum Opcodes
     SMSG_SET_PLAY_HOVER_ANIM                          = 0xE84,  // 5.0.5 16048
     SMSG_SET_PROFICIENCY                              = 0x823,  // 5.0.5 16048
     SMSG_SET_PROJECTILE_POSITION                      = 0x8BC,  // 5.0.5 16048
+    SMSG_SET_TIME_ZONE_INFORMATION                    = 0x14AF, // 5.4.1 17538 (JamList) (NYI)
     SMSG_SHOWTAXINODES                                = 0xD49,  // 5.0.5 16048
     SMSG_SHOW_BANK                                    = 0x008E, // 5.4.1 17538
     SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI       = 0xAC0,  // 5.0.5 16048

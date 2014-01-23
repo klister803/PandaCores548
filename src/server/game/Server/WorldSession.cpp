@@ -806,6 +806,21 @@ void WorldSession::SendAccountDataTimes(uint32 mask)
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
         data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
     data.WriteBit(1);
+    data.FlushBits();
+    SendPacket(&data);
+    //SendTimeZoneInformation();
+}
+
+// ToDo: add confing. Are we need it?
+void WorldSession::SendTimeZoneInformation()
+{
+    std::string zone = "Europe/Moscow";    //RTL: Europe/Paris
+    WorldPacket data(SMSG_SET_TIME_ZONE_INFORMATION, 30);
+    data.WriteBits(zone.size(), 7);
+    data.WriteBits(zone.size(), 7);
+    data.FlushBits();
+    data.WriteString(zone);
+    data.WriteString(zone);
     SendPacket(&data);
 }
 

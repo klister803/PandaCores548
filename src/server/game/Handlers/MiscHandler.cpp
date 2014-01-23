@@ -999,24 +999,26 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
 
-    uint32 mask, timestamp, decompressedSize;
-    // first login - mask 0x60
-    recvData >> mask >> timestamp >> decompressedSize;
+    uint32 type, timestamp, decompressedSize, OriginalSize;
+    recvData >> OriginalSize >> timestamp >> decompressedSize;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "UAD: type mask %u, time %u, decompressedSize %u", mask, timestamp, decompressedSize);
+    //sLog->outDebug(LOG_FILTER_NETWORKIO, "UAD: type %u, time %u, decompressedSize %u", type, timestamp, decompressedSize);
 
     //if (type > NUM_ACCOUNT_DATA_TYPES)
         //return;
 
     if (decompressedSize == 0)                               // erase
     {
-        SetAccountData(AccountDataType(mask), 0, "");
+        type = recvData.ReadBits(3);
+        if (type > NUM_ACCOUNT_DATA_TYPES)
+            return;
 
-        WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
-        data << uint32(mask);
-        data << uint32(0);
-        SendPacket(&data);
+        SetAccountData(AccountDataType(type), 0, "");
 
+        //WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
+        //data << uint32(type);
+        //data << uint32(0);
+        //SendPacket(&data);
         return;
     }
 
@@ -1028,26 +1030,31 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
     }
 
     ByteBuffer dest;
-    dest.resize(decompressedSize);
+    dest.resize(OriginalSize);
+    uLongf realSize = OriginalSize;
 
-    uLongf realSize = decompressedSize;
-    if (uncompress(const_cast<uint8*>(dest.contents()), &realSize, const_cast<uint8*>(recvData.contents() + recvData.rpos()), recvData.size() - recvData.rpos()) != Z_OK)
+    if (uncompress(const_cast<uint8*>(dest.contents()), &realSize, const_cast<uint8*>(recvData.contents() + recvData.rpos()), decompressedSize) != Z_OK)
     {
         recvData.rfinish();                   // unnneded warning spam in this case
         sLog->outError(LOG_FILTER_NETWORKIO, "UAD: Failed to decompress account data");
         return;
     }
 
-    std::string adata;
-    dest >> adata;
+    std::string adata = dest.ReadString(OriginalSize);
 
-    // unk always 3, need sniffs
-    uint32 unk = recvData.ReadBits(3);
+    recvData.read_skip(decompressedSize);       //uncompress not move packet
+    type = recvData.ReadBits(3);
+    recvData.ReadFlush();
 
-    //SetAccountData(AccountDataType(mask), timestamp, adata);
+    if (type > NUM_ACCOUNT_DATA_TYPES)
+        return;
+
+    recvData.rfinish(); 
+
+    SetAccountData(AccountDataType(type), timestamp, adata);
 
     //WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
-    //data << uint32(mask);
+    //data << uint32(type);
     //data << uint32(0);
     //SendPacket(&data);
 }
