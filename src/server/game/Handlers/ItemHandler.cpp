@@ -276,9 +276,11 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recvData)
 void WorldSession::HandleDestroyItemOpcode(WorldPacket & recvData)
 {
     //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_DESTROY_ITEM");
-    uint8 bag, slot, count, data1, data2, data3;
+    int32 count;
+    int8 bag, slot;
 
-    recvData >> bag >> slot >> count >> data1 >> data2 >> data3;
+    recvData >> count;
+    recvData >> bag >> slot;
     //sLog->outDebug("STORAGE: receive bag = %u, slot = %u, count = %u", bag, slot, count);
 
     uint16 pos = (bag << 8) | slot;
@@ -844,9 +846,10 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleListInventoryOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
 
-    recvData >> guid;
+    recvData.ReadGuidMask<1, 3, 7, 6, 5, 2, 0, 4>(guid);
+    recvData.ReadGuidBytes<5, 6, 4, 1, 7, 3, 2, 0>(guid);
 
     if (!GetPlayer()->isAlive())
         return;
@@ -883,8 +886,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     //    rawItemCount = 300; // client cap but uint8 max value is 255
 
     ByteBuffer itemsData(32 * rawItemCount);
-    std::vector<bool> enablers;
-    enablers.reserve(2 * rawItemCount);
+    bool hasExtendedCost[MAX_VENDOR_ITEMS];
 
     const float discountMod = _player->GetReputationPriceDiscount(vendor);
     uint32 count = 0;
@@ -987,7 +989,6 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             //if (int32 priceMod = _player->GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
                  //price -= CalculatePct(price, priceMod);
 
-            itemsData << uint32(itemTemplate->MaxDurability);
             // if (!unk "enabler") data << uint32(something);
             if (vendorItem->ExtendedCost != 0)
             {
@@ -998,22 +999,24 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                         price = uint32(iece->RequiredItemCount[0] * 10000 * sWorld->getRate(RATE_DONATE));
                 }
             }
-            itemsData << uint32(price);
-            itemsData << uint32(vendorItem->Type);     // 1 is items, 2 is currency
-            itemsData << uint32(itemTemplate->BuyCount);
+
             itemsData << uint32(vendorItem->item);
-            itemsData << uint32(count);        // client expects counting to start at 1
-            itemsData << int32(leftInStock);
+            itemsData << uint32(price);
             if (vendorItem->ExtendedCost != 0)
             {
-                enablers.push_back(0);
+                hasExtendedCost[slot] = true;
                 itemsData << uint32(vendorItem->ExtendedCost);
             }
             else
-                enablers.push_back(1);
-            enablers.push_back(1);                 // unk bit
-            enablers.push_back(1);                 // unk bit
+                hasExtendedCost[slot] = false;
+
             itemsData << uint32(itemTemplate->DisplayInfoID);
+            itemsData << uint32(itemTemplate->BuyCount);
+            itemsData << uint32(count);        // client expects counting to start at 1
+            itemsData << int32(leftInStock);
+            itemsData << uint32(vendorItem->Type);     // 1 is items, 2 is currency
+            itemsData << uint32(itemTemplate->MaxDurability);
+
             realCount++;
         }
         else if (vendorItem->Type == ITEM_VENDOR_TYPE_CURRENCY)
@@ -1028,24 +1031,23 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
             uint32 precision = currencyTemplate->GetPrecision();
 
+            itemsData << uint32(vendorItem->item);
+            itemsData << uint32(0);                   // price, only seen currency types that have Extended cost
+
+            hasExtendedCost[slot] = true;
+            itemsData << uint32(vendorItem->ExtendedCost);
+
+            enablers.push_back(1);                    // unk bit
+            enablers.push_back(0);                    // unk bit
+
+            itemsData << uint32(0);                   // displayId
+            itemsData << uint32(vendorItem->maxcount * precision);
+            itemsData << uint32(count);               // client expects counting to start at 1
+            itemsData << int32(-1);
+            itemsData << uint32(vendorItem->Type);    // 1 is items, 2 is currency
             itemsData << uint32(0);                  // max durability
             // if (!unk "enabler") data << uint32(something);
-            itemsData << uint32(0);                   // price, only seen currency types that have Extended cost
-            itemsData << uint32(vendorItem->Type);    // 1 is items, 2 is currency
-            itemsData << uint32(vendorItem->maxcount * precision);
-            itemsData << uint32(vendorItem->item);
-            itemsData << uint32(count);        // client expects counting to start at 1
-            itemsData << int32(-1);
-            if (vendorItem->ExtendedCost != 0)
-            {
-                enablers.push_back(0);
-                itemsData << uint32(vendorItem->ExtendedCost);
-            }
-            else
-                enablers.push_back(1);
-            enablers.push_back(1);                    // unk bit
-            enablers.push_back(1);                    // unk bit
-            itemsData << uint32(0);                   // displayId
+
             realCount++;
         }
         // else error
@@ -1055,29 +1057,32 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
     WorldPacket data(SMSG_LIST_INVENTORY, 12 + itemsData.size());
     
-    uint8 bitOrder[8] = {5, 4, 2, 1, 6, 7, 3, 0};
-    data.WriteBitInOrder(guid, bitOrder);
+    // It doesn't matter what value is used here (PROBABLY its full vendor size)
+    // What matters is that if count of items we can see is 0 and this field is 1
+    // then client will open the vendor list, otherwise it won't
+    if (rawItemCount)
+        data << uint8(rawItemCount);
+    else
+        data << uint8(vendor->isArmorer());
 
-    data.WriteBits(realCount, 21); // item count
+    data.WriteGuidMask<1, 5, 0, 2>(guid);
+    data.WriteBits(realCount, 18); // item count
+    data.WriteGuidMask<4>(guid);
 
-    for (std::vector<bool>::const_iterator itr = enablers.begin(); itr != enablers.end(); ++itr)
-        data.WriteBit(*itr);
+    for (uint32 i = 0; i < count; i++)
+    {
+        data.WriteBit(!hasExtendedCost[i]);         // has extended cost
+        data.WriteBit(1);                           // has unknown
+        data.WriteBit(0);                           // unknown
+    }
 
+    data.WriteGuidMask<3, 6, 7>(guid);
     data.FlushBits();
+
     if (!itemsData.empty())
         data.append(itemsData);
 
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[2]);
-
-    data << uint8(realCount == 0); // unk byte, item count 0: 1, item count != 0: 0 or some "random" value below 300
-
+    recvData.ReadGuidBytes<0, 2, 1, 3, 5, 7, 4, 6>(guid);
     SendPacket(&data);
 }
 

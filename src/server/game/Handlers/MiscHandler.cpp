@@ -2218,11 +2218,8 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
 
-    uint8 bitOrder[8] = {5, 0, 3, 1, 7, 6, 2, 4};
-    recvPacket.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {2, 3, 5, 7, 6, 0, 1, 4};
-    recvPacket.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<2, 3, 5, 0, 4, 7, 6, 1>(guid);
+    recvData.ReadGuidBytes<1, 2, 5, 0, 3, 4, 6, 7>(guid);
 
     WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
     if(obj)

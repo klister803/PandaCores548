@@ -1040,7 +1040,7 @@ enum Opcodes
     SMSG_LF_GUILD_MEMBERSHIP_LIST_UPDATED             = 0xAF7,  // 5.0.5 16048
     SMSG_LF_GUILD_POST_UPDATED                        = 0xE5A,  // 5.0.5 16048
     SMSG_LF_GUILD_RECRUIT_LIST_UPDATED                = 0xB1D,  // 5.0.5 16048
-    SMSG_LIST_INVENTORY                               = 0xFDE,  // 5.0.5 16048
+    SMSG_LIST_INVENTORY                               = 0x08BD, // 5.4.1 17538
     SMSG_LOAD_CUF_PROFILES                            = 0xFC9,  // 5.0.5 16048
     SMSG_LF_GUILD_SEARCH_RESULT                       = 0,      // Not found in TC
     SMSG_LOGIN_SETTIMESPEED                           = 0x0D17, // 5.4.1 17538
