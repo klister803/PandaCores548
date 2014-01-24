@@ -594,7 +594,7 @@ class spell_mage_frostbolt : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_frostbolt_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/) override
+            bool Validate(SpellInfo const* /*spellEntry*/)
             {
                 return true;
             }
