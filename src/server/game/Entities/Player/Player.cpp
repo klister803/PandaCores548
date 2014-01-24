@@ -4347,6 +4347,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
             }
             data.WriteBits(bitCount, 22);
             data.WriteBits(bitCount, 22);
+            data.FlushBits();
             data.append(dataBuffer1);
             data.append(dataBuffer2);
             GetSession()->SendPacket(&data);
