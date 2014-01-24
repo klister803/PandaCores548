@@ -384,34 +384,34 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
 void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recvData)
 {
     uint32 textID;
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> textID;
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_NPC_TEXT_QUERY ID '%u'", textID);
 
-    recvData >> guid;
+    recvData.ReadGuidMask<4, 7, 2, 5, 3, 0, 1, 6>(guid);
+    recvData.ReadGuidBytes<6, 4, 1, 3, 2, 5, 7, 0>(guid);
     GetPlayer()->SetSelection(guid);
 
     GossipText const* pGossip = sObjectMgr->GetGossipText(textID);
 
-    WorldPacket data(SMSG_NPC_TEXT_UPDATE, 100);          // guess size
-    data << textID;
-    data << uint32(0x3F800000); // unk flags 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << textID;
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
-    data << uint32(0x00); // unk 5.0.5
+    ByteBuffer buf;
+    for (int i = 0; i < 8; ++i)
+        if (i == 0)
+            buf << uint32(0x3F800000);
+        else
+            buf << uint32(0);
+    for (int i = 0; i < 8; ++i)
+        if (i == 0)
+            buf << uint32(textID);
+        else
+            buf << uint32(0);
+
+    WorldPacket data(SMSG_NPC_TEXT_UPDATE, 100);
+    data << uint32(textID);
+    data << uint32(buf.size());
+    data.append(buf);
+    data.WriteBit(1);                                   // has data
 
     /*if (!pGossip)
     {
@@ -497,13 +497,16 @@ void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
     uint16 size1 = pGossip ? pGossip->Options[0].Text_0.length() : text.length();
     uint16 size2 = pGossip ? pGossip->Options[0].Text_1.length() : text.length();
 
+    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_BROADCAST_TEXT));
+    data << uint32(DB2_REPLY_BROADCAST_TEXT);
+
     buff << uint32(entry);
-    buff << uint32(0); // unk
+    buff << uint32(0);
     buff << uint16(size1);
-    if(size1)
+    if (size1)
         buff << std::string( pGossip ? pGossip->Options[0].Text_0 : text);
     buff << uint16(size2);
-    if(size2)
+    if (size2)
         buff << std::string(pGossip ? pGossip->Options[0].Text_1 : text);
     buff << uint32(0);
     buff << uint32(0);
@@ -517,9 +520,6 @@ void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
 
     data << uint32(buff.size());
     data.append(buff);
-
-    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_BROADCAST_TEXT));
-    data << uint32(DB2_REPLY_BROADCAST_TEXT);
     data << uint32(entry);
 
     SendPacket(&data);

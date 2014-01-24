@@ -693,7 +693,11 @@ void Battlefield::SendAreaSpiritHealerQueryOpcode(Player* player, const uint64 &
     WorldPacket data(SMSG_AREA_SPIRIT_HEALER_TIME, 12);
     uint32 time = m_LastResurectTimer;  // resurrect every 30 seconds
 
-    data << guid << time;
+    data.WriteGuidMask<6, 5, 4, 2, 7, 0, 3, 1>(guid);
+    data.WriteGuidBytes<4, 5, 7, 3, 1>(guid);
+    data << uint32(time);
+    data.WriteGuidBytes<0, 2, 6>(guid);
+
     ASSERT(player && player->GetSession());
     player->GetSession()->SendPacket(&data);
 }

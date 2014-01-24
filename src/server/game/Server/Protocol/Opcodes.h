@@ -669,7 +669,7 @@ enum Opcodes
     SMSG_ADD_RUNE_POWER                               = 0x86A,  // 5.0.5 16048
     SMSG_AI_REACTION                                  = 0x828,  // 5.0.5 16048
     SMSG_ALL_ACHIEVEMENT_DATA                         = 0x005,  // 5.4.1 17538
-    SMSG_AREA_SPIRIT_HEALER_TIME                      = 0xD1D,  // 5.0.5 16048
+    SMSG_AREA_SPIRIT_HEALER_TIME                      = 0x119C, // 5.4.1 17538
     SMSG_AREA_TRIGGER_MESSAGE                         = 0xC31,  // 5.0.5 16048
     SMSG_AREA_TRIGGER_MOVEMENT_UPDATE                 = 0xFB8,  // 5.0.5 16048
     SMSG_AREA_TRIGGER_RESET                           = 0xB9B,  // 5.0.5 16048
@@ -845,7 +845,7 @@ enum Opcodes
     SMSG_DAMAGE_CALC_LOG                              = 0xD9C,  // 5.0.5 16048
     SMSG_DAMAGE_DONE_OBSOLETE                         = 0,      // Not found in 4.3.4
     SMSG_DANCE_QUERY_RESPONSE                         = 0x843,  // 5.0.5 16048
-    SMSG_DB_REPLY                                     = 0xB8B,  // 5.0.5 16048
+    SMSG_DB_REPLY                                     = 0x1406, // 5.4.1 17538
     SMSG_DEATH_RELEASE_LOC                            = 0x85E,  // 5.0.5 16048
     SMSG_DEBUG_RUNE_REGEN                             = 0xE2E,  // 5.0.5 16048
     SMSG_DEFENSE_MESSAGE                              = 0x9E9,  // 5.0.5 16048
@@ -915,7 +915,7 @@ enum Opcodes
     SMSG_GM_TICKET_STATUS_UPDATE                      = 0x821,  // 5.0.5 16048
     SMSG_GODMODE                                      = 0x9F3,  // 5.0.5 16048
     SMSG_GOSSIP_COMPLETE                              = 0x0AD6, // 5.4.1 17538
-    SMSG_GOSSIP_MESSAGE                               = 0xDE4,  // 5.0.5 16048
+    SMSG_GOSSIP_MESSAGE                               = 0x03FC, // 5.4.1 17538
     SMSG_GOSSIP_POI                                   = 0xD70,  // 5.0.5 16048
     SMSG_GROUPACTION_THROTTLED                        = 0x994,  // 5.0.5 16048
     SMSG_GROUP_CANCEL                                 = 0x84B,  // 5.0.5 16048
@@ -1127,7 +1127,7 @@ enum Opcodes
     SMSG_NOTIFICATION                                 = 0xE0F,  // 5.0.5 16048
     SMSG_NOTIFY_DANCE                                 = 0x917,  // 5.0.5 16048
     SMSG_NOTIFY_DEST_LOC_SPELL_CAST                   = 0x8FA,  // 5.0.5 16048
-    SMSG_NPC_TEXT_UPDATE                              = 0x80C,  // 5.0.5 16048
+    SMSG_NPC_TEXT_UPDATE                              = 0x101F, // 5.4.1 17538
     SMSG_NPC_WONT_TALK                                = 0,      // Not found in 4.3.4
     SMSG_OFFER_PETITION_ERROR                         = 0xCE7,  // 5.0.5 16048
     SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA         = 0xCB3,  // 5.0.5 16048
@@ -1263,7 +1263,7 @@ enum Opcodes
     SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0xE54,  // 5.0.5 16048
     SMSG_SET_FACTION_ATWAR                            = 0xDD2,  // 5.0.5 16048
     SMSG_SET_FACTION_STANDING                         = 0xC64,  // 5.0.5 16048
-    SMSG_SET_FACTION_VISIBLE                          = 0xD20,  // 5.0.5 16048
+    SMSG_SET_FACTION_VISIBLE                          = 0x003F, // 5.4.1 17538
     SMSG_SET_FLAT_SPELL_MODIFIER                      = 0xC74,  // 5.0.5 16048
     SMSG_SET_FORCED_REACTIONS                         = 0xDE0,  // 5.0.5 16048
     SMSG_SET_MELEE_ANIM_KIT                           = 0,      // Not found in 4.3.4

@@ -329,8 +329,9 @@ void WorldSession::HandleGossipHelloOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GOSSIP_HELLO");
 
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<2, 0, 1, 5, 7, 6, 4, 3>(guid);
+    recvData.ReadGuidBytes<6, 3, 2, 0, 5, 1, 7, 4>(guid);
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
     if (!unit)

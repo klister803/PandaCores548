@@ -243,7 +243,7 @@ void ReputationMgr::SendVisible(FactionState const* faction) const
 
     // make faction visible in reputation list at client
     WorldPacket data(SMSG_SET_FACTION_VISIBLE, 4);
-    data << faction->ReputationListID;
+    data << uint32(faction->ReputationListID);
     _player->SendDirectMessage(&data);
 }
 

@@ -332,15 +332,18 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket & recvData)
 void WorldSession::SendItemeExtendedCostDb2Reply(uint32 entry)
 {
     WorldPacket data(SMSG_DB_REPLY);
-    const ItemExtendedCostEntry* extendedCost = sItemExtendedCostStore.LookupEntry(entry);
+    ItemExtendedCostEntry const* extendedCost = sItemExtendedCostStore.LookupEntry(entry);
     if (!extendedCost)
     {
-        data << uint32(0);          // size of next block
         data << uint32(time(NULL)); // hotfix date
-        data << uint32(DB2_REPLY_ITEM);
+        data << uint32(DB2_REPLY_ITEM_EXTENDED_COST);
+        data << uint32(0);          // size of next block
         data << uint32(-1);         // entry
         return;
     }
+
+    data << uint32(sObjectMgr->GetHotfixDate(extendedCost->ID, DB2_REPLY_ITEM_EXTENDED_COST));
+    data << uint32(DB2_REPLY_ITEM_EXTENDED_COST);
 
     ByteBuffer buff;
 
@@ -363,7 +366,6 @@ void WorldSession::SendItemeExtendedCostDb2Reply(uint32 entry)
 
     for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
         buff << uint32(extendedCost->RequiredCurrencyCount[i]);
-
     // Unk
     for (uint32 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; i++)
         buff << uint32(0);
@@ -371,8 +373,6 @@ void WorldSession::SendItemeExtendedCostDb2Reply(uint32 entry)
     data << uint32(buff.size());
     data.append(buff);
 
-    data << uint32(sObjectMgr->GetHotfixDate(extendedCost->ID, DB2_REPLY_ITEM_EXTENDED_COST));
-    data << uint32(DB2_REPLY_ITEM_EXTENDED_COST);
     data << uint32(extendedCost->ID);
 
     SendPacket(&data);
@@ -384,12 +384,15 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
     if (!proto)
     {
-        data << uint32(0);          // size of next block
         data << uint32(time(NULL)); // hotfix date
         data << uint32(DB2_REPLY_ITEM);
+        data << uint32(0);          // size of next block
         data << uint32(-1);         // entry
         return;
     }
+
+    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_ITEM));
+    data << uint32(DB2_REPLY_ITEM);
 
     ByteBuffer buff;
     buff << uint32(entry);
@@ -403,9 +406,6 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
 
     data << uint32(buff.size());
     data.append(buff);
-    
-    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_ITEM));
-    data << uint32(DB2_REPLY_ITEM);
     data << uint32(entry);
 
     SendPacket(&data);
@@ -417,12 +417,15 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
     if (!proto)
     {
-        data << uint32(0);          // size of next block
         data << uint32(time(NULL)); // hotfix date
         data << uint32(DB2_REPLY_SPARSE);
+        data << uint32(0);          // size of next block
         data << uint32(-1);         // entry
         return;
     }
+
+    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_SPARSE));
+    data << uint32(DB2_REPLY_SPARSE);
 
     ByteBuffer buff;
     buff << uint32(entry);
@@ -431,6 +434,7 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     buff << uint32(proto->Flags2);
     buff << float(proto->Unk430_1);
     buff << float(proto->Unk430_2);
+    buff << uint32(0); // unk 5.0.5
     buff << uint32(proto->BuyCount);
     buff << int32(proto->BuyPrice);
     buff << uint32(proto->SellPrice);
@@ -537,13 +541,10 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     buff << float(proto->StatScalingFactor);    // StatScalingFactor
     buff << uint32(proto->CurrencySubstitutionId);
     buff << uint32(proto->CurrencySubstitutionCount);
-    buff << uint32(0); // unk 5.0.5
 
     data << uint32(buff.size());
     data.append(buff);
 
-    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_SPARSE));
-    data << uint32(DB2_REPLY_SPARSE);
     data << uint32(entry);
 
     SendPacket(&data);
