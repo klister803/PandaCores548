@@ -14011,165 +14011,96 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         {
             case MOVE_WALK:
             {
-                data.Initialize(SMSG_SPLINE_MOVE_SET_WALK_SPEED, 8+4+2+4+4+4+4+4+4+4);
+                //! 5.4.1
+                data.Initialize(SMSG_SPLINE_MOVE_SET_WALK_SPEED, 8+4+1);
     
-                uint8 bitOrder[8] = {3, 6, 2, 1, 4, 7, 5, 0};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
-                data.WriteByteSeq(guid[5]);
+                data.WriteGuidMask<2, 0, 6, 3, 7, 5, 1, 4>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[2]);
-                data << uint32(0); //unk
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[4]);
+                data.WriteGuidBytes<3, 1, 4, 2, 6, 0, 5, 7>(guid);
                 break;
             }
             case MOVE_RUN:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_SPLINE_MOVE_SET_RUN_SPEED, 1 + 8 + 4);
     
-                uint8 bitOrder[8] = {6, 5, 2, 3, 4, 1, 0, 7};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[4]);
-                data << uint32(0);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[6]);
+                data.WriteGuidMask<7, 0, 4, 6, 1, 2, 3, 5>(guid);
+                data.WriteGuidBytes<2, 4, 6>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[3]);
+                data.WriteGuidBytes< 0, 3, 7, 1, 5>(guid);
                 break;
             }
             case MOVE_RUN_BACK:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_SPLINE_MOVE_SET_RUN_BACK_SPEED, 1 + 8 + 4);
     
-                uint8 bitOrder[8] = {1, 3, 0, 5, 7, 6, 4, 2};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[4]);
+                data.WriteGuidMask<1, 7, 2, 5, 0, 6, 3, 4>(guid);               
+                data.WriteGuidBytes<4, 7, 6, 0, 2, 3>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[7]);
+                data.WriteGuidBytes<5, 1>(guid);
                 break;
             }
             case MOVE_SWIM:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_SPLINE_MOVE_SET_SWIM_SPEED, 1 + 8 + 4);
     
-                uint8 bitOrder[8] = {0, 6, 2, 3, 5, 4, 7, 1};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
-                data.WriteByteSeq(guid[4]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[1]);
+                data.WriteGuidMask<3, 2, 6, 1, 7, 0, 4, 5>(guid);                
+                data.WriteGuidBytes<3>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[6]);
+                data.WriteGuidBytes<4, 1, 2, 7, 0, 5, 6>(guid);
                 break;
             }
             case MOVE_SWIM_BACK:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_SPLINE_MOVE_SET_SWIM_BACK_SPEED, 1 + 8 + 4);
     
-                uint8 bitOrder[8] = {4, 6, 5, 2, 7, 1, 0, 3};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[4]);
-                data.WriteByteSeq(guid[2]);
+                data.WriteGuidMask<6, 0, 1, 3, 7, 2, 4, 5>(guid);                
+                data.WriteGuidBytes<2, 5, 6, 4, 3, 1, 0>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[7]);
+                data.WriteGuidBytes<7>(guid);
                 break;
             }
             case MOVE_TURN_RATE:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_SPLINE_MOVE_SET_TURN_RATE, 1 + 8 + 4);
     
-                uint8 bitOrder[8] = {2, 4, 6, 1, 3, 5, 7, 0};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
+                data.WriteGuidMask<5, 1, 7, 2, 0, 6, 3, 4>(guid);               
+                data.WriteGuidBytes<4, 0, 3, 7, 5, 2>(guid);
                 data << float(GetSpeed(mtype));
-    
-                uint8 byteOrder[8] = {1, 5, 3, 2, 7, 4, 6, 0};
-                data.WriteBytesSeq(guid, byteOrder);
+                data.WriteGuidBytes<1, 6>(guid);
                 break;
             }
             case MOVE_FLIGHT:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_SPLINE_MOVE_SET_FLIGHT_SPEED, 1 + 8 + 4);
     
-                uint8 bitOrder[8] = {3, 2, 7, 0, 1, 6, 4, 5};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[4]);
+                data.WriteGuidMask<2, 6, 0, 3, 4, 1, 5, 7>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[2]);
+                data.WriteGuidBytes<7, 2, 3, 0, 5, 1, 4, 6>(guid);
                 break;
             }
             case MOVE_FLIGHT_BACK:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_SPLINE_MOVE_SET_FLIGHT_BACK_SPEED, 1 + 8 + 4);
     
-                uint8 bitOrder[8] = {3, 6, 4, 0, 1, 5, 2, 7};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[4]);
+                data.WriteGuidMask<6, 7, 1, 5, 2, 4, 3, 0>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[2]);
+                data.WriteGuidBytes<4, 3, 6, 5, 0, 2, 1, 7>(guid, byteOrder);
                 break;
             }
             case MOVE_PITCH_RATE:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_SPLINE_MOVE_SET_PITCH_RATE, 1 + 8 + 4);
-                    
-                uint8 bitOrder[8] = {6, 3, 7, 5, 2, 1, 4, 0};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
                 data << float(GetSpeed(mtype));
-    
-                uint8 byteOrder[8] = {6, 5, 2, 0, 3, 7, 4, 1};
-                data.WriteBytesSeq(guid, byteOrder);
+                data.WriteGuidMask<4, 0, 5, 7, 2, 3, 6, 1>(guid);
+                data.WriteGuidBytes<0, 3, 7, 4, 1, 2, 6, 5>(guid, byteOrder);
                 break;
             }
             default:
@@ -14196,168 +14127,111 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         {
             case MOVE_WALK:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_WALK_SPEED, 1 + 8 + 4 + 4);
-    
-                uint8 bitOrder[8] = {3, 6, 2, 1, 4, 7, 5, 0};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.WriteByteSeq(guid[5]);
+   
+                data.WriteGuidMask<0, 4, 5, 2, 3, 1, 6, 7>(guid);                
+                data.WriteGuidBytes<6, 1, 5>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[2]);
-                data << uint32(0);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[4]);
+                data.WriteGuidBytes<2>(guid);
+                data << uint32(0); // Unk Int32
+                data.WriteGuidBytes<4, 0, 7, 3>(guid);
                 break;
             }
             case MOVE_RUN:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_RUN_SPEED, 1 + 8 + 4 + 4);
-    
-                uint8 bitOrder[8] = {6, 5, 2, 1, 3, 4, 0, 7};
-                data.WriteBitInOrder(guid, bitOrder);
 
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[4]);
-                data << uint32(0);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[6]);
+                data.WriteGuidMask<3, 6, 7, 1, 4, 0, 2, 5>(guid, bitOrder);
+                data.WriteGuidBytes<7, 5>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[3]);
+                data.WriteGuidBytes<6, 2, 0, 3, 1, 4>(guid);
+                data << uint32(0); // Unk Int32
                 break;
             }
             case MOVE_RUN_BACK:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_RUN_BACK_SPEED, 1 + 8 + 4 + 4);
-    
-                uint8 bitOrder[8] = {1, 2, 5, 7, 3, 4, 6, 0};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.WriteByteSeq(guid[4]);
-                data << uint32(0);
-                data.WriteByteSeq(guid[6]);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[5]);
+                data << uint32(0); // Unk Int32
+                data.WriteGuidMask<6, 3, 1, 4, 0, 5, 2, 7>(guid);
+                data.WriteGuidBytes<5, 3, 1, 7, 0, 6, 4, 2>(guid);
                 break;
             }
             case MOVE_SWIM:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_SWIM_SPEED, 1 + 8 + 4 + 4);
+    
+                data.WriteGuidMask<6, 3, 1, 2, 0, 4, 7, 5>(guid);
+                data.WriteGuidBytes<2>(guid);
                 data << float(GetSpeed(mtype));
-                data << uint32(0);
-    
-                uint8 bitOrder[8] = {3, 7, 2, 4, 0, 1, 6, 5};
-                data.WriteBitInOrder(guid, bitOrder);
-    
-                uint8 byteOrder[8] = {6, 0, 2, 7, 1, 4, 3, 5};
-                data.WriteBytesSeq(guid, byteOrder);
-
+                data.WriteGuidBytes<1, 6>(guid);
+                data << uint32(0); // Unk Int32
+                data.WriteGuidBytes<3, 4, 0, 7, 5>(guid);
                 break;
             }
             case MOVE_SWIM_BACK:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_SWIM_BACK_SPEED, 1 + 8 + 4 + 4);
     
-                uint8 bitOrder[8] = {3, 4, 0, 2, 1, 5, 6, 7};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[7]);
+                data.WriteGuidMask<0, 6, 5, 2, 1, 7, 4, 3>(guid);
+                data.WriteGuidBytes<0, 3, 6>(guid);
+                data << uint32(0); // Unk Int32
+                data.WriteGuidBytes<5>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[4]);
-                data << uint32(0);
+                data.WriteGuidBytes<2, 1, 7, 4>(guid);
                 break;
             }
             case MOVE_TURN_RATE:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_TURN_RATE, 1 + 8 + 4 + 4);
-    
-                uint8 bitOrder[8] = {7, 2, 1, 0, 4, 5, 6, 3};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[2]);
+                
+                data.WriteGuidMask<1, 7, 3, 0, 5, 4, 6, 2>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[0]);
-                data << uint32(0);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[4]);
+                data.WriteGuidBytes<2, 7, 1, 5, 6, 0, 4, 3>(guid);
+                data << uint32(0); // Unk Int32
                 break;
             }
             case MOVE_FLIGHT:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_FLIGHT_SPEED, 1 + 8 + 4 + 4);
     
-                uint8 bitOrder[8] = {5, 2, 3, 7, 4, 0, 6, 1};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[4]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[1]);
+                data.WriteGuidMask<3, 0, 2, 4, 6, 1, 5, 7>(guid);
+                data.WriteGuidBytes<2, 7, 1>(guid);
                 data << float(GetSpeed(mtype));
-                data << uint32(0);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[3]);
+                data.WriteGuidBytes<0, 4, 5>(guid);
+                data << uint32(0); // Unk Int32
+                data.WriteGuidBytes<6, 3>(guid);
                 break;
             }
             case MOVE_FLIGHT_BACK:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_FLIGHT_BACK_SPEED, 1 + 8 + 4 + 4);
     
-                uint8 bitOrder[8] = {6, 1, 2, 7, 5, 4, 0, 3};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.WriteByteSeq(guid[4]);
-                data << uint32(0);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[3]);
+                data.WriteGuidMask<1, 0, 7, 2, 3, 5, 4, 6>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[6]);
+                data.WriteGuidBytes<1, 4, 0, 3, 6, 7, 2, 5>(guid);
+                data << uint32(0); // Unk Int32
                 break;
             }
             case MOVE_PITCH_RATE:
             {
+                //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_PITCH_RATE, 1 + 8 + 4 + 4);
-    
-                uint8 bitOrder[8] = {7, 5, 2, 3, 1, 0, 6, 4};
-                data.WriteBitInOrder(guid, bitOrder);
-
+                
+                data.WriteGuidMask<7, 5, 2, 6, 1, 3, 0, 4>(guid);
+                data.WriteGuidBytes<2, 6>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[4]);
-                data.WriteByteSeq(guid[2]);
-                data << uint32(0);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[5]);
+                data.WriteGuidBytes<3, 1, 5, 4, 0>(guid);
+                data << uint32(0); // Unk Int32
+                data.WriteGuidBytes<7>(guid);
                 break;
             }
             default:
