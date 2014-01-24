@@ -126,7 +126,7 @@ class boss_empress_shekzeer : public CreatureScript
                 if (!me->isInCombat() || phase == PHASE_ONE)
                     value = 0;
                 else if (phase == PHASE_TWO)
-                    value = 1;
+                    value = 2;
             }
 
             void EnterCombat(Unit* /*who*/)
