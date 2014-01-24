@@ -8316,11 +8316,11 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
             packet.WriteBit(!printLog);//printLog); // print in log
             packet.WriteBit(itr->second.seasonTotal); // hasSeasonCount
             
-            if (itr->second.seasonTotal)
-                packet << uint32(itr->second.seasonTotal);
-
             if (weekCap)
                 packet << uint32(newWeekCount / precision);
+
+            if (itr->second.seasonTotal)
+                packet << uint32(itr->second.seasonTotal / precision);
 
             GetSession()->SendPacket(&packet);
         }
