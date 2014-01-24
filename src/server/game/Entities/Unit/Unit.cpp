@@ -14091,7 +14091,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
     
                 data.WriteGuidMask<6, 7, 1, 5, 2, 4, 3, 0>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteGuidBytes<4, 3, 6, 5, 0, 2, 1, 7>(guid, byteOrder);
+                data.WriteGuidBytes<4, 3, 6, 5, 0, 2, 1, 7>(guid);
                 break;
             }
             case MOVE_PITCH_RATE:
@@ -14100,7 +14100,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.Initialize(SMSG_SPLINE_MOVE_SET_PITCH_RATE, 1 + 8 + 4);
                 data << float(GetSpeed(mtype));
                 data.WriteGuidMask<4, 0, 5, 7, 2, 3, 6, 1>(guid);
-                data.WriteGuidBytes<0, 3, 7, 4, 1, 2, 6, 5>(guid, byteOrder);
+                data.WriteGuidBytes<0, 3, 7, 4, 1, 2, 6, 5>(guid);
                 break;
             }
             default:
@@ -14143,7 +14143,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_RUN_SPEED, 1 + 8 + 4 + 4);
 
-                data.WriteGuidMask<3, 6, 7, 1, 4, 0, 2, 5>(guid, bitOrder);
+                data.WriteGuidMask<3, 6, 7, 1, 4, 0, 2, 5>(guid);
                 data.WriteGuidBytes<7, 5>(guid);
                 data << float(GetSpeed(mtype));
                 data.WriteGuidBytes<6, 2, 0, 3, 1, 4>(guid);
@@ -18785,26 +18785,17 @@ void Unit::UpdateObjectVisibility(bool forced)
 void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin)
 {
     ObjectGuid guid = GetGUID();
+    //! 5.4.1
     WorldPacket data(SMSG_MOVE_KNOCK_BACK, (1+8+4+4+4+4+4));
     
-    uint8 bitOrder[8] = {7, 0, 5, 1, 4, 6, 2, 3};
-    data.WriteBitInOrder(guid, bitOrder);
+    data << float(speedXY);
+    data << float(vcos);
+    data << float(speedZ);
+    data << uint32(0);
+    data << float(vsin);
     
-    data << float(speedZ); //32
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[5]);
-    data << float(speedXY); //24
-    data.WriteByteSeq(guid[2]);
-    data << float(vcos);   //36
-    data << float(vsin); //40
-    data << uint32(0);   //28
-    data.WriteByteSeq(guid[6]);
-
-
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[7]);
+    data.WriteGuidMask<7, 2, 4, 3, 0, 6, 1, 5>(guid);
+    data.WriteGuidBytes<1, 4, 0, 2, 3, 5, 7, 6>(guid);
 
     player->GetSession()->SendPacket(&data);
 }

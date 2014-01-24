@@ -2588,7 +2588,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         {
             damage = CalculatePct(m_caster->GetMaxHealth(), damage);
 
-            if (m_caster->GetHealth() < damage)
+            if (int32(m_caster->GetHealth()) < damage)
             {
                 damage = m_caster->GetHealth() - 1;
                 m_caster->SetHealth(1);

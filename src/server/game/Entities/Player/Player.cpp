@@ -27951,33 +27951,24 @@ void Player::SendMovementSetHover(bool apply)
     ObjectGuid guid = GetGUID();
     if (apply)
     {
+        //! 5.4.1
         WorldPacket data(SMSG_MOVE_SET_HOVER, 12);
     
-        uint8 bitOrder[8] = {5, 0, 2, 3, 1, 7, 6, 0};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.WriteByteSeq(guid[7]);
+        data.WriteGuidMask<5, 7, 2, 4, 6, 1, 0, 3>(guid);
         data << uint32(0);          //! movement counter
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[4]);
+        data.WriteGuidBytes<0, 6, 1, 2, 3, 4, 5, 7>(guid);
+
         SendDirectMessage(&data);
     }
     else
     {
+        //! 5.4.1
         WorldPacket data(SMSG_MOVE_UNSET_HOVER, 12);
+        
+        data.WriteGuidMask<3, 7, 0, 2, 1, 4, 6, 5>(guid);
+        data.WriteGuidBytes<2, 0, 1, 6, 4>(guid);
         data << uint32(0);          //! movement counter
-    
-        uint8 bitOrder[8] = {7, 4, 1, 6, 2, 0, 3, 5};
-        data.WriteBitInOrder(guid, bitOrder);
-    
-        uint8 byteOrder[8] = {7, 0, 1, 6, 5, 4, 3, 2};
-        data.WriteBytesSeq(guid, byteOrder);
-
+        data.WriteGuidBytes<3, 7, 5>(guid);
         SendDirectMessage(&data);
     }
 }
@@ -28094,11 +28085,12 @@ void Player::SetMover(Unit* target)
 
     if (m_mover)
     {
+        //! 5.4.1
         WorldPacket data(SMSG_MOVE_SET_ACTIVE_MOVER);
         ObjectGuid guid = m_mover->GetGUID();
 
-        data.WriteGuidMask<7, 4, 2, 6, 0, 1, 3, 5>(guid);
-        data.WriteGuidBytes<2, 5, 0, 3, 7, 1, 6, 4>(guid);
+        data.WriteGuidMask<4, 7, 3, 0, 6, 1, 5, 2>(guid);
+        data.WriteGuidBytes<6, 3, 1, 5, 7, 2, 4, 0>(guid);
 
         SendDirectMessage(&data);
     }

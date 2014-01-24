@@ -2624,35 +2624,20 @@ bool Creature::SetWalk(bool enable)
     ObjectGuid guid = GetGUID();
     if (enable)
     {
+        //! 5.4.1
         WorldPacket data(SMSG_SPLINE_MOVE_SET_WALK_MODE, 9);
     
-        uint8 bitOrder[8] = {2, 3, 4, 7, 6, 1, 5, 0};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.FlushBits();
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[6]);
-        data << float(0); //un5
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[4]);
+        data.WriteGuidMask<7, 4, 0, 1, 5, 6, 2, 3>(guid);
+        data.WriteGuidBytes<6, 5, 7, 3, 1, 0, 4, 2>(guid);
         SendMessageToSet(&data, false);
     }
     else
     {
+        //! 5.4.1
         WorldPacket data(SMSG_SPLINE_MOVE_SET_RUN_MODE, 9);
     
-        uint8 bitOrder[8] = {7, 4, 2, 1, 3, 5, 0, 6};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.FlushBits();
-    
-        uint8 byteOrder[8] = {5, 6, 7, 1, 2, 4, 3, 0};
-        data.WriteBytesSeq(guid, byteOrder);
-
+        data.WriteGuidMask<0, 7, 6, 2, 4, 3, 1, 5>(guid);
+        data.WriteGuidBytes<0, 2, 1, 6, 3, 7, 5, 4>(guid);
         SendMessageToSet(&data, false);
     }
 
@@ -2672,30 +2657,20 @@ bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
     ObjectGuid guid = GetGUID();
     if (disable)
     {
+        //! 5.4.1
         WorldPacket data(SMSG_SPLINE_MOVE_GRAVITY_DISABLE, 9);
     
-        uint8 bitOrder[8] = {2, 6, 4, 7, 0, 5, 3, 1};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.FlushBits();
-    
-        uint8 byteOrder[8] = {1, 2, 5, 4, 0, 7, 6, 3};
-        data.WriteBytesSeq(guid, byteOrder);
-
+        data.WriteGuidMask<5, 4, 3, 0, 1, 7, 6, 2>(guid);
+        data.WriteGuidBytes<4, 6, 3, 5, 0, 1, 7, 2>(guid);
         SendMessageToSet(&data, false);
     }
     else
     {
+        //! 5.4.1
         WorldPacket data(SMSG_SPLINE_MOVE_GRAVITY_ENABLE, 9);
     
-        uint8 bitOrder[8] = {5, 4, 7, 1, 3, 6, 2, 0};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.FlushBits();
-    
-        uint8 byteOrder[8] = {7, 3, 4, 2, 1, 6, 0, 5};
-        data.WriteBytesSeq(guid, byteOrder);
-
+        data.WriteGuidMask<4, 0, 1, 5, 2, 3, 6, 7>(guid);
+        data.WriteGuidBytes<4, 1, 7, 6, 2, 5, 0, 3>(guid);
         SendMessageToSet(&data, false);
     }
 
