@@ -894,7 +894,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     uint32 realCount = 0;
     for (uint32 slot = 0; slot < rawItemCount; ++slot)
     {
-        count++;
+        ++count;
 
         VendorItem const* vendorItem = vendorItems->GetItem(slot);
         if (!vendorItem) continue;
@@ -1010,15 +1010,15 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             }
             else
                 hasExtendedCost[slot] = false;
-
             itemsData << uint32(itemTemplate->DisplayInfoID);
             itemsData << uint32(itemTemplate->BuyCount);
-            itemsData << uint32(count);        // client expects counting to start at 1
+            itemsData << uint32(count);                 // client expects counting to start at 1
             itemsData << int32(leftInStock);
-            itemsData << uint32(vendorItem->Type);     // 1 is items, 2 is currency
+            itemsData << uint32(vendorItem->Type);      // 1 is items, 2 is currency
+            itemsData << uint32(0);                     // upgrade id
             itemsData << uint32(itemTemplate->MaxDurability);
 
-            realCount++;
+            ++realCount;
         }
         else if (vendorItem->Type == ITEM_VENDOR_TYPE_CURRENCY)
         {
@@ -1033,25 +1033,23 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             uint32 precision = currencyTemplate->GetPrecision();
 
             itemsData << uint32(vendorItem->item);
-            itemsData << uint32(0);                   // price, only seen currency types that have Extended cost
-
+            itemsData << uint32(0);                     // price, only seen currency types that have Extended cost
             hasExtendedCost[slot] = true;
             itemsData << uint32(vendorItem->ExtendedCost);
-
-            itemsData << uint32(0);                   // displayId
+            itemsData << uint32(0);                     // displayId
             itemsData << uint32(vendorItem->maxcount * precision);
-            itemsData << uint32(count);               // client expects counting to start at 1
+            itemsData << uint32(count);                 // client expects counting to start at 1
             itemsData << int32(-1);
-            itemsData << uint32(vendorItem->Type);    // 1 is items, 2 is currency
-            itemsData << uint32(0);                  // max durability
-            // if (!unk "enabler") data << uint32(something);
+            itemsData << uint32(vendorItem->Type);      // 1 is items, 2 is currency
+            itemsData << uint32(0);                     // upgrade id
+            itemsData << uint32(0);                     // max durability
 
-            realCount++;
+            ++realCount;
         }
         // else error
     }
 
-   ObjectGuid guid = vendorGuid;
+    ObjectGuid guid = vendorGuid;
 
     WorldPacket data(SMSG_LIST_INVENTORY, 12 + itemsData.size());
     
@@ -1067,10 +1065,10 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     data.WriteBits(realCount, 18); // item count
     data.WriteGuidMask<4>(guid);
 
-    for (uint32 i = 0; i < count; i++)
+    for (uint32 i = 0; i < count; ++i)
     {
         data.WriteBit(!hasExtendedCost[i]);         // has extended cost
-        data.WriteBit(1);                           // has unknown
+        data.WriteBit(1);                           // has condition
         data.WriteBit(0);                           // unknown
     }
 

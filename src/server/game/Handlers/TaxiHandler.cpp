@@ -107,10 +107,15 @@ void WorldSession::SendTaxiMenu(Creature* unit)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_TAXINODE_STATUS_QUERY %u ", curloc);
 
+    ObjectGuid guid = unit->GetObjectGuid();
     WorldPacket data(SMSG_SHOWTAXINODES, (4 + 8 + 4 + 8 * 4));
-    data << uint32(1);
-    data << uint64(unit->GetGUID());
+    data.WriteBits(TaxiMaskSize, 24);
+    data.WriteBit(1);       // has data
+    data.WriteGuidMask<0, 4, 3, 1, 5, 7, 2, 6>(guid);
+
+    data.WriteGuidBytes<4, 0>(guid);
     data << uint32(curloc);
+    data.WriteGuidBytes<5, 7, 6, 3, 1, 2>(guid);
     GetPlayer()->m_taxi.AppendTaximaskTo(data, GetPlayer()->isTaxiCheater());
     SendPacket(&data);
 

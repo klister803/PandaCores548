@@ -916,7 +916,7 @@ enum Opcodes
     SMSG_GODMODE                                      = 0x9F3,  // 5.0.5 16048
     SMSG_GOSSIP_COMPLETE                              = 0x0AD6, // 5.4.1 17538
     SMSG_GOSSIP_MESSAGE                               = 0x03FC, // 5.4.1 17538
-    SMSG_GOSSIP_POI                                   = 0xD70,  // 5.0.5 16048
+    SMSG_GOSSIP_POI                                   = 0x1001, // 5.4.1 17538
     SMSG_GROUPACTION_THROTTLED                        = 0x994,  // 5.0.5 16048
     SMSG_GROUP_CANCEL                                 = 0x84B,  // 5.0.5 16048
     SMSG_GROUP_DECLINE                                = 0x8EA,  // 5.0.5 16048
@@ -1276,7 +1276,7 @@ enum Opcodes
     SMSG_SET_PROFICIENCY                              = 0x823,  // 5.0.5 16048
     SMSG_SET_PROJECTILE_POSITION                      = 0x8BC,  // 5.0.5 16048
     SMSG_SET_TIME_ZONE_INFORMATION                    = 0x14AF, // 5.4.1 17538 (JamList) (NYI)
-    SMSG_SHOWTAXINODES                                = 0xD49,  // 5.0.5 16048
+    SMSG_SHOWTAXINODES                                = 0x119F, // 5.4.1 17538
     SMSG_SHOW_BANK                                    = 0x008E, // 5.4.1 17538
     SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI       = 0xAC0,  // 5.0.5 16048
     SMSG_SHOW_RATINGS                                 = 0xB99,  // 5.0.5 16048
