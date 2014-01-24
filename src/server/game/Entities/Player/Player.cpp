@@ -1072,10 +1072,12 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         return false;
     }
 
-    uint32 RaceClassGender = (createInfo->Race) | (createInfo->Class << 8) | (createInfo->Gender << 24);
+    uint32 RaceClassGender = (createInfo->Race) | (createInfo->Class << 8) | (createInfo->Gender << 16);
 
-    SetUInt32Value(UNIT_FIELD_BYTES_0, RaceClassGender);
-    SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, powertype);
+    SetRace(createInfo->Race);
+    SetClass(createInfo->Class);
+    SetGender(createInfo->Gender);
+    SetFieldPowerType(powertype);
 
     InitDisplayIds();
     if (sWorld->getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || sWorld->getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP)
@@ -5951,7 +5953,7 @@ void Player::CreateCorpse()
         return;
     }
 
-    _uf = GetUInt32Value(UNIT_FIELD_BYTES_0);
+    _uf = getRace();
     _pb = GetUInt32Value(PLAYER_BYTES);
     _pb2 = GetUInt32Value(PLAYER_BYTES_2);
 
@@ -18279,11 +18281,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // overwrite some data fields
-    uint32 bytes0 = 0;
-    bytes0 |= fields[3].GetUInt8();                         // race
-    bytes0 |= fields[4].GetUInt8() << 8;                    // class
-    bytes0 |= Gender << 24;                                 // gender
-    SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
+    SetRace(fields[3].GetUInt8());
+    SetClass(fields[4].GetUInt8());
+    SetGender(Gender);
 
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[6].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[7].GetUInt32());

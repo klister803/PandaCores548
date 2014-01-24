@@ -1398,6 +1398,10 @@ class Unit : public WorldObject
         uint8 getClass() const { return GetByteValue(UNIT_FIELD_BYTES_0, 1); }
         uint32 getClassMask() const { return 1 << (getClass()-1); }
         uint8 getGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, 3); }
+        void SetGender(uint8 gender) { SetByteValue(UNIT_FIELD_BYTES_0, 3, gender); }
+        void SetRace(uint8 race) { SetByteValue(UNIT_FIELD_BYTES_0, 0, race); }
+        void SetClass(uint8 newClass) { SetByteValue(UNIT_FIELD_BYTES_0, 1, newClass); }
+        
 
         float GetStat(Stats stat) const { return float(GetUInt32Value(UNIT_FIELD_STAT0+stat)); }
         void SetStat(Stats stat, int32 val) { SetStatInt32Value(UNIT_FIELD_STAT0+stat, val); }
@@ -1431,6 +1435,7 @@ class Unit : public WorldObject
         int32 GetHealthGain(int32 dVal);
 
         Powers getPowerType() const { return Powers(GetUInt32Value(UNIT_FIELD_DISPLAY_POWER)); }
+        void SetFieldPowerType(uint32 powerType) { SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, powerType); }
         void setPowerType(Powers power);
         int32 GetPower(Powers power) const;
         int32 GetMinPower(Powers power) const { return power == POWER_ECLIPSE ? -100 : 0; }
