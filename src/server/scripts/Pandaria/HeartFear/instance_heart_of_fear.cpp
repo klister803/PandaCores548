@@ -28,6 +28,7 @@ public:
         uint64 meljarakexdoorGuid;
         uint64 unsokendoorGuid;
         uint64 unsokexdoorGuid;
+        uint64 empresscocoonGuid;
 
         std::vector<uint64> vizierarenadoorGuids;
         std::vector<uint64> garaloncdoorGuids;
@@ -60,6 +61,7 @@ public:
             meljarakexdoorGuid  = 0;
             unsokendoorGuid     = 0;
             unsokexdoorGuid     = 0;
+            empresscocoonGuid   = 0;
 
             vizierarenadoorGuids.clear();
             garaloncdoorGuids.clear();
@@ -181,6 +183,9 @@ public:
             case GO_UNSOK_EX_DOOR:
                 unsokexdoorGuid = go->GetGUID();
                 break;
+            case GO_EMPRESS_COCOON:
+                empresscocoonGuid = go->GetGUID();
+                break;
             }
         }
 
@@ -188,7 +193,7 @@ public:
         {
             if (!InstanceScript::SetBossState(id, state))
                 return false;
-
+            
             switch (id)
             {
             case DATA_VIZIER_ZORLOK:
@@ -310,12 +315,25 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(unsokendoorGuid, true);
-                        //HandleGameObject(unsokexdoorGuid, true); next boss not ready
+                        HandleGameObject(unsokexdoorGuid, true);
                         break;
                     }
                     break;
                 }
-                
+            case DATA_SHEKZEER:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        HandleGameObject(unsokexdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(unsokexdoorGuid, false);
+                        break;
+                    }
+                    break;
+                }
             }
             return true;
         }
@@ -341,7 +359,7 @@ public:
                     return garalonGuid;
                 case NPC_MELJARAK:
                     return meljarakGuid;
-                //Merjalak Soldiers
+                //Meljarak Soldiers
                 case NPC_SRATHIK_1:
                     return srathik[0];
                 case NPC_SRATHIK_2:
@@ -365,6 +383,8 @@ public:
                     return unsokGuid;
                 case NPC_SHEKZEER:
                     return shekzeerGuid;
+                case GO_EMPRESS_COCOON:
+                    return empresscocoonGuid;
             }
             return 0;
         }

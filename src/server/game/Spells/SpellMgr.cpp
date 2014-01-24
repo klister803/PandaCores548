@@ -4276,7 +4276,25 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
                     spellInfo->Effects[1].Effect = 0;
                     break;
-
+                //
+                //Empress Shekzeer
+                case 123788: //Cry of terror
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 1;
+                    break;
+                case 123735: //Dread screetch
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 1;
+                    spellInfo->Effects[1].TargetB = 0;
+                    break;
+                case 123743: //Dread screetch trigger spell
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
+                    break;
+                case 124845: //Calamity
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
 
                     
                 //World Boss
