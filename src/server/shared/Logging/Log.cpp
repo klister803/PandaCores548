@@ -601,3 +601,16 @@ void Log::outDiff(const char * str, ...)
         fflush(diffLogFile);
     }
 }
+
+void Log::outU(const char* str, ...)
+{
+    if (!str)
+        return;
+
+    va_list ap;
+    va_start(ap, str);
+
+    vlog(LOG_FILTER_UWOW_CORE, LOG_LEVEL_ERROR, str, ap);
+
+    va_end(ap);
+}

@@ -2789,13 +2789,14 @@ Appender.CharDump=2,2,0,%s.log
 Appender.Arenas=2,2,0,Arena.log
 Appender.SQLDev=2,2,0,SQLDev.log
 Appender.SQLDriver=2,2,0,SQLDriver.log
+Appender.CoreSpecInfo=2,1,0,CoreSpecInfo.log
 
 #    Appenders
 #        Description: List of Appenders to read from config
 #                     (Using spaces as separator).
 #        Default:     "Console Server GM DBErrors Char RA Warden Chat"
 
-Appenders=Console Server GM DBErrors Char RA Warden Chat
+Appenders=Console Server GM DBErrors Char RA Warden Chat CoreSpecInfo
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -2849,6 +2850,7 @@ Appenders=Console Server GM DBErrors Char RA Warden Chat
 #                        39 - Battlefield
 #                        40 - Server Loading
 #                        41 - Opcodes (just id and name sent / received)
+#                        42 - Special Output
 #                     LogLevel
 #                         0 - (Disabled)
 #                         1 - (Trace)
@@ -2876,6 +2878,7 @@ Logger.SQLDev=37,3,SQLDev
 Logger.CharDump=38,3,CharDump
 Logger.Load=40,3,Console Server
 Logger.Opcodes=41,6,Console Server
+Logger.SpecInfo=42,1,CoreSpecInfo
 
 #
 #    Loggers
@@ -2883,7 +2886,7 @@ Logger.Opcodes=41,6,Console Server
 #                     (Using spaces as separator).
 #        Default:     "Root Chat DBErrors GM RA Warden Character Load"
 
-Loggers=Root Chat DBErrors GM RA Warden Character Load WorldServer Opcodes
+Loggers=Root Chat DBErrors GM RA Warden Character Load WorldServer Opcodes SpecInfo
 
 #
 ###################################################################################################

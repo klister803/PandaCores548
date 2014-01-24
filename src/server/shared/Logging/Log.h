@@ -64,6 +64,7 @@ class Log
         static void outTimestamp(FILE* file);
         uint32 GetRealmID() const { return realm; }
 
+        void outU(const char* str, ...);
     private:
         void vlog(LogFilterType f, LogLevel level, char const* str, va_list argptr);
         void write(LogMessage* msg);
