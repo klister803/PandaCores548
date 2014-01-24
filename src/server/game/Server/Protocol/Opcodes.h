@@ -1090,9 +1090,9 @@ enum Opcodes
     SMSG_MOVE_NORMAL_FALL                             = 0x03A0, // 5.4.1 17538
     SMSG_MOVE_ROOT                                    = 0x0608, // 5.4.1 17538
     SMSG_MOVE_SET_ACTIVE_MOVER                        = 0x0626, // 5.4.1 17538
-    SMSG_MOVE_SET_CAN_FLY                             = 0xB90,  // 5.0.5 16048
+    SMSG_MOVE_SET_CAN_FLY                             = 0x0209, // 5.4.1 17538
     SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0x0237, // 5.4.1 17538
-    SMSG_MOVE_SET_COLLISION_HEIGHT                    = 0xE40,  // 5.0.5 16048
+    SMSG_MOVE_SET_COLLISION_HEIGHT                    = 0x0207, // 5.4.1 17538
     SMSG_MOVE_SET_COMPOUND_STATE                      = 0xA98,  // 5.0.5 16048
     SMSG_MOVE_SET_FLIGHT_BACK_SPEED                   = 0x07AC, // 5.4.1 17538
     SMSG_MOVE_SET_FLIGHT_SPEED                        = 0x02B2, // 5.4.1 17538
@@ -1105,7 +1105,7 @@ enum Opcodes
     SMSG_MOVE_SET_TURN_RATE                           = 0x02BA, // 5.4.1 17538
     SMSG_MOVE_SET_WALK_SPEED                          = 0x0716, // 5.4.1 17538
     SMSG_MOVE_UNROOT                                  = 0x0618, // 5.4.1 17538
-    SMSG_MOVE_UNSET_CAN_FLY                           = 0xBC9,  // 5.0.5 16048
+    SMSG_MOVE_UNSET_CAN_FLY                           = 0x031B, // 5.4.1 17538
     SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0x0A00,// 5.4.1 17538
     SMSG_MOVE_UNSET_HOVER                             = 0x0304, // 5.4.1 17538
     SMSG_MOVE_UPDATE_COLLISION_HEIGHT                 = 0xE3E,  // 5.0.5 16048
@@ -1278,7 +1278,7 @@ enum Opcodes
     SMSG_SET_TIME_ZONE_INFORMATION                    = 0x14AF, // 5.4.1 17538 (JamList) (NYI)
     SMSG_SHOWTAXINODES                                = 0x119F, // 5.4.1 17538
     SMSG_SHOW_BANK                                    = 0x008E, // 5.4.1 17538
-    SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI       = 0xAC0,  // 5.0.5 16048
+    SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI       = 0x081D, // 5.4.1 17538
     SMSG_SHOW_RATINGS                                 = 0xB99,  // 5.0.5 16048
     SMSG_SOR_START_EXPERIENCE_INCOMPLETE              = 0xAB4,  // 5.0.5 16048
     SMSG_SPELLBREAKLOG                                = 0xC45,  // 5.0.5 16048

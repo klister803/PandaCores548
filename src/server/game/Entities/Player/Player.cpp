@@ -27870,37 +27870,23 @@ void Player::SendMovementSetCanFly(bool apply)
     WorldPacket data;
     if (apply)
     {
+        //! 5.4.1
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 1 + 8 + 4);
 
-        uint8 bitOrder[8] = {0, 7, 6, 5, 1, 3, 4, 2};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[4]);
+        data.WriteGuidMask<6, 2, 4, 1, 0, 5, 7, 3>(guid);
+        data.WriteGuidBytes< 7, 6, 4>(guid);
         data << uint32(0);          //! movement counter
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[5]);
+        data.WriteGuidBytes< 2, 3, 1, 0, 5>(guid);
     }
     else
     {
+        //! 5.4.1
         data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 1 + 8 + 4);
 
-        uint8 bitOrder[8] = {5, 7, 2, 3, 6, 0, 4, 1};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[4]);
+        data.WriteGuidMask<7, 6, 5, 1, 2, 4, 3, 0>(guid);
+        data.WriteGuidBytes< 0, 6, 3, 7, 2, 1, 5>(guid);
         data << uint32(0);          //! movement counter
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[3]);
+        data.WriteGuidBytes< 4>(guid);
     }
     SendDirectMessage(&data);
 }
@@ -28015,28 +28001,25 @@ void Player::SendMovementSetFeatherFall(bool apply)
 void Player::SendMovementSetCollisionHeight(float height)
 {
     ObjectGuid guid = GetGUID();
+
+    //! 5.4.1
     WorldPacket data(SMSG_MOVE_SET_COLLISION_HEIGHT, 2 + 8 + 4 + 4);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[3]);
-    data.WriteBits(0, 5);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[5]);
+    data.WriteGuidMask<7, 0, 6, 1>(guid);
+    data.WriteBits(0, 2);
+    data.WriteGuidMask<2, 5, 3>(guid);
+    data.WriteBit(1);                        // dword1C
+    data.WriteGuidMask<4>(guid);
+
     data.FlushBits();
     
-    data << uint32(sWorld->GetGameTime());   // Packet counter
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[7]);
+    data.WriteGuidBytes<5, 4, 1, 7, 0, 2>(guid);
+    //if (dword1C)
+    //    packet.ReadInt32("dword1C");
     data << float(height);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[3]);
+    data << uint32(sWorld->GetGameTime());   // Packet counter
+    data.WriteGuidBytes<6>(guid);
+    data << float(1.0f);                     // sometimes 1.3f(swiming for ex). It's default char height
+    data.WriteGuidBytes<3>(guid);
 
     SendDirectMessage(&data);
 }
