@@ -1207,6 +1207,8 @@ bool Guardian::UpdateAllStats()
     for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
         UpdateResistances(i);
 
+    UpdatePetMeleeHastMod();
+
     return true;
 }
 
@@ -1224,7 +1226,7 @@ void Guardian::UpdatePetMeleeHastMod()
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
 
-    amount += GetTotalForAurasModifier(&auratypelist);
+    amount += m_owner->GetTotalForAurasModifier(&auratypelist);
 
     float value = BASE_ATTACK_TIME;
 
