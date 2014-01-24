@@ -27910,38 +27910,23 @@ void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
     ObjectGuid guid = GetGUID();
     if (apply)
     {
+        //! 5.4.1
         WorldPacket data(SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, 12);
     
-        uint8 bitOrder[8] = {5, 0, 2, 3, 4, 7, 6, 1};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[5]);
+        data.WriteGuidMask<3, 7, 5, 6, 2, 0, 4, 1>(guid);
+        data.WriteGuidBytes< 4, 0, 2>(guid);
         data << uint32(0);          //! movement counter
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[0]);
+        data.WriteGuidBytes< 6, 1, 7, 5, 3 >(guid);
         SendDirectMessage(&data);
     }
     else
     {
+        //! 5.4.1
         WorldPacket data(SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, 12);
     
-        uint8 bitOrder[8] = {3, 1, 6, 2, 4, 5, 7, 0};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[2]);
+        data.WriteGuidMask<1, 4, 2, 7, 5, 0, 3, 6>(guid);
+        data.WriteGuidBytes< 1, 4, 6, 7, 2, 6, 3, 0 >(guid);
         data << uint32(0);          //! movement counter
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[5]);
         SendDirectMessage(&data);
     }
 }
@@ -27979,33 +27964,22 @@ void Player::SendMovementSetWaterWalking(bool apply)
     WorldPacket data;
     if (apply)
     {
+        //! 5.4.1
         data.Initialize(SMSG_MOVE_WATER_WALK, 1 + 4 + 8);
     
-        uint8 bitOrder[8] = {7, 6, 0, 1, 5, 4, 3, 2};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[2]);
+        data.WriteGuidMask<0, 7, 1, 5, 6, 2, 3, 4>(guid);
+        data.WriteGuidBytes<4, 0, 5, 6, 3, 1, 2, 7>(guid);
         data << uint32(0);          //! movement counter
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[0]);
     }
     else
     {
+        //! 5.4.1
         data.Initialize(SMSG_MOVE_LAND_WALK, 1 + 4 + 8);
-        data << uint32(0);          //! movement counter
-    
-        uint8 bitOrder[8] = {5, 4, 3, 2, 0, 7, 1, 6};
-        data.WriteBitInOrder(guid, bitOrder);
 
-        data.FlushBits();
-    
-        uint8 byteOrder[8] = {1, 0, 2, 6, 3, 4, 5, 7};
-        data.WriteBytesSeq(guid, byteOrder);
+        data.WriteGuidMask<7, 5, 6, 1, 2, 3, 0, 4>(guid);
+        data.WriteGuidBytes<3, 4, 7, 5, 2, 0, 6>(guid);
+        data << uint32(0);          //! movement counter
+        data.WriteGuidBytes<1>(guid);
     }
     SendDirectMessage(&data);
 }
@@ -28017,32 +27991,22 @@ void Player::SendMovementSetFeatherFall(bool apply)
 
     if (apply)
     {
+        //! 5.4.1
         data.Initialize(SMSG_MOVE_FEATHER_FALL, 1 + 4 + 8);
     
-        uint8 bitOrder[8] = {7, 3, 2, 1, 6, 0, 4, 5};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.WriteByteSeq(guid[7]);
+        data.WriteGuidMask<0, 7, 6, 5, 4, 1, 3, 2>(guid);
+        data.WriteGuidBytes<2, 1, 0, 3, 4, 5, 7, 6>(guid);
         data << uint32(0);          //! movement counter
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[5]);
     }
     else
     {
+        //! 5.4.1
         data.Initialize(SMSG_MOVE_NORMAL_FALL, 1 + 4 + 8);
     
-        uint8 bitOrder[8] = {2, 1, 5, 0, 6, 4, 7, 3};
-        data.WriteBitInOrder(guid, bitOrder);
-
+        data.WriteGuidMask<5, 1, 7, 6, 3, 0, 2, 4>(guid);
+        data.WriteGuidBytes<3, 4, 1, 6, 7, 0, 5>(guid);
         data << uint32(0);          //! movement counter
-    
-        uint8 byteOrder[8] = {2, 6, 4, 5, 7, 3, 1, 0};
-        data.WriteBytesSeq(guid, byteOrder);
+        data.WriteGuidBytes<2>(guid);
     }
 
     SendDirectMessage(&data);

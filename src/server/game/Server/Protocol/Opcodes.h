@@ -1082,16 +1082,16 @@ enum Opcodes
     SMSG_MOUNTSPECIAL_ANIM                            = 0x976,  // 5.0.5 16048
     SMSG_MOVE_COLLISION_DISABLE                       = 0xA16,  // 5.0.5 16048
     SMSG_MOVE_COLLISION_ENABLE                        = 0xF22,  // 5.0.5 16048
-    SMSG_MOVE_FEATHER_FALL                            = 0xAFC,  // 5.0.5 16048
+    SMSG_MOVE_FEATHER_FALL                            = 0x060D, // 5.4.1 17538
     SMSG_MOVE_GRAVITY_DISABLE                         = 0xE21,  // 5.0.5 16048
     SMSG_MOVE_GRAVITY_ENABLE                          = 0xBF2,  // 5.0.5 16048
     SMSG_MOVE_KNOCK_BACK                              = 0x0211, // 5.4.1 17538
-    SMSG_MOVE_LAND_WALK                               = 0xB1C,  // 5.0.5 16048
-    SMSG_MOVE_NORMAL_FALL                             = 0xF42,  // 5.0.5 16048
+    SMSG_MOVE_LAND_WALK                               = 0x0688, // 5.4.1 17538
+    SMSG_MOVE_NORMAL_FALL                             = 0x03A0, // 5.4.1 17538
     SMSG_MOVE_ROOT                                    = 0x0608, // 5.4.1 17538
     SMSG_MOVE_SET_ACTIVE_MOVER                        = 0x0626, // 5.4.1 17538
     SMSG_MOVE_SET_CAN_FLY                             = 0xB90,  // 5.0.5 16048
-    SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0xBA7,  // 5.0.5 16048
+    SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0x0237, // 5.4.1 17538
     SMSG_MOVE_SET_COLLISION_HEIGHT                    = 0xE40,  // 5.0.5 16048
     SMSG_MOVE_SET_COMPOUND_STATE                      = 0xA98,  // 5.0.5 16048
     SMSG_MOVE_SET_FLIGHT_BACK_SPEED                   = 0x07AC, // 5.4.1 17538
@@ -1106,7 +1106,7 @@ enum Opcodes
     SMSG_MOVE_SET_WALK_SPEED                          = 0x0716, // 5.4.1 17538
     SMSG_MOVE_UNROOT                                  = 0x0618, // 5.4.1 17538
     SMSG_MOVE_UNSET_CAN_FLY                           = 0xBC9,  // 5.0.5 16048
-    SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0xA28,// 5.0.5 16048
+    SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY = 0x0A00,// 5.4.1 17538
     SMSG_MOVE_UNSET_HOVER                             = 0x0304, // 5.4.1 17538
     SMSG_MOVE_UPDATE_COLLISION_HEIGHT                 = 0xE3E,  // 5.0.5 16048
     SMSG_MOVE_UPDATE_FLIGHT_BACK_SPEED                = 0xB2A,  // 5.0.5 16048
@@ -1118,7 +1118,7 @@ enum Opcodes
     SMSG_MOVE_UPDATE_TELEPORT                         = 0xA80,  // 5.0.5 16048
     SMSG_MOVE_UPDATE_TURN_RATE                        = 0xF96,  // 5.0.5 16048
     SMSG_MOVE_UPDATE_WALK_SPEED                       = 0xB28,  // 5.0.5 16048
-    SMSG_MOVE_WATER_WALK                              = 0xE66,  // 5.0.5 16048
+    SMSG_MOVE_WATER_WALK                              = 0x030D, // 5.4.1 17538
     SMSG_MULTIPLE_PACKETS                             = 0x826,  // 5.0.5 16048
     SMSG_NAME_QUERY_RESPONSE                          = 0x1407, // 5.4.1 17538
     SMSG_NEW_TAXI_PATH                                = 0x1135, // 5.4.1 17538
@@ -1306,7 +1306,7 @@ enum Opcodes
     SMSG_SPLINE_MOVE_COLLISION_ENABLE                 = 0xE12,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_GRAVITY_DISABLE                  = 0x07B5, // 5.4.1 17538
     SMSG_SPLINE_MOVE_GRAVITY_ENABLE                   = 0x0322, // 5.4.1 17538
-    SMSG_SPLINE_MOVE_ROOT                             = 0xFAA,  // 5.0.5 16048
+    SMSG_SPLINE_MOVE_ROOT                             = 0x078E, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_FEATHER_FALL                 = 0xBD5,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_SET_FLIGHT_BACK_SPEED            = 0x03B1, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_FLIGHT_SPEED                 = 0x0221, // 5.4.1 17538
@@ -1326,7 +1326,7 @@ enum Opcodes
     SMSG_SPLINE_MOVE_SET_WATER_WALK                   = 0xB69,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_START_SWIM                       = 0xEEE,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_STOP_SWIM                        = 0xE0B,  // 5.0.5 16048
-    SMSG_SPLINE_MOVE_UNROOT                           = 0xAAC,  // 5.0.5 16048
+    SMSG_SPLINE_MOVE_UNROOT                           = 0x03AF, // 5.4.1 17538
     SMSG_SPLINE_MOVE_UNSET_FLYING                     = 0xEB1,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_UNSET_HOVER                      = 0xBC0,  // 5.0.5 16048
     SMSG_STABLE_RESULT                                = 0x8F5,  // 5.0.5 16048

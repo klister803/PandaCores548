@@ -17897,6 +17897,7 @@ void Unit::SendMoveRoot(uint32 value)
 {
     ObjectGuid guid = GetGUID();
 
+    //! 5.4.1
     WorldPacket data(SMSG_MOVE_ROOT, 1 + 8 + 4);
     data.WriteGuidMask<7, 1, 2, 6, 4, 3, 0, 5>(guid);
     data << uint32(value);
@@ -17909,6 +17910,7 @@ void Unit::SendMoveUnroot(uint32 value)
 {
     ObjectGuid guid = GetGUID();
 
+    //! 5.4.1
     WorldPacket data(SMSG_MOVE_UNROOT, 1 + 8 + 4);
     data.WriteGuidMask<2, 0, 3, 6, 1, 5, 4, 7>(guid);
     data.WriteGuidBytes<1, 5, 2, 6, 4>(guid);
@@ -17977,16 +17979,11 @@ void Unit::SetRooted(bool apply)
         else
         {
             ObjectGuid guid = GetGUID();
+            //! 5.4.1
             WorldPacket data(SMSG_SPLINE_MOVE_ROOT, 8);
-    
-            uint8 bitOrder[8] = {7, 3, 0, 5, 6, 1, 2, 4};
-            data.WriteBitInOrder(guid, bitOrder);
-
-            data.FlushBits();
-    
-            uint8 byteOrder[8] = {4, 2, 1, 7, 5, 3, 6, 0};
-            data.WriteBytesSeq(guid, byteOrder);
-
+   
+            data.WriteGuidMask<0, 5, 2, 1, 4, 6, 3, 7>(guid);
+            data.WriteGuidBytes<2, 7, 3, 0, 4, 6, 1, 5>(guid);
             SendMessageToSet(&data, true);
             StopMoving();
         }
@@ -18000,16 +17997,11 @@ void Unit::SetRooted(bool apply)
             else
             {
                 ObjectGuid guid = GetGUID();
+                //! 5.4.1
                 WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, 8);
                     
-                uint8 bitOrder[8] = {4, 2, 5, 3, 0, 1, 6, 7};
-                data.WriteBitInOrder(guid, bitOrder);
-
-                data.FlushBits();
-    
-                uint8 byteOrder[8] = {7, 1, 2, 6, 5, 3, 4, 0};
-                data.WriteBytesSeq(guid, byteOrder);
-
+                data.WriteGuidMask<1, 0, 2, 6, 5, 4, 7>(guid);
+                data.WriteGuidBytes<2, 4, 7, 3, 6, 5, 1, 0>(guid);
                 SendMessageToSet(&data, true);
             }
 
@@ -19654,17 +19646,12 @@ void Unit::_ExitVehicle(Position const* exitPosition)
         ToPlayer()->SetFallInformation(0, GetPositionZ());
     else if (HasUnitMovementFlag(MOVEMENTFLAG_ROOT))
     {
+        //! 5.4.1
         WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, 8);
         ObjectGuid guid = GetGUID();
     
-        uint8 bitOrder[8] = {4, 2, 5, 3, 0, 1, 6, 7};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.FlushBits();
-    
-        uint8 byteOrder[8] = {7, 1, 2, 6, 5, 3, 4, 0};
-        data.WriteBytesSeq(guid, byteOrder);
-
+        data.WriteGuidMask<1, 0, 2, 6, 5, 4, 7>(guid);
+        data.WriteGuidBytes<2, 4, 7, 3, 6, 5, 1, 0>(guid);
         SendMessageToSet(&data, false);
     }
 
