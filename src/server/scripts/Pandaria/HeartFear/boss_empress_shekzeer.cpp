@@ -173,14 +173,14 @@ class boss_empress_shekzeer : public CreatureScript
                     me->SetReactState(REACT_PASSIVE);
                     events.CancelEvent(EVENT_TERROR);
                     events.CancelEvent(EVENT_SCREECH);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetVisible(false);
+                    //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    //me->SetVisible(false);
                     sdiedval = 0;
                     SummonRoyalSentinels();
                     break;
                 case ACTION_PHASE_1:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetVisible(true);
+                    //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    //me->SetVisible(true);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
                     events.ScheduleEvent(EVENT_SCREECH, urand(15000, 20000), 0, PHASE_ONE);
@@ -194,8 +194,8 @@ class boss_empress_shekzeer : public CreatureScript
                     }
                     break;
                 case ACTION_PHASE_3:
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetVisible(true);
+                    //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    //me->SetVisible(true);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
                     me->SetPower(POWER_ENERGY, 150);
