@@ -1693,6 +1693,75 @@ class spell_q12512_resuscitate: public SpellScriptLoader
         };
 };
 
+class spell_q30050_resuscitate: public SpellScriptLoader
+{
+    public:
+        spell_q30050_resuscitate() : SpellScriptLoader("spell_q30050_resuscitate") { }
+
+        class spell_q30050_resuscitate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q30050_resuscitate_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    if (AuraEffect const* aurEff = caster->GetAuraEffect(108123, EFFECT_0))
+                    {
+                        int32 step = uint32(aurEff->GetTickNumber() / 15);
+                        if(step > 36)
+                            step -= 36;
+                        else if(step > 30)
+                            step -= 30;
+                        else if(step > 24)
+                            step -= 24;
+                        else if(step > 18)
+                            step =- 18;
+                        else if(step > 12)
+                            step =- 12;
+                        else if(step > 6)
+                            step =- 6;
+
+                        switch (step)
+                        {
+                            case 0:
+                                caster->CastSpell(caster, 108106, true);
+                                break;
+                            case 1:
+                                caster->CastSpell(caster, 108108, true);
+                                break;
+                            case 2:
+                                caster->CastSpell(caster, 108109, true);
+                                break;
+                            case 3:
+                                caster->CastSpell(caster, 108110, true);
+                                break;
+                            case 4:
+                                caster->CastSpell(caster, 108111, true);
+                                break;
+                            case 5:
+                                caster->CastSpell(caster, 108112, true);
+                                break;
+                            case 6:
+                                caster->CastSpell(caster, 108114, true);
+                                break;
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_q30050_resuscitate_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_q30050_resuscitate_SpellScript();
+        };
+};
+
 void AddSC_quest_spell_scripts()
 {
     new spell_q55_sacred_cleansing();
@@ -1734,4 +1803,5 @@ void AddSC_quest_spell_scripts()
     new spell_q13291_q13292_q13239_q13261_armored_decoy_summon_skytalon();
     new spell_q27421_rayne_seed();
     new spell_q12512_resuscitate();
+    new spell_q30050_resuscitate();
 }
