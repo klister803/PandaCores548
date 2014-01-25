@@ -17996,15 +17996,19 @@ void Player::SendQuestConfirmAccept(const Quest* quest, Player* pReceiver)
     }
 }
 
-void Player::SendPushToPartyResponse(Player* player, uint32 msg)
+void Player::SendPushToPartyResponse(Player* player, uint8 msg)
 {
     if (player)
     {
-        WorldPacket data(MSG_QUEST_PUSH_RESULT, (8+1));
-        data << uint64(player->GetGUID());
-        data << uint8(msg);                                 // valid values: 0-8
+        ObjectGuid guid = player->GetObjectGuid();
+
+        WorldPacket data(SMSG_QUEST_PUSH_RESULT, 8 + 1 + 1);
+        data.WriteGuidMask<7, 0, 4, 6, 1, 2, 3, 5>(guid);
+        data.WriteGuidBytes<2, 4, 6>(guid);
+        data << uint8(msg);
+        data.WriteGuidBytes<0, 3, 7, 1, 5>(guid);
         GetSession()->SendPacket(&data);
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent MSG_QUEST_PUSH_RESULT");
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUEST_PUSH_RESULT");
     }
 }
 

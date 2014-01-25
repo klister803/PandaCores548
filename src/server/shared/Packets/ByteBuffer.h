@@ -197,6 +197,12 @@ class ByteBufferSourceException : public ByteBufferException
         }
 };
 
+template<class T>
+struct Unused
+{
+    Unused() {}
+};
+
 class ByteBuffer
 {
     public:
@@ -526,6 +532,13 @@ class ByteBuffer
                     break;
                 value += c;
             }
+            return *this;
+        }
+
+        template<class T>
+        ByteBuffer &operator>>(Unused<T> const&)
+        {
+            read_skip<T>();
             return *this;
         }
 
