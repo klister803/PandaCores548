@@ -10986,7 +10986,9 @@ uint32 Player::GetXPRestBonus(uint32 xp)
 void Player::SetBindPoint(uint64 guid)
 {
     WorldPacket data(SMSG_BINDER_CONFIRM, 8);
-    data << uint64(guid);
+    data.WriteGuidMask<6, 3, 4, 5, 1, 2, 7, 0>(guid);
+    data.WriteGuidBytes<0, 3, 5, 2, 1, 7, 6, 4>(guid);
+
     GetSession()->SendPacket(&data);
 }
 
@@ -10995,7 +10997,7 @@ void Player::SendTalentWipeConfirm(uint64 guid, bool specialization)
     ObjectGuid Guid = guid;
     uint32 cost = 0;
 
-    if(!specialization)
+    if (!specialization)
         cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetTalentsCost();
     else
         cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetSpecializationCost();
@@ -11004,7 +11006,7 @@ void Player::SendTalentWipeConfirm(uint64 guid, bool specialization)
     data.WriteGuidMask<7, 4, 2, 3, 5, 6, 1, 0>(Guid);
     data << uint32(cost);
     data.WriteGuidBytes<1, 6, 7, 5, 0, 4, 3>(Guid);
-    data << uint8(specialization); // 0: talent, 1: specialization, 2: glyph, 3: pet speciazlization
+    data << uint8(specialization ? 1 : 0);  // 0: talent, 1: specialization, 2: glyph, 3: pet speciazlization
     data.WriteGuidBytes<2>(Guid);
 
     GetSession()->SendPacket(&data);

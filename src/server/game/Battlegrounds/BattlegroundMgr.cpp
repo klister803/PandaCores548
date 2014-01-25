@@ -1232,22 +1232,23 @@ void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid 
     ByteBuffer dataBuffer;
 
     data->Initialize(SMSG_BATTLEFIELD_LIST);
-    // TODO: Fix guid
-    data->WriteBit(guid[4]);
-    data->WriteBit(0);
-    data->WriteBit(0);
-    data->WriteBit(guid[1]);
-    data->WriteBit(1);
-    data->WriteBit(guid[5]);
-    data->WriteBit(guid[3]);
-    data->WriteBit(guid[7]);
-    data->WriteBit(1);
+    *data << uint32(winner_honor);              // holiday
+    *data << uint32(winner_honor);              // random
+    *data << uint8(0);                          // min level
+    *data << uint8(0);                          // max level
+    *data << uint32(bgTypeId);                  // battleground id
+    *data << uint32(winner_conquest);           // holiday
+    *data << uint32(loser_honor);               // random
+    *data << uint32(winner_conquest);           // random
+    *data << uint32(loser_honor);               // holiday
 
-    if (bgTypeId == BATTLEGROUND_AA)                         // arena
-    {
-        data->WriteBits(0, 24);                                 // unk (count?)
-    }
-    else                                                    // battleground
+    data->WriteGuidMask<1>(guid);
+    data->WriteBit(!guid);                      // from where
+    data->WriteGuidMask<4>(guid);
+
+    if (bgTypeId == BATTLEGROUND_AA)            // arena
+        data->WriteBits(0, 22);                 // instance count
+    else                                        // battleground
     {
         uint32 count = 0;
         if (Battleground* bgTemplate = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId))
@@ -1263,36 +1264,21 @@ void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid 
                 }
             }
         }
-        data->WriteBits(count, 24);
+        data->WriteBits(count, 22);
     }
-    data->WriteBit(guid[2]);
-    data->WriteBit(guid[6]);
-    data->WriteBit(guid[0]);
 
+    data->WriteGuidMask<0, 6>(guid);
+    data->WriteBit(player->GetRandomWinner());  // holiday
+    data->WriteGuidMask<5>(guid);
+    data->WriteBit(1);                          // unk
+    data->WriteGuidMask<2, 3, 7>(guid);
+    data->WriteBit(player->GetRandomWinner());  // random
     data->FlushBits();
 
-    data->WriteByteSeq(guid[6]);
-    *data << uint32(winner_conquest);                           // 3.3.3 winHonor
-    data->WriteByteSeq(guid[2]);
-    *data << uint32(winner_honor);                          // 3.3.3 lossHonor
-    *data << uint32(loser_honor); //winner_arena);                           // 3.3.3 winArena ?
-    data->WriteByteSeq(guid[5]);
-    *data << uint8(75); //unk
-    
-    *data << uint32(loser_honor);//winner_arena);                           // 3.3.3 winArena ?
-    *data << uint32(winner_honor);                          // 3.3.3 lossHonor
-    *data << uint32(winner_conquest);                           // 3.3.3 winHonor
-    data->WriteByteSeq(guid[3]);
-    data->WriteByteSeq(guid[7]);
-    *data << uint8(79); //unk
-    
-    *data << uint32(bgTypeId);                              // battleground id
-    data->WriteByteSeq(guid[1]);
-    data->WriteByteSeq(guid[0]);
-    data->WriteByteSeq(guid[4]);
-
+    data->WriteGuidBytes<2, 5, 7>(guid);
     if (!dataBuffer.empty())
         data->append(dataBuffer);
+    data->WriteGuidBytes<1, 3, 6, 4, 0>(guid);
 }
 
 void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, BattlegroundTypeId bgTypeId)

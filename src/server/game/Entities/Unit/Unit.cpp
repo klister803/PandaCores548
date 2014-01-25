@@ -18555,24 +18555,13 @@ void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
     ObjectGuid guid = GetGUID();
 
     WorldPacket data(SMSG_PLAY_SPELL_VISUAL_KIT, 4 + 4+ 4 + 8);
-    //I am not sure for the uint32 values, we may have to swap them.
-    
-    uint8 bitOrder[8] = {0, 1, 5, 3, 7, 2, 4, 6};
-    data.WriteBitInOrder(guid, bitOrder);
-
-    data.FlushBits();
-
     data << uint32(0);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[1]);
     data << uint32(unkParam);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[5]);
     data << uint32(id); // SpellVisualKit.db2 index
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[3]);
+
+    data.WriteGuidMask<5, 4, 6, 0, 1, 7, 3, 2>(guid);
+    data.WriteGuidBytes<1, 7, 0, 3, 5, 4, 6, 2>(guid);
+
     SendMessageToSet(&data, false);
 }
 
