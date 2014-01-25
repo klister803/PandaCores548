@@ -2025,6 +2025,7 @@ Player* Creature::SelectNearestPlayerNotGM(float distance) const
 
 void Creature::SendAIReaction(AiReaction reactionType)
 {
+    ObjectGuid guidd = GetGUID();
     //! 5.4.1
     WorldPacket data(SMSG_AI_REACTION, 12);
     data.WriteGuidMask<1, 5, 4, 3, 7, 6, 0, 2>(guidd);
