@@ -16739,10 +16739,14 @@ void Unit::SendPetCastFail(uint32 spellid, SpellCastResult result)
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
+    //! 5.4.1
     WorldPacket data(SMSG_PET_CAST_FAILED, 1 + 4 + 1);
-    data << uint8(0);                                       // cast count
     data << uint32(spellid);
-    data << uint8(result);
+    data << uint32(result);
+    data << uint8(0);                                       // cast count
+    data << uint8(0xC0);                                    // unk 2 bits
+    //data.WriteBit(1);
+    //data.WriteBit(1);
     owner->ToPlayer()->GetSession()->SendPacket(&data);
 }
 

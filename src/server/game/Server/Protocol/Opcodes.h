@@ -1154,7 +1154,7 @@ enum Opcodes
     SMSG_PET_ACTION_SOUND                             = 0x0015, // 5.4.1 17538
     SMSG_PET_ADDED                                    = 0xA7F,  // 5.0.5 16048
     SMSG_PET_BROKEN                                   = 0xC8B,  // 5.0.5 16048
-    SMSG_PET_CAST_FAILED                              = 0x9C9,  // 5.0.5 16048
+    SMSG_PET_CAST_FAILED                              = 0x099E, // 5.4.1 17538
     SMSG_PET_DISMISS_SOUND                            = 0xD84,  // 5.0.5 16048
     SMSG_PET_GUIDS                                    = 0,      // 0x2D26 in 4.3.4 @todo : Find me and BACON !
     SMSG_PET_LEARNED_SPELL                            = 0x0597, // 5.4.1 17538
