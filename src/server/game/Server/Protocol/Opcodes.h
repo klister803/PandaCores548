@@ -732,7 +732,7 @@ enum Opcodes
     SMSG_BATTLE_PET_SLOT_UPDATE                       = 0xF16,  // 5.0.5 16048
     SMSG_BATTLE_PET_TRAP_LEVEL                        = 0xAE1,  // 5.0.5 16048
     SMSG_BATTLE_PET_UPDATES                           = 0xF1E,  // 5.0.5 16048
-    SMSG_BATTLEFIELD_LIST                             = 0xFE5,  // 5.0.5 16048
+    SMSG_BATTLEFIELD_LIST                             = 0x09B7, // 5.4.1 17538
     SMSG_BATTLEFIELD_MGR_EJECTED                      = 0xA89,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_EJECT_PENDING                = 0xB36,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_ENTERED                      = 0xA0A,  // 5.0.5 16048
