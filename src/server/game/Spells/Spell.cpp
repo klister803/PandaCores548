@@ -4053,90 +4053,161 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
     if (result == SPELL_CAST_OK)
         return;
 
-    WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
-    data << uint8(cast_count);                              // single cast or multi 2.3 (0/1)
-    data << uint32(spellInfo->Id);
-    data << uint8(result);                                  // problem
+    bool hasBit1 = false;
+    bool hasBit2 = false;
+    uint32 result1 = 0;
+    uint32 result2 = 0;
+
     switch (result)
     {
         case SPELL_FAILED_NOT_READY:
-            data << uint32(0);                              // unknown (value 1 update cooldowns on client flag)
+        {
+            hasBit1 = true;
+            result1 = 0;                                    // unknown (value 1 update cooldowns on client flag)                       
             break;
+        }
         case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
-            data << uint32(spellInfo->RequiresSpellFocus);  // SpellFocusObject.dbc id
+        {
+            hasBit1 = true;
+            result1 = spellInfo->RequiresSpellFocus;        // SpellFocusObject.dbc id
             break;
+        }
         case SPELL_FAILED_REQUIRES_AREA:                    // AreaTable.dbc id
+        {
+            hasBit1 = true;
             // hardcode areas limitation case
             switch (spellInfo->Id)
             {
                 case 41617:                                 // Cenarion Mana Salve
                 case 41619:                                 // Cenarion Healing Salve
-                    data << uint32(3905);
+                    result1 = 3905;
                     break;
                 case 41618:                                 // Bottled Nethergon Energy
                 case 41620:                                 // Bottled Nethergon Vapor
-                    data << uint32(3842);
+                    result1 = 3842;
                     break;
                 case 45373:                                 // Bloodberry Elixir
-                    data << uint32(4075);
+                    result1 = 4075;
                     break;
                 default:                                    // default case (don't must be)
-                    data << uint32(0);
+                    result1 = 0;
                     break;
             }
+
             break;
+        }
         case SPELL_FAILED_TOTEMS:
+        {
+            if (spellInfo->Totem[0] && spellInfo->Totem[1])
+            {
+                hasBit1 = true;
+                hasBit2 = true;
+            }
+            else
+            {
+                hasBit1 = true;
+            }
+
             if (spellInfo->Totem[0])
-                data << uint32(spellInfo->Totem[0]);
+                result1 = spellInfo->Totem[0];
+
             if (spellInfo->Totem[1])
-                data << uint32(spellInfo->Totem[1]);
+                result2 = spellInfo->Totem[1];
             break;
+        }
         case SPELL_FAILED_TOTEM_CATEGORY:
+        {
+            if (spellInfo->TotemCategory[0] && spellInfo->TotemCategory[1])
+            {
+                hasBit1 = true;
+                hasBit2 = true;
+            }
+            else
+            {
+                hasBit1 = true;
+            }
+
             if (spellInfo->TotemCategory[0])
-                data << uint32(spellInfo->TotemCategory[0]);
+                result1 = spellInfo->TotemCategory[0];
+
             if (spellInfo->TotemCategory[1])
-                data << uint32(spellInfo->TotemCategory[1]);
+                result2 = uint32(spellInfo->TotemCategory[1]);
+
+            //if (hasBit1 && hasBit2 && (!spellInfo->TotemCategory[0] || !spellInfo->TotemCategory[1]))
+            //    sLog->OutCS(">>> SPELL_FAILED_TOTEM_CATEGORY ");
+
             break;
+        }
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND:
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND:
-            data << uint32(spellInfo->EquippedItemClass);
-            data << uint32(spellInfo->EquippedItemSubClassMask);
+        {
+            hasBit1 = true;
+            hasBit2 = true;
+            result1 = spellInfo->EquippedItemClass;
+            result2 = spellInfo->EquippedItemSubClassMask;
             break;
+        }
         case SPELL_FAILED_TOO_MANY_OF_ITEM:
         {
-             uint32 item = 0;
-             for (int8 eff = 0; eff < MAX_SPELL_EFFECTS; eff++)
-                 if (spellInfo->Effects[eff].ItemType)
-                     item = spellInfo->Effects[eff].ItemType;
-             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item);
-             if (proto && proto->ItemLimitCategory)
-                 data << uint32(proto->ItemLimitCategory);
-             break;
+            uint32 item = 0;
+            for (int8 eff = 0; eff < MAX_SPELL_EFFECTS; eff++)
+                if (spellInfo->Effects[eff].ItemType)
+                    item = spellInfo->Effects[eff].ItemType;
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item);
+            if (proto && proto->ItemLimitCategory)
+            {
+                hasBit1 = true;
+                result1 = proto->ItemLimitCategory;
+            }
+            break;
         }
         case SPELL_FAILED_PREVENTED_BY_MECHANIC:
-            data << uint32(spellInfo->GetAllEffectsMechanicMask());  // SpellMechanic.dbc id
+        {
+            hasBit1 = true;
+            result1 = spellInfo->GetAllEffectsMechanicMask();   // SpellMechanic.dbc id
             break;
+        }
         case SPELL_FAILED_NEED_EXOTIC_AMMO:
-            data << uint32(spellInfo->EquippedItemSubClassMask); // seems correct...
+        {
+            hasBit1 = true;
+            result1 = spellInfo->EquippedItemSubClassMask;          // seems correct...
             break;
+        }
         case SPELL_FAILED_NEED_MORE_ITEMS:
-            data << uint32(0);                              // Item id
-            data << uint32(0);                              // Item count?
+        {
+            hasBit1 = true;
+            hasBit2 = true;
+            result2 = 0;                              // Item id
+            result1 = 0;                              // Item count?
             break;
+        }
         case SPELL_FAILED_MIN_SKILL:
-            data << uint32(0);                              // SkillLine.dbc id
-            data << uint32(0);                              // required skill value
+        {
+            hasBit1 = true;
+            hasBit2 = true;
+            result1 = 0;                              // SkillLine.dbc id
+            result2 = 0;                              // required skill value
             break;
+        }
         case SPELL_FAILED_FISHING_TOO_LOW:
-            data << uint32(0);                              // required fishing skill
+        {
+            hasBit1 = true;
+            result1 = 0;                              // required fishing skill
             break;
+        }
         case SPELL_FAILED_CUSTOM_ERROR:
-            data << uint32(customError);
+        {
+            hasBit1 = true;
+            result1 = customError;
             break;
+        }
         case SPELL_FAILED_SILENCED:
-            data << uint32(0);                              // Unknown
+        {
+            hasBit1 = true;
+            result1 = 0;                              // Unknown
             break;
+        }
         case SPELL_FAILED_REAGENTS:
         {
             uint32 missingItem = 0;
@@ -4155,15 +4226,27 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
                 }
             }
 
-            data << uint32(missingItem);  // first missing item
+            hasBit1 = true;
+            result1 = missingItem;
             break;
         }
         // TODO: SPELL_FAILED_NOT_STANDING
         default:
             break;
     }
-    caster->GetSession()->SendPacket(&data);
-}
+
+    //! 5.4.1
+    WorldPacket data(SMSG_CAST_FAILED, 1+4+4);
+    data.WriteBit(!hasBit2);
+    data.WriteBit(!hasBit1);
+    data << uint32(result);                                 // problem
+    data << uint32(spellInfo->Id);                          // spellId
+    if (hasBit2)
+        data << uint32(result2);
+    data << uint8(cast_count);                              // single cast or multi 2.3 (0/1)
+    if (hasBit1)
+        data << uint32(result1);
+    caster->GetSession()->SendPacket(&data);}
 
 void Spell::SendSpellStart()
 {
