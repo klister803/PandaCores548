@@ -24230,6 +24230,7 @@ void Player::SendComboPoints()
     if (combotarget)
     {
         WorldPacket data;
+        ObjectGuid combotargetGuid = combotarget->GetGUID();
         /*if (m_mover != this)
         {
             data.Initialize(SMSG_PET_UPDATE_COMBO_POINTS, m_mover->GetPackGUID().size()+combotarget->GetPackGUID().size()+1);
@@ -24238,10 +24239,10 @@ void Player::SendComboPoints()
         else*/
             //! 5.4.1
             data.Initialize(SMSG_UPDATE_COMBO_POINTS, combotarget->GetPackGUID().size()+1);
-        data.WriteBitInOrder<5, 4, 6, 1, 3, 2, 7, 0>(combotargetGuid);
-        data.WriteByteSeq<1, 3, 7>(combotargetGuid);
+        data.WriteGuidMask<5, 4, 6, 1, 3, 2, 7, 0>(combotargetGuid);
+        data.WriteGuidBytes<1, 3, 7>(combotargetGuid);
         data << uint8(m_comboPoints);
-        data.WriteByteSeq<6, 5, 2, 4, 0>(combotargetGuid);
+        data.WriteGuidBytes<6, 5, 2, 4, 0>(combotargetGuid);
         GetSession()->SendPacket(&data);
     }
 }

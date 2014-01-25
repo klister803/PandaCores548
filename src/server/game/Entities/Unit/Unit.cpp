@@ -16758,7 +16758,7 @@ void Unit::SendPetActionFeedback(uint8 msg)
     WorldPacket data(SMSG_PET_ACTION_FEEDBACK, 2);
     data << uint8(msg);
     data.WriteBit(!send_spell);
-    data.data.FlushBits();
+    data.FlushBits();
     if (send_spell)
         data << uint32(0);
     owner->ToPlayer()->GetSession()->SendPacket(&data);
@@ -16775,7 +16775,7 @@ void Unit::SendPetTalk(uint32 pettalk)
     //! 5.4.1
     WorldPacket data(SMSG_PET_ACTION_SOUND, 8 + 4);
     data << uint32(pettalk);
-    data.WriteGuidMask<2, 3, 1, 4, 5, 6, 0, 7}>(Guid);
+    data.WriteGuidMask<2, 3, 1, 4, 5, 6, 0, 7>(Guid);
     data.WriteGuidBytes<6, 2, 7, 1, 3, 4, 5, 0>(Guid);
     owner->ToPlayer()->GetSession()->SendPacket(&data);
 }
