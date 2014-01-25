@@ -22756,7 +22756,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
     WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+m_spells.size()*8);
 
     data.WriteGuidMask<4, 7, 6>(guid);
-    size_t count_pos = packet.bitwpos();
+    size_t count_pos = data.bitwpos();
     data.WriteBits(1, 21);
     data.WriteGuidMask<2, 3, 1, 0>(guid);
     data.WriteBit(1);
@@ -24453,7 +24453,7 @@ void Player::SendCooldownAtLogin()
     //! 5.4.1
     WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
     data.WriteGuidMask<4, 7, 6>(guid);
-    size_t count_pos = packet.bitwpos();
+    size_t count_pos = data.bitwpos();
     data.WriteBits(1, 21);
     data.WriteGuidMask<2, 3, 1, 0>(guid);
     data.WriteBit(1);
