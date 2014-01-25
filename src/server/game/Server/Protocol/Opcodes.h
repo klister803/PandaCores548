@@ -667,7 +667,7 @@ enum Opcodes
     SMSG_ACTIVATETAXIREPLY                            = 0x0816, // 5.4.1 17538
     SMSG_ADDON_INFO                                   = 0x1136, // 5.4.1 17538
     SMSG_ADD_RUNE_POWER                               = 0x86A,  // 5.0.5 16048
-    SMSG_AI_REACTION                                  = 0x828,  // 5.0.5 16048
+    SMSG_AI_REACTION                                  = 0x0997, // 5.4.1 17538
     SMSG_ALL_ACHIEVEMENT_DATA                         = 0x005,  // 5.4.1 17538
     SMSG_AREA_SPIRIT_HEALER_TIME                      = 0x119C, // 5.4.1 17538
     SMSG_AREA_TRIGGER_MESSAGE                         = 0xC31,  // 5.0.5 16048
@@ -997,7 +997,7 @@ enum Opcodes
     SMSG_INVALID_PROMOTION_CODE                       = 0xC2F,  // 5.0.5 16048
     SMSG_INVENTORY_CHANGE_FAILURE                     = 0x119E, // 5.4.1 17538
     SMSG_ITEM_ADD_PASSIVE                             = 0xF6A,  // 5.0.5 16048
-    SMSG_ITEM_COOLDOWN                                = 0x96D,  // 5.0.5 16048
+    SMSG_ITEM_COOLDOWN                                = 0x0C18, // 5.4.1 17538
     SMSG_ITEM_ENCHANT_TIME_UPDATE                     = 0x99E,  // 5.0.5 16048
     SMSG_ITEM_EXPIRE_PURCHASE_REFUND                  = 0xFC6,  // 5.0.5 16048
     SMSG_ITEM_PUSH_RESULT                             = 0x0D1F, // 5.4.1 17538
@@ -1124,7 +1124,7 @@ enum Opcodes
     SMSG_NEW_TAXI_PATH                                = 0x1135, // 5.4.1 17538
     SMSG_NEW_WORLD                                    = 0x010F, // 5.4.1 17538
     SMSG_NEW_WORLD_ABORT                              = 0x0DB6, // 5.4.1 17538
-    SMSG_NOTIFICATION                                 = 0xE0F,  // 5.0.5 16048
+    SMSG_NOTIFICATION                                 = 0x0135, // 5.4.1 17538
     SMSG_NOTIFY_DANCE                                 = 0x917,  // 5.0.5 16048
     SMSG_NOTIFY_DEST_LOC_SPELL_CAST                   = 0x8FA,  // 5.0.5 16048
     SMSG_NPC_TEXT_UPDATE                              = 0x101F, // 5.4.1 17538
@@ -1156,13 +1156,13 @@ enum Opcodes
     SMSG_PET_GUIDS                                    = 0,      // 0x2D26 in 4.3.4 @todo : Find me and BACON !
     SMSG_PET_LEARNED_SPELL                            = 0x0597, // 5.4.1 17538
     SMSG_PET_MODE                                     = 0xD2C,  // 5.0.5 16048
-    SMSG_PET_NAME_INVALID                             = 0x85B,  // 5.0.5 16048
-    SMSG_PET_NAME_QUERY_RESPONSE                      = 0x88E,  // 5.0.5 16048
+    SMSG_PET_NAME_INVALID                             = 0x093F, // 5.4.1 17538
+    SMSG_PET_NAME_QUERY_RESPONSE                      = 0x0425, // 5.4.1 17538
     SMSG_PET_REMOVED_SPELL                            = 0x048D, // 5.4.1 17538
     SMSG_PET_RENAMEABLE                               = 0x9EB,  // 5.0.5 16048
     SMSG_PET_SLOT_UPDATED                             = 0xA1B,  // 5.0.5 16048
-    SMSG_PET_SPELLS                                   = 0xD79,  // 5.0.5 16048
-    SMSG_PET_TAME_FAILURE                             = 0x8CD,  // 5.0.5 16048
+    SMSG_PET_SPELLS                                   = 0x01E4, // 5.4.1 17538
+    SMSG_PET_TAME_FAILURE                             = 0x1195, // 5.4.1 17538
     SMSG_PET_UPDATE_COMBO_POINTS                      = 0x9CD,  // 5.0.5 16048
     SMSG_PLAYED_TIME                                  = 0xD59,  // 5.0.5 16048
     SMSG_PLAYERBINDERROR                              = 0xC89,  // 5.0.5 16048
