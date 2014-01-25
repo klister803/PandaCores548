@@ -1319,7 +1319,7 @@ enum Opcodes
     SMSG_SPLINE_MOVE_SET_RUN_MODE                     = 0x03A6, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_RUN_SPEED                    = 0x02A1, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_SWIM_BACK_SPEED              = 0x0682, // 5.4.1 17538
-    SMSG_SPLINE_MOVE_SET_SWIM_SPEED                   = 0x0798, // 5.4.1 17538
+    SMSG_SPLINE_MOVE_SET_SWIM_SPEED                   = 0x0318, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_TURN_RATE                    = 0x07BF, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_WALK_MODE                    = 0x0A03, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_WALK_SPEED                   = 0x0305, // 5.4.1 17538
