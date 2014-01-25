@@ -5620,15 +5620,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                         }
                         break;
                     }
+                    case 5171:  // Slice and Dice
                     case 73651: // Recuperate
                     {
-                        if (Aura * aura = m_caster->GetAura(73651))
+                        if (Aura * aura = m_caster->GetAura(m_spellInfo->Id))
                         {
-                            int32 Duration = 6000;
+                            int32 bonusDuration = m_spellInfo->Id == 5171 ? 6000: 0;
                         
                             if (Player * player = m_caster->ToPlayer())
                             {
-                                if (aura->GetDuration() > player->GetComboPoints() * Duration)
+                                if (aura->GetDuration() > player->GetComboPoints() * 6000 + bonusDuration)
                                     return SPELL_FAILED_TRY_AGAIN;
                             }
                         }
