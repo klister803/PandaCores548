@@ -598,7 +598,7 @@ enum Opcodes
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0x000,  // 5.0.5 16048 deprecated
     SMSG_CHANNEL_START                                = 0x831,  // 5.0.5 16048
-    SMSG_CHANNEL_UPDATE                               = 0x8ED,  // 5.0.5 16048
+    SMSG_CHANNEL_UPDATE                               = 0x1148, // 5.4.1 17538
     MSG_GM_BIND_OTHER                                 = 0x000,  // Not found in 4.3.4
     MSG_GM_SHOWLABEL                                  = 0x000,  // Not found in 4.3.4
     MSG_GM_SUMMON                                     = 0x000,  // Not found in 4.3.4
@@ -1185,7 +1185,7 @@ enum Opcodes
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0x103F, // 5.4.1 17538 real SMSG_PLAY_SPELL_IMPACT
     SMSG_PLAY_TIME_WARNING                            = 0x817,  // 5.0.5 16048
     SMSG_PONG                                         = 0x005D, // 5.4.1 17538
-    SMSG_POWER_UPDATE                                 = 0x94A,  // 5.0.5 16048
+    SMSG_POWER_UPDATE                                 = 0x09A4, // 5.4.1 17538
     SMSG_PRE_RESURRECT                                = 0x88A,  // 5.0.5 16048
     SMSG_PROCRESIST                                   = 0X80F,  // 5.0.5 16048
     SMSG_PROPOSE_LEVEL_GRANT                          = 0xD8D,  // 5.0.5 16048
