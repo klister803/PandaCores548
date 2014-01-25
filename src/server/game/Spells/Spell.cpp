@@ -5620,6 +5620,20 @@ SpellCastResult Spell::CheckCast(bool strict)
                         }
                         break;
                     }
+                    case 73651: // Recuperate
+                    {
+                        if (Aura * aura = m_caster->GetAura(73651))
+                        {
+                            int32 Duration = 6000;
+                        
+                            if (Player * player = m_caster->ToPlayer())
+                            {
+                                if (aura->GetDuration() > player->GetComboPoints() * Duration)
+                                    return SPELL_FAILED_TRY_AGAIN;
+                            }
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }
