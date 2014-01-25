@@ -648,7 +648,8 @@ enum Opcodes
     MSG_PETITION_DECLINE                              = 0x0B7C, // 5.4.1 17538
     MSG_PETITION_RENAME                               = 0x004C, // 5.4.1 17538
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x1D33, // 5.4.1 17538
-    MSG_QUEST_PUSH_RESULT                             = 0x06C4, // 5.4.1 17538
+    CMSG_QUEST_PUSH_RESULT                            = 0x06C4, // 5.4.1 17538
+    SMSG_QUEST_PUSH_RESULT                            = 0x027D, // 5.4.1 17538
     CMSG_RANDOM_ROLL                                  = 0x0DEC, // 5.4.1 17538
     SMSG_RANDOM_ROLL                                  = 0x08B4, // 5.4.1 17538
     MSG_SAVE_GUILD_EMBLEM                             = 0x16D4, // 5.4.1 17538
@@ -1195,7 +1196,7 @@ enum Opcodes
     SMSG_PVP_OPTIONS_ENABLED                          = 0xA09,  // 5.0.5 16048
     SMSG_QUERY_QUESTS_COMPLETED_RESPONSE              = 0x000,  // 5.0.5 16048 Deprecated
     SMSG_QUERY_TIME_RESPONSE                          = 0x935,  // 5.0.5 16048
-    SMSG_QUESTGIVER_OFFER_REWARD                      = 0x85C,  // 5.0.5 16048
+    SMSG_QUESTGIVER_OFFER_REWARD                      = 0x0B5C, // 5.4.1 17538
     SMSG_QUESTGIVER_QUEST_COMPLETE                    = 0xB98,  // 5.0.5 16048
     SMSG_QUESTGIVER_QUEST_DETAILS                     = 0xD4E,  // 5.0.5 16048
     SMSG_QUESTGIVER_QUEST_FAILED                      = 0xD02,  // 5.0.5 16048
