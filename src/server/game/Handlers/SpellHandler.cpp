@@ -913,13 +913,16 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     _player->RemoveOwnedAura(spellId, 0, 0, AURA_REMOVE_BY_CANCEL);
 }
 
+//! 5.4.1
 void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
 {
-    uint64 guid;
+    ObjectGuid guid;
     uint32 spellId;
 
-    recvPacket >> guid;
     recvPacket >> spellId;
+
+    recvPacket.WriteGuidMask<7, 2, 6, 4, 1, 5, 0, 3>(guid);
+    recvPacket.WriteGuidBytes<0, 2, 3, 7, 4, 1, 6, 5>(guid);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)

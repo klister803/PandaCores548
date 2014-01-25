@@ -1150,8 +1150,8 @@ enum Opcodes
     SMSG_PETITION_SHOWLIST                            = 0x11A6, // 5.4.1 17538
     SMSG_PETITION_SHOW_SIGNATURES                     = 0xCBC,  // 5.0.5 16048
     SMSG_PETITION_SIGN_RESULTS                        = 0x148F, // 5.4.1 17538
-    SMSG_PET_ACTION_FEEDBACK                          = 0x95D,  // 5.0.5 16048
-    SMSG_PET_ACTION_SOUND                             = 0xC2A,  // 5.0.5 16048
+    SMSG_PET_ACTION_FEEDBACK                          = 0x0C1C, // 5.4.1 17538
+    SMSG_PET_ACTION_SOUND                             = 0x0015, // 5.4.1 17538
     SMSG_PET_ADDED                                    = 0xA7F,  // 5.0.5 16048
     SMSG_PET_BROKEN                                   = 0xC8B,  // 5.0.5 16048
     SMSG_PET_CAST_FAILED                              = 0x9C9,  // 5.0.5 16048
@@ -1179,7 +1179,7 @@ enum Opcodes
     SMSG_PLAY_MUSIC                                   = 0x8EF,  // 5.0.5 16048
     SMSG_PLAY_OBJECT_SOUND                            = 0xCED,  // 5.0.5 16048
     SMSG_PLAY_SOUND                                   = 0x873,  // 5.0.5 16048
-    SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0,      // 0x4A35 in 4.3.4 @todo : Find me and BACON !
+    SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0x0486, // 5.4.1 17538
     //SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048 removed in commit c041875
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0x103F, // 5.4.1 17538 real SMSG_PLAY_SPELL_IMPACT
@@ -1371,7 +1371,7 @@ enum Opcodes
     SMSG_UNIT_SPELLCAST_START                         = 0xC12,  // 5.0.5 16048
     SMSG_UPDATE_ACCOUNT_DATA                          = 0x0196, // 5.4.1 17538
     SMSG_UPDATE_ACCOUNT_DATA_COMPLETE                 = 0xD35,  // 5.0.5 16048
-    SMSG_UPDATE_COMBO_POINTS                          = 0x9A5,  // 5.0.5 16048
+    SMSG_UPDATE_COMBO_POINTS                          = 0x090D, // 5.4.1 17538
     SMSG_UPDATE_CURRENCY                              = 0xE55,  // 5.0.5 16048
     SMSG_UPDATE_CURRENCY_WEEK_LIMIT                   = 0xAEA,  // 5.0.5 16048
     SMSG_UPDATE_DUNGEON_ENCOUNTER_FOR_LOOT            = 0xA53,  // 5.0.5 16048

@@ -16742,8 +16742,15 @@ void Unit::SendPetActionFeedback(uint8 msg)
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    WorldPacket data(SMSG_PET_ACTION_FEEDBACK, 1);
+    bool send_spell = false;
+
+    //! 5.4.1
+    WorldPacket data(SMSG_PET_ACTION_FEEDBACK, 2);
     data << uint8(msg);
+    data.WriteBit(!send_spell);
+    data.data.FlushBits();
+    if (send_spell)
+        data << uint32(0);
     owner->ToPlayer()->GetSession()->SendPacket(&data);
 }
 
@@ -16753,9 +16760,13 @@ void Unit::SendPetTalk(uint32 pettalk)
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
+    ObjectGuid Guid = GetGUID();
+
+    //! 5.4.1
     WorldPacket data(SMSG_PET_ACTION_SOUND, 8 + 4);
-    data << uint64(GetGUID());
     data << uint32(pettalk);
+    data.WriteGuidMask<2, 3, 1, 4, 5, 6, 0, 7}>(Guid);
+    data.WriteGuidBytes<6, 2, 7, 1, 3, 4, 5, 0>(Guid);
     owner->ToPlayer()->GetSession()->SendPacket(&data);
 }
 
@@ -17535,12 +17546,16 @@ void Unit::SendDurabilityLoss(Player* receiver, uint32 percent)
     receiver->GetSession()->SendPacket(&data);
 }
 
-//Check for 5.0.5
+//Check for 5.4.1
 void Unit::PlayOneShotAnimKit(uint32 id)
 {
+    ObjectGuid guidd(GetGUID());
+
     WorldPacket data(SMSG_PLAY_ONE_SHOT_ANIM_KIT, 7 + 2);
-    data.appendPackGUID(GetGUID());
-    data << uint16(id);
+    data.WriteGuidMask<1, 5, 4, 3, 7, 6, 0, 2>(guidd);
+    data.WriteGuidBytes<3, 0, 7, 6, 5, 1, 4>(guidd);
+        data << uint16(id);
+    data.WriteGuidBytes<2>(guidd);
     SendMessageToSet(&data, true);
 }
 
