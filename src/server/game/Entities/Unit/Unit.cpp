@@ -14154,10 +14154,12 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             {
                 //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_RUN_BACK_SPEED, 1 + 8 + 4 + 4);
+                data.WriteGuidMask<1, 0, 5, 2, 4, 6, 7, 3>(guid);
+                data.WriteGuidBytes<3, 0, 7>(guid);
                 data << float(GetSpeed(mtype));
+                data.WriteGuidBytes<2, 4>(guid);
                 data << uint32(0); // Unk Int32
-                data.WriteGuidMask<6, 3, 1, 4, 0, 5, 2, 7>(guid);
-                data.WriteGuidBytes<5, 3, 1, 7, 0, 6, 4, 2>(guid);
+                data.WriteGuidBytes<6, 1, 5>(guid);
                 break;
             }
             case MOVE_SWIM:

@@ -2025,11 +2025,11 @@ Player* Creature::SelectNearestPlayerNotGM(float distance) const
 
 void Creature::SendAIReaction(AiReaction reactionType)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_AI_REACTION, 12);
-
-    data << uint64(GetGUID());
+    data.WriteGuidMask<1, 5, 4, 3, 7, 6, 0, 2>(guidd);
+    data.WriteGuidBytes<0, 5, 6, 2, 7, 3, 1, 4>(guidd);
     data << uint32(reactionType);
-
     ((WorldObject*)this)->SendMessageToSet(&data, true);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_AI_REACTION, type %u.", reactionType);
