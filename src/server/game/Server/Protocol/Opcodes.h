@@ -808,7 +808,7 @@ enum Opcodes
     SMSG_CHAT_WRONG_FACTION                           = 0x86E,  // 5.0.5 16048
     SMSG_CHECK_FOR_BOTS                               = 0,      // Not found in 4.3.4
     SMSG_CLEAR_BOSS_EMOTES                            = 0xB87,  // 5.0.5 16048
-    SMSG_CLEAR_COOLDOWN                               = 0,      // Not found in 4.3.4
+    SMSG_CLEAR_COOLDOWN                               = 0x00B7, // 5.4.1 17538
     SMSG_CLEAR_COOLDOWNS                              = 0xEB2,  // 5.0.5 16048
     SMSG_CLEAR_FAR_SIGHT_IMMEDIATE                    = 0xCDE,  // 5.0.5 16048
     SMSG_CLEAR_TARGET                                 = 0xD0B,  // 5.0.5 16048
@@ -1296,9 +1296,9 @@ enum Opcodes
     SMSG_SPELLNONMELEEDAMAGELOG                       = 0x9E0,  // 5.4.1 17538
     SMSG_SPELLORDAMAGE_IMMUNE                         = 0X977,  // 5.0.5 16048
     SMSG_SPELLSTEALLOG                                = 0xDAC,  // 5.0.5 16048
-    SMSG_SPELL_CATEGORY_COOLDOWN                      = 0x000,  // 5.0.5 16048 Unused
-    SMSG_SPELL_COOLDOWN                               = 0xD75,  // 5.0.5 16048
-    SMSG_SPELL_DELAYED                                = 0xC17,  // 5.0.5 16048
+    SMSG_SPELL_CATEGORY_COOLDOWN                      = 0x0C49, // 5.4.1 17538
+    SMSG_SPELL_COOLDOWN                               = 0x0864, // 5.4.1 17538
+    SMSG_SPELL_DELAYED                                = 0x01ED, // 5.4.1 17538
     SMSG_SPELL_FAILED_OTHER                           = 0x11BC, // 5.4.1 17538
     SMSG_SPELL_FAILURE                                = 0x012C, // 5.4.1 17538
     SMSG_SPELL_GO                                     = 0x14EC, // 5.4.1 17538

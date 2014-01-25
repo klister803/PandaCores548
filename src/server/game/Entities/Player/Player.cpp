@@ -13278,10 +13278,20 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
 
                     GetGlobalCooldownMgr().AddGlobalCooldown(spellProto, m_weaponChangeTimer);
 
+                    ObjectGuid guid = GetGUID();
+
+                    //! 5.4.1
                     WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4);
-                    data << uint64(GetGUID());
-                    data << uint8(1);
-                    data << uint32(cooldownSpell);
+                    data.WriteGuidMask<4, 7, 6>(guid);
+                    data.WriteBits(1, 21);
+                    data.WriteGuidMask<2, 3, 1, 0>(guid);
+                    data.WriteBit(1);
+                    data.WriteGuidMask<5>(guid);
+
+                    data.FlushBits();
+   
+                    data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
+                    data << uint32(cooldownSpell);                   
                     data << uint32(0);
                     GetSession()->SendPacket(&data);
                 }
@@ -22740,11 +22750,24 @@ void Player::ContinueTaxiFlight()
 
 void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 {
-                                                            // last check 2.0.10
+    ObjectGuid guid = GetGUID();
+
+    //! 5.4.1
     WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+m_spells.size()*8);
-    data << uint64(GetGUID());
-    data << uint8(0x0);                                     // flags (0x1, 0x2)
+
+    data.WriteGuidMask<4, 7, 6>(guid);
+    size_t count_pos = packet.bitwpos();
+    data.WriteBits(1, 21);
+    data.WriteGuidMask<2, 3, 1, 0>(guid);
+    data.WriteBit(1);
+    data.WriteGuidMask<5>(guid);
+
+    data.FlushBits();
+   
+    data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
+
     time_t curTime = time(NULL);
+    uint32 count = 0;
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
         if (itr->second->state == PLAYERSPELL_REMOVED)
@@ -22770,7 +22793,9 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
             data << uint32(unTimeMs);                       // in m.secs
             AddSpellCooldown(unSpellId, 0, curTime + unTimeMs/IN_MILLISECONDS);
         }
+        ++count;
     }
+    data.PutBits(count_pos, count, 21);
     GetSession()->SendPacket(&data);
 }
 
@@ -24421,10 +24446,22 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
 void Player::SendCooldownAtLogin()
 {
+    ObjectGuid guid = GetGUID();
     time_t curTime = time(NULL);
+    uint32 count = 0;
+
+    //! 5.4.1
     WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
-    data << uint64(GetGUID());
-    data << uint8(1);
+    data.WriteGuidMask<4, 7, 6>(guid);
+    size_t count_pos = packet.bitwpos();
+    data.WriteBits(1, 21);
+    data.WriteGuidMask<2, 3, 1, 0>(guid);
+    data.WriteBit(1);
+    data.WriteGuidMask<5>(guid);
+
+    data.FlushBits();
+   
+    data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
     for (SpellCooldowns::const_iterator itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
     {
@@ -24433,7 +24470,9 @@ void Player::SendCooldownAtLogin()
 
         data << uint32(itr->first);
         data << uint32(uint32(itr->second.end - curTime)*IN_MILLISECONDS);
+        ++count;
     }
+    data.PutBits(count_pos, count, 21);
 
     GetSession()->SendPacket(&data);
 }
@@ -27141,28 +27180,19 @@ void Player::RemoveAtLoginFlag(AtLoginFlags flags, bool persist /*= false*/)
 
 void Player::SendClearCooldown(uint32 spell_id, Unit* target)
 {
-    WorldPacket data(SMSG_CLEAR_COOLDOWNS);
+    //! 5.4.1
+    WorldPacket data(SMSG_CLEAR_COOLDOWN);
     ObjectGuid guid = target->GetGUID();
-    uint32 count = 1;
 
-    uint8 bitOrder[8] = {0, 3, 7, 1, 5, 2, 4, 6};
-    data.WriteBitInOrder(guid, bitOrder);
+    data.WriteGuidMask<7, 5, 4, 6, 1, 2>(guid);
+    data.WriteBit(0/*notPet*/);
+    data.WriteGuidMask<0, 3>(guid);
 
-    data.WriteBits(count, 24); // count
     data.FlushBits();
 
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[6]);
-
-    for (uint32 i = 0; i < count; ++i)
-        data << spell_id;
-
-    data.WriteByteSeq(guid[7]);
+    data.WriteGuidBytes<7, 4, 2, 0, 3>(guid);
+    data << spell_id;
+    data.WriteGuidBytes<5, 6, 1>(guid);
 
     SendDirectMessage(&data);
 }
@@ -29338,8 +29368,9 @@ void Player::SendCategoryCooldownMods()
             cItr->second += (*itr)->GetAmount();
     }
 
+    //! 5.4.1
     WorldPacket data(SMSG_SPELL_CATEGORY_COOLDOWN, 4 + (int(list.size()) * 8));
-    data.WriteBits<int>(list.size(), 23);
+    data.WriteBits<int>(list.size(), 21);
     data.FlushBits();
     for (std::map<uint32, int32>::const_iterator itr = categoryMods.begin(); itr != categoryMods.end(); ++itr)
     {

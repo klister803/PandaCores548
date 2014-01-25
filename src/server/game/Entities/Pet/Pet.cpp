@@ -1214,11 +1214,23 @@ void Pet::_LoadSpellCooldowns()
 
     if (result)
     {
+        ObjectGuid guid = GetGUID();
         time_t curTime = time(NULL);
+        uint32 count = 0;
 
+        //! 5.4.1
         WorldPacket data(SMSG_SPELL_COOLDOWN, size_t(8+1+result->GetRowCount()*8));
-        data << GetGUID();
-        data << uint8(0x0);                                 // flags (0x1, 0x2)
+
+        data.WriteGuidMask<4, 7, 6>(guid);
+        size_t count_pos = packet.bitwpos();
+        data.WriteBits(1, 21);
+        data.WriteGuidMask<2, 3, 1, 0>(guid);
+        data.WriteBit(1);
+        data.WriteGuidMask<5>(guid);
+
+        data.FlushBits();
+
+        data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
         do
         {
@@ -1245,6 +1257,8 @@ void Pet::_LoadSpellCooldowns()
             sLog->outDebug(LOG_FILTER_PETS, "Pet (Number: %u) spell %u cooldown loaded (%u secs).", m_charmInfo->GetPetNumber(), spell_id, uint32(db_time-curTime));
         }
         while (result->NextRow());
+
+        data.PutBits(count_pos, count, 21);
 
         if (!m_CreatureSpellCooldowns.empty() && GetOwner())
             ((Player*)GetOwner())->GetSession()->SendPacket(&data);
