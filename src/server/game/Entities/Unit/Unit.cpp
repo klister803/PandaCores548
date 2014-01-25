@@ -15286,7 +15286,7 @@ void Unit::SetPower(Powers power, int32 val)
         data.WriteGuidBytes<1, 2, 0>(guid[1]);
         data << uint8(power);
         data << int32(val);
-        data.WriteGuidBytes<7, 4, 5, 6, 3>(guid[7]);
+        data.WriteGuidBytes<7, 4, 5, 6, 3>(guid);
         SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
     }
 

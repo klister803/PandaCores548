@@ -3006,11 +3006,21 @@ void Player::Regenerate(Powers power)
 
                     if (IsInWorld())
                     {
+                        ObjectGuid guid = GetGUID();
+
+                        //! 5.4.1
                         WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
-                        data.append(GetPackGUID());
-                        data << uint32(1);
+        
+                        data.WriteGuidMask<1>(guid);
+                        int powerCounter = 1;
+                        data.WriteBits(powerCounter, 21);
+                        data.WriteGuidMask<3, 6, 0, 4, 2, 5, 7>(guid);
+                        data.FlushBits();       
+                        data.WriteGuidBytes<1, 2, 0>(guid[1]);
                         data << uint8(power);
                         data << int32(curValue);
+                        data.WriteGuidBytes<7, 4, 5, 6, 3>(guid);
+
                         SendMessageToSet(&data, false);
                     }
                     m_doLastUpdate = false;
