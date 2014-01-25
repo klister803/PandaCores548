@@ -35,8 +35,9 @@
 //void called when player click on auctioneer npc
 void WorldSession::HandleAuctionHelloOpcode(WorldPacket& recvData)
 {
-    uint64 guid;                                            //NPC guid
-    recvData >> guid;
+    ObjectGuid guid;                                        //NPC guid
+    recvData.ReadGuidMask<1, 0, 2, 6, 5, 4, 7, 3>(guid);
+    recvData.ReadGuidBytes<2, 4, 7, 3, 6, 5, 1, 0>(guid);
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
     if (!unit)
@@ -65,10 +66,13 @@ void WorldSession::SendAuctionHello(uint64 guid, Creature* unit)
     if (!ahEntry)
         return;
 
-    WorldPacket data(MSG_AUCTION_HELLO, 12);
-    data << uint64(guid);
+    WorldPacket data(SMSG_AUCTION_HELLO, 12);
+    data.WriteGuidMask<2, 1>(guid);
+    data.WriteBit(1);                                   // 3.3.3: 1 - AH enabled, 0 - AH disabled
+    data.WriteGuidMask<4, 6, 0, 5, 3, 7>(guid);
+    data.WriteGuidBytes<2, 0, 7, 6, 5, 1, 3, 4>(guid);
     data << uint32(ahEntry->houseId);
-    data << uint8(1);                                       // 3.3.3: 1 - AH enabled, 0 - AH disabled
+    
     SendPacket(&data);
 }
 

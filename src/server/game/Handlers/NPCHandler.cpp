@@ -53,8 +53,9 @@ enum StableResultCode
 
 void WorldSession::HandleTabardVendorActivateOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<7, 2, 6, 0, 3, 1, 4, 5>(guid);
+    recvData.ReadGuidBytes<6, 3, 7, 0, 4, 1, 2, 5>(guid);
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TABARDDESIGNER);
     if (!unit)
@@ -72,8 +73,9 @@ void WorldSession::HandleTabardVendorActivateOpcode(WorldPacket & recvData)
 
 void WorldSession::SendTabardVendorActivate(uint64 guid)
 {
-    WorldPacket data(MSG_TABARDVENDOR_ACTIVATE, 8);
-    data << guid;
+    WorldPacket data(SMSG_TABARDVENDOR_ACTIVATE, 8 + 1);
+    data.WriteGuidMask<4, 2, 1, 3, 0, 6, 7, 5>(guid);
+    data.WriteGuidBytes<4, 6, 5, 0, 7, 1, 2, 3>(guid);
     SendPacket(&data);
 }
 
@@ -109,9 +111,10 @@ void WorldSession::SendShowBank(uint64 guid)
 
 void WorldSession::HandleTrainerListOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<7, 0, 6, 3, 1, 5, 4, 2>(guid);
+    recvData.ReadGuidBytes<5, 0, 1, 4, 6, 7, 3, 2>(guid);
 
-    recvData >> guid;
     SendTrainerList(guid);
 }
 
@@ -156,13 +159,8 @@ void WorldSession::SendTrainerList(uint64 guid, const std::string& strTitle)
         return;
     }
 
+    ByteBuffer buff;
     WorldPacket data(SMSG_TRAINER_LIST, 8+4+4+trainer_spells->spellList.size()*38 + strTitle.size()+1);
-    data << guid;
-    data << uint32(trainer_spells->trainerType);
-    data << uint32(1); // different value for each trainer, also found in CMSG_TRAINER_BUY_SPELL
-
-    size_t count_pos = data.wpos();
-    data << uint32(trainer_spells->spellList.size());
 
     // reputation discount
     float fDiscountMod = _player->GetReputationPriceDiscount(unit);
@@ -193,61 +191,68 @@ void WorldSession::SendTrainerList(uint64 guid, const std::string& strTitle)
 
         TrainerSpellState state = _player->GetTrainerSpellState(tSpell);
 
-        data << uint32(tSpell->spell);                      // learned spell (or cast-spell in profession case)
-        data << uint8(state == TRAINER_SPELL_GREEN_DISABLED ? TRAINER_SPELL_GREEN : state);
-        data << uint32(floor(tSpell->spellCost * fDiscountMod));
-
-        data << uint8(tSpell->reqLevel);
-        data << uint32(tSpell->reqSkill);
-        data << uint32(tSpell->reqSkillValue);
-        //prev + req or req + 0
-        uint8 maxReq = 0;
+        uint32 reqSpell = 0;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if (!tSpell->learnedSpell[i])
                 continue;
             if (uint32 prevSpellId = sSpellMgr->GetPrevSpellInChain(tSpell->learnedSpell[i]))
             {
-                data << uint32(prevSpellId);
-                ++maxReq;
-            }
-            if (maxReq == 1)
+                reqSpell = prevSpellId;
                 break;
+            }
             SpellsRequiringSpellMapBounds spellsRequired = sSpellMgr->GetSpellsRequiredForSpellBounds(tSpell->learnedSpell[i]);
-            for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequired.first; itr2 != spellsRequired.second && maxReq < 2; ++itr2)
+            for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequired.first; itr2 != spellsRequired.second; ++itr2)
             {
-                data << uint32(itr2->second);
-                ++maxReq;
+                reqSpell = itr2->second;
+                break;
             }
-            if (maxReq == 1)
+
+            if (reqSpell)
                 break;
         }
-        while (maxReq < 1)
-        {
-            data << uint32(0);
-            ++maxReq;
-        }
-
-        data << uint32(/*primary_prof_first_rank && can_learn_primary_prof ? 1 : 0*/0);
+        buff << uint32(tSpell->spell);                      // learned spell (or cast-spell in profession case)
+        buff << uint32(reqSpell);
+        buff << uint32(/*primary_prof_first_rank && can_learn_primary_prof ? 1 : 0*/0);
         // primary prof. learn confirmation dialog
-        data << uint32(/*primary_prof_first_rank ? 1 : 0*/ 0);    // must be equal prev. field to have learn button in enabled state
+        buff << uint32(/*primary_prof_first_rank ? 1 : 0*/ 0);    // must be equal prev. field to have learn button in enabled state
+        buff << uint8(state == TRAINER_SPELL_GREEN_DISABLED ? TRAINER_SPELL_GREEN : state);
+        buff << uint8(tSpell->reqLevel);
+        buff << uint32(tSpell->reqSkillValue);
+        buff << uint32(floor(tSpell->spellCost * fDiscountMod));
+        buff << uint32(tSpell->reqSkill);
 
         ++count;
     }
 
-    data << strTitle;
+    data.WriteGuidMask<4, 0>(guid);
+    data.WriteBits(count, 19);
+    data.WriteGuidMask<3, 7>(guid);
+    data.WriteBits(strTitle.size(), 11);
+    data.WriteGuidMask<5, 6, 2, 1>(guid);
+    data.FlushBits();
+    if (!buff.empty())
+        data.append(buff);
 
-    data.put<uint32>(count_pos, count);
+    data.WriteGuidBytes<4, 3, 2, 5, 1, 6>(guid);
+    data << uint32(trainer_spells->trainerType);
+    data.WriteString(strTitle);
+    data << uint32(1); // different value for each trainer, also found in CMSG_TRAINER_BUY_SPELL
+    data.WriteGuidBytes<7, 0>(guid);
+
     SendPacket(&data);
 }
 
 void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvData)
 {
-    uint64 guid;
+    ObjectGuid guid;
     uint32 spellId;
     int32 trainerId;
 
-    recvData >> guid >> trainerId >> spellId;
+    recvData >> trainerId >> spellId;
+    recvData.ReadGuidMask<3, 7, 1, 6, 2, 4, 5, 0>(guid);
+    recvData.ReadGuidBytes<1, 3, 7, 0, 6, 4, 2, 5>(guid);
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_TRAINER_BUY_SPELL NpcGUID=%u, learn spell id is: %u", uint32(GUID_LOPART(guid)), spellId);
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
@@ -312,7 +317,6 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvData)
         _player->learnSpell(spellId, false);
 
     SendTrainerService(guid, spellId, 2);
-
 }
 
 void WorldSession::SendTrainerService(uint64 guid, uint32 spellId, uint32 result)
@@ -534,10 +538,11 @@ void WorldSession::HandleListStabledPetsOpcode(WorldPacket & recvData)
     else
        timeAddIgnoreOpcode = now;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recv MSG_LIST_STABLED_PETS");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recv CMSG_LIST_STABLED_PETS");
 
-    uint64 npcGUID;
-    recvData >> npcGUID;
+    ObjectGuid npcGUID;
+    recvData.ReadGuidMask<1, 3, 4, 2, 0, 5, 7, 6>(npcGUID);
+    recvData.ReadGuidBytes<0, 6, 1, 2, 5, 3, 7, 4>(npcGUID);
 
     if (!CheckStableMaster(npcGUID))
         return;
@@ -571,6 +576,7 @@ struct PetData
     uint32 petnumber;
     uint32 creature;
     uint32 lvl;
+    uint32 modelid;
     std::string name;
 };
 
@@ -582,18 +588,14 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
     if (GetPlayer()->getClass() != CLASS_HUNTER)
         return;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Send MSG_LIST_STABLED_PETS.");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Send SMSG_LIST_STABLED_PETS.");
 
-    WorldPacket data(MSG_LIST_STABLED_PETS, 200);
-
-    data << uint64(guid);
-
-    size_t wpos = data.wpos();
-    data << uint8(0);                                       // place holder for slot show number
-    data << uint8(20);
+    ByteBuffer buf;
+    WorldPacket data(SMSG_LIST_STABLED_PETS, 200);
 
     uint8 num = 0;
 
+    std::vector<uint32> nameLen;
     if (result)
     {
         bool stableSlot[PET_SLOT_STABLE_LAST];
@@ -609,12 +611,15 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
             uint8 petSlot = fields[1].GetUInt8();
             if (petSlot < PET_SLOT_STABLE_LAST)
             {
-                data << uint32(petSlot);                        // 4.x petSlot
-                data << uint32(fields[2].GetUInt32());          // petnumber
-                data << uint32(fields[3].GetUInt32());          // creature entry
-                data << uint32(fields[4].GetUInt16());          // level
-                data << fields[5].GetString();                  // name
-                data << uint8(fields[1].GetUInt8() < uint8(PET_SLOT_STABLE_FIRST)? 1: 2);                               // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+                std::string name = fields[5].GetString();
+                buf.WriteString(name);
+                nameLen.push_back(name.size());
+                buf << uint8(fields[1].GetUInt8() < uint8(PET_SLOT_STABLE_FIRST)? 1 : 3);                               // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+                buf << uint32(fields[2].GetUInt32());          // petnumber
+                buf << uint32(fields[6].GetUInt32());          // model id
+                buf << uint32(fields[4].GetUInt16());          // level
+                buf << uint32(fields[3].GetUInt32());          // creature entry
+                buf << uint32(petSlot);                        // 4.x petSlot
 
                 ++num;
 
@@ -628,6 +633,7 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
                 pData.creature = fields[3].GetUInt32();
                 pData.lvl = fields[4].GetUInt16();
                 pData.name = fields[5].GetString();
+                pData.modelid = fields[6].GetUInt32();
 
                 outOfStable.push_back(pData);
             }
@@ -645,12 +651,14 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
                     PetData pData = *itr;
                     pData.slot = i;
 
-                    data << uint32(pData.slot);         // 4.x petSlot
-                    data << uint32(pData.petnumber);    // petnumber
-                    data << uint32(pData.creature);     // creature entry
-                    data << uint32(pData.lvl);          // level
-                    data << pData.name;                 // name
-                    data << uint8(pData.slot < uint8(PET_SLOT_STABLE_FIRST) ? 1 : 2); // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+                    buf.WriteString(pData.name);
+                    nameLen.push_back(pData.name.size());
+                    buf << uint8(pData.slot < uint8(PET_SLOT_STABLE_FIRST) ? 1 : 3); // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+                    buf << uint32(pData.petnumber);    // petnumber
+                    buf << uint32(pData.modelid);
+                    buf << uint32(pData.lvl);          // level
+                    buf << uint32(pData.creature);     // creature entry
+                    buf << uint32(pData.slot);         // 4.x petSlot
 
                     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UDP_CHAR_PET_SLOT_BY_ID);
                     stmt->setUInt32(0, pData.slot);
@@ -665,7 +673,15 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
         }
     }
 
-    data.put<uint8>(wpos, num);                             // set real data to placeholder
+    data.WriteBits(num, 19);
+    for (uint32 i = 0; i < num; ++i)
+        data.WriteBits(nameLen[i], 8);
+    data.WriteGuidMask<2, 5, 6, 7, 3, 0, 4, 1>(guid);
+    data.FlushBits();
+    data.WriteGuidBytes<0>(guid);
+    if (!buf.empty())
+        data.append(buf);
+    data.WriteGuidBytes<6, 2, 7, 3, 4, 5, 1>(guid);
 
     SendPacket(&data);
 }

@@ -559,13 +559,8 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 
     if (result)
     {
-        WorldPacket data(SMSG_PETITION_SIGN_RESULTS, (8+8+4));
-        data << uint64(petitionGuid);
-        data << uint64(_player->GetGUID());
-        data << uint32(PETITION_SIGN_ALREADY_SIGNED);
-
         // close at signer side
-        SendPacket(&data);
+        SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_ALREADY_SIGNED);
         return;
     }
 
@@ -580,13 +575,8 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "PETITION SIGN: GUID %u by player: %s (GUID: %u Account: %u)", GUID_LOPART(petitionGuid), _player->GetName(), playerGuid, GetAccountId());
 
-    WorldPacket data(SMSG_PETITION_SIGN_RESULTS, (8+8+4));
-    data << uint64(petitionGuid);
-    data << uint64(_player->GetGUID());
-    data << uint32(PETITION_SIGN_OK);
-
     // close at signer side
-    SendPacket(&data);
+    SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_OK);
 
     // update signs count on charter, required testing...
     //Item* item = _player->GetItemByGuid(petitionguid));
@@ -595,7 +585,38 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 
     // update for owner if online
     if (Player* owner = ObjectAccessor::FindPlayer(ownerGuid))
-        owner->GetSession()->SendPacket(&data);
+        owner->GetSession()->SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_OK);
+}
+
+void WorldSession::SendPetitionSignResult(uint64 playerGuid, uint64 petitionGuid, uint8 result)
+{
+    WorldPacket data(SMSG_PETITION_SIGN_RESULTS, 8 + 8 + 1 + 1 + 1);
+
+    data.WriteGuidMask<6>(playerGuid);
+    data.WriteGuidMask<3, 0, 6, 7>(petitionGuid);
+    data.WriteGuidMask<2>(playerGuid);
+    data.WriteGuidMask<5>(petitionGuid);
+    data.WriteGuidMask<4>(playerGuid);
+    data.WriteGuidMask<2>(petitionGuid);
+    data.WriteGuidMask<1, 5, 7, 0>(playerGuid);
+    data.WriteBits(result, 4);
+    data.WriteGuidMask<1>(petitionGuid);
+    data.WriteGuidMask<3>(playerGuid);
+    data.WriteGuidMask<4>(petitionGuid);
+
+    data.WriteGuidBytes<5>(petitionGuid);
+    data.WriteGuidBytes<0, 4>(playerGuid);
+    data.WriteGuidBytes<1>(petitionGuid);
+    data.WriteGuidBytes<2, 3>(playerGuid);
+    data.WriteGuidBytes<4, 3>(petitionGuid);
+    data.WriteGuidBytes<7>(playerGuid);
+    data.WriteGuidBytes<2>(petitionGuid);
+    data.WriteGuidBytes<5, 1>(playerGuid);
+    data.WriteGuidBytes<6>(petitionGuid);
+    data.WriteGuidBytes<6>(playerGuid);
+    data.WriteGuidBytes<0, 7>(petitionGuid);
+
+    SendPacket(&data);
 }
 
 void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
@@ -783,8 +804,8 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     // Check if player is already in a guild
     if (_player->GetGuildId())
     {
-        data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
-        data << (uint32)PETITION_TURN_ALREADY_IN_GUILD;
+        data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 1);
+        data.WriteBits(PETITION_TURN_ALREADY_IN_GUILD, 4);
         _player->GetSession()->SendPacket(&data);
         return;
     }
@@ -814,8 +835,8 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     // Notify player if signatures are missing
     if (signatures < requiredSignatures)
     {
-        data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
-        data << (uint32)PETITION_TURN_NEED_MORE_SIGNATURES;
+        data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 1);
+        data.WriteBits(PETITION_TURN_NEED_MORE_SIGNATURES, 4);
         SendPacket(&data);
         return;
     }
@@ -860,8 +881,8 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     // created
     sLog->outDebug(LOG_FILTER_NETWORKIO, "TURN IN PETITION GUID %u", GUID_LOPART(petitionGuid));
 
-    data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
-    data << (uint32)PETITION_TURN_OK;
+    data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 1);
+    data.WriteBits(PETITION_TURN_OK, 4);
     SendPacket(&data);
 }
 
@@ -869,8 +890,9 @@ void WorldSession::HandlePetitionShowListOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Received CMSG_PETITION_SHOWLIST");
 
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<1, 3, 0, 6, 7, 2, 5, 4>(guid);
+    recvData.ReadGuidBytes<1, 7, 4, 2, 3, 5, 6, 0>(guid);
 
     SendPetitionShowList(guid);
 }
@@ -884,44 +906,17 @@ void WorldSession::SendPetitionShowList(uint64 guid)
         return;
     }
 
-    WorldPacket data(SMSG_PETITION_SHOWLIST, 8+1+4*6);
-    data << guid;                                           // npc guid
+    if (!creature->isTabardDesigner())
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandlePetitionShowListOpcode - Unit (GUID: %u) is not a tabard designer.", uint32(GUID_LOPART(guid)));
+        return;
+    }
 
-    if (creature->isTabardDesigner())
-    {
-        data << uint8(1);                                   // count
-        data << uint32(1);                                  // index
-        data << uint32(GUILD_CHARTER);                      // charter entry
-        data << uint32(CHARTER_DISPLAY_ID);                 // charter display id
-        data << uint32(GUILD_CHARTER_COST);                 // charter cost
-        data << uint32(0);                                  // unknown
-        data << uint32(4);                                  // required signs?
-    }
-    else
-    {
-        data << uint8(3);                                   // count
-        // 2v2
-        data << uint32(1);                                  // index
-        data << uint32(ARENA_TEAM_CHARTER_2v2);             // charter entry
-        data << uint32(CHARTER_DISPLAY_ID);                 // charter display id
-        data << uint32(ARENA_TEAM_CHARTER_2v2_COST);        // charter cost
-        data << uint32(2);                                  // unknown
-        data << uint32(2);                                  // required signs?
-        // 3v3
-        data << uint32(2);                                  // index
-        data << uint32(ARENA_TEAM_CHARTER_3v3);             // charter entry
-        data << uint32(CHARTER_DISPLAY_ID);                 // charter display id
-        data << uint32(ARENA_TEAM_CHARTER_3v3_COST);        // charter cost
-        data << uint32(3);                                  // unknown
-        data << uint32(3);                                  // required signs?
-        // 5v5
-        data << uint32(3);                                  // index
-        data << uint32(ARENA_TEAM_CHARTER_5v5);             // charter entry
-        data << uint32(CHARTER_DISPLAY_ID);                 // charter display id
-        data << uint32(ARENA_TEAM_CHARTER_5v5_COST);        // charter cost
-        data << uint32(5);                                  // unknown
-        data << uint32(5);                                  // required signs?
-    }
+    WorldPacket data(SMSG_PETITION_SHOWLIST, 4 + 8 + 1);
+    data.WriteGuidMask<4, 0, 1, 6, 3, 7, 5, 2>(guid);
+    data.WriteGuidBytes<2, 3, 1, 5>(guid);
+    data << uint32(GUILD_CHARTER_COST);                 // charter cost
+    data.WriteGuidBytes<4, 0, 6, 7>(guid);
 
     SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Sent SMSG_PETITION_SHOWLIST");
