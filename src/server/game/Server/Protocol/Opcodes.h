@@ -1299,8 +1299,8 @@ enum Opcodes
     SMSG_SPELL_CATEGORY_COOLDOWN                      = 0x000,  // 5.0.5 16048 Unused
     SMSG_SPELL_COOLDOWN                               = 0xD75,  // 5.0.5 16048
     SMSG_SPELL_DELAYED                                = 0xC17,  // 5.0.5 16048
-    SMSG_SPELL_FAILED_OTHER                           = 0xC0E,  // 5.0.5 16048
-    SMSG_SPELL_FAILURE                                = 0xD93,  // 5.0.5 16048
+    SMSG_SPELL_FAILED_OTHER                           = 0x11BC, // 5.4.1 17538
+    SMSG_SPELL_FAILURE                                = 0x012C, // 5.4.1 17538
     SMSG_SPELL_GO                                     = 0x14EC, // 5.4.1 17538
     SMSG_SPELL_START                                  = 0x0CCC, // 5.4.1 17538
     SMSG_SPELL_UPDATE_CHAIN_TARGETS                   = 0x858,  // 5.0.5 16048

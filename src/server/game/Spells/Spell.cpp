@@ -4937,18 +4937,26 @@ void Spell::ExecuteLogEffectResurrect(uint8 effIndex, Unit* target)
 
 void Spell::SendInterrupted(uint8 result)
 {
+    ObjectGuid guid = m_caster->GetGUID();
+
+    //! 5.4.1
     WorldPacket data(SMSG_SPELL_FAILURE, (8+4+1));
-    data.append(m_caster->GetPackGUID());
-    data << uint8(m_cast_count);
     data << uint32(m_spellInfo->Id);
+    data << uint8(m_cast_count);
     data << uint8(result);
+    data.WriteGuidMask<6, 1, 3, 7, 0, 4, 2, 5>(guid);
+    data.WriteGuidBytes<3, 2, 1, 6, 5, 0, 4, 7>(guid);
     m_caster->SendMessageToSet(&data, true);
 
+    //! 5.4.1
     data.Initialize(SMSG_SPELL_FAILED_OTHER, (8+4));
-    data.append(m_caster->GetPackGUID());
+    data.WriteGuidMask<0, 4, 6, 2, 7, 3, 5, 1>(guid);
+    data.WriteGuidBytes<7, 3, 5>(guid);
     data << uint8(m_cast_count);
+    data.WriteGuidBytes<4, 1>(guid);
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
+    data.WriteGuidBytes<0, 6, 2>(guid[0]);
     m_caster->SendMessageToSet(&data, true);
 }
 
