@@ -664,7 +664,7 @@ public:
 enum FreedProtoDrake
 {
     AREA_VALLEY_OF_ANCIENT_WINTERS      = 4437,
-    TEXT_EMOTE                          = 0,
+    TEXT_EMOTE                          = 0
 };
 
 const Position FreedDrakeWaypoints[16] =

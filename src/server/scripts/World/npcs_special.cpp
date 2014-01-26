@@ -2369,11 +2369,7 @@ class npc_training_dummy : public CreatureScript
                     Player* player = source->ToPlayer();
                     if(!player)
                         return;
-                    if (spell->Id == 73899 && (player->GetQuestStatus(25143) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(26969) == QUEST_STATUS_INCOMPLETE))
-                    {
-                        player->KilledMonsterCredit(44175, 0);
-                    }
-                    if (spell->Id == 20271 && (player->GetQuestStatus(26918) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(24528) == QUEST_STATUS_INCOMPLETE))
+                    if (spell->Id == 589 || spell->Id == 20271 || spell->Id == 73899)  
                     {
                         player->KilledMonsterCredit(44175, 0);
                     }

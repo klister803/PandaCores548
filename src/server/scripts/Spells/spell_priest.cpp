@@ -2165,44 +2165,6 @@ class spell_pri_shadowform : public SpellScriptLoader
         }
 };
 
-class spell_priest_flash_heal : public SpellScriptLoader
-{
-    public:
-        spell_priest_flash_heal() : SpellScriptLoader("spell_priest_flash_heal") { }
-
-        class spell_priest_flash_heal_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_priest_flash_heal_SpellScript)
-
-            bool Validate(SpellEntry const * /*spellEntry*/)
-            {
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit * caster = GetCaster())
-                {
-                    if (caster->GetTypeId() == TYPEID_PLAYER)
-                    {
-                        caster->ToPlayer()->KilledMonsterCredit(44175, 0);
-                        caster->ToPlayer()->KilledMonsterCredit(48305, 0);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHit += SpellEffectFn(spell_priest_flash_heal_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_HEAL);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_priest_flash_heal_SpellScript();
-        }
-};
-
 enum PsyfiendSpells
 {
     SPELL_PSYCHIC_HORROR    = 113792,
@@ -2473,7 +2435,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_shadowform();
     new spell_pri_evangelism();
     new spell_pri_archangel();
-    new spell_priest_flash_heal();
     new spell_pri_void_tendrils();
     new spell_pri_psychic_terror();
     new spell_pri_divine_star();
