@@ -67,6 +67,7 @@ set(scripts_STAT_SRCS
   Pandaria/MogushanVault/boss_will_of_emperor.cpp
 
   Pandaria/HeartFear/instance_heart_of_fear.cpp
+  Pandaria/HeartFear/heart_of_fear.h
   Pandaria/HeartFear/boss_vizier_zorlok.cpp
   Pandaria/HeartFear/boss_lord_tayak.cpp
   Pandaria/HeartFear/boss_garalon.cpp
@@ -74,6 +75,13 @@ set(scripts_STAT_SRCS
   Pandaria/HeartFear/boss_unsok.cpp
   Pandaria/HeartFear/boss_empress_shekzeer.cpp
 
+  Pandaria/TerraceEndlessSpring/instance_terrace_of_endless_spring.cpp
+  Pandaria/TerraceEndlessSpring/terrace_of_endless_spring.h
+  Pandaria/TerraceEndlessSpring/boss_protectors.cpp
+  Pandaria/TerraceEndlessSpring/boss_tsulong.cpp
+  Pandaria/TerraceEndlessSpring/boss_lei_shi.cpp
+  Pandaria/TerraceEndlessSpring/boss_sha_of_fear.cpp
+  
   Pandaria/WanderingIsland/WanderingIsland_North.cpp
   Pandaria/WanderingIsland/WanderingIsland_East.cpp
   Pandaria/WanderingIsland/WanderingIsland_West.cpp
