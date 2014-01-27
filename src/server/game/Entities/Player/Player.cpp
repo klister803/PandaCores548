@@ -8095,6 +8095,8 @@ void Player::SendNewCurrency(uint32 id) const
         return;
 
     ByteBuffer currencyData;
+
+    //! 5.4.1
     WorldPacket packet(SMSG_INIT_CURRENCY, 4 + 1*(5*4 + 1));
     packet.WriteBits(1, 22);
 
@@ -8106,29 +8108,31 @@ void Player::SendNewCurrency(uint32 id) const
     uint32 seasonTotal = itr->second.seasonTotal;
     bool hasSeason = entry->HasSeasonCount();
 
+    packet.WriteBit(hasSeason);                                         // season total earned
     packet.WriteBit(weekCap);
-    packet.WriteBit(weekCap && weekCount);
-    packet.WriteBit(hasSeason);     // season total earned
-    packet.WriteBits(itr->second.flags, 5);           // some flags
-
-    if (weekCap)
-        currencyData << uint32(weekCap / precision);
-    if (weekCap && weekCount)
-        currencyData << uint32(weekCount / precision);
-    if (hasSeason)
-        currencyData << uint32(seasonTotal / precision);
-
-    currencyData << uint32(itr->second.totalCount / precision);
-    currencyData << uint32(entry->ID);
+    packet.WriteBits(itr->second.flags, 5);                             // some flags
+    packet.WriteBit(weekCap && weekCount);                              // hasWeekCount
 
     packet.FlushBits();
-    packet.append(currencyData);
+
+    packet << uint32(itr->second.totalCount / precision);               // Currency count
+    packet << uint32(entry->ID);                                        // Currency Id
+
+    if (hasSeason)
+        packet << uint32(seasonTotal / precision);
+    if (weekCap && weekCount)
+        packet << uint32(weekCount / precision);
+    if (weekCap)
+        packet << uint32(weekCap / precision);
+
     GetSession()->SendPacket(&packet);
 }
 
 void Player::SendCurrencies() const
 {
     ByteBuffer currencyData;
+
+    //! 5.4.1
     WorldPacket packet(SMSG_INIT_CURRENCY, 3 + _currencyStorage.size() * (5 * 5 + 1));
     packet.WriteBits(_currencyStorage.size(), 21);
 
@@ -8142,20 +8146,20 @@ void Player::SendCurrencies() const
         uint32 seasonTotal = itr->second.seasonTotal;
         bool hasSeason = entry->HasSeasonCount();
 
-        packet.WriteBit(weekCap && weekCount);
-        packet.WriteBit(hasSeason);             // season total earned
+        packet.WriteBit(hasSeason);                                     // season total earned
         packet.WriteBit(weekCap);
-        packet.WriteBits(itr->second.flags, 5); // some flags
+        packet.WriteBits(itr->second.flags, 5);                         // some flags
+        packet.WriteBit(weekCap && weekCount);                          // hasWeekCount
 
-        currencyData << uint32(itr->second.totalCount / precision);
+        currencyData << uint32(itr->second.totalCount / precision);     // Currency count
+        currencyData << uint32(entry->ID);                              // Currency Id
+
+        if (hasSeason)
+            currencyData << uint32(seasonTotal / precision);
         if (weekCap && weekCount)
             currencyData << uint32(weekCount / precision);
         if (weekCap)
             currencyData << uint32(weekCap / precision);
-        if (hasSeason)
-            currencyData << uint32(seasonTotal / precision);
-
-        currencyData << uint32(entry->ID);
     }
 
     packet.FlushBits();
@@ -8346,20 +8350,22 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
                 return;
             }
 
+            //! 5.4.1
             WorldPacket packet(SMSG_UPDATE_CURRENCY, 12);
             
             packet << uint32(id);
             packet << uint32(newTotalCount / precision);
+            packet << uint32(0);                                //unk
             
+            packet.WriteBit(!printLog);                         //printLog); // print in log
             packet.WriteBit(weekCap != 0);
-            packet.WriteBit(!printLog);//printLog); // print in log
             packet.WriteBit(itr->second.seasonTotal); // hasSeasonCount
             
-            if (itr->second.seasonTotal)
-                packet << uint32(itr->second.seasonTotal);
-
             if (weekCap)
                 packet << uint32(newWeekCount / precision);
+
+            if (itr->second.seasonTotal)
+                packet << uint32(itr->second.seasonTotal);
 
             GetSession()->SendPacket(&packet);
         }
@@ -8430,13 +8436,14 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
             break;
     }
 
-   if (cap != currency->WeekCap && IsInWorld() && !GetSession()->PlayerLoading())
-   {
-       WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
-       packet << uint32(currency->ID);
-       packet << uint32(cap / currency->GetPrecision());
-       GetSession()->SendPacket(&packet);
-   }
+    if (cap != currency->WeekCap && IsInWorld() && !GetSession()->PlayerLoading())
+    {
+        //! 5.4.1
+        WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
+        packet << uint32(currency->ID);
+        packet << uint32(cap / currency->GetPrecision());
+        GetSession()->SendPacket(&packet);
+    }
 
     return cap;
 }
@@ -8479,6 +8486,7 @@ void Player::UpdateConquestCurrencyCap(uint32 currency)
         uint32 precision = currencyEntry->GetPrecision();
         uint32 cap = GetCurrencyWeekCap(currencyEntry);
 
+        //! 5.4.1
         WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
         packet << uint32(currenciesToUpdate[i]);
         packet << uint32(cap / precision);

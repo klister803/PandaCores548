@@ -151,12 +151,13 @@ uint32 ReputationMgr::GetDefaultStateFlags(FactionEntry const* factionEntry) con
 
 void ReputationMgr::SendForceReactions()
 {
+    //! 5.4.1
     WorldPacket data(SMSG_SET_FORCED_REACTIONS, 1 + _forcedReactions.size() * (4 + 4));
     data.WriteBits(_forcedReactions.size(), 6);
     for (ForcedReactions::const_iterator itr = _forcedReactions.begin(); itr != _forcedReactions.end(); ++itr)
     {
-        data << uint32(itr->first);                         // faction_id (Faction.dbc)
         data << uint32(itr->second);                        // reputation rank
+        data << uint32(itr->first);                         // faction_id (Faction.dbc)
     }
     _player->SendDirectMessage(&data);
 }
@@ -165,16 +166,19 @@ void ReputationMgr::SendState(FactionState const* faction)
 {
     uint32 count = 1;
 
+    //! 5.4.1
     WorldPacket data(SMSG_SET_FACTION_STANDING, 17);
     data << float(0);
-    data << uint8(_sendFactionIncreased);
+    data << float(0);
+    data.WriteBit(_sendFactionIncreased);
     _sendFactionIncreased = false; // Reset
 
-    size_t p_count = data.wpos();
-    data << uint32(count);
+    size_t count_pos = data.bitwpos();
+    data.WriteBits(count, 21);
+    data.FlushBits();
 
-    data << uint32(faction->ReputationListID);
     data << uint32(faction->Standing);
+    data << uint32(faction->ReputationListID);
 
     for (FactionStateList::iterator itr = _factions.begin(); itr != _factions.end(); ++itr)
     {
@@ -183,19 +187,20 @@ void ReputationMgr::SendState(FactionState const* faction)
             itr->second.needSend = false;
             if (itr->second.ReputationListID != faction->ReputationListID)
             {
-                data << uint32(itr->second.ReputationListID);
                 data << uint32(itr->second.Standing);
+                data << uint32(itr->second.ReputationListID);
                 ++count;
             }
         }
     }
 
-    data.put<uint32>(p_count, count);
+    data.PutBits(count_pos, count, 21);
     _player->SendDirectMessage(&data);
 }
 
 void ReputationMgr::SendInitialReputations()
 {
+    //! 5.4.1
     WorldPacket data(SMSG_INITIALIZE_FACTIONS, (4+256*5));
 
     RepListID a = 0;

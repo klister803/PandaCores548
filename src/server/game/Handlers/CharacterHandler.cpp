@@ -1068,18 +1068,22 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         pCurrChar->SetGuildLevel(0);
     }
 
-    data.Initialize(SMSG_LEARNED_DANCE_MOVES, 4+4);
-    data << uint64(0);
+    //! 5.4.1
+    // ToDo: add data from config
+    data.Initialize(SMSG_ARENA_SEASON_WORLDSTATE, 4+4);
+    data << uint32(sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
+    data << uint32(sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID));
     SendPacket(&data);
 
+    //! 5.4.1
     data.Initialize(SMSG_HOTFIX_INFO);
     HotfixData const& hotfix = sObjectMgr->GetHotfixData();
-    data.WriteBits(hotfix.size(), 22);
+    data.WriteBits(hotfix.size(), 20);
     data.FlushBits();
     for (uint32 i = 0; i < hotfix.size(); ++i)
     {
-        data << uint32(hotfix[i].Type);
         data << uint32(hotfix[i].Timestamp);
+        data << uint32(hotfix[i].Type);
         data << uint32(hotfix[i].Entry);
     }
     SendPacket(&data);

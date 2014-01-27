@@ -709,6 +709,7 @@ enum Opcodes
     SMSG_AUTH_RESPONSE                                = 0x0D05, // 5.4.1 17538
     SMSG_AVAILABLE_VOICE_CHANNEL                      = 0x941,  // 5.0.5 16048
     SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,  // 5.0.5 16048
+    SMSG_ARENA_SEASON_WORLDSTATE                      = 0x041F, // 5.4.1 17538
     SMSG_BARBER_SHOP_RESULT                           = 0x0126, // 5.4.1 17538
     SMSG_BATTLE_PET_BATTLE_FINISHED                   = 0xBC8,  // 5.0.5 16048
     SMSG_BATTLE_PET_CHAT_RESTRICTED                   = 0xB68,  // 5.0.5 16048
@@ -984,7 +985,7 @@ enum Opcodes
     SMSG_HOTFIX_INFO                                  = 0x0C27, // 5.4.1 17538
     SMSG_HOTFIX_NOTIFY                                = 0xEE0,  // 5.0.5 16048
     SMSG_INITIALIZE_FACTIONS                          = 0x0CAC, // 5.4.1 17538
-    SMSG_INIT_CURRENCY                                = 0xAE5,  // 5.0.5 16048
+    SMSG_INIT_CURRENCY                                = 0x08AC, // 5.4.1 17538
     SMSG_INIT_WORLD_STATES                            = 0x0D94, // 5.4.1 17538
     SMSG_INSPECT                                      = 0,      // Not found in 4.3.4
     SMSG_INSPECT_RATED_BG_STATS                       = 0xB42,  // 5.0.5 16048
@@ -1266,10 +1267,10 @@ enum Opcodes
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
     SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0xE54,  // 5.0.5 16048
     SMSG_SET_FACTION_ATWAR                            = 0xDD2,  // 5.0.5 16048
-    SMSG_SET_FACTION_STANDING                         = 0xC64,  // 5.0.5 16048
+    SMSG_SET_FACTION_STANDING                         = 0x1017, // 5.4.1 17538
     SMSG_SET_FACTION_VISIBLE                          = 0x003F, // 5.4.1 17538
     SMSG_SET_FLAT_SPELL_MODIFIER                      = 0xC74,  // 5.0.5 16048
-    SMSG_SET_FORCED_REACTIONS                         = 0xDE0,  // 5.0.5 16048
+    SMSG_SET_FORCED_REACTIONS                         = 0x0025, // 5.4.1 17538
     SMSG_SET_MELEE_ANIM_KIT                           = 0,      // Not found in 4.3.4
     SMSG_SET_MOVEMENT_ANIM_KIT                        = 0,      // Not found in 4.3.4
     SMSG_SET_PCT_SPELL_MODIFIER                       = 0x802,  // 5.0.5 16048
@@ -1373,8 +1374,8 @@ enum Opcodes
     SMSG_UPDATE_ACCOUNT_DATA                          = 0x0196, // 5.4.1 17538
     SMSG_UPDATE_ACCOUNT_DATA_COMPLETE                 = 0xD35,  // 5.0.5 16048
     SMSG_UPDATE_COMBO_POINTS                          = 0x090D, // 5.4.1 17538
-    SMSG_UPDATE_CURRENCY                              = 0xE55,  // 5.0.5 16048
-    SMSG_UPDATE_CURRENCY_WEEK_LIMIT                   = 0xAEA,  // 5.0.5 16048
+    SMSG_UPDATE_CURRENCY                              = 0x897,  // 5.4.1 17538
+    SMSG_UPDATE_CURRENCY_WEEK_LIMIT                   = 0x050D, // 5.4.1 17538
     SMSG_UPDATE_DUNGEON_ENCOUNTER_FOR_LOOT            = 0xA53,  // 5.0.5 16048
     SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT               = 0xCA3,  // 5.0.5 16048
     SMSG_UPDATE_INSTANCE_OWNERSHIP                    = 0x01BF, // 5.4.1 17538
