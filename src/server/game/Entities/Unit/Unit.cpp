@@ -10451,7 +10451,7 @@ void Unit::CombatStop(bool includingCast)
     AttackStop();
     RemoveAllAttackers();
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendAttackSwingResult(SMSG_CANCEL_COMBAT);     // melee and ranged forced attack cancel
+        ToPlayer()->SendAttackSwingResult(ATTACK_SWING_ERROR_CANT_ATTACK);     // melee and ranged forced attack cancel
     ClearInCombat();
 }
 
@@ -20039,7 +20039,7 @@ void Unit::StopAttackFaction(uint32 faction_id)
 
             // melee and ranged forced attack cancel
             if (GetTypeId() == TYPEID_PLAYER)
-                ToPlayer()->SendAttackSwingResult(SMSG_CANCEL_COMBAT);
+                ToPlayer()->SendAttackSwingResult(ATTACK_SWING_ERROR_CANT_ATTACK);
         }
     }
 

@@ -1602,7 +1602,7 @@ class spell_hun_scatter_shot : public SpellScriptLoader
                 // break Auto Shot and autohit
                 caster->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
                 caster->AttackStop();
-                caster->SendAttackSwingCancelAttack();
+                caster->SendAttackSwingResult(ATTACK_SWING_ERROR_CANT_ATTACK);
 
                 if (caster->HasAura(HUNTER_SPELL_GLYPH_OF_COLLAPSE))
                     if (Unit* target = GetHitUnit())

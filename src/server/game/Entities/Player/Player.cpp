@@ -21457,8 +21457,8 @@ void Player::SendAutoRepeatCancel(Unit* target)
 
     //! 5.4.1
     WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, 9);
-    data.WriteGuidMask<5, 2, 3, 6, 0, 4, 1, 7>(guid, BitsOrder);
-    data.WriteGuidBytes<1, 6, 5, 7, 2, 4, 0, 3>(guid, bytesOrder);
+    data.WriteGuidMask<5, 2, 3, 6, 0, 4, 1, 7>(guid);
+    data.WriteGuidBytes<1, 6, 5, 7, 2, 4, 0, 3>(guid);
     GetSession()->SendPacket(&data);
 }
 
