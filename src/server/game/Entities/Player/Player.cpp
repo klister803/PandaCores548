@@ -1784,7 +1784,7 @@ void Player::Update(uint32 p_time)
                     setAttackTimer(BASE_ATTACK, 100);
                     if (m_swingErrorMsg != 1)               // send single time (client auto repeat)
                     {
-                        SendAttackSwingNotInRange();
+                        SendAttackSwingResult(ATTACK_SWING_ERROR_NOT_IN_RANGE);
                         m_swingErrorMsg = 1;
                     }
                 }
@@ -1794,7 +1794,7 @@ void Player::Update(uint32 p_time)
                     setAttackTimer(BASE_ATTACK, 100);
                     if (m_swingErrorMsg != 2)               // send single time (client auto repeat)
                     {
-                        SendAttackSwingBadFacingAttack();
+                        SendAttackSwingResult(ATTACK_SWING_ERROR_BAD_FACING);
                         m_swingErrorMsg = 2;
                     }
                 }
@@ -21392,12 +21392,6 @@ bool Player::CanSpeak() const
 /***              LOW LEVEL FUNCTIONS:Notifiers        ***/
 /*********************************************************/
 
-void Player::SendAttackSwingNotInRange()
-{
-    WorldPacket data(SMSG_ATTACKSWING_NOTINRANGE, 0);
-    GetSession()->SendPacket(&data);
-}
-
 void Player::SavePositionInDB(uint32 mapid, float x, float y, float z, float o, uint32 zone, uint64 guid)
 {
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_POSITION);
@@ -21449,34 +21443,22 @@ void Player::Customize(uint64 guid, uint8 gender, uint8 skin, uint8 face, uint8 
     CharacterDatabase.Execute(stmt);
 }
 
-void Player::SendAttackSwingDeadTarget()
+void Player::SendAttackSwingResult(AttackSwing error)
 {
-    WorldPacket data(SMSG_ATTACKSWING_DEADTARGET, 0);
-    GetSession()->SendPacket(&data);
-}
-
-void Player::SendAttackSwingCantAttack()
-{
-    WorldPacket data(SMSG_ATTACKSWING_CANT_ATTACK, 0);
-    GetSession()->SendPacket(&data);
-}
-
-void Player::SendAttackSwingCancelAttack()
-{
-    WorldPacket data(SMSG_CANCEL_COMBAT, 0);
-    GetSession()->SendPacket(&data);
-}
-
-void Player::SendAttackSwingBadFacingAttack()
-{
-    WorldPacket data(SMSG_ATTACKSWING_BADFACING, 0);
+    //! 5.4.1
+    WorldPacket data(SMSG_ATTACKSWING_ERROR, 1);
+    data.WriteBits(error, 2);
     GetSession()->SendPacket(&data);
 }
 
 void Player::SendAutoRepeatCancel(Unit* target)
 {
-    WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, target->GetPackGUID().size());
-    data.append(target->GetPackGUID());                     // may be it's target guid
+    ObjectGuid guid = target->GetGUID();    // may be it's target guid
+
+    //! 5.4.1
+    WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, 9);
+    data.WriteGuidMask<5, 2, 3, 6, 0, 4, 1, 7>(guid, BitsOrder);
+    data.WriteGuidBytes<1, 6, 5, 7, 2, 4, 0, 3>(guid, bytesOrder);
     GetSession()->SendPacket(&data);
 }
 

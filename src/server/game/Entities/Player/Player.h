@@ -807,6 +807,14 @@ enum EnviromentalDamage
     DAMAGE_FALL_TO_VOID = 6                                 // custom case for fall without durability loss
 };
 
+enum AttackSwing
+{
+    ATTACK_SWING_ERROR_BAD_FACING       = 0,
+    ATTACK_SWING_ERROR_NOT_IN_RANGE     = 1,
+    ATTACK_SWING_ERROR_DEAD_TARGET      = 2,
+    ATTACK_SWING_ERROR_CANT_ATTACK      = 3
+};
+
 enum PlayerChatTag
 {
     CHAT_TAG_NONE       = 0x00,
@@ -2373,11 +2381,7 @@ class Player : public Unit, public GridObject<Player>
         void SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 BonusXP, bool recruitAFriend = false, float group_rate=1.0f);
 
         // notifiers
-        void SendAttackSwingCantAttack();
-        void SendAttackSwingCancelAttack();
-        void SendAttackSwingDeadTarget();
-        void SendAttackSwingNotInRange();
-        void SendAttackSwingBadFacingAttack();
+        void SendAttackSwingResult(AttackSwing error);
         void SendAutoRepeatCancel(Unit* target);
         void SendExplorationExperience(uint32 Area, uint32 Experience);
 

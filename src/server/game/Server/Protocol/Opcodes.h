@@ -687,12 +687,9 @@ enum Opcodes
     SMSG_ARENA_TEAM_ROSTER                            = 0xCA4,  // 5.0.5 16048
     SMSG_ARENA_TEAM_STATS                             = 0xDD6,  // 5.0.5 16048
     SMSG_ATTACKERSTATEUPDATE                          = 0x182B, // 5.4.1 17538
-    SMSG_ATTACKSTART                                  = 0x992,  // 5.0.5 16048
+    SMSG_ATTACKSTART                                  = 0x012F, // 5.4.1 17538
     SMSG_ATTACKSTOP                                   = 0xD3C,  // 5.4.1 17538
-    SMSG_ATTACKSWING_BADFACING                        = 0x898,  // 5.0.5 16048
-    SMSG_ATTACKSWING_CANT_ATTACK                      = 0x8AC,  // 5.0.5 16048
-    SMSG_ATTACKSWING_DEADTARGET                       = 0xC2B,  // 5.0.5 16048
-    SMSG_ATTACKSWING_NOTINRANGE                       = 0x852,  // 5.0.5 16048
+    SMSG_ATTACKSWING_ERROR                            = 0x05BF, // 5.4.1 17538
     SMSG_AUCTION_BIDDER_LIST_RESULT                   = 0xDB3,  // 5.0.5 16048
     SMSG_AUCTION_BIDDER_NOTIFICATION                  = 0x9D0,  // 5.0.5 16048
     SMSG_AUCTION_COMMAND_RESULT                       = 0x91A,  // 5.0.5 16048
@@ -787,7 +784,7 @@ enum Opcodes
     SMSG_CALENDAR_SEND_NUM_PENDING                    = 0xC29,  // 5.0.5 16048
     SMSG_CALENDAR_UPDATE_INVITE_LIST                  = 0,      // Not found in 4.3.4
     SMSG_CAMERA_SHAKE                                 = 0x9AF,  // 5.0.5 16048
-    SMSG_CANCEL_AUTO_REPEAT                           = 0xDBB,  // 5.0.5 16048
+    SMSG_CANCEL_AUTO_REPEAT                           = 0x0C0C, // 5.4.1 17538
     SMSG_CANCEL_COMBAT                                = 0x9D5,  // 5.0.5 16048
     SMSG_CAST_FAILED                                  = 0x0407, // 5.4.1 17538
     SMSG_CHANNEL_LIST                                 = 0x142B, // 5.4.1 17538

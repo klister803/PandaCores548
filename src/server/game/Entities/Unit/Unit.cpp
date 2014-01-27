@@ -2414,18 +2414,94 @@ float Unit::CalculateLevelPenalty(SpellInfo const* spellProto) const
 
 void Unit::SendMeleeAttackStart(Unit* victim)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_ATTACKSTART, 8 + 8);
-    data << uint64(GetGUID());
-    data << uint64(victim->GetGUID());
+
+    ObjectGuid attackerGuid = GetGUID();
+    ObjectGuid victimGuid = victim->GetGUID();
+
+    data.WriteBit(attackerGuid[3]);
+    data.WriteBit(victimGuid[3]);
+    data.WriteBit(victimGuid[2]);
+    data.WriteBit(attackerGuid[0]);
+    data.WriteBit(attackerGuid[1]);
+    data.WriteBit(attackerGuid[4]);
+    data.WriteBit(victimGuid[7]);
+    data.WriteBit(victimGuid[4]);
+    data.WriteBit(attackerGuid[5]);
+    data.WriteBit(victimGuid[1]);
+    data.WriteBit(victimGuid[5]);
+    data.WriteBit(attackerGuid[6]);
+    data.WriteBit(attackerGuid[7]);
+    data.WriteBit(victimGuid[0]);
+    data.WriteBit(victimGuid[6]);
+    data.WriteBit(attackerGuid[2]);
+
+    data.WriteByteSeq(attackerGuid[4]);
+    data.WriteByteSeq(attackerGuid[6]);
+    data.WriteByteSeq(attackerGuid[2]);
+    data.WriteByteSeq(attackerGuid[7]);
+    data.WriteByteSeq(victimGuid[1]);
+    data.WriteByteSeq(attackerGuid[0]);
+    data.WriteByteSeq(attackerGuid[3]);
+    data.WriteByteSeq(victimGuid[2]);
+    data.WriteByteSeq(attackerGuid[5]);
+    data.WriteByteSeq(victimGuid[0]);
+    data.WriteByteSeq(victimGuid[4]);
+    data.WriteByteSeq(victimGuid[3]);
+    data.WriteByteSeq(attackerGuid[1]);
+    data.WriteByteSeq(victimGuid[6]);
+    data.WriteByteSeq(victimGuid[5]);
+    data.WriteByteSeq(victimGuid[7]);
+
     SendMessageToSet(&data, true);
     sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Sent SMSG_ATTACKSTART");
 }
 
 void Unit::SendMeleeAttackStop(Unit* victim)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_ATTACKSTOP, (8+8+4));
-    data.append(GetPackGUID());
-    data.append(victim ? victim->GetPackGUID() : 0);
+
+    ObjectGuid attackerGuid = GetGUID();
+    ObjectGuid victimGuid = victim ? victim->GetGUID() : NULL;
+
+    data.WriteBit(victimGuid[3]);
+    data.WriteBit(victimGuid[0]);
+    data.WriteBit(attackerGuid[1]);
+    data.WriteBit(victimGuid[1]);
+    data.WriteBit(victimGuid[2]);
+    data.WriteBit(victimGuid[6]);
+    data.WriteBit(victimGuid[5]);
+    data.WriteBit(attackerGuid[3]);
+    data.WriteBit(attackerGuid[0]);
+    data.WriteBit(attackerGuid[6]);
+    data.WriteBit(victimGuid[4]);
+    data.WriteBit(0);                   // Unk bit - updating rotation ?
+    data.WriteBit(attackerGuid[5]);
+    data.WriteBit(victimGuid[7]);
+    data.WriteBit(attackerGuid[7]);
+    data.WriteBit(attackerGuid[2]);
+    data.WriteBit(attackerGuid[4]);
+
+    data.FlushBits();
+
+    data.WriteByteSeq(victimGuid[5]);
+    data.WriteByteSeq(attackerGuid[0]);
+    data.WriteByteSeq(attackerGuid[6]);
+    data.WriteByteSeq(victimGuid[1]);
+    data.WriteByteSeq(victimGuid[3]);
+    data.WriteByteSeq(victimGuid[6]);
+    data.WriteByteSeq(victimGuid[7]);
+    data.WriteByteSeq(victimGuid[0]);
+    data.WriteByteSeq(attackerGuid[4]);
+    data.WriteByteSeq(attackerGuid[1]);
+    data.WriteByteSeq(attackerGuid[7]);
+    data.WriteByteSeq(victimGuid[4]);
+    data.WriteByteSeq(attackerGuid[3]);
+    data.WriteByteSeq(attackerGuid[5]);
+    data.WriteByteSeq(victimGuid[2]);
+    data.WriteByteSeq(attackerGuid[2]);
     data << uint32(0);                                     //! Can also take the value 0x01, which seems related to updating rotation
     SendMessageToSet(&data, true);
     sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Sent SMSG_ATTACKSTOP");
@@ -10375,7 +10451,7 @@ void Unit::CombatStop(bool includingCast)
     AttackStop();
     RemoveAllAttackers();
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
+        ToPlayer()->SendAttackSwingResult(SMSG_CANCEL_COMBAT);     // melee and ranged forced attack cancel
     ClearInCombat();
 }
 
@@ -19963,7 +20039,7 @@ void Unit::StopAttackFaction(uint32 faction_id)
 
             // melee and ranged forced attack cancel
             if (GetTypeId() == TYPEID_PLAYER)
-                ToPlayer()->SendAttackSwingCancelAttack();
+                ToPlayer()->SendAttackSwingResult(SMSG_CANCEL_COMBAT);
         }
     }
 
