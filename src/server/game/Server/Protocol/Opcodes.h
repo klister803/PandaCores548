@@ -1356,7 +1356,7 @@ enum Opcodes
     SMSG_TIME_SYNC_REQ                                = 0x1197, // 5.4.1 17538
     SMSG_TITLE_EARNED                                 = 0x94B,  // 5.0.5 16048
     SMSG_TOGGLE_XP_GAIN                               = 0xD62,  // 5.0.5 16048
-    SMSG_TOTEM_CREATED                                = 0x918,  // 5.0.5 16048
+    SMSG_TOTEM_CREATED                                = 0x00B5, // 5.4.1 17538
     SMSG_TRADE_STATUS                                 = 0xF85,  // 5.0.5 16048
     SMSG_TRADE_STATUS_EXTENDED                        = 0xAFB,  // 5.0.5 16048
     SMSG_TRAINER_LIST                                 = 0x01BC, // 5.4.1 17538
