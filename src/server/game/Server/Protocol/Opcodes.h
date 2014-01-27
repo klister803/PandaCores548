@@ -1349,8 +1349,8 @@ enum Opcodes
     SMSG_TAXINODE_STATUS                              = 0x141D, // 5.4.1 17538
     SMSG_TEST_DROP_RATE_RESULT                        = 0x000,  // 5.0.5 16048 Unused
     SMSG_TEXT_EMOTE                                   = 0x880,  // 5.0.5 16048
-    SMSG_THREAT_CLEAR                                 = 0xC9B,  // 5.0.5 16048
-    SMSG_THREAT_REMOVE                                = 0x9BF,  // 5.0.5 16048
+    SMSG_THREAT_CLEAR                                 = 0x141C, // 5.4.1 17538
+    SMSG_THREAT_REMOVE                                = 0x0CB7, // 5.4.1 17538
     SMSG_THREAT_UPDATE                                = 0x118D, // 5.4.1 17538
     SMSG_TIME_ADJUSTMENT                              = 0xF3A,  // 5.0.5 16048
     SMSG_TIME_SYNC_REQ                                = 0x1197, // 5.4.1 17538

@@ -10451,7 +10451,7 @@ void Unit::CombatStop(bool includingCast)
     AttackStop();
     RemoveAllAttackers();
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendAttackSwingResult(ATTACK_SWING_ERROR_CANT_ATTACK);     // melee and ranged forced attack cancel
+        ToPlayer()->SendAttackSwingResult(ATTACK_SWING_ERROR_DEAD_TARGET);     // melee and ranged forced attack cancel
     ClearInCombat();
 }
 
@@ -19950,15 +19950,31 @@ void Unit::SendThreatListUpdate()
         uint32 count = getThreatManager().getThreatList().size();
 
         sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Send SMSG_THREAT_UPDATE Message");
+
+        ObjectGuid hostileGUID = 0;
+        ObjectGuid guid = GetGUID(); 
+        ByteBuffer dataBuffer;
+
+        //! 5.4.1
         WorldPacket data(SMSG_THREAT_UPDATE);
-        data.append(GetPackGUID());
-        data << uint32(count);
+        data.WriteGuidMask<3, 2, 1>(guid);
+        data.WriteBits(count, 21);
+        data.WriteGuidMask<0>(guid);
         std::list<HostileReference*>& tlist = getThreatManager().getThreatList();
         for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
         {
-            data.appendPackGUID((*itr)->getUnitGuid());
-            data << uint32((*itr)->getThreat() * 100);
+            hostileGUID = (*itr)->getUnitGuid();
+            data.WriteGuidMask<2, 4, 6, 1, 5, 3, 0, 7>(hostileGUID);
+
+            dataBuffer << uint32((*itr)->getThreat() * 100);
+            dataBuffer.WriteGuidBytes<0, 2, 5, 1, 4, 3, 6, 7>(hostileGUID);
         }
+        data.WriteGuidMask<4, 7, 5, 6>(guid);
+        data.FlushBits();
+        data.WriteGuidBytes<0, 2>(guid);
+        data.append(dataBuffer);
+        data.WriteGuidBytes<4, 7, 5, 6, 1, 3>(guid);
+
         SendMessageToSet(&data, false);
     }
 }
@@ -19970,16 +19986,52 @@ void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
         uint32 count = getThreatManager().getThreatList().size();
 
         sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Send SMSG_HIGHEST_THREAT_UPDATE Message");
+
+        ObjectGuid hostileGUID = 0;
+        ObjectGuid HostileReferenceGUID = pHostileReference->getUnitGuid();
+        ObjectGuid guid = GetGUID(); 
+        ByteBuffer dataBuffer;
+
+        //! 5.4.1
         WorldPacket data(SMSG_HIGHEST_THREAT_UPDATE);
-        data.append(GetPackGUID());
-        data.appendPackGUID(pHostileReference->getUnitGuid());
-        data << uint32(count);
+        data.WriteGuidMask<2>(guid);
+        data.WriteGuidMask<5>(HostileReferenceGUID);
+        data.WriteGuidMask<5>(guid);
+        data.WriteGuidMask<7>(HostileReferenceGUID);
+        data.WriteGuidMask<7>(guid);
+        data.WriteGuidMask<2>(HostileReferenceGUID);
+        data.WriteGuidMask<6, 1, 4>(guid);
+        data.WriteGuidMask<6, 1>(HostileReferenceGUID);
+        data.WriteBits(count, 21);
+
         std::list<HostileReference*>& tlist = getThreatManager().getThreatList();
         for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
         {
-            data.appendPackGUID((*itr)->getUnitGuid());
-            data << uint32((*itr)->getThreat());
+            hostileGUID = (*itr)->getUnitGuid();
+
+            data.WriteGuidMask<5, 4, 7, 6, 2, 0, 1, 3>(hostileGUID);
+
+            dataBuffer.WriteGuidBytes<2, 1, 5, 4, 3>(hostileGUID);
+            dataBuffer << uint32((*itr)->getThreat());
+            dataBuffer.WriteGuidBytes<0, 6, 7>(hostileGUID);
         }
+        data.WriteGuidMask<0, 4>(HostileReferenceGUID);
+        data.WriteGuidMask<3>(guid);
+        data.WriteGuidMask<3>(HostileReferenceGUID);
+        data.WriteGuidMask<0>(guid);
+
+        data.FlushBits();
+
+        data.append(dataBuffer);
+        data.WriteGuidBytes<5>(guid);
+        data.WriteGuidBytes<1>(HostileReferenceGUID);
+        data.WriteGuidBytes<6, 4, 7>(guid);
+        data.WriteGuidBytes<0>(HostileReferenceGUID);
+        data.WriteGuidBytes<3>(guid);
+        data.WriteGuidBytes<7>(HostileReferenceGUID);
+        data.WriteGuidBytes<1, 0, 2>(guid);
+        data.WriteGuidBytes<5, 2, 6, 4, 3>(HostileReferenceGUID);
+
         SendMessageToSet(&data, false);
     }
 }
@@ -19987,17 +20039,42 @@ void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
 void Unit::SendClearThreatListOpcode()
 {
     sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Send SMSG_THREAT_CLEAR Message");
+
+    ObjectGuid guid = GetGUID(); 
+
+    //! 5.4.1
     WorldPacket data(SMSG_THREAT_CLEAR, 8);
-    data.append(GetPackGUID());
+    data.WriteGuidMask<0, 2, 5, 3, 1, 4, 6, 7>(guid);
+    data.WriteGuidBytes<1, 2, 3, 7, 6, 0, 4, 5>(guid);
     SendMessageToSet(&data, false);
 }
 
 void Unit::SendRemoveFromThreatListOpcode(HostileReference* pHostileReference)
 {
     sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Send SMSG_THREAT_REMOVE Message");
+
+    ObjectGuid guid = GetGUID(); 
+    ObjectGuid RefGUID = pHostileReference->getUnitGuid(); 
+
+    //! 5.4.1
     WorldPacket data(SMSG_THREAT_REMOVE, 8 + 8);
-    data.append(GetPackGUID());
-    data.appendPackGUID(pHostileReference->getUnitGuid());
+    data.WriteGuidMask<3>(guid);
+    data.WriteGuidMask<5, 1, 3, 0>(RefGUID);
+    data.WriteGuidMask<5>(guid);
+    data.WriteGuidMask<2, 7>(RefGUID);
+    data.WriteGuidMask<2, 6>(guid);
+    data.WriteGuidMask<4>(RefGUID);
+    data.WriteGuidMask<0, 7, 1, 4>(guid);
+    data.WriteGuidMask<6>(RefGUID);
+
+    data.WriteGuidBytes<0, 5>(guid);
+    data.WriteGuidBytes<4>(RefGUID);
+    data.WriteGuidBytes<4, 7>(guid);
+    data.WriteGuidBytes<0, 1>(RefGUID);
+    data.WriteGuidBytes<3, 1>(guid);
+    data.WriteGuidBytes<6, 7, 2, 3, 5>(RefGUID);
+    data.WriteGuidBytes<2, 6>(guid);
+
     SendMessageToSet(&data, false);
 }
 
@@ -20039,7 +20116,7 @@ void Unit::StopAttackFaction(uint32 faction_id)
 
             // melee and ranged forced attack cancel
             if (GetTypeId() == TYPEID_PLAYER)
-                ToPlayer()->SendAttackSwingResult(ATTACK_SWING_ERROR_CANT_ATTACK);
+                ToPlayer()->SendAttackSwingResult(ATTACK_SWING_ERROR_DEAD_TARGET);
         }
     }
 

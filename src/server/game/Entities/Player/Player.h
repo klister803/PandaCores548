@@ -811,8 +811,8 @@ enum AttackSwing
 {
     ATTACK_SWING_ERROR_BAD_FACING       = 0,
     ATTACK_SWING_ERROR_NOT_IN_RANGE     = 1,
-    ATTACK_SWING_ERROR_DEAD_TARGET      = 2,
-    ATTACK_SWING_ERROR_CANT_ATTACK      = 3
+    ATTACK_SWING_ERROR_DEAD_TARGET      = 2,                // nothing shown
+    ATTACK_SWING_ERROR_CANT_ATTACK      = 3                 // interrupted
 };
 
 enum PlayerChatTag
