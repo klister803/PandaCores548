@@ -481,6 +481,7 @@ enum Opcodes
     CMSG_SET_CHANNEL_WATCH                            = 0xD2A,  // 5.0.5 16048
     CMSG_SET_CONTACT_NOTES                            = 0x119A, // 5.4.1 17538
     CMSG_SET_CURRENCY_FLAGS                           = 0x134E, // 5.4.1 17538
+    CMSG_SET_DUNGEON_DIFFICULTY                       = 0x0C69, // 5.4.1 17538
     CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x0569, // 5.4.1 17538
     CMSG_SET_FACTION_ATWAR                            = 0x0776, // 5.4.1 17538 or 0x0667
     CMSG_SET_FACTION_CHEAT                            = 0x000,  // 5.0.5 16048
@@ -653,7 +654,6 @@ enum Opcodes
     CMSG_RANDOM_ROLL                                  = 0x0DEC, // 5.4.1 17538
     SMSG_RANDOM_ROLL                                  = 0x08B4, // 5.4.1 17538
     MSG_SAVE_GUILD_EMBLEM                             = 0x16D4, // 5.4.1 17538
-    MSG_SET_DUNGEON_DIFFICULTY                        = 0x0C69, // 5.4.1 17538
     MSG_SET_RAID_DIFFICULTY                           = 0x04B3, // 5.4.1 17538
     CMSG_TABARDVENDOR_ACTIVATE                        = 0x17F7, // 5.4.1 17538
     SMSG_TABARDVENDOR_ACTIVATE                        = 0x0006, // 5.4.1 17538
@@ -882,7 +882,7 @@ enum Opcodes
     SMSG_EQUIPMENT_SET_SAVED                          = 0x990,  // 5.0.5 16048
     SMSG_EQUIPMENT_SET_USE_RESULT                     = 0xC52,  // 5.0.5 16048
     SMSG_EXPECTED_SPAM_RECORDS                        = 0xC4D,  // 5.0.5 16048
-    SMSG_EXPLORATION_EXPERIENCE                       = 0xC38,  // 5.0.5 16048
+    SMSG_EXPLORATION_EXPERIENCE                       = 0x092C, // 5.4.1 17538
     SMSG_FAILED_PLAYER_CONDITION                      = 0xA46,  // 5.0.5 16048
     SMSG_FEATURE_SYSTEM_STATUS                        = 0x142C, // 5.4.1 17538
     SMSG_FEIGN_DEATH_RESISTED                         = 0xD7D,  // 5.0.5 16048
@@ -1266,6 +1266,7 @@ enum Opcodes
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
     SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0xE54,  // 5.0.5 16048
+    SMSG_SET_DUNGEON_DIFFICULTY                       = 0x00BC, // 5.4.1 17538
     SMSG_SET_FACTION_ATWAR                            = 0xDD2,  // 5.0.5 16048
     SMSG_SET_FACTION_STANDING                         = 0x1017, // 5.4.1 17538
     SMSG_SET_FACTION_VISIBLE                          = 0x003F, // 5.4.1 17538
@@ -1365,8 +1366,8 @@ enum Opcodes
     SMSG_TRAINER_SERVICE                              = 0x04AD, // 5.4.1 17538
     SMSG_TRANSFER_ABORTED                             = 0x889,  // 5.0.5 16048
     SMSG_TRANSFER_PENDING                             = 0xF79,  // 5.0.5 16048
-    SMSG_TRIGGER_CINEMATIC                            = 0xC18,  // 5.0.5 16048
-    SMSG_TRIGGER_MOVIE                                = 0xD51,  // 5.0.5 16048
+    SMSG_TRIGGER_CINEMATIC                            = 0x0198, // 5.4.1 17538
+    SMSG_TRIGGER_MOVIE                                = 0x0D25, // 5.4.1 17538
     SMSG_TURN_IN_PETITION_RESULTS                     = 0x0D3E, // 5.4.1 17538
     SMSG_TUTORIAL_FLAGS                               = 0x0D1B, // 5.4.1 17538
     SMSG_UNIT_HEALTH_FREQUENT                         = 0x8D1,  // 5.0.5 16048

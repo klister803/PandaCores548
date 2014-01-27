@@ -7447,6 +7447,7 @@ void Player::SendDirectMessage(WorldPacket* data)
 
 void Player::SendCinematicStart(uint32 CinematicSequenceId)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(CinematicSequenceId);
     SendDirectMessage(&data);
@@ -7454,6 +7455,7 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId)
 
 void Player::SendMovieStart(uint32 MovieId)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_TRIGGER_MOVIE, 4);
     data << uint32(MovieId);
     SendDirectMessage(&data);
@@ -21480,15 +21482,17 @@ void Player::SendAutoRepeatCancel(Unit* target)
 
 void Player::SendExplorationExperience(uint32 Area, uint32 Experience)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_EXPLORATION_EXPERIENCE, 8);
-    data << uint32(Area);
     data << uint32(Experience);
+    data << uint32(Area);
     GetSession()->SendPacket(&data);
 }
 
 void Player::SendDungeonDifficulty()
 {
-    WorldPacket data(MSG_SET_DUNGEON_DIFFICULTY, 4);
+    //! 5.4.1
+    WorldPacket data(SMSG_SET_DUNGEON_DIFFICULTY, 4);
     data << (uint32)GetDungeonDifficulty();
     GetSession()->SendPacket(&data);
 }
