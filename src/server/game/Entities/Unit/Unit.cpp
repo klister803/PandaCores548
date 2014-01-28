@@ -7288,24 +7288,24 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                             if (rogue->HasSpellCooldown(51699) || !rogue->isInCombat())
                                 break;
 
-                            Unit * AddComdoTarget;
-
                             if (rogue->GetComboTarget())
                             {
-                                AddComdoTarget = ObjectAccessor::GetUnit(*rogue, rogue->GetComboTarget());
-                            }
-                            else if (rogue->GetSelectedUnit() && !rogue->GetSelectedUnit()->IsFriendlyTo(rogue))
-                            {
-                                AddComdoTarget = rogue->GetSelectedUnit();
-                            } 
-                            else
-                            {
-                                AddComdoTarget = target;
-                            }
-                            if (!AddComdoTarget->IsFriendlyTo(rogue))
-                            {
-                                rogue->CastSpell(AddComdoTarget, 51699, true);
+                                Unit * getComdoTarget = ObjectAccessor::GetUnit(*rogue, rogue->GetComboTarget());
+                                rogue->CastSpell(getComdoTarget, 51699, true);
                                 rogue->AddSpellCooldown(51699, NULL, time(NULL) + cooldown);
+                                break;
+                            }
+                            if (rogue->GetSelectedUnit() && !rogue->GetSelectedUnit()->IsFriendlyTo(rogue))
+                            {
+                                rogue->CastSpell(rogue->GetSelectedUnit(), 51699, true);
+                                rogue->AddSpellCooldown(51699, NULL, time(NULL) + cooldown);
+                                break;
+                            } 
+                            if (target && !target->IsFriendlyTo(rogue))
+                            {
+                                rogue->CastSpell(target, 51699, true);
+                                rogue->AddSpellCooldown(51699, NULL, time(NULL) + cooldown);
+                                break;
                             }
                         }
                     }
