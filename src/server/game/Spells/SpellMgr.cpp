@@ -3941,8 +3941,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].BasePoints = 100;
                     break;
                 case 6358:  // Seduce (succubus)
-                    spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
-                    break;
                 case 115268: // Mesmerize (succubus)
                     spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
                     break;
