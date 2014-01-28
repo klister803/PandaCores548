@@ -4271,7 +4271,7 @@ void Spell::SendSpellStart()
 
     //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_START, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
 
-    ObjectGuid guid1A0 = 0;
+    ObjectGuid guid1A0 = ObjectGuid();
     ObjectGuid casterGuid = m_caster->GetObjectGuid();
     ObjectGuid itemCasterGuid = m_CastItem ? m_CastItem->GetObjectGuid() : casterGuid;
     ObjectGuid targetGuid;
@@ -4286,7 +4286,7 @@ void Spell::SendSpellStart()
     bool hasDelayMoment = false;
     bool hasRuneStateBefore = castFlags & CAST_FLAG_RUNE_LIST;
     bool hasAmmoInventoryType = false;
-    bool hasPredicionHeal = false;
+    bool hasPredictedHeal = false;
     bool hasVisualChain = false;
     bool hasAmmoDisplayId = false;
     bool hasElevation = false;
@@ -4332,16 +4332,15 @@ void Spell::SendSpellStart()
     data.WriteBit(!hasDelayMoment);                             // !has delay moment
     data.WriteBit(!hasRuneStateBefore);                         // has rune state before
 
-    ObjectGuid* unkGuids3;
-    unkGuids3 = new ObjectGuid[extraTargetsCount];
-    for (uint32 i = 0; i < extraTargetsCount; i++)
+    std::vector<ObjectGuid> unkGuids3(extraTargetsCount);
+    for (uint32 i = 0; i < extraTargetsCount; ++i)
         data.WriteGuidMask<3, 1, 7, 6, 2, 4, 5, 0>(unkGuids3[i]);
 
     data.WriteBit(!hasAmmoInventoryType);                       // !byte170
     data.WriteGuidMask<2>(itemCasterGuid);
     data.WriteBits(0, 24);                                      // hit count
 
-    for (uint32 i = 0; i < missCount2; i++)
+    for (uint32 i = 0; i < missCount2; ++i)
     {
         uint32 hitResult = 0;
         data.WriteBits(hitResult, 4);                           // unk bits
@@ -4353,7 +4352,7 @@ void Spell::SendSpellStart()
     data.WriteGuidMask<6>(casterGuid);
     data.WriteBits(0, 13);                                      // dword2C
     data.WriteGuidMask<4>(itemCasterGuid);
-    data.WriteBit(!hasPredicionHeal);                           // !has predicted healing
+    data.WriteBit(!hasPredictedHeal);                           // !has predicted healing
     data.WriteGuidMask<0>(itemCasterGuid);
     data.WriteBit(hasVisualChain);                              // byte17C
     data.WriteBit(m_targets.HasSrc());
@@ -4414,7 +4413,7 @@ void Spell::SendSpellStart()
         data.WriteGuidBytes<6>(srcTransportGuid);
     }
 
-    for (uint32 i = 0; i < extraTargetsCount; i++)
+    for (uint32 i = 0; i < extraTargetsCount; ++i)
     {
         Unit* unkUnit3 = ObjectAccessor::FindUnit(unkGuids3[i]);
         data.WriteGuidBytes<5, 2>(unkGuids3[i]);
@@ -4479,7 +4478,7 @@ void Spell::SendSpellStart()
     if (targetMask & TARGET_FLAG_STRING)
         data.WriteString(m_targets.m_strTarget);
 
-    for (uint32 i = 0; i < powerCount; i++)
+    for (uint32 i = 0; i < powerCount; ++i)
     {
         // not sure about this ...
         data << uint8((Powers)GetSpellInfo()->PowerType);
@@ -4529,13 +4528,8 @@ void Spell::SendSpellStart()
 
     data.WriteGuidBytes<7>(casterGuid);
 
-    if (hasPredicionHeal)
-    {
-        data << uint32(0);
-        //data << uint8(0); // unkByte
-        // if (unkByte == 2)
-            // data.append(0);
-    }
+    if (hasPredictedHeal)
+        data << uint32(0);                                      // amount
 
     data.WriteGuidBytes<4>(itemCasterGuid);
     data.WriteGuidBytes<5>(casterGuid);
@@ -4577,7 +4571,7 @@ void Spell::SendSpellGo()
     if (m_targets.HasTraj())
         castFlags |= CAST_FLAG_ADJUST_MISSILE;
 
-    ObjectGuid guid1A0 = 0;
+    ObjectGuid guid1A0;
     ObjectGuid casterGuid = m_caster->GetObjectGuid();
     ObjectGuid itemCasterGuid = m_CastItem ? m_CastItem->GetObjectGuid() : casterGuid;
     ObjectGuid targetGuid;
@@ -4643,9 +4637,8 @@ void Spell::SendSpellGo()
     data.WriteBit(!guid1A0);                                    // "Guid 1A0 marker"
     data.WriteGuidMask<0>(casterGuid);
 
-    ObjectGuid* Guids2;
-    Guids2 = new ObjectGuid[extraTargetsCount];
-    for (uint32 i = 0; i < extraTargetsCount; i++)
+    std::vector<ObjectGuid> Guids2(extraTargetsCount);
+    for (uint32 i = 0; i < extraTargetsCount; ++i)
         data.WriteGuidMask<4, 1, 5, 2, 0, 3, 6, 7>(Guids2[i]);
 
     data.WriteBit(!hasAmmoDisplayId);                            // !dword16C
@@ -4671,7 +4664,7 @@ void Spell::SendSpellGo()
         }
     }
 
-    data.WriteBit(!hasPredicionHeal);                           // !has predicted healing
+    data.WriteBit(!hasPredictedHeal);                           // !has predicted healing
     data.WriteBit(hasPowerUnit);                                // has power unit
     data.WriteBit(!hasPredictedType);                           // !byte1AC
     counter = 0;
@@ -4762,7 +4755,7 @@ void Spell::SendSpellGo()
 
     data.WriteGuidBytes<3, 1, 6, 5, 0, 7, 2, 4>(targetGuid);
 
-    for (uint32 i = 0; i < powerCount; i++)
+    for (uint32 i = 0; i < powerCount; ++i)
     {
         data << uint32(m_caster->GetPower((Powers)GetSpellInfo()->PowerType));
         data << uint8((Powers)GetSpellInfo()->PowerType); //Power
@@ -4784,7 +4777,7 @@ void Spell::SendSpellGo()
         ++counter;
     }
 
-    for (uint32 i = 0; i < extraTargetsCount; i++) // TARGET_FLAG_EXTRA_TARGETS
+    for (uint32 i = 0; i < extraTargetsCount; ++i) // TARGET_FLAG_EXTRA_TARGETS
     {
         Unit* second = ObjectAccessor::FindUnit(Guids2[i]);
 
@@ -4793,7 +4786,7 @@ void Spell::SendSpellGo()
         data.WriteGuidBytes<4, 1>(Guids2[i]);
         data << float(second ? second->GetPositionZ() : 0.0f);
         data.WriteGuidBytes<3>(Guids2[i]);
-        data << float(second ? second->GetPositionX() : 0.0f);   
+        data << float(second ? second->GetPositionX() : 0.0f);
     }
 
     if (m_targets.HasSrc())
@@ -4871,7 +4864,7 @@ void Spell::SendSpellGo()
         data << uint32(0);
     }
 
-    if (hasPredicionHeal)
+    if (hasPredictedHeal)
         data << uint32(0);
 
     data.WriteGuidBytes<6, 1>(casterGuid);
