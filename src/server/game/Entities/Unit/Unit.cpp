@@ -7279,6 +7279,38 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 51701: // Honor Among Thieves
+                {
+                    if (Unit * owner = (Unit *)(triggeredByAura->GetBase()->GetOwner()))
+                    {
+                        if (Player * rogue = owner->ToPlayer())
+                        {
+                            if (rogue->HasSpellCooldown(51699) || !rogue->isInCombat())
+                                break;
+
+                            Unit * AddComdoTarget;
+
+                            if (rogue->GetComboTarget())
+                            {
+                                AddComdoTarget = ObjectAccessor::GetUnit(*rogue, rogue->GetComboTarget());
+                            }
+                            else if (rogue->GetSelectedUnit() && !rogue->GetSelectedUnit()->IsFriendlyTo(rogue))
+                            {
+                                AddComdoTarget = rogue->GetSelectedUnit();
+                            } 
+                            else
+                            {
+                                AddComdoTarget = target;
+                            }
+                            if (!AddComdoTarget->IsFriendlyTo(rogue))
+                            {
+                                rogue->CastSpell(AddComdoTarget, 51699, true);
+                                rogue->AddSpellCooldown(51699, NULL, time(NULL) + cooldown);
+                            }
+                        }
+                    }
+                    break;
+                }
                 // Anticipation
                 case 114015:
                 {
