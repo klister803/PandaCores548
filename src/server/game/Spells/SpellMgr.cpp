@@ -125,6 +125,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Seduction
             else if (spellproto->Id == 6358 || spellproto->Id == 132412)
                 return DIMINISHING_FEAR;
+            // Mesmerize
+            else if (spellproto->Id == 115268)
+                return DIMINISHING_FEAR;
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -3938,6 +3941,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].BasePoints = 100;
                     break;
                 case 6358:  // Seduce (succubus)
+                    spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
+                    break;
+                case 115268: // Mesmerize (succubus)
                     spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
                     break;
                 case 980:   // Agony
