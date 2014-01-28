@@ -17676,9 +17676,34 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
     if (isRewardAllowed && player && player != victim)
     {
+        ObjectGuid guid = player->GetGUID();
+        ObjectGuid vGuid = victim->GetGUID();
+
+        //! 5.4.1
         WorldPacket data(SMSG_PARTYKILLLOG, (8+8)); // send event PARTY_KILL
-        data << uint64(player->GetGUID()); // player with killing blow
-        data << uint64(victim->GetGUID()); // victim
+        data.WriteBit(0);
+        data.WriteGuidMask<1>(guid);
+        data.WriteGuidMask<4>(vGuid);
+        data.WriteGuidMask<6, 0, 7, 3, 2, 4>(guid);
+        data.WriteGuidMask<5, 7, 0, 2, 6>(vGuid);
+        data.WriteGuidMask<5>(guid);
+        data.WriteGuidMask<3, 1>(vGuid);
+
+        data.FlushBits();
+
+        data.WriteGuidBytes<7>(guid);
+        data.WriteGuidBytes<5>(vGuid);
+        data.WriteGuidBytes<4>(guid);
+        data.WriteGuidBytes<0>(vGuid);
+        data.WriteGuidBytes<5>(guid);
+        data.WriteGuidBytes<4, 2>(vGuid);
+        data.WriteGuidBytes<1>(guid);
+        data.WriteGuidBytes<6>(vGuid);
+        data.WriteGuidBytes<6>(guid);
+        data.WriteGuidBytes<3, 1>(vGuid);
+        data.WriteGuidBytes<0, 3>(guid);
+        data.WriteGuidBytes<7>(vGuid);
+        data.WriteGuidBytes<2>(guid);
 
         Player* looter = player;
 
@@ -17709,15 +17734,6 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
         else
         {
             player->SendDirectMessage(&data);
-
-            if (creature)
-            {
-                WorldPacket data2(SMSG_LOOT_LIST, 8 + 1 + 1);
-                data2 << uint64(creature->GetGUID());
-                data << uint64(0);
-                data << uint64(0);
-                player->SendMessageToSet(&data2, true);
-            }
         }
 
         if (creature)

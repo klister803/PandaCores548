@@ -240,26 +240,29 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
     }
 }
 
+//! 5.4.1
 void WorldSession::HandleLootOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_LOOT");
 
     ObjectGuid guid;
     
-    uint8 bitOrder[8] = {0, 3, 1, 7, 6, 4, 2, 5};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {0, 1, 4, 2, 3, 7, 6, 5};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<7, 5, 4, 2, 0, 1, 6, 3>(guid);
+    recvData.ReadGuidBytes<0, 2, 1, 3, 6, 5, 4, 7>(guid);
 
     // Check possible cheat
     if (!_player->isAlive())
         return;
 
-    GetPlayer()->SendLoot(guid, LOOT_CORPSE, true);
-
     std::list<Creature*> corpesList;
     _player->GetCorpseCreatureInGrid(corpesList, LOOT_DISTANCE);
+
+    WorldPacket data(SMSG_LOOT_RELEASE);
+    data << uint32(corpesList.size()-1);                             //aoe counter
+    _player->SendDirectMessage(&data);
+
+    GetPlayer()->SendLoot(guid, LOOT_CORPSE, false);
+
     for (std::list<Creature*>::const_iterator itr = corpesList.begin(); itr != corpesList.end(); ++itr)
     {
         if(Creature* creature = (*itr))

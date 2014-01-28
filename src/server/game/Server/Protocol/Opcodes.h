@@ -1057,9 +1057,10 @@ enum Opcodes
     SMSG_LOOT_LIST                                    = 0xC37,  // 5.0.5 16048
     SMSG_LOOT_MASTER_LIST                             = 0xA5A,  // 5.0.5 16048
     SMSG_LOOT_MONEY_NOTIFY                            = 0xF18,  // 5.0.5 16048
+    SMSG_LOOT_RELEASE                                 = 0x051F, // 5.4.1 17538
     SMSG_LOOT_RELEASE_RESPONSE                        = 0x008F, // 5.4.1 17538
     SMSG_LOOT_REMOVED                                 = 0x01BD, // 5.4.1 17538
-    SMSG_LOOT_RESPONSE                                = 0xA75,  // 5.0.5 16048
+    SMSG_LOOT_RESPONSE                                = 0x0537, // 5.4.1 17538
     SMSG_LOOT_ROLL                                    = 0xB59,  // 5.0.5 16048
     SMSG_LOOT_ROLL_WON                                = 0xF32,  // 5.0.5 16048
     SMSG_LOOT_START_ROLL                              = 0xEF4,  // 5.0.5 16048
@@ -1137,7 +1138,7 @@ enum Opcodes
     SMSG_OPEN_LFG_DUNGEON_FINDER                      = 0x894,  // 5.0.5 16048
     SMSG_OVERRIDE_LIGHT                               = 0x8B3,  // 5.0.5 16048
     SMSG_PAGE_TEXT_QUERY_RESPONSE                     = 0xCE2,  // 5.0.5 16048
-    SMSG_PARTYKILLLOG                                 = 0x84A,  // 5.0.5 16048
+    SMSG_PARTYKILLLOG                                 = 0x04B5, // 5.4.1 17538
     SMSG_PARTY_COMMAND_RESULT                         = 0xC2D,  // 5.0.5 16048
     SMSG_PARTY_MEMBER_STATS                           = 0xCBA,  // 5.0.5 16048
     SMSG_PARTY_MEMBER_STATS_FULL                      = 0x912,  // 5.0.5 16048

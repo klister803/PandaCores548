@@ -48,6 +48,7 @@ enum HighGuid
     HIGHGUID_GROUP          = 0x1F5,
     HIGHGUID_GUILD          = 0x1FF,                       // new 4.x
     HIGHGUID_INSTANCE_SAVE  = 0x1F44,                      // new 5.x
+    HIGHGUID_LOOT           = 0xF59                        // new 5.x
 };
 
 #define IS_EMPTY_GUID(Guid)          (Guid == 0)

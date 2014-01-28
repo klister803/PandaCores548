@@ -10254,7 +10254,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
         }
     }
 
-    WorldPacket data(SMSG_LOOT_RESPONSE);           // we guess size
+    //! 5.4.1
+    WorldPacket data(SMSG_LOOT_RESPONSE);
     data << LootView(*loot, this, loot_type, guid, permission, pool);
 
     SendDirectMessage(&data);
