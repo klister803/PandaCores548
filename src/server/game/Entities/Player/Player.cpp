@@ -22078,17 +22078,19 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
         {
             if (opcode == SMSG_SET_PCT_SPELL_MODIFIER)
             {
-                float val = 1;
-
-                if (!apply)
-                    val += float(mod->value) / 100;
+                int32 amount = 100;
 
                 for (SpellModList::iterator itr = m_spellMods[mod->op].begin(); itr != m_spellMods[mod->op].end(); ++itr)
                     if ((*itr)->type == mod->type && (*itr)->mask & _mask)
-                        val += (*itr)->value/100;
+                        amount += (*itr)->value;
 
                 if (mod->value)
-                    val += apply ? float(mod->value)/100 : -(float(mod->value)/100);
+                    amount += apply ? mod->value : -mod->value;
+
+                if (amount < 0)
+                    amount = 0;
+
+                float val = amount / 100.0f;
 
                 data << uint8(eff);
                 data << float(val);
