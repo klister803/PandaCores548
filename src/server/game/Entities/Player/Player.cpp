@@ -17989,8 +17989,16 @@ void Player::SendQuestTimerFailed(uint32 quest_id)
 
 void Player::SendCanTakeQuestResponse(uint32 msg) const
 {
+    bool hasString = false;
     WorldPacket data(SMSG_QUESTGIVER_QUEST_INVALID, 4);
     data << uint32(msg);
+    data.WriteBit(!hasString);      // used with INVALIDREASON_DONT_HAVE_REQ
+    if (hasString)
+    {
+        data.WriteBits(0, 9);
+        data.WriteString("");
+    }
+
     GetSession()->SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTGIVER_QUEST_INVALID");
 }
@@ -18006,10 +18014,19 @@ void Player::SendQuestConfirmAccept(const Quest* quest, Player* pReceiver)
             if (const QuestLocale* pLocale = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
                 ObjectMgr::GetLocaleString(pLocale->Title, loc_idx, strTitle);
 
+        ObjectGuid guid = GetObjectGuid();
+
         WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, (4 + strTitle.size() + 8));
+        data.WriteGuidMask<6>(guid);
+        data.WriteBit(0);   // has title
+        data.WriteBits(strTitle.size(), 10);
+        data.WriteGuidMask<2, 4, 5, 3, 0, 7, 1>(guid);
+
+        data.WriteGuidBytes<3>(guid);
         data << uint32(quest->GetQuestId());
-        data << strTitle;
-        data << uint64(GetGUID());
+        data.WriteGuidBytes<1, 6, 7>(guid);
+        data.WriteString(strTitle);
+        data.WriteGuidBytes<2, 0, 4, 5>(guid);
         pReceiver->GetSession()->SendPacket(&data);
 
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUEST_CONFIRM_ACCEPT");

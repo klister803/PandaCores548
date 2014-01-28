@@ -873,11 +873,10 @@ void WorldSession::HandleQueryQuestsCompleted(WorldPacket& /*recvData*/)
 
 void WorldSession::HandleQuestNpcQuery(WorldPacket& recvData)
 {
-    uint32 realCount = 0;
     uint32 count = recvData.ReadBits(22);
     QuestStarter* starterMap = sObjectMgr->GetCreatureQuestStarterMap();
 
-    uint32* quests = new uint32[count];
+    std::vector<uint32> quests;
     for (uint32 i = 0; i < count; ++i)
     {
         uint32 questId;
@@ -893,40 +892,26 @@ void WorldSession::HandleQuestNpcQuery(WorldPacket& recvData)
         if (starterMap->find(questId) == starterMap->end())
             continue;
 
-        quests[realCount++] = questId;
+        quests.push_back(questId);
     }
 
-    WorldPacket data(SMSG_QUEST_NPC_QUERY_RESPONSE, 3 + (realCount * 3) + (realCount * 8));
-    data.WriteBits(realCount, 23);
+    WorldPacket data(SMSG_QUEST_NPC_QUERY_RESPONSE, 3 + quests.size() * (4 + 3));
+    data.WriteBits(quests.size(), 21);
 
-    if (realCount == 0)
+    ByteBuffer buffer;
+    for (uint32 i = 0; i < quests.size(); ++i)
     {
-        delete[] quests;
+        QuestStarter::const_iterator itr = starterMap->find(quests[i]);
+        data.WriteBits(itr->second.size(), 22);
 
-        SendPacket(&data);
-        return;
-    }
-
-    ByteBuffer buffer(realCount * 8);
-
-    for (uint32 i = 0; i < realCount; ++i)
-    {
-        uint32 questId = quests[i];
-
-        QuestStarter::const_iterator itr = starterMap->find(questId);
-        data.WriteBits<int>(itr->second.size(), 24);
-
-        buffer << questId;
+        buffer << uint32(quests[i]);
         for (QuestObject::const_iterator obj = itr->second.begin(); obj != itr->second.end(); ++obj)
-        {
-            uint32 creatureId = (*obj);
-            buffer << creatureId;
-        }
+            buffer << uint32(*obj);
     }
 
-    data.append(buffer);
-
-    delete[] quests;
+    data.FlushBits();
+    if (!buffer.empty())
+        data.append(buffer);
 
     SendPacket(&data);
 }
