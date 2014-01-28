@@ -1472,16 +1472,16 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 
     recvData.ReadGuidMask<5, 1, 3, 0, 6, 4>(guid);
 
-    uint32 declinedNamesLength[5];
-    for (int i = 0; i != 5; i++)
+    uint32 declinedNamesLength[MAX_DECLINED_NAME_CASES];
+    for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
         declinedNamesLength[i] = recvData.ReadBits(7);
 
     recvData.ReadGuidMask<2, 7>(guid);
     recvData.ReadFlush();
     recvData.ReadGuidBytes<6, 1, 2>(guid);
-    
+
     bool decl_checl = true;
-    for (int i = 0; i != 5; i++)
+    for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
     {
         declinedname.name[i] = recvData.ReadString(declinedNamesLength[i]);
         if (!normalizePlayerName(declinedname.name[i]))
@@ -1545,7 +1545,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
         return;
     }
 
-    for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
+    for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
         CharacterDatabase.EscapeString(declinedname.name[i]);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -1557,7 +1557,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_DECLINED_NAME);
     stmt->setUInt32(0, GUID_LOPART(guid));
 
-    for (uint8 i = 0; i < 5; i++)
+    for (uint8 i = 0; i < 5; ++i)
         stmt->setString(i+1, declinedname.name[i]);
 
     trans->Append(stmt);

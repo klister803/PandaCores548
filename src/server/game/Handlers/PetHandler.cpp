@@ -1034,7 +1034,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
         }
         recvPacket.ReadByteSeq(movementGuid[4]);
         recvPacket >> movementInfo.pos.m_positionZ;
-        for (uint32 i = 0; i != unkMovementLoopCounter; i++)
+        for (uint32 i = 0; i < unkMovementLoopCounter; ++i)
             recvPacket.read_skip<uint32>();
         if (hasFallData)
         {
