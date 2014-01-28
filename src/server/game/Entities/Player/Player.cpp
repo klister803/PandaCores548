@@ -8255,8 +8255,8 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    if (!modifyWeek && weekCap && newWeekCount > weekCap)
-        newWeekCount = weekCap;
+    if (!modifyWeek)
+        newWeekCount = oldWeekCount;
 
     // if we get more then weekCap just set to limit
     if (modifyWeek && weekCap && (int32(weekCap) < newWeekCount))
