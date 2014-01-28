@@ -4581,7 +4581,7 @@ void Spell::SendSpellGo()
     uint32 powerCount = 0;
 
     bool hasPowerUnit = false/*castFlags & CAST_FLAG_POWER_LEFT_SELF*/;
-    bool hasPredicionHeal = castFlags & CAST_FLAG_HEAL_PREDICTION;
+    bool hasPredictedHeal = castFlags & CAST_FLAG_HEAL_PREDICTION;
     bool hasAmmoDisplayId = false;
     bool byte180 = false;
     bool hasCastSchoolImmunities = false;
