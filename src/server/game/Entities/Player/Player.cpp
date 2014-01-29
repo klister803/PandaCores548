@@ -29353,9 +29353,10 @@ void Player::SendCemeteryList(bool onMap)
         buf << uint32(itr->second.safeLocId);
     }
 
+    //! 5.4.1
     WorldPacket packet(SMSG_REQUEST_CEMETERY_LIST_RESPONSE, buf.wpos()+4);
+    packet.WriteBits(count, 22);
     packet.WriteBit(onMap);
-    packet.WriteBits(count, 24);
     packet.FlushBits();
     packet.append(buf);
     GetSession()->SendPacket(&packet);

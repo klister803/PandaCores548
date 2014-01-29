@@ -1240,7 +1240,7 @@ enum Opcodes
     SMSG_REFORGE_RESULT                               = 0xBA6,  // 5.0.5 16048
     SMSG_REMOVED_SPELL                                = 0x049E, // 5.4.1 17538
     SMSG_REPORT_PVP_AFK_RESULT                        = 0x897,  // 5.0.5 16048
-    SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0xBB7,  // 5.0.5 16048
+    SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0x040D, // 5.4.1 17538
     SMSG_REQUEST_PVP_REWARDS_RESPONSE                 = 0xE30,  // 5.0.5 16048
     SMSG_RESEARCH_COMPLETE                            = 0xBF3,  // 5.0.5 16048
     SMSG_RESEARCH_SETUP_HISTORY                       = 0xBF1,  // 5.0.5 16048
