@@ -266,12 +266,13 @@ ObjectMgr::~ObjectMgr()
             delete *encounterItr;
 }
 
-std::list<CurrencyLoot> ObjectMgr::GetCurrencyLoot(uint32 entry, uint8 type)
+std::list<CurrencyLoot> ObjectMgr::GetCurrencyLoot(uint32 entry, uint8 type, uint8 spawnMode)
 {
     std::list<CurrencyLoot> temp;
+    uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(spawnMode)));
     for (CurrencysLoot::iterator itr = _currencysLoot.begin(); itr != _currencysLoot.end(); ++itr)
     {
-        if (itr->Entry == entry && itr->Type == type)
+        if (itr->Entry == entry && itr->Type == type && (itr->lootmode & diffMask))
             temp.push_back(*itr);
     }
     return temp;
@@ -6589,7 +6590,7 @@ uint64 ObjectMgr::GenerateVoidStorageItemId()
 
 void ObjectMgr::LoadCurrencysLoot()
 {
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, type, currencyId, currencyAmount, currencyMaxAmount FROM currency_loot");
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, type, currencyId, currencyAmount, currencyMaxAmount, lootmode FROM currency_loot");
     if (!result)
         return;
 
@@ -6603,6 +6604,7 @@ void ObjectMgr::LoadCurrencysLoot()
         uint32 currencyId = field[2].GetUInt32();
         uint32 currencyAmount = field[3].GetUInt32();
         uint32 currencyMaxAmount = field[4].GetUInt32();
+        uint32 lootmode = field[5].GetUInt32();
 
         if (type < 1)
         {
@@ -6615,7 +6617,7 @@ void ObjectMgr::LoadCurrencysLoot()
             continue;
         }
 
-        CurrencyLoot loot = CurrencyLoot(entry, type, currencyId, currencyAmount, currencyMaxAmount);
+        CurrencyLoot loot = CurrencyLoot(entry, type, currencyId, currencyAmount, currencyMaxAmount, lootmode);
         _currencysLoot.push_back(loot);
         ++count;
     }
