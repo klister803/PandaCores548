@@ -10270,28 +10270,23 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
 void Player::SendNotifyLootMoneyRemoved(uint64 gold, uint64 lguid)
 {
-    WorldPacket data(SMSG_LOOT_CLEAR_MONEY);
-    data << uint64(gold);
-    GetSession()->SendPacket(&data);
-
-    data.Initialize(SMSG_COIN_REMOVED);
+    //! 5.4.1
+    WorldPacket data(SMSG_COIN_REMOVED, 8);
     ObjectGuid guid;
     if(lguid)
         guid = lguid;
     else
         guid = GetLootGUID();
 
-    uint8 bitOrder[8] = {5, 4, 6, 3, 1, 0, 2, 7};
-    data.WriteBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {1, 0, 4, 2, 6, 5, 7, 3};
-    data.WriteBytesSeq(guid, byteOrder);
+    data.WriteGuidMask<0, 7, 5, 6, 3, 4, 2, 1>(guid);
+    data.WriteGuidBytes<3, 0, 4, 2, 5, 1, 6, 7>(guid);
     
     GetSession()->SendPacket(&data);
 }
 
 void Player::SendNotifyLootItemRemoved(uint8 lootSlot, uint64 lguid)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_LOOT_REMOVED);
     ObjectGuid guid;
     if (lguid)
@@ -10323,7 +10318,7 @@ void Player::SendNotifyLootItemRemoved(uint8 lootSlot, uint64 lguid)
 
     data.WriteGuidBytes<1>(guid2);
     data.WriteGuidBytes<7, 4, 1>(guid);
-    data.WriteGuidBytes<0, 3, 6, 2>(guid2);
+    data.WriteGuidBytes<0, 6, 3, 2>(guid2);
 
 
     GetSession()->SendPacket(&data);

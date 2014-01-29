@@ -204,6 +204,13 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
                 uint32 goldPerPlayer = uint32((loot->gold) / (playersNear.size()));
                 
                 loot->NotifyMoneyRemoved(goldPerPlayer);
+
+                //! 5.4.1
+                WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
+                data << uint32(goldPerPlayer);
+                data.WriteBit(playersNear.size() <= 1);     // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
+                data.FlushBits();
+
                 for (std::vector<Player*>::const_iterator i = playersNear.begin(); i != playersNear.end(); ++i)
                 {
                     (*i)->ModifyMoney(goldPerPlayer);
@@ -213,9 +220,6 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
                         if (uint32 guildGold = CalculatePct(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
                             guild->HandleMemberDepositMoney(this, guildGold, true);
 
-                    WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
-                    data.WriteBit(playersNear.size() <= 1); // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
-                    data << uint32(goldPerPlayer);
                     (*i)->GetSession()->SendPacket(&data);
                 }
             }
@@ -229,9 +233,12 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
                         guild->HandleMemberDepositMoney(this, guildGold, true);
 
                 loot->NotifyMoneyRemoved(loot->gold);
+
+                //! 5.4.1
                 WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
-                data.WriteBit(1);   // "You loot..."
                 data << uint32(loot->gold);
+                data.WriteBit(1);   // "You loot..."
+                data.FlushBits();
                 SendPacket(&data);
             }
 
