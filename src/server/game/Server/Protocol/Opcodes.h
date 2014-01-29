@@ -565,6 +565,7 @@ enum Opcodes
     CMSG_WARGAME_START                                = 0x10E0, // 5.4.1 17538
     CMSG_WHO                                          = 0x1568, // 5.4.1 17538
     CMSG_WHOIS                                        = 0x2456, // 5.0.5 16048
+    CMSG_MOVE_WORLDPORT_ACK                           = 0x00E0, // 5.4.1 17538
     CMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x04EC, // 5.4.1 17538
     CMSG_WORLD_TELEPORT                               = 0x0D48, // 5.4.1 17538
     CMSG_WRAP_ITEM                                    = 0x0034, // 5.4.1 17538
@@ -644,7 +645,6 @@ enum Opcodes
     MSG_MOVE_UPDATE_MOUSE                             = 0,      // Client patched
     MSG_MOVE_UPDATE_RUN_SPEED                         = 0,      // Client patched
     MSG_MOVE_WATER_WALK                               = 0,      // Client patched
-    MSG_MOVE_WORLDPORT_ACK                            = 0x00E0, // 5.4.1 17538
     MSG_NOTIFY_PARTY_SQUELCH                          = 0,      // 0x4D06 in 4.3.4 @todo : Find me and BACON !
     MSG_PARTY_ASSIGNMENT                              = 0x0CC5, // 5.4.1 17538
     MSG_PETITION_DECLINE                              = 0x0B7C, // 5.4.1 17538
