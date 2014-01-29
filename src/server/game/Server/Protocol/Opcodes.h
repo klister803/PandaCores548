@@ -600,7 +600,7 @@ enum Opcodes
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0x000,  // 5.0.5 16048 deprecated
     SMSG_CHANNEL_START                                = 0x831,  // 5.0.5 16048
-    SMSG_CHANNEL_UPDATE                               = 0x000,  // unknown - duplicate with CMSG_LOAD_SCREEN
+    SMSG_CHANNEL_UPDATE                               = 0x1148, // 5.4.1 17538
     MSG_GM_BIND_OTHER                                 = 0x000,  // Not found in 4.3.4
     MSG_GM_SHOWLABEL                                  = 0x000,  // Not found in 4.3.4
     MSG_GM_SUMMON                                     = 0x000,  // Not found in 4.3.4
@@ -1165,7 +1165,7 @@ enum Opcodes
     SMSG_PET_REMOVED_SPELL                            = 0x048D, // 5.4.1 17538
     SMSG_PET_RENAMEABLE                               = 0x9EB,  // 5.0.5 16048
     SMSG_PET_SLOT_UPDATED                             = 0xA1B,  // 5.0.5 16048
-    SMSG_PET_SPELLS                                   = 0x0000, // unknown - duplicate with CMSG_REQUEST_HOTFIX
+    SMSG_PET_SPELLS                                   = 0x1E4,  // 5.4.1 17538
     SMSG_PET_TAME_FAILURE                             = 0x1195, // 5.4.1 17538
     SMSG_PET_UPDATE_COMBO_POINTS                      = 0x9CD,  // 5.0.5 16048
     SMSG_PLAYED_TIME                                  = 0xD59,  // 5.0.5 16048
