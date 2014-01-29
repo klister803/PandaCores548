@@ -1362,8 +1362,8 @@ enum Opcodes
     SMSG_TRADE_STATUS_EXTENDED                        = 0xAFB,  // 5.0.5 16048
     SMSG_TRAINER_LIST                                 = 0x01BC, // 5.4.1 17538
     SMSG_TRAINER_SERVICE                              = 0x04AD, // 5.4.1 17538
-    SMSG_TRANSFER_ABORTED                             = 0x889,  // 5.0.5 16048
-    SMSG_TRANSFER_PENDING                             = 0xF79,  // 5.0.5 16048
+    SMSG_TRANSFER_ABORTED                             = 0x111D, // 5.4.1 17538
+    SMSG_TRANSFER_PENDING                             = 0x0917, // 5.4.1 17538
     SMSG_TRIGGER_CINEMATIC                            = 0x0198, // 5.4.1 17538
     SMSG_TRIGGER_MOVIE                                = 0x0D25, // 5.4.1 17538
     SMSG_TURN_IN_PETITION_RESULTS                     = 0x0D3E, // 5.4.1 17538

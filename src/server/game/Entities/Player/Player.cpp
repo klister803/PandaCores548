@@ -2497,23 +2497,14 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if (!GetSession()->PlayerLogout())
             {
                 // send transfer packets
+                //! 5.4.1
                 WorldPacket data(SMSG_TRANSFER_PENDING, 4 + 4 + 4);
-                
-                if (m_transport)
-                {
-                    data.WriteBit(0);       // unknown
-                    data.WriteBit(1);   // has transport
-                    data.FlushBits();
-                    data << m_transport->GetEntry() << GetMapId();
-                }
-                else
-                {
-                    data.WriteBit(0);       // unknown
-                    data.WriteBit(0);   // has transport
-                    data.FlushBits();
-                }
-
+                data.WriteBit(0);       // customLoadScreenSpell
+                data.WriteBit(1);       // has transport
+                data.FlushBits();
                 data << uint32(mapid);
+                if (m_transport)
+                    data << GetMapId() << m_transport->GetEntry();
                 GetSession()->SendPacket(&data);
             }
 
@@ -24566,10 +24557,14 @@ void Player::SendUpdateToOutOfRangeGroupMembers()
 
 void Player::SendTransferAborted(uint32 mapid, TransferAbortReason reason, uint8 arg)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_TRANSFER_ABORTED, 4+2);
+    data.WriteBits(reason, 5);      // transfer abort reason
+    data.WriteBit(!arg);
+    data.FlushBits();
+    if (arg)
+        data << uint8(arg);
     data << uint32(mapid);
-    data << uint8(reason); // transfer abort reason
-    data << uint8(arg);
     GetSession()->SendPacket(&data);
 }
 
