@@ -483,7 +483,8 @@ enum Opcodes
     CMSG_SET_CURRENCY_FLAGS                           = 0x134E, // 5.4.1 17538
     CMSG_SET_DUNGEON_DIFFICULTY                       = 0x0C69, // 5.4.1 17538
     CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x0569, // 5.4.1 17538
-    CMSG_SET_FACTION_ATWAR                            = 0x0776, // 5.4.1 17538 or 0x0667
+    CMSG_SET_FACTION_ATWAR                            = 0x0776, // 5.4.1 17538
+    CMSG_UNSET_FACTION_ATWAR                          = 0x0667, // 5.4.1 17538
     CMSG_SET_FACTION_CHEAT                            = 0x000,  // 5.0.5 16048
     CMSG_SET_FACTION_INACTIVE                         = 0x0A75, // 5.4.1 17538
     CMSG_SET_GUILD_BANK_TEXT                          = 0x12C3, // 5.4.1 17538
@@ -599,7 +600,7 @@ enum Opcodes
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0x000,  // 5.0.5 16048 deprecated
     SMSG_CHANNEL_START                                = 0x831,  // 5.0.5 16048
-    SMSG_CHANNEL_UPDATE                               = 0x1148, // 5.4.1 17538
+    SMSG_CHANNEL_UPDATE                               = 0x000,  // unknown - duplicate with CMSG_LOAD_SCREEN
     MSG_GM_BIND_OTHER                                 = 0x000,  // Not found in 4.3.4
     MSG_GM_SHOWLABEL                                  = 0x000,  // Not found in 4.3.4
     MSG_GM_SUMMON                                     = 0x000,  // Not found in 4.3.4
@@ -1164,7 +1165,7 @@ enum Opcodes
     SMSG_PET_REMOVED_SPELL                            = 0x048D, // 5.4.1 17538
     SMSG_PET_RENAMEABLE                               = 0x9EB,  // 5.0.5 16048
     SMSG_PET_SLOT_UPDATED                             = 0xA1B,  // 5.0.5 16048
-    SMSG_PET_SPELLS                                   = 0x01E4, // 5.4.1 17538
+    SMSG_PET_SPELLS                                   = 0x0000, // unknown - duplicate with CMSG_REQUEST_HOTFIX
     SMSG_PET_TAME_FAILURE                             = 0x1195, // 5.4.1 17538
     SMSG_PET_UPDATE_COMBO_POINTS                      = 0x9CD,  // 5.0.5 16048
     SMSG_PLAYED_TIME                                  = 0xD59,  // 5.0.5 16048
@@ -1277,7 +1278,7 @@ enum Opcodes
     SMSG_SET_PHASE_SHIFT                              = 0xA93,  // 5.0.5 16048
     SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0x0085, // 5.4.1 17538
     SMSG_SET_PLAY_HOVER_ANIM                          = 0xE84,  // 5.0.5 16048
-    SMSG_SET_PROFICIENCY                              = 0x823,  // 5.0.5 16048
+    SMSG_SET_PROFICIENCY                              = 0x05B6, // 5.4.1 17538
     SMSG_SET_PROJECTILE_POSITION                      = 0x8BC,  // 5.0.5 16048
     SMSG_SET_TIME_ZONE_INFORMATION                    = 0x14AF, // 5.4.1 17538 (JamList) (NYI)
     SMSG_SHOWTAXINODES                                = 0x119F, // 5.4.1 17538

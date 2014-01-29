@@ -813,12 +813,8 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recvPacket)
     ObjectGuid guid;
 
     recvPacket.ReadBit(); //unk
-
-    uint8 bitOrder[8] = {2, 1, 6, 5, 4, 7, 0, 3};
-    recvPacket.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {4, 2, 7, 3, 0, 5, 6, 1};
-    recvPacket.ReadBytesSeq(guid, byteOrder);
+    recvPacket.ReadGuidMask<4, 7, 0, 1, 5, 6, 2, 3>(guid);
+    recvPacket.ReadGuidBytes<6, 5, 4, 3, 1, 0, 7, 2>(guid);
 
     if (GetPlayer()->IsInWorld())
     {

@@ -1247,13 +1247,20 @@ void WorldSession::HandleSetFactionAtWar(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_FACTION_ATWAR");
 
-    uint32 repListID;
-    uint8  flag;
-
+    uint8 repListID;
     recvData >> repListID;
-    recvData >> flag;
 
-    GetPlayer()->GetReputationMgr().SetAtWar(repListID, flag);
+    GetPlayer()->GetReputationMgr().SetAtWar(repListID, true);
+}
+
+void WorldSession::HandleUnsetFactionAtWar(WorldPacket & recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_UNSET_FACTION_ATWAR");
+
+    uint8 repListID;
+    recvData >> repListID;
+
+    GetPlayer()->GetReputationMgr().SetAtWar(repListID, false);
 }
 
 //I think this function is never used :/ I dunno, but i guess this opcode not exists
@@ -1302,11 +1309,11 @@ void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_FACTION_INACTIVE");
-    uint32 replistid;
-    uint8 inactive;
-    recvData >> replistid >> inactive;
+    uint32 repListid;
+    recvData >> repListid;
+    bool inactive = recvData.ReadBit();
 
-    _player->GetReputationMgr().SetInactive(replistid, inactive);
+    _player->GetReputationMgr().SetInactive(repListid, inactive);
 }
 
 void WorldSession::HandleShowingHelmOpcode(WorldPacket& recvData)
