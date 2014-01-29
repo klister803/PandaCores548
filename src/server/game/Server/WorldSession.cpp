@@ -49,7 +49,7 @@
 bool MapSessionFilter::Process(WorldPacket* packet)
 {
     Opcodes opcode = DropHighBytes(packet->GetOpcode());
-    OpcodeHandler const* opHandle = opcodeTable[opcode];
+    OpcodeHandler const* opHandle = opcodeTable[CMSG][opcode];
 
     //let's check if our opcode can be really processed in Map::Update()
     if (opHandle->packetProcessing == PROCESS_INPLACE)
@@ -72,7 +72,7 @@ bool MapSessionFilter::Process(WorldPacket* packet)
 bool WorldSessionFilter::Process(WorldPacket* packet)
 {
     Opcodes opcode = DropHighBytes(packet->GetOpcode());
-    OpcodeHandler const* opHandle = opcodeTable[opcode];
+    OpcodeHandler const* opHandle = opcodeTable[CMSG][opcode];
     //check if packet handler is supposed to be safe
     if (opHandle->packetProcessing == PROCESS_INPLACE)
         return true;
@@ -214,10 +214,10 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 
     if (!forced)
     {
-        OpcodeHandler* handler = opcodeTable[packet->GetOpcode()];
+        OpcodeHandler* handler = opcodeTable[SMSG][packet->GetOpcode()];
         if (!handler || handler->status == STATUS_UNHANDLED)
         {
-            sLog->outError(LOG_FILTER_OPCODES, "Prevented sending disabled opcode %s to %s", GetOpcodeNameForLogging(packet->GetOpcode()).c_str(), GetPlayerName(false).c_str());
+            sLog->outError(LOG_FILTER_OPCODES, "Prevented sending disabled opcode %s to %s", GetOpcodeNameForLogging(packet->GetOpcode(), SMSG).c_str(), GetPlayerName(false).c_str());
             return;
         }
     }
@@ -335,7 +335,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             !_recvQueue.empty() && _recvQueue.peek(true) != firstDelayedPacket &&
             _recvQueue.next(packet, updater))
     {
-        const OpcodeHandler* opHandle = opcodeTable[packet->GetOpcode()];
+        const OpcodeHandler* opHandle = opcodeTable[CMSG][packet->GetOpcode()];
 
         try
         {
@@ -357,7 +357,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                             QueuePacket(packet);
                             //! Log
                                 sLog->outDebug(LOG_FILTER_NETWORKIO, "Re-enqueueing packet with opcode %s with with status STATUS_LOGGEDIN. "
-                                    "Player is currently not in world yet.", GetOpcodeNameForLogging(packet->GetOpcode()).c_str());
+                                    "Player is currently not in world yet.", GetOpcodeNameForLogging(packet->GetOpcode(), CMSG).c_str());
                         }
                     }
                     else if (_player->IsInWorld())

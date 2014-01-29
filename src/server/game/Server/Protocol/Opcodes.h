@@ -1434,6 +1434,13 @@ enum PacketProcessing
     PROCESS_THREADSAFE                                      // packet is thread-safe - process it in Map::Update()
 };
 
+enum PacketType
+{
+    CMSG            = 0,
+    SMSG            = 1,
+    MAX_PACKET_TYPE
+};
+
 class WorldPacket;
 class WorldSession;
 
@@ -1451,19 +1458,34 @@ struct OpcodeHandler
     pOpcodeHandler handler;
 };
 
-extern OpcodeHandler* opcodeTable[NUM_OPCODE_HANDLERS];
+extern OpcodeHandler* opcodeTable[MAX_PACKET_TYPE][NUM_OPCODE_HANDLERS];
 void InitOpcodes();
 
 // Lookup opcode name for human understandable logging
-inline std::string GetOpcodeNameForLogging(Opcodes id)
+inline std::string GetOpcodeNameForLogging(Opcodes id, PacketType ptype = MAX_PACKET_TYPE)
 {
+    // all cases should be defined
+    if (ptype == MAX_PACKET_TYPE)
+    {
+        if (opcodeTable[CMSG][uint32(id) & 0x7FFF] && opcodeTable[SMSG][uint32(id) & 0x7FFF])
+        {
+            // Should not happend! Try to do strict definitions.
+            std::ostringstream ss;
+            ss << "CMSG: " << GetOpcodeNameForLogging(id, CMSG);
+            ss << " SMSG " << GetOpcodeNameForLogging(id, CMSG);
+            return ss.str();
+        }
+
+        return GetOpcodeNameForLogging(id, opcodeTable[CMSG][uint32(id) & 0x7FFF] ? CMSG : SMSG);
+    }
+
     uint32 opcode = uint32(id);
     std::ostringstream ss;
     ss << '[';
 
     if (id < UNKNOWN_OPCODE)
     {
-        if (OpcodeHandler* handler = opcodeTable[uint32(id) & 0x7FFF])
+        if (OpcodeHandler* handler = opcodeTable[ptype][uint32(id) & 0x7FFF])
             ss << handler->name;
         else
             ss << "UNKNOWN OPCODE";

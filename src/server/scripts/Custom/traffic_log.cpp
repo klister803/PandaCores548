@@ -70,7 +70,7 @@ public:
         std::vector<Value>::iterator itr = v.begin();
         while (itr != v.end() && i < size)
         {
-            handler->PSendSysMessage("%i: 0x%x(%s); Value: %u;", i+1, (*itr).pos, opcodeTable[(*itr).pos]->name, (*itr).value);
+            handler->PSendSysMessage("%i: 0x%x(%s); Value: %u;", i+1, (*itr).pos, opcodeTable[SMSG][(*itr).pos]->name, (*itr).value);
             itr++;
             i++;
         }
@@ -102,7 +102,7 @@ public:
         std::vector<Value>::iterator itr = v.begin();
         while (itr != v.end() && i < size)
         {
-            handler->PSendSysMessage("%i: 0x%x(%s); Value: %f(mb);", i+1, (*itr).pos, opcodeTable[(*itr).pos]->name, float((*itr).value) / 1024.f / 1024.f);
+            handler->PSendSysMessage("%i: 0x%x(%s); Value: %f(mb);", i+1, (*itr).pos, opcodeTable[SMSG][(*itr).pos]->name, float((*itr).value) / 1024.f / 1024.f);
             itr++;
             i++;
         }
@@ -134,7 +134,7 @@ public:
         std::vector<Value>::iterator itr = v.begin();
         while (itr != v.end() && i < size)
         {
-            handler->PSendSysMessage("%i: 0x%x(%s); Value: %u;", i+1, (*itr).pos, opcodeTable[(*itr).pos]->name, (*itr).value);
+            handler->PSendSysMessage("%i: 0x%x(%s); Value: %u;", i+1, (*itr).pos, opcodeTable[SMSG][(*itr).pos]->name, (*itr).value);
             itr++;
             i++;
         }
