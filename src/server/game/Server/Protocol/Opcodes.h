@@ -597,6 +597,7 @@ enum Opcodes
     CMSG_MOVE_STOP_TURN                               = 0x1749, // 5.4.1 17538
     CMSG_CORPSE_QUERY                                 = 0x0D4C, // 5.4.1 17538
     CMSG_RAID_TARGET_UPDATE                           = 0x15E4, // 5.4.1 17538
+    CMSG_GET_WEB_TICKET                               = 0x11C5, // 5.4.1 17538
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
@@ -850,11 +851,11 @@ enum Opcodes
     SMSG_DAMAGE_DONE_OBSOLETE                         = 0,      // Not found in 4.3.4
     SMSG_DANCE_QUERY_RESPONSE                         = 0x843,  // 5.0.5 16048
     SMSG_DB_REPLY                                     = 0x1406, // 5.4.1 17538
-    SMSG_DEATH_RELEASE_LOC                            = 0x85E,  // 5.0.5 16048
+    SMSG_DEATH_RELEASE_LOC                            = 0x1194, // 5.4.1 17538
     SMSG_DEBUG_RUNE_REGEN                             = 0xE2E,  // 5.0.5 16048
-    SMSG_DEFENSE_MESSAGE                              = 0x9E9,  // 5.0.5 16048
+    SMSG_DEFENSE_MESSAGE                              = 0x0D14, // 5.4.1 17538
     SMSG_DESTROY_OBJECT                               = 0x04B4, // 5.4.1 17538
-    SMSG_DESTRUCTIBLE_BUILDING_DAMAGE                 = 0xDE5,  // 5.0.5 16048
+    SMSG_DESTRUCTIBLE_BUILDING_DAMAGE                 = 0x1434, // 5.4.1 17538
     SMSG_DIFFERENT_INSTANCE_FROM_PARTY                = 0xE26,  // 5.0.5 16048
     SMSG_DISENCHANT_CREDIT                            = 0xE2D,  // 5.0.5 16048
     SMSG_DISMOUNT                                     = 0x9B3,  // 5.0.5 16048
@@ -871,7 +872,7 @@ enum Opcodes
     SMSG_DUEL_REQUESTED                               = 0xC30,  // 5.0.5 16048
     SMSG_DUEL_WINNER                                  = 0xDD1,  // 5.0.5 16048
     SMSG_DUMP_RIDE_TICKETS_RESPONSE                   = 0xBF9,  // 5.0.5 16048
-    SMSG_DURABILITY_DAMAGE_DEATH                      = 0xD0C,  // 5.0.5 16048
+    SMSG_DURABILITY_DAMAGE_DEATH                      = 0x0934, // 5.4.1 17538
     SMSG_ECHO_PARTY_SQUELCH                           = 0,      // 0x0814 in 4.3.4 @todo : Find me and BACON !
     SMSG_EMOTE                                        = 0x0D8B, // 5.4.1 17538
     SMSG_ENABLE_BARBER_SHOP                           = 0xC19,  // 5.0.5 16048

@@ -203,13 +203,30 @@ void ReputationMgr::SendInitialReputations()
     //! 5.4.1
     WorldPacket data(SMSG_INITIALIZE_FACTIONS, (4+256*5));
 
+    RepListID a = 0;
     for (FactionStateList::iterator itr = _factions.begin(); itr != _factions.end(); ++itr)
     {
+        // fill in absent fields
+        for (; a != itr->first; ++a)
+        {
+            data << uint8(0);
+            data << uint32(0);
+        }
+
         // fill in encountered data
         data << uint8(itr->second.Flags);
         data << uint32(itr->second.Standing);
 
         itr->second.needSend = false;
+
+        ++a;
+    }
+
+    // fill in absent fields
+    for (; a != 256; ++a)
+    {
+        data << uint8(0);
+        data << uint32(0);
     }
 
     for (uint32 i = 0; i < 256; ++i)

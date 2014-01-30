@@ -60,7 +60,7 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_REPOP_REQUEST Message");
 
-    recvData.read_skip<uint8>(); // FromLua ?
+    recvData.ReadBit();
 
     if (GetPlayer()->isAlive() || GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
@@ -551,7 +551,7 @@ void WorldSession::HandleReturnToGraveyard(WorldPacket& /*recvPacket*/)
 {
     if (GetPlayer()->isAlive() || !GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
-    //TODO: unk32, unk32
+
     GetPlayer()->RepopAtGraveyard();
 }
 

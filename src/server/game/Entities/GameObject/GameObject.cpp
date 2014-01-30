@@ -1862,12 +1862,77 @@ void GameObject::ModifyHealth(int32 change, Unit* attackerOrHealer /*= NULL*/, u
     // TODO: is there any packet for healing?
     if (change < 0 && player)
     {
-        WorldPacket data(SMSG_DESTRUCTIBLE_BUILDING_DAMAGE, 8 + 8 + 8 + 4 + 4);
-        data.appendPackGUID(GetGUID());
-        data.appendPackGUID(attackerOrHealer->GetGUID());
-        data.appendPackGUID(player->GetGUID());
-        data << uint32(-change);
+        WorldPacket data(SMSG_DESTRUCTIBLE_BUILDING_DAMAGE);
+        data.WriteGuidMask<0, 7, 2, 6>(attackerOrHealer->GetGUID());
+        data.WriteGuidMask<0>(player->GetGUID());
+        data.WriteGuidMask<4>(attackerOrHealer->GetGUID());
+        data.WriteGuidMask<7>(player->GetGUID());
+        data.WriteGuidMask<5>(attackerOrHealer->GetGUID());
+        data.WriteGuidMask<4>(player->GetGUID());
+        data.WriteGuidMask<1>(attackerOrHealer->GetGUID());
+        data.WriteGuidMask<3>(player->GetGUID());
+        data.WriteGuidMask<0>(GetGUID());
+        data.WriteGuidMask<3>(attackerOrHealer->GetGUID());
+        data.WriteBit(0);                                         // unk bit, bool unk
+        data.WriteGuidMask<1, 7, 3>(GetGUID());
+        /*uint64 unkGuid = 0;
+        if (unk)
+        {
+            data.WriteGuidMask<1>(unkGuid);
+            data.WriteBits(0, 21);                                // unk counter
+            data.WriteGuidMask<4, 5, 2, 0, 6, 7, 3>(unkGuid);
+        }*/
+        data.WriteGuidMask<6>(GetGUID());
+        data.WriteGuidMask<5>(player->GetGUID());
+        data.WriteGuidMask<5>(GetGUID());
+        data.WriteGuidMask<6>(player->GetGUID());
+        data.WriteGuidMask<2>(GetGUID());
+        data.WriteGuidMask<1, 2>(player->GetGUID());
+        data.WriteGuidMask<4>(GetGUID());
+
         data << uint32(spellId);
+
+        /*if (unk)
+        {
+            data.WriteGuidBytes<3, 6>(unkGuid);
+            data << uint32(0);
+            data << uint32(0);
+            data.WriteGuidBytes<5, 2, 4>(unkGuid);
+
+            if (unk_counter)
+            {
+                for (int i = 0; i < unk_counter; i++)
+                {
+                    data << uint32(0);
+                    data << uint32(0);
+                }
+            }
+
+            data.WriteGuidBytes<0, 7, 1>(unkGuid);
+            data << uint32(0);
+        }*/
+        data.WriteGuidBytes<0>(player->GetGUID());
+        data.WriteGuidBytes<7>(GetGUID());
+        data.WriteGuidBytes<6>(attackerOrHealer->GetGUID());
+        data.WriteGuidBytes<4>(GetGUID());
+        data.WriteGuidBytes<6>(player->GetGUID());
+        data.WriteGuidBytes<5, 2, 3>(attackerOrHealer->GetGUID());
+        data.WriteGuidBytes<0, 1>(GetGUID());
+        data.WriteGuidBytes<4>(player->GetGUID());
+        data.WriteGuidBytes<6>(GetGUID());
+        data.WriteGuidBytes<1>(player->GetGUID());
+        data.WriteGuidBytes<3>(GetGUID());
+        data.WriteGuidBytes<0>(attackerOrHealer->GetGUID());
+        data.WriteGuidBytes<5, 2>(player->GetGUID());
+        data.WriteGuidBytes<4, 1>(attackerOrHealer->GetGUID());
+        data.WriteGuidBytes<7>(player->GetGUID());
+
+        data << uint32(-change);
+
+        data.WriteGuidBytes<7>(attackerOrHealer->GetGUID());
+        data.WriteGuidBytes<3>(player->GetGUID());
+        data.WriteGuidBytes<5, 2>(GetGUID());
+
         player->GetSession()->SendPacket(&data);
     }
 
