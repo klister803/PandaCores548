@@ -485,6 +485,7 @@ enum Opcodes
     CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x0569, // 5.4.1 17538
     CMSG_SET_FACTION_ATWAR                            = 0x0776, // 5.4.1 17538
     CMSG_UNSET_FACTION_ATWAR                          = 0x0667, // 5.4.1 17538
+    CMSG_SET_LFG_BONUS_FACTION                        = 0x1676, // 5.4.1 17538
     CMSG_SET_FACTION_CHEAT                            = 0x000,  // 5.0.5 16048
     CMSG_SET_FACTION_INACTIVE                         = 0x0A75, // 5.4.1 17538
     CMSG_SET_GUILD_BANK_TEXT                          = 0x12C3, // 5.4.1 17538

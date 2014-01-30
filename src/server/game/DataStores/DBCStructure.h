@@ -1021,7 +1021,7 @@ struct FactionEntry
     char* name;                                             // 23       m_name_lang
     //char*     description;                                // 24       m_description_lang
     //uint32                                                // 25
-    //uint32                                                // 26       5.4.1
+    uint32      canBeLFGBonus;                              // 26       5.4.1
     //uint32                                                // 27       5.4.1
 
     // helpers

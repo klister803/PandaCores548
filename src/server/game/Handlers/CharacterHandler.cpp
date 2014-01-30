@@ -1253,6 +1253,25 @@ void WorldSession::HandleSetFactionAtWar(WorldPacket & recvData)
     GetPlayer()->GetReputationMgr().SetAtWar(repListID, true);
 }
 
+void WorldSession::HandleSetLfgBonusFaction(WorldPacket & recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_LFG_BONUS_FACTION");
+
+    uint32 factionID;
+    recvData >> factionID;
+
+    if (factionID)
+    {
+        if (FactionEntry const* faction = sFactionStore.LookupEntry(factionID))
+            if (faction->canBeLFGBonus)
+                // player->SetLfgBonusRep(factionID, true);
+                GetPlayer()->SetUInt32Value(PLAYER_FIELD_LFG_BONUS_FACTION, factionID);
+    }
+    else
+        // player->SetLfgBonusRep(factionID, false);
+        GetPlayer()->SetUInt32Value(PLAYER_FIELD_LFG_BONUS_FACTION, 0);
+}
+
 void WorldSession::HandleUnsetFactionAtWar(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_UNSET_FACTION_ATWAR");
@@ -1301,9 +1320,11 @@ void WorldSession::HandleTutorialReset(WorldPacket& /*recvData*/)
 void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_WATCHED_FACTION");
-    uint32 fact;
-    recvData >> fact;
-    GetPlayer()->SetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fact);
+
+    uint32 factionID;
+    recvData >> factionID;
+
+    GetPlayer()->SetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, factionID);
 }
 
 void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
