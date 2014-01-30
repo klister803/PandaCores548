@@ -21,6 +21,7 @@ public:
         instance_terrace_of_endless_spring_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         //GameObjects
+        std::vector<uint64> leishientdoorGuids;
 
         //Creature
         uint64 kaolanGuid;
@@ -35,6 +36,7 @@ public:
             SetBossNumber(5);
 
             //GameObject
+            leishientdoorGuids.clear();
            
             //Creature
             kaolanGuid    = 0;
@@ -72,9 +74,8 @@ public:
 
         void OnGameObjectCreate(GameObject* go)
         {
-           /* switch (go->GetEntry())
-            {
-            }*/
+            if (go->GetEntry() == GO_LEI_SHI_ENT_DOOR)
+                leishientdoorGuids.push_back(go->GetGUID());
         }
 
         bool SetBossState(uint32 id, EncounterState state)
@@ -82,9 +83,6 @@ public:
             if (!InstanceScript::SetBossState(id, state))
                 return false;
             
-           /* switch (id)
-            {
-            }*/
             return true;
         }
 

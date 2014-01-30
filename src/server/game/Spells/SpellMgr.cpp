@@ -4300,6 +4300,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].Effect = 0;
                     break;
 
+
+                //Terrace of Endless Spring
+                //Protectors of Endless
+                case 117052: //Sha Corruption
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
+
+
                     
                 //World Boss
                 //Sha of Anger

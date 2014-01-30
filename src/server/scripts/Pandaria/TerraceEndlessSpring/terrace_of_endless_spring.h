@@ -31,6 +31,7 @@ enum eCreatures
 
 enum eGameObjects
 {   
+    GO_LEI_SHI_ENT_DOOR      = 212916,
 };
 
 #endif TERRACEOFENDLESSSPRING
