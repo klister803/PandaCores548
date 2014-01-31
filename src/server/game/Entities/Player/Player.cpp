@@ -8799,8 +8799,8 @@ void Player::DuelComplete(DuelCompleteType type)
     if (type != DUEL_INTERRUPTED)
     {
         data.Initialize(SMSG_DUEL_WINNER);
-        data << uint32(0);                                  // some unk int32, maybe time1 && time2
-        data << uint32(0);
+        data << uint32(50790415);                           // some unk ints32
+        data << uint32(50790415);                           // accountID? realmID? time?
         data.WriteBit(type == DUEL_WON ? 0 : 1);            // 0 = just won; 1 = fled
         data.WriteBits(strlen(duel->opponent->GetName()), 6);
         data.WriteBits(strlen(GetName()), 6);
