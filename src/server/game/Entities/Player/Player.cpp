@@ -17937,17 +17937,14 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
     }
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_COMPLETE, (4 + 4 + 4 + 4 + 4));
-
-    data.WriteBit(0);                                      // FIXME: unknown bits, common values sent
-    data.WriteBit(1);
-    data.FlushBits();
-
-    data << uint32(quest->GetBonusTalents());              // bonus talents (not verified for 4.x)
-    data << uint32(quest->GetRewardSkillPoints());         // 4.x bonus skill points
-    data << uint32(xp);
-    data << uint32(moneyReward);
-    data << uint32(questId);
     data << uint32(quest->GetRewardSkillId());             // 4.x bonus skill id
+    data << uint32(moneyReward);
+    data << uint32(quest->GetBonusTalents());              // bonus talents (not verified for 4.x)
+    data << uint32(xp);
+    data << uint32(questId);
+    data << uint32(quest->GetRewardSkillPoints());         // 4.x bonus skill points
+    data.WriteBit(1);
+    data.WriteBit(0);                                      // FIXME: unknown bits, common values sent
 
     GetSession()->SendPacket(&data);
 
@@ -18007,7 +18004,7 @@ void Player::SendQuestConfirmAccept(const Quest* quest, Player* pReceiver)
 
         ObjectGuid guid = GetObjectGuid();
 
-        WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, (4 + strTitle.size() + 8));
+        WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, 4 + strTitle.size() + 8 + 1 + 2);
         data.WriteGuidMask<6>(guid);
         data.WriteBit(0);   // has title
         data.WriteBits(strTitle.size(), 10);
@@ -18046,19 +18043,27 @@ void Player::SendQuestUpdateAddCreatureOrGo(Quest const* quest, uint64 guid, uin
 
     int32 entry = quest->RequiredNpcOrGo[ creatureOrGO_idx ];
     if (entry < 0)
-        // client expected gameobject template id in form (id|0x80000000)
-        entry = (-entry) | 0x80000000;
+        entry = -entry;
 
-    uint8 unk1 = 0;
+    uint8 reqType = 0;
+    for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        if (quest->RequiredIdBack[i] == entry)
+        {
+            reqType = quest->RequirementType[i];
+            break;
+        }
 
-    WorldPacket data(SMSG_QUESTUPDATE_ADD_KILL, (4*4+8));
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTUPDATE_ADD_KILL");
-    data << uint32(quest->GetQuestId());
-    data << uint32(entry);
+    WorldPacket data(SMSG_QUESTUPDATE_ADD_KILL, 29);
+    data << uint8(reqType);
     data << uint16(old_count + add_count);
-    data << uint32(quest->RequiredNpcOrGoCount[ creatureOrGO_idx ]);
-    data << uint64(guid);
-    data << uint8(unk1);
+    data << uint32(quest->GetQuestId());
+    data << uint16(quest->RequiredNpcOrGoCount[ creatureOrGO_idx ]);
+    data << uint32(entry);
+
+    data.WriteGuidMask<4, 3, 0, 2, 5, 7, 6, 1>(guid);
+    data.WriteGuidBytes<2, 5, 6, 7, 4, 1, 3, 0>(guid);
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTUPDATE_ADD_KILL");
     GetSession()->SendPacket(&data);
 
     uint16 log_slot = FindQuestSlot(quest->GetQuestId());
@@ -18071,11 +18076,12 @@ void Player::SendQuestUpdateAddPlayer(Quest const* quest, uint16 old_count, uint
     ASSERT(old_count + add_count < 65536 && "player count store in 16 bits");
 
     WorldPacket data(SMSG_QUESTUPDATE_ADD_PVP_KILL, (2*4) + 1);
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTUPDATE_ADD_PVP_KILL");
+    data << uint8(QUEST_OBJECTIVE_PLAYER_KILLS);
+    data << uint32(old_count + add_count);      // test me vs. (add_count)
     data << uint32(quest->GetQuestId());
-    data << uint8(old_count + add_count);
-    data << uint32(quest->GetPlayersSlain());
+
     GetSession()->SendPacket(&data);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTUPDATE_ADD_PVP_KILL");
 
     uint16 log_slot = FindQuestSlot(quest->GetQuestId());
     if (log_slot < MAX_QUEST_LOG_SIZE)

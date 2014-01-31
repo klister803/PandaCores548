@@ -302,6 +302,9 @@ class Quest
         uint32 CalculateHonorGain(uint8 level) const;
         uint32 GetItemFromPakage(uint32 classMask) const;
 
+        uint32 GetRewItemDisplayId(uint8 index) const;
+        uint32 GetRewChoiceItemDisplayId(uint8 index) const;
+
         // multiple values
         std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
         uint32 RequiredItemId[QUEST_ITEM_OBJECTIVES_COUNT];
@@ -451,4 +454,23 @@ struct QuestStatusData
     uint16 PlayerCount;
     bool Explored;
 };
+
+enum QuestObjectives
+{
+    QUEST_OBJECTIVE_CREATURE                = 0,
+    QUEST_OBJECTIVE_ITEM                    = 1,
+    QUEST_OBJECTIVE_GAMEOBJECT              = 2,
+    QUEST_OBJECTIVE_INTERACT                = 3,
+    QUEST_OBJECTIVE_CURRENCY                = 4,
+    QUEST_OBJECTIVE_SPELL                   = 5,
+    QUEST_OBJECTIVE_FACTION                 = 6,
+    QUEST_OBJECTIVE_UNK7                    = 7,
+    QUEST_OBJECTIVE_MONEY                   = 8,
+    QUEST_OBJECTIVE_PLAYER_KILLS            = 9,
+    QUEST_OBJECTIVE_EXPLORE_AREATRIGGER     = 10,
+    QUEST_OBJECTIVE_PET_TRAINER_DEFEAT      = 11,
+    QUEST_OBJECTIVE_UNK12                   = 12,
+    QUEST_OBJECTIVE_PET_BATTLE_VICTORIES    = 13,
+};
+
 #endif
