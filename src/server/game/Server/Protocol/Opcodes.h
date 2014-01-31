@@ -864,13 +864,13 @@ enum Opcodes
     SMSG_DISPLAY_GAME_ERROR                           = 0xA63,  // 5.0.5 16048
     SMSG_DONT_AUTO_PUSH_SPELLS_TO_ACTION_BAR          = 0xBD1,  // 5.0.5 16048
     SMSG_DROP_NEW_CONNECTION                          = 0x527,  // 5.0.5 16048
-    SMSG_DUEL_COMPLETE                                = 0x9F6,  // 5.0.5 16048
-    SMSG_DUEL_COUNTDOWN                               = 0x993,  // 5.0.5 16048
+    SMSG_DUEL_COMPLETE                                = 0x0BD,  // 5.4.1 17538
+    SMSG_DUEL_COUNTDOWN                               = 0x10B7, // 5.4.1 17538
     SMSG_DUEL_INBOUNDS                                = 0x8B7,  // 5.0.5 16048
     SMSG_DUEL_OUTOFBOUNDS                             = 0xD8A,  // 5.0.5 16048
     CMSG_DUEL_PROPOSED                                = 0x1169, // 5.4.1 17538
-    SMSG_DUEL_REQUESTED                               = 0xC30,  // 5.0.5 16048
-    SMSG_DUEL_WINNER                                  = 0xDD1,  // 5.0.5 16048
+    SMSG_DUEL_REQUESTED                               = 0xD1E,  // 5.4.1 17538
+    SMSG_DUEL_WINNER                                  = 0x925,  // 5.4.1 17538
     SMSG_DUMP_RIDE_TICKETS_RESPONSE                   = 0xBF9,  // 5.0.5 16048
     SMSG_DURABILITY_DAMAGE_DEATH                      = 0x0934, // 5.4.1 17538
     SMSG_ECHO_PARTY_SQUELCH                           = 0,      // 0x0814 in 4.3.4 @todo : Find me and BACON !
@@ -898,7 +898,7 @@ enum Opcodes
     SMSG_FORGE_MASTER_SET                             = 0xF8F,  // 5.0.5 16048
     SMSG_FRIEND_STATUS                                = 0x180B, // 5.4.1 17538
     SMSG_GAMEOBJECT_CUSTOM_ANIM                       = 0xCDC,  // 5.0.5 16048
-    SMSG_GAMEOBJECT_DESPAWN_ANIM                      = 0xD55,  // 5.0.5 16048
+    SMSG_GAMEOBJECT_DESPAWN_ANIM                      = 0x1495, // 5.4.1 17538
     SMSG_GAMEOBJECT_PAGETEXT                          = 0x87D,  // 5.0.5 16048
     SMSG_GAMEOBJECT_QUERY_RESPONSE                    = 0x0916, // 5.4.1 17538
     SMSG_GAMEOBJECT_RESET_STATE                       = 0x8C6,  // 5.0.5 16048

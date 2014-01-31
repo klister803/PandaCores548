@@ -8796,17 +8796,14 @@ void Player::DuelComplete(DuelCompleteType type)
 
     sLog->outDebug(LOG_FILTER_UNITS, "Duel Complete %s %s", GetName(), duel->opponent->GetName());
 
-    WorldPacket data(SMSG_DUEL_COMPLETE, (1));
-    data << (uint8)((type != DUEL_INTERRUPTED) ? 1 : 0);
-    GetSession()->SendPacket(&data);
-
-    if (duel->opponent->GetSession())
-        duel->opponent->GetSession()->SendPacket(&data);
-
     if (type != DUEL_INTERRUPTED)
     {
-        data.Initialize(SMSG_DUEL_WINNER, (1+20));          // we guess size
-        data << uint8(type == DUEL_WON ? 0 : 1);            // 0 = just won; 1 = fled
+        data.Initialize(SMSG_DUEL_WINNER);
+        data << uint32(0);                                  // some unk int32, maybe time1 && time2
+        data << uint32(0);
+        data.WriteBit(type == DUEL_WON ? 0 : 1);            // 0 = just won; 1 = fled
+        data.WriteBits(strlen(duel->opponent->GetName()), 6);
+        data.WriteBits(strlen(GetName()), 6);
         data << duel->opponent->GetName();
         data << GetName();
         SendMessageToSet(&data, true);
@@ -8855,6 +8852,13 @@ void Player::DuelComplete(DuelCompleteType type)
     GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER));
     if (obj)
         duel->initiator->RemoveGameObject(obj, true);
+
+    WorldPacket data(SMSG_DUEL_COMPLETE);
+    data.WriteBit(type == DUEL_WON ? 0 : 1);
+    GetSession()->SendPacket(&data);
+
+    if (duel->opponent->GetSession())
+        duel->opponent->GetSession()->SendPacket(&data);
 
     /* remove auras */
     AuraApplicationMap &itsAuras = duel->opponent->GetAppliedAuras();

@@ -33,11 +33,8 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
 
-    uint8 bitOrder[8] = {2, 7, 0, 5, 6, 3, 1, 4};
-    recvPacket.ReadBitInOrder(guid, bitOrder);
-    
-    uint8 byteOrder[8] = {3, 4, 1, 5, 0, 2, 7, 6};
-    recvPacket.ReadBytesSeq(guid, byteOrder);
+    recvPacket.ReadGuidMask<5, 4, 0, 1, 7, 2, 3, 6>(guid);
+    recvPacket.ReadGuidBytes<2, 7, 4, 3, 6, 1, 5, 0>(guid);
 
     Player* caster = GetPlayer();
     Unit* unitTarget = NULL;
@@ -46,13 +43,18 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 
     if (!unitTarget || caster->GetTypeId() != TYPEID_PLAYER || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
+
     Player* target = unitTarget->ToPlayer();
+
     // caster or target already have requested duel
     if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUIDLow()))
         return;
+
+    // create duel flag visual
     caster->CastSpell(unitTarget, 7266, false);
+
     // Players can only fight a duel in zones with this flag
-    /*AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetAreaId());
+    AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetAreaId());
     if (casterAreaEntry && !(casterAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
     {
         //SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
@@ -92,9 +94,28 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     //END
 
     // Send request
-    WorldPacket data(SMSG_DUEL_REQUESTED, 8 + 8);
-    data << uint64(pGameObj->GetGUID());
-    data << uint64(caster->GetGUID());
+    WorldPacket data(SMSG_DUEL_REQUESTED);
+
+    data.WriteGuidMask<5>(pGameObj->GetGUID());
+    data.WriteGuidMask<5, 2>(caster->GetGUID());
+    data.WriteGuidMask<7>(pGameObj->GetGUID());
+    data.WriteGuidMask<7>(caster->GetGUID());
+    data.WriteGuidMask<2, 0, 6, 1, 3>(pGameObj->GetGUID());
+    data.WriteGuidMask<6, 4, 3, 0>(caster->GetGUID());
+    data.WriteGuidMask<4>(pGameObj->GetGUID());
+    data.WriteGuidMask<2>(caster->GetGUID());
+
+    data.WriteGuidBytes<1, 4>(caster->GetGUID());
+    data.WriteGuidBytes<0>(pGameObj->GetGUID());
+    data.WriteGuidBytes<6, 7>(caster->GetGUID());
+    data.WriteGuidBytes<7, 5>(pGameObj->GetGUID());
+    data.WriteGuidBytes<3>(caster->GetGUID());
+    data.WriteGuidBytes<6>(pGameObj->GetGUID());
+    data.WriteGuidBytes<2>(caster->GetGUID());
+    data.WriteGuidBytes<3>(pGameObj->GetGUID());
+    data.WriteGuidBytes<0, 5>(caster->GetGUID());
+    data.WriteGuidBytes<2, 4, 1>(pGameObj->GetGUID());
+
     caster->GetSession()->SendPacket(&data);
     target->GetSession()->SendPacket(&data);
 
@@ -118,7 +139,7 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     caster->SetUInt64Value(PLAYER_DUEL_ARBITER, pGameObj->GetGUID());
     target->SetUInt64Value(PLAYER_DUEL_ARBITER, pGameObj->GetGUID());
 
-    sScriptMgr->OnPlayerDuelRequest(target, caster);*/
+    sScriptMgr->OnPlayerDuelRequest(target, caster);
 }
 
 void WorldSession::HandleDuelAcceptResultOpcode(WorldPacket& recvPacket)
@@ -129,7 +150,6 @@ void WorldSession::HandleDuelAcceptResultOpcode(WorldPacket& recvPacket)
     recvPacket.ReadGuidMask<3, 5, 2, 4, 0, 6>(guid);
     bool accepted = recvPacket.ReadBit();
     recvPacket.ReadGuidMask<1, 7>(guid);
-
     recvPacket.ReadGuidBytes<1, 7, 6, 3, 4, 5, 2, 0>(guid);
 
     // no duel requested
