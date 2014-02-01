@@ -746,12 +746,12 @@ enum Opcodes
     SMSG_BATTLEFIELD_PLAYER_POSITIONS                 = 0,      // 0x58B4 in 4.3.4 @todo : Find me and BACON !
     SMSG_BATTLEFIELD_PORT_DENIED                      = 0,      // 0x35A3 in 4.3.4 @todo : Find me and BACON !
     SMSG_BATTLEFIELD_RATED_INFO                       = 0xA84,  // 5.0.5 16048
-    SMSG_BATTLEFIELD_STATUS                           = 0xF39,  // 5.0.5 16048
-    SMSG_BATTLEFIELD_STATUS_QUEUED                    = 0xB88,  // 5.0.5 16048
-    SMSG_BATTLEFIELD_STATUS_NEEDCONFIRMATION          = 0xAE3,  // 5.0.5 16048
-    SMSG_BATTLEFIELD_STATUS_ACTIVE                    = 0xA33,  // 5.0.5 16048
+    SMSG_BATTLEFIELD_STATUS                           = 0x052E, // 5.4.1 17538
+    SMSG_BATTLEFIELD_STATUS_QUEUED                    = 0x0D0F, // 5.4.1 17538
+    SMSG_BATTLEFIELD_STATUS_NEEDCONFIRMATION          = 0x003E, // 5.4.1 17538
+    SMSG_BATTLEFIELD_STATUS_ACTIVE                    = 0x082F, // 5.4.1 17538
     SMSG_BATTLEFIELD_STATUS_WAITFORGROUPS             = 0xADA,  // 5.0.5 16048
-    SMSG_BATTLEFIELD_STATUS_FAILED                    = 0xE88,  // 5.0.5 16048
+    SMSG_BATTLEFIELD_STATUS_FAILED                    = 0x09B4, // 5.4.1 17538
     SMSG_BATTLEGROUND_INFO_THROTTLED                  = 0xBEC,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_JOINED                   = 0xAB5,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0xAD3,  // 5.0.5 16048

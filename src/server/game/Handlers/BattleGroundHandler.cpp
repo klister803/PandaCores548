@@ -71,26 +71,25 @@ void WorldSession::SendBattleGroundList(uint64 guid, BattlegroundTypeId bgTypeId
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
 {
     ObjectGuid guid;
     uint32 bgTypeId_ = 0;
-    uint32 instanceId = 0;
-    uint8 joinAsGroup = 0;
+    uint8 instanceId = 0;   // wtf could be 0-8
     bool isPremade = false;
     Group* grp = NULL;
 
-    recvData >> instanceId;                                 // battleground type id (DBC id)
     recvData.read_skip<uint32>();
     recvData.read_skip<uint32>();
-
-    uint8 bitOrder[8] = {2, 5, 3, 7, 6, 0, 1, 4};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    joinAsGroup = recvData.ReadBit();
-
-    uint8 byteOrder[8] = {6, 1, 3, 5, 7, 0, 4, 2};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    if (recvData.ReadBit())
+        instanceId = 8;
+    recvData.ReadGuidMask<2, 4, 0, 3, 7, 1>(guid);
+    bool joinAsGroup = recvData.ReadBit();
+    recvData.ReadGuidMask<5, 6>(guid);
+    recvData.ReadGuidBytes<0, 1, 7, 2, 4, 6, 5, 3>(guid);
+    if (instanceId != 8)
+        recvData >> instanceId;
 
     bgTypeId_ = GUID_LOPART(guid);
 
@@ -347,32 +346,26 @@ void WorldSession::HandleBattlefieldListOpcode(WorldPacket& recvData)
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_BATTLEFIELD_PORT Message");
 
     uint32 time;
     uint32 queueSlot;                                            // guessed
-    uint32 unk;                                       // type id from dbc
-    uint8 action;                                           // enter battle 0x1, leave queue 0x0
+    uint32 unk;                                                 // type id from dbc
+    uint8 action;                                               // enter battle 0x1, leave queue 0x0
     ObjectGuid guid;
     
-    recvData >> unk;
-    recvData >> queueSlot;
-    recvData >> time;
-
-    guid[0] = recvData.ReadBit();
-    guid[5] = recvData.ReadBit();
-    guid[3] = recvData.ReadBit();
-    guid[2] = recvData.ReadBit();
-    guid[4] = recvData.ReadBit();
-    guid[1] = recvData.ReadBit();
     action = recvData.ReadBit();
-    guid[6] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
+    recvData.ReadFlush();
 
-    uint8 byteOrder[8] = {0, 3, 4, 7, 1, 5, 6, 2};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData >> unk;
+    recvData >> time;
+    recvData >> queueSlot;
+    
+    recvData.WriteGuidMask<5, 0, 4, 2, 6, 1, 3, 7>(guid);
+    recvData.WriteGuidBytes<2, 5, 4, 6, 3, 0, 7, 1>(guid);
 
     if (!_player || !_player->InBattlegroundQueue())
     {
