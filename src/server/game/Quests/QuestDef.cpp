@@ -397,3 +397,23 @@ uint32 Quest::GetItemFromPakage(uint32 classMask) const
 
     return 0;
 }
+
+uint32 Quest::GetRewItemDisplayId(uint8 index) const
+{
+    uint32 itemId = RewardItemId[index];
+    if (!itemId)
+        return 0;
+
+    ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
+    return item ? item->DisplayInfoID : 0;
+}
+
+uint32 Quest::GetRewChoiceItemDisplayId(uint8 index) const
+{
+    uint32 itemId = RewardChoiceItemId[index];
+    if (!itemId)
+        return 0;
+
+    ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
+    return item ? item->DisplayInfoID : 0;
+}

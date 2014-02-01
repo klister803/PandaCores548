@@ -322,8 +322,7 @@ void WorldSession::HandleQuestQueryOpcode(WorldPacket & recvData)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_QUEST_QUERY quest = %u", questId);
 
-    if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
-        _player->PlayerTalkClass->SendQuestQueryResponse(quest);
+    _player->PlayerTalkClass->SendQuestQueryResponse(questId);
 }
 
 void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
@@ -813,8 +812,11 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
     uint32 count = 0;
 
     WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE);
-    data << uint32(count);                                  // placeholder
 
+    uint32 pos = data.bitwpos();
+    data.WriteBits(0, 21);
+
+    ByteBuffer buff;
     for (Player::ClientGUIDs::const_iterator itr = _player->m_clientGUIDs.begin(); itr != _player->m_clientGUIDs.end(); ++itr)
     {
         uint32 questStatus = DIALOG_STATUS_NONE;
@@ -832,8 +834,11 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
             if (questStatus > 6)
                 questStatus = getDialogStatus(_player, questgiver, defstatus);
 
-            data << uint64(questgiver->GetGUID());
-            data << uint32(questStatus);
+            data.WriteGuidBytes<6, 1, 2, 5, 0, 7, 3, 4>(questgiver->GetGUID());
+
+            buff.WriteGuidBytes<4, 1, 7, 0, 2, 3>(questgiver->GetGUID());
+            buff << uint32(questStatus);
+            buff.WriteGuidBytes<5, 6>(questgiver->GetGUID());
             ++count;
         }
         else if (IS_GAMEOBJECT_GUID(*itr))
@@ -847,13 +852,22 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
             if (questStatus > 6)
                 questStatus = getDialogStatus(_player, questgiver, defstatus);
 
-            data << uint64(questgiver->GetGUID());
-            data << uint32(questStatus);
+            data.WriteGuidBytes<6, 1, 2, 5, 0, 7, 3, 4>(questgiver->GetGUID());
+
+            buff.WriteGuidBytes<4, 1, 7, 0, 2, 3>(questgiver->GetGUID());
+            buff << uint32(questStatus);
+            buff.WriteGuidBytes<5, 6>(questgiver->GetGUID());
             ++count;
         }
     }
 
-    data.put<uint32>(0, count);                             // write real count
+    if (!buff.empty())
+    {
+        data.FlushBits();
+        data.append(buff);
+    }
+
+    data.PutBits(pos, count, 21);                       // write real count
     SendPacket(&data);
 }
 
