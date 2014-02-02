@@ -49,15 +49,15 @@ bool UpdateData::BuildPacket(std::list<WorldPacket*>& packets)
     if (!HasData())
         return false;
 
-    static const uint32 maxBlockCount = 50;
+    static uint32 const maxBlockCount = 50;
     bool outOfRangeAdded = false;
     uint32 blockCount = m_blocks.size();
     do
     {
-        WorldPacket* packet = new WorldPacket(SMSG_UPDATE_OBJECT, (m_outOfRangeGUIDs.empty() ? 0 : 1 + 4 + 9 * (outOfRangeAdded ? m_outOfRangeGUIDs.size() : 0)) + std::min(m_blocks.size(), uint32(maxBlockCount)) * 50);
+        uint32 count = std::min(blockCount, maxBlockCount);
+        WorldPacket* packet = new WorldPacket(SMSG_UPDATE_OBJECT, (m_outOfRangeGUIDs.empty() ? 0 : (1 + 4 + 9 * (outOfRangeAdded ? m_outOfRangeGUIDs.size() : 0)) + count));
 
         *packet << uint16(m_map);
-        uint32 count = std::min(blockCount, maxBlockCount);
         *packet << uint32(count + (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded ? 1 : 0));
 
         if (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded)
