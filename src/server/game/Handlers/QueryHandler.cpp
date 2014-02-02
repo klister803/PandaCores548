@@ -43,7 +43,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     data << uint8(nameData ? 0 : 1);
     if (nameData)
     {
-        data << uint8(!nameData->m_gender);
+        data << uint8(nameData->m_gender);
         data << uint8(nameData->m_class);
         data << uint8(nameData->m_level);
         data << uint32(realmID);

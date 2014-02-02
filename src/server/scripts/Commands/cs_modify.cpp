@@ -412,12 +412,12 @@ public:
         if (handler->needReportToTarget(target))
             (ChatHandler(target)).PSendSysMessage(LANG_YOURS_SPELLFLATID_CHANGED, handler->GetNameLink().c_str(), spellflatid, val, mark);
 
-        WorldPacket data(SMSG_SET_FLAT_SPELL_MODIFIER, (1+1+2+2));
+        /*WorldPacket data(SMSG_SET_FLAT_SPELL_MODIFIER, (1+1+2+2));
         data << uint8(spellflatid);
         data << uint8(op);
         data << uint16(val);
         data << uint16(mark);
-        target->GetSession()->SendPacket(&data);
+        target->GetSession()->SendPacket(&data);*/
 
         return true;
     }

@@ -95,17 +95,14 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     uint8 boxTextLength = 0;
     std::string code = "";
 
-    recvData >> menuId >> gossipListId;
+    recvData >> gossipListId >> menuId;
 
     recvData.ReadGuidMask<4, 0, 6, 3, 2, 7, 1>(guid);
     boxTextLength = recvData.ReadBits(8);
     recvData.ReadGuidMask<5>(guid);
 
     recvData.ReadGuidBytes<5, 6, 3, 0, 1>(guid);
-
-    if (_player->PlayerTalkClass->IsGossipOptionCoded(gossipListId))
-        code = recvData.ReadString(boxTextLength);
-
+    code = recvData.ReadString(boxTextLength);
     recvData.ReadGuidBytes<2, 7, 4>(guid);
 
     Creature* unit = NULL;
@@ -1131,15 +1128,18 @@ int32 WorldSession::HandleEnableNagleAlgorithm()
 void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_ACTION_BUTTON");
-    uint8 button;
-    uint32 packetData;
-    recvData >> packetData >> button;
 
-    uint32 action = ACTION_BUTTON_ACTION(packetData);
-    uint8  type   = ACTION_BUTTON_TYPE(packetData);
+    uint8 button;
+    ObjectGuid packedData;
+    recvData >> button;
+    recvData.ReadGuidMask<4, 7, 5, 6, 1, 3, 0, 2>(packedData);
+    recvData.ReadGuidBytes<3, 4, 6, 7, 1, 2, 0, 5>(packedData);
+
+    uint32 action = uint32(packedData & 0xFFFFFFFF);
+    uint8  type = uint8(packedData >> 56);
 
     sLog->outInfo(LOG_FILTER_NETWORKIO, "BUTTON: %u ACTION: %u TYPE: %u", button, action, type);
-    if (!packetData)
+    if (!packedData)
     {
         sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Remove action from button %u", button);
         GetPlayer()->removeActionButton(button);
@@ -2245,8 +2245,8 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvData)
     recvData.ReadGuidBytes<1, 2, 5, 0, 3, 4, 6, 7>(guid);
 
     WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
-    if(obj)
-        obj->SendUpdateToPlayer(GetPlayer());
+    /*if(obj)
+        obj->SendUpdateToPlayer(GetPlayer());*/
 
     sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object " UI64FMTD " (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
 }

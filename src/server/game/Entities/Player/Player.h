@@ -233,15 +233,15 @@ enum ActionButtonType
     ACTION_BUTTON_ITEM      = 0x80
 };
 
-#define ACTION_BUTTON_ACTION(X) (uint32(X) & 0x00FFFFFF)
-#define ACTION_BUTTON_TYPE(X)   ((uint32(X) & 0xFF000000) >> 24)
+#define ACTION_BUTTON_ACTION(X) (uint32(uint64(X) & 0xFFFFFFFF))
+#define ACTION_BUTTON_TYPE(X)   (uint8(uint64(X) >> 56))
 #define MAX_ACTION_BUTTON_ACTION_VALUE (0x00FFFFFF+1)
 
 struct ActionButton
 {
     ActionButton() : packedData(0), uState(ACTIONBUTTON_NEW) {}
 
-    uint32 packedData;
+    uint64 packedData;
     ActionButtonUpdateState uState;
 
     // helpers
@@ -249,7 +249,7 @@ struct ActionButton
     uint32 GetAction() const { return ACTION_BUTTON_ACTION(packedData); }
     void SetActionAndType(uint32 action, ActionButtonType type)
     {
-        uint32 newData = action | (uint32(type) << 24);
+        uint64 newData = action | (uint64(type) << 56);
         if (newData != packedData || uState == ACTIONBUTTON_DELETED)
         {
             packedData = newData;

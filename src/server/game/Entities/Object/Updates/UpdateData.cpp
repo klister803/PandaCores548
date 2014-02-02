@@ -25,7 +25,7 @@
 #include "World.h"
 #include "zlib.h"
 
-UpdateData::UpdateData(uint16 map) : m_map(map), m_blockCount(0)
+UpdateData::UpdateData(uint16 map) : m_map(map)/*, m_blockCount(0)*/
 {
 }
 
@@ -41,36 +41,49 @@ void UpdateData::AddOutOfRangeGUID(uint64 guid)
 
 void UpdateData::AddUpdateBlock(const ByteBuffer &block)
 {
-    m_data.append(block);
-    ++m_blockCount;
+    m_blocks.push_back(block);
 }
 
-bool UpdateData::BuildPacket(WorldPacket* packet)
+bool UpdateData::BuildPacket(std::list<WorldPacket*>& packets)
 {
-    ASSERT(packet->empty());                                // shouldn't happen
-    packet->Initialize(SMSG_UPDATE_OBJECT, 2 + 4 + (m_outOfRangeGUIDs.empty() ? 0 : 1 + 4 + 9 * m_outOfRangeGUIDs.size()) + m_data.wpos());
+    if (!HasData())
+        return false;
 
-    *packet << uint16(m_map);
-    *packet << uint32(m_blockCount + (m_outOfRangeGUIDs.empty() ? 0 : 1));
-
-    if (!m_outOfRangeGUIDs.empty())
+    static const uint32 maxBlockCount = 50;
+    bool outOfRangeAdded = false;
+    uint32 blockCount = m_blocks.size();
+    do
     {
-        *packet << uint8(UPDATETYPE_OUT_OF_RANGE_OBJECTS);
-        *packet << uint32(m_outOfRangeGUIDs.size());
+        WorldPacket* packet = new WorldPacket(SMSG_UPDATE_OBJECT, (m_outOfRangeGUIDs.empty() ? 0 : 1 + 4 + 9 * (outOfRangeAdded ? m_outOfRangeGUIDs.size() : 0)) + std::min(m_blocks.size(), uint32(maxBlockCount)) * 50);
 
-        for (std::set<uint64>::const_iterator i = m_outOfRangeGUIDs.begin(); i != m_outOfRangeGUIDs.end(); ++i)
-            packet->appendPackGUID(*i);
+        *packet << uint16(m_map);
+        uint32 count = std::min(blockCount, maxBlockCount);
+        *packet << uint32(count + (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded ? 1 : 0));
+
+        if (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded)
+        {
+            outOfRangeAdded = true;
+            *packet << uint8(UPDATETYPE_OUT_OF_RANGE_OBJECTS);
+            *packet << uint32(m_outOfRangeGUIDs.size());
+
+            for (std::set<uint64>::const_iterator i = m_outOfRangeGUIDs.begin(); i != m_outOfRangeGUIDs.end(); ++i)
+                packet->appendPackGUID(*i);
+        }
+
+        for (BlockList::const_iterator itr = m_blocks.begin(); itr != m_blocks.end() && count > 0; ++itr, --count, --blockCount)
+            packet->append(*itr);
+
+        packets.push_back(packet);
     }
+    while (blockCount > 0);
 
-    packet->append(m_data);
     return true;
 }
 
 void UpdateData::Clear()
 {
-    m_data.clear();
     m_outOfRangeGUIDs.clear();
-    m_blockCount = 0;
+    m_blocks.clear();
     m_map = 0;
 }
 

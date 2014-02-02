@@ -274,10 +274,16 @@ void BattlegroundSA::StartShips()
             if (Player* p = ObjectAccessor::FindPlayer(itr->first))
             {
                 UpdateData data(p->GetMapId());
-                WorldPacket pkt;
+                std::list<WorldPacket*> packets;
                 GetBGObject(i)->BuildValuesUpdateBlockForPlayer(&data, p);
-                data.BuildPacket(&pkt);
-                p->GetSession()->SendPacket(&pkt);
+                if (data.BuildPacket(packets))
+                {
+                    for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+                    {
+                        p->GetSession()->SendPacket(*itr);
+                        delete *itr;
+                    }
+                }
             }
         }
     }
@@ -920,9 +926,15 @@ void BattlegroundSA::SendTransportInit(Player* player)
             GetBGObject(BG_SA_BOAT_ONE)->BuildCreateUpdateBlockForPlayer(&transData, player);
         if (BgObjects[BG_SA_BOAT_TWO])
             GetBGObject(BG_SA_BOAT_TWO)->BuildCreateUpdateBlockForPlayer(&transData, player);
-        WorldPacket packet;
-        transData.BuildPacket(&packet);
-        player->GetSession()->SendPacket(&packet);
+        std::list<WorldPacket*> packets;
+        if (transData.BuildPacket(packets))
+        {
+            for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+            {
+                player->GetSession()->SendPacket(*itr);
+                delete *itr;
+            }
+        }
     }
 }
 
@@ -935,9 +947,16 @@ void BattlegroundSA::SendTransportsRemove(Player* player)
             GetBGObject(BG_SA_BOAT_ONE)->BuildOutOfRangeUpdateBlock(&transData);
         if (BgObjects[BG_SA_BOAT_TWO])
             GetBGObject(BG_SA_BOAT_TWO)->BuildOutOfRangeUpdateBlock(&transData);
-        WorldPacket packet;
-        transData.BuildPacket(&packet);
-        player->GetSession()->SendPacket(&packet);
+
+        std::list<WorldPacket*> packets;
+        if (transData.BuildPacket(packets))
+        {
+            for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+            {
+                player->GetSession()->SendPacket(*itr);
+                delete *itr;
+            }
+        }
     }
 }
 

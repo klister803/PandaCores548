@@ -310,10 +310,16 @@ void GameObject::Update(uint32 diff)
                             SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
 
                             UpdateData udata(caster->GetMapId());
-                            WorldPacket packet;
+                            std::list<WorldPacket*> packets;
                             BuildValuesUpdateBlockForPlayer(&udata, caster->ToPlayer());
-                            udata.BuildPacket(&packet);
-                            caster->ToPlayer()->GetSession()->SendPacket(&packet);
+                            if (udata.BuildPacket(packets))
+                            {
+                                for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+                                {
+                                    caster->ToPlayer()->GetSession()->SendPacket(*itr);
+                                    delete *itr;
+                                }
+                            }
 
                             SendCustomAnim(GetGoAnimProgress());
                         }

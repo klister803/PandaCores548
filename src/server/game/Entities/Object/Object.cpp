@@ -268,15 +268,24 @@ void Object::SendUpdateToPlayer(Player* player)
 {
     // send create update to player
     UpdateData upd(player->GetMapId());
-    WorldPacket packet;
+    std::list<WorldPacket*> packets;
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
-    upd.BuildPacket(&packet);
-    player->GetSession()->SendPacket(&packet);
+    if (upd.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            player->GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const
 {
+    if (!isType(TYPEMASK_ITEM) && !target->HaveAtClient((WorldObject*)this))
+        return;
+
     ByteBuffer buf(500);
 
     buf << uint8(UPDATETYPE_VALUES);

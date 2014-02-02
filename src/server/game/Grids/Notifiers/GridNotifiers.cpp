@@ -62,9 +62,15 @@ void VisibleNotifier::SendToSelf()
     if (!i_data.HasData())
         return;
 
-    WorldPacket packet;
-    i_data.BuildPacket(&packet);
-    i_player.GetSession()->SendPacket(&packet);
+    std::list<WorldPacket*> packets;
+    if (i_data.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            i_player.GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 
     for (std::set<Unit*>::const_iterator it = i_visibleNow.begin(); it != i_visibleNow.end(); ++it)
         i_player.SendInitialVisiblePackets(*it);

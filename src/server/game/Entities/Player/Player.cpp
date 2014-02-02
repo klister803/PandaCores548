@@ -1112,6 +1112,8 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         SetUInt64Value(PLAYER_FIELD_KNOWN_TITLES + i, 0);  // 0=disabled
     SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
 
+    SetUInt32Value(PLAYER_HOME_PLAYER_REALM, realmID);
+
     SetUInt32Value(PLAYER_FIELD_KILLS, 0);
     SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 0);
 
@@ -7234,7 +7236,7 @@ void Player::SendActionButtons(uint32 state) const
     {
         ActionButtonList::const_iterator itr = m_actionButtons.find(i);
         if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED)
-            buttons[i] = uint64(itr->second.GetType()) << 32 | itr->second.GetAction();
+            buttons[i] = itr->second.packedData;
         else
             buttons[i] = 0;
     }
@@ -7287,11 +7289,11 @@ bool Player::IsActionButtonDataValid(uint8 button, uint32 action, uint8 type)
         return false;
     }
 
-    if (action >= MAX_ACTION_BUTTON_ACTION_VALUE)
+    /*if (action >= MAX_ACTION_BUTTON_ACTION_VALUE)
     {
         sLog->outError(LOG_FILTER_PLAYER_LOADING, "Action %u not added into button %u for player %s: action must be < %u", action, button, GetName(), MAX_ACTION_BUTTON_ACTION_VALUE);
         return false;
-    }
+    }*/
 
     switch (type)
     {
@@ -14675,10 +14677,30 @@ void Player::SendBuyError(BuyResult msg, Creature* creature, uint32 item, uint32
 void Player::SendSellError(SellResult msg, Creature* creature, uint64 guid)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_SELL_ITEM");
-    WorldPacket data(SMSG_SELL_ITEM, (8+8+1));  // last check 4.3.4
-    data << uint64(creature ? creature->GetGUID() : 0);
-    data << uint64(guid);
+    WorldPacket data(SMSG_SELL_ITEM, 1 + 9 + 9);
+    ObjectGuid creatureGuid = creature ? creature->GetGUID() : 0;
+
+    data.WriteGuidMask<5, 4, 6, 2>(creatureGuid);
+    data.WriteGuidMask<5, 2>(guid);
+    data.WriteGuidMask<0>(creatureGuid);
+    data.WriteGuidMask<4>(guid);
+    data.WriteGuidMask<7>(creatureGuid);
+    data.WriteGuidMask<7>(guid);
+    data.WriteGuidMask<1, 3>(creatureGuid);
+    data.WriteGuidMask<0, 1, 6, 3>(guid);
+
+    data.WriteGuidBytes<7>(guid);
+    data.WriteGuidBytes<1, 5, 7>(creatureGuid);
+    data.WriteGuidBytes<5>(guid);
+    data.WriteGuidBytes<4>(creatureGuid);
+    data.WriteGuidBytes<3, 4>(guid);
+    data.WriteGuidBytes<0, 2>(creatureGuid);
+    data.WriteGuidBytes<2>(guid);
+    data.WriteGuidBytes<6>(creatureGuid);
     data << uint8(msg);
+    data.WriteGuidBytes<3>(creatureGuid);
+    data.WriteGuidBytes<0, 6, 1>(guid);
+    
     GetSession()->SendPacket(&data);
 }
 
@@ -18861,6 +18883,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     SetUInt32Value(PLAYER_CHOSEN_TITLE, curTitle);
 
+    SetUInt32Value(PLAYER_HOME_PLAYER_REALM, realmID);
+
     // has to be called after last Relocate() in Player::LoadFromDB
     SetFallInformation(0, GetPositionZ());
 
@@ -22186,12 +22210,12 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
 
     int i = 0;
     flag128 _mask = 0;
-    uint32 modTypeCount = 0; // count of mods per one mod->op
+    uint32 modTypeCount = 0;            // count of mods per one mod->op
+
     WorldPacket data(opcode);
-    data << uint32(1);  // count of different mod->op's in packet
-    size_t writePos = data.wpos();
-    data << uint32(modTypeCount);
-    data << uint8(mod->op);
+    data.WriteBits(1, 22);              // count of different mod->op's in packet
+    uint32 bpos = data.bitwpos();
+    data.WriteBits(0, 21);
     for (int eff = 0; eff < 128; ++eff)
     {
         if (eff != 0 && (eff % 32) == 0)
@@ -22214,8 +22238,8 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
                 if (mod->value)
                     val += apply ? float(mod->value)/100 : -(float(mod->value)/100);
 
-                data << uint8(eff);
                 data << float(val);
+                data << uint8(eff);
                 ++modTypeCount;
                 continue;
             }
@@ -22231,8 +22255,11 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
             ++modTypeCount;
         }
     }
-    data.put<uint32>(writePos, modTypeCount);
+    data << uint8(mod->op);
+
+    data.PutBits(bpos, modTypeCount, 21);
     SendDirectMessage(&data);
+
     if (apply)
         m_spellMods[mod->op].push_back(mod);
     else
@@ -22369,7 +22396,7 @@ void Player::SetSpellModTakingSpell(Spell* spell, bool apply)
 void Player::SendProficiency(ItemClass itemClass, uint32 itemSubclassMask)
 {
     WorldPacket data(SMSG_SET_PROFICIENCY, 1 + 4);
-    data << uint8(itemClass) << uint32(itemSubclassMask);
+    data << uint32(itemSubclassMask) << uint8(itemClass);
     GetSession()->SendPacket(&data);
 }
 
@@ -24155,7 +24182,6 @@ void Player::UpdateTriggerVisibility()
         return;
 
     UpdateData udata(GetMapId());
-    WorldPacket packet;
     for (ClientGUIDs::iterator itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_CREATURE_GUID(*itr))
@@ -24168,8 +24194,15 @@ void Player::UpdateTriggerVisibility()
         }
     }
 
-    udata.BuildPacket(&packet);
-    GetSession()->SendPacket(&packet);
+    std::list<WorldPacket*> packets;
+    if (udata.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
@@ -25078,7 +25111,6 @@ void Player::UpdateForQuestWorldObjects()
         return;
 
     UpdateData udata(GetMapId());
-    WorldPacket packet;
     for (ClientGUIDs::iterator itr=m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_GAMEOBJECT_GUID(*itr))
@@ -25115,8 +25147,16 @@ void Player::UpdateForQuestWorldObjects()
             }
         }
     }
-    udata.BuildPacket(&packet);
-    GetSession()->SendPacket(&packet);
+
+    std::list<WorldPacket*> packets;
+    if (udata.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 void Player::SummonIfPossible(bool agree)

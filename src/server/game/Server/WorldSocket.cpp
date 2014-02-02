@@ -224,10 +224,10 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
 
     sScriptMgr->OnPacketSend(this, *pct);
 
-    ServerPktHeader header(pct->size() + 2, pct->GetOpcode());
+    ServerPktHeader header(pct->wpos() + 2, pct->GetOpcode());
     if (m_Crypt.IsInitialized())
     {
-        uint32 totalLength = pct->size();
+        uint32 totalLength = pct->wpos();
         totalLength <<= 13;
         totalLength |= ((uint32)pct->GetOpcode() & 0x1FFF);
 
@@ -239,14 +239,14 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
         m_Crypt.EncryptSend((uint8*)header.header, header.getHeaderLength());
     }
 
-    if (m_OutBuffer->space() >= pct->size() + header.getHeaderLength() && msg_queue()->is_empty())
+    if (m_OutBuffer->space() >= pct->wpos() + header.getHeaderLength() && msg_queue()->is_empty())
     {
         // Put the packet on the buffer.
         if (m_OutBuffer->copy((char*) header.header, header.getHeaderLength()) == -1)
             ACE_ASSERT (false);
 
         if (!pct->empty())
-            if (m_OutBuffer->copy((char*) pct->contents(), pct->size()) == -1)
+            if (m_OutBuffer->copy((char*) pct->contents(), pct->wpos()) == -1)
                 ACE_ASSERT (false);
     }
     else
@@ -254,12 +254,12 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
         // Enqueue the packet.
         ACE_Message_Block* mb;
 
-        ACE_NEW_RETURN(mb, ACE_Message_Block(pct->size() + header.getHeaderLength()), -1);
+        ACE_NEW_RETURN(mb, ACE_Message_Block(pct->wpos() + header.getHeaderLength()), -1);
 
         mb->copy((char*) header.header, header.getHeaderLength());
 
         if (!pct->empty())
-            mb->copy((const char*)pct->contents(), pct->size());
+            mb->copy((const char*)pct->contents(), pct->wpos());
 
         if (msg_queue()->enqueue_tail(mb, (ACE_Time_Value*)&ACE_Time_Value::zero) == -1)
         {
