@@ -1131,15 +1131,18 @@ int32 WorldSession::HandleEnableNagleAlgorithm()
 void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_ACTION_BUTTON");
-    uint8 button;
-    uint32 packetData;
-    recvData >> packetData >> button;
 
-    uint32 action = ACTION_BUTTON_ACTION(packetData);
-    uint8  type   = ACTION_BUTTON_TYPE(packetData);
+    uint8 button;
+    ObjectGuid packedData;
+    recvData >> button;
+    recvData.ReadGuidMask<4, 7, 5, 6, 1, 3, 0, 2>(packedData);
+    recvData.ReadGuidBytes<3, 4, 6, 7, 1, 2, 0, 5>(packedData);
+
+    uint32 action = uint32(packedData & 0xFFFFFFFF);
+    uint8  type = uint8(packedData >> 56);
 
     sLog->outInfo(LOG_FILTER_NETWORKIO, "BUTTON: %u ACTION: %u TYPE: %u", button, action, type);
-    if (!packetData)
+    if (!packedData)
     {
         sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Remove action from button %u", button);
         GetPlayer()->removeActionButton(button);

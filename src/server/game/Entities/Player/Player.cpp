@@ -7236,7 +7236,7 @@ void Player::SendActionButtons(uint32 state) const
     {
         ActionButtonList::const_iterator itr = m_actionButtons.find(i);
         if (itr != m_actionButtons.end() && itr->second.uState != ACTIONBUTTON_DELETED)
-            buttons[i] = uint64(itr->second.GetType()) << 32 | itr->second.GetAction();
+            buttons[i] = itr->second.packedData;
         else
             buttons[i] = 0;
     }
@@ -7289,11 +7289,11 @@ bool Player::IsActionButtonDataValid(uint8 button, uint32 action, uint8 type)
         return false;
     }
 
-    if (action >= MAX_ACTION_BUTTON_ACTION_VALUE)
+    /*if (action >= MAX_ACTION_BUTTON_ACTION_VALUE)
     {
         sLog->outError(LOG_FILTER_PLAYER_LOADING, "Action %u not added into button %u for player %s: action must be < %u", action, button, GetName(), MAX_ACTION_BUTTON_ACTION_VALUE);
         return false;
-    }
+    }*/
 
     switch (type)
     {
