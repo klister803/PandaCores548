@@ -303,6 +303,7 @@ enum GroupJoinBattlegroundResult
     ERR_BATTLEFIELD_TEAM_PARTY_SIZE                 = 22,
     ERR_NOT_ON_TOURNAMENT_REALM                     = 23,
     ERR_BATTLEGROUND_PLAYERS_FROM_DIFFERENT_REALMS  = 24,
+    ERR_LEAVE_QUEUE                                 = 30,       // just leave queue
     ERR_REMOVE_FROM_PVP_QUEUE_GRANT_LEVEL           = 33,
     ERR_REMOVE_FROM_PVP_QUEUE_FACTION_CHANGE        = 34,
     ERR_BATTLEGROUND_JOIN_FAILED                    = 35,

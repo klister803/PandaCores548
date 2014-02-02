@@ -353,19 +353,19 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
 
     uint32 time;
     uint32 queueSlot;                                            // guessed
-    uint32 unk;                                                 // type id from dbc
-    uint8 action;                                               // enter battle 0x1, leave queue 0x0
+    uint32 unk;                                                  // type id from dbc
+    uint8 action;                                                // enter battle 0x1, leave queue 0x0
     ObjectGuid guid;
     
     action = recvData.ReadBit();
     recvData.ReadFlush();
 
-    recvData >> unk;
-    recvData >> time;
     recvData >> queueSlot;
-    
-    recvData.WriteGuidMask<5, 0, 4, 2, 6, 1, 3, 7>(guid);
-    recvData.WriteGuidBytes<2, 5, 4, 6, 3, 0, 7, 1>(guid);
+    recvData >> time;
+    recvData >> unk;
+   
+    recvData.ReadGuidMask<5, 0, 4, 2, 6, 1, 3, 7>(guid);
+    recvData.ReadGuidBytes<2, 5, 4, 6, 3, 0, 7, 1>(guid);
 
     if (!_player || !_player->InBattlegroundQueue())
     {
@@ -521,8 +521,8 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
                     at->SaveToDB();
                 }
             }
-
-            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, _player, queueSlot, STATUS_NONE, _player->GetBattlegroundQueueJoinTime(bgTypeId), 0, 0);
+            //send bg command result to show nice message
+            sBattlegroundMgr->BuildStatusFailedPacket(&data, bg, _player, queueSlot, ERR_LEAVE_QUEUE);
             SendPacket(&data);
 
             _player->RemoveBattlegroundQueueId(bgQueueTypeId);  // must be called this way, because if you move this call to queue->removeplayer, it causes bugs
