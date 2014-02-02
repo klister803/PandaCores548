@@ -1261,7 +1261,7 @@ enum Opcodes
     SMSG_SERVERTIME                                   = 0x999,  // 5.0.5 16048
     SMSG_SERVER_FIRST_ACHIEVEMENT                     = 0x8A6,  // 5.0.5 16048
     SMSG_SERVER_INFO_RESPONSE                         = 0xA5C,  // 5.0.5 16048
-    SMSG_SERVER_MESSAGE                               = 0x962,  // 5.0.5 16048
+    SMSG_SERVER_MESSAGE                               = 0x1539, // 5.4.1 17538
     SMSG_SERVER_PERF                                  = 0xE8D,  // 5.0.5 16048
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
