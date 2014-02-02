@@ -14677,10 +14677,30 @@ void Player::SendBuyError(BuyResult msg, Creature* creature, uint32 item, uint32
 void Player::SendSellError(SellResult msg, Creature* creature, uint64 guid)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_SELL_ITEM");
-    WorldPacket data(SMSG_SELL_ITEM, (8+8+1));  // last check 4.3.4
-    data << uint64(creature ? creature->GetGUID() : 0);
-    data << uint64(guid);
+    WorldPacket data(SMSG_SELL_ITEM, 1 + 9 + 9);
+    ObjectGuid creatureGuid = creature ? creature->GetGUID() : 0;
+
+    data.WriteGuidMask<5, 4, 6, 2>(creatureGuid);
+    data.WriteGuidMask<5, 2>(guid);
+    data.WriteGuidMask<0>(creatureGuid);
+    data.WriteGuidMask<4>(guid);
+    data.WriteGuidMask<7>(creatureGuid);
+    data.WriteGuidMask<7>(guid);
+    data.WriteGuidMask<1, 3>(creatureGuid);
+    data.WriteGuidMask<0, 1, 6, 3>(guid);
+
+    data.WriteGuidBytes<7>(guid);
+    data.WriteGuidBytes<1, 5, 7>(creatureGuid);
+    data.WriteGuidBytes<5>(guid);
+    data.WriteGuidBytes<4>(creatureGuid);
+    data.WriteGuidBytes<3, 4>(guid);
+    data.WriteGuidBytes<0, 2>(creatureGuid);
+    data.WriteGuidBytes<2>(guid);
+    data.WriteGuidBytes<6>(creatureGuid);
     data << uint8(msg);
+    data.WriteGuidBytes<3>(creatureGuid);
+    data.WriteGuidBytes<0, 6, 1>(guid);
+    
     GetSession()->SendPacket(&data);
 }
 
@@ -22190,12 +22210,12 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
 
     int i = 0;
     flag128 _mask = 0;
-    uint32 modTypeCount = 0; // count of mods per one mod->op
+    uint32 modTypeCount = 0;            // count of mods per one mod->op
+
     WorldPacket data(opcode);
-    data << uint32(1);  // count of different mod->op's in packet
-    size_t writePos = data.wpos();
-    data << uint32(modTypeCount);
-    data << uint8(mod->op);
+    data.WriteBits(1, 22);              // count of different mod->op's in packet
+    uint32 bpos = data.bitwpos();
+    data.WriteBits(0, 21);
     for (int eff = 0; eff < 128; ++eff)
     {
         if (eff != 0 && (eff % 32) == 0)
@@ -22218,8 +22238,8 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
                 if (mod->value)
                     val += apply ? float(mod->value)/100 : -(float(mod->value)/100);
 
-                data << uint8(eff);
                 data << float(val);
+                data << uint8(eff);
                 ++modTypeCount;
                 continue;
             }
@@ -22235,8 +22255,11 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
             ++modTypeCount;
         }
     }
-    data.put<uint32>(writePos, modTypeCount);
+    data << uint8(mod->op);
+
+    data.PutBits(bpos, modTypeCount, 21);
     SendDirectMessage(&data);
+
     if (apply)
         m_spellMods[mod->op].push_back(mod);
     else
@@ -22373,7 +22396,7 @@ void Player::SetSpellModTakingSpell(Spell* spell, bool apply)
 void Player::SendProficiency(ItemClass itemClass, uint32 itemSubclassMask)
 {
     WorldPacket data(SMSG_SET_PROFICIENCY, 1 + 4);
-    data << uint8(itemClass) << uint32(itemSubclassMask);
+    data << uint32(itemSubclassMask) << uint8(itemClass);
     GetSession()->SendPacket(&data);
 }
 

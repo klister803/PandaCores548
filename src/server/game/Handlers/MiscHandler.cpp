@@ -95,17 +95,14 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     uint8 boxTextLength = 0;
     std::string code = "";
 
-    recvData >> menuId >> gossipListId;
+    recvData >> gossipListId >> menuId;
 
     recvData.ReadGuidMask<4, 0, 6, 3, 2, 7, 1>(guid);
     boxTextLength = recvData.ReadBits(8);
     recvData.ReadGuidMask<5>(guid);
 
     recvData.ReadGuidBytes<5, 6, 3, 0, 1>(guid);
-
-    if (_player->PlayerTalkClass->IsGossipOptionCoded(gossipListId))
-        code = recvData.ReadString(boxTextLength);
-
+    code = recvData.ReadString(boxTextLength);
     recvData.ReadGuidBytes<2, 7, 4>(guid);
 
     Creature* unit = NULL;

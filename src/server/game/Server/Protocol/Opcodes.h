@@ -1255,7 +1255,7 @@ enum Opcodes
     SMSG_RESYNC_RUNES                                 = 0xC05,  // 5.0.5 16048
     SMSG_ROLE_POLL_BEGIN                              = 0,      // 0x70B0 in 4.3.4 @todo : Find me and BACON !
     SMSG_RWHOIS                                       = 0xDCA,  // 5.0.5 16048
-    SMSG_SELL_ITEM                                    = 0xC76,  // 5.0.5 16048
+    SMSG_SELL_ITEM                                    = 0x002E, // 5.4.1 17538
     SMSG_SEND_MAIL_RESULT                             = 0xA4F,  // 5.0.5 16048
     SMSG_SEND_UNLEARN_SPELLS                          = 0x14C4, // 5.4.1 17538
     SMSG_SERVERTIME                                   = 0x999,  // 5.0.5 16048
@@ -1270,11 +1270,11 @@ enum Opcodes
     SMSG_SET_FACTION_ATWAR                            = 0xDD2,  // 5.0.5 16048
     SMSG_SET_FACTION_STANDING                         = 0x1017, // 5.4.1 17538
     SMSG_SET_FACTION_VISIBLE                          = 0x003F, // 5.4.1 17538
-    SMSG_SET_FLAT_SPELL_MODIFIER                      = 0xC74,  // 5.0.5 16048
+    SMSG_SET_FLAT_SPELL_MODIFIER                      = 0x00E0, // 5.4.1 17538
     SMSG_SET_FORCED_REACTIONS                         = 0x0025, // 5.4.1 17538
     SMSG_SET_MELEE_ANIM_KIT                           = 0,      // Not found in 4.3.4
     SMSG_SET_MOVEMENT_ANIM_KIT                        = 0,      // Not found in 4.3.4
-    SMSG_SET_PCT_SPELL_MODIFIER                       = 0x802,  // 5.0.5 16048
+    SMSG_SET_PCT_SPELL_MODIFIER                       = 0x0061, // 5.4.1 17538
     SMSG_SET_PET_SPECIALIZATION                       = 0x1115, // 5.4.1 17538
     SMSG_SET_PHASE_SHIFT                              = 0xA93,  // 5.0.5 16048
     SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0x0085, // 5.4.1 17538
