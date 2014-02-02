@@ -485,7 +485,6 @@ bool Group::AddMember(Player* player)
             player->SetFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
 
             UpdateData groupData(player->GetMapId());
-            WorldPacket groupDataPacket;
 
             // Broadcast group members' fields to player
             for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
@@ -509,8 +508,15 @@ bool Group::AddMember(Player* player)
                         player->BuildValuesUpdateBlockForPlayer(&newData, member);
                         if (newData.HasData())
                         {
-                            newData.BuildPacket(&newDataPacket);
-                            member->SendDirectMessage(&newDataPacket);
+                            std::list<WorldPacket*> packets;
+                            if (newData.BuildPacket(packets))
+                            {
+                                for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+                                {
+                                    member->SendDirectMessage(*itr);
+                                    delete *itr;
+                                }
+                            }
                         }
                     }
                 }
@@ -518,8 +524,15 @@ bool Group::AddMember(Player* player)
 
             if (groupData.HasData())
             {
-                groupData.BuildPacket(&groupDataPacket);
-                player->SendDirectMessage(&groupDataPacket);
+                std::list<WorldPacket*> packets;
+                if (groupData.BuildPacket(packets))
+                {
+                    for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+                    {
+                        player->SendDirectMessage(*itr);
+                        delete *itr;
+                    }
+                }
             }
 
             player->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
