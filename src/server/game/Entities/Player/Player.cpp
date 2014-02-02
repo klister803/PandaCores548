@@ -1112,6 +1112,8 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         SetUInt64Value(PLAYER_FIELD_KNOWN_TITLES + i, 0);  // 0=disabled
     SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
 
+    SetUInt32Value(PLAYER_HOME_PLAYER_REALM, realmID);
+
     SetUInt32Value(PLAYER_FIELD_KILLS, 0);
     SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 0);
 
@@ -18860,6 +18862,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         curTitle = 0;
 
     SetUInt32Value(PLAYER_CHOSEN_TITLE, curTitle);
+
+    SetUInt32Value(PLAYER_HOME_PLAYER_REALM, realmID);
 
     // has to be called after last Relocate() in Player::LoadFromDB
     SetFallInformation(0, GetPositionZ());

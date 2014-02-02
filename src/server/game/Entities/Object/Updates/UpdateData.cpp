@@ -51,21 +51,20 @@ bool UpdateData::BuildPacket(std::list<WorldPacket*>& packets)
 
     static const uint32 maxBlockCount = 50;
     bool outOfRangeAdded = false;
-    uint32 blockCount = m_blocks.size() + (m_outOfRangeGUIDs.empty() ? 0 : 1);
+    uint32 blockCount = m_blocks.size();
     do
     {
         WorldPacket* packet = new WorldPacket(SMSG_UPDATE_OBJECT, (m_outOfRangeGUIDs.empty() ? 0 : 1 + 4 + 9 * (outOfRangeAdded ? m_outOfRangeGUIDs.size() : 0)) + std::min(m_blocks.size(), uint32(maxBlockCount)) * 50);
 
         *packet << uint16(m_map);
-        uint32 count = std::min(blockCount + (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded ? 1 : 0), uint32(maxBlockCount));
-        *packet << uint32(count);
+        uint32 count = std::min(blockCount, maxBlockCount);
+        *packet << uint32(count + (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded ? 1 : 0));
 
         for (BlockList::const_iterator itr = m_blocks.begin(); itr != m_blocks.end() && count > 0; ++itr, --count, --blockCount)
             packet->append(*itr);
 
         if (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded)
         {
-            --blockCount;
             outOfRangeAdded = true;
             *packet << uint8(UPDATETYPE_OUT_OF_RANGE_OBJECTS);
             *packet << uint32(m_outOfRangeGUIDs.size());
