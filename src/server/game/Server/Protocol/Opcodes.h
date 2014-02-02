@@ -1193,7 +1193,7 @@ enum Opcodes
     SMSG_PROPOSE_LEVEL_GRANT                          = 0xD8D,  // 5.0.5 16048
     SMSG_PUREMOUNT_CANCELLED_OBSOLETE                 = 0,      // Not found in 4.3.4
     SMSG_PVP_CREDIT                                   = 0xD43,  // 5.0.5 16048
-    SMSG_PVP_LOG_DATA                                 = 0xB3F,  // 5.0.5 16048
+    SMSG_PVP_LOG_DATA                                 = 0x018D, // 5.4.1 17538
     SMSG_PVP_OPTIONS_ENABLED                          = 0xA09,  // 5.0.5 16048
     SMSG_QUERY_QUESTS_COMPLETED_RESPONSE              = 0x000,  // 5.0.5 16048 Deprecated
     SMSG_QUERY_TIME_RESPONSE                          = 0x935,  // 5.0.5 16048

@@ -407,19 +407,11 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
     uint8 counta2 = 0;
     uint8 counth2 = 0;
 
+    //! 5.4.1
     data->Initialize(SMSG_PVP_LOG_DATA, (1+1+4+40*bg->GetPlayerScoresSize()));
 
-    size_t a2_pos = data->wpos();
-    *data << uint8(0);
-
-    size_t h2_pos = data->wpos();
-    *data << uint8(0);
-
-    data->WriteBit(isRated); // +20
-    data->WriteBit(isArena); // +48
-
     size_t count_pos = data->bitwpos();
-    data->WriteBits(0, 21);     // Placeholder
+    data->WriteBits(0, 19);     // Placeholder
 
     int32 count = 0;
     ByteBuffer buff;
@@ -438,38 +430,39 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         Player* player = ObjectAccessor::FindPlayer(itr2->first);
         if (!player)
             continue;
+        
+        buff.WriteGuidBytes<2, 7>(guid);
+        buff << int32(player->GetSpecializationId(player->GetActiveSpec()));
+        buff.WriteGuidBytes<3>(guid);
 
         if (!isArena) // Unk 3 prolly is (bg)
         {
-            buff << uint32(itr2->second->BonusHonor / 100);
-            buff << uint32(itr2->second->HonorableKills);
             buff << uint32(itr2->second->Deaths);
+            buff << uint32(itr2->second->BonusHonor / 100);
+            buff << uint32(itr2->second->HonorableKills);  
         }
-        // if (unk 5) << uint32() unk
-        buff.WriteByteSeq(guid[0]);
-        buff << uint32(itr2->second->HealingDone);             // healing done
-        buff.WriteByteSeq(guid[7]);
+
         switch (bg->GetTypeID(true))                             // Custom values
         {
             case BATTLEGROUND_RB:
                 switch (bg->GetMapId())
                 {
                     case 489:
-                        data->WriteBits(2, 24);
+                        data->WriteBits(2, 22);
                         buff << uint32(((BattlegroundWGScore*)itr2->second)->FlagCaptures);        // flag captures
                         buff << uint32(((BattlegroundWGScore*)itr2->second)->FlagReturns);         // flag returns
                         break;
                     case 566:
-                        data->WriteBits(1, 24);
+                        data->WriteBits(1, 22);
                         buff << uint32(((BattlegroundEYScore*)itr2->second)->FlagCaptures);        // flag captures
                         break;
                     case 529:
-                        data->WriteBits(2, 24);
+                        data->WriteBits(2, 22);
                         buff << uint32(((BattlegroundABScore*)itr2->second)->BasesAssaulted);      // bases asssulted
                         buff << uint32(((BattlegroundABScore*)itr2->second)->BasesDefended);       // bases defended
                         break;
                     case 30:
-                        data->WriteBits(5, 24);
+                        data->WriteBits(5, 22);
                         buff << uint32(((BattlegroundAVScore*)itr2->second)->GraveyardsAssaulted); // GraveyardsAssaulted
                         buff << uint32(((BattlegroundAVScore*)itr2->second)->GraveyardsDefended);  // GraveyardsDefended
                         buff << uint32(((BattlegroundAVScore*)itr2->second)->TowersAssaulted);     // TowersAssaulted
@@ -477,32 +470,32 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                         buff << uint32(((BattlegroundAVScore*)itr2->second)->MinesCaptured);       // MinesCaptured
                         break;
                     case 607:
-                        data->WriteBits(2, 24);
+                        data->WriteBits(2, 22);
                         buff << uint32(((BattlegroundSAScore*)itr2->second)->demolishers_destroyed);
                         buff << uint32(((BattlegroundSAScore*)itr2->second)->gates_destroyed);
                         break;
                     case 628:                                   // IC
-                        data->WriteBits(2, 24);
+                        data->WriteBits(2, 22);
                         buff << uint32(((BattlegroundICScore*)itr2->second)->BasesAssaulted);       // bases asssulted
                         buff << uint32(((BattlegroundICScore*)itr2->second)->BasesDefended);        // bases defended
                         break;
                     case 726:
-                        data->WriteBits(2, 24);
+                        data->WriteBits(2, 22);
                         buff << uint32(((BattlegroundTPScore*)itr2->second)->FlagCaptures);         // flag captures
                         buff << uint32(((BattlegroundTPScore*)itr2->second)->FlagReturns);          // flag returns
                         break;
                     case 761:
-                        data->WriteBits(2, 24);
+                        data->WriteBits(2, 22);
                         buff << uint32(((BattlegroundBFGScore*)itr2->second)->BasesAssaulted);      // bases asssulted
                         buff << uint32(((BattlegroundBFGScore*)itr2->second)->BasesDefended);       // bases defended
                         break;
                     default:
-                        data->WriteBits(0, 24);
+                        data->WriteBits(0, 22);
                         break;
                 }
                 break;
             case BATTLEGROUND_AV:
-                data->WriteBits(5, 24);
+                data->WriteBits(5, 22);
                 buff << uint32(((BattlegroundAVScore*)itr2->second)->GraveyardsAssaulted); // GraveyardsAssaulted
                 buff << uint32(((BattlegroundAVScore*)itr2->second)->GraveyardsDefended);  // GraveyardsDefended
                 buff << uint32(((BattlegroundAVScore*)itr2->second)->TowersAssaulted);     // TowersAssaulted
@@ -510,46 +503,46 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                 buff << uint32(((BattlegroundAVScore*)itr2->second)->MinesCaptured);       // MinesCaptured
                 break;
             case BATTLEGROUND_WS:
-                data->WriteBits(2, 24);
+                data->WriteBits(2, 22);
                 buff << uint32(((BattlegroundWGScore*)itr2->second)->FlagCaptures);        // flag captures
                 buff << uint32(((BattlegroundWGScore*)itr2->second)->FlagReturns);         // flag returns
                 break;
             case BATTLEGROUND_AB:
-                data->WriteBits(2, 24);
+                data->WriteBits(2, 22);
                 buff << uint32(((BattlegroundABScore*)itr2->second)->BasesAssaulted);      // bases asssulted
                 buff << uint32(((BattlegroundABScore*)itr2->second)->BasesDefended);       // bases defended
                 break;
             case BATTLEGROUND_EY:
-                data->WriteBits(1, 24);
+                data->WriteBits(1, 22);
                 buff << uint32(((BattlegroundEYScore*)itr2->second)->FlagCaptures);        // flag captures
                 break;
             case BATTLEGROUND_SA:
-                data->WriteBits(2, 24);
+                data->WriteBits(2, 22);
                 buff << uint32(((BattlegroundSAScore*)itr2->second)->demolishers_destroyed);
                 buff << uint32(((BattlegroundSAScore*)itr2->second)->gates_destroyed);
                 break;
             case BATTLEGROUND_IC:
-                data->WriteBits(2, 24);
+                data->WriteBits(2, 22);
                 buff << uint32(((BattlegroundICScore*)itr2->second)->BasesAssaulted);       // bases asssulted
                 buff << uint32(((BattlegroundICScore*)itr2->second)->BasesDefended);        // bases defended
                 break;
             case BATTLEGROUND_TP:
-                data->WriteBits(2, 24);
+                data->WriteBits(2, 22);
                 buff << uint32(((BattlegroundTPScore*)itr2->second)->FlagCaptures);         // flag captures
                 buff << uint32(((BattlegroundTPScore*)itr2->second)->FlagReturns);          // flag returns
                 break;
             case BATTLEGROUND_BFG:
-                data->WriteBits(2, 24);
+                data->WriteBits(2, 22);
                 buff << uint32(((BattlegroundBFGScore*)itr2->second)->BasesAssaulted);      // bases asssulted
                 buff << uint32(((BattlegroundBFGScore*)itr2->second)->BasesDefended);       // bases defended
                 break;
             case BATTLEGROUND_KT:
-                data->WriteBits(2, 24);
+                data->WriteBits(2, 22);
                 buff << uint32(((BattleGroundKTScore*)itr2->second)->OrbHandles);
                 buff << uint32(((BattleGroundKTScore*)itr2->second)->Score * 10);
                 break;
             case BATTLEGROUND_SSM:
-                data->WriteBits(1, 24);
+                data->WriteBits(1, 22);
                 buff << uint32(((BattleGroundSSMScore*)itr2->second)->CartsTaken);
                 break;
             case BATTLEGROUND_NA:
@@ -557,112 +550,115 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
             case BATTLEGROUND_BE:
             case BATTLEGROUND_AA:
             case BATTLEGROUND_RL:
-            case BATTLEGROUND_DS:                               // wotlk
-            case BATTLEGROUND_RV:                               // wotlk
-                data->WriteBits(0, 24);
+            case BATTLEGROUND_DS:                                   // wotlk
+            case BATTLEGROUND_RV:                                   // wotlk
+                data->WriteBits(0, 22);
                 break;
             default:
-                data->WriteBits(0, 24);
+                data->WriteBits(0, 22);
                 break;
         }
 
-        data->WriteBit(0); // Unk 1
-        data->WriteBit(guid[4]);
-        data->WriteBit(!isArena); // Unk 3 -- Prolly if (bg)
-        data->WriteBit(0); // Unk 2
-        data->WriteBit(0); // Unk 4 // damage done ??
-        data->WriteBit(guid[6]);
-        data->WriteBit(guid[3]);
-        data->WriteBit(guid[7]);
-        data->WriteBit(isArena); // Unk 5
-        data->WriteBit(guid[1]);
-        data->WriteBit(0); // Unk 6
-        data->WriteBit(guid[0]);
-
-        if (isArena)
+        data->WriteGuidMask<2, 4, 6, 7>(guid);
+        data->WriteBit(isArena);
+        data->WriteGuidMask<5>(guid);
+        data->WriteBit(0);                                          // PLR_SCORE::field_2C
+        if (isArena)                                                // Reversed team
             data->WriteBit(bg->GetPlayerTeam(guid) == ALLIANCE);
         else
             data->WriteBit(player->GetBGTeam() == ALLIANCE);
+        data->WriteBit(0);
+        data->WriteBit(isArena);                                    // rating changed
+        data->WriteGuidMask<3, 1>(guid);
+        data->WriteBit(0);                                          // PLR_SCORE_field_44
+        data->WriteBit(!isArena);                                   // Unk 3 -- Prolly if (bg)
+        data->WriteGuidMask<0>(guid);
+
+
+        //byte part
+        buff << uint32(itr2->second->KillingBlows);
+        buff.WriteGuidBytes<6, 4>(guid);
+        if(isArena)
+            buff << int32(bg->GetArenaTeamRatingChangeByIndex(bg->GetPlayerTeam(guid) == HORDE));
+        buff << uint32(itr2->second->DamageDone);                   // damage done
+        buff.WriteGuidBytes<5, 0, 1>(guid);
+        buff << uint32(itr2->second->HealingDone);                  // healing done
 
         if (player->GetBGTeam() == ALLIANCE)
             ++counta2;
         else
             ++counth2;
-        data->WriteBit(guid[2]);
-        data->WriteBit(guid[5]);
-        
-        buff.WriteByteSeq(guid[6]);
-        buff << uint32(itr2->second->KillingBlows);
-        // if (unk 6) << uint32() unk
-        buff << uint32(itr2->second->DamageDone);              // damage done
-        buff.WriteByteSeq(guid[2]);
-        buff.WriteByteSeq(guid[1]);
-        //buff << uint32(40);
-        // if (unk 2) << uint32() unk
-        // if (unk 4) << uint32() unk
-        if(isArena)
-            buff << int32(bg->GetArenaTeamRatingChangeByIndex(bg->GetPlayerTeam(guid) == HORDE));
-        buff.WriteByteSeq(guid[4]);
-        buff << int32(player->GetSpecializationId(player->GetActiveSpec()));
-        buff.WriteByteSeq(guid[3]);
-        buff.WriteByteSeq(guid[5]);
+
         ++count;
     }
-    
+
+    data->WriteBit(isRated);
+    data->WriteBit(bg->GetStatus() == STATUS_WAIT_LEAVE);           // If Ended
+    data->WriteBit(isArena);
+
+
     if (isArena)
     {
         for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
         {
             if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
-                data->WriteBits(at->GetName().length(), 8);
+            {
+                data->WriteBits(at->GetName().length(), 7);
+                data->WriteBits(0, 8);                              //guid part
+            }
             else
-                data->WriteBits(0, 8);
+            {
+                data->WriteBits(0, 7);
+                data->WriteBits(0, 8);                              //guid part
+            }
         }
     }
-
-    data->WriteBit(bg->GetStatus() == STATUS_WAIT_LEAVE);    // If Ended
 
     data->FlushBits();
 
-    data->put<uint8>(a2_pos, counta2);
-    data->put<uint8>(h2_pos, counth2);
-    data->PutBits<int32>(count_pos, count, 21);              // Number of Players
-
-    data->append(buff);
-    if (isRated)                                             // arena TODO : Fix Order on Rated Implementation
-    {
-        // it seems this must be according to BG_WINNER_A/H and _NOT_ BG_TEAM_A/H
-        for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
-        {
-            int32 rating_change = bg->GetArenaTeamRatingChangeByIndex(i);
-
-            uint32 pointsLost = rating_change < 0 ? -rating_change : 0;
-            uint32 pointsGained = rating_change > 0 ? rating_change : 0;
-            uint32 MatchmakerRating = bg->GetArenaMatchmakerRatingByIndex(i);
-
-            if(i == 1)
-            {
-                *data << uint32(pointsLost);                    // Rating Lost
-                *data << uint32(MatchmakerRating);              // Matchmaking Value
-                *data << uint32(pointsGained);                  // Rating gained
-            }
-            else
-            {
-                *data << uint32(pointsLost);                    // Rating Lost
-                *data << uint32(pointsGained);                  // Rating gained
-                *data << uint32(MatchmakerRating);              // Matchmaking Value
-            }
-
-            sLog->outDebug(LOG_FILTER_BATTLEGROUND, "rating change: %d", rating_change);
-        }
-    }
-    if (bg->GetStatus() == STATUS_WAIT_LEAVE)
-        *data << uint8(bg->GetWinner());                    // who win
+    data->PutBits<int32>(count_pos, count, 19);
 
     if (isArena)
         for (int8 i = 0; i < BG_TEAMS_COUNT; ++i)
             if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
                 data->WriteString(at->GetName());
+
+    data->append(buff);
+    
+    if (isRated)
+    {
+        int32 rating_change[BG_TEAMS_COUNT];
+        uint32 pointsLost[BG_TEAMS_COUNT];
+        uint32 pointsGained[BG_TEAMS_COUNT];
+        uint32 MatchmakerRating[BG_TEAMS_COUNT];
+
+        // it seems this must be according to BG_WINNER_A/H and _NOT_ BG_TEAM_A/H
+        for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
+        {
+            rating_change[i] = bg->GetArenaTeamRatingChangeByIndex(i);
+
+            pointsLost[i] = rating_change[i] < 0 ? -rating_change[i] : 0;
+            pointsGained[i] = rating_change[i] > 0 ? rating_change[i] : 0;
+            MatchmakerRating[i] = bg->GetArenaMatchmakerRatingByIndex(i);
+
+            sLog->outDebug(LOG_FILTER_BATTLEGROUND, "rating change: %d", rating_change);
+        }
+
+        *data << uint32(MatchmakerRating[TEAM_HORDE]);                 // Matchmaking Value
+        *data << uint32(pointsGained[TEAM_ALLIANCE]);                  // Rating gained
+        *data << uint32(pointsLost[TEAM_ALLIANCE]);                    // Rating Lost
+        *data << uint32(pointsGained[TEAM_HORDE]);                     // Rating gained
+        *data << uint32(pointsLost[TEAM_HORDE]);                       // Rating Lost
+        *data << uint32(MatchmakerRating[TEAM_ALLIANCE]);              // Matchmaking Value            
+    }
+
+    *data << uint8(counta2);
+    *data << uint8(counth2);
+
+    if (bg->GetStatus() == STATUS_WAIT_LEAVE)
+        *data << uint8(bg->GetWinner());                               // who win
+
+
 }
 
 void BattlegroundMgr::BuildStatusFailedPacket(WorldPacket* data, Battleground* bg, Player* player, uint8 QueueSlot, GroupJoinBattlegroundResult result)
