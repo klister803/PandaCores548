@@ -250,11 +250,11 @@ class boss_protectors : public CreatureScript
                       }
                   }
                   
-                  if (Creature* tsulong = me->GetCreature(*me, instance->GetData64(NPC_TSULONG)))
+                 /* if (Creature* tsulong = me->GetCreature(*me, instance->GetData64(NPC_TSULONG)))
                   {
                       tsulong->SetVisible(true);
                       tsulong->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                  }
+                  }boss not ready */
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -265,11 +265,17 @@ class boss_protectors : public CreatureScript
                     {
                         CallDieControl(instance, me, me->GetEntry());
                         if (CalcAliveBosses(instance, me) > 1) //Only last boss must be looted
-                            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE|UNIT_DYNFLAG_TAPPED);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         else if (CalcAliveBosses(instance, me) == 1) //last boss died - active tsulong
                             SetProtectorsDone();
                     }
                 }
+            }
+
+            void JustDied(Unit* killer)
+            {
+                if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+                    me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             }
 
             void UpdateAI(const uint32 diff)
