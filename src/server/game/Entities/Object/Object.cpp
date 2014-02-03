@@ -283,8 +283,15 @@ void Object::SendUpdateToPlayer(Player* player)
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const
 {
-    if (!isType(TYPEMASK_ITEM) && !target->HaveAtClient((WorldObject*)this))
+    // hack
+    if (target->isBeingLoaded())
+    {
+        BuildCreateUpdateBlockForPlayer(data, target);
         return;
+    }
+
+    //if (!isType(TYPEMASK_ITEM) && !target->HaveAtClient((WorldObject*)this))
+    //    return;
 
     ByteBuffer buf(500);
 

@@ -127,32 +127,32 @@ enum GuildCommandError
 
 enum GuildEvents
 {
-    GE_PROMOTION                    = 1,
-    GE_DEMOTION                     = 2,
-    GE_MOTD                         = 3,
-    GE_JOINED                       = 4,
-    GE_LEFT                         = 5,
-    GE_REMOVED                      = 6,
-    GE_LEADER_IS                    = 7,
-    GE_LEADER_CHANGED               = 8,
-    GE_DISBANDED                    = 9,
-    GE_TABARDCHANGE                 = 10,
-    GE_RANK_UPDATED                 = 11,
-    GE_RANK_CREATED                 = 12,
-    GE_RANK_DELETED                 = 13,
-    GE_RANK_ORDER_CHANGED           = 14,
-    GE_FOUNDER                      = 15, // At guild creation - Set founder
-    GE_SIGNED_ON                    = 16,
-    GE_SIGNED_OFF                   = 17,
-    GE_GUILDBANKBAGSLOTS_CHANGED    = 18,
-    GE_BANK_TAB_PURCHASED           = 19,
-    GE_BANK_TAB_UPDATED             = 20,
-    GE_BANK_MONEY_UPDATED           = 21,
-    GE_BANK_MONEY_WITHDRAWN         = 22,
-    GE_BANK_TEXT_CHANGED            = 23,
-    GE_LEADER_REPLACED              = 24,
-    GE_SIGNED_ON_MOBILE             = 25,
-    GE_SIGNED_OFF_MOBILE            = 26
+    GE_PROMOTION                    = 1,    // SMSG_GUILD_RANKS_UPDATE
+    GE_DEMOTION                     = 2,    // SMSG_GUILD_RANKS_UPDATE
+    GE_MOTD                         = 3,    // SMSG_GUILD_EVENT_MOTD
+    GE_JOINED                       = 4,    // SMSG_GUILD_EVENT_JOIN_MEMBER
+    GE_LEFT                         = 5,    // SMSG_GUILD_EVENT_REMOVE_MEMBER
+    GE_REMOVED                      = 6,    // SMSG_GUILD_EVENT_REMOVE_MEMBER
+    GE_LEADER_IS                    = 7,    // SMSG_GUILD_EVENT_LEADER
+    GE_LEADER_CHANGED               = 8,    // SMSG_GUILD_EVENT_LEADER
+    GE_DISBANDED                    = 9,    // SMSG_GUILD_EVENT_GUILD_DISBANDED
+    GE_TABARDCHANGE                 = 10,   // not exist
+    GE_RANK_UPDATED                 = 11,   // SMSG_GUILD_EVENT_RANK_UPDATE
+    GE_RANK_CREATED                 = 12,   // SMSG_GUILD_EVENT_RANK_UPDATE
+    GE_RANK_DELETED                 = 13,   // SMSG_GUILD_EVENT_RANK_UPDATE
+    GE_RANK_ORDER_CHANGED           = 14,   // SMSG_GUILD_EVENT_RANK_UPDATE
+    GE_FOUNDER                      = 15,   // SMSG_GUILD_EVENT_RANK_UPDATE At guild creation - Set founder
+    GE_SIGNED_ON                    = 16,   // SMSG_GUILD_EVENT_ONLINE
+    GE_SIGNED_OFF                   = 17,   // SMSG_GUILD_EVENT_ONLINE
+    GE_GUILDBANKBAGSLOTS_CHANGED    = 18,   // SMSG_GUILD_EVENT_GUILDBANKBAGSLOTS_CHANGED
+    GE_BANK_TAB_PURCHASED           = 19,   // SMSG_GUILD_EVENT_TAB_PURCHASED
+    GE_BANK_TAB_UPDATED             = 20,   // SMSG_GUILD_EVENT_GUILDBANK_TAB_UPDATE
+    GE_BANK_MONEY_UPDATED           = 21,   // SMSG_GUILD_BANK_MONEY_UPDATE
+    GE_BANK_MONEY_WITHDRAWN         = 22,   // not exist
+    GE_BANK_TEXT_CHANGED            = 23,   // SMSG_GUILD_EVENT_GUILDBANK_TEXT_CHANGED
+    GE_LEADER_REPLACED              = 24,   // SMSG_GUILD_EVENT_LEADER
+    GE_SIGNED_ON_MOBILE             = 25,   // SMSG_GUILD_EVENT_ONLINE
+    GE_SIGNED_OFF_MOBILE            = 26    // SMSG_GUILD_EVENT_ONLINE
 };
 
 enum PetitionTurns
