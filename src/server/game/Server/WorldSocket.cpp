@@ -167,37 +167,49 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
     if (closing_)
         return -1;
 
-    // Dump outgoing packet
-    if (sPacketLog->CanLogPacket())
-        sPacketLog->LogPacket(*pct, SERVER_TO_CLIENT);
+    size_t size = pct->wpos();
+    WorldPacket* compressed = NULL;
 
-    /*Opcodes uncompressedOpcode = pct->GetOpcode();
+    /*bool compress = false;
+    Opcodes uncompressedOpcode = pct->GetOpcode();
     if (pct->compressed)
         pct = pct->compressed;
-    else if (uncompressedOpcode != SMSG_COMPRESSED_OPCODE)
+    else if (uncompressedOpcode != SMSG_COMPRESSED_OPCODE && size > 500 && m_Session && m_Session->GetPlayer() && !m_Session->GetPlayer()->isBeingLoaded() )
     {
-        size_t size = pct->wpos();
         if (size >= 45 &&
             uncompressedOpcode != MSG_VERIFY_CONNECTIVITY &&
             (uncompressedOpcode & 0xCBA) != 1058 &&     // not auth opcode
-            uncompressedOpcode != 0x467 &&
+            uncompressedOpcode != SMSG_CHAR_ENUM &&
             uncompressedOpcode != 0x522 &&
             uncompressedOpcode != 0x666 &&
             uncompressedOpcode != 0x726)
         {
-            size += sizeof(uint32);  // + opcode
-            ByteBuffer buf(*pct);
-            buf._GetStorage().insert(buf._GetStorage().begin(), uint32(uncompressedOpcode) & 0xFF);
-            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 8) & 0xFF);
-            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 16) & 0xFF);
-            buf._GetStorage().insert(buf._GetStorage().begin(), (uint32(uncompressedOpcode) >> 24) & 0xFF);
+            ServerPktHeader header(pct->wpos() + 2, pct->GetOpcode());
+            if (m_Crypt.IsInitialized())
+            {
+                uint32 totalLength = pct->wpos();
+                totalLength <<= 13;
+                totalLength |= ((uint32)pct->GetOpcode() & 0x1FFF);
 
+                header.header[0] = (uint32)((totalLength & 0xFF));
+                header.header[1] = (uint32)((totalLength >> 8) & 0xFF);
+                header.header[2] = (uint32)((totalLength >> 16) & 0xFF);
+                header.header[3] = (uint32)((totalLength >> 24) & 0xFF);
+
+                m_Crypt.EncryptSend((uint8*)header.header, header.getHeaderLength());
+            }
+
+            ByteBuffer buf(pct->wpos() + header.getHeaderLength());
+            buf.append (header.header, header.getHeaderLength());
+            buf.append(pct->contents(), pct->wpos());
+
+            size += header.getHeaderLength();  // + opcode
+            if (buf.size() != size)
+                sLog->outError(LOG_FILTER_NETWORKIO, "WARNING!!! SIZE NOT CORECT buf %u, calc %u", buf.size(), size);
             uint32 destsize = compressBound(size);
 
-            WorldPacket* compressed = new WorldPacket(SMSG_COMPRESSED_OPCODE);
-            compressed->resize(destsize + sizeof(uint32));
-            compressed->put<uint32>(0, size);
-            WorldPacket::Compress(const_cast<uint8*>(compressed->contents()) + sizeof(uint32), &destsize, (void*)buf.contents(), size);
+            std::vector<uint8> storage(destsize);
+            WorldPacket::Compress(static_cast<void*>(&storage[0]) , &destsize, (void*)buf.contents(), size);
             if (destsize == 0)
                 delete compressed;
             else
@@ -208,16 +220,26 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
 
                 if (size > destsize)
                 {
-                    compressed->resize(destsize + sizeof(uint32));
-                    const_cast<WorldPacket*>(pct)->compressed = compressed;
+                    compressed = new WorldPacket(SMSG_COMPRESSED_OPCODE, destsize + 12);
+                    *compressed << uint32(size);
+                    *compressed << uint32(pct->GetOpcode());
+                    *compressed << uint32(destsize);
+                    compressed->append(&storage[0], destsize);
+                    
+                    //const_cast<WorldPacket*>(pct)->compressed = compressed;
                     pct = compressed;
+                    compress = true;
                 }
             }
         }
     }*/
 
+    // Dump outgoing packet
+    if (sPacketLog->CanLogPacket())
+        sPacketLog->LogPacket(*pct, SERVER_TO_CLIENT);
+
     if (pct->GetOpcode() != SMSG_MONSTER_MOVE)
-        sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s", GetOpcodeNameForLogging(pct->GetOpcode()).c_str());
+        sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s len %u", GetOpcodeNameForLogging(pct->GetOpcode()).c_str(), pct->wpos());
 
     SendSize[pct->GetOpcode()] += pct->size();
     ++SendCount[pct->GetOpcode()];
@@ -586,16 +608,16 @@ int WorldSocket::handle_input_header (void)
                 _player ? _player->GetName() : "<none>",
                 header.size, header.cmd, GetRemoteAddress().c_str());
 
-        if(!m_Session && !_player && sWorld->getBoolConfig(CONFIG_IPSET_ENABLE))
-        {
-            char buffer[200];
-            sprintf(buffer,"ipset -A badip %s>/dev/null 2>/dev/null &",GetRemoteAddress().c_str());
-            system(buffer);
-        }
+            if(!m_Session && !_player && sWorld->getBoolConfig(CONFIG_IPSET_ENABLE))
+            {
+                char buffer[200];
+                sprintf(buffer,"ipset -A badip %s>/dev/null 2>/dev/null &",GetRemoteAddress().c_str());
+                system(buffer);
+            }
 
-        errno = EINVAL;
-        return -1;
-    }
+            errno = EINVAL;
+            return -1;
+        }
 
         header.size -= 4;
 

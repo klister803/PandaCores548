@@ -31,7 +31,7 @@ enum Opcodes
     NUM_OPCODE_HANDLERS                               = (0x7FFF+1),
     UNKNOWN_OPCODE                                    = (0xFFFF+1),
     NULL_OPCODE                                       = 0,
-    SMSG_COMPRESSED_OPCODE                            = 0x467,  // 5.0.5 16048
+    SMSG_COMPRESSED_OPCODE                            = 0x0855, // 5.4.1 17538
 
     CMSG_ACCEPT_LEVEL_GRANT                           = 0x07FE, // 5.4.1 17538
     CMSG_ACCEPT_TRADE                                 = 0x1A4F, // 5.4.1 17538

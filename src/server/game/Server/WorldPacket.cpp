@@ -27,6 +27,8 @@ void WorldPacket::Compress(void* dst, uint32* dst_size, void* src, int src_size)
     c_stream.zalloc = (alloc_func)0;
     c_stream.zfree = (free_func)0;
     c_stream.opaque = (voidpf)0;
+    c_stream.avail_in = 0;
+    c_stream.next_in = NULL;
 
     int32 z_res = deflateInit(&c_stream, sWorld->getIntConfig(CONFIG_COMPRESSION));
     if (z_res != Z_OK)
@@ -41,7 +43,7 @@ void WorldPacket::Compress(void* dst, uint32* dst_size, void* src, int src_size)
     c_stream.next_in = (Bytef*)src;
     c_stream.avail_in = (uInt)src_size;
 
-    z_res = deflate(&c_stream, Z_NO_FLUSH);
+    z_res = deflate(&c_stream, Z_NO_FLUSH);// Z_NO_FLUSH old Z_SYNC_FLUSH
     if (z_res != Z_OK)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Can't compress update packet (zlib: deflate) Error code: %i (%s)", z_res, zError(z_res));
