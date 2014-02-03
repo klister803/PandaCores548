@@ -238,6 +238,25 @@ class boss_protectors : public CreatureScript
                 }
             }
 
+            void SetProtectorsDone()
+            {
+                  Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                  if (!players.isEmpty())
+                  {
+                      for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                      {
+                          if (Player* pPlayer = itr->getSource())
+                              me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
+                      }
+                  }
+                  
+                  if (Creature* tsulong = me->GetCreature(*me, instance->GetData64(NPC_TSULONG)))
+                  {
+                      tsulong->SetVisible(true);
+                      tsulong->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                  }
+            }
+
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 if (instance)
@@ -246,7 +265,9 @@ class boss_protectors : public CreatureScript
                     {
                         CallDieControl(instance, me, me->GetEntry());
                         if (CalcAliveBosses(instance, me) > 1) //Only last boss must be looted
-                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            me->SetLootRecipient(NULL);
+                        else if (CalcAliveBosses(instance, me) == 1) //last boss died - active tsulong
+                            SetProtectorsDone();
                     }
                 }
             }
