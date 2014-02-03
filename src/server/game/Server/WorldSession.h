@@ -422,6 +422,8 @@ class WorldSession
         uint32 GetRecruiterId() const { return recruiterId; }
         bool IsARecruiter() const { return isRecruiter; }
 
+        z_stream_s* GetCompressionStream() { return _compressionStream; }
+
     public:                                                 // opcodes handlers
 
         void Handle_NULL(WorldPacket& recvPacket);          // not used
@@ -1110,6 +1112,8 @@ class WorldSession
         uint32 _pakagepersecond;
         uint32 _second;
         uint32 _counttokick;
+
+        z_stream_s* _compressionStream;
 };
 #endif
 /// @}

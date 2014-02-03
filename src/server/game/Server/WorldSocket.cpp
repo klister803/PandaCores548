@@ -170,69 +170,15 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
     size_t size = pct->wpos();
     WorldPacket* compressed = NULL;
 
-    /*bool compress = false;
-    Opcodes uncompressedOpcode = pct->GetOpcode();
-    if (pct->compressed)
-        pct = pct->compressed;
-    else if (uncompressedOpcode != SMSG_COMPRESSED_OPCODE && size > 500 && m_Session && m_Session->GetPlayer() && !m_Session->GetPlayer()->isBeingLoaded() )
+    // Empty buffer used in case packet should be compressed
+    // Disable compression for now :)
+    WorldPacket buff;
+    if (m_Session && pct->size() > 0x400 && pct->GetOpcode() != SMSG_COMPRESSED_OPCODE && m_Session->GetPlayer() && !m_Session->GetPlayer()->isBeingLoaded())
     {
-        if (size >= 45 &&
-            uncompressedOpcode != MSG_VERIFY_CONNECTIVITY &&
-            (uncompressedOpcode & 0xCBA) != 1058 &&     // not auth opcode
-            uncompressedOpcode != SMSG_CHAR_ENUM &&
-            uncompressedOpcode != 0x522 &&
-            uncompressedOpcode != 0x666 &&
-            uncompressedOpcode != 0x726)
-        {
-            ServerPktHeader header(pct->wpos() + 2, pct->GetOpcode());
-            if (m_Crypt.IsInitialized())
-            {
-                uint32 totalLength = pct->wpos();
-                totalLength <<= 13;
-                totalLength |= ((uint32)pct->GetOpcode() & 0x1FFF);
+        buff.Compress(m_Session->GetCompressionStream(), pct);
+        pct = &buff;
+    }
 
-                header.header[0] = (uint32)((totalLength & 0xFF));
-                header.header[1] = (uint32)((totalLength >> 8) & 0xFF);
-                header.header[2] = (uint32)((totalLength >> 16) & 0xFF);
-                header.header[3] = (uint32)((totalLength >> 24) & 0xFF);
-
-                m_Crypt.EncryptSend((uint8*)header.header, header.getHeaderLength());
-            }
-
-            ByteBuffer buf(pct->wpos() + header.getHeaderLength());
-            buf.append (header.header, header.getHeaderLength());
-            buf.append(pct->contents(), pct->wpos());
-
-            size += header.getHeaderLength();  // + opcode
-            if (buf.size() != size)
-                sLog->outError(LOG_FILTER_NETWORKIO, "WARNING!!! SIZE NOT CORECT buf %u, calc %u", buf.size(), size);
-            uint32 destsize = compressBound(size);
-
-            std::vector<uint8> storage(destsize);
-            WorldPacket::Compress(static_cast<void*>(&storage[0]) , &destsize, (void*)buf.contents(), size);
-            if (destsize == 0)
-                delete compressed;
-            else
-            {
-                sLog->outError(LOG_FILTER_NETWORKIO, "Compressed Packet %s %u bytes -> %u bytes (%f%%)",
-                    GetOpcodeNameForLogging(pct->GetOpcode()).c_str(),
-                    uint32(size), uint32(destsize), (float)destsize / (double)size * 100.0);
-
-                if (size > destsize)
-                {
-                    compressed = new WorldPacket(SMSG_COMPRESSED_OPCODE, destsize + 12);
-                    *compressed << uint32(size);
-                    *compressed << uint32(pct->GetOpcode());
-                    *compressed << uint32(destsize);
-                    compressed->append(&storage[0], destsize);
-                    
-                    //const_cast<WorldPacket*>(pct)->compressed = compressed;
-                    pct = compressed;
-                    compress = true;
-                }
-            }
-        }
-    }*/
 
     // Dump outgoing packet
     if (sPacketLog->CanLogPacket())
