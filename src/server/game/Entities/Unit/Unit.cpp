@@ -11905,10 +11905,20 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             return true;
                         break;
                     case SPELLFAMILY_PALADIN:
-                        // Holy Shock
-                        if (spellProto->Id == 20473)
-                            crit_chance += 25.0f;
+                    {
+                        switch (spellProto->Id)
+                        {
+                            case 25912: // Holy Shock Damage
+                            case 25914: // Holy Shock Heal
+                            {
+                                crit_chance += 25.0f;
+                                break;
+                            }
+                            default:
+                                break;
+                        }
                         break;
+                    }
                     case SPELLFAMILY_DRUID:
                         // Improved Faerie Fire
                         if (victim->HasAuraState(AURA_STATE_FAERIE_FIRE))
