@@ -130,11 +130,11 @@ enum GuildEvents
     GE_PROMOTION                    = 1,
     GE_DEMOTION                     = 2,
     GE_MOTD                         = 3,
-    GE_JOINED                       = 4,
+    GE_JOINED                       = 4,    // SMSG_GUILD_EVENT_JOIN_MEMBER
     GE_LEFT                         = 5,
     GE_REMOVED                      = 6,
-    GE_LEADER_IS                    = 7,
-    GE_LEADER_CHANGED               = 8,
+    GE_LEADER_IS                    = 7,    // SMSG_GUILD_EVENT_LEADER
+    GE_LEADER_CHANGED               = 8,    // SMSG_GUILD_EVENT_LEADER
     GE_DISBANDED                    = 9,
     GE_TABARDCHANGE                 = 10,
     GE_RANK_UPDATED                 = 11,
