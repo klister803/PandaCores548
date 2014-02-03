@@ -265,7 +265,7 @@ class boss_protectors : public CreatureScript
                     {
                         CallDieControl(instance, me, me->GetEntry());
                         if (CalcAliveBosses(instance, me) > 1) //Only last boss must be looted
-                            me->SetLootRecipient(NULL);
+                            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE|UNIT_DYNFLAG_TAPPED);
                         else if (CalcAliveBosses(instance, me) == 1) //last boss died - active tsulong
                             SetProtectorsDone();
                     }
