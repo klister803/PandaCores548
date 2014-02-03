@@ -1231,6 +1231,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         case SPELLFAMILY_PALADIN:
             switch (m_spellInfo->Id)
             {
+                case 20473: // Holy Shock
+                {
+                    uint32 spellid = unitTarget->IsFriendlyTo(m_caster) ? 25914: 25912;
+                    m_caster->CastSpell(unitTarget, spellid, true);
+                    break;
+                }
                 case 31789:                                 // Righteous Defense (step 1)
                 {
                     // Clear targets for eff 1
