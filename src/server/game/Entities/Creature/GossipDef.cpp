@@ -608,7 +608,7 @@ void PlayerMenu::SendQuestQueryResponse(uint32 questId) const
     data.WriteString(questGiverTargetName);
     data.WriteString(questDetails);
 
-    for (int i = 0; i < realCount; ++i)
+    for (uint32 i = 0; i < realCount; ++i)
     {
         data << uint32(0);                                      // unk
         data << uint8(quest->RequirementType[i]);               // RequirementType
@@ -831,10 +831,10 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
     data.WriteBits(questTurnTextWindow.size(), 10);
     data.WriteGuidMask<4>(npcGUID);
 
-    data.WriteGuidMask<4, 7>(npcGUID);
+    data.WriteGuidBytes<4, 7>(npcGUID);
     data.WriteString(questTitle);
     data.WriteString(questTurnTargetName);
-    data.WriteGuidMask<5>(npcGUID);
+    data.WriteGuidBytes<5>(npcGUID);
     for (uint8 i = 0; i < QUEST_EMOTE_COUNT; ++i)
     {
         if (quest->OfferRewardEmote[i] <= 0)
