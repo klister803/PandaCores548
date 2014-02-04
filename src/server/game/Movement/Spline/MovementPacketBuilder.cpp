@@ -256,7 +256,7 @@ namespace Movement
         data.WriteGuidBytes<5, 6>(guid);
 
         if (type == MonsterMoveFacingAngle)
-            data << float(move_spline.facing.angle);
+            data << float(Position::NormalizeOrientation(move_spline.facing.angle));
 
         Vector3 const& pos = move_spline.spline.getPoint(move_spline.spline.first());
 

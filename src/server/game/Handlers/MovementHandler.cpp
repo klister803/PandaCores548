@@ -1317,7 +1317,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                 break;
             case MSEOrientation:
                 if (hasOrientation)
-                    data << mi->pos.GetOrientation();
+                    data << Position::NormalizeOrientation(mi->pos.GetOrientation());
                 break;
             case MSETransportPositionX:
                 if (hasTransportData)
@@ -1333,7 +1333,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                 break;
             case MSETransportOrientation:
                 if (hasTransportData)
-                    data << mi->t_pos.GetOrientation();
+                    data << Position::NormalizeOrientation(mi->t_pos.GetOrientation());
                 break;
             case MSETransportSeat:
                 if (hasTransportData)
@@ -1353,7 +1353,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                 break;
             case MSEPitch:
                 if (mi->hasPitch)
-                    data << mi->pitch;
+                    data << Position::NormalizePitch(mi->pitch);
                 break;
             case MSEFallTime:
                 if (mi->hasFallData)
