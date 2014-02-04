@@ -70,14 +70,20 @@ void WorldPacket::Compress(z_stream* compressionStream, WorldPacket const* sourc
     size_t sizePos = 0;
     resize(destsize + sizeof(uint32)*3);
 
+    uint32 dict = 0x9827D8F1;
+    uint32 adler_origina = adler32( dict, static_cast<const Bytef*>(source->contents()), size);
+
     _compressionStream = compressionStream;
-    Compress(static_cast<void*>(&_storage[0] + sizeof(uint32)), &destsize, static_cast<const void*>(source->contents()), size);
+//    uint32 adler_2 = adler32();
+    Compress(static_cast<void*>(&_storage[0] + sizeof(uint32)*3), &destsize, static_cast<const void*>(source->contents()), size);
     if (destsize == 0)
         return;
 
+    uint32 adler_compred = adler32( dict, static_cast<Bytef*>(&_storage[0] + sizeof(uint32)*3), destsize); 
+
     put<uint32>(0, size);
-    put<uint32>(4, uncompressedOpcode);
-    put<uint32>(8, destsize);
+    put<uint32>(4, adler_compred);
+    put<uint32>(8, adler_origina);
     resize(destsize + sizeof(uint32)*3);
 
     SetOpcode(opcode);
@@ -92,7 +98,7 @@ void WorldPacket::Compress(void* dst, uint32 *dst_size, const void* src, int src
     _compressionStream->next_in = (Bytef*)src;
     _compressionStream->avail_in = (uInt)src_size;
 
-    int32 z_res = deflate(_compressionStream, Z_SYNC_FLUSH);    // Z_NO_FLUSH old Z_SYNC_FLUSH
+    int32 z_res = deflate(_compressionStream, Z_NO_FLUSH);    // Z_NO_FLUSH old Z_SYNC_FLUSH
     if (z_res != Z_OK)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Can't compress packet (zlib: deflate) Error code: %i (%s, msg: %s)", z_res, zError(z_res), _compressionStream->msg);
