@@ -1121,6 +1121,14 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel - 30 + (petlevel / 4)));
             break;
         }
+        case 46506: // Guardian of Ancient Kings
+        {
+            float mindmg = m_owner->GetFloatValue(UNIT_FIELD_MINDAMAGE);
+            float maxdmg = m_owner->GetFloatValue(UNIT_FIELD_MAXDAMAGE);
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
+            break;
+        }
         default:
         {
             switch (petType)
