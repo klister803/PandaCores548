@@ -616,15 +616,7 @@ void Transport::UpdateForMap(Map const* targetMap)
             {
                 UpdateData transData(GetMapId());
                 BuildCreateUpdateBlockForPlayer(&transData, itr->getSource());
-                std::list<WorldPacket*> packets;
-                if (transData.BuildPacket(packets))
-                {
-                    for (std::list<WorldPacket*>::iterator itr2 = packets.begin(); itr2 != packets.end(); ++itr2)
-                    {
-                        itr->getSource()->SendDirectMessage(*itr2);
-                        delete *itr2;
-                    }
-                }
+                transData.SendTo(itr->getSource());
             }
         }
     }
@@ -633,17 +625,9 @@ void Transport::UpdateForMap(Map const* targetMap)
         UpdateData transData(targetMap->GetId());
         BuildOutOfRangeUpdateBlock(&transData);
 
-        std::list<WorldPacket*> packets;
-        if (transData.BuildPacket(packets))
-        {
-            for (Map::PlayerList::const_iterator itr = player.begin(); itr != player.end(); ++itr)
-                if (this != itr->getSource()->GetTransport())
-                    for (std::list<WorldPacket*>::iterator itr2 = packets.begin(); itr2 != packets.end(); ++itr2)
-                        itr->getSource()->SendDirectMessage(*itr2);
-
-            for (std::list<WorldPacket*>::iterator itr2 = packets.begin(); itr2 != packets.end(); ++itr2)
-                delete *itr2;
-        }
+        for (Map::PlayerList::const_iterator itr = player.begin(); itr != player.end(); ++itr)
+            if (this != itr->getSource()->GetTransport())
+                transData.SendTo(itr->getSource());
     }
 }
 

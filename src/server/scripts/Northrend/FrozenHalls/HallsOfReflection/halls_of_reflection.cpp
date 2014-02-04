@@ -218,15 +218,7 @@ void StartFly(Transport* t)
         {
             UpdateData transData(pPlayer->GetMapId());
             t->BuildCreateUpdateBlockForPlayer(&transData, pPlayer);
-            std::list<WorldPacket*> packets;
-            if (transData.BuildPacket(packets))
-            {
-                for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-                {
-                    pPlayer->SendDirectMessage(*itr);
-                    delete *itr;
-                }
-            }
+            transData.SendTo(pPlayer);
         }
     }
 }
@@ -246,15 +238,7 @@ void StopFly(Transport* t)
         {
             UpdateData transData(pPlayer->GetMapId());
             t->BuildCreateUpdateBlockForPlayer(&transData, pPlayer);
-            std::list<WorldPacket*> packets;
-            if (transData.BuildPacket(packets))
-            {
-                for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-                {
-                    pPlayer->SendDirectMessage(*itr);
-                    delete *itr;
-                }
-            }
+            transData.SendTo(pPlayer);
         }
     }
 }

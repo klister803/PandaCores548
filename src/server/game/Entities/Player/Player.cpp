@@ -24194,15 +24194,7 @@ void Player::UpdateTriggerVisibility()
         }
     }
 
-    std::list<WorldPacket*> packets;
-    if (udata.BuildPacket(packets))
-    {
-        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-        {
-            GetSession()->SendPacket(*itr);
-            delete *itr;
-        }
-    }
+    udata.SendTo(this);
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
@@ -25148,15 +25140,7 @@ void Player::UpdateForQuestWorldObjects()
         }
     }
 
-    std::list<WorldPacket*> packets;
-    if (udata.BuildPacket(packets))
-    {
-        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-        {
-            GetSession()->SendPacket(*itr);
-            delete *itr;
-        }
-    }
+    udata.SendTo(this);
 }
 
 void Player::SummonIfPossible(bool agree)

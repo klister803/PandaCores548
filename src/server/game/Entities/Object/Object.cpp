@@ -271,14 +271,7 @@ void Object::SendUpdateToPlayer(Player* player)
     std::list<WorldPacket*> packets;
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
-    if (upd.BuildPacket(packets))
-    {
-        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-        {
-            player->GetSession()->SendPacket(*itr);
-            delete *itr;
-        }
-    }
+    upd.SendTo(player);
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const
