@@ -1485,6 +1485,8 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             }
         }
 
+        AddPct(AP, GetMaxPositiveAuraModifier(SPELL_AURA_MOD_ATTACK_POWER_PCT));
+
         //UNIT_FIELD_(RANGED)_ATTACK_POWER field
         SetInt32Value(UNIT_FIELD_ATTACK_POWER, AP);
 

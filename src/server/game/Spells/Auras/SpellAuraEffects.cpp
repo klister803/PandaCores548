@@ -5123,6 +5123,8 @@ void AuraEffect::HandleAuraModAttackPowerPercent(AuraApplication const* aurApp, 
 
     if (target->ToPlayer())
         target->ToPlayer()->UpdateAttackPowerAndDamage(false);
+    else if (Pet* pet = target->ToPet())
+        pet->UpdateAttackPowerAndDamage(false);
 }
 
 void AuraEffect::HandleAuraModRangedAttackPowerPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
