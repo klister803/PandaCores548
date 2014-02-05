@@ -172,13 +172,12 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
 
     // Empty buffer used in case packet should be compressed
     // Disable compression for now :)
-    WorldPacket buff;
-    if (m_Session && pct->size() > 0x400 && pct->GetOpcode() != SMSG_COMPRESSED_OPCODE && m_Session->GetPlayer() && !m_Session->GetPlayer()->isBeingLoaded())
-    {
-        if (buff.Compress(m_Session->GetCompressionStream(), pct))
-            pct = &buff;
-    }
-
+    //WorldPacket buff;
+    //if (m_Session && pct->size() > 0x400 && pct->GetOpcode() != SMSG_COMPRESSED_OPCODE && m_Session->GetPlayer() && !m_Session->GetPlayer()->isBeingLoaded())
+    //{
+        //if (buff.Compress(m_Session->GetCompressionStream(), pct))
+        //    pct = &buff;
+    //}
 
     // Dump outgoing packet
     if (sPacketLog->CanLogPacket())

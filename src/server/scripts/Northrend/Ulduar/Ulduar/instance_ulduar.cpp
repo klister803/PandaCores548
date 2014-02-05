@@ -520,16 +520,8 @@ public:
                                         if (Player* pPlayer = i->getSource())
                                         {
                                             UpdateData data(pPlayer->GetMapId());
-                                            std::list<WorldPacket*> packets;
                                             MimironTram->BuildValuesUpdateBlockForPlayer(&data, pPlayer);
-                                            if (data.BuildPacket(packets))
-                                            {
-                                                for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-                                                {
-                                                    pPlayer->GetSession()->SendPacket(*itr);
-                                                    delete *itr;
-                                                }
-                                            }
+                                            data.SendTo(pPlayer);
                                         }
                                     }
                                 }

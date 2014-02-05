@@ -527,7 +527,19 @@ struct Position
         }
         return fmod(o, 2.0f * static_cast<float>(M_PI));
     }
+
+    static float NormalizePitch(float o)
+    {
+
+        if (o > -M_PI && o < M_PI)
+            return o;
+
+        o = NormalizeOrientation(o + M_PI) - M_PI;
+
+        return o;
+    }
 };
+
 ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const& streamer);
 ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYZStreamer const& streamer);
 ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYZStreamer const& streamer);

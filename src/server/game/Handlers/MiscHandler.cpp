@@ -2239,16 +2239,18 @@ void WorldSession::HandleViolenceLevel(WorldPacket& recvPacket)
 
 void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvData)
 {
-    ObjectGuid guid;
+    sLog->outError(LOG_FILTER_NETWORKIO, "Received CMSG_OBJECT_UPDATE_FAILED from player %s (%u). Not patched client - kick him", GetPlayerName().c_str(), GetGuidLow());
+    KickPlayer();
+    /*ObjectGuid guid;
 
     recvData.ReadGuidMask<2, 3, 5, 0, 4, 7, 6, 1>(guid);
     recvData.ReadGuidBytes<1, 2, 5, 0, 3, 4, 6, 7>(guid);
 
     WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
-    /*if(obj)
-        obj->SendUpdateToPlayer(GetPlayer());*/
+    //if(obj)
+    //    obj->SendUpdateToPlayer(GetPlayer());
 
-    sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object " UI64FMTD " (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
+    sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object " UI64FMTD " (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());*/
 }
 
 // DestrinyFrame.xml : lua function NeutralPlayerSelectFaction

@@ -271,14 +271,7 @@ void Object::SendUpdateToPlayer(Player* player)
     std::list<WorldPacket*> packets;
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
-    if (upd.BuildPacket(packets))
-    {
-        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-        {
-            player->GetSession()->SendPacket(*itr);
-            delete *itr;
-        }
-    }
+    upd.SendTo(player);
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const
@@ -475,7 +468,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             data->WriteGuidBytes<5>(transGuid);
             *data << int8(self->GetTransSeat());
             data->WriteGuidBytes<2>(transGuid);
-            *data << float(self->GetTransOffsetO());
+            *data << float(Position::NormalizeOrientation(self->GetTransOffsetO()));
             data->WriteGuidBytes<4, 7>(transGuid);
             if (uint32 time2 = self->m_movementInfo.t_time2)
                 *data << uint32(time2);
@@ -500,12 +493,12 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         *data << self->GetSpeed(MOVE_TURN_RATE);
         *data << float(self->GetPositionX());
         if (!G3D::fuzzyEq(self->GetOrientation(), 0.0f))
-            *data << float(self->GetOrientation());
+            *data << float(Position::NormalizeOrientation(self->GetOrientation()));
         *data << self->GetSpeed(MOVE_PITCH_RATE);
         *data << self->GetSpeed(MOVE_SWIM);
         if ((movementFlags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) ||
             (movementFlagsExtra & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING))
-            *data << float(self->m_movementInfo.pitch);
+            *data << float(Position::NormalizePitch(self->m_movementInfo.pitch));
         data->WriteGuidBytes<3>(guid);
         if (movementFlags & MOVEMENTFLAG_SPLINE_ELEVATION)
             *data << float(self->m_movementInfo.splineElevation);
@@ -525,7 +518,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         else
             *data << float(self->GetPositionZ());
         *data << float(self->GetPositionY());
-        *data << float(self->GetOrientation());
+        *data << float(Position::NormalizeOrientation(self->GetOrientation()));
     }
 
     if (flags & UPDATEFLAG_GO_TRANSPORT_POSITION)
@@ -544,7 +537,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         if (uint32 time3 = self->m_movementInfo.t_time3)
             *data << uint32(time3);
         data->WriteGuidBytes<6>(transGuid);
-        *data << float(self->GetTransOffsetO());
+        *data << float(Position::NormalizeOrientation(self->GetTransOffsetO()));
         data->WriteGuidBytes<5, 0>(transGuid);
         *data << float(self->GetTransOffsetX());
     }
