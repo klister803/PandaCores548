@@ -3478,10 +3478,6 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
     if (aurApp->GetRemoveMode())
         return;
 
-    if (aura->GetSpellInfo()->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
-        if (aurApp->_target->GetTypeId() != TYPEID_PLAYER && aurApp->_target != caster)
-            return;
-
     aura->HandleAuraSpecificMods(aurApp, caster, true, false);
 
     // Epicurean
