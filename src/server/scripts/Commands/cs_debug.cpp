@@ -62,6 +62,7 @@ public:
             { "sellerror",      SEC_ADMINISTRATOR,  false, &HandleDebugSendSellErrorCommand,      "", NULL },
             { "setphaseshift",  SEC_ADMINISTRATOR,  false, &HandleDebugSendSetPhaseShiftCommand,  "", NULL },
             { "spellfail",      SEC_ADMINISTRATOR,  false, &HandleDebugSendSpellFailCommand,      "", NULL },
+            { "compress",       SEC_ADMINISTRATOR,   false, &HandleDebugSendCompressCommand,      "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                                  "", NULL }
         };
         static ChatCommand debugCommandTable[] =
@@ -269,6 +270,21 @@ public:
 
         handler->GetSession()->SendPacket(&data);
 
+        return true;
+    }
+    
+    static bool HandleDebugSendCompressCommand(ChatHandler* handler, char const* args)
+    {
+        std::string msg = "TEST TEST TEST";
+        WorldPacket data(SMSG_NOTIFICATION, 2 + msg.length());
+        data.WriteBits(msg.length(), 12);
+        data.FlushBits();
+        data.WriteString(msg);
+        //handler->GetSession()->SendPacket(&data);
+
+        WorldPacket buff;
+        buff.Compress(handler->GetSession()->GetCompressionStream(), &data);
+        handler->GetSession()->SendPacket(&buff);
         return true;
     }
 
