@@ -46,6 +46,8 @@ enum OBJECT_UPDATE_FLAGS
     UPDATEFLAG_AREA_TRIGGER          = 0x0400,
 };
 
+class Player;
+
 class UpdateData
 {
     public:
