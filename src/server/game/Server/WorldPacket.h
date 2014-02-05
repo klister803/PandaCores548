@@ -62,7 +62,7 @@ class WorldPacket : public ByteBuffer
         z_stream_s* _compressionStream;
 
     protected:
-        bool Compress(void* dst, uint32 *dst_size, const void* src, int src_size);
+        bool Compress(void* dst, uint32 *dst_size, const void* src, int src_size, int flush);
         Opcodes m_opcode;
 };
 #endif
