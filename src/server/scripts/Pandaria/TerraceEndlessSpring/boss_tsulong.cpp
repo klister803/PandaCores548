@@ -21,43 +21,147 @@
 
 enum eSpells
 {
+    //Tsulong
+    //Night phase
+    SPELL_DREAD_SHADOWS       = 122767,
+    SPELL_DREAD_SHADOWS_TR_EF = 122768,
+    SPELL_NIGHTMARES          = 122770,
+    SPELL_SHADOW_BREATH       = 122752,
+    SPELL_SUNBEAM             = 122782,
+    SPELL_SUNBEAM_TR_EF       = 122789,
+    //Day phase
+    SPELL_SUN_BREATH          = 122855,
+    SPELL_BATHED_INLIGHT      = 122858,
+    //
+    //Sha Summons
+};
+
+enum eSummons
+{
+    NPC_SUNBEAM               = 90740,
 };
 
 enum eEvents
 {
+    EVENT_SHADOW_BREATH       = 1,
+    EVENT_NIGHTMARE           = 2,
+    EVENT_SUNBEAM             = 3,
 };
+
+enum Phase
+{
+    PHASE_NULL           = 0, 
+    PHASE_NIGHT          = 1,
+    PHASE_DAY            = 2,
+};
+
+Position const sunbeampos[4] = 
+{
+    {-1017.82f, -3078.43f, 12.5717f},
+    {-1017.74f, -3023.0f,  12.5803f},
+    {-992.80f,  -3049.35f, 12.5840f},
+    {-1044.39f, -3049.58f, 12.5793f},
+};
+
+//Work only night phase
+
+bool CheckProtectors(InstanceScript* instance, Creature* caller)
+{
+    if (instance && caller)
+    {
+        if (Creature* pr = caller->GetCreature(*caller, instance->GetData64(NPC_PROTECTOR_KAOLAN)))
+        {
+            if (pr->isAlive())
+                return true;
+        }
+    }
+    return false;
+}
 
 class boss_tsulong : public CreatureScript
 {
     public:
         boss_tsulong() : CreatureScript("boss_tsulong") {}
 
-        struct boss_tsulongAI : public ScriptedAI
+        struct boss_tsulongAI : public BossAI
         {
-            boss_tsulongAI(Creature* creature) : ScriptedAI(creature)
+            boss_tsulongAI(Creature* creature) : BossAI(creature, DATA_TSULONG)
             {
                 instance = creature->GetInstanceScript();
+                if (instance)
+                {
+                    if (CheckProtectors(instance, me))
+                    {
+                        me->SetVisible(false);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    }
+                }
             }
 
             InstanceScript* instance;
+            Phase phase;
 
             void Reset()
+            {              
+                _Reset();
+                phase = PHASE_NULL;
+                me->SetReactState(REACT_DEFENSIVE);
+                me->setPowerType(POWER_ENERGY);
+                me->SetPower(POWER_ENERGY, 0);
+                me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
+            }
+            
+            void RegeneratePower(Powers power, int32 &value)
             {
+                if (!me->isInCombat() || phase == PHASE_NULL)
+                    value = 0;
+                else 
+                    value = 2;
             }
 
             void EnterCombat(Unit* who)
             {
+                _EnterCombat();
+                events.SetPhase(PHASE_NIGHT);
+                phase = PHASE_NIGHT;
+                me->AddAura(SPELL_DREAD_SHADOWS, me);
+                events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
+                events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
+                events.ScheduleEvent(EVENT_SUNBEAM,       urand(20000, 30000));
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* killer)
             {
+                _JustDied();
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_SHADOW_BREATH:
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_SHADOW_BREATH);
+                        events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
+                        break;
+                    case EVENT_NIGHTMARE:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
+                            DoCast(target, SPELL_NIGHTMARES);
+                        events.ScheduleEvent(EVENT_NIGHTMARE, urand(15000, 25000));
+                        break;
+                    case EVENT_SUNBEAM:
+                        me->SummonCreature(NPC_SUNBEAM, sunbeampos[urand(0, 3)]);
+                        events.ScheduleEvent(EVENT_SUNBEAM, urand(20000, 30000));                      
+                        break;
+                    }
+                }
                 DoMeleeAttackIfReady();
             }
         };
@@ -68,7 +172,116 @@ class boss_tsulong : public CreatureScript
         }
 };
 
+class npc_sunbeam : public CreatureScript
+{
+    public:
+        npc_sunbeam() : CreatureScript("npc_sunbeam") {}
+
+        struct npc_sunbeamAI : public ScriptedAI
+        {
+            npc_sunbeamAI(Creature* creature) : ScriptedAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            }
+            InstanceScript* instance;
+            uint8 hitval;
+            uint8 maxhitval;
+
+            void Reset()
+            {
+                hitval = 0;
+                maxhitval = 0;
+                SetMaxHitVal();
+                me->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
+                me->AddAura(SPELL_SUNBEAM, me);
+            }
+
+            void SetMaxHitVal()
+            {
+                switch (me->GetMap()->GetDifficulty())
+                {
+                case MAN10_DIFFICULTY :
+                case MAN10_HEROIC_DIFFICULTY:
+                    maxhitval = urand(6, 8);
+                    break;
+                case MAN25_DIFFICULTY:
+                case MAN25_HEROIC_DIFFICULTY:
+                    maxhitval = urand(14, 18);
+                    break;
+                }
+            }
+
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
+            {
+                if (maxhitval)
+                {
+                    if (spell->Id == SPELL_SUNBEAM_TR_EF && target->GetTypeId() == TYPEID_PLAYER && hitval < maxhitval)
+                        hitval++;
+                    
+                    if (hitval == maxhitval)
+                    {
+                        maxhitval = 0;
+                        me->DespawnOrUnsummon();
+                    }
+                }
+            }
+
+            void EnterEvadeMode(){}
+
+            void EnterCombat(Unit* who){}
+
+            void UpdateAI(const uint32 diff){}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_sunbeamAI(creature);
+        }
+};
+
+class spell_sunbeam : public SpellScriptLoader
+{
+    public:
+        spell_sunbeam() : SpellScriptLoader("spell_sunbeam") { }
+
+        class spell_sunbeam_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sunbeam_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetTarget())
+                {
+                    if (GetTarget()->HasAura(SPELL_DREAD_SHADOWS_TR_EF))
+                        GetTarget()->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS_TR_EF);
+                    GetTarget()->ApplySpellImmune(SPELL_DREAD_SHADOWS_TR_EF, 0, 0, true);
+                }
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetTarget())
+                    GetTarget()->ApplySpellImmune(SPELL_DREAD_SHADOWS_TR_EF, 0, 0, false);
+            }
+
+            void Register()
+            {
+                OnEffectApply     += AuraEffectApplyFn(spell_sunbeam_AuraScript::OnApply,   EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_sunbeam_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sunbeam_AuraScript();
+        }
+};
+
 void AddSC_boss_tsulong()
 {
     new boss_tsulong();
+    new npc_sunbeam();
+    new spell_sunbeam();
 }

@@ -82,7 +82,26 @@ public:
         {
             if (!InstanceScript::SetBossState(id, state))
                 return false;
-            
+
+            switch (id)
+            {
+            case DATA_TSULONG:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case IN_PROGRESS:
+                        break;
+                    case DONE:
+                        /*for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);*/
+                        break;
+                    }
+                    break;
+                }
+            default:
+                break;
+            }
             return true;
         }
 

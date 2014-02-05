@@ -250,11 +250,11 @@ class boss_protectors : public CreatureScript
                       }
                   }
                   
-                 /* if (Creature* tsulong = me->GetCreature(*me, instance->GetData64(NPC_TSULONG)))
+                  if (Creature* tsulong = me->GetCreature(*me, instance->GetData64(NPC_TSULONG)))
                   {
                       tsulong->SetVisible(true);
                       tsulong->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                  }boss not ready */
+                  }
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)

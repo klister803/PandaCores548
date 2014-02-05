@@ -4308,6 +4308,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 0;
                     spellInfo->Effects[1].Effect = 0;
                     break;
+                //Tsulong
+                case 122767: //Dread Shadows
+                    spellInfo->Effects[1].TriggerSpell = 0;
+                    break;
+                case 122789: //SunBeam trigger aura
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    break;
 
 
                     
