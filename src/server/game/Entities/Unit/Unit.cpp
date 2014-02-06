@@ -6660,20 +6660,28 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     uint8 effIdx = triggeredByAura->GetEffIndex();
                     switch (procSpell->Id)
                     {
-                        case 116:       // Frostbolt
-                        case 44614:     // Frostfire Bolt
-                        case 84714:     // Frozen Orb
+                        case 116:   // Frostbolt
+                        case 44614: // Frostfire Bolt
+                        case 84714: // Frozen Orb
+                        {
                             if (effIdx != EFFECT_0)
                                 return false;
                             break;
-                        case 42208:     // Blizzard
+                        }
+                        case 42208: // Blizzard
+                        {
                             if (effIdx != EFFECT_1)
                                 return false;
                             break;
-                        case 2948:      // Scorch
+                        }
+                        case 2948:  // Scorch
+                        {
                             if (effIdx != EFFECT_2)
                                 return false;
                             break;
+                        }
+                        default:
+                            return false;
                     }
 
                     if (!roll_chance_i(triggerAmount))
