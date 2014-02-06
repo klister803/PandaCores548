@@ -1124,7 +1124,7 @@ enum Opcodes
     SMSG_MOVE_UPDATE_TURN_RATE                        = 0xF96,  // 5.0.5 16048
     SMSG_MOVE_UPDATE_WALK_SPEED                       = 0xB28,  // 5.0.5 16048
     SMSG_MOVE_WATER_WALK                              = 0x030D, // 5.4.1 17538
-    SMSG_MULTIPLE_PACKETS                             = 0x826,  // 5.0.5 16048
+    SMSG_MULTIPLE_PACKETS                             = 0x1454, // 5.4.1 17538
     SMSG_NAME_QUERY_RESPONSE                          = 0x1407, // 5.4.1 17538
     SMSG_NEW_TAXI_PATH                                = 0x1135, // 5.4.1 17538
     SMSG_NEW_WORLD                                    = 0x010F, // 5.4.1 17538

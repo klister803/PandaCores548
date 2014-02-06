@@ -62,7 +62,9 @@ public:
             { "sellerror",      SEC_ADMINISTRATOR,  false, &HandleDebugSendSellErrorCommand,      "", NULL },
             { "setphaseshift",  SEC_ADMINISTRATOR,  false, &HandleDebugSendSetPhaseShiftCommand,  "", NULL },
             { "spellfail",      SEC_ADMINISTRATOR,  false, &HandleDebugSendSpellFailCommand,      "", NULL },
-            { "compress",       SEC_ADMINISTRATOR,   false, &HandleDebugSendCompressCommand,      "", NULL },
+            { "compress",       SEC_ADMINISTRATOR,  false, &HandleDebugSendCompressCommand,       "", NULL },
+            { "multi",          SEC_ADMINISTRATOR,  false, &HandleDebugSendMultCommand,           "", NULL },
+            
             { NULL,             SEC_PLAYER,         false, NULL,                                  "", NULL }
         };
         static ChatCommand debugCommandTable[] =
@@ -286,6 +288,28 @@ public:
         WorldPacket buff;
         buff.Compress(handler->GetSession()->GetCompressionStream(), &data);
         handler->GetSession()->SendPacket(&buff);
+        return true;
+    }
+
+    static bool HandleDebugSendMultCommand(ChatHandler* handler, char const* args)
+    {
+        uint32 const count = 1;
+        std::string const msg = "TEST TEST TEST III A B C D E F G 1 2 3 4 5 6 7 8 9 0 K O P D S";
+        
+        ByteBuffer buff;//SMSG_NOTIFICATION
+        buff.WriteBits(msg.length(), 12);
+        buff.FlushBits();
+        buff.WriteString(msg);
+
+        WorldPacket data(SMSG_MULTIPLE_PACKETS, 100);
+        for (int32 i = 0; i < count; ++i)
+        {
+            data << uint16(SMSG_NOTIFICATION);
+            data << uint16(buff.wpos());
+            data.append(buff);
+        }
+
+        handler->GetSession()->SendPacket(&data);
         return true;
     }
 

@@ -71,6 +71,7 @@ bool WorldPacket::Compress(z_stream* compressionStream, WorldPacket const* sourc
     uint32 adler_origina = adler32( 0x9827D8F1u, source->contents(), size);
 
     std::vector<uint8> storage(destsize);
+    //! ToDo: client alway send inflate result -3 with msg: invalid stored block lengths
     if (!Compress(&storage[0], &destsize, source->contents(), size, Z_SYNC_FLUSH))
         return false;
 
