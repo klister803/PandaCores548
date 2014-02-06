@@ -2500,6 +2500,31 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
 
     uint32 item_id = m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType;
 
+    switch (m_spellInfo->Id)
+    {
+        case 111830: // Darkmoon Card of Mists
+        {
+            switch (urand(0, 31))
+            {
+                case  0: item_id = 79284; break;     case  1: item_id = 79285; break;
+                case  2: item_id = 79286; break;     case  3: item_id = 79287; break;
+                case  4: item_id = 79288; break;     case  5: item_id = 79289; break;
+                case  6: item_id = 79290; break;     case  7: item_id = 79283; break;
+
+                case  8: item_id = 79291; break;     case  9: item_id = 79292; break;
+                case 10: item_id = 79293; break;     case 11: item_id = 79294; break;
+                case 12: item_id = 79295; break;     case 13: item_id = 79296; break;
+                case 14: item_id = 79297; break;     case 15: item_id = 79298; break;
+                
+                default:
+                    break;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
     if (item_id)
         DoCreateItem(effIndex, item_id);
 
