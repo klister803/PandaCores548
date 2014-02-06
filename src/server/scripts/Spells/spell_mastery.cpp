@@ -231,53 +231,6 @@ class spell_mastery_ignite : public SpellScriptLoader
         }
 };
 
-// Called by 35395 - Crusader Strike, 53595 - Hammer of the Righteous, 24275 - Hammer of Wrath, 85256 - Templar's Verdict and 53385 - Divine Storm
-// 76672 - Mastery : Hand of Light
-class spell_mastery_hand_of_light : public SpellScriptLoader
-{
-    public:
-        spell_mastery_hand_of_light() : SpellScriptLoader("spell_mastery_hand_of_light") { }
-
-        class spell_mastery_hand_of_light_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mastery_hand_of_light_SpellScript);
-
-            void HandleAfterHit()
-            {
-                Unit* caster = GetCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER || caster->getLevel() < 80)
-                    return;
-
-                Unit* target = GetHitUnit();
-                if (!target)
-                    return;
-
-                if (GetSpellInfo()->Id != MASTERY_SPELL_HAND_OF_LIGHT)
-                {
-                    AuraEffect const* aurEff = caster->GetAuraEffect(76672, EFFECT_0);
-                    if (!aurEff)
-                        return;
-
-                    float value = aurEff->GetAmount();
-
-                    int32 bp = int32(GetHitDamage() * value / 100);
-
-                    caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, NULL, NULL, true);
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_mastery_hand_of_light_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mastery_hand_of_light_SpellScript();
-        }
-};
-
 // Called by 403 - Lightning Bolt, 421 - Chain Lightning, 51505 - Lava Burst and 117014 - Elemental Blast
 // 77222 - Mastery : Elemental Overload
 class spell_mastery_elemental_overload : public SpellScriptLoader
@@ -358,6 +311,5 @@ void AddSC_mastery_spell_scripts()
     new spell_mastery_combo_breaker();
     new spell_mastery_blood_shield();
     new spell_mastery_ignite();
-    new spell_mastery_hand_of_light();
     new spell_mastery_elemental_overload();
 }
