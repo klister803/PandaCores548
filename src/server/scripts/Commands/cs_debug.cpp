@@ -275,7 +275,8 @@ public:
     
     static bool HandleDebugSendCompressCommand(ChatHandler* handler, char const* args)
     {
-        std::string msg = "TEST TEST TEST";
+        std::string msg = "TEST TEST TEST III A B C D E F G 1 2 3 4 5 6 7 8 9 0 K O P D S"
+            "TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST";
         WorldPacket data(SMSG_NOTIFICATION, 2 + msg.length());
         data.WriteBits(msg.length(), 12);
         data.FlushBits();
