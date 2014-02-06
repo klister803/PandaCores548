@@ -186,7 +186,7 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
     if (pct->GetOpcode() != SMSG_MONSTER_MOVE)
         sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s len %u", GetOpcodeNameForLogging(pct->GetOpcode()).c_str(), pct->wpos());
 
-    SendSize[pct->GetOpcode()] += pct->size();
+    SendSize[pct->GetOpcode()] += pct->wpos();
     ++SendCount[pct->GetOpcode()];
 
     sScriptMgr->OnPacketSend(this, *pct);

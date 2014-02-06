@@ -342,6 +342,7 @@ private:
             m_zoneId(0),
             m_level(0),
             m_class(0),
+            m_gender(GENDER_MALE),
             m_flags(GUILDMEMBER_STATUS_NONE),
             m_logoutTime(::time(NULL)),
             m_accountId(0),
@@ -355,7 +356,7 @@ private:
             memset(m_bankWithdraw, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(int32));
         }
         void SetStats(Player* player);
-        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation);
+        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender);
         bool CheckStats() const;
 
         void SetPublicNote(std::string const& publicNote);
@@ -386,6 +387,7 @@ private:
         std::string GetOfficerNote() const { return m_officerNote; }
         uint8 GetClass() const { return m_class; }
         uint8 GetLevel() const { return m_level; }
+        uint8 GetGender() const { return m_gender; }
         uint8 GetFlags() const { return m_flags; }
         uint32 GetZoneId() const { return m_zoneId; }
         uint32 GetAchievementPoints() const { return m_achievementPoints; }
@@ -425,6 +427,7 @@ private:
         uint32 m_zoneId;
         uint8 m_level;
         uint8 m_class;
+        uint8 m_gender;
         uint8 m_flags;
         uint64 m_logoutTime;
         uint32 m_accountId;

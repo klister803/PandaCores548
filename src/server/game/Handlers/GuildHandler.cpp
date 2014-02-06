@@ -65,11 +65,20 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 
     // If guild doesn't exist or player is not part of the guild send error
     if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
-        if (guild->IsMember(playerGuid))
+        //if (guild->IsMember(playerGuid))
         {
             guild->HandleQuery(this);
             return;
         }
+    else
+    {
+        WorldPacket data(SMSG_GUILD_QUERY_RESPONSE);
+        data.WriteGuidMask<5, 0, 3, 4, 7, 1>(guildGuid);
+        data.WriteBit(0);   // no data
+        data.WriteGuidMask<2, 6>(guildGuid);
+        data.WriteGuidBytes<3, 0, 5, 2, 7, 1, 6, 4>(guildGuid);
+        SendPacket(&data);
+    }
 
     Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_PLAYER_NOT_IN_GUILD);
 }
