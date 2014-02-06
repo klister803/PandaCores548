@@ -721,6 +721,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 amount = GetBase()->GetUnitOwner()->SpellHealingBonusTaken(caster, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
             }
             break;
+        case SPELL_AURA_417:
+        {
+            switch (GetId())
+            {
+                case 25956: // Sanctity of Battle
+                {
+                    amount  = 100;
+                    amount -= CalculatePct(amount, caster->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2));
+                    amount -= CalculatePct(amount, caster->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MELEE_RANGED_HASTE));
+                    amount -= 100;
+
+                    if (amount > 0) amount = 0;
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_PERIODIC_DAMAGE:
         {
             if (!caster)
@@ -1291,21 +1310,24 @@ void AuraEffect::CalculateSpellMod()
                     break;
             }
             break;
+        case SPELL_AURA_417:
         case SPELL_AURA_ADD_FLAT_MODIFIER:
         case SPELL_AURA_ADD_PCT_MODIFIER:
+        {
             if (!m_spellmod)
             {
                 m_spellmod = new SpellModifier(GetBase());
                 m_spellmod->op = SpellModOp(GetMiscValue());
                 ASSERT(m_spellmod->op < MAX_SPELLMOD);
 
-                m_spellmod->type = SpellModType(GetAuraType());    // SpellModType value == spell aura types
+                m_spellmod->type = GetAuraType() == SPELL_AURA_417 ? SPELLMOD_PCT: SpellModType(GetAuraType());    // SpellModType value == spell aura types
                 m_spellmod->spellId = GetId();
                 m_spellmod->mask = GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).SpellClassMask;
                 m_spellmod->charges = GetBase()->GetCharges();
             }
             m_spellmod->value = GetAmount();
             break;
+        }
         default:
             break;
     }
@@ -4979,6 +5001,14 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
     {
         target->ToPlayer()->UpdateMeleeHastMod();
         target->ToPlayer()->UpdateRangeHastMod();
+
+
+            Unit::AuraEffectList const& GcdByMeleeHaste = target->GetAuraEffectsByType(SPELL_AURA_417);		
+            for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
+            {	
+                (*itr)->SetCanBeRecalculated(true);
+                (*itr)->RecalculateAmount(target);
+            }
     }
 }
 
