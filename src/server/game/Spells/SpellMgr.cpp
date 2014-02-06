@@ -4315,6 +4315,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 122789: //SunBeam trigger aura
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
+                //Lei Shi
+                case 123121:
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    break;
+
 
 
                     

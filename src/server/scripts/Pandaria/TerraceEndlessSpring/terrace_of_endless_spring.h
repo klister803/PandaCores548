@@ -32,6 +32,12 @@ enum eCreatures
 enum eGameObjects
 {   
     GO_LEI_SHI_ENT_DOOR      = 212916,
+    GO_LEI_SHI_EX_DOOR       = 214634,
+};
+
+enum sAction
+{
+    ACTION_REMOVE_PROTECT      = 23,
 };
 
 #endif TERRACEOFENDLESSSPRING

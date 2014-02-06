@@ -21,10 +21,22 @@
 
 enum eSpells
 {
+    SPELL_AFRAID            = 123181,
+    SPELL_SPRAY             = 123121,
+    SPELL_GETAWAY           = 123461,
+    SPELL_PROTECT           = 123250,
 };
 
-enum eEvents
+enum sSummon
 {
+    NPC_ANIMATED_PROTECTOR  = 62995,      
+};
+
+Position const sumprpos[3] = 
+{
+    {-990.73f,  -2927.51f, 19.1718f},
+    {-1045.78f, -2925.12f, 19.1729f},
+    {-1017.72f, -2885.31f, 19.6366f},
 };
 
 class boss_lei_shi : public CreatureScript
@@ -32,25 +44,64 @@ class boss_lei_shi : public CreatureScript
     public:
         boss_lei_shi() : CreatureScript("boss_lei_shi") {}
 
-        struct boss_lei_shiAI : public ScriptedAI
+        struct boss_lei_shiAI : public BossAI
         {
-            boss_lei_shiAI(Creature* creature) : ScriptedAI(creature)
+            boss_lei_shiAI(Creature* creature) : BossAI(creature, DATA_LEI_SHI)
             {
                 instance = creature->GetInstanceScript();
             }
 
             InstanceScript* instance;
+            uint8 health;
 
             void Reset()
             {
+                _Reset();
+                health = 0;
+                me->SetReactState(REACT_DEFENSIVE);
             }
 
             void EnterCombat(Unit* who)
             {
+                _EnterCombat();
+            }
+
+            void DamageTaken(Unit* attacker, uint32 &damage)
+            {
+                if (me->HasAura(SPELL_PROTECT))
+                    damage = 0;
+
+                if (HealthBelowPct(80) && !health ||
+                    HealthBelowPct(60) && health == 1 ||
+                    HealthBelowPct(40) && health == 2 ||
+                    HealthBelowPct(20) && health == 3)
+                {
+                    health++;
+                    me->AddAura(SPELL_PROTECT, me);
+                    for (uint8 n = 0; n < 3 ; n++)
+                    {
+                        if (Creature* pr = me->SummonCreature(NPC_ANIMATED_PROTECTOR, sumprpos[n]))
+                            pr->AI()->DoZoneInCombat(pr, 100.0f);
+                    }
+
+                }
+            }
+
+            void DoAction(int32 const action)
+            {
+                if (action == ACTION_REMOVE_PROTECT)
+                {
+                    if (me->HasAura(SPELL_PROTECT))
+                    {
+                        me->RemoveAurasDueToSpell(SPELL_PROTECT);
+                        summons.DespawnAll();
+                    }
+                }
             }
 
             void JustDied(Unit* /*killer*/)
             {
+                _JustDied();
             }
 
             void UpdateAI(const uint32 diff)
@@ -58,7 +109,7 @@ class boss_lei_shi : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                DoMeleeAttackIfReady();
+                DoSpellAttackIfReady(SPELL_SPRAY);
             }
         };
 

@@ -22,6 +22,7 @@ public:
 
         //GameObjects
         std::vector<uint64> leishientdoorGuids;
+        std::vector<uint64> leishiexdoorGuids;
 
         //Creature
         uint64 kaolanGuid;
@@ -37,6 +38,7 @@ public:
 
             //GameObject
             leishientdoorGuids.clear();
+            leishiexdoorGuids.clear();
            
             //Creature
             kaolanGuid    = 0;
@@ -72,10 +74,32 @@ public:
             }
         }
 
+        void OnUnitDeath(Unit* who)
+        {
+            if (who->ToCreature())
+            {
+                if (who->GetEntry() == 62995) //Animated protector
+                {
+                    if (Creature* leishi = instance->GetCreature(leishiGuid))
+                    {
+                        if (leishi->isAlive())
+                            leishi->AI()->DoAction(ACTION_REMOVE_PROTECT);
+                    }
+                }
+            }
+        }
+
         void OnGameObjectCreate(GameObject* go)
         {
-            if (go->GetEntry() == GO_LEI_SHI_ENT_DOOR)
+            switch (go->GetEntry())
+            {
+            case GO_LEI_SHI_ENT_DOOR:
                 leishientdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_LEI_SHI_EX_DOOR:
+                leishiexdoorGuids.push_back(go->GetGUID());
+                break;
+            }          
         }
 
         bool SetBossState(uint32 id, EncounterState state)
@@ -93,7 +117,29 @@ public:
                     case IN_PROGRESS:
                         break;
                     case DONE:
-                        /*for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
+                        for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    }
+                    break;
+                }
+            case DATA_LEI_SHI:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+
+                       /* for (std::vector<uint64>::const_iterator guid = leishiexdoorGuids.begin(); guid != leishiexdoorGuids.end(); guid++)
                             HandleGameObject(*guid, true);*/
                         break;
                     }
