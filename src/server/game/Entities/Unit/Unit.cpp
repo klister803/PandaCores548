@@ -1319,7 +1319,10 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
                 damage -= damageInfo->blocked;
             }
 
-            ApplyResilience(victim, &damage, crit);
+            if (spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
+                break;
+
+                ApplyResilience(victim, &damage, crit);
 
             break;
         }
