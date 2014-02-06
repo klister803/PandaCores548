@@ -2515,6 +2515,16 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
                 case 10: item_id = 79293; break;     case 11: item_id = 79294; break;
                 case 12: item_id = 79295; break;     case 13: item_id = 79296; break;
                 case 14: item_id = 79297; break;     case 15: item_id = 79298; break;
+
+                case 16: item_id = 79299; break;     case 17: item_id = 79303; break;
+                case 18: item_id = 79300; break;     case 19: item_id = 79304; break;
+                case 20: item_id = 79301; break;     case 21: item_id = 79305; break;
+                case 22: item_id = 79302; break;     case 23: item_id = 79306; break;
+
+                case 24: item_id = 79307; break;     case 25: item_id = 79308; break;
+                case 26: item_id = 79309; break;     case 27: item_id = 79310; break;
+                case 28: item_id = 79311; break;     case 29: item_id = 79312; break;
+                case 30: item_id = 79313; break;     case 31: item_id = 79314; break;
                 
                 default:
                     break;
