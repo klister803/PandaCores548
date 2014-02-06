@@ -63,40 +63,34 @@ bool WorldPacket::Compress(z_stream* compressionStream, WorldPacket const* sourc
     }
 
     Opcodes opcode = SMSG_COMPRESSED_OPCODE;
-    uLongf size = source->wpos();
-    uLongf destsize = compressBound(size);
+    uint32 size = source->wpos();
+    uint32 destsize = compressBound(size);
     uint32 size2 = destsize;
     size_t sizePos = 0;
-    resize(destsize + 12);
 
     uint32 adler_origina = adler32( 0x9827D8F1u, static_cast<const Bytef*>(source->contents()), size);
 
-    //_compressionStream = compressionStream;
-
-    int32 z_res = compress(const_cast<uint8*>(&_storage[0]+12), &destsize, (uint8*)source->contents(), size);
-    if (z_res!= Z_OK)
-    {
-        sLog->outError(LOG_FILTER_NETWORKIO, "zlib:compress Error code: %i (%s, msg: %s) size %i s2 %i", z_res, zError(z_res), _compressionStream->msg, size, size2);
+    ByteBuffer buf(destsize);   //used for testing, after complite perfome compression direct to buffer cur. packet.
+    
+    if (!Compress((uint8*)(buf.contents()), &destsize, (uint8*)source->contents(), size, Z_SYNC_FLUSH))
         return false;
-    }
 
-    //if (!Compress(&_storage[0]+12, &destsize, static_cast<const void*>(source->contents()), size, Z_SYNC_FLUSH))
-    //    return false;
+    buf.resize(destsize);    
+    uint32 adler_compred = adler32( 0x9827D8F1u, (Bytef*)buf.contents(), buf.size()); 
 
-    uint32 adler_compred = adler32( 0x9827D8F1u, static_cast<Bytef*>(&_storage[0]+12), destsize); 
-
-    resize(destsize + 12);
-
-    put<uint32>(0, size);
-    put<uint32>(4, adler_origina);
-    put<uint32>(8, adler_compred);
+    *this << uint32(size);
+    *this << uint32(adler_origina);
+    *this << uint32(adler_compred);
+    append(buf);
 
     SetOpcode(opcode);
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Successfully compressed opcode %u (len %u) to %u (len %u) adler(before %u| after %u)", uncompressedOpcode, size, opcode, destsize, adler_origina, adler_compred);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "Successfully compressed opcode %u (len %u) to %u (len %u) adler(before %u| after %u) size %u wp %u)", uncompressedOpcode, size, opcode, destsize, adler_origina, adler_compred, this->size(), wpos());
 
     // TEST
-    /*uLongf destsize2 = compressBound(size);
+    /*
+    uLongf destsize2 = compressBound(size);
+    uLongf destsize2 = compressBound(size);
     ByteBuffer dest;
     dest.resize(size);
     //z_res = uncompress(const_cast<uint8*>(dest.contents()), &size, const_cast<uint8*>(&_storage[0]+12), destsize);
@@ -120,37 +114,64 @@ bool WorldPacket::Compress(z_stream* compressionStream, WorldPacket const* sourc
     return true;
 }
 
-//! Z_FINISH | Z_SYNC_FLUSH
+//! Z_FINISH | Z_SYNC_FLUSH | Z_NO_FLUSH
 bool WorldPacket::Compress(void* dst, uint32 *dst_size, const void* src, int src_size, int flush)
 {
-    _compressionStream->next_out = (Bytef*)dst;
-    _compressionStream->avail_out = *dst_size;
-    _compressionStream->next_in = (Bytef*)src;
-    _compressionStream->avail_in = (uInt)src_size;
+    z_stream c_stream;
 
-    int32 z_res = deflate(_compressionStream, flush); //Z_SYNC_FLUSH
-    sLog->outError(LOG_FILTER_NETWORKIO, "Error code: %i (%s, msg: %s) dst %i", z_res, zError(z_res), _compressionStream->msg, *dst_size);
+    c_stream.zalloc = (alloc_func)0;
+    c_stream.zfree = (free_func)0;
+    c_stream.opaque = (voidpf)0;
 
-    if (z_res != Z_OK && z_res != Z_STREAM_END)
+    // default Z_BEST_SPEED (1)
+    int z_res = deflateInit(&c_stream, sWorld->getIntConfig(CONFIG_COMPRESSION));
+    if (z_res != Z_OK)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Can't compress packet (zlib: deflate) Error code: %i (%s, msg: %s)", z_res, zError(z_res), _compressionStream->msg);
+        sLog->outError(LOG_FILTER_GENERAL, "Can't compress update packet (zlib: deflateInit) Error code: %i (%s)", z_res, zError(z_res));
         *dst_size = 0;
         return false;
     }
 
-    if (_compressionStream->avail_in != 0)
+    c_stream.next_out = (Bytef*)dst;
+    c_stream.avail_out = *dst_size;
+    c_stream.next_in = (Bytef*)src;
+    c_stream.avail_in = (uInt)src_size;
+
+    z_res = deflate(&c_stream, Z_SYNC_FLUSH);
+    if (z_res != Z_OK)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Can't compress packet (zlib: deflate not greedy)");
+        sLog->outError(LOG_FILTER_GENERAL, "Can't compress update packet (zlib: deflate) Error code: %i (%s)", z_res, zError(z_res));
         *dst_size = 0;
         return false;
     }
 
-    if (z_res == Z_OK && _compressionStream->avail_out == 0)
+    if (c_stream.avail_in != 0)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Need repeat compression");
+        sLog->outError(LOG_FILTER_GENERAL, "Can't compress update packet (zlib: deflate not greedy)");
+        *dst_size = 0;
         return false;
     }
-    sLog->outError(LOG_FILTER_NETWORKIO, "Error code: %i (%s, msg: %s) dst %i avail_out %i", z_res, zError(z_res), _compressionStream->msg, *dst_size, _compressionStream->avail_out);
-    *dst_size = _compressionStream->total_out;
+
+    z_res = deflate(&c_stream, Z_FINISH);
+    if (z_res != Z_STREAM_END)
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "Can't compress update packet (zlib: deflate should report Z_STREAM_END instead %i (%s)", z_res, zError(z_res));
+        *dst_size = 0;
+        return false;
+    }
+
+    z_res = deflateEnd(&c_stream);
+    if (z_res != Z_OK)
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "Can't compress update packet (zlib: deflateEnd) Error code: %i (%s)", z_res, zError(z_res));
+        *dst_size = 0;
+        return false;
+    }
+    *dst_size = c_stream.total_out;
+    
+    
+    //*dst_size -= _compressionStream->avail_out;
+    //*dst_size = _compressionStream->total_out;
+    //_compressionStream->total_out = 0;
     return true;
 }
