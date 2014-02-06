@@ -5002,13 +5002,12 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
         target->ToPlayer()->UpdateMeleeHastMod();
         target->ToPlayer()->UpdateRangeHastMod();
 
-
-            Unit::AuraEffectList const& GcdByMeleeHaste = target->GetAuraEffectsByType(SPELL_AURA_417);		
-            for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
-            {	
-                (*itr)->SetCanBeRecalculated(true);
-                (*itr)->RecalculateAmount(target);
-            }
+        Unit::AuraEffectList const& GcdByMeleeHaste = target->GetAuraEffectsByType(SPELL_AURA_417);		
+        for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
+        {	
+            (*itr)->SetCanBeRecalculated(true);
+            (*itr)->RecalculateAmount(target);
+        }
     }
 }
 
