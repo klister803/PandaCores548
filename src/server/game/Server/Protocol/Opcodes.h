@@ -1409,7 +1409,7 @@ enum Opcodes
     SMSG_WEEKLY_RESET_CURRENCY                        = 0xEBB,  // 5.0.5 16048
     SMSG_WEEKLY_SPELL_USAGE                           = 0xB6D,  // 5.0.5 16048 //unused
     SMSG_WEEKLY_SPELL_USAGE_UPDATE                    = 0,      //
-    SMSG_WHO                                          = 0x933,  // 5.0.5 16048
+    SMSG_WHO                                          = 0x053C, // 5.4.1 17538
     SMSG_WHOIS                                        = 0x943,  // 5.0.5 16048
     SMSG_WORLD_SERVER_INFO                            = 0x0427, // 5.4.1 17538
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x05AC, // 5.4.1 17538
