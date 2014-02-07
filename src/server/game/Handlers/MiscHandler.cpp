@@ -1068,12 +1068,12 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
     //SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleRequestAccountData(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_REQUEST_ACCOUNT_DATA");
 
-    uint32 type;
-    recvData >> type;
+    uint32 type = recvData.ReadBits(3);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "RAD: type %u", type);
 
@@ -1099,6 +1099,7 @@ void WorldSession::HandleRequestAccountData(WorldPacket& recvData)
 
     ObjectGuid playerGuid = _player ? _player->GetGUID() : 0;
 
+    //! 5.4.1
     WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA, 8+4+4+4+destSize);
 
     data.WriteBits(type, 3);                                // type (0-7)
