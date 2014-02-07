@@ -14204,12 +14204,10 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 //! 5.4.1
                 data.Initialize(SMSG_MOVE_SET_WALK_SPEED, 1 + 8 + 4 + 4);
    
-                data.WriteGuidMask<0, 4, 5, 2, 3, 1, 6, 7>(guid);                
-                data.WriteGuidBytes<6, 1, 5>(guid);
                 data << float(GetSpeed(mtype));
-                data.WriteGuidBytes<2>(guid);
                 data << uint32(0); // Unk Int32
-                data.WriteGuidBytes<4, 0, 7, 3>(guid);
+                data.WriteGuidMask<5, 4, 3, 1, 0, 7, 2, 6>(guid);                
+                data.WriteGuidBytes<7, 5, 3, 2, 4, 1, 6, 0>(guid);
                 break;
             }
             case MOVE_RUN:
