@@ -303,9 +303,11 @@ enum EItemDynamicFields
 
 enum ItemDynamicModifiersOffset
 {
-    ITEM_DYN_MOD_REFORGE                             = 0x0,
-    ITEM_DYN_MOD_TRANSMOGRIFICATION                  = 0x1,
-    ITEM_DYN_MOD_END                                 = 0x2,
+    ITEM_DYN_MOD_REFORGE                             = 0,
+    ITEM_DYN_MOD_TRANSMOGRIFICATION                  = 1,
+    ITEM_DYN_MOD_UPGRADE_ID                          = 2,
+    ITEM_DYN_MOD_BATTLE_PET                          = 3,
+    ITEM_DYN_MOD_END                                 = 4,
 };
 
 enum EContainerFields

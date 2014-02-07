@@ -195,7 +195,7 @@ enum GuildBankEventLogTypes
     GUILD_BANK_LOG_WITHDRAW_MONEY       = 5,
     GUILD_BANK_LOG_REPAIR_MONEY         = 6,
     GUILD_BANK_LOG_MOVE_ITEM2           = 7,
-    GUILD_BANK_LOG_UNK1                 = 8,
+    GUILD_BANK_LOG_WITHDRAW_FOR_TAB     = 8,
     GUILD_BANK_LOG_BUY_SLOT             = 9,
     GUILD_BANK_LOG_CASH_FLOW_DEPOSIT    = 10
 };
@@ -554,6 +554,8 @@ private:
     class LogHolder
     {
     public:
+        typedef std::list<LogEntry*> GuildLog;
+
         LogHolder(uint32 guildId, uint32 maxRecords) : m_guildId(guildId), m_maxRecords(maxRecords), m_nextGUID(uint32(GUILD_EVENT_LOG_GUID_UNDEFINED)) { }
         ~LogHolder();
 
@@ -567,9 +569,9 @@ private:
         // Writes information about all events to packet
         void WritePacket(WorldPacket& data) const;
         uint32 GetNextGUID();
+        GuildLog const* GetLog() { return &m_log; }
 
     private:
-        typedef std::list<LogEntry*> GuildLog;
         GuildLog m_log;
         uint32 m_guildId;
         uint32 m_maxRecords;
