@@ -60,6 +60,7 @@ class SpellCastTargets;
 class UpdateMask;
 class PhaseMgr;
 class RatedBattleground;
+class Guild;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -2045,6 +2046,7 @@ class Player : public Unit, public GridObject<Player>
         void SetReputation(uint32 factionentry, uint32 value);
         uint32 GetReputation(uint32 factionentry);
         std::string GetGuildName();
+        Guild* GetGuild();
 
         // Talents
         uint32 GetFreeTalentPoints() const { return _talentMgr->FreeTalentPoints; }

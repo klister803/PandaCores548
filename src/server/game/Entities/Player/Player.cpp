@@ -27558,6 +27558,11 @@ std::string Player::GetGuildName()
     return GetGuildId() ? sGuildMgr->GetGuildById(GetGuildId())->GetName() : "";
 }
 
+Guild* Player::GetGuild()
+{
+    return GetGuildId() ? sGuildMgr->GetGuildById(GetGuildId()) : NULL;
+}
+
 void Player::SendDuelCountdown(uint32 counter)
 {
     WorldPacket data(SMSG_DUEL_COUNTDOWN, 4);
