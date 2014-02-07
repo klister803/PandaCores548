@@ -1141,7 +1141,7 @@ enum Opcodes
     SMSG_OVERRIDE_LIGHT                               = 0x8B3,  // 5.0.5 16048
     SMSG_PAGE_TEXT_QUERY_RESPONSE                     = 0xCE2,  // 5.0.5 16048
     SMSG_PARTYKILLLOG                                 = 0x04B5, // 5.4.1 17538
-    SMSG_PARTY_COMMAND_RESULT                         = 0xC2D,  // 5.0.5 16048
+    SMSG_PARTY_COMMAND_RESULT                         = 0x0430, // 5.4.1 17538
     SMSG_PARTY_MEMBER_STATS_FULL                      = 0x0CB4, // 5.4.1 17538
     SMSG_PAUSE_MIRROR_TIMER                           = 0x8E9,  // 5.0.5 16048 
     SMSG_PERIODICAURALOG                              = 0x449,  // 5.4.1 17538

@@ -50,6 +50,7 @@ class Aura;
 
 void WorldSession::SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res, uint32 val /* = 0 */)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_PARTY_COMMAND_RESULT, 4 + member.size() + 1 + 4 + 4 + 8);
     data << uint32(operation);
     data << member;
@@ -60,6 +61,7 @@ void WorldSession::SendPartyResult(PartyOperation operation, const std::string& 
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_INVITE");
@@ -73,38 +75,22 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
     ObjectGuid crossRealmGuid; // unused
 
     recvData.read_skip<uint32>(); // Non-zero in cross realm invites
-    recvData.read_skip<uint8>();
     recvData.read_skip<uint32>(); // Always 0
+    recvData.read_skip<uint8>();
+    
     std::string realmName, memberName;
 
+    recvData.ReadGuidMask<2>(crossRealmGuid);
     uint8 realmLen = recvData.ReadBits(9);
+    recvData.ReadGuidMask<0, 3, 4, 6, 7, 5, 1>(crossRealmGuid);
+    uint8 nameLen = recvData.ReadBits(9);
 
-    crossRealmGuid[1] = recvData.ReadBit();
-    crossRealmGuid[3] = recvData.ReadBit();
-    crossRealmGuid[4] = recvData.ReadBit();
-    crossRealmGuid[6] = recvData.ReadBit();
-    crossRealmGuid[5] = recvData.ReadBit();
+    recvData.ReadFlush();
 
-    uint8 nameLen = recvData.ReadBits(10);
-
-    crossRealmGuid[7] = recvData.ReadBit();
-    crossRealmGuid[0] = recvData.ReadBit();
-    crossRealmGuid[2] = recvData.ReadBit();
-
-    recvData.ReadByteSeq(crossRealmGuid[4]);
-    recvData.ReadByteSeq(crossRealmGuid[0]);
-
+    recvData.ReadGuidBytes<5>(crossRealmGuid);
     realmName = recvData.ReadString(realmLen); // unused
-
-    recvData.ReadByteSeq(crossRealmGuid[7]);
-
     memberName = recvData.ReadString(nameLen);
-
-    recvData.ReadByteSeq(crossRealmGuid[1]);
-    recvData.ReadByteSeq(crossRealmGuid[6]);
-    recvData.ReadByteSeq(crossRealmGuid[5]);
-    recvData.ReadByteSeq(crossRealmGuid[2]);
-    recvData.ReadByteSeq(crossRealmGuid[3]);
+    recvData.ReadGuidBytes<4, 0, 3, 6, 1, 2, 7>(crossRealmGuid);
 
     // attempt add selected player
 
@@ -1158,6 +1144,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
     uint32 mask = player->GetGroupUpdateFlag();
     ByteBuffer buffer(200);
 
+    //! 5.4.1
     data->Initialize(SMSG_PARTY_MEMBER_STATS_FULL, 200);
 
     if (full)
@@ -1397,6 +1384,9 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
         buffer.FlushBits();
         // for (count) *data << uint16(phaseId)
     }
+
+    if (mask & GROUP_UPDATE_FLAG_SPECIALIZATION)
+        buffer << uint16(player->GetSpecializationId(player->GetActiveSpec()));
 
     *data << uint32(buffer.wpos());
     data->append(buffer);
