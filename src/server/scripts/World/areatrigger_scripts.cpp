@@ -273,7 +273,7 @@ class AreaTrigger_at_sholazar_waygate : public AreaTriggerScript
 
 enum NatsLanding
 {
-    QUEST_NATS_BARGAIN = 11209,
+    QUEST_NATS_BARGAIN = 27220,
     SPELL_FISH_PASTE   = 42644,
     NPC_LURKING_SHARK  = 23928
 };
