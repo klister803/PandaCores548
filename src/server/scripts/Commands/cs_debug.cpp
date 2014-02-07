@@ -293,7 +293,7 @@ public:
 
     static bool HandleDebugSendMultCommand(ChatHandler* handler, char const* args)
     {
-        uint32 const count = 1;
+        uint32 const count = 3;
         std::string const msg = "TEST TEST TEST III A B C D E F G 1 2 3 4 5 6 7 8 9 0 K O P D S";
         
         ByteBuffer buff;//SMSG_NOTIFICATION

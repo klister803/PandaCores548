@@ -422,7 +422,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_CEMETERY_LIST,                   STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleCemeteryListOpcode        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_HOTFIX,                          STATUS_AUTHED,    PROCESS_INPLACE,      &WorldSession::HandleRequestHotfix             );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_INSPECT_RATED_BG_STATS,          STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleInspectRatedBGStats                     );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_PARTY_MEMBER_STATS,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestPartyMemberStatsOpcode);
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_PARTY_MEMBER_STATS,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestPartyMemberStatsOpcode);
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_PET_INFO,                        STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::HandleRequestPetInfoOpcode      );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_PVP_OPTIONS_ENABLED,             STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::HandleRequestPvpOptions         );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_PVP_REWARDS,                     STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestPvpReward          );
@@ -1024,8 +1024,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_PAGE_TEXT_QUERY_RESPONSE,                STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_PARTYKILLLOG,                            STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_PARTY_COMMAND_RESULT,                    STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_PARTY_MEMBER_STATS,                      STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_PARTY_MEMBER_STATS_FULL,                 STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_PARTY_MEMBER_STATS_FULL,                   STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_PAUSE_MIRROR_TIMER,                      STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_PERIODICAURALOG,                         STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_PETGODMODE,                              STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );

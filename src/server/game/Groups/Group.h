@@ -102,8 +102,9 @@ enum GroupUpdateFlags
     GROUP_UPDATE_FLAG_CUR_HP            = 0x00000004,       // uint32 (HP)
     GROUP_UPDATE_FLAG_MAX_HP            = 0x00000008,       // uint32 (HP)
     GROUP_UPDATE_FLAG_POWER_TYPE        = 0x00000010,       // uint8 (PowerType)
-    GROUP_UPDATE_FLAG_CUR_POWER         = 0x00000020,       // int16 (power value)
-    GROUP_UPDATE_FLAG_MAX_POWER         = 0x00000040,       // int16 (power value)
+                                                            // UNIT_FIELD_OVERRIDE_DISPLAY_POWER_ID
+    GROUP_UPDATE_FLAG_CUR_POWER         = 0x00000040,       // int16 (power value)
+    GROUP_UPDATE_FLAG_MAX_POWER         = 0x00000080,       // int16 (power value)
     GROUP_UPDATE_FLAG_LEVEL             = 0x00000100,       // uint16 (level value)
     GROUP_UPDATE_FLAG_ZONE              = 0x00000200,       // uint16 (zone id)
     GROUP_UPDATE_FLAG_UNK100            = 0x00000400,       // int16 (unk
@@ -120,6 +121,7 @@ enum GroupUpdateFlags
     GROUP_UPDATE_FLAG_PET_AURAS         = 0x00400000,       // [see GROUP_UPDATE_FLAG_AURAS]
     GROUP_UPDATE_FLAG_VEHICLE_SEAT      = 0x00800000,       // int32 (vehicle seat id)
     GROUP_UPDATE_FLAG_PHASE             = 0x01000000,       // int32 (unk), uint32 (phase count), for (count) uint16(phaseId)
+    GROUP_UPDATE_FLAG_HAS_UNK20         = 0x80000000,       // If not have this flag client remove 0x20 flag
 
     GROUP_UPDATE_PET = GROUP_UPDATE_FLAG_PET_GUID | GROUP_UPDATE_FLAG_PET_NAME | GROUP_UPDATE_FLAG_PET_MODEL_ID |
                        GROUP_UPDATE_FLAG_PET_CUR_HP | GROUP_UPDATE_FLAG_PET_MAX_HP | GROUP_UPDATE_FLAG_PET_POWER_TYPE |
