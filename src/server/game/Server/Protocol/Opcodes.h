@@ -924,7 +924,7 @@ enum Opcodes
     SMSG_GOSSIP_POI                                   = 0x1001, // 5.4.1 17538
     SMSG_GROUPACTION_THROTTLED                        = 0x994,  // 5.0.5 16048
     SMSG_GROUP_CANCEL                                 = 0x84B,  // 5.0.5 16048
-    SMSG_GROUP_DECLINE                                = 0x8EA,  // 5.0.5 16048
+    SMSG_GROUP_DECLINE                                = 0x0CA0, // 5.4.1 17538
     SMSG_GROUP_DESTROYED                              = 0xD3A,  // 5.0.5 16048
     SMSG_GROUP_INVITE                                 = 0x09A6, // 5.4.1 17538
     SMSG_GROUP_JOINED_BATTLEGROUND                    = 0,      // Not found in TC

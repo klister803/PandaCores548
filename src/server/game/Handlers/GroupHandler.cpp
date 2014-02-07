@@ -73,7 +73,7 @@ void WorldSession::SendGroupInvite(Player* player, bool AlowEnter)
     data.WriteGuidMask<7, 2, 0>(invitedGuid);
     data.WriteBits(0, 22);                              // Count 2
     data.WriteBits(strlen(GetPlayer()->GetName()), 6);  // Inviter name length
-    data.WriteBit(!AlowEnter);                          // Inverse already in group
+    data.WriteBit(AlowEnter);                           // Inverse already in group
     data.WriteGuidMask<4>(invitedGuid);
     data.WriteBit(0);
     data.WriteBit(0);
@@ -244,13 +244,16 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
     SendPartyResult(PARTY_OP_INVITE, memberName, ERR_PARTY_RESULT_OK);
 }
 
+//! 5.4.1
 void WorldSession::HandleGroupInviteResponseOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_INVITE_RESPONSE");
 
     recvData.read_skip<uint8>(); // unk
-    recvData.ReadBit();
+    bool dword18 = recvData.ReadBit();
     bool accept = recvData.ReadBit();
+    if (dword18)
+        recvData.read_skip<uint32>();
 
     Group* group = GetPlayer()->GetGroupInvite();
 
@@ -313,6 +316,7 @@ void WorldSession::HandleGroupInviteResponseOpcode(WorldPacket& recvData)
 
         // report
         std::string name = std::string(GetPlayer()->GetName());
+        //! 5.4.1
         WorldPacket data(SMSG_GROUP_DECLINE, name.length());
         data << name.c_str();
         leader->GetSession()->SendPacket(&data);
