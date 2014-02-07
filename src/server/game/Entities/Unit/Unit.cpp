@@ -6601,18 +6601,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 }
                 case 44448: // Pyroblast Clearcasting Driver
                 {
-                    int32 amount = triggeredByAura->GetAmount();
+                    bool RemoveHeatingUp = HasAura(48107) ? true: false;
+
                     if (procEx & PROC_EX_CRITICAL_HIT)
                     {
-                        amount *= 2;
-                        if (amount < 400)   // not enough
-                        {
-                            triggeredByAura->SetAmount(amount);
-                            return true;
-                        }
-                        CastSpell(this, 48108, true, castItem, triggeredByAura);
+                        uint32 aura = RemoveHeatingUp ? 48108: 48107;
+                        CastSpell(this, aura, true);
                     }
-                    triggeredByAura->SetAmount(100);
+                    if (RemoveHeatingUp)
+                        RemoveAura(48107);
+
                     return true;
                 }
                 // Glyph of Polymorph
