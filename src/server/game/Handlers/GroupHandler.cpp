@@ -1080,10 +1080,6 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
     data->WriteGuidMask<1, 7, 3, 2, 0>(guid);
     data->FlushBits();
 
-    buffer.WriteGuidBytes<2, 1, 7>(guid);
-    buffer << uint32(mask);
-    buffer.WriteGuidBytes<4, 3, 5, 0, 6>(guid);
-
     if (mask & GROUP_UPDATE_FLAG_STATUS)
     {
         if (player->IsPvP())
@@ -1301,6 +1297,10 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
 
     *data << uint32(buffer.wpos());
     data->append(buffer);
+
+    data->WriteGuidBytes<2, 1, 7>(guid);
+    *data << uint32(mask);
+    data->WriteGuidBytes<4, 3, 5, 0, 6>(guid);
 }
 
 //! 5.4.1
@@ -1311,17 +1311,24 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
     ObjectGuid Guid;
     recvData.read_skip<uint8>();
 
-    recvData.WriteGuidMask<4, 0, 1, 3, 6, 2, 7, 5>(Guid);
-    recvData.WriteGuidBytes<0, 4, 6, 3, 1, 5, 2, 7>(Guid);
+    recvData.ReadGuidMask<4, 0, 1, 3, 6, 2, 7, 5>(Guid);
+    recvData.ReadGuidBytes<0, 4, 6, 3, 1, 5, 2, 7>(Guid);
 
     Player* player = HashMapHolder<Player>::Find(Guid);
     if (!player)
     {
+        //! 5.4.1
         WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 3+4+2);
-        data << uint8(0);                                   // only for SMSG_PARTY_MEMBER_STATS_FULL, probably arena/bg related
-        data.appendPackGUID(Guid);
-        data << (uint32) GROUP_UPDATE_FLAG_STATUS;
+        data.WriteGuidMask<5, 6, 4>(Guid);
+        data.WriteBit(0);                                   // only for SMSG_PARTY_MEMBER_STATS_FULL, probably arena/bg related
+        data.WriteBit(1);                                   // full
+        data.WriteGuidMask<1, 7, 3, 2, 0>(Guid);
+        data.FlushBits();
+        data << uint32(2);
         data << (uint16) MEMBER_STATUS_OFFLINE;
+        data.WriteGuidBytes<2, 1, 7>(Guid);
+        data << uint32(GROUP_UPDATE_FLAG_STATUS);
+        data.WriteGuidBytes<4, 3, 5, 0, 6>(Guid);
         SendPacket(&data);
         return;
     }
