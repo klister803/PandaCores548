@@ -928,7 +928,7 @@ enum Opcodes
     SMSG_GROUP_DESTROYED                              = 0xD3A,  // 5.0.5 16048
     SMSG_GROUP_INVITE                                 = 0x09A6, // 5.4.1 17538
     SMSG_GROUP_JOINED_BATTLEGROUND                    = 0,      // Not found in TC
-    SMSG_PARTY_UPDATE                                 = 0xB3E,  // 5.0.5 16048
+    SMSG_PARTY_UPDATE                                 = 0x01B5, // 5.4.1 17538
     SMSG_GROUP_SET_LEADER                             = 0,      // 0xA1A Not sure ! 0x0526 in 4.3.4 @todo : Find me and BACON !
     SMSG_GROUP_SET_ROLE                               = 0xA7B,  // 5.0.5 16048
     SMSG_GROUP_UNINVITE                               = 0x8A8,  // 5.0.5 16048
