@@ -22677,6 +22677,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 void Player::InitDataForForm(bool reapplyMods)
 {
     ShapeshiftForm form = GetShapeshiftForm();
+    bool FierceTiger = false;
 
     SpellShapeshiftFormEntry const* ssEntry = sSpellShapeshiftFormStore.LookupEntry(form);
     if (ssEntry && ssEntry->attackSpeed)
@@ -22691,6 +22692,12 @@ void Player::InitDataForForm(bool reapplyMods)
     switch (form)
     {
         case FORM_FIERCE_TIGER:
+        {
+            FierceTiger = true;
+            if (getPowerType() != POWER_ENERGY)
+                setPowerType(POWER_ENERGY);
+            break;
+        }
         case FORM_STURDY_OX:
         case FORM_GHOUL:
         case FORM_CAT:
@@ -22721,7 +22728,7 @@ void Player::InitDataForForm(bool reapplyMods)
     }
 
     // update auras at form change, ignore this at mods reapply (.reset stats/etc) when form not change.
-    if (!reapplyMods)
+    if (!reapplyMods && !FierceTiger)
         UpdateEquipSpellsAtFormChange();
 
     UpdateAttackPowerAndDamage();
