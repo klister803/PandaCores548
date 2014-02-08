@@ -454,6 +454,7 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recvData)
     group->SendUpdate();
 }
 
+//! 5.4.1
 void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_SET_ROLES");
@@ -468,51 +469,38 @@ void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
     recvData >> unk;
     recvData >> newRole;
 
-    uint8 bitOrder[8] = {5, 6, 0, 3, 1, 2, 4, 7};
-    recvData.ReadBitInOrder(guid2, bitOrder);
+    recvData.ReadGuidMask<4, 0, 2, 7, 5, 6, 1, 3>(guid2);
+    recvData.ReadGuidBytes<4, 6, 2, 5, 3, 7, 0, 1>(guid2);
 
-    uint8 byteOrder[8] = {7, 4, 2, 1, 6, 5, 3, 0};
-    recvData.ReadBytesSeq(guid2, byteOrder);
-
+    //! 5.4.1
     WorldPacket data(SMSG_GROUP_SET_ROLE, 24);
 
-    data.WriteBit(guid2[7]);
-    data.WriteBit(guid2[2]);
-    data.WriteBit(guid1[6]);
-    data.WriteBit(guid1[5]);
-    data.WriteBit(guid1[4]);
-    data.WriteBit(guid2[3]);
-    data.WriteBit(guid2[4]);
-    data.WriteBit(guid2[0]);
-
-    data.WriteBit(guid2[6]);
-    data.WriteBit(guid1[7]);
-    data.WriteBit(guid2[5]);
-    data.WriteBit(guid1[1]);
-    data.WriteBit(guid1[2]);
-    data.WriteBit(guid1[0]);
-    data.WriteBit(guid1[3]);
-    data.WriteBit(guid2[1]);
-
-    data.WriteByteSeq(guid1[7]);
-    data.WriteByteSeq(guid2[5]);
+    data.WriteGuidMask<2>(guid1);
+    data.WriteGuidMask<1>(guid2);
+    data.WriteGuidMask<1, 3>(guid1);
+    data.WriteGuidMask<2, 3>(guid2);
+    data.WriteGuidMask<7>(guid1);
+    data.WriteGuidMask<7, 5>(guid2);
+    data.WriteGuidMask<4, 6>(guid1);
+    data.WriteGuidMask<0, 6>(guid2);
+    data.WriteGuidMask<0>(guid1);
+    data.WriteGuidMask<4>(guid2);
+    data.WriteGuidMask<5>(guid1);
+            
+    data.WriteGuidBytes<1>(guid1);
+    data.WriteGuidBytes<7>(guid2);
+    data.WriteGuidBytes<6>(guid1);
     data << uint32(0); // Old Role
-    data.WriteByteSeq(guid2[2]);
-    data.WriteByteSeq(guid1[0]);
-    data.WriteByteSeq(guid1[2]);
-    data.WriteByteSeq(guid2[1]);
-    data.WriteByteSeq(guid1[4]);
-    data.WriteByteSeq(guid1[3]);
-    data << uint32(newRole); // New Role
-    data.WriteByteSeq(guid2[6]);
-    data.WriteByteSeq(guid1[6]);
-    data.WriteByteSeq(guid2[3]);
-    data.WriteByteSeq(guid1[5]);
-    data.WriteByteSeq(guid1[1]);
+    data.WriteGuidBytes<5>(guid1);
     data << uint8(unk);
-    data.WriteByteSeq(guid2[4]);
-    data.WriteByteSeq(guid2[0]);
-    data.WriteByteSeq(guid2[7]);
+    data.WriteGuidBytes<3>(guid2);
+    data.WriteGuidBytes<3>(guid1);
+    data.WriteGuidBytes<4, 1 ,2>(guid2);
+    data.WriteGuidBytes<0, 7>(guid1);
+    data.WriteGuidBytes<0, 6>(guid2);
+    data << uint32(newRole); // New Role
+    data.WriteGuidBytes<5>(guid2);
+    data.WriteGuidBytes<2, 4>(guid1);
 
     if (GetPlayer()->GetGroup())
     {
@@ -524,6 +512,7 @@ void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
         SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleGroupDisbandOpcode(WorldPacket& /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_DISBAND");

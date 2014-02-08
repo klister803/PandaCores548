@@ -930,7 +930,7 @@ enum Opcodes
     SMSG_GROUP_JOINED_BATTLEGROUND                    = 0,      // Not found in TC
     SMSG_PARTY_UPDATE                                 = 0x01B5, // 5.4.1 17538
     SMSG_GROUP_SET_LEADER                             = 0x0C97, // 5.4.1 17538
-    SMSG_GROUP_SET_ROLE                               = 0xA7B,  // 5.0.5 16048
+    SMSG_GROUP_SET_ROLE                               = 0x0534, // 5.4.1 17538
     SMSG_GROUP_UNINVITE                               = 0x19B0, // 5.4.1 17538
     SMSG_GUILD_ACHIEVEMENT_DATA                       = 0xF23,  // 5.0.5 16048
     SMSG_GUILD_ACHIEVEMENT_DELETED                    = 0xB46,  // 5.0.5 16048
