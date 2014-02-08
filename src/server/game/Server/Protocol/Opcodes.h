@@ -1063,8 +1063,9 @@ enum Opcodes
     SMSG_LOOT_RELEASE_RESPONSE                        = 0x008F, // 5.4.1 17538
     SMSG_LOOT_REMOVED                                 = 0x01BD, // 5.4.1 17538
     SMSG_LOOT_RESPONSE                                = 0x0537, // 5.4.1 17538
-    SMSG_LOOT_ROLL                                    = 0xB59,  // 5.0.5 16048
-    SMSG_LOOT_ROLL_WON                                = 0xF32,  // 5.0.5 16048
+    SMSG_LOOT_ROLL                                    = 0x05A5, // 5.4.1 17538
+    SMSG_LOOT_ROLLS_COMPLETE                          = 0x0D06, // 5.4.1 17538
+    SMSG_LOOT_ROLL_WON                                = 0x040C, // 5.4.1 17538
     SMSG_LOOT_START_ROLL                              = 0x04A6, // 5.4.1 17538
     SMSG_COIN_REMOVED                                 = 0x0C3E, // 5.4.1 17538
     SMSG_MAIL_LIST_RESULT                             = 0x95E,  // 5.0.5 16048
