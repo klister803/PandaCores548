@@ -1953,7 +1953,6 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     // Insrt member data colected before
     data.append(dataBuffer);
 
-    //! ToDo: check m_lootThreshold & m_lootMethod
     if (true)                                                           // HasLooterGuid                                      
     {
         data << uint8(m_lootThreshold);                                 // loot threshold

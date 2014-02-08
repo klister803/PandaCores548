@@ -536,6 +536,7 @@ void WorldSession::HandleGroupDisbandOpcode(WorldPacket& /*recvData*/)
     GetPlayer()->RemoveFromGroup(GROUP_REMOVEMETHOD_LEAVE);
 }
 
+//! 5.4.1
 void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_LOOT_METHOD");
@@ -549,11 +550,8 @@ void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
     recvData >> lootMethod;
     recvData >> lootThreshold;
 
-    uint8 bitOrder[8] = {6, 2, 7, 4, 3, 1, 0, 5};
-    recvData.ReadBitInOrder(lootMaster, bitOrder);
-
-    uint8 byteOrder[8] = {3, 2, 0, 7, 5, 1, 6, 4};
-    recvData.ReadBytesSeq(lootMaster, byteOrder);
+    recvData.ReadGuidMask<4, 0, 7, 3, 2, 6, 5, 1>(lootMaster);
+    recvData.ReadGuidBytes<4, 7, 6, 3, 5, 1, 2, 0>(lootMaster);
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
