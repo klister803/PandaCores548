@@ -929,9 +929,9 @@ enum Opcodes
     SMSG_GROUP_INVITE                                 = 0x09A6, // 5.4.1 17538
     SMSG_GROUP_JOINED_BATTLEGROUND                    = 0,      // Not found in TC
     SMSG_PARTY_UPDATE                                 = 0x01B5, // 5.4.1 17538
-    SMSG_GROUP_SET_LEADER                             = 0,      // 0xA1A Not sure ! 0x0526 in 4.3.4 @todo : Find me and BACON !
+    SMSG_GROUP_SET_LEADER                             = 0x0C97, // 5.4.1 17538
     SMSG_GROUP_SET_ROLE                               = 0xA7B,  // 5.0.5 16048
-    SMSG_GROUP_UNINVITE                               = 0x8A8,  // 5.0.5 16048
+    SMSG_GROUP_UNINVITE                               = 0x19B0, // 5.4.1 17538
     SMSG_GUILD_ACHIEVEMENT_DATA                       = 0xF23,  // 5.0.5 16048
     SMSG_GUILD_ACHIEVEMENT_DELETED                    = 0xB46,  // 5.0.5 16048
     SMSG_GUILD_ACHIEVEMENT_EARNED                     = 0xA8E,  // 5.0.5 16048

@@ -323,6 +323,7 @@ void WorldSession::HandleGroupInviteResponseOpcode(WorldPacket& recvData)
     }
 }
 
+//! 5.4.1
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_UNINVITE_GUID");
@@ -332,24 +333,12 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recvData)
 
     recvData.read_skip<uint8>(); // unk 0x00
 
+    recvData.ReadGuidMask<3>(guid);
     uint8 stringSize = recvData.ReadBits(8);
-
-    recvData.ReadBit();
-
-    uint8 bitOrder[8] = {4, 7, 5, 6, 1, 2, 3, 0};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[2]);
-
+    recvData.ReadGuidMask<5, 2, 0, 4, 1, 6, 7>(guid);
+    recvData.ReadGuidBytes<0, 4>(guid);
     unkstring = recvData.ReadString(stringSize);
-
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[1]);
+    recvData.ReadGuidBytes<5, 7, 2, 3, 1, 6>(guid);
 
     //can't uninvite yourself
     if (guid == GetPlayer()->GetGUID())
@@ -434,6 +423,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
     SendPartyResult(PARTY_OP_UNINVITE, membername, ERR_TARGET_NOT_IN_GROUP_S);
 }
 
+//! 5.4.1
 void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_SET_LEADER");
@@ -441,11 +431,8 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recvData)
     ObjectGuid guid;
     recvData.read_skip<uint8>();
 
-    uint8 bitOrder[8] = {7, 3, 5, 1, 2, 0, 4, 6};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {1, 2, 3, 6, 7, 0, 5, 4};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<6, 7, 0, 3, 2, 5, 4, 1>(guid);
+    recvData.ReadGuidBytes<5, 7, 1, 6, 2, 4, 0, 3>(guid);
 
     Player* player = ObjectAccessor::FindPlayer(guid);
     Group* group = GetPlayer()->GetGroup();
@@ -466,7 +453,7 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recvData)
     group->ChangeLeader(guid);
     group->SendUpdate();
 }
-/* TODO: FIXME FOR 5.0.5 */
+
 void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_SET_ROLES");
@@ -536,6 +523,7 @@ void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
     else
         SendPacket(&data);
 }
+
 void WorldSession::HandleGroupDisbandOpcode(WorldPacket& /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_DISBAND");
