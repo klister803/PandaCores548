@@ -569,20 +569,18 @@ void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
     group->SendUpdate();
 }
 
+//! 5.4.1
 void WorldSession::HandleLootRoll(WorldPacket& recvData)
 {
     ObjectGuid guid;
     uint8 itemSlot;
     uint8  rollType;
 
-    recvData >> itemSlot; //always 0
+    recvData >> itemSlot;              // always 0
     recvData >> rollType;              // 0: pass, 1: need, 2: greed
 
-    uint8 bitOrder[8] = {4, 5, 3, 2, 6, 1, 0, 7};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {5, 6, 1, 3, 2, 4, 7, 0};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<7, 1, 2, 4, 5, 6, 3, 0>(guid);
+    recvData.ReadGuidBytes<0, 7, 1, 3, 4, 6, 2, 5>(guid);
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)

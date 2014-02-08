@@ -1056,7 +1056,7 @@ enum Opcodes
     SMSG_LOG_XPGAIN                                   = 0x98A,  // 5.0.5 16048
     SMSG_LOOT_ALL_PASSED                              = 0xE49,  // 5.0.5 16048
     SMSG_LOOT_CONTENTS                                = 0xBFC,  // 5.0.5 16048
-    SMSG_LOOT_LIST                                    = 0xC37,  // 5.0.5 16048
+    SMSG_LOOT_LIST                                    = 0x14B5, // 5.4.1 17538
     SMSG_LOOT_MASTER_LIST                             = 0xA5A,  // 5.0.5 16048
     SMSG_LOOT_MONEY_NOTIFY                            = 0x143E, // 5.4.1 17538
     SMSG_LOOT_RELEASE                                 = 0x051F, // 5.4.1 17538
@@ -1065,7 +1065,7 @@ enum Opcodes
     SMSG_LOOT_RESPONSE                                = 0x0537, // 5.4.1 17538
     SMSG_LOOT_ROLL                                    = 0xB59,  // 5.0.5 16048
     SMSG_LOOT_ROLL_WON                                = 0xF32,  // 5.0.5 16048
-    SMSG_LOOT_START_ROLL                              = 0xEF4,  // 5.0.5 16048
+    SMSG_LOOT_START_ROLL                              = 0x04A6, // 5.4.1 17538
     SMSG_COIN_REMOVED                                 = 0x0C3E, // 5.4.1 17538
     SMSG_MAIL_LIST_RESULT                             = 0x95E,  // 5.0.5 16048
     SMSG_MAP_OBJ_EVENTS                               = 0xBF6,  // 5.0.5 16048
