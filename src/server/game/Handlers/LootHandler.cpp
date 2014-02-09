@@ -499,12 +499,8 @@ void WorldSession::HandleLootMasterAskForRoll(WorldPacket& recvData)
     uint8 slot = 0;
 
     recvData >> slot;
-
-    uint8 bitOrder[8] = {4, 3, 7, 6, 5, 1, 0, 2};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {4, 1, 0, 2, 5, 6, 7, 3};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<0, 4, 2, 1, 5, 3, 7, 6>(guid);
+    recvData.ReadGuidBytes<4, 7, 6, 0, 5, 1, 2, 3>(guid);
 
     if (!_player->GetGroup() || _player->GetGroup()->GetLooterGuid() != _player->GetGUID())
     {

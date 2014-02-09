@@ -1032,45 +1032,37 @@ void Group::SendLootRollWon(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumb
     }
 }
 
+//! 5.4.1
 void Group::SendLootAllPassed(Roll const& roll)
 {
     WorldPacket data(SMSG_LOOT_ALL_PASSED, (8+4+4+4+4));
     ObjectGuid guid = roll.lootedGUID;
 
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(roll.itemSlot == 0);
+    data.WriteGuidMask<3>(guid);
+    data.WriteBit(0);
+    data.WriteGuidMask<6>(guid);
+    data.WriteBits(0, 2);
+    data.WriteGuidMask<0, 4, 5>(guid);
     data.WriteBit(1);
+    data.WriteBit(roll.itemSlot == 0);
+    data.WriteBits(roll.TotalEmited(), 3);
+    data.WriteGuidMask<2, 7, 1>(guid);
 
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[1]);
+    data.FlushBits();
 
-    //We don't know where to send the different values and but it works this way.
-    data.WriteByteSeq(guid[1]);
+    data.WriteGuidBytes<4, 3, 2, 0>(guid);
+    data << uint32(roll.itemid);                // real itemID
+    data.WriteGuidBytes<6, 5>(guid);
     if (roll.itemSlot)
         data << uint8(roll.itemSlot);
+    data.WriteGuidBytes<7>(guid);
+                                                // DisplayID
+    data << uint32(sObjectMgr->GetItemTemplate(roll.itemid)->DisplayInfoID);   
     data << uint32(roll.itemid);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[7]);
-    data << uint32(roll.itemid);
-    data << uint32(roll.itemid);
-    //if (bit56) send it
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[3]);
+    data << uint32(0);                          // unk data with string
     data << uint32(roll.itemid);
     data << uint32(roll.itemid);
-
-    /*data << uint32(roll.itemSlot);                             // Item loot slot
-    data << uint32(roll.itemid);                               // The itemEntryId for the item that shall be rolled for
-    data << uint32(roll.itemRandomPropId);                     // Item random property ID
-    data << uint32(roll.itemRandomSuffix);                     // Item random suffix ID*/
+    data.WriteGuidBytes<1>(guid);
 
     for (Roll::PlayerVote::const_iterator itr = roll.playerVote.begin(); itr != roll.playerVote.end(); ++itr)
     {
