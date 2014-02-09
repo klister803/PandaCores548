@@ -142,6 +142,7 @@ class Roll : public LootValidatorRef
         void setLoot(Loot* pLoot);
         Loot* getLoot();
         void targetObjectBuildLink();
+        uint8 TotalEmited() const { return totalNeed + totalGreed + totalPass; }
 
         uint64 itemGUID;
         uint32 itemid;
