@@ -2591,6 +2591,10 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         if (flagEx & CREATURE_FLAG_EXTRA_NO_BLOCK)
             canBlock = false;
     }
+
+    if (spell->Id == 24275) // Hammer of Wrath can't parry
+        canParry = false;
+
     // Ignore combat result aura
     AuraEffectList const& ignore = GetAuraEffectsByType(SPELL_AURA_IGNORE_COMBAT_RESULT);
     for (AuraEffectList::const_iterator i = ignore.begin(); i != ignore.end(); ++i)
