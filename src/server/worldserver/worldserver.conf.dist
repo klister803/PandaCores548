@@ -3065,3 +3065,17 @@ AnnounceMute = 0
 #                     1 - (Enabled)
 
 SpellForbidden = 0
+
+#   DisableRestart
+#        Description: Disable server restart.
+#        Default:     0 - (Disabled, server restarted every day)
+#                     1 - (Enabled)
+
+DisableRestart = 0
+
+#   DisableUpdateOnlineTable
+#        Description: Disable update online table on auth base
+#        Default:     0 - (Disabled, server restarted every day)
+#                     1 - (Enabled)
+
+DisableUpdateOnlineTable = 0

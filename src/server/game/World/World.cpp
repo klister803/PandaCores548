@@ -1309,6 +1309,7 @@ void World::LoadConfigSettings(bool reload)
         m_int_configs[CONFIG_AUTO_SERVER_RESTART_HOUR] = 5;
     }
     m_bool_configs[CONFIG_DISABLE_RESTART] = ConfigMgr::GetBoolDefault("DisableRestart", true);
+    m_bool_configs[CONFIG_DISABLE_NEW_ONLINE] = ConfigMgr::GetBoolDefault("DisableUpdateOnlineTable", false);
 
     // call ScriptMgr if we're reloading the configuration
     m_bool_configs[CONFIG_WINTERGRASP_ENABLE] = ConfigMgr::GetBoolDefault("Wintergrasp.Enable", false);
@@ -2160,7 +2161,8 @@ void World::Update(uint32 diff)
 
         LoginDatabase.Execute(stmt);
 
-        LoginDatabase.PQuery("REPLACE INTO `online` (`realmID`, `online`, `diff`, `uptime`) VALUES ('%u', '%u', '%u', '%u')", realmID, GetActiveSessionCount(), GetUpdateTime(), GetUptime());
+        if (!m_bool_configs[CONFIG_DISABLE_NEW_ONLINE])
+            LoginDatabase.PQuery("REPLACE INTO `online` (`realmID`, `online`, `diff`, `uptime`) VALUES ('%u', '%u', '%u', '%u')", realmID, GetActiveSessionCount(), GetUpdateTime(), GetUptime());
     }
 
     /// <li> Clean logs table
