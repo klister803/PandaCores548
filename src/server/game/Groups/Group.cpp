@@ -981,7 +981,7 @@ void Group::SendLootRollWon(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumb
     data.WriteGuidMask<2, 5>(guid);
     data.WriteGuidMask<3>(target);
     data.WriteBit(0);
-    data.WriteBit(roll.itemSlot == 0);
+    data.WriteBit(1);
     data.WriteGuidMask<5>(target);
     data.WriteGuidMask<7>(guid);
 
@@ -1009,10 +1009,10 @@ void Group::SendLootRollWon(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumb
 
     //! 5.4.1
     WorldPacket data2(SMSG_LOOT_ROLLS_COMPLETE, 7);
-    data.WriteGuidMask<4, 7, 1, 6, 0, 5, 2, 3>(target);
-    data.WriteGuidBytes<1, 5, 0, 7>(target);
-    data << uint8(roll.itemSlot);
-    data.WriteGuidBytes<6, 2, 4, 3>(target);
+    data2.WriteGuidMask<4, 7, 1, 6, 0, 5, 2, 3>(target);
+    data2.WriteGuidBytes<1, 5, 0, 7>(target);
+    data2 << uint8(roll.itemSlot);
+    data2.WriteGuidBytes<6, 2, 4, 3>(target);
 
     for (Roll::PlayerVote::const_iterator itr = roll.playerVote.begin(); itr != roll.playerVote.end(); ++itr)
     {
