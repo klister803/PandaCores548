@@ -4302,6 +4302,14 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
+        case 5221: // Shred
+        {
+            if (unitTarget->HasAuraWithMechanic((1<<MECHANIC_BLEED)))
+            {
+                AddPct(m_damage, 20);
+            }   
+            break;
+        }
         case 60103:        // Lava Lash
         {
             if (m_caster->GetTypeId() != TYPEID_PLAYER)
