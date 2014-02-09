@@ -3009,7 +3009,7 @@ void Player::Regenerate(Powers power)
                         data.WriteBits(powerCounter, 21);
                         data.WriteGuidMask<3, 6, 0, 4, 2, 5, 7>(guid);
                         data.FlushBits();       
-                        data.WriteGuidBytes<1, 2, 0>(guid[1]);
+                        data.WriteGuidBytes<1, 2, 0>(guid);
                         data << uint8(power);
                         data << int32(curValue);
                         data.WriteGuidBytes<7, 4, 5, 6, 3>(guid);

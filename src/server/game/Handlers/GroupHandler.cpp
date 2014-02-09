@@ -576,8 +576,8 @@ void WorldSession::HandleLootRoll(WorldPacket& recvData)
     uint8 itemSlot;
     uint8  rollType;
 
-    recvData >> itemSlot;              // always 0
     recvData >> rollType;              // 0: pass, 1: need, 2: greed
+    recvData >> itemSlot;              // always 0
 
     recvData.ReadGuidMask<7, 1, 2, 4, 5, 6, 3, 0>(guid);
     recvData.ReadGuidBytes<0, 7, 1, 3, 4, 6, 2, 5>(guid);
