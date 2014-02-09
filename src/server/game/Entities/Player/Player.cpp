@@ -5754,9 +5754,9 @@ void Player::DeleteOldCharacters(uint32 keepDays)
 */
 void Player::BuildPlayerRepop()
 {
-    WorldPacket data(SMSG_PRE_RESURRECT, GetPackGUID().size());
-    data.append(GetPackGUID());
-    GetSession()->SendPacket(&data);
+    //WorldPacket data(SMSG_PRE_RESURRECT, GetPackGUID().size());
+    //data.append(GetPackGUID());
+    //GetSession()->SendPacket(&data);
 
     if (getRace() == RACE_NIGHTELF)
         CastSpell(this, 20584, true);
@@ -5808,6 +5808,7 @@ void Player::BuildPlayerRepop()
 
 void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 {
+    //! 5.4.1
     WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);          // remove spirit healer position
     data << uint32(-1);
     data << float(0);
@@ -6262,11 +6263,12 @@ void Player::RepopAtGraveyard()
         UpdateObjectVisibility();
         if (isDead())                                        // not send if alive, because it used in TeleportTo()
         {
+            //! 5.4.1
             WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);  // show spirit healer position on minimap
             data << ClosestGrave->map_id;
-            data << ClosestGrave->x;
-            data << ClosestGrave->y;
             data << ClosestGrave->z;
+            data << ClosestGrave->y;
+            data << ClosestGrave->x;
             GetSession()->SendPacket(&data);
         }
     }

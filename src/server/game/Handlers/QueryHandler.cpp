@@ -299,22 +299,15 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
 
     if (!corpse)
     {
+        //! 5.4.1
         WorldPacket data(SMSG_CORPSE_QUERY);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-
-        data << int32(0);
+        data << uint8(0);
+        data << uint8(0);   // corpse not found
+        data << float(0);
+        data << float(0);
         data << int32(0);
         data << float(0);
-        data << float(0);
-        data << float(0);
+        data << int32(0);
         SendPacket(&data);
         return;
     }
@@ -345,39 +338,23 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
         }
     }
     ObjectGuid guid = corpse->GetGUID();
+
+    //! 5.4.1
     WorldPacket data(SMSG_CORPSE_QUERY);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(1);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
+    data.WriteGuidMask<1, 0, 3, 7, 4, 6, 5, 2>(guid);
+    data.WriteBit(1);               // corpse found
 
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[4]);
-    data << int32(mapid);
-    data << int32(corpsemapid);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[1]);
-    data << float(y);
-    data.WriteByteSeq(guid[0]);
-    data << float(x);
-    data << float(z);
-    data.WriteByteSeq(guid[2]);
+    data.FlushBits();
 
-    /*WorldPacket data(MSG_CORPSE_QUERY, 1+(6*4));
-    data << uint8(1);                                       // corpse found
-    data << int32(mapid);
-    data << float(x);
     data << float(y);
+    data.WriteGuidBytes<6>(guid);
+    data << float(x);
+    data << int32(mapid);
+    data.WriteGuidBytes<0, 7, 2, 4>(guid);
     data << float(z);
+    data.WriteGuidBytes<1, 5, 3>(guid);
     data << int32(corpsemapid);
-    data << uint32(0);                                      // unknown*/
+
     SendPacket(&data);
 }
 

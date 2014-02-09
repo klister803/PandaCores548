@@ -913,12 +913,14 @@ void WorldSession::HandleBugOpcode(WorldPacket& recvData)
     CharacterDatabase.Execute(stmt);
 }
 
+//! 5.4.1
 void WorldSession::HandleReclaimCorpseOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RECLAIM_CORPSE");
 
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid corpseGuid;
+    recvData.ReadGuidMask<7, 2, 6, 0, 3, 1, 4, 5>(corpseGuid);
+    recvData.ReadGuidBytes<6, 3, 7, 0, 4, 1, 2, 5>(corpseGuid);
 
     if (GetPlayer()->isAlive())
         return;
