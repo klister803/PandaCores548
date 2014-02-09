@@ -3229,41 +3229,6 @@ class spell_gen_tp_storm_orgri : public SpellScriptLoader
         }
 };
 
-// Gift of the Naaru - 59548 or 59547 or 59545 or 59544 or 59543 or 59542
-class spell_gen_gift_of_the_naaru : public SpellScriptLoader
-{
-    public:
-        spell_gen_gift_of_the_naaru() : SpellScriptLoader("spell_gen_gift_of_the_naaru") { }
-
-        class spell_gen_gift_of_the_naaru_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_gen_gift_of_the_naaru_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    int32 healAmount = _player->GetMaxHealth() * 0.2f / 5;
-
-                    AuraEffect* aurEff = _player->GetAuraEffect(GetSpellInfo()->Id, 0, _player->GetGUID());
-
-                    if (aurEff)
-                        aurEff->SetAmount(healAmount);
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_gen_gift_of_the_naaru_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_gen_gift_of_the_naaru_SpellScript();
-        }
-};
-
 enum RunningWildMountIds
 {
     RUNNING_WILD_MODEL_MALE     = 29422,
@@ -3772,7 +3737,6 @@ void AddSC_generic_spell_scripts()
     new spell_gen_upper_deck_create_foam_sword();
     new spell_gen_bonked();
     new spell_gen_tp_storm_orgri();
-    new spell_gen_gift_of_the_naaru();
     new spell_gen_running_wild();
     new spell_gen_two_forms();
     new spell_gen_darkflight();

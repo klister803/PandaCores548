@@ -845,9 +845,29 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             }
             break;
         case SPELL_AURA_PERIODIC_HEAL:
+        {
             if (!caster)
                 break;
+
+            switch (GetId())
+            {
+                case 28880:  // Warrior     - Gift of the Naaru
+                case 59542:  // Paladin     - Gift of the Naaru
+                case 59543:  // Hunter      - Gift of the Naaru
+                case 59544:  // Priest      - Gift of the Naaru
+                case 59545:  // Deathknight - Gift of the Naaru
+                case 59547:  // Shaman      - Gift of the Naaru
+                case 59548:  // Mage        - Gift of the Naaru
+                case 121093: // Monk        - Gift of the Naaru
+                {
+                    amount = CalculatePct(caster->GetMaxHealth(), m_spellInfo->Effects[1].BasePoints) / GetTotalTicks();
+                    break;
+                }
+                default:
+                    break;
+            }
             break;
+        }
         case SPELL_AURA_MOD_THREAT:
         {
             uint8 level_diff = 0;

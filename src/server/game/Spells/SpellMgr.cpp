@@ -3339,7 +3339,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 83968: // Mass Resurrection
+                case 121093: // Monk - Gift of the Naaru
+                    spellInfo->SpellFamilyName = SPELLFAMILY_MONK;
+                    break;
+                case 83968:  // Mass Resurrection
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_PARTY;
                     break;
