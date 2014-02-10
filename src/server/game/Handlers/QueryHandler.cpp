@@ -245,32 +245,33 @@ void WorldSession::HandleGameObjectQueryOpcode(WorldPacket & recvData)
             }
         }
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GAMEOBJECT_QUERY '%s' - Entry: %u. ", info->name.c_str(), entry);
+
+        ByteBuffer buff;
         WorldPacket data (SMSG_GAMEOBJECT_QUERY_RESPONSE, 150);
         data << uint32(entry);
-        size_t pos = data.wpos();
-        data << uint32(0);
 
-        data << uint32(info->type);
-        data << uint32(info->displayId);
-        data << Name;
-        data << uint8(0) << uint8(0) << uint8(0);           // name2, name3, name4
-        data << IconName;                                   // 2.0.3, string. Icon name to use instead of default icon for go's (ex: "Attack" makes sword)
-        data << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
-        data << info->unk1;
+        buff << uint32(info->type);
+        buff << uint32(info->displayId);
+        buff << Name;
+        buff << uint8(0) << uint8(0) << uint8(0);           // name2, name3, name4
+        buff << IconName;                                   // 2.0.3, string. Icon name to use instead of default icon for go's (ex: "Attack" makes sword)
+        buff << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
+        buff << info->unk1;
 
-        data.append(info->raw.data, MAX_GAMEOBJECT_DATA);
-        data << float(info->size);                          // go size
+        buff.append<uint32>(info->raw.data, MAX_GAMEOBJECT_DATA);
+        buff << float(info->size);                          // go size
         uint8 itemsCount = 0;
         for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
             if (info->questItems[i])
                 ++itemsCount;
-        data << uint8(itemsCount);
+        buff << uint8(itemsCount);
         for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
             if (info->questItems[i])
-                data << uint32(info->questItems[i]);        // itemId[6], quest drop
-        data << int32(info->unkInt32);                      // 4.x, unknown
+                buff << uint32(info->questItems[i]);        // itemId[6], quest drop
+        buff << int32(info->unkInt32);                      // 4.x, unknown
 
-        data.put<uint32>(pos, data.wpos() - pos);
+        data << uint32(buff.size());
+        data.append(buff);
         data.WriteBit(1);
 
         SendPacket(&data);
@@ -281,10 +282,10 @@ void WorldSession::HandleGameObjectQueryOpcode(WorldPacket & recvData)
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (GUID: %u, ENTRY: %u)",
             GUID_LOPART(guid), entry);
 
-        WorldPacket data (SMSG_GAMEOBJECT_QUERY_RESPONSE, 4);
-        data << uint32(entry | 0x80000000);
+        WorldPacket data (SMSG_GAMEOBJECT_QUERY_RESPONSE, 4 + 4 + 1);
+        data << uint32(entry);
         data << uint32(0);
-        data.WriteBit(1);
+        data.WriteBit(0);
         SendPacket(&data);
 
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
