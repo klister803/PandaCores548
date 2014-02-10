@@ -599,6 +599,7 @@ void WorldSession::HandleLootRoll(WorldPacket& recvData)
     }
 }
 
+//! 5.4.1
 void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_MINIMAP_PING");
@@ -607,22 +608,28 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
         return;
 
     float x, y;
-    recvData >> x;
-    recvData >> y;
+    uint8 unk;
+    recvData >> x >> y >> unk;
 
     //sLog->outDebug(LOG_FILTER_GENERAL, "Received opcode MSG_MINIMAP_PING X: %f, Y: %f", x, y);
 
     /** error handling **/
     /********************/
 
+    ObjectGuid guid = GetPlayer()->GetObjectGuid();
+
     // everything's fine, do it
+    //! 5.4.1
     WorldPacket data(MSG_MINIMAP_PING, (8+4+4));
-    data << uint64(GetPlayer()->GetGUID());
     data << float(x);
     data << float(y);
+    data.WriteGuidMask<7, 6, 0, 5, 3, 2, 1, 4>(guid);
+    data.WriteGuidBytes<1, 6, 3, 0, 2, 4, 5, 7>(guid);
+
     GetPlayer()->GetGroup()->BroadcastPacket(&data, true, -1, GetPlayer()->GetGUID());
 }
 
+//! 5.4.1
 void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 {
     uint32 minimum, maximum, roll;

@@ -322,6 +322,7 @@ enum Opcodes
     CMSG_LOOT_RELEASE                                 = 0x13DE, // 5.4.1 17538
     CMSG_LOOT_ROLL                                    = 0x167D, // 5.4.1 17538
     CMSG_LOOT_MASTER_ASK_FOR_ROLL                     = 0x17D7, // 5.4.1 17538
+    CMSG_MINIMAP_PING                                 = 0x1548, // 5.4.1 17538
     CMSG_MAIL_CREATE_TEXT_ITEM                        = 0x0274, // 5.4.1 17538
     CMSG_MAIL_DELETE                                  = 0x1AED, // 5.4.1 17538
     CMSG_MAIL_MARK_AS_READ                            = 0x0B64, // 5.4.1 17538
@@ -609,7 +610,6 @@ enum Opcodes
     MSG_GM_SUMMON                                     = 0x000,  // Not found in 4.3.4
     CMSG_LIST_STABLED_PETS                            = 0x0745, // 5.4.1 17538
     SMSG_LIST_STABLED_PETS                            = 0x11B4, // 5.4.1 17538
-    MSG_MINIMAP_PING                                  = 0x1548, // 5.4.1 17538 5.0.5: 0x04B
     MSG_MOVE_CHARM_TELEPORT_CHEAT                     = 0,      // Client patched
     MSG_MOVE_FALL_LAND                                = 0,      // Client patched
     MSG_MOVE_FEATHER_FALL                             = 0,      // Client patched
@@ -1076,6 +1076,7 @@ enum Opcodes
     SMSG_MEETINGSTONE_SETQUEUE                        = 0,      // Not found in 4.3.4
     SMSG_MESSAGECHAT                                  = 0x14AC, // 5.4.1 17538
     SMSG_MESSAGE_BOX                                  = 0xB2F,  // 5.0.5 16048
+    SMSG_MINIMAP_PING                                 = 0x058F, // 5.4.1 17538
     SMSG_MINIGAME_SETUP                               = 0x9D3,  // 5.0.5 16048
     SMSG_MINIGAME_STATE                               = 0xC57,  // 5.0.5 16048
     SMSG_MIRRORIMAGE_DATA                             = 0xDC1,  // 5.0.5 16048
