@@ -620,7 +620,7 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 
     // everything's fine, do it
     //! 5.4.1
-    WorldPacket data(MSG_MINIMAP_PING, (8+4+4));
+    WorldPacket data(SMSG_MINIMAP_PING, (8+4+4));
     data << float(x);
     data << float(y);
     data.WriteGuidMask<7, 6, 0, 5, 3, 2, 1, 4>(guid);
@@ -666,9 +666,10 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
         SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received SMSG_RAID_TARGET_UPDATE");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RAID_TARGET_UPDATE");
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
@@ -678,29 +679,26 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
     recvData >> unk;
     recvData >> x;
 
+    ObjectGuid guid;
+    recvData.ReadGuidMask<2, 5, 6, 4, 7, 1, 0, 3>(guid);
+    recvData.ReadGuidBytes<2, 6, 4, 3, 5, 7, 1, 0>(guid);
+
     /** error handling **/
     /********************/
 
     // everything's fine, do it
-    if (x == 0xFF)                                           // target icon request
+    if (x == 0xFF)                                          // target icon request
         group->SendTargetIconList(this);
     else                                                    // target icon update
     {
         if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()) && !(group->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
             return;
 
-        ObjectGuid guid;
-
-        uint8 bitOrder[8] = {4, 1, 3, 5, 7, 0, 2, 6};
-        recvData.ReadBitInOrder(guid, bitOrder);
-
-        uint8 byteOrder[8] = {3, 1, 6, 4, 7, 0, 2, 5};
-        recvData.ReadBytesSeq(guid, byteOrder);
-
         group->SetTargetIcon(x, _player->GetGUID(), guid);
     }
 }
 
+//! 5.4.1
 void WorldSession::HandleGroupRaidConvertOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_RAID_CONVERT");
@@ -1339,6 +1337,10 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
     WorldPacket data;
     player->GetSession()->BuildPartyMemberStatsChangedPacket(player, &data, true);
     SendPacket(&data);
+
+    // Send group target icons too
+    if (Group* group = pCurrChar->GetGroup())
+        group->SendTargetIconList(this);
 
     /*Pet* pet = player->GetPet();
 

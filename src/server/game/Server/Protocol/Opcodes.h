@@ -662,8 +662,8 @@ enum Opcodes
     SMSG_TABARDVENDOR_ACTIVATE                        = 0x0006, // 5.4.1 17538
     MSG_TALENT_WIPE_CONFIRM                           = 0,      // Talents removed in 5.0.x
     MSG_VERIFY_CONNECTIVITY                           = 0x4F57, // 5.4.1 17538
-    SMSG_RAID_TARGET_UPDATE_SINGLE                    = 0xF13,  // 5.0.5 16048
-    SMSG_RAID_TARGET_UPDATE_ALL                       = 0xB9E,  // 5.0.5 16048
+    SMSG_RAID_TARGET_UPDATE_SINGLE                    = 0x0404, // 5.4.1 17538
+    SMSG_RAID_TARGET_UPDATE_ALL                       = 0x0995, // 5.4.1 17538
     SMSG_CORPSE_QUERY                                 = 0x11BE, // 5.4.1 17538
     SMSG_ACCOUNT_DATA_TIMES                           = 0x1486, // 5.4.1 17538
     SMSG_ACCOUNT_INFO_RESPONSE                        = 0xF05,  // 5.0.5 16048

@@ -1737,6 +1737,7 @@ void Group::CountTheRoll(Rolls::iterator rollI)
     delete roll;
 }
 
+//! 5.4.1
 void Group::SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid)
 {
     if (id >= TARGETICONCOUNT)
@@ -1751,50 +1752,32 @@ void Group::SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid)
     m_targetIcons[id] = targetGuid;
 
     WorldPacket data(SMSG_RAID_TARGET_UPDATE_SINGLE, (1+8+1+8));
-    data.WriteBit(whoGuid[5]);
-    data.WriteBit(whoGuid[3]);
-    data.WriteBit(targetGuid[0]);
-    data.WriteBit(targetGuid[1]);
-    data.WriteBit(targetGuid[3]);
-    data.WriteBit(whoGuid[7]);
-    data.WriteBit(whoGuid[6]);
-    data.WriteBit(targetGuid[4]);
-    
-    data.WriteBit(targetGuid[7]);
-    data.WriteBit(targetGuid[6]);
-    data.WriteBit(targetGuid[5]);
-    data.WriteBit(whoGuid[0]);
-    data.WriteBit(whoGuid[1]);
-    data.WriteBit(whoGuid[2]);
-    data.WriteBit(targetGuid[2]);
-    data.WriteBit(whoGuid[4]);
 
-    data.WriteByteSeq(whoGuid[0]);
-    data.WriteByteSeq(targetGuid[2]);
-    data.WriteByteSeq(whoGuid[6]);
-    data.WriteByteSeq(whoGuid[4]);
-    data.WriteByteSeq(targetGuid[6]);
-    data.WriteByteSeq(whoGuid[2]);
-    data.WriteByteSeq(targetGuid[1]);
-    data.WriteByteSeq(targetGuid[7]);
+    data.WriteGuidMask<3, 2, 0, 4>(targetGuid);
+    data.WriteGuidMask<0>(whoGuid);
+    data.WriteGuidMask<1>(targetGuid);
+    data.WriteGuidMask<4, 1>(whoGuid);
+    data.WriteGuidMask<5>(targetGuid);
+    data.WriteGuidMask<5, 3, 2, 7>(whoGuid);
+    data.WriteGuidMask<6>(targetGuid);
+    data.WriteGuidMask<6>(whoGuid);
+    data.WriteGuidMask<7>(targetGuid);
+
     data << uint8(id);
+    data.WriteGuidBytes<6, 4>(whoGuid);
+    data.WriteGuidBytes<7>(targetGuid);
+    data.WriteGuidBytes<3>(whoGuid);
+    data.WriteGuidBytes<6, 5>(targetGuid);
+    data.WriteGuidBytes<7, 5, 0>(whoGuid);
+    data.WriteGuidBytes<1, 2>(targetGuid);
     data << uint8(0);                                       // set targets
-    data.WriteByteSeq(targetGuid[5]);
-    data.WriteByteSeq(whoGuid[3]);
-    data.WriteByteSeq(targetGuid[0]);
-    data.WriteByteSeq(whoGuid[1]);
-    data.WriteByteSeq(targetGuid[4]);
-    data.WriteByteSeq(whoGuid[5]);
-    data.WriteByteSeq(targetGuid[3]);
-    data.WriteByteSeq(whoGuid[7]);
+    data.WriteGuidBytes<2, 1>(whoGuid);
+    data.WriteGuidBytes<3, 0, 4>(targetGuid);
 
-    /*data << uint8(0);                                       // set targets
-    data << uint64(whoGuid);
-    data << uint8(id);
-    data << uint64(targetGuid);*/
     BroadcastPacket(&data, true);
 }
 
+//! 5.4.1
 void Group::SendTargetIconList(WorldSession* session)
 {
     if (!session)
@@ -1804,7 +1787,7 @@ void Group::SendTargetIconList(WorldSession* session)
     data << uint8(1);                                       // list targets
     size_t count = 0;
     size_t pos = data.wpos();
-    data.WriteBits(0, 25);
+    data.WriteBits(TARGETICONCOUNT, 23);
     ByteBuffer dataBuffer;
 
     for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
@@ -1813,24 +1796,19 @@ void Group::SendTargetIconList(WorldSession* session)
             continue;
         ObjectGuid guid = m_targetIcons[i];
     
-        uint8 bitOrder[8] = {3, 0, 7, 2, 4, 5, 1, 6};
-        data.WriteBitInOrder(guid, bitOrder);
+        data.WriteGuidMask<7, 6, 0, 1, 5, 2, 3, 4>(guid);
 
-        dataBuffer.WriteByteSeq(guid[1]);
-        dataBuffer.WriteByteSeq(guid[7]);
-        dataBuffer.WriteByteSeq(guid[0]);
-        dataBuffer.WriteByteSeq(guid[2]);
+        dataBuffer.WriteGuidBytes<2, 0, 6, 5, 4>(guid);
         dataBuffer << uint8(i);
-        dataBuffer.WriteByteSeq(guid[3]);
-        dataBuffer.WriteByteSeq(guid[5]);
-        dataBuffer.WriteByteSeq(guid[4]);
-        dataBuffer.WriteByteSeq(guid[6]);
+        dataBuffer.WriteGuidBytes<7, 3, 1>(guid);
         ++count;
     }
     data.FlushBits();
-    data.PutBits<uint32>(pos, count, 25);
+    data.PutBits<uint32>(pos, count, 23);
     data.append(dataBuffer);
     session->SendPacket(&data);
+
+    //SMSG_RAID_MARKERS
 }
 
 void Group::SendUpdate()
