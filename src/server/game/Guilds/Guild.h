@@ -784,7 +784,7 @@ public:
     void HandleAcceptMember(WorldSession* session);
     void HandleLeaveMember(WorldSession* session);
     void HandleRemoveMember(WorldSession* session, uint64 guid);
-    void HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, uint32 rank);
+    void HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, bool promote);
     void HandleSetMemberRank(WorldSession* session, uint64 targetGuid, uint64 setterGuid, uint32 rank);
     void HandleAddNewRank(WorldSession* session, const std::string& name);
     void HandleRemoveRank(WorldSession* session, uint32 rankId);

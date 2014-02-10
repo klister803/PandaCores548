@@ -1111,21 +1111,14 @@ void AchievementMgr<Guild>::Reset()
     ObjectGuid guid = GetOwner()->GetGUID();
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
     {
-        WorldPacket data(SMSG_GUILD_ACHIEVEMENT_DELETED, 4);
+        WorldPacket data(SMSG_GUILD_ACHIEVEMENT_DELETED, 4 + 4 + 8 + 1);
+        data.WriteGuidMask<1, 3, 4, 2, 0, 5, 7, 6>(guid);
 
-        uint8 bitOrder[8] = {4, 1, 2, 3, 0, 7, 5, 6};
-        data.WriteBitInOrder(guid, bitOrder);
-
+        data.WriteGuidBytes<0>(guid);
         data << uint32(iter->first);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[7]);
+        data.WriteGuidBytes<3, 4, 7, 1, 2>(guid);
         data << uint32(secsToTimeBitFields(iter->second.date));
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[2]);
+        data.WriteGuidBytes<5, 6>(guid);
         SendPacket(&data);
     }
 
@@ -1200,14 +1193,12 @@ void AchievementMgr<T>::SendAchievementEarned(AchievementEntry const* achievemen
     data.WriteGuidMask<4, 3>(thisPlayerGuid);
     data.WriteGuidMask<6>(firstPlayerOnAccountGuid);
 
-    data.FlushBits();
-
     data.WriteGuidBytes<5>(thisPlayerGuid);
-    data << uint32(50724905);
+    data << uint32(realmID);
     data.WriteGuidBytes<2>(firstPlayerOnAccountGuid);
     data.WriteGuidBytes<3>(thisPlayerGuid);
     data.WriteGuidBytes<4>(firstPlayerOnAccountGuid);
-    data << uint32(50724905);
+    data << uint32(realmID);
     data.WriteGuidBytes<1, 0>(firstPlayerOnAccountGuid);
     data.WriteGuidBytes<7>(thisPlayerGuid);
     data << uint32(achievement->ID);
@@ -1228,21 +1219,13 @@ void AchievementMgr<Guild>::SendAchievementEarned(AchievementEntry const* achiev
 {
     ObjectGuid guid = GetOwner()->GetGUID();
 
-    WorldPacket data(SMSG_GUILD_ACHIEVEMENT_EARNED, 8+4+8);
+    WorldPacket data(SMSG_GUILD_ACHIEVEMENT_EARNED, 8 + 4 + 4 + 1);
+    data.WriteGuidMask<6, 2, 7, 0, 1, 3, 5, 4>(guid);
 
-    uint8 bitOrder[8] = {3, 1, 0, 7, 4, 6, 2, 5};
-    data.WriteBitInOrder(guid, bitOrder);
-
-    data.WriteByteSeq(guid[2]);
-    data << uint32(secsToTimeBitFields(time(NULL)));
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[3]);
+    data.WriteGuidBytes<5, 2, 0, 6, 3>(guid);
     data << uint32(achievement->ID);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[6]);
+    data.WriteGuidBytes<1, 7, 4>(guid);
+    data << uint32(secsToTimeBitFields(time(NULL)));
 
     SendPacket(&data);
 }
@@ -2462,23 +2445,15 @@ template<>
 void AchievementMgr<Guild>::SendAllAchievementData(Player* receiver)
 {
     WorldPacket data(SMSG_GUILD_ACHIEVEMENT_DATA, m_completedAchievements.size() * (4 + 4) + 3);
-    data.WriteBits(m_completedAchievements.size(), 22);
+    data.WriteBits(m_completedAchievements.size(), 20);
+    for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
+        data.WriteBits(0, 8);
     for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
     {
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-        data.WriteBit(0);
-    }
-    for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
-    {
+        data << uint32(secsToTimeBitFields(itr->second.date));
         data << uint32(0); //0 or time ?
         data << uint32(itr->first);
-        data << uint32(secsToTimeBitFields(itr->second.date));
+        data << uint32(0);
     }
 
     receiver->GetSession()->SendPacket(&data);
@@ -2680,13 +2655,11 @@ void AchievementMgr<Guild>::SendAchievementInfo(Player* receiver, uint32 achieve
         criteriaData.WriteGuidBytes<3>(guid);
     }
 
-    data.PutBits(0, numCriteria, 19);
-
-    if (!data.empty())
-    {
-        data.FlushBits();
+    data.FlushBits();
+    if (!criteriaData.empty())
         data.append(criteriaData);
-    }
+
+    data.PutBits(0, numCriteria, 19);
 
     receiver->GetSession()->SendPacket(&data);
 }

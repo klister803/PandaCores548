@@ -932,9 +932,9 @@ enum Opcodes
     SMSG_GROUP_SET_LEADER                             = 0x0C97, // 5.4.1 17538
     SMSG_GROUP_SET_ROLE                               = 0x0534, // 5.4.1 17538
     SMSG_GROUP_UNINVITE                               = 0x19B0, // 5.4.1 17538
-    SMSG_GUILD_ACHIEVEMENT_DATA                       = 0xF23,  // 5.0.5 16048
-    SMSG_GUILD_ACHIEVEMENT_DELETED                    = 0xB46,  // 5.0.5 16048
-    SMSG_GUILD_ACHIEVEMENT_EARNED                     = 0xA8E,  // 5.0.5 16048
+    SMSG_GUILD_ACHIEVEMENT_DATA                       = 0x0150, // 5.4.1 17538
+    SMSG_GUILD_ACHIEVEMENT_DELETED                    = 0x14D8, // 5.4.1 17538
+    SMSG_GUILD_ACHIEVEMENT_EARNED                     = 0x0051, // 5.4.1 17538
     SMSG_GUILD_ACHIEVEMENT_MEMBERS                    = 0xA62,  // 5.0.5 16048
     SMSG_GUILD_BANK_LIST                              = 0x1858, // 5.4.1 17538
     SMSG_GUILD_BANK_LOG_QUERY_RESULT                  = 0x0550, // 5.4.1 17538
@@ -1405,7 +1405,7 @@ enum Opcodes
     SMSG_WARDEN_DATA                                  = 0x09AC, // 5.4.1 17538
     SMSG_WARGAME_CHECK_ENTRY                          = 0xBE6,  // 5.0.5 16048
     SMSG_WARGAME_REQUEST_SENT                         = 0xF48,  // 5.0.5 16048
-    SMSG_WEATHER                                      = 0x485,  // 5.4.1 17538
+    SMSG_WEATHER                                      = 0x0485, // 5.4.1 17538
     SMSG_WEEKLY_LAST_RESET                            = 0xB2D,  // 5.0.5 16048
     SMSG_WEEKLY_RESET_CURRENCY                        = 0xEBB,  // 5.0.5 16048
     SMSG_WEEKLY_SPELL_USAGE                           = 0xB6D,  // 5.0.5 16048 //unused

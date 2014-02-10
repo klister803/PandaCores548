@@ -1760,7 +1760,7 @@ void Guild::HandleRemoveMember(WorldSession* session, uint64 guid)
         SendCommandResult(session, GUILD_QUIT_S, ERR_PLAYER_NO_MORE_IN_GUILD, removedPlayer->GetName());
 }
 
-void Guild::HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, uint32 rank)
+void Guild::HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, bool demote)
 {
     Player* player = session->GetPlayer();
 
@@ -1768,7 +1768,6 @@ void Guild::HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, uin
     if (Member* member = GetMember(targetGuid))
     {
         uint32 oldrank = member->GetRankId();
-        bool demote = oldrank < rank;
         if (!_HasRankRight(player, demote ? GR_RIGHT_DEMOTE : GR_RIGHT_PROMOTE))
         {
             SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
@@ -1808,7 +1807,7 @@ void Guild::HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, uin
             }
         }
 
-        uint32 newRankId = rank;//member->GetRankId() + (demote ? 1 : -1);
+        uint32 newRankId = member->GetRankId() + (demote ? 1 : -1);
         member->ChangeRank(newRankId);
         _LogEvent(demote ? GUILD_EVENT_LOG_DEMOTE_PLAYER : GUILD_EVENT_LOG_PROMOTE_PLAYER, player->GetGUIDLow(), GUID_LOPART(member->GetGUID()), newRankId);
         _BroadcastEvent(demote ? GE_DEMOTION : GE_PROMOTION, 0, player->GetName(), member->GetName().c_str(), _GetRankName(newRankId).c_str());
@@ -2141,15 +2140,14 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
             }
         }
     }
-    data.PutBits(bitpos, itemCount, 18);
 
     data.WriteBit(0);
 
+    data.FlushBits();
     if (!tabData.empty())
-    {
-        data.FlushBits();
         data.append(tabData);
-    }
+
+    data.PutBits(bitpos, itemCount, 18);
 
     session->SendPacket(&data);
 
