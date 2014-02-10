@@ -2502,7 +2502,6 @@ void Unit::SendMeleeAttackStop(Unit* victim)
     data.WriteByteSeq(attackerGuid[5]);
     data.WriteByteSeq(victimGuid[2]);
     data.WriteByteSeq(attackerGuid[2]);
-    data << uint32(0);                                     //! Can also take the value 0x01, which seems related to updating rotation
     SendMessageToSet(&data, true);
     sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Sent SMSG_ATTACKSTOP");
 
