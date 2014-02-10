@@ -373,6 +373,7 @@ enum Opcodes
     CMSG_OPEN_ITEM                                    = 0x0009, // 5.4.1 17538
     CMSG_OPT_OUT_OF_LOOT                              = 0x0356, // 5.4.1 17538
     CMSG_PAGE_TEXT_QUERY                              = 0x1254, // 5.4.1 17538
+    CMSG_PARTY_ASSIGNMENT                             = 0x0CC5, // 5.4.1 17538
     CMSG_PARTY_SILENCE                                = 0x000,  // 5.0.5 16048 Deprecated, script doesn't exist anymore. Sure ? 0x6B26 in 4.3.4
     CMSG_PARTY_UNSILENCE                              = 0x000,  // 5.0.5 16048 Deprecated, script doesn't exist anymore. Sure ? 0x4D24 in 4.3.4
     CMSG_PETITION_BUY                                 = 0x07FF, // 5.4.1 17538
@@ -648,7 +649,6 @@ enum Opcodes
     MSG_MOVE_UPDATE_RUN_SPEED                         = 0,      // Client patched
     MSG_MOVE_WATER_WALK                               = 0,      // Client patched
     MSG_NOTIFY_PARTY_SQUELCH                          = 0,      // 0x4D06 in 4.3.4 @todo : Find me and BACON !
-    MSG_PARTY_ASSIGNMENT                              = 0x0CC5, // 5.4.1 17538
     MSG_PETITION_DECLINE                              = 0x0B7C, // 5.4.1 17538
     MSG_PETITION_RENAME                               = 0x004C, // 5.4.1 17538
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x1D33, // 5.4.1 17538
@@ -1223,9 +1223,9 @@ enum Opcodes
     SMSG_RAID_INSTANCE_INFO                           = 0x000,  // 5.0.5 16048 Deprecated ?
     SMSG_RAID_INSTANCE_MESSAGE                        = 0xD0E,  // 5.0.5 16048
     SMSG_RAID_MARKERS_CHANGED                         = 0xBAA,  // 5.0.5 16048
-    SMSG_RAID_READY_CHECK_COMPLETED                   = 0xA13,  // 5.0.5 16048
-    SMSG_RAID_READY_CHECK_RESPONSE                    = 0xBDE,  // 5.0.5 16048
-    SMSG_RAID_READY_CHECK_STARTED                     = 0xF28,  // 5.0.5 16048 
+    SMSG_RAID_READY_CHECK_COMPLETED                   = 0x09AF, // 5.4.1 17538
+    SMSG_RAID_READY_CHECK_RESPONSE                    = 0x14AE, // 5.4.1 17538
+    SMSG_RAID_READY_CHECK_STARTED                     = 0x1427, // 5.4.1 17538 
     SMSG_RAID_READY_CHECK_THROTTLED_ERROR             = 0,      // 0x2607 in 4.3.4 @todo : Find me and BACON !
     SMSG_RAID_SUMMON_FAILED                           = 0xA4E,  // 5.0.5 16048
     SMSG_RANDOMIZE_CHAR_NAME                          = 0xA9B,  // 5.0.5 16048
