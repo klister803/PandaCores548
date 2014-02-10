@@ -1037,8 +1037,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
             ++linecount;
         }
 
-        data.PutBits<uint32>(bit_pos, linecount, 4);
         data.FlushBits();
+        data.PutBits<uint32>(bit_pos, linecount, 4);
         data << str_motd;                                // mess
 
         SendPacket(&data);

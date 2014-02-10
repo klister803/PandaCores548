@@ -195,7 +195,7 @@ enum GuildBankEventLogTypes
     GUILD_BANK_LOG_WITHDRAW_MONEY       = 5,
     GUILD_BANK_LOG_REPAIR_MONEY         = 6,
     GUILD_BANK_LOG_MOVE_ITEM2           = 7,
-    GUILD_BANK_LOG_UNK1                 = 8,
+    GUILD_BANK_LOG_WITHDRAW_FOR_TAB     = 8,
     GUILD_BANK_LOG_BUY_SLOT             = 9,
     GUILD_BANK_LOG_CASH_FLOW_DEPOSIT    = 10
 };
@@ -342,6 +342,7 @@ private:
             m_zoneId(0),
             m_level(0),
             m_class(0),
+            m_gender(GENDER_MALE),
             m_flags(GUILDMEMBER_STATUS_NONE),
             m_logoutTime(::time(NULL)),
             m_accountId(0),
@@ -355,7 +356,7 @@ private:
             memset(m_bankWithdraw, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(int32));
         }
         void SetStats(Player* player);
-        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation);
+        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender);
         bool CheckStats() const;
 
         void SetPublicNote(std::string const& publicNote);
@@ -386,6 +387,7 @@ private:
         std::string GetOfficerNote() const { return m_officerNote; }
         uint8 GetClass() const { return m_class; }
         uint8 GetLevel() const { return m_level; }
+        uint8 GetGender() const { return m_gender; }
         uint8 GetFlags() const { return m_flags; }
         uint32 GetZoneId() const { return m_zoneId; }
         uint32 GetAchievementPoints() const { return m_achievementPoints; }
@@ -425,6 +427,7 @@ private:
         uint32 m_zoneId;
         uint8 m_level;
         uint8 m_class;
+        uint8 m_gender;
         uint8 m_flags;
         uint64 m_logoutTime;
         uint32 m_accountId;
@@ -551,6 +554,8 @@ private:
     class LogHolder
     {
     public:
+        typedef std::list<LogEntry*> GuildLog;
+
         LogHolder(uint32 guildId, uint32 maxRecords) : m_guildId(guildId), m_maxRecords(maxRecords), m_nextGUID(uint32(GUILD_EVENT_LOG_GUID_UNDEFINED)) { }
         ~LogHolder();
 
@@ -564,9 +569,9 @@ private:
         // Writes information about all events to packet
         void WritePacket(WorldPacket& data) const;
         uint32 GetNextGUID();
+        GuildLog const* GetLog() { return &m_log; }
 
     private:
-        typedef std::list<LogEntry*> GuildLog;
         GuildLog m_log;
         uint32 m_guildId;
         uint32 m_maxRecords;
@@ -779,7 +784,7 @@ public:
     void HandleAcceptMember(WorldSession* session);
     void HandleLeaveMember(WorldSession* session);
     void HandleRemoveMember(WorldSession* session, uint64 guid);
-    void HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, uint32 rank);
+    void HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, bool promote);
     void HandleSetMemberRank(WorldSession* session, uint64 targetGuid, uint64 setterGuid, uint32 rank);
     void HandleAddNewRank(WorldSession* session, const std::string& name);
     void HandleRemoveRank(WorldSession* session, uint32 rankId);

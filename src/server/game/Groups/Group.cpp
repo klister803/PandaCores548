@@ -1461,6 +1461,8 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
     data.WriteBit(guid_looted[3]);
     data.WriteBit(guid_looted[2]);
 
+    data.FlushBits();
+
     data.WriteByteSeq(guid_looted[3]);
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
