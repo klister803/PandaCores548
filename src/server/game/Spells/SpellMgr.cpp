@@ -4323,12 +4323,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
                 //Lei Shi
-                case 123121:
+                case 123121: //Spray
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
                     spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
                     break;
-
-
+                //Sha of Fear
+                case 119495: //Eerie skull trigger spell
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    break;
+                case 119086: //Penetrating bolt trigger spell
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    break;
 
                     
                 //World Boss

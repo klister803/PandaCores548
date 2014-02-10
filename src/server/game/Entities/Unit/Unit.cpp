@@ -15391,6 +15391,7 @@ uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
             case 60400: //        the Imperator  JAN_XI
             case 62837: //Empress Shekzeer
             case 62442: //Tsulong
+            case 60999: //Sha of Fear
                 return 0;
             default:
                 break;
