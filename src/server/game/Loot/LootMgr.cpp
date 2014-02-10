@@ -1105,7 +1105,6 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
         }
     }
 
-    bitBuffer.PutBits(count_pos, itemsShown, 19);
     bitBuffer.WriteGuidMask<3>(lv._guid);
     bitBuffer.WriteGuidMask<3>(GUID48);
     bitBuffer.WriteBit(!byte34);
@@ -1132,6 +1131,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     }*/
 
     bitBuffer.FlushBits();
+    bitBuffer.PutBits(count_pos, itemsShown, 19);
     b.append(bitBuffer);
 
     b.WriteGuidBytes<2, 1>(lv._guid);

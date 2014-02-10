@@ -861,11 +861,9 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
         }
     }
 
+    data.FlushBits();
     if (!buff.empty())
-    {
-        data.FlushBits();
         data.append(buff);
-    }
 
     data.PutBits(pos, count, 21);                       // write real count
     SendPacket(&data);
