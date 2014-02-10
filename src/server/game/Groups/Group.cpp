@@ -40,7 +40,7 @@
 Roll::Roll(uint64 _guid, LootItem const& li) : itemGUID(_guid), itemid(li.itemid),
     itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix), itemCount(li.count),
     totalPlayersRolling(0), totalNeed(0), totalGreed(0), totalPass(0), itemSlot(0),
-    rollVoteMask(ROLL_ALL_TYPE_NO_DISENCHANT)
+    rollVoteMask(ROLL_ALL_TYPE_NO_DISENCHANT), aoeSlot(0)
 {
 }
 
@@ -61,7 +61,8 @@ Loot* Roll::getLoot()
 Group::Group() : m_leaderGuid(0), m_leaderName(""), m_groupType(GROUPTYPE_NORMAL),
     m_dungeonDifficulty(REGULAR_DIFFICULTY), m_raidDifficulty(MAN10_DIFFICULTY),
     m_bgGroup(NULL), m_bfGroup(NULL), m_lootMethod(FREE_FOR_ALL), m_lootThreshold(ITEM_QUALITY_UNCOMMON), m_looterGuid(0),
-    m_subGroupsCounts(NULL), m_guid(0), m_counter(0), m_maxEnchantingLevel(0), m_dbStoreId(0), m_readyCheckCount(0), m_readyCheck(false)
+    m_subGroupsCounts(NULL), m_guid(0), m_counter(0), m_maxEnchantingLevel(0), m_dbStoreId(0), m_readyCheckCount(0), m_readyCheck(false),
+    m_aoe_slots(0)
 {
     for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
         m_targetIcons[i] = 0;
@@ -819,14 +820,14 @@ void Group::SendLootStartRoll(uint32 countDown, uint32 mapid, const Roll& r)
     data.WriteBits(0, 2);                                           //unk
     data.WriteBit(1);
     data.WriteGuidMask<6>(guid);
-    data.WriteBit(r.itemSlot == 0);
+    data.WriteBit(r.aoeSlot == 0);
     data.WriteGuidMask<7>(guid);
 
     data.FlushBits();
 
     data << uint8(r.rollVoteMask);                                  // roll type mask
-    if(r.itemSlot)
-        data << uint8(r.itemSlot);
+    if(r.aoeSlot)
+        data << uint8(r.aoeSlot);
     data << uint32(mapid);                                          // 3.3.3 mapid
     data << uint32(countDown);                                      // the countdown time to choose "need" or "greed"
     data.WriteGuidBytes<1>(guid);
@@ -871,14 +872,14 @@ void Group::SendLootStartRollToPlayer(uint32 countDown, uint32 mapId, Player* p,
     data.WriteBits(0, 2);                                           //unk
     data.WriteBit(1);
     data.WriteGuidMask<6>(guid);
-    data.WriteBit(r.itemSlot == 0);
+    data.WriteBit(r.aoeSlot == 0);
     data.WriteGuidMask<7>(guid);
 
     data.FlushBits();
 
     data << uint8(r.rollVoteMask);                                  // roll type mask
-    if(r.itemSlot)
-        data << uint8(r.itemSlot);
+    if(r.aoeSlot)
+        data << uint8(r.aoeSlot);
     data << uint32(mapId);                                          // 3.3.3 mapid
     data << uint32(countDown);                                      // the countdown time to choose "need" or "greed"
     data.WriteGuidBytes<1>(guid);
@@ -919,7 +920,7 @@ void Group::SendLootRoll(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumber,
     data.WriteGuidMask<1, 4, 3>(guid);
     data.WriteBit(0);
     data.WriteGuidMask<6>(target);
-    data.WriteBit(roll.itemSlot == 0);
+    data.WriteBit(roll.aoeSlot == 0);
     data.WriteGuidMask<2, 4>(target);
     data.WriteBits(roll.TotalEmited(), 3);
     data.WriteGuidMask<3>(target);
@@ -929,8 +930,8 @@ void Group::SendLootRoll(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumber,
 
     data << uint32(1);                                      // always 1
     data.WriteGuidBytes<1, 0>(target);
-    if (roll.itemSlot)
-        data << uint8(roll.itemSlot);
+    if (roll.aoeSlot)
+        data << uint8(roll.aoeSlot);
     data.WriteGuidBytes<4, 5>(target);
     data.WriteGuidBytes<3, 4, 7, 2, 1>(guid);
     data << uint32(0);
@@ -967,7 +968,7 @@ void Group::SendLootRollWon(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumb
     ObjectGuid target = targetGuid;
     ObjectGuid guid = roll.lootedGUID;
     
-    data.WriteBit(roll.itemSlot == 0);
+    data.WriteBit(roll.aoeSlot == 0);
     data.WriteGuidMask<0>(guid);
     data.WriteGuidMask<4>(target);
     data.WriteGuidMask<1>(guid);
@@ -1000,8 +1001,8 @@ void Group::SendLootRollWon(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumb
     data << uint32(sObjectMgr->GetItemTemplate(roll.itemid)->DisplayInfoID);   
     data.WriteGuidBytes<1, 5, 2>(guid);
     data << uint32(roll.itemid);                            // the itemEntryId for the item that shall be rolled for
-    if (roll.itemSlot)
-        data << roll.itemSlot;
+    if (roll.aoeSlot)
+        data << roll.aoeSlot;
     data.WriteGuidBytes<6>(guid);
     data << uint8(rollType);                                // rollType related to SMSG_LOOT_ROLL
     data.WriteGuidBytes<7, 3>(guid);
@@ -1044,7 +1045,7 @@ void Group::SendLootAllPassed(Roll const& roll)
     data.WriteBits(0, 2);
     data.WriteGuidMask<0, 4, 5>(guid);
     data.WriteBit(1);
-    data.WriteBit(roll.itemSlot == 0);
+    data.WriteBit(roll.aoeSlot == 0);
     data.WriteBits(roll.TotalEmited(), 3);
     data.WriteGuidMask<2, 7, 1>(guid);
 
@@ -1053,8 +1054,8 @@ void Group::SendLootAllPassed(Roll const& roll)
     data.WriteGuidBytes<4, 3, 2, 0>(guid);
     data << uint32(roll.itemid);                // real itemID
     data.WriteGuidBytes<6, 5>(guid);
-    if (roll.itemSlot)
-        data << uint8(roll.itemSlot);
+    if (roll.aoeSlot)
+        data << uint8(roll.aoeSlot);
     data.WriteGuidBytes<7>(guid);
                                                 // DisplayID
     data << uint32(sObjectMgr->GetItemTemplate(roll.itemid)->DisplayInfoID);   
@@ -1167,6 +1168,7 @@ void Group::GroupLoot(Loot* loot, WorldObject* pLootedObject)
             {
                 r->setLoot(loot);
                 r->itemSlot = itemSlot;
+                r->aoeSlot = ++m_aoe_slots;
                 if (item->DisenchantID && m_maxEnchantingLevel >= item->RequiredDisenchantSkill)
                     r->rollVoteMask |= ROLL_FLAG_TYPE_DISENCHANT;
 
@@ -1245,6 +1247,7 @@ void Group::GroupLoot(Loot* loot, WorldObject* pLootedObject)
         {
             r->setLoot(loot);
             r->itemSlot = itemSlot;
+            r->aoeSlot = ++m_aoe_slots;
 
             loot->quest_items[itemSlot - loot->items.size()].is_blocked = true;
 
@@ -1311,6 +1314,8 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
             {
                 r->setLoot(loot);
                 r->itemSlot = itemSlot;
+                r->aoeSlot = ++m_aoe_slots;
+
                 if (item->DisenchantID && m_maxEnchantingLevel >= item->RequiredDisenchantSkill)
                     r->rollVoteMask |= ROLL_FLAG_TYPE_DISENCHANT;
 
@@ -1380,6 +1385,7 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
         {
             r->setLoot(loot);
             r->itemSlot = itemSlot;
+            r->aoeSlot = ++m_aoe_slots;
 
             loot->quest_items[itemSlot - loot->items.size()].is_blocked = true;
 
@@ -1538,9 +1544,9 @@ void Group::DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot*
     SendLootStartRoll(180000, mapid, *r);
 }
 
-void Group::CountRollVote(uint64 playerGUID, uint8 slot, uint8 Choice)
+void Group::CountRollVote(uint64 playerGUID, uint8 AoeSlot, uint8 Choice)
 {
-    Rolls::iterator rollI = GetRoll(slot);
+    Rolls::iterator rollI = GetRoll(AoeSlot);
     if (rollI == RollId.end())
         return;
     Roll* roll = *rollI;
@@ -2867,11 +2873,11 @@ bool Group::isRollLootActive() const
     return !RollId.empty();
 }
 
-Group::Rolls::iterator Group::GetRoll(uint8 slot)
+Group::Rolls::iterator Group::GetRoll(uint8 _aoeSlot)
 {
     Rolls::iterator iter;
     for (iter=RollId.begin(); iter != RollId.end(); ++iter)
-        if ((*iter)->itemSlot == slot && (*iter)->isValid())
+        if ((*iter)->aoeSlot == _aoeSlot && (*iter)->isValid())
             return iter;
     return RollId.end();
 }

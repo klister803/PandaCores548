@@ -157,6 +157,7 @@ class Roll : public LootValidatorRef
         uint8 totalGreed;
         uint8 totalPass;
         uint8 itemSlot;
+        uint8 aoeSlot;
         uint8 rollVoteMask;
 };
 
@@ -313,6 +314,7 @@ class Group
         void CountRollVote(uint64 playerGUID, uint8 slot, uint8 Choise);
         void DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot*, LootItem&, Player*);
         void EndRoll(Loot* loot);
+        void ClearAoeSlots() { m_aoe_slots = 0; };
 
         // related to disenchant rolls
         void ResetMaxEnchantingLevel();
@@ -367,6 +369,7 @@ class Group
         uint32              m_maxEnchantingLevel;
         uint32              m_dbStoreId;                    // Represents the ID used in database (Can be reused by other groups if group was disbanded)
         uint8               m_readyCheckCount;
+        uint8               m_aoe_slots;                    // centrilize aoe loot method
         bool                m_readyCheck;
 };
 #endif

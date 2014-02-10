@@ -277,6 +277,10 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
                 GetPlayer()->SendLoot(creature->GetGUID(), LOOT_CORPSE, true, 1);
     }
 
+    //clear aoe loot state
+    if (Group* group = GetPlayer()->GetGroup())
+        group->ClearAoeSlots();
+
     // interrupt cast
     if (GetPlayer()->IsNonMeleeSpellCasted(false))
         GetPlayer()->InterruptNonMeleeSpells(false);
