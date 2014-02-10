@@ -7773,9 +7773,10 @@ void AuraEffect::HandleAuraForceWeather(AuraApplication const* aurApp, uint8 mod
 
     if (apply)
     {
-        WorldPacket data(SMSG_WEATHER, (4 + 4 + 1));
+        WorldPacket data(SMSG_WEATHER, 4 + 4 + 1);
 
-        data << uint32(GetMiscValue()) << 1.0f << uint8(0);
+        data << uint32(GetMiscValue()) << 1.0f;
+        data.WriteBit(false);
         target->GetSession()->SendPacket(&data);
     }
     else
