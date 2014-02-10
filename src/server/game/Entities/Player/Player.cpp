@@ -10220,7 +10220,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
     if(AoeLoot)
         AddAoeLootList(guid);
-    else
+
+    if (pool == 0)
         SetLootGUID(guid);
 
     // LOOT_INSIGNIA and LOOT_FISHINGHOLE unsupported by client

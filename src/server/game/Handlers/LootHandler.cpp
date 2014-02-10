@@ -268,7 +268,7 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
     data << uint32(corpesList.size()-1);                             //aoe counter
     _player->SendDirectMessage(&data);
 
-    GetPlayer()->SendLoot(guid, LOOT_CORPSE, false);
+    GetPlayer()->SendLoot(guid, LOOT_CORPSE, true);
 
     for (std::list<Creature*>::const_iterator itr = corpesList.begin(); itr != corpesList.end(); ++itr)
     {
