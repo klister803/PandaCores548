@@ -3544,9 +3544,6 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
             totalmul += CalculatePct(1.0f, value);
         }
-
-        if (!m_isMoltenCored)
-            DropModCharge(mod, spell);
     }
 
     float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
