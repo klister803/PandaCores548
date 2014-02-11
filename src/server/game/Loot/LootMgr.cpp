@@ -853,12 +853,9 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                         continue;
                     bitBuffer.WriteBit(0);
                     bitBuffer.WriteBits(0, 2);
-                    bitBuffer.WriteBits(2, 3);
+                    bitBuffer.WriteBits(slot_type, 3);
                     bitBuffer.WriteBit(!i);
-                    bitBuffer.WriteBit(!slot_type);
-
-                    if (slot_type)
-                        dataBuffer << uint8(slot_type);
+                    bitBuffer.WriteBit(1);
 
                     dataBuffer << uint32(l.items[i].itemid);
                     dataBuffer << uint32(0);    //unk counter
@@ -887,9 +884,9 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
 
                     bitBuffer.WriteBit(0);
                     bitBuffer.WriteBits(0, 2);
-                    bitBuffer.WriteBits(2, 3);
+                    bitBuffer.WriteBits(LOOT_SLOT_TYPE_ALLOW_LOOT, 3);
                     bitBuffer.WriteBit(!i);
-                    bitBuffer.WriteBit(!LOOT_SLOT_TYPE_ALLOW_LOOT);
+                    bitBuffer.WriteBit(1);
                     
                     dataBuffer << uint32(l.items[i].itemid);
                     dataBuffer << uint32(0);    //unk counter
@@ -929,13 +926,10 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                 {
                     bitBuffer.WriteBit(0);
                     bitBuffer.WriteBits(0, 2);
-                    bitBuffer.WriteBits(2, 3);
+                    bitBuffer.WriteBits(slot_type, 3);
                     bitBuffer.WriteBit(!i);
-                    bitBuffer.WriteBit(!slot_type);
+                    bitBuffer.WriteBit(1);
                     
-                    if (slot_type)
-                        dataBuffer << uint8(slot_type);
-
                     dataBuffer << uint32(l.items[i].itemid);
                     dataBuffer << uint32(0);    //unk counter
                     dataBuffer << uint32(l.items[i].randomPropertyId);
@@ -991,12 +985,9 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
 
                 bitBuffer.WriteBit(0);
                 bitBuffer.WriteBits(0, 2);
-                bitBuffer.WriteBits(2, 3);
+                bitBuffer.WriteBits(slottype, 3);
                 bitBuffer.WriteBit(!(l.items.size() + (qi - q_list->begin())));
-                bitBuffer.WriteBit(!slottype);
- 
-                if (slottype)
-                    dataBuffer << uint8(slottype);
+                bitBuffer.WriteBit(1);
 
                 dataBuffer << uint32(item.itemid);
                 dataBuffer << uint32(0);    //unk counter
@@ -1025,13 +1016,10 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             {
                 bitBuffer.WriteBit(0);
                 bitBuffer.WriteBits(0, 2);
-                bitBuffer.WriteBits(2, 3);
+                bitBuffer.WriteBits(slotType, 3);
                 bitBuffer.WriteBit(!fi->index);
-                bitBuffer.WriteBit(!slotType);
+                bitBuffer.WriteBit(1);
                 
-                if (slotType)
-                    dataBuffer << uint8(slotType);
-
                 dataBuffer << uint32(item.itemid);
                 dataBuffer << uint32(0);    //unk counter
                 dataBuffer << uint32(item.randomPropertyId);
@@ -1083,13 +1071,10 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
 
                 bitBuffer.WriteBit(0);
                 bitBuffer.WriteBits(0, 2);
-                bitBuffer.WriteBits(2, 3);
+                bitBuffer.WriteBits(slottype, 3);
                 bitBuffer.WriteBit(!ci->index);
-                bitBuffer.WriteBit(!slottype);
+                bitBuffer.WriteBit(1);
                 
-                if (slottype)
-                    dataBuffer << uint8(slottype);
-
                 dataBuffer << uint32(item.itemid);
                 dataBuffer << uint32(0);    //unk counter
                 dataBuffer << uint32(item.randomPropertyId);
@@ -1105,6 +1090,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
         }
     }
 
+    bitBuffer.PutBits(count_pos, itemsShown, 19);
     bitBuffer.WriteGuidMask<3>(lv._guid);
     bitBuffer.WriteGuidMask<3>(GUID48);
     bitBuffer.WriteBit(!byte34);
@@ -1131,7 +1117,6 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     }*/
 
     bitBuffer.FlushBits();
-    bitBuffer.PutBits(count_pos, itemsShown, 19);
     b.append(bitBuffer);
 
     b.WriteGuidBytes<2, 1>(lv._guid);
@@ -1145,7 +1130,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     b.WriteGuidBytes<2>(GUID48);
 
     if (byte50)
-        b << uint8(0);
+        b << uint8(lv.permission);
 
     b.WriteGuidBytes<7>(GUID48);
 

@@ -94,9 +94,10 @@ enum LootSlotType
 {
     LOOT_SLOT_TYPE_ALLOW_LOOT   = 0,                        // player can loot the item.
     LOOT_SLOT_TYPE_ROLL_ONGOING = 1,                        // roll is ongoing. player cannot loot.
-    LOOT_SLOT_TYPE_MASTER       = 2,                        // item can only be distributed by group loot master.
+    LOOT_SLOT_TYPE_OWNER        = 2,                        // ignore binding confirmation and etc, for single player looting
     LOOT_SLOT_TYPE_LOCKED       = 3,                        // item is shown in red. player cannot loot.
-    LOOT_SLOT_TYPE_OWNER        = 4,                        // ignore binding confirmation and etc, for single player looting
+    LOOT_SLOT_TYPE_UNK          = 4,
+    LOOT_SLOT_TYPE_MASTER       = 6,                        // item can only be distributed by group loot master.
 };
 
 class Player;
