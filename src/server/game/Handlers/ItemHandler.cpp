@@ -36,7 +36,9 @@ void WorldSession::HandleSplitItemOpcode(WorldPacket& recvData)
     uint8 srcbag, srcslot, dstbag, dstslot;
     uint32 count;
 
-    recvData >> srcbag >> srcslot >> dstbag >> dstslot >> count;
+    recvData >> count >> dstbag >> srcbag >> dstslot >> srcslot;
+    recvData.rfinish();
+
     //sLog->outDebug("STORAGE: receive srcbag = %u, srcslot = %u, dstbag = %u, dstslot = %u, count = %u", srcbag, srcslot, dstbag, dstslot, count);
 
     uint16 src = ((srcbag << 8) | srcslot);
@@ -568,7 +570,7 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
 void WorldSession::HandleReadItem(WorldPacket& recvData)
 {
     uint8 bag, slot;
-    recvData >> slot >> bag;
+    recvData >> bag >> slot;
 
     Item* pItem = _player->GetItemByPos(bag, slot);
 
