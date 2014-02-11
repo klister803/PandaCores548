@@ -60,6 +60,8 @@ public:
         {
             globalCooldown = 0;
             buffTimer = 0;
+            if(sGameEventMgr->IsActiveEvent(8))
+                me->AddAura(71507, me); //aura for event
         }
 
         void EnterCombat(Unit* who)
