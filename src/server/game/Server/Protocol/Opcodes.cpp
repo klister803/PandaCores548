@@ -210,7 +210,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_GAMEOBJECT_QUERY,                        STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleGameObjectQueryOpcode     );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_GAMEOBJ_REPORT_USE,                      STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGameobjectReportUse       );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_GAMEOBJ_USE,                             STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGameObjectUseOpcode       );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_GET_MAIL_LIST,                           STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGetMailList               );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_GET_MAIL_LIST,                           STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGetMailList               );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_GET_MIRRORIMAGE_DATA,                    STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMirrorImageDataRequest    );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_GMRESPONSE_RESOLVE,                      STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGMResponseResolve         );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_GMSURVEY_SUBMIT,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGMSurveySubmit            );
@@ -321,12 +321,12 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_LOOT_ROLL,                               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleLootRoll                  );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_LOOT_MASTER_ASK_FOR_ROLL,                STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleLootMasterAskForRoll      );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MINIMAP_PING,                            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMinimapPingOpcode         );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_CREATE_TEXT_ITEM,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailCreateTextItem        );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_DELETE,                             STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailDelete                );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_MARK_AS_READ,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailMarkAsRead            );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_RETURN_TO_SENDER,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailReturnToSender        );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_TAKE_ITEM,                          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailTakeItem              );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_TAKE_MONEY,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailTakeMoney             );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_CREATE_TEXT_ITEM,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailCreateTextItem        );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_DELETE,                             STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailDelete                );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_MARK_AS_READ,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailMarkAsRead            );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_RETURN_TO_SENDER,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailReturnToSender        );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_TAKE_ITEM,                          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailTakeItem              );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_TAKE_MONEY,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailTakeMoney             );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_BATTLEGROUND,          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_GUILD,                 STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_INSTANCE,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
