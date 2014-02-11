@@ -274,7 +274,7 @@ public:
 
     void LoadFromDB(Field* fields);
     void SaveToDB(uint32 guildId) const;
-    void ReadPacket(WorldPacket& recv) { recv >> m_style >> m_color >> m_borderStyle >> m_borderColor >> m_backgroundColor; }
+    void ReadPacket(WorldPacket& recv) { recv >> m_backgroundColor >> m_color >> m_borderStyle >> m_style >> m_borderColor; }
     void WritePacket(WorldPacket& data) const;
 
     uint32 GetStyle() const { return m_style; }
@@ -864,6 +864,15 @@ public:
     EmblemInfo const& GetEmblemInfo() const { return m_emblemInfo; }
 
     inline uint8 GetPurchasedTabsSize() const { return uint8(m_bankTabs.size()); }
+
+    void SendMotd(WorldSession* session = NULL);
+    void SendGuildEventJoinMember(uint64 guid, std::string name);
+    void SendGuildEventRemoveMember(uint64 guid, std::string name, uint64 kickerGuid = 0, std::string kickerName = "");
+    void SendGuildEventLeader(uint64 guid, std::string name, uint64 oldGuid, std::string oldName);
+    void SendGuildEventDisbanded();
+    void SendGuildEventRankUpdate(uint32 rankId = 0);
+    void SendGuildEventOnline(uint64 guid, std::string name, bool online, WorldSession* session = NULL);
+    void SendGuildEventTabTextChanged(uint32 tabId, WorldSession* session = NULL);
 
 protected:
     uint32 m_id;

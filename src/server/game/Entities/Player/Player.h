@@ -2259,7 +2259,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetRank() { return GetUInt32Value(PLAYER_GUILDRANK); }
         void SetGuildLevel(uint32 level) { SetUInt32Value(PLAYER_GUILDLEVEL, level); }
         uint32 GetGuildLevel() { return GetUInt32Value(PLAYER_GUILDLEVEL); }
-        void SetGuildIdInvited(uint32 GuildId) { m_GuildIdInvited = GuildId; }
+        void SetGuildIdInvited(uint32 GuildId, uint64 guid = 0) { m_GuildIdInvited = GuildId; m_GuildInviterGuid = guid; }
+        uint64 GetGuildInviterGuid() const { return m_GuildInviterGuid; }
         uint32 GetGuildId() const { return GetUInt32Value(OBJECT_FIELD_DATA); /* return only lower part */ }
         static uint32 GetGuildIdFromDB(uint64 guid);
         static uint8 GetRankFromDB(uint64 guid);
@@ -3246,6 +3247,7 @@ class Player : public Unit, public GridObject<Player>
         SkillStatusMap mSkillStatus;
 
         uint32 m_GuildIdInvited;
+        uint64 m_GuildInviterGuid;
         uint32 m_ArenaTeamIdInvited;
 
         PlayerMails m_mail;

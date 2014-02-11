@@ -124,9 +124,20 @@ void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
             guild->HandleAcceptMember(this);
 }
 
-void WorldSession::HandleGuildDeclineOpcode(WorldPacket& /*recvPacket*/)
+void WorldSession::HandleGuildDeclineOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_DECLINE");
+
+    if (Player* inviter = ObjectAccessor::FindPlayer(GetPlayer()->GetGuildInviterGuid()))
+    {
+        std::string name = GetPlayer()->GetName();
+        WorldPacket data(SMSG_GUILD_DECLINE, 1 + name.size() + 4);
+        data.WriteBits(name.size(), 6);
+        data.WriteBit(recvPacket.GetOpcode() == CMSG_GUILD_AUTO_DECLINE);
+        data << uint32(realmID);
+        data.WriteString(name);
+        inviter->SendDirectMessage(&data);
+    }
 
     GetPlayer()->SetGuildIdInvited(0);
     GetPlayer()->SetInGuild(0);
@@ -301,13 +312,15 @@ void WorldSession::HandleGuildChangeInfoTextOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_SAVE_GUILD_EMBLEM");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SAVE_GUILD_EMBLEM");
 
-    uint64 vendorGuid;
-    recvPacket >> vendorGuid;
-
+    ObjectGuid vendorGuid;
     EmblemInfo emblemInfo;
+
     emblemInfo.ReadPacket(recvPacket);
+
+    recvPacket.ReadGuidMask<2, 4, 1, 5, 7, 3, 6, 0>(vendorGuid);
+    recvPacket.ReadGuidBytes<2, 0, 3, 7, 1, 6, 4, 5>(vendorGuid);
 
     if (GetPlayer()->GetNPCIfCanInteractWith(vendorGuid, UNIT_NPC_FLAG_TABARDDESIGNER))
     {
@@ -616,8 +629,7 @@ void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
         rightsAndSlots[tabId] = GuildBankRightsAndSlots(tabId, uint8(bankRights), slots);
     }
 
-    uint32 nameLength = recvPacket.ReadBits(7);
-    std::string rankName = recvPacket.ReadString(nameLength);
+    std::string rankName = recvPacket.ReadString(recvPacket.ReadBits(7));
 
     guild->HandleSetRankInfo(this, rankId, rankName, newRights, moneyPerDay * 10000, rightsAndSlots);
 
