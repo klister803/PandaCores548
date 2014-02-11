@@ -1376,8 +1376,8 @@ enum Opcodes
     SMSG_TITLE_EARNED                                 = 0x94B,  // 5.0.5 16048
     SMSG_TOGGLE_XP_GAIN                               = 0xD62,  // 5.0.5 16048
     SMSG_TOTEM_CREATED                                = 0x00B5, // 5.4.1 17538
-    SMSG_TRADE_STATUS                                 = 0xF85,  // 5.0.5 16048
-    SMSG_TRADE_STATUS_EXTENDED                        = 0xAFB,  // 5.0.5 16048
+    SMSG_TRADE_STATUS                                 = 0x0115, // 5.4.1 17538
+    SMSG_TRADE_STATUS_EXTENDED                        = 0x0C17, // 5.4.1 17538
     SMSG_TRAINER_LIST                                 = 0x01BC, // 5.4.1 17538
     SMSG_TRAINER_SERVICE                              = 0x04AD, // 5.4.1 17538
     SMSG_TRANSFER_ABORTED                             = 0x111D, // 5.4.1 17538
