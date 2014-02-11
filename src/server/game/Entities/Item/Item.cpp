@@ -1530,3 +1530,20 @@ uint32 Item::GetTransmogrification() const
 {
     return GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION);
 }
+
+void Item::AppendDynamicInfo(ByteBuffer& buff)
+{
+    uint32 dynamicMask = 0;
+    ByteBuffer buffer;
+    for (uint32 j = 0; j < ITEM_DYN_MOD_END; ++j)
+        if (uint32 value = GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, j))
+        {
+            dynamicMask |= 1 << j;
+            buffer << value;
+        }
+
+    buff << uint32(buffer.size() + 4);
+    buff << uint32(dynamicMask);
+    if (!buffer.empty())
+        buff.append(buffer);
+}

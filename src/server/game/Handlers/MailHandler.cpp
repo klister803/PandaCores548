@@ -366,10 +366,12 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 //called when mail is read
 void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData)
 {
-    uint64 mailbox;
+    ObjectGuid mailbox;
     uint32 mailId;
-    recvData >> mailbox;
+
     recvData >> mailId;
+    recvData.ReadGuidMask<7, 3, 4, 1, 5, 2, 6, 0>(mailbox);
+    recvData.ReadGuidBytes<1, 4, 0, 2, 7, 5, 6, 3>(mailbox);
 
     if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
         return;
@@ -389,10 +391,8 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData)
 //called when client deletes mail
 void WorldSession::HandleMailDelete(WorldPacket & recvData)
 {
-    //uint64 mailbox;
     uint32 mailId;
-    //recvData >> mailbox;
-    recvData.read_skip<uint32>();   
+    recvData.read_skip<uint32>();
     recvData >> mailId;                       // mailTemplateId
 
     //if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
@@ -419,13 +419,10 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
 {
     ObjectGuid owner;
     uint32 mailId;
+
     recvData >> mailId;
-
-    uint8 bitOrder[8] = {2, 6, 5, 0, 7, 3, 4, 1};
-    recvData.ReadBitInOrder(owner, bitOrder);
-
-    uint8 byteOrder[8] = {3, 1, 5, 0, 4, 2, 7, 6};
-    recvData.ReadBytesSeq(owner, byteOrder);
+    recvData.ReadGuidMask<5, 7, 4, 0, 1, 2, 6, 3>(owner);
+    recvData.ReadGuidBytes<1, 0, 7, 5, 2, 4, 3, 6>(owner);
 
     //if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
     //    return;
@@ -485,12 +482,14 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
 //called when player takes item attached in mail
 void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
 {
-    uint64 mailbox;
+    ObjectGuid mailbox;
     uint32 mailId;
     uint32 itemId;
-    recvData >> mailbox;
+
     recvData >> mailId;
     recvData >> itemId;                                    // item guid low
+    recvData.ReadGuidMask<1, 0, 6, 3, 5, 2, 7, 4>(mailbox);
+    recvData.ReadGuidBytes<0, 6, 4, 3, 7, 1, 5, 2>(mailbox);
 
     if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
         return;
@@ -581,13 +580,15 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
 
 void WorldSession::HandleMailTakeMoney(WorldPacket& recvData)
 {
-    uint64 mailbox;
+    ObjectGuid mailbox;
     uint64 money;
     uint32 mailId;
 
-    recvData >> mailbox;
     recvData >> mailId;
     recvData >> money;
+    recvData.ReadGuidMask<4, 0, 1, 7, 5, 2, 3, 6>(mailbox);
+    recvData.ReadGuidBytes<6, 1, 2, 0, 4, 5, 7, 3>(mailbox);
+
 
     if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
         return;
@@ -619,8 +620,9 @@ void WorldSession::HandleMailTakeMoney(WorldPacket& recvData)
 //called when player lists his received mails
 void WorldSession::HandleGetMailList(WorldPacket& recvData)
 {
-    uint64 mailbox;
-    recvData >> mailbox;
+    ObjectGuid mailbox;
+    recvData.ReadGuidMask<0, 2, 6, 7, 5, 4, 3, 1>(mailbox);
+    recvData.ReadGuidBytes<1, 2, 4, 6, 0, 3, 5, 7>(mailbox);
 
     if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
         return;
@@ -747,11 +749,12 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 //used when player copies mail body to his inventory
 void WorldSession::HandleMailCreateTextItem(WorldPacket& recvData)
 {
-    uint64 mailbox;
+    ObjectGuid mailbox;
     uint32 mailId;
 
-    recvData >> mailbox;
     recvData >> mailId;
+    recvData.ReadGuidMask<4, 6, 2, 3, 7, 1, 5, 0>(mailbox);
+    recvData.ReadGuidBytes<0, 7, 1, 5, 3, 2, 4, 6>(mailbox);
 
     if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
         return;

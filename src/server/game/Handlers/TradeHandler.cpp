@@ -33,40 +33,32 @@
 
 void WorldSession::SendTradeStatus(TradeStatus status)
 {
-    WorldPacket data;
-
-    //Struct not updated
-    data.Initialize(SMSG_TRADE_STATUS, 1+4+4);
+    WorldPacket data(SMSG_TRADE_STATUS, 1 + 4 + 4);
+    data.WriteBit(0);
     data.WriteBits(status, 5);
 
     switch (status)
     {
         case TRADE_STATUS_BEGIN_TRADE:
-            data.WriteBits(0, 8); // zero guid
-            data.FlushBits();
+            data.WriteBits(0, 8);   // zero guid
             break;
         case TRADE_STATUS_OPEN_WINDOW:
-            data.FlushBits();
-            data << uint32(18); // unk
+            data << uint32(0);      // unk
             break;
         case TRADE_STATUS_CLOSE_WINDOW:
-            data.WriteBit(0); // unk
-            data.FlushBits();
-            data << uint32(0); // unk
-            data << uint32(0); // unk
+            data.WriteBit(0);       // param 2
+            data << uint32(0);      // param 1
+            data << uint32(0);      // equip err
             break;
         case TRADE_STATUS_ONLY_CONJURED:
         case TRADE_STATUS_NOT_ELIGIBLE:
-            data.FlushBits();
-            data << uint8(0); // unk
+            data << uint8(0);       // slot id
             break;
-        case TRADE_STATUS_CURRENCY: // Not implemented
-        //case TRADE_STATUS_CURRENCY_NOT_TRADABLE: // Not implemented
-            data.FlushBits();
-            data << uint32(0); // unk
-            data << uint32(0); // unk
+        case TRADE_STATUS_CURRENCY:
+        case TRADE_STATUS_CURRENCY_NOT_TRADEABLE:
+            data << uint32(0);      // currency id
+            data << uint32(0);      // currency amt
         default:
-            data.FlushBits();
             break;
     }
 
@@ -87,7 +79,7 @@ void WorldSession::SendUpdateTrade(bool trader_data /*= true*/)
 {
     TradeData* view_trade = trader_data ? _player->GetTradeData()->GetTraderData() : _player->GetTradeData();
 
-    ByteBuffer itemData(7*2 + 7*4 + 3*4 + 3*4 + 1);
+    ByteBuffer itemData(7 * 2 + 7 * 4 + 3 * 4 + 3 * 4 + 1);
 
     uint8 count = 0;
     for (uint8 i = 0; i < TRADE_SLOT_COUNT; ++i)
@@ -95,16 +87,16 @@ void WorldSession::SendUpdateTrade(bool trader_data /*= true*/)
             ++count;
 
     WorldPacket data(SMSG_TRADE_STATUS_EXTENDED);
-    data << uint8(trader_data);                             // 1 means traders data, 0 means own
-    data << uint32(TRADE_SLOT_COUNT);                       // trade slots count/number?, = prev field in most cases
-    data << uint32(0);
     data << uint32(TRADE_SLOT_COUNT);                       // trade slots count/number?, = next field in most cases
-    data << uint32(0);
+    data << uint32(TRADE_SLOT_COUNT);                       // trade slots count/number?, = prev field in most cases
+    data << uint32(0);                                      // trade currency related
+    data << uint32(0);                                      // same as in TRADE_STATUS_BEGIN_TRADE
+    data << uint32(view_trade->GetSpell());
+    data << uint8(trader_data);                             // 1 means traders data, 0 means own
     data << uint64(view_trade->GetMoney());                 // trader gold
-    data << uint32(18); //unk values but necessary, TradeStatus ?
-    data << uint32(0);
+    data << uint32(0);                                      // trade currency related
 
-    data.WriteBits(count, 22);
+    data.WriteBits(count, 20);
 
     for (uint8 i = 0; i < TRADE_SLOT_COUNT; ++i)
     {
@@ -114,65 +106,51 @@ void WorldSession::SendUpdateTrade(bool trader_data /*= true*/)
 
         ObjectGuid giftCreatorGuid = item->GetUInt64Value(ITEM_FIELD_GIFTCREATOR);
         ObjectGuid creatorGuid = item->GetUInt64Value(ITEM_FIELD_CREATOR);
+        bool notWrapped = !item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
 
-        data.WriteBit(giftCreatorGuid[1]);
-        bool notWrapped = data.WriteBit(!item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED));
-        data.WriteBit(giftCreatorGuid[5]);
-        data.WriteBit(giftCreatorGuid[2]);
+        data.WriteGuidMask<0, 6>(giftCreatorGuid);
+        data.WriteBit(notWrapped);
+
+        itemData.WriteGuidBytes<4>(giftCreatorGuid);
 
         if (notWrapped)
         {
-            data.WriteBit(creatorGuid[2]);
-            data.WriteBit(creatorGuid[6]);
-            data.WriteBit(creatorGuid[0]);
+            data.WriteGuidMask<0, 3, 1>(creatorGuid);
             data.WriteBit(item->GetTemplate()->LockID != 0);
-            data.WriteBit(creatorGuid[3]);
-            data.WriteBit(creatorGuid[1]);
-            data.WriteBit(creatorGuid[4]);
-            data.WriteBit(creatorGuid[5]);
-            data.WriteBit(creatorGuid[7]);
-            
-            itemData.WriteByteSeq(creatorGuid[0]);
-            itemData << uint32(0);
-            itemData << uint32(0);
-            itemData.WriteByteSeq(creatorGuid[4]);
-            itemData << uint32(0);
-            itemData.WriteByteSeq(creatorGuid[5]);
+            data.WriteGuidMask<6, 5, 2, 4, 7>(creatorGuid);
+
+            itemData << uint32(item->GetItemSuffixFactor());
+
+            item->AppendDynamicInfo(itemData);
+
+            itemData << uint32(0);      // unk
+            itemData << uint32(item->GetSpellCharges());
+
             for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT+MAX_GEM_SOCKETS; ++enchant_slot)
                 itemData << uint32(item->GetEnchantmentId(EnchantmentSlot(enchant_slot)));
-                
-            itemData << uint32(0);
-            itemData.WriteByteSeq(creatorGuid[6]);
-            itemData << uint32(0);
-            itemData << uint32(0);
-            itemData.WriteByteSeq(creatorGuid[7]);
-            itemData << uint32(0);
-            itemData.WriteByteSeq(creatorGuid[3]);
-            itemData.WriteByteSeq(creatorGuid[1]);
-            itemData << uint32(0);
-            itemData.WriteByteSeq(creatorGuid[2]);
+            itemData << uint32(item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT));
+            itemData << uint32(item->GetItemRandomPropertyId());
+            itemData.WriteGuidBytes<4, 1, 6, 7, 0, 3>(creatorGuid);
+            itemData << uint32(item->GetUInt32Value(ITEM_FIELD_DURABILITY));
+            itemData << uint32(item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY));
+            itemData.WriteGuidBytes<2, 5>(creatorGuid);
         }
-        data.WriteBit(giftCreatorGuid[7]);
-        data.WriteBit(giftCreatorGuid[0]);
-        data.WriteBit(giftCreatorGuid[3]);
-        data.WriteBit(giftCreatorGuid[4]);
-        data.WriteBit(giftCreatorGuid[6]);
 
-        itemData.WriteByteSeq(giftCreatorGuid[5]);
-        itemData.WriteByteSeq(giftCreatorGuid[0]);
-        itemData << uint32(item->GetTemplate()->ItemId);
-        itemData.WriteByteSeq(giftCreatorGuid[7]);
-        itemData.WriteByteSeq(giftCreatorGuid[3]);
+        data.WriteGuidMask<7, 1, 5, 4, 3, 2>(giftCreatorGuid);
+
         itemData << uint32(item->GetCount());
-        itemData.WriteByteSeq(giftCreatorGuid[1]);
-        itemData.WriteByteSeq(giftCreatorGuid[2]);
-        itemData.WriteByteSeq(giftCreatorGuid[4]);
-        itemData.WriteByteSeq(giftCreatorGuid[6]);
+        itemData.WriteGuidBytes<6, 3>(giftCreatorGuid);
+        itemData << uint32(item->GetTemplate()->ItemId);
+        itemData.WriteGuidBytes<1, 5, 2>(giftCreatorGuid);
         itemData << uint8(i);
+        itemData.WriteGuidBytes<7, 0>(giftCreatorGuid);
     }
-    data.FlushBits();
+
     if (!itemData.empty())
+    {
+        data.FlushBits();
         data.append(itemData);
+    }
 
     SendPacket(&data);
 }
@@ -598,12 +576,8 @@ void WorldSession::HandleCancelTradeOpcode(WorldPacket& /*recvPacket*/)
 void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
-
-    uint8 bitOrder[8] = {2, 5, 0, 7, 6, 4, 1, 3};
-    recvPacket.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {0, 4, 2, 7, 3, 6, 1, 5};
-    recvPacket.ReadBytesSeq(guid, byteOrder);
+    recvPacket.ReadGuidMask<4, 7, 3, 0, 6, 1, 5, 2>(guid);
+    recvPacket.ReadGuidBytes<6, 3, 1, 5, 7, 2, 4, 0>(guid);
 
     if (GetPlayer()->m_trade)
         return;
@@ -704,19 +678,13 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
     _player->m_trade = new TradeData(_player, pOther);
     pOther->m_trade = new TradeData(pOther, _player);
 
-    WorldPacket data(SMSG_TRADE_STATUS, 2+7);
-    data.WriteBits(TRADE_STATUS_BEGIN_TRADE, 5);
-
     ObjectGuid playerGuid = _player->GetGUID();
 
-    uint8 bitOrder2[8] = {4, 0, 5, 6, 1, 3, 2, 7};
-    data.WriteBitInOrder(playerGuid, bitOrder2);
-
-    data.WriteBit(0);   // unk bit, usually 0
-    data.FlushBits();
-
-    uint8 byteOrder2[8] = {0, 2, 4, 7, 5, 6, 1, 3};
-    data.WriteBytesSeq(playerGuid, byteOrder2);
+    WorldPacket data(SMSG_TRADE_STATUS, 1 + 8 + 1);
+    data.WriteBit(0);
+    data.WriteBits(TRADE_STATUS_BEGIN_TRADE, 5);
+    data.WriteGuidMask<0, 1, 3, 6, 2, 7, 4, 5>(playerGuid);
+    data.WriteGuidBytes<3, 4, 2, 6, 1, 5, 0, 7>(playerGuid);
 
     pOther->GetSession()->SendPacket(&data);
 }
@@ -740,9 +708,9 @@ void WorldSession::HandleSetTradeItemOpcode(WorldPacket& recvPacket)
     uint8 tradeSlot;
     uint8 bag;
     uint8 slot;
-    
-    recvPacket >> bag;
+
     recvPacket >> tradeSlot;
+    recvPacket >> bag;
     recvPacket >> slot;
 
     TradeData* my_trade = _player->GetTradeData();

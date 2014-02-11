@@ -375,6 +375,8 @@ class Item : public Object
         void SetTransmogrification(uint32 value);
         uint32 GetTransmogrification() const;
 
+        void AppendDynamicInfo(ByteBuffer& buff);
+
     private:
         std::string m_text;
         uint8 m_slot;
