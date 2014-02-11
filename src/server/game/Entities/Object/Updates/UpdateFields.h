@@ -83,7 +83,8 @@ enum EUnitFields
     UNIT_FIELD_MOD_RANGED_HASTE                      = OBJECT_END + 0x4C,   // Size: 0x1
     UNIT_MOD_HASTE_REGEN                             = OBJECT_END + 0x4D,   // Size: 0x1
     UNIT_CREATED_BY_SPELL                            = OBJECT_END + 0x4E,   // Size: 0x1
-    UNIT_NPC_FLAGS                                   = OBJECT_END + 0x4F,   // Size: 0x2
+    UNIT_NPC_FLAGS                                   = OBJECT_END + 0x4F,   // Size: 0x1
+    UNIT_NPC_FLAGS2                                  = OBJECT_END + 0x50,   // Size: 0x1
     UNIT_NPC_EMOTESTATE                              = OBJECT_END + 0x51,   // Size: 0x1
     UNIT_FIELD_STAT0                                 = OBJECT_END + 0x52,   // Size: 0x5
     UNIT_FIELD_POSSTAT0                              = OBJECT_END + 0x57,   // Size: 0x5

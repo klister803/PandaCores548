@@ -1899,27 +1899,39 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_EQUIPMENT_SET_USE");
 
+    ObjectGuid itemGuid[EQUIPMENT_SLOT_END];
+
+    for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        recvData >> Unused<uint8>() >> Unused<uint8>();     // bag, slot
+
+    for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        recvData.ReadGuidMask<3, 0, 5, 1, 7, 2, 4, 6>(itemGuid[i]);
+
+    uint32 dword10 = recvData.ReadBits(2);
+    for (uint8 i = 0; i < dword10; ++i)
+    {
+        recvData.ReadBit();
+        recvData.ReadBit();
+    }
+
+    for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        recvData.ReadGuidBytes<4, 7, 3, 0, 1, 2, 6, 5>(itemGuid[i]);
+
+    recvData.rfinish();
+
     EquipmentSlots startSlot = _player->isInCombat() ? EQUIPMENT_SLOT_MAINHAND : EQUIPMENT_SLOT_START;
     for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {
-        if (i == 17)
-            continue;
-        uint64 itemGuid;
-        recvData.readPackGUID(itemGuid);
-
-        uint8 srcbag, srcslot;
-        recvData >> srcbag >> srcslot;
-        
-        if (i < uint32(startSlot))
+        if (i == EQUIPMENT_SLOT_RANGED || i < uint32(startSlot))
             continue;
 
-        sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "Item " UI64FMTD ": srcbag %u, srcslot %u", itemGuid, srcbag, srcslot);
+        sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "Item " UI64FMTD ": srcbag %u, srcslot %u", (uint64)itemGuid[i]);
 
         // check if item slot is set to "ignored" (raw value == 1), must not be unequipped then
-        if (itemGuid == 1)
+        if (itemGuid[i] == 1)
             continue;
 
-        Item* item = _player->GetItemByGuid(itemGuid);
+        Item* item = _player->GetItemByGuid(itemGuid[i]);
 
         uint16 dstpos = i | (INVENTORY_SLOT_BAG_0 << 8);
 
@@ -1949,7 +1961,7 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket& recvData)
     }
 
     WorldPacket data(SMSG_EQUIPMENT_SET_USE_RESULT, 1);
-    data << uint8(0);                                       // 4 - equipment swap failed - inventory is full
+    data << uint8(0);                                       // 4 - inventory is full, 0 - ok, else failed
     SendPacket(&data);
 }
 

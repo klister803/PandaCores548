@@ -27128,8 +27128,10 @@ void Player::SetEquipmentSet(uint32 index, EquipmentSet eqset)
         eqslot.Guid = sObjectMgr->GenerateEquipmentSetGuid();
 
         WorldPacket data(SMSG_EQUIPMENT_SET_SAVED, 4 + 1);
+        data.WriteGuidMask<0, 6, 3, 1, 4, 2, 7, 5>(eqslot.Guid);
+        data.WriteGuidBytes<3, 6, 5, 1>(eqslot.Guid);
         data << uint32(index);
-        data.appendPackGUID(eqslot.Guid);
+        data.WriteGuidBytes<0, 7, 2, 4>(eqslot.Guid);
         GetSession()->SendPacket(&data);
     }
 

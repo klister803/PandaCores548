@@ -1265,9 +1265,12 @@ void WorldSession::HandleSpellClick(WorldPacket& recvData)
 void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GET_MIRRORIMAGE_DATA");
-    uint64 guid;
+    ObjectGuid guid;
     uint32 displayId;
-    recvData >> guid >> displayId;
+
+    recvData >> displayId;
+    recvData.ReadGuidMask<0, 2, 5, 6, 4, 3, 1, 7>(guid);
+    recvData.ReadGuidBytes<2, 0, 1, 3, 7, 6, 5, 4>(guid);
 
     // Get unit for which data is needed by client
     Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)NULL);
@@ -1282,75 +1285,85 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     if (!creator)
         return;
 
-    WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68);
-    data << uint64(guid);
-    data << uint32(creator->GetDisplayId());
-    data << uint8(creator->getRace());
+    Player* player = creator->ToPlayer();
+    ObjectGuid guildGuid;
+    if (uint32 guildId = player ? player->GetGuildId() : 0)
+        if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+            guildGuid = guild->GetGUID();
+
+    WorldPacket data(SMSG_MIRRORIMAGE_DATA, 80);
+    data.WriteGuidMask<5>(guildGuid);
+    data.WriteGuidMask<0, 5>(guid);
+    data.WriteGuidMask<4>(guildGuid);
+    data.WriteGuidMask<7, 1, 4>(guid);
+    data.WriteGuidMask<3, 7, 2>(guildGuid);
+    data.WriteGuidMask<6>(guid);
+    data.WriteGuidMask<1, 6>(guildGuid);
+    data.WriteGuidMask<3>(guid);
+
+    uint32 slotCount = 0;
+    uint32 bitpos = data.bitwpos();
+    data.WriteBits(slotCount, 22);
+
+    data.WriteGuidMask<2>(guid);
+    data.WriteGuidMask<0>(guildGuid);
+
+    data << uint8(player ? player->GetByteValue(PLAYER_BYTES, 1) : 0);   // face
+    data.WriteGuidBytes<2, 7>(guid);
+    data.WriteGuidBytes<6, 1>(guildGuid);
     data << uint8(creator->getGender());
     data << uint8(creator->getClass());
+    data.WriteGuidBytes<1>(guid);
+    data.WriteGuidBytes<0>(guildGuid);
+    data << uint8(player ? player->GetByteValue(PLAYER_BYTES, 2) : 0);   // hair
+    data.WriteGuidBytes<5, 0>(guid);
+    data.WriteGuidBytes<4, 2>(guildGuid);
 
-    if (creator->GetTypeId() == TYPEID_PLAYER)
+    static EquipmentSlots const itemSlots[] =
     {
-        Player* player = creator->ToPlayer();
-        Guild* guild = NULL;
+        EQUIPMENT_SLOT_HEAD,
+        EQUIPMENT_SLOT_SHOULDERS,
+        EQUIPMENT_SLOT_BODY,
+        EQUIPMENT_SLOT_CHEST,
+        EQUIPMENT_SLOT_WAIST,
+        EQUIPMENT_SLOT_LEGS,
+        EQUIPMENT_SLOT_FEET,
+        EQUIPMENT_SLOT_WRISTS,
+        EQUIPMENT_SLOT_HANDS,
+        EQUIPMENT_SLOT_TABARD,
+        EQUIPMENT_SLOT_BACK,
+        EQUIPMENT_SLOT_END
+    };
 
-        if (uint32 guildId = player->GetGuildId())
-            guild = sGuildMgr->GetGuildById(guildId);
-
-        data << uint8(player->GetByteValue(PLAYER_BYTES, 0));   // skin
-        data << uint8(player->GetByteValue(PLAYER_BYTES, 1));   // face
-        data << uint8(player->GetByteValue(PLAYER_BYTES, 2));   // hair
-        data << uint8(player->GetByteValue(PLAYER_BYTES, 3));   // haircolor
-        data << uint8(player->GetByteValue(PLAYER_BYTES_2, 0)); // facialhair
-        data << uint64(guild ? guild->GetGUID() : 0);
-
-        static EquipmentSlots const itemSlots[] =
-        {
-            EQUIPMENT_SLOT_HEAD,
-            EQUIPMENT_SLOT_SHOULDERS,
-            EQUIPMENT_SLOT_BODY,
-            EQUIPMENT_SLOT_CHEST,
-            EQUIPMENT_SLOT_WAIST,
-            EQUIPMENT_SLOT_LEGS,
-            EQUIPMENT_SLOT_FEET,
-            EQUIPMENT_SLOT_WRISTS,
-            EQUIPMENT_SLOT_HANDS,
-            EQUIPMENT_SLOT_BACK,
-            EQUIPMENT_SLOT_TABARD,
-            EQUIPMENT_SLOT_END
-        };
-
-        // Display items in visible slots
-        for (EquipmentSlots const* itr = &itemSlots[0]; *itr != EQUIPMENT_SLOT_END; ++itr)
-        {
-            if (*itr == EQUIPMENT_SLOT_HEAD && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
-                data << uint32(0);
-            else if (*itr == EQUIPMENT_SLOT_BACK && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
-                data << uint32(0);
-            else if (Item const* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, *itr))
-                data << uint32(item->GetTemplate()->DisplayInfoID);
-            else
-                data << uint32(0);
-        }
-    }
-    else
+    // Display items in visible slots
+    for (EquipmentSlots const* itr = &itemSlots[0]; *itr != EQUIPMENT_SLOT_END; ++itr)
     {
-        // Skip player data for creatures
-        data << uint8(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
-        data << uint32(0);
+        if (!player)
+            data << uint32(0);
+        else if (*itr == EQUIPMENT_SLOT_HEAD && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
+            data << uint32(0);
+        else if (*itr == EQUIPMENT_SLOT_BACK && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
+            data << uint32(0);
+        else if (Item const* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, *itr))
+            data << uint32(item->GetTemplate()->DisplayInfoID);
+        else
+            data << uint32(0);
+        ++slotCount;
     }
+
+    data << uint8(creator->getRace());
+    data.WriteGuidBytes<4>(guid);
+    data.WriteGuidBytes<7>(guildGuid);
+    data << uint8(player ? player->GetByteValue(PLAYER_BYTES_2, 0) : 0); // facialhair
+    data.WriteGuidBytes<6>(guid);
+    data << uint32(creator->GetDisplayId());
+    data << uint8(player ? player->GetByteValue(PLAYER_BYTES, 0) : 0);   // skin
+    data.WriteGuidBytes<3>(guid);
+    data.WriteGuidBytes<3>(guildGuid);
+    data << uint8(player ? player->GetByteValue(PLAYER_BYTES, 3) : 0);   // haircolor
+    data.WriteGuidBytes<5>(guildGuid);
+
+    data.PutBits<uint32>(bitpos, slotCount, 22);
 
     SendPacket(&data);
 }
