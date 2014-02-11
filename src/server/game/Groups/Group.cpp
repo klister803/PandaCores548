@@ -1451,13 +1451,12 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
     }
 
     data.WriteGuidMask<2, 3, 7>(guid_looted);
+    data.PutBits<uint32>(pos, real_count, 24);
 
     data.FlushBits();
 
     data.append(dataBuffer);
     data.WriteGuidBytes<7, 0, 3, 2, 1, 4, 5, 6>(guid_looted);
-
-    data.PutBits<uint32>(pos, real_count, 24);
 
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
@@ -1803,8 +1802,8 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 
     Player* member = NULL;
 
-    uint8 const gStatusOnline = (isBGGroup() || isBFGroup()) ? MEMBER_STATUS_PVP : 0;
     uint8 const gStatusOfline = (isBGGroup() || isBFGroup()) ? MEMBER_STATUS_PVP : 0;
+    uint8 const gStatusOnline = gStatusOfline | MEMBER_STATUS_ONLINE;
 
     ObjectGuid leaderGuid = m_leaderGuid;
     ObjectGuid guid = m_guid;
