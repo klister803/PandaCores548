@@ -537,6 +537,163 @@ void WorldSession::HandleGroupDisbandOpcode(WorldPacket& /*recvData*/)
 }
 
 //! 5.4.1
+void WorldSession::HandleLootMasterAskForRoll(WorldPacket& recvData)
+{
+    ObjectGuid guid = 0;
+    uint8 slot = 0;
+
+    recvData >> slot;
+    recvData.ReadGuidMask<0, 4, 2, 1, 5, 3, 7, 6>(guid);
+    recvData.ReadGuidBytes<4, 7, 6, 0, 5, 1, 2, 3>(guid);
+
+    if (!_player->GetGroup() || _player->GetGroup()->GetLooterGuid() != _player->GetGUID())
+    {
+        _player->SendLootRelease(guid);
+        return;
+    }
+
+    Loot* loot = NULL;
+
+    if (IS_CRE_OR_VEH_GUID(guid))
+    {
+        Creature* creature = GetPlayer()->GetMap()->GetCreature(guid);
+        if (!creature)
+            return;
+
+        loot = &creature->loot;
+    }
+    else if (IS_GAMEOBJECT_GUID(guid))
+    {
+        GameObject* pGO = GetPlayer()->GetMap()->GetGameObject(guid);
+        if (!pGO)
+            return;
+
+        loot = &pGO->loot;
+    }
+
+    if (!loot)
+        return;
+
+    if (slot >= loot->items.size() + loot->quest_items.size())
+    {
+        sLog->outDebug(LOG_FILTER_LOOT, "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), slot, (unsigned long)loot->items.size());
+        return;
+    }
+
+    LootItem& item = slot >= loot->items.size() ? loot->quest_items[slot - loot->items.size()] : loot->items[slot];
+
+    _player->GetGroup()->DoRollForAllMembers(guid, slot, _player->GetMapId(), loot, item, _player);
+}
+
+//! 5.4.1
+void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
+{
+    ObjectGuid target_playerguid = 0;
+
+    uint32 count = recvData.ReadBits(23);
+    std::vector<ObjectGuid> guids(count);
+    std::vector<uint8> types(count);
+
+    recvData.ReadGuidMask<6, 2>(target_playerguid);
+    
+    if (count > 100)
+        return;
+
+    for (uint32 i = 0; i < count; ++i)
+        recvData.ReadGuidMask<1, 0, 5, 2, 3, 6, 7, 4>(guids[i]);
+
+    ///
+
+    recvData.ReadGuidMask<5, 7, 0, 3, 1, 4>(target_playerguid);
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        recvData.ReadGuidBytes<5, 2, 3, 0, 6, 7>(guids[i]);
+        recvData >> types[i];
+        recvData.ReadGuidBytes<1, 4>(guids[i]);
+    }
+
+    recvData.ReadGuidBytes<5, 3, 6, 7, 1, 2, 0, 4>(target_playerguid);
+    //recvData >> lootguid >> slotid >> target_playerguid;
+
+    if (!_player->GetGroup() || _player->GetGroup()->GetLooterGuid() != _player->GetGUID())
+    {
+        _player->SendLootRelease(GetPlayer()->GetLootGUID());
+        return;
+    }
+
+    Player* target = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(target_playerguid, 0, HIGHGUID_PLAYER));
+    if (!target)
+        return;
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSession::HandleLootMasterGiveOpcode (CMSG_LOOT_MASTER_GIVE, 0x02A3) Target = [%s].", target->GetName());
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        ObjectGuid lootguid = guids[i];
+        uint8 slotid = types[i];
+        Loot* loot = NULL;
+
+        if (IS_CRE_OR_VEH_GUID(lootguid))
+        {
+            Creature* creature = GetPlayer()->GetMap()->GetCreature(lootguid);
+            if (!creature)
+                return;
+
+            loot = &creature->loot;
+        }
+        else if (IS_GAMEOBJECT_GUID(lootguid))
+        {
+            GameObject* pGO = GetPlayer()->GetMap()->GetGameObject(lootguid);
+            if (!pGO)
+                return;
+
+            loot = &pGO->loot;
+        }
+
+        if (!loot)
+            return;
+
+        if (slotid >= loot->items.size() + loot->quest_items.size())
+        {
+            sLog->outDebug(LOG_FILTER_LOOT, "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), slotid, (unsigned long)loot->items.size());
+            return;
+        }
+
+        LootItem& item = slotid >= loot->items.size() ? loot->quest_items[slotid - loot->items.size()] : loot->items[slotid];
+
+        ItemPosCountVec dest;
+        InventoryResult msg = target->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item.itemid, item.count);
+        if (item.follow_loot_rules && !item.AllowedForPlayer(target))
+            msg = EQUIP_ERR_CANT_EQUIP_EVER;
+        if (msg != EQUIP_ERR_OK)
+        {
+            target->SendEquipError(msg, NULL, NULL, item.itemid);
+            // send duplicate of error massage to master looter
+            _player->SendEquipError(msg, NULL, NULL, item.itemid);
+            return;
+        }
+
+        // list of players allowed to receive this item in trade
+        AllowedLooterSet looters = item.GetAllowedLooters();
+
+        // not move item from loot to target inventory
+        Item* newitem = target->StoreNewItem(dest, item.itemid, true, item.randomPropertyId, looters);
+        target->SendNewItem(newitem, uint32(item.count), false, false, true);
+        target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, item.itemid, item.count);
+        target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE, loot->loot_type, item.count);
+        target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM, item.itemid, item.count);
+
+        // mark as looted
+        item.count=0;
+        item.is_looted=true;
+
+        loot->NotifyItemRemoved(slotid);
+        --loot->unlootedCount;
+    }
+}
+
+//! 5.4.1
 void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_LOOT_METHOD");
@@ -728,6 +885,7 @@ void WorldSession::HandleGroupRaidConvertOpcode(WorldPacket& recvData)
         group->ConvertToRaid();
 }
 
+//! 5.4.1
 void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
 {
     time_t now = time(NULL);
@@ -746,10 +904,13 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
     if (!group)
         return;
 
-    std::string name;
+    ObjectGuid guid;
     uint8 groupNr;
-    recvData >> name;
-    recvData >> groupNr;
+    uint8 unk;
+    recvData >> groupNr >> unk;
+
+    recvData.ReadGuidMask<0, 1, 7, 6, 3, 5, 4, 2>(guid);
+    recvData.ReadGuidBytes<6, 3, 7, 5, 1, 4, 2, 0>(guid);
 
     if (groupNr >= MAX_RAID_SUBGROUPS)
         return;
@@ -760,17 +921,6 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
 
     if (!group->HasFreeSlotSubGroup(groupNr))
         return;
-
-    Player* movedPlayer = sObjectAccessor->FindPlayerByName(name.c_str());
-    uint64 guid;
-
-    if (movedPlayer)
-        guid = movedPlayer->GetGUID();
-    else
-    {
-        CharacterDatabase.EscapeString(name);
-        guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
-    }
 
     group->ChangeMembersGroup(guid, groupNr);
 }
@@ -958,6 +1108,7 @@ void WorldSession::HandleRaidLeaderReadyCheck(WorldPacket& recvData)
     group->OfflineReadyCheck();
 }
 
+//! 5.4.1
 void WorldSession::HandleRaidConfirmReadyCheck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RAID_CONFIRM_READY_CHECK");
@@ -1443,6 +1594,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
 sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got CMSG_GROUP_CANCEL.");
 }*/
 
+//! 5.4.1
 void WorldSession::HandleOptOutOfLootOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_OPT_OUT_OF_LOOT");

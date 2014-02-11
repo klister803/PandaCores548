@@ -1420,19 +1420,19 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
     }
 }
 
+//! 5.4.1
 void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Group::MasterLoot (SMSG_LOOT_MASTER_LIST)");
     uint32 real_count = 0;
-    ByteBuffer dataBuffer;
+
+    ByteBuffer dataBuffer(GetMembersCount()*8);
     ObjectGuid guid_looted = pLootedObject->GetGUID();
-    WorldPacket data(SMSG_LOOT_MASTER_LIST);
-    data.WriteBit(guid_looted[0]);
-    data.WriteBit(guid_looted[5]);
-    data.WriteBit(guid_looted[7]);
-    data.WriteBit(guid_looted[6]);
+
+    WorldPacket data(SMSG_LOOT_MASTER_LIST, 12 + GetMembersCount()*8);
+    data.WriteGuidMask<5, 4, 6, 1, 0>(guid_looted);
     uint32 pos = data.bitwpos();
-    data.WriteBits(0, 26);
+    data.WriteBits(0, 24);
 
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
@@ -1444,56 +1444,20 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
         {
             ObjectGuid guid = looter->GetGUID();
 
-            data.WriteBit(guid[1]);
-            data.WriteBit(guid[0]);
-            data.WriteBit(guid[7]);
-            data.WriteBit(guid[2]);
-            data.WriteBit(guid[6]);
-            data.WriteBit(guid[5]);
-            data.WriteBit(guid[4]);
-            data.WriteBit(guid[3]);
-
+            data.WriteGuidMask<0, 6, 3, 1, 5, 7, 4, 2>(guid);
+            dataBuffer.WriteGuidBytes<6, 7, 2, 0, 5, 3, 1, 4>(guid);
             ++real_count;
         }
     }
-    data.WriteBit(guid_looted[1]);
-    data.WriteBit(guid_looted[4]);
-    data.WriteBit(guid_looted[3]);
-    data.WriteBit(guid_looted[2]);
+
+    data.WriteGuidMask<2, 3, 7>(guid_looted);
 
     data.FlushBits();
 
-    data.WriteByteSeq(guid_looted[3]);
-    for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
-    {
-        Player* looter = itr->getSource();
-        if (!looter->IsInWorld())
-            continue;
+    data.append(dataBuffer);
+    data.WriteGuidBytes<7, 0, 3, 2, 1, 4, 5, 6>(guid_looted);
 
-        if (looter->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
-        {
-            ObjectGuid guid = looter->GetGUID();
-
-            data.WriteByteSeq(guid[1]);
-            data.WriteByteSeq(guid[4]);
-            data.WriteByteSeq(guid[7]);
-            data.WriteByteSeq(guid[6]);
-            data.WriteByteSeq(guid[5]);
-            data.WriteByteSeq(guid[2]);
-            data.WriteByteSeq(guid[0]);
-            data.WriteByteSeq(guid[3]);
-        }
-    }
-
-    data.WriteByteSeq(guid_looted[5]);
-    data.WriteByteSeq(guid_looted[7]);
-    data.WriteByteSeq(guid_looted[1]);
-    data.WriteByteSeq(guid_looted[2]);
-    data.WriteByteSeq(guid_looted[4]);
-    data.WriteByteSeq(guid_looted[0]);
-    data.WriteByteSeq(guid_looted[6]);
-
-    data.PutBits<uint32>(pos, real_count, 26);
+    data.PutBits<uint32>(pos, real_count, 24);
 
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {

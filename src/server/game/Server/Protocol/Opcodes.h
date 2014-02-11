@@ -927,7 +927,7 @@ enum Opcodes
     SMSG_GROUPACTION_THROTTLED                        = 0x994,  // 5.0.5 16048
     SMSG_GROUP_CANCEL                                 = 0x84B,  // 5.0.5 16048
     SMSG_GROUP_DECLINE                                = 0x0CA0, // 5.4.1 17538
-    SMSG_GROUP_DESTROYED                              = 0xD3A,  // 5.0.5 16048
+    SMSG_GROUP_DESTROYED                              = 0x0D3A, // 5.4.1 17538
     SMSG_GROUP_INVITE                                 = 0x09A6, // 5.4.1 17538
     SMSG_GROUP_JOINED_BATTLEGROUND                    = 0,      // Not found in TC
     SMSG_PARTY_UPDATE                                 = 0x01B5, // 5.4.1 17538
@@ -1009,8 +1009,8 @@ enum Opcodes
     SMSG_INSPECT_TALENT                               = 0xE3D,  // 5.0.5 16048
     SMSG_INSTANCE_DIFFICULTY                          = 0,      // Not found in 4.3.4
     SMSG_INSTANCE_LOCK_WARNING_QUERY                  = 0xDAA,  // 5.0.5 16048
-    SMSG_INSTANCE_RESET                               = 0xD58,  // 5.0.5 16048
-    SMSG_INSTANCE_RESET_FAILED                        = 0x98C,  // 5.0.5 16048
+    SMSG_INSTANCE_RESET                               = 0x0526, // 5.4.1 17538
+    SMSG_INSTANCE_RESET_FAILED                        = 0x0CA7, // 5.4.1 17538
     SMSG_INSTANCE_SAVE_CREATED                        = 0xCFC,  // 5.0.5 16048
     SMSG_INVALIDATE_DANCE                             = 0xD7E,  // 5.0.5 16048
     SMSG_INVALIDATE_PLAYER                            = 0x8CA,  // 5.0.5 16048
@@ -1072,7 +1072,7 @@ enum Opcodes
     SMSG_LOOT_ALL_PASSED                              = 0x009E, // 5.4.1 17538
     SMSG_LOOT_CONTENTS                                = 0xBFC,  // 5.0.5 16048
     SMSG_LOOT_LIST                                    = 0x14B5, // 5.4.1 17538
-    SMSG_LOOT_MASTER_LIST                             = 0xA5A,  // 5.0.5 16048
+    SMSG_LOOT_MASTER_LIST                             = 0x0435, // 5.4.1 17538
     SMSG_LOOT_MONEY_NOTIFY                            = 0x143E, // 5.4.1 17538
     SMSG_LOOT_RELEASE                                 = 0x051F, // 5.4.1 17538
     SMSG_LOOT_RELEASE_RESPONSE                        = 0x008F, // 5.4.1 17538
@@ -1235,7 +1235,7 @@ enum Opcodes
     SMSG_QUEST_POI_QUERY_RESPONSE                     = 0x0ADE, // 5.4.1 17538
     SMSG_QUEST_QUERY_RESPONSE                         = 0x02F5, // 5.4.1 17538
     SMSG_RAID_GROUP_ONLY                              = 0xDA4,  // 5.0.5 16048
-    SMSG_RAID_INSTANCE_INFO                           = 0x000,  // 5.0.5 16048 Deprecated ?
+    SMSG_RAID_INSTANCE_INFO                           = 0x05B5, // 5.4.1 17538
     SMSG_RAID_INSTANCE_MESSAGE                        = 0xD0E,  // 5.0.5 16048
     SMSG_RAID_MARKERS_CHANGED                         = 0xBAA,  // 5.0.5 16048
     SMSG_RAID_READY_CHECK_COMPLETED                   = 0x09AF, // 5.4.1 17538

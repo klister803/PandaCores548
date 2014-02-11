@@ -618,13 +618,14 @@ void WorldSession::HandleLogoutCancelOpcode(WorldPacket& /*recvData*/)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_LOGOUT_CANCEL_ACK Message");
 }
 
+//! 5.4.1
 void WorldSession::HandleTogglePvP(WorldPacket& recvData)
 {
+    uint8 newPvPStatus = recvData.ReadBit();
+
     // this opcode can be used in two ways: Either set explicit new status or toggle old status
-    if (recvData.size() == 1)
+    if (newPvPStatus)
     {
-        bool newPvPStatus;
-        recvData >> newPvPStatus;
         GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, newPvPStatus);
         GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_PVP_TIMER, !newPvPStatus);
     }

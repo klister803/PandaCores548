@@ -10321,7 +10321,6 @@ void Player::SendNotifyLootItemRemoved(uint8 lootSlot, uint64 lguid)
     data.WriteGuidBytes<7, 4, 1>(guid);
     data.WriteGuidBytes<0, 6, 3, 2>(guid2);
 
-
     GetSession()->SendPacket(&data);
 }
 
@@ -20103,14 +20102,16 @@ void Player::BindToInstance()
     GetSession()->SendCalendarRaidLockout(mapSave, true);
 }
 
+//! 5.4.1
 void Player::SendRaidInfo()
 {
     uint32 counter = 0;
+    ObjectGuid instanceID = 0;
+    ByteBuffer dataBuffer;
+    InstanceSave* save = NULL;
 
-    WorldPacket data(SMSG_RAID_INSTANCE_INFO, 4);
-
-    size_t p_counter = data.wpos();
-    data << uint32(counter);                                // placeholder
+    WorldPacket data(SMSG_RAID_INSTANCE_INFO, 200);
+    data.WriteBits(counter, 20);                            // placeholder
 
     time_t now = time(NULL);
 
@@ -20120,21 +20121,30 @@ void Player::SendRaidInfo()
         {
             if (itr->second.perm)
             {
-                InstanceSave* save = itr->second.save;
-                data << uint32(save->GetMapId());           // map id
-                data << uint32(save->GetDifficulty());      // difficulty
-                data << uint32(0);                          // Unknown 4.2.2
-                data << uint64(save->GetInstanceId());      // instance id
-                data << uint8(1);                           // expired = 0
-                data << uint8(0);                           // extended = 1
-                data << uint32(save->GetResetTime() - now); // reset time
-                data << uint32(0);                          // Unknown 4.2.2
+                save = itr->second.save;
+                instanceID = save->GetInstanceId();
+                data.WriteGuidMask<2, 4, 7>(instanceID);
+                data.WriteBit(0);                                       //extended?
+                data.WriteGuidMask<1, 6>(instanceID);
+                data.WriteBit(1);                                       //expired?
+                data.WriteGuidMask<5, 3, 0>(instanceID);
+
+                dataBuffer.WriteGuidBytes<2>(instanceID);
+                dataBuffer << uint32(save->GetResetTime() - now);       // reset time
+                dataBuffer.WriteGuidBytes<7, 5, 0, 4, 1, 3>(instanceID);
+                dataBuffer << uint32(save->GetDifficulty());            // difficulty
+                dataBuffer << uint32(save->GetMapId());                 // map id
+                dataBuffer << uint32(0);                                // Heroic
+                dataBuffer.WriteGuidBytes<6>(instanceID);
                 ++counter;
             }
         }
     }
 
-    data.put<uint32>(p_counter, counter);
+    data.FlushBits();
+    data.append(dataBuffer);
+
+    data.PutBits<uint32>(0, counter, 20);
     GetSession()->SendPacket(&data);
 }
 
@@ -20159,6 +20169,7 @@ void Player::SendSavedInstances()
     }
 
     //Send opcode SMSG_UPDATE_INSTANCE_OWNERSHIP. true or false means, whether you have current raid/heroic instances
+    //! 5.4.1
     data.Initialize(SMSG_UPDATE_INSTANCE_OWNERSHIP, 4);
     data << uint32(hasBeenSaved);
     GetSession()->SendPacket(&data);
@@ -20172,6 +20183,7 @@ void Player::SendSavedInstances()
         {
             if (itr->second.perm)
             {
+                //! 5.4.1
                 data.Initialize(SMSG_UPDATE_LAST_INSTANCE, 4);
                 data << uint32(itr->second.save->GetMapId());
                 GetSession()->SendPacket(&data);
@@ -21584,6 +21596,7 @@ void Player::ResetInstances(uint8 method, bool isRaid)
     }
 }
 
+//! 5.4.1
 void Player::SendResetInstanceSuccess(uint32 MapId)
 {
     WorldPacket data(SMSG_INSTANCE_RESET, 4);
@@ -21591,6 +21604,7 @@ void Player::SendResetInstanceSuccess(uint32 MapId)
     GetSession()->SendPacket(&data);
 }
 
+//! 5.4.1
 void Player::SendResetInstanceFailed(uint32 reason, uint32 MapId)
 {
     /*reasons for instance reset failure:
@@ -21599,8 +21613,10 @@ void Player::SendResetInstanceFailed(uint32 reason, uint32 MapId)
     // 2>: There are players in your party attempting to zone into an instance.
     */
     WorldPacket data(SMSG_INSTANCE_RESET_FAILED, 8);
-    data << uint32(reason);
+    data.WriteBits(reason, 2);
+    data.FlushBits();
     data << uint32(MapId);
+    
     GetSession()->SendPacket(&data);
 }
 
