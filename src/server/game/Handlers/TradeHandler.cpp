@@ -121,19 +121,7 @@ void WorldSession::SendUpdateTrade(bool trader_data /*= true*/)
 
             itemData << uint32(item->GetItemSuffixFactor());
 
-            uint32 dynamicMask = 0;
-            ByteBuffer buffer;
-            for (uint32 j = 0; j < ITEM_DYN_MOD_END; ++j)
-                if (uint32 value = item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, j))
-                {
-                    dynamicMask |= 1 << j;
-                    buffer << value;
-                }
-
-            itemData << uint32(buffer.size() + 4);
-            itemData << uint32(dynamicMask);
-            if (!buffer.empty())
-                itemData.append(buffer);
+            item->AppendDynamicInfo(itemData);
 
             itemData << uint32(0);      // unk
             itemData << uint32(item->GetSpellCharges());

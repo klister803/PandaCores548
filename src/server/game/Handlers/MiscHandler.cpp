@@ -1444,22 +1444,22 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
     uint8 activeSpec = player->GetActiveSpec();
     uint32 talent_points = 41;
-    WorldPacket data(SMSG_INSPECT_TALENT, 8 + 4 + 1 + 1 + talent_points + 8 + 4 + 8 + 4);
-    data << uint32(player->GetSpecializationId(activeSpec));
 
+    Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId());
     ObjectGuid playerGuid = player->GetGUID();
-    data.WriteBit(playerGuid[6]);
 
-    uint32 glyphCount = 0;
-    size_t glyphPos = data.bitwpos();
-    data.WriteBits(glyphCount, 25);
-
-    data.WriteBit(playerGuid[3]);
+    WorldPacket data(SMSG_INSPECT_TALENT, 8 + 4 + 1 + 1 + talent_points + 8 + 4 + 8 + 4);
+    size_t talentPos = data.bitwpos();
+    uint32 talentCount = 0;
+    data.WriteBits(talentCount, 23);
+    data.WriteBit(guild != NULL);
+    if (guild)
+        data.WriteGuidMask<6, 7, 4, 0, 2, 5, 1, 3>(guild->GetGUID());
+    data.WriteGuidMask<6, 5, 3>(playerGuid);
 
     uint32 equipmentCount = 0;
     size_t equipmentPos = data.bitwpos();
-    data.WriteBits(equipmentCount, 22);
-
+    data.WriteBits(equipmentCount, 20);
     for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {
         Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
@@ -1468,18 +1468,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
         ObjectGuid itemCreator = item->GetUInt64Value(ITEM_FIELD_CREATOR);
 
-        data.WriteBit(itemCreator[7]);
-        data.WriteBit(0);               // unkFlag
-        data.WriteBit(itemCreator[4]);
-        data.WriteBit(itemCreator[2]);
-        data.WriteBit(0);               // unkFlag2
-        data.WriteBit(itemCreator[6]);
-        data.WriteBit(itemCreator[5]);
-        data.WriteBit(itemCreator[0]);
-        data.WriteBit(itemCreator[3]);
-        data.WriteBit(1);               // unkFlag3
-        data.WriteBit(itemCreator[1]);
-
+        data.WriteGuidMask<4, 0, 1, 7>(itemCreator);
         uint32 enchantmentCount = 0;
         for (uint32 j = 0; j < MAX_ENCHANTMENT_SLOT; ++j)
         {
@@ -1489,97 +1478,25 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
             ++enchantmentCount;
         }
-        data.WriteBits(enchantmentCount, 23);
+        data.WriteBits(enchantmentCount, 21);
+        data.WriteGuidMask<2>(itemCreator);
+        data.WriteBit(0);
+        data.WriteGuidMask<3>(itemCreator);
+        data.WriteBit(1);
+        data.WriteGuidMask<6>(itemCreator);
+        data.WriteBit(0);
+        data.WriteGuidMask<5>(itemCreator);
+
         ++equipmentCount;
     }
-    data.PutBits<uint32>(equipmentPos, equipmentCount, 22);
 
-    Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId());
-    data.WriteBit(guild != NULL);
-    if (guild != NULL)
-    {
-        ObjectGuid guildGuid = guild->GetGUID();
+    data.WriteGuidMask<0, 7, 4, 1>(playerGuid);
 
-        uint8 bitOrder[8] = { 4, 6, 3, 2, 7, 0, 5, 1 };
-        data.WriteBitInOrder(guildGuid, bitOrder);
-    }
-    data.WriteBit(playerGuid[5]);
-    data.WriteBit(playerGuid[2]);
-    data.WriteBit(playerGuid[7]);
+    uint32 glyphCount = 0;
+    size_t glyphPos = data.bitwpos();
+    data.WriteBits(glyphCount, 23);
 
-    uint32 talentCount = 0;
-    size_t talentPos = data.bitwpos();
-    data.WriteBits(talentCount, 25);
-
-    data.WriteBit(playerGuid[0]);
-    data.WriteBit(playerGuid[4]);
-    data.WriteBit(playerGuid[1]);
-    data.FlushBits();
-
-    for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
-    {
-        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
-        if (!item)
-            continue;
-
-        ObjectGuid itemCreator = item->GetUInt64Value(ITEM_FIELD_CREATOR); // item creator
-
-        data.WriteByteSeq(itemCreator[0]);
-        data.WriteByteSeq(itemCreator[2]);
-        data.WriteByteSeq(itemCreator[7]);
-        data.WriteByteSeq(itemCreator[1]);
-        data << uint32(item->GetEntry());
-        // if unkflag2
-        //      data << unk32
-        data.WriteByteSeq(itemCreator[4]);
-        data.WriteByteSeq(itemCreator[3]);
-        data.WriteByteSeq(itemCreator[6]);
-        // if unkFlag
-        //      data << unk16
-        for (uint32 j = 0; j < MAX_ENCHANTMENT_SLOT; ++j)
-        {
-            uint32 enchId = item->GetEnchantmentId(EnchantmentSlot(j));
-            if (!enchId)
-                continue;
-
-            data << uint32(enchId);
-            data << uint8(j);
-        }
-
-        uint32 dynamicMask = 0;
-        ByteBuffer buffer;
-        for (uint32 j = 0; j < ITEM_DYN_MOD_END; ++j)
-            if (uint32 value = item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, j))
-            {
-                dynamicMask |= 1 << j;
-                buffer << value;
-            }
-
-        data << uint32(buffer.size() + 4);
-        data << uint32(dynamicMask);
-        if (!buffer.empty())
-            data.append(buffer);
-
-        data.WriteByteSeq(itemCreator[5]);
-        data << uint8(i);
-    }
-
-    if (guild)
-    {
-        ObjectGuid guildGuid = guild->GetGUID();
-
-        data << uint32(guild->GetLevel());
-        data.WriteByteSeq(guildGuid[3]);
-        data.WriteByteSeq(guildGuid[7]);
-        data.WriteByteSeq(guildGuid[5]);
-        data.WriteByteSeq(guildGuid[1]);
-        data.WriteByteSeq(guildGuid[4]);
-        data.WriteByteSeq(guildGuid[6]);
-        data.WriteByteSeq(guildGuid[2]);
-        data << uint64(guild->GetExperience());
-        data << uint32(guild->GetMembersCount());
-        data.WriteByteSeq(guildGuid[0]);
-    }
+    data.WriteGuidMask<2>(playerGuid);
 
     PlayerTalentMap* Talents = player->GetTalentMap(activeSpec);
     for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
@@ -1591,11 +1508,47 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
             ++talentCount;
         }
     }
-    data.PutBits<uint32>(talentPos, talentCount, 25);
 
-    data.WriteByteSeq(playerGuid[2]);
-    data.WriteByteSeq(playerGuid[4]);
-    data.WriteByteSeq(playerGuid[5]);
+    if (guild)
+    {
+        ObjectGuid guildGuid = guild->GetGUID();
+
+        data.WriteGuidBytes<3>(guildGuid);
+        data << uint32(guild->GetMembersCount());
+        data.WriteGuidBytes<4, 2>(guildGuid);
+        data << uint32(guild->GetLevel());
+        data.WriteGuidBytes<5, 1, 6>(guildGuid);
+        data << uint64(guild->GetExperience());
+        data.WriteGuidBytes<7, 0>(guildGuid);
+    }
+
+    for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+    {
+        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (!item)
+            continue;
+
+        ObjectGuid itemCreator = item->GetUInt64Value(ITEM_FIELD_CREATOR); // item creator
+
+        data.WriteGuidBytes<1, 5, 7, 6>(itemCreator);
+        for (uint32 j = 0; j < MAX_ENCHANTMENT_SLOT; ++j)
+        {
+            uint32 enchId = item->GetEnchantmentId(EnchantmentSlot(j));
+            if (!enchId)
+                continue;
+
+            data << uint8(j);
+            data << uint32(enchId);
+        }
+        data.WriteGuidBytes<3>(itemCreator);
+        item->AppendDynamicInfo(data);
+        data.WriteGuidBytes<0>(itemCreator);
+        data << uint8(i);
+        data << uint32(item->GetEntry());
+        data.WriteGuidBytes<2, 4>(itemCreator);
+    }
+
+    data.WriteGuidBytes<0, 5, 2, 3>(playerGuid);
 
     for (uint8 i = 0; i < MAX_GLYPH_SLOT_INDEX; ++i)
     {
@@ -1606,13 +1559,14 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
         data << uint16(glyph);                  // GlyphProperties.dbc
         ++glyphCount;
     }
-    data.PutBits<uint32>(glyphPos, glyphCount, 25);
 
-    data.WriteByteSeq(playerGuid[0]);
-    data.WriteByteSeq(playerGuid[6]);
-    data.WriteByteSeq(playerGuid[7]);
-    data.WriteByteSeq(playerGuid[1]);
-    data.WriteByteSeq(playerGuid[3]);
+    data << uint32(player->GetSpecializationId(activeSpec));
+
+    data.WriteGuidBytes<1, 6, 7, 4>(playerGuid);
+
+    data.PutBits<uint32>(talentPos, talentCount, 23);
+    data.PutBits<uint32>(glyphPos, glyphCount, 23);
+    data.PutBits<uint32>(equipmentPos, equipmentCount, 20);
 
     SendPacket(&data);
 }

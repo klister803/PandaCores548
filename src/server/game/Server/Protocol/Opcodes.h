@@ -1006,7 +1006,7 @@ enum Opcodes
     SMSG_INSPECT_RATED_BG_STATS                       = 0xB42,  // 5.0.5 16048
     SMSG_INSPECT_HONOR_STATS                          = 0xFD4,  // 5.0.5 16048
     SMSG_INSPECT_RESULTS_UPDATE                       = 0,      // 0x0C14 in 4.3.4 @todo : Find me and BACON !
-    SMSG_INSPECT_TALENT                               = 0xE3D,  // 5.0.5 16048
+    SMSG_INSPECT_TALENT                               = 0x1024, // 5.4.1 17538
     SMSG_INSTANCE_DIFFICULTY                          = 0,      // Not found in 4.3.4
     SMSG_INSTANCE_LOCK_WARNING_QUERY                  = 0xDAA,  // 5.0.5 16048
     SMSG_INSTANCE_RESET                               = 0xD58,  // 5.0.5 16048
