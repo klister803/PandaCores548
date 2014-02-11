@@ -2592,8 +2592,17 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
             canBlock = false;
     }
 
-    if (spell->Id == 24275) // Hammer of Wrath can't parry
-        canParry = false;
+    switch (spell->Id)
+    {
+        case 24275: // Hammer of Wrath
+        case 49998: // Death Strike
+        {
+            canParry = false;
+            break;
+        }
+        default:
+            break;
+    }
 
     // Ignore combat result aura
     AuraEffectList const& ignore = GetAuraEffectsByType(SPELL_AURA_IGNORE_COMBAT_RESULT);
