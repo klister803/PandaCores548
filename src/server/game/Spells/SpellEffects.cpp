@@ -3328,9 +3328,9 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         return;
 
     // Ok if exist some buffs for dispel try dispel it
-    uint32 failCount = 0;
     DispelChargesList success_list;
-    WorldPacket dataFail(SMSG_DISPEL_FAILED, 8+8+4+4+damage*4);
+
+    std::list<uint32> spellFails;
     // dispel N = damage buffs (or while exist buffs for dispel)
     for (int32 count = 0; count < damage && !dispel_list.empty();)
     {
@@ -3365,23 +3365,13 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
                     dispel_list.erase(itr);
             }
             else
-            {
-                if (!failCount)
-                {
-                    // Failed to dispell
-                    dataFail << uint64(m_caster->GetGUID());            // Caster GUID
-                    dataFail << uint64(unitTarget->GetGUID());          // Victim GUID
-                    dataFail << uint32(m_spellInfo->Id);                // dispel spell id
-                }
-                ++failCount;
-                dataFail << uint32(itr->first->GetId());                         // Spell Id
-            }
+                spellFails.push_back(itr->first->GetId());               // Spell Id
             ++count;
         }
     }
 
-    if (failCount)
-        m_caster->SendMessageToSet(&dataFail, true);
+    if (!spellFails.empty())
+        m_caster->SendDispelFailed(unitTarget->GetGUID(), m_spellInfo->Id, spellFails);
 
     if (success_list.empty())
         return;
@@ -3392,21 +3382,15 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
 
     m_caster->ProcDamageAndSpell(unitTarget, PROC_FLAG_DONE_DISPEL_SPELL, PROC_FLAG_TAKEN_DISPEL_SPELL, PROC_EX_NORMAL_HIT, 1, BASE_ATTACK, m_spellInfo);
 
-    WorldPacket dataSuccess(SMSG_SPELLDISPELLOG, 8+8+4+1+4+success_list.size()*5);
-    // Send packet header
-    dataSuccess.append(unitTarget->GetPackGUID());         // Victim GUID
-    dataSuccess.append(m_caster->GetPackGUID());           // Caster GUID
-    dataSuccess << uint32(m_spellInfo->Id);                // dispel spell id
-    dataSuccess << uint8(0);                               // not used
-    dataSuccess << uint32(success_list.size());            // count
+    std::list<uint32> spellSuccess;
+
     for (DispelChargesList::iterator itr = success_list.begin(); itr != success_list.end(); ++itr)
     {
-        // Send dispelled spell info
-        dataSuccess << uint32(itr->first->GetId());              // Spell Id
-        dataSuccess << uint8(0);                        // 0 - dispelled !=0 cleansed
+        spellSuccess.push_back(itr->first->GetId());
         unitTarget->RemoveAurasDueToSpellByDispel(itr->first->GetId(), m_spellInfo->Id, itr->first->GetCasterGUID(), m_caster, itr->second);
     }
-    m_caster->SendMessageToSet(&dataSuccess, true);
+
+    m_caster->SendDispelLog(unitTarget->GetGUID(), m_spellInfo->Id, spellSuccess, false, false);
 
     // On success dispel
     // Devour Magic
@@ -6621,9 +6605,9 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
         return;
 
     // Ok if exist some buffs for dispel try dispel it
-    uint32 failCount = 0;
     DispelList success_list;
-    WorldPacket dataFail(SMSG_DISPEL_FAILED, 8+8+4+4+damage*4);
+
+    std::list<uint32> spellFails;
     // dispel N = damage buffs (or while exist buffs for dispel)
     for (int32 count = 0; count < damage && !steal_list.empty();)
     {
@@ -6648,23 +6632,13 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
                     steal_list.erase(itr);
             }
             else
-            {
-                if (!failCount)
-                {
-                    // Failed to dispell
-                    dataFail << uint64(m_caster->GetGUID());            // Caster GUID
-                    dataFail << uint64(unitTarget->GetGUID());          // Victim GUID
-                    dataFail << uint32(m_spellInfo->Id);                // dispel spell id
-                }
-                ++failCount;
-                dataFail << uint32(itr->first->GetId());                         // Spell Id
-            }
+                spellFails.push_back(itr->first->GetId());              // Spell Id
             ++count;
         }
     }
 
-    if (failCount)
-        m_caster->SendMessageToSet(&dataFail, true);
+    if (!spellFails.empty())
+        m_caster->SendDispelFailed(unitTarget->GetGUID(), m_spellInfo->Id, spellFails);
 
     if (success_list.empty())
         return;
@@ -6673,19 +6647,14 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
     if (m_spellInfo->Id == 30449 && m_caster->HasAura(115713))
         m_caster->CastSpell(m_caster, 115714, true);
 
-    WorldPacket dataSuccess(SMSG_SPELLSTEALLOG, 8+8+4+1+4+damage*5);
-    dataSuccess.append(unitTarget->GetPackGUID());  // Victim GUID
-    dataSuccess.append(m_caster->GetPackGUID());    // Caster GUID
-    dataSuccess << uint32(m_spellInfo->Id);         // dispel spell id
-    dataSuccess << uint8(0);                        // not used
-    dataSuccess << uint32(success_list.size());     // count
+    std::list<uint32> spellSuccess;
     for (DispelList::iterator itr = success_list.begin(); itr!=success_list.end(); ++itr)
     {
-        dataSuccess << uint32(itr->first);          // Spell Id
-        dataSuccess << uint8(0);                    // 0 - steals !=0 transfers
+        spellSuccess.push_back(itr->first);          // Spell Id
         unitTarget->RemoveAurasDueToSpellBySteal(itr->first, itr->second, m_caster);
     }
-    m_caster->SendMessageToSet(&dataSuccess, true);
+
+    m_caster->SendDispelLog(unitTarget->GetGUID(), m_spellInfo->Id, spellSuccess, false, true);
 }
 
 void Spell::EffectKillCreditPersonal(SpellEffIndex effIndex)

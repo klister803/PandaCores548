@@ -16639,7 +16639,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             int32 damageLeft = triggeredByAura->GetAmount();
                             // No damage left
                             if (damageLeft < int32(damage) && triggeredByAura->GetId() != 114052)
+                            {
+                                std::list<uint32> auras;
+                                auras.push_back(i->aura->GetId());
+                                SendDispelLog(target ? target->GetGUID() : 0, procSpell ? procSpell->Id : 0, auras, true, false);
+
                                 i->aura->Remove();
+                            }
                             else if (triggeredByAura->GetId() != 114052)
                                 triggeredByAura->SetAmount(damageLeft - damage);
                         }
@@ -20870,5 +20876,93 @@ void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c)
         data << float(c.float1490);
     if (c.realmId)
         data << uint32(c.realmId);
+}
+
+void Unit::SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList)
+{
+    ObjectGuid sourceGuid = GetObjectGuid();
+
+    WorldPacket data(SMSG_DISPEL_FAILED, spellList.size() * 4 + 8 + 8 + 1 + 1 + 3);
+    data.WriteGuidMask<6>(targetGuid);
+    data.WriteBit(0);       // not has power data
+    data.WriteGuidMask<3>(sourceGuid);
+
+    data.WriteGuidMask<6>(sourceGuid);
+    data.WriteBits(spellList.size(), 22);
+    data.WriteGuidMask<0>(sourceGuid);
+    data.WriteGuidMask<2>(targetGuid);
+    data.WriteGuidMask<2, 4>(sourceGuid);
+    data.WriteGuidMask<1>(targetGuid);
+    data.WriteGuidMask<1, 5>(sourceGuid);
+    data.WriteGuidMask<7, 3, 4, 0>(targetGuid);
+    data.WriteGuidMask<7>(sourceGuid);
+    data.WriteGuidMask<5>(targetGuid);
+
+    data.WriteGuidBytes<4>(targetGuid);
+    data.WriteGuidBytes<4, 2>(sourceGuid);
+    data.WriteGuidBytes<2, 3, 7>(targetGuid);
+    data.WriteGuidBytes<5>(sourceGuid);
+    data.WriteGuidBytes<1>(targetGuid);
+    data.WriteGuidBytes<7, 0>(sourceGuid);
+    data.WriteGuidBytes<6>(targetGuid);
+    data.WriteGuidBytes<1, 3>(sourceGuid);
+    data.WriteGuidBytes<0, 5>(targetGuid);
+    data.WriteGuidBytes<6>(sourceGuid);
+
+    for (std::list<uint32>::const_iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
+        data << uint32(*itr);
+
+    data << uint32(spellId);
+
+    SendMessageToSet(&data, true);
+}
+
+void Unit::SendDispelLog(uint64 unitTargetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen)
+{
+    ObjectGuid casterGuid = GetObjectGuid();
+
+    WorldPacket data(SMSG_SPELLDISPELLOG, 4 + 4 + spellList.size() * 5 + 3 + 1);
+    data.WriteGuidMask<1>(casterGuid);
+    data.WriteBit(stolen);      // used in dispel, 0 - dispeled, 1 - stolen
+    data.WriteGuidMask<7, 2>(casterGuid);
+    data.WriteBit(broke);       // 0 - dispel, 1 - break
+    data.WriteGuidMask<0>(casterGuid);
+    data.WriteGuidMask<3>(unitTargetGuid);
+
+    data.WriteBits(spellList.size(), 22);
+    for (uint32 i = 0; i < spellList.size(); ++i)
+    {
+        data.WriteBit(0);
+        data.WriteBit(!stolen);
+        data.WriteBit(0);
+    }
+
+    data.WriteGuidMask<2, 0>(unitTargetGuid);
+    data.WriteBit(0);           // not has power data
+    data.WriteGuidMask<3>(casterGuid);
+
+    data.WriteGuidMask<5, 4>(casterGuid);
+    data.WriteGuidMask<1, 7, 4, 5, 6>(unitTargetGuid);
+    data.WriteGuidMask<6>(casterGuid);
+
+    data.WriteGuidBytes<5>(unitTargetGuid);
+    data << uint32(spellId);
+
+    for (std::list<uint32>::const_iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
+        data << uint32(*itr);
+
+    data.WriteGuidBytes<3>(casterGuid);
+    data.WriteGuidBytes<7, 2>(unitTargetGuid);
+    data.WriteGuidBytes<1, 0>(casterGuid);
+    data.WriteGuidBytes<3>(unitTargetGuid);
+    data.WriteGuidBytes<7>(casterGuid);
+    data.WriteGuidBytes<0, 4>(unitTargetGuid);
+    data.WriteGuidBytes<2, 6>(casterGuid);
+    data.WriteGuidBytes<1>(unitTargetGuid);
+    data.WriteGuidBytes<4>(casterGuid);
+    data.WriteGuidBytes<6>(unitTargetGuid);
+    data.WriteGuidBytes<5>(casterGuid);
+
+    SendMessageToSet(&data, true);
 }
 

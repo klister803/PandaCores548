@@ -863,7 +863,7 @@ enum Opcodes
     SMSG_DISENCHANT_CREDIT                            = 0xE2D,  // 5.0.5 16048
     SMSG_DISMOUNT                                     = 0x9B3,  // 5.0.5 16048
     SMSG_DISMOUNTRESULT                               = 0xC02,  // 5.0.5 16048
-    SMSG_DISPEL_FAILED                                = 0xD8B,  // 5.0.5 16048
+    SMSG_DISPEL_FAILED                                = 0x10CD, // 5.4.1 17538
     SMSG_DISPLAY_GAME_ERROR                           = 0xA63,  // 5.0.5 16048
     SMSG_DONT_AUTO_PUSH_SPELLS_TO_ACTION_BAR          = 0xBD1,  // 5.0.5 16048
     SMSG_DROP_NEW_CONNECTION                          = 0x527,  // 5.0.5 16048
@@ -1304,9 +1304,9 @@ enum Opcodes
     SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI       = 0x081D, // 5.4.1 17538
     SMSG_SHOW_RATINGS                                 = 0xB99,  // 5.0.5 16048
     SMSG_SOR_START_EXPERIENCE_INCOMPLETE              = 0xAB4,  // 5.0.5 16048
-    SMSG_SPELLBREAKLOG                                = 0xC45,  // 5.0.5 16048
+    SMSG_SPELLBREAKLOG                                = 0,      // 5.4.1 17538 obsolete - use SMSG_SPELLDISPELLOG
     SMSG_SPELLDAMAGESHIELD                            = 0x10E4, // 5.4.1 17538
-    SMSG_SPELLDISPELLOG                               = 0x931,  // 5.0.5 16048
+    SMSG_SPELLDISPELLOG                               = 0x086D, // 5.4.1 17538
     SMSG_SPELLENERGIZELOG                             = 0x9C0,  // 5.0.5 16048
     SMSG_SPELLHEALLOG                                 = 0x890,  // 5.0.5 16048
     SMSG_SPELLINSTAKILLLOG                            = 0xC56,  // 5.0.5 16048
@@ -1315,7 +1315,7 @@ enum Opcodes
     SMSG_SPELLLOGMISS                                 = 0x854,  // 5.0.5 16048
     SMSG_SPELLNONMELEEDAMAGELOG                       = 0x9E0,  // 5.4.1 17538
     SMSG_SPELLORDAMAGE_IMMUNE                         = 0X977,  // 5.0.5 16048
-    SMSG_SPELLSTEALLOG                                = 0xDAC,  // 5.0.5 16048
+    SMSG_SPELLSTEALLOG                                = 0x0,    // 5.4.1 17538 obsolete - use SMSG_SPELLDISPELLOG
     SMSG_SPELL_CATEGORY_COOLDOWN                      = 0x0C49, // 5.4.1 17538
     SMSG_SPELL_COOLDOWN                               = 0x0864, // 5.4.1 17538
     SMSG_SPELL_DELAYED                                = 0x01ED, // 5.4.1 17538

@@ -2337,6 +2337,9 @@ class Unit : public WorldObject
 
         std::deque<uint64> m_livingBombTargets;
 
+        void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
+        void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
+
     protected:
         explicit Unit (bool isWorldObject);
 
