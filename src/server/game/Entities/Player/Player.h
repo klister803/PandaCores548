@@ -2359,6 +2359,8 @@ class Player : public Unit, public GridObject<Player>
         void UpdateRangeHastMod();
         void UpdateHastMod();
 
+        void SetLootSpecID(uint32 spec) { SetUInt32Value(PLAYER_FIELD_LOOT_SPEC_ID, spec); }
+        uint32 GetLootSpecID() const { return GetUInt32Value(PLAYER_FIELD_LOOT_SPEC_ID); }
         uint64 GetLootGUID() const { return m_lootGuid; }
         void SetLootGUID(uint64 guid) { m_lootGuid = guid; }
         void ClearAoeLootList() { m_AoelootGuidList.clear(); }

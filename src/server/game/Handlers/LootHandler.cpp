@@ -496,3 +496,22 @@ void WorldSession::DoLootRelease(uint64 lguid)
     //Player is not looking at loot list, he doesn't need to see updates on the loot list
     loot->RemoveLooter(player->GetGUID());
 }
+
+void WorldSession::HandleLootSpecIdOpcode(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_LOOT_METHOD_FOR_SPECIALIZATION");
+
+    uint32 specID;
+    recvData >> specID;
+
+    if (specID == 0)
+    {
+        _player->SetLootSpecID(0);
+        return;
+    }
+
+    uint8 classId = _player->getClass();
+    ChrSpecializationsEntry const* specialization = sChrSpecializationsStore.LookupEntry(specID);
+    if (specialization && specialization->classId == classId)
+        _player->SetLootSpecID(specID);   
+}

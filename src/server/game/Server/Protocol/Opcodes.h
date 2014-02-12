@@ -319,6 +319,7 @@ enum Opcodes
     CMSG_LOOT_CURRENCY                                = 0,      // 0x781C in 4.3.4  @todo : find me i give you more bacon !
     CMSG_LOOT_MASTER_GIVE                             = 0x1B4F, // 5.4.1 17538
     CMSG_LOOT_METHOD                                  = 0x15E9, // 5.4.1 17538
+    CMSG_LOOT_METHOD_FOR_SPECIALIZATION               = 0x06DD, // 5.4.1 17538
     CMSG_LOOT_MONEY                                   = 0x17DD, // 5.4.1 17538
     CMSG_LOOT_RELEASE                                 = 0x13DE, // 5.4.1 17538
     CMSG_LOOT_ROLL                                    = 0x167D, // 5.4.1 17538
