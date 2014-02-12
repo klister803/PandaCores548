@@ -4541,6 +4541,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ProcCharges = 6;
                     break;
                 case 84964: // Rayne's Seed
+                case 101847: // Shoe Baby
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
                 default:
