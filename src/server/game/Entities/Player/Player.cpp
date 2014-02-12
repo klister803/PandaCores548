@@ -18428,7 +18428,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     uint32 instanceId = fields[52].GetUInt32();
 
     uint32 dungeonDiff = fields[39].GetUInt8() & 0x0F;
-    if (dungeonDiff >= MAX_DUNGEON_DIFFICULTY)
+    if (dungeonDiff >= MAX_DUNGEON_DIFFICULTY || !dungeonDiff)
         dungeonDiff = REGULAR_DIFFICULTY;
     uint32 raidDiff = (fields[39].GetUInt8() >> 4) & 0x0F;
     if (raidDiff >= MAX_RAID_DIFFICULTY)
@@ -20088,14 +20088,15 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave* save, bool permanent, b
         return NULL;
 }
 
+//! 5.4.1
 void Player::BindToInstance()
 {
     InstanceSave* mapSave = sInstanceSaveMgr->GetInstanceSave(_pendingBindId);
     if (!mapSave) //it seems sometimes mapSave is NULL, but I did not check why
         return;
 
-    WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 4);
-    data << uint32(0);
+    WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 1);
+    data << uint8(0);           //debug bit
     GetSession()->SendPacket(&data);
     BindToInstance(mapSave, true);
 
@@ -21497,42 +21498,44 @@ void Player::Customize(uint64 guid, uint8 gender, uint8 skin, uint8 face, uint8 
     CharacterDatabase.Execute(stmt);
 }
 
+//! 5.4.1
 void Player::SendAttackSwingResult(AttackSwing error)
 {
-    //! 5.4.1
     WorldPacket data(SMSG_ATTACKSWING_ERROR, 1);
     data.WriteBits(error, 2);
     GetSession()->SendPacket(&data);
 }
 
+//! 5.4.1
 void Player::SendAutoRepeatCancel(Unit* target)
 {
     ObjectGuid guid = target->GetGUID();    // may be it's target guid
 
-    //! 5.4.1
     WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, 9);
     data.WriteGuidMask<5, 2, 3, 6, 0, 4, 1, 7>(guid);
     data.WriteGuidBytes<1, 6, 5, 7, 2, 4, 0, 3>(guid);
     GetSession()->SendPacket(&data);
 }
 
+//! 5.4.1
 void Player::SendExplorationExperience(uint32 Area, uint32 Experience)
 {
-    //! 5.4.1
+
     WorldPacket data(SMSG_EXPLORATION_EXPERIENCE, 8);
     data << uint32(Experience);
     data << uint32(Area);
     GetSession()->SendPacket(&data);
 }
 
+//! 5.4.1
 void Player::SendDungeonDifficulty()
 {
-    //! 5.4.1
     WorldPacket data(SMSG_SET_DUNGEON_DIFFICULTY, 4);
     data << (uint32)GetDungeonDifficulty();
     GetSession()->SendPacket(&data);
 }
 
+//! 5.4.1
 void Player::SendRaidDifficulty(int32 forcedDifficulty)
 {
     WorldPacket data(MSG_SET_RAID_DIFFICULTY, 4);
@@ -21540,10 +21543,11 @@ void Player::SendRaidDifficulty(int32 forcedDifficulty)
     GetSession()->SendPacket(&data);
 }
 
+//! 5.4.1
 void Player::SendResetFailedNotify(uint32 mapid)
 {
-    WorldPacket data(SMSG_RESET_FAILED_NOTIFY, 4);
-    data << uint32(mapid);
+    WorldPacket data(SMSG_RESET_FAILED_NOTIFY, 0);
+    //data << uint32(mapid);
     GetSession()->SendPacket(&data);
 }
 

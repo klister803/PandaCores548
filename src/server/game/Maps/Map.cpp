@@ -2544,8 +2544,9 @@ void InstanceMap::PermBindAllPlayers(Player* source)
         if (!bind || !bind->perm)
         {
             player->BindToInstance(save, true);
-            WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 4);
-            data << uint32(0);
+            //! 5.4.1
+            WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 1);
+            data << uint8(0);       //debug bit
             player->GetSession()->SendPacket(&data);
 
             player->GetSession()->SendCalendarRaidLockout(save, true);

@@ -1012,7 +1012,7 @@ enum Opcodes
     SMSG_INSTANCE_LOCK_WARNING_QUERY                  = 0xDAA,  // 5.0.5 16048
     SMSG_INSTANCE_RESET                               = 0x0526, // 5.4.1 17538
     SMSG_INSTANCE_RESET_FAILED                        = 0x0CA7, // 5.4.1 17538
-    SMSG_INSTANCE_SAVE_CREATED                        = 0xCFC,  // 5.0.5 16048
+    SMSG_INSTANCE_SAVE_CREATED                        = 0x1105, // 5.4.1 17538
     SMSG_INVALIDATE_DANCE                             = 0xD7E,  // 5.0.5 16048
     SMSG_INVALIDATE_PLAYER                            = 0x8CA,  // 5.0.5 16048
     SMSG_INVALID_PROMOTION_CODE                       = 0xC2F,  // 5.0.5 16048
@@ -1264,7 +1264,7 @@ enum Opcodes
     SMSG_RESEARCH_COMPLETE                            = 0xBF3,  // 5.0.5 16048
     SMSG_RESEARCH_SETUP_HISTORY                       = 0xBF1,  // 5.0.5 16048
     SMSG_RESET_COMPRESSION_CONTEXT                    = 0x627,  // 5.0.5 16048
-    SMSG_RESET_FAILED_NOTIFY                          = 0xD3E,  // 5.0.5 16048
+    SMSG_RESET_FAILED_NOTIFY                          = 0x0007, // 5.4.1 17538
     SMSG_RESISTLOG                                    = 0,      // Not found in 4.3.4
     SMSG_RESPEC_WIPE_CONFIRM                          = 0x099F, // 5.4.1 17538
     SMSG_RESPOND_INSPECT_ACHIEVEMENTS                 = 0x04AF, // 5.4.1 17538
