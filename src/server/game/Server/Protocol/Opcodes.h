@@ -882,8 +882,8 @@ enum Opcodes
     SMSG_ENCHANTMENTLOG                               = 0xC49,  // 5.0.5 16048
     SMSG_ENVIRONMENTALDAMAGELOG                       = 0x951,  // 5.0.5 16048
     SMSG_EQUIPMENT_SET_LIST                           = 0x0CBF, // 5.4.1 17538
-    SMSG_EQUIPMENT_SET_SAVED                          = 0x990,  // 5.0.5 16048
-    SMSG_EQUIPMENT_SET_USE_RESULT                     = 0xC52,  // 5.0.5 16048
+    SMSG_EQUIPMENT_SET_SAVED                          = 0x1426, // 5.4.1 17538
+    SMSG_EQUIPMENT_SET_USE_RESULT                     = 0x0516, // 5.4.1 17538
     SMSG_EXPECTED_SPAM_RECORDS                        = 0xC4D,  // 5.0.5 16048
     SMSG_EXPLORATION_EXPERIENCE                       = 0x092C, // 5.4.1 17538
     SMSG_FAILED_PLAYER_CONDITION                      = 0xA46,  // 5.0.5 16048
@@ -1095,7 +1095,7 @@ enum Opcodes
     SMSG_MINIMAP_PING                                 = 0x058F, // 5.4.1 17538
     SMSG_MINIGAME_SETUP                               = 0x9D3,  // 5.0.5 16048
     SMSG_MINIGAME_STATE                               = 0xC57,  // 5.0.5 16048
-    SMSG_MIRRORIMAGE_DATA                             = 0xDC1,  // 5.0.5 16048
+    SMSG_MIRRORIMAGE_DATA                             = 0x146D, // 5.4.1 17538
     SMSG_MISSILE_CANCEL                               = 0xFD1,  // 5.0.5 16048
     SMSG_MODIFY_COOLDOWN                              = 0x9C7,  // 5.0.5 16048
     SMSG_MONSTER_MOVE                                 = 0x0216, // 5.4.1 17538

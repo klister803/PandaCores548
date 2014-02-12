@@ -32,9 +32,10 @@ void WorldSession::HandleTaxiNodeStatusQueryOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_TAXINODE_STATUS_QUERY");
 
-    uint64 guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<0, 7, 6, 5, 4, 1, 3, 2>(guid);
+    recvData.ReadGuidBytes<7, 0, 5, 2, 3, 4, 1, 6>(guid);
 
-    recvData >> guid;
     SendTaxiStatus(guid);
 }
 
@@ -71,8 +72,8 @@ void WorldSession::HandleTaxiQueryAvailableNodes(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_TAXIQUERYAVAILABLENODES");
 
     ObjectGuid guid;
-    recvData.ReadGuidMask<5, 1, 7, 6, 3, 0, 2, 4>(guid);
-    recvData.ReadGuidBytes<4, 6, 2, 7, 0, 3, 1, 5>(guid);
+    recvData.ReadGuidMask<7, 6, 2, 5, 0, 3, 1, 4>(guid);
+    recvData.ReadGuidBytes<5, 1, 7, 6, 3, 2, 0, 4>(guid);
 
     // cheating checks
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);

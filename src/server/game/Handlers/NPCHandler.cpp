@@ -823,10 +823,30 @@ void WorldSession::HandleRepairItemOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REPAIR_ITEM");
 
-    uint64 npcGUID, itemGUID;
-    uint8 guildBank;                                        // new in 2.3.2, bool that means from guild bank money
+    ObjectGuid npcGUID, itemGUID;
+    bool guildBank;                                         // new in 2.3.2, bool that means from guild bank money
 
-    recvData >> npcGUID >> itemGUID >> guildBank;
+    recvData.ReadGuidMask<4>(npcGUID);
+    recvData.ReadGuidMask<0>(itemGUID);
+    recvData.ReadGuidMask<7>(npcGUID);
+    recvData.ReadGuidMask<2, 1>(itemGUID);
+    recvData.ReadGuidMask<5>(npcGUID);
+    recvData.ReadGuidMask<3>(itemGUID);
+    recvData.ReadGuidMask<2>(npcGUID);
+    guildBank = recvData.ReadBit();
+    recvData.ReadGuidMask<3, 0>(npcGUID);
+    recvData.ReadGuidMask<7, 4>(itemGUID);
+    recvData.ReadGuidMask<6, 1>(npcGUID);
+    recvData.ReadGuidMask<6, 5>(itemGUID);
+
+    recvData.ReadGuidBytes<2>(npcGUID);
+    recvData.ReadGuidBytes<6, 5, 2>(itemGUID);
+    recvData.ReadGuidBytes<1, 7>(npcGUID);
+    recvData.ReadGuidBytes<4, 7>(itemGUID);
+    recvData.ReadGuidBytes<5, 4>(npcGUID);
+    recvData.ReadGuidBytes<1>(itemGUID);
+    recvData.ReadGuidBytes<3, 6, 0>(npcGUID);
+    recvData.ReadGuidBytes<0, 3>(itemGUID);
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(npcGUID, UNIT_NPC_FLAG_REPAIR);
     if (!unit)

@@ -1807,25 +1807,19 @@ void WorldSession::HandleFarSightOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_FAR_SIGHT");
 
-    uint8 apply;
-    recvData >> apply;
-
-    switch (apply)
+    bool apply = recvData.ReadBit();
+    if (!apply)
     {
-    case 0:
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Player %u set vision to self", _player->GetGUIDLow());
         _player->SetSeer(_player);
-        break;
-    case 1:
+    }
+    else
+    {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Added FarSight " UI64FMTD " to player %u", _player->GetUInt64Value(PLAYER_FARSIGHT), _player->GetGUIDLow());
         if (WorldObject* target = _player->GetViewpoint())
             _player->SetSeer(target);
         else
             sLog->outError(LOG_FILTER_NETWORKIO, "Player %s requests non-existing seer " UI64FMTD, _player->GetName(), _player->GetUInt64Value(PLAYER_FARSIGHT));
-        break;
-    default:
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
-        return;
     }
 
     GetPlayer()->UpdateVisibilityForPlayer();
