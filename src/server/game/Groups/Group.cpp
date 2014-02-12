@@ -1502,6 +1502,7 @@ void Group::DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot*
     {
         r->setLoot(loot);
         r->itemSlot = slot;
+        r->aoeSlot = ++m_aoe_slots;     //restart at next loot. it's normall
 
         RollId.push_back(r);
     }
