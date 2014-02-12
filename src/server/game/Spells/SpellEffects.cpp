@@ -335,10 +335,33 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     if (m_caster == unitTarget)                              // prevent interrupt message
         finish();
 
+    ObjectGuid targetGuid = unitTarget->GetObjectGuid();
+    ObjectGuid casterGuid = m_caster->GetObjectGuid();
+
     WorldPacket data(SMSG_SPELLINSTAKILLLOG, 8+8+4);
-    data << uint64(m_caster->GetGUID());
-    data << uint64(unitTarget->GetGUID());
+    data.WriteGuidMask<1, 3>(targetGuid);
+    data.WriteGuidMask<5, 4>(casterGuid);
+    data.WriteGuidMask<7>(targetGuid);
+    data.WriteGuidMask<1, 0, 6>(casterGuid);
+    data.WriteGuidMask<0, 5>(targetGuid);
+    data.WriteGuidMask<2, 7>(casterGuid);
+    data.WriteGuidMask<6>(targetGuid);
+    data.WriteGuidMask<3>(casterGuid);
+    data.WriteGuidMask<2>(targetGuid);
+    data.WriteBit(0);       // not has power data
+    data.WriteGuidMask<4>(targetGuid);
+    data.WriteGuidBytes<5>(casterGuid);
+    data.WriteGuidBytes<4>(targetGuid);
+    data.WriteGuidBytes<3, 0>(casterGuid);
+    data.WriteGuidBytes<0, 1, 5>(targetGuid);
+    data.WriteGuidBytes<2>(casterGuid);
+    data.WriteGuidBytes<7>(targetGuid);
+    data.WriteGuidBytes<1, 4, 6>(casterGuid);
+    data.WriteGuidBytes<2>(targetGuid);
+    data.WriteGuidBytes<7>(casterGuid);
+    data.WriteGuidBytes<6, 3>(targetGuid);
     data << uint32(m_spellInfo->Id);
+
     m_caster->SendMessageToSet(&data, true);
 
     m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);

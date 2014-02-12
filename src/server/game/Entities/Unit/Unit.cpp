@@ -5296,15 +5296,33 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
 
 void Unit::SendSpellMiss(Unit* target, uint32 spellID, SpellMissInfo missInfo)
 {
-    WorldPacket data(SMSG_SPELLLOGMISS, (4+8+1+4+8+1));
+    ObjectGuid casterGuid = GetObjectGuid();
+    ObjectGuid targetGuid = target->GetObjectGuid();
+
+    WorldPacket data(SMSG_SPELLLOGMISS, 8 + 8 + 1 + 1 + 1 + 3 + 4);
+    data.WriteGuidMask<5, 2, 4>(casterGuid);
+    data.WriteBit(0);           // not has power data
+    data.WriteGuidMask<1>(casterGuid);
+
+    data.WriteBits(1, 23);      // miss count
+    //for (var i = 0; i < missCount; ++i)
+    {
+        data.WriteBit(0);       // not has floats
+        data.WriteGuidMask<1, 0, 3, 4, 5, 7, 2, 6>(targetGuid);
+    }
+
+    data.WriteGuidMask<0, 6, 3, 7>(casterGuid);
+
+    //for (var i = 0; i < missCount; ++i)
+    {
+        data.WriteGuidBytes<4, 0, 1, 7, 6, 3, 5>(targetGuid);
+        data << uint8(missInfo);
+        data.WriteGuidBytes<2>(targetGuid);
+    }
+
+    data.WriteGuidBytes<3, 6, 4, 2, 1, 7, 5, 0>(casterGuid);
     data << uint32(spellID);
-    data << uint64(GetGUID());
-    data << uint8(0);                                       // can be 0 or 1
-    data << uint32(1);                                      // target count
-    // for (i = 0; i < target count; ++i)
-    data << uint64(target->GetGUID());                      // target GUID
-    data << uint8(missInfo);
-    // end loop
+
     SendMessageToSet(&data, true);
 }
 
@@ -5320,11 +5338,32 @@ void Unit::SendSpellDamageResist(Unit* target, uint32 spellId)
 
 void Unit::SendSpellDamageImmune(Unit* target, uint32 spellId)
 {
-    WorldPacket data(SMSG_SPELLORDAMAGE_IMMUNE, 8+8+4+1);
-    data << uint64(GetGUID());
-    data << uint64(target->GetGUID());
+    ObjectGuid casterGuid = GetObjectGuid();
+    ObjectGuid targetGuid = target->GetObjectGuid();
+
+    WorldPacket data(SMSG_SPELLORDAMAGE_IMMUNE, 8 + 8 + 4 + 1 + 1 + 1);
+    data.WriteGuidMask<3, 1>(targetGuid);
+    data.WriteGuidMask<1, 5>(casterGuid);
+    data.WriteBit(1);       // 1 - spell immmune, 0 - damage? (1 seen only)
+    data.WriteGuidMask<7>(targetGuid);
+    data.WriteGuidMask<7, 2>(casterGuid);
+    data.WriteGuidMask<5>(targetGuid);
+    data.WriteGuidMask<3, 0>(casterGuid);
+    data.WriteBit(0);       // not has power data
+    data.WriteGuidMask<4>(casterGuid);
+    data.WriteGuidMask<0>(targetGuid);
+    data.WriteGuidMask<6>(casterGuid);
+    data.WriteGuidMask<6>(targetGuid);
+
+    data.WriteGuidMask<2, 4>(targetGuid);
+    data.WriteGuidBytes<1, 4, 2>(casterGuid);
+    data.WriteGuidBytes<4, 5>(targetGuid);
+    data.WriteGuidBytes<0, 6>(casterGuid);
+    data.WriteGuidBytes<2, 6>(targetGuid);
+    data.WriteGuidBytes<7, 3, 5>(casterGuid);
     data << uint32(spellId);
-    data << uint8(0); // bool - log format: 0-default, 1-debug
+    data.WriteGuidBytes<0, 7, 1, 3>(targetGuid);
+
     SendMessageToSet(&data, true);
 }
 
@@ -11252,16 +11291,42 @@ void Unit::UnsummonAllTotems()
 
 void Unit::SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 OverHeal, uint32 Absorb, bool critical)
 {
-    // we guess size
-    WorldPacket data(SMSG_SPELLHEALLOG, (8+8+4+4+4+4+1+1));
-    data.append(victim->GetPackGUID());
-    data.append(GetPackGUID());
-    data << uint32(SpellID);
+    ObjectGuid casterGuid = GetObjectGuid();
+    ObjectGuid targetGuid = victim->GetObjectGuid();
+
+    WorldPacket data(SMSG_SPELLHEALLOG, 4 * 4 + 8 + 8 + 1 + 1 + 1);
+
+    data.WriteGuidMask<4>(casterGuid);
+    data.WriteGuidMask<5, 3>(targetGuid);
+    data.WriteBit(0);       // not has float
+    data.WriteGuidMask<3>(casterGuid);
+    data.WriteGuidMask<7>(targetGuid);
+    data.WriteGuidMask<0, 5>(casterGuid);
+    data.WriteGuidMask<0>(targetGuid);
+    data.WriteGuidMask<7, 1>(casterGuid);
+    data.WriteBit(critical);
+    data.WriteGuidMask<6>(casterGuid);
+    data.WriteGuidMask<1, 6, 2>(targetGuid);
+    data.WriteGuidMask<2>(casterGuid);
+    data.WriteBit(0);       // not has float
+    data.WriteGuidMask<4>(targetGuid);
+    data.WriteBit(0);       // not has power data
+
     data << uint32(Damage);
+    data.WriteGuidBytes<1>(targetGuid);
+    data.WriteGuidBytes<7>(casterGuid);
+    data.WriteGuidBytes<7>(targetGuid);
+    data.WriteGuidBytes<3, 6, 5>(casterGuid);
+    data.WriteGuidBytes<2>(targetGuid);
     data << uint32(OverHeal);
+    data.WriteGuidBytes<0, 6>(targetGuid);
+    data.WriteGuidBytes<4>(casterGuid);
+    data.WriteGuidBytes<5>(targetGuid);
+    data.WriteGuidBytes<4, 3>(targetGuid);
+    data << uint32(SpellID);
     data << uint32(Absorb); // Absorb amount
-    data << uint8(critical ? 1 : 0);
-    data << uint8(0); // unused
+    data.WriteGuidBytes<2, 1, 0>(casterGuid);
+
     SendMessageToSet(&data, true);
 }
 
