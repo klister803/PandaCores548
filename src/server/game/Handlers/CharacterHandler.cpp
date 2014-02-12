@@ -1341,14 +1341,14 @@ void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 void WorldSession::HandleShowingHelmOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_SHOWING_HELM for %s", _player->GetName());
-    recvData.read_skip<uint8>(); // unknown, bool?
+    recvData.ReadBit(); // on / off
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
 }
 
 void WorldSession::HandleShowingCloakOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_SHOWING_CLOAK for %s", _player->GetName());
-    recvData.read_skip<uint8>(); // unknown, bool?
+    recvData.ReadBit(); // on / off
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
 }
 

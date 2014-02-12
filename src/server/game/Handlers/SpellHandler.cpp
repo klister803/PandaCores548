@@ -1247,8 +1247,12 @@ void WorldSession::HandleSpellClick(WorldPacket& recvData)
     else
        timeLastHandleSpellClick = now;
 
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<1, 7, 2, 5, 0, 6>(guid);
+    recvData.ReadBit();
+    recvData.ReadGuidMask<3, 4>(guid);
+
+    recvData.ReadGuidBytes<2, 3, 6, 5, 4, 1, 0, 7>(guid);
 
     // this will get something not in world. crash
     Creature* unit = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);

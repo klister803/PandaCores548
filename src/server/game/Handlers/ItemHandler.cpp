@@ -1370,10 +1370,30 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Received opcode CMSG_WRAP_ITEM");
 
-    uint8 gift_bag, gift_slot, item_bag, item_slot;
+    uint8 gift_bag = 0, gift_slot = 0, item_bag = 0, item_slot = 0;
 
-    recvData >> gift_bag >> gift_slot;                     // paper
-    recvData >> item_bag >> item_slot;                     // item
+    uint8 count = recvData.ReadBits(2);
+    if (count != 2)
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WRAP: data count != 2 (%u)", count);
+        recvData.rfinish();
+        return;
+    }
+
+    bool bits[2][2];
+    for (uint8 i = 0; i < count; ++i)
+    {
+        bits[i][0] = !recvData.ReadBit();
+        bits[i][1] = !recvData.ReadBit();
+    }
+    if (bits[0][1])
+        recvData >> gift_slot;
+    if (bits[0][0])
+        recvData >> gift_bag;
+    if (bits[1][1])
+        recvData >> item_slot;
+    if (bits[1][0])
+        recvData >> item_bag;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WRAP: receive gift_bag = %u, gift_slot = %u, item_bag = %u, item_slot = %u", gift_bag, gift_slot, item_bag, item_slot);
 
@@ -1481,15 +1501,49 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_SOCKET_GEMS");
 
-    uint64 item_guid;
-    uint64 gem_guids[MAX_GEM_SOCKETS];
+    ObjectGuid item_guid;
+    ObjectGuid gem_guids[MAX_GEM_SOCKETS];
 
-    recvData >> item_guid;
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidMask<2>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidMask<1>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidMask<4>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidMask<7>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidMask<5>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidMask<6>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidMask<0>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidMask<3>(gem_guids[i]);
+
+    recvData.ReadGuidMask<0, 4, 3, 7, 1, 5, 6, 2>(item_guid);
+
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidBytes<2>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidBytes<1>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidBytes<4>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidBytes<7>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidBytes<6>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidBytes<3>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidBytes<0>(gem_guids[i]);
+    for (uint8 i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recvData.ReadGuidBytes<5>(gem_guids[i]);
+
+    recvData.ReadGuidBytes<6, 0, 4, 2, 5, 3, 1, 7>(item_guid);
+
     if (!item_guid)
         return;
-
-    for (int i = 0; i < MAX_GEM_SOCKETS; ++i)
-        recvData >> gem_guids[i];
 
     //cheat -> tried to socket same gem multiple times
     if ((gem_guids[0] && (gem_guids[0] == gem_guids[1] || gem_guids[0] == gem_guids[2])) ||
