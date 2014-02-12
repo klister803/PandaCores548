@@ -1305,7 +1305,7 @@ enum Opcodes
     SMSG_SHOW_RATINGS                                 = 0xB99,  // 5.0.5 16048
     SMSG_SOR_START_EXPERIENCE_INCOMPLETE              = 0xAB4,  // 5.0.5 16048
     SMSG_SPELLBREAKLOG                                = 0xC45,  // 5.0.5 16048
-    SMSG_SPELLDAMAGESHIELD                            = 0xDA5,  // 5.0.5 16048
+    SMSG_SPELLDAMAGESHIELD                            = 0x10E4, // 5.4.1 17538
     SMSG_SPELLDISPELLOG                               = 0x931,  // 5.0.5 16048
     SMSG_SPELLENERGIZELOG                             = 0x9C0,  // 5.0.5 16048
     SMSG_SPELLHEALLOG                                 = 0x890,  // 5.0.5 16048
@@ -1368,7 +1368,7 @@ enum Opcodes
     SMSG_TALENTS_INVOLUNTARILY_RESET                  = 0x9E1,  // 5.0.5 16048
     SMSG_TAXINODE_STATUS                              = 0x141D, // 5.4.1 17538
     SMSG_TEST_DROP_RATE_RESULT                        = 0x000,  // 5.0.5 16048 Unused
-    SMSG_TEXT_EMOTE                                   = 0x880,  // 5.0.5 16048
+    SMSG_TEXT_EMOTE                                   = 0x10A6, // 5.4.1 17538
     SMSG_THREAT_CLEAR                                 = 0x141C, // 5.4.1 17538
     SMSG_THREAT_REMOVE                                = 0x0CB7, // 5.4.1 17538
     SMSG_THREAT_UPDATE                                = 0x118D, // 5.4.1 17538

@@ -724,18 +724,30 @@ namespace Trinity
 
             void operator()(WorldPacket& data, LocaleConstant loc_idx)
             {
-                char const* nam = i_target ? i_target->GetNameForLocaleIdx(loc_idx) : NULL;
-                uint32 namlen = (nam ? strlen(nam) : 0) + 1;
+                ObjectGuid targetGuid = i_target ? i_target->GetGUID() : 0;
+                ObjectGuid sourceGuid = i_player.GetGUID();
 
-                data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
-                data << i_player.GetGUID();
-                data << (uint32)i_text_emote;
-                data << i_emote_num;
-                data << (uint32)namlen;
-                if (namlen > 1)
-                    data.append(nam, namlen);
-                else
-                    data << (uint8)0x00;
+                data.Initialize(SMSG_TEXT_EMOTE, 4 + 4 + 8 + 8 + 1 + 1);
+                data.WriteGuidMask<2>(targetGuid);
+                data.WriteGuidMask<1, 3, 6, 7>(sourceGuid);
+                data.WriteGuidMask<5, 7>(targetGuid);
+                data.WriteGuidMask<5>(sourceGuid);
+                data.WriteGuidMask<1>(targetGuid);
+                data.WriteGuidMask<2, 0>(sourceGuid);
+                data.WriteGuidMask<6>(targetGuid);
+                data.WriteGuidMask<4>(sourceGuid);
+                data.WriteGuidMask<3, 4, 0>(targetGuid);
+
+                data.WriteGuidBytes<2>(sourceGuid);
+                data.WriteGuidBytes<1>(targetGuid);
+                data.WriteGuidBytes<7, 3, 6>(sourceGuid);
+                data << uint32(i_text_emote);
+                data.WriteGuidBytes<6, 5>(targetGuid);
+                data.WriteGuidBytes<5, 4>(sourceGuid);
+                data.WriteGuidBytes<4, 2, 7, 0, 3>(targetGuid);
+                data.WriteGuidBytes<0>(sourceGuid);
+                data << uint32(i_emote_num);
+                data.WriteGuidBytes<1>(sourceGuid);
             }
 
         private:
@@ -759,11 +771,13 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recvData)
     }
 
     uint32 text_emote, emoteNum;
-    uint64 guid;
+    ObjectGuid guid;
 
     recvData >> text_emote;
     recvData >> emoteNum;
-    recvData >> guid;
+
+    recvData.ReadGuidMask<5, 7, 2, 3, 1, 0, 6, 4>(guid);
+    recvData.ReadGuidBytes<7, 0, 6, 2, 3, 5, 1, 4>(guid);
 
     sScriptMgr->OnPlayerTextEmote(GetPlayer(), text_emote, emoteNum, guid);
 

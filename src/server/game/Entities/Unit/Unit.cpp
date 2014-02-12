@@ -1699,15 +1699,37 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
             victim->DealDamageMods(this, damage, NULL);
 
             // TODO: Move this to a packet handler
-            WorldPacket data(SMSG_SPELLDAMAGESHIELD, 8 + 8 + 4 + 4 + 4 + 4 + 4);
-            data << uint64(victim->GetGUID());
-            data << uint64(GetGUID());
-            data << uint32(i_spellProto->Id);
-            data << uint32(damage);                  // Damage
+            ObjectGuid victimGuid = victim->GetGUID();
+            ObjectGuid sourceGuid = GetGUID();
             int32 overkill = int32(damage) - int32(GetHealth());
-            data << uint32(overkill > 0 ? overkill : 0); // Overkill
+
+            WorldPacket data(SMSG_SPELLDAMAGESHIELD, 8 + 8 + 4 + 4 + 4 + 4 + 4);
+
+            data.WriteGuidMask<3>(sourceGuid);
+            data.WriteBit(0);       // not has power data
+            data.WriteGuidMask<1>(victimGuid);
+            data.WriteGuidMask<1>(sourceGuid);
+
+            data.WriteGuidMask<3, 5, 0>(victimGuid);
+            data.WriteGuidMask<4>(sourceGuid);
+            data.WriteGuidMask<7, 6, 2, 4>(victimGuid);
+            data.WriteGuidMask<2, 7, 5, 0, 6>(sourceGuid);
+
+            data.WriteGuidBytes<1>(sourceGuid);
+
+            data.WriteGuidBytes<7>(victimGuid);
+            data.WriteGuidBytes<6, 7>(sourceGuid);
+            data.WriteGuidBytes<5, 6, 3, 1, 0>(victimGuid);
+            data.WriteGuidBytes<5, 2>(sourceGuid);
+            data << uint32(overkill > 0 ? overkill : 0);    // Overkill
+            data << uint32(damage);                         // Damage
+            data.WriteGuidBytes<4>(victimGuid);
+            data << uint32(-1);                             // FIX ME: Send resisted damage, both fully resisted and partly resisted
             data << uint32(i_spellProto->SchoolMask);
-            data << uint32(0); // FIX ME: Send resisted damage, both fully resisted and partly resisted
+            data.WriteGuidBytes<0>(sourceGuid);
+            data << uint32(i_spellProto->Id);
+            data.WriteGuidBytes<2>(victimGuid);
+            data.WriteGuidBytes<3, 4>(sourceGuid);
             victim->SendMessageToSet(&data, true);
 
             victim->DealDamage(this, damage, 0, SPELL_DIRECT_DAMAGE, i_spellProto->GetSchoolMask(), i_spellProto, true);
