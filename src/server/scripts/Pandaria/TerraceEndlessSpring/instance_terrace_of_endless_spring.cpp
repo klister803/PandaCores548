@@ -139,14 +139,27 @@ public:
                         for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
                             HandleGameObject(*guid, true);
 
-                       /* for (std::vector<uint64>::const_iterator guid = leishiexdoorGuids.begin(); guid != leishiexdoorGuids.end(); guid++)
-                            HandleGameObject(*guid, true);*/
+                        for (std::vector<uint64>::const_iterator guid = leishiexdoorGuids.begin(); guid != leishiexdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
                         break;
                     }
                     break;
                 }
-            default:
-                break;
+            case DATA_SHA_OF_FEAR:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator guid = leishiexdoorGuids.begin(); guid != leishiexdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator guid = leishiexdoorGuids.begin(); guid != leishiexdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        break;
+                    }
+                }
             }
             return true;
         }

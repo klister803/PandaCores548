@@ -3339,7 +3339,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 83968: // Mass Resurrection
+                case 121093: // Monk - Gift of the Naaru
+                    spellInfo->SpellFamilyName = SPELLFAMILY_MONK;
+                    break;
+                case 83968:  // Mass Resurrection
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_PARTY;
                     break;
@@ -3569,8 +3572,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
-                case 64422: // Sonic Screech (Auriaya)
+                case 64422:  // Sonic Screech (Auriaya)
                 case 122994: // Unseen Strike
+                case 117921: // Massive Attacks
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
@@ -4320,12 +4324,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
                 //Lei Shi
-                case 123121:
+                case 123121: //Spray
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
                     spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
                     break;
-
-
+                //Sha of Fear
+                case 119495: //Eerie skull trigger spell
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    break;
+                case 119086: //Penetrating bolt trigger spell
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    break;
 
                     
                 //World Boss

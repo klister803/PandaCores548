@@ -746,14 +746,14 @@ void AddSC_boss_garajal();
 void AddSC_boss_spirit_kings();
 void AddSC_boss_elegon();
 void AddSC_boss_will_of_emperor();
-void AddSC_instance_heart_of_fear();                //Heart of Fear
+void AddSC_instance_heart_of_fear();                // Heart of Fear
 void AddSC_boss_vizier_zorlok();
 void AddSC_boss_lord_tayak();
 void AddSC_boss_garalon();
 void AddSC_boss_lord_meljarak();
 void AddSC_boss_unsok();
 void AddSC_boss_empress_shekzeer();
-void AddSC_instance_terrace_of_endless_spring();    //Terrace of Endless Spring
+void AddSC_instance_terrace_of_endless_spring();    // Terrace of Endless Spring
 void AddSC_boss_protectors();
 void AddSC_boss_tsulong();
 void AddSC_boss_lei_shi();
