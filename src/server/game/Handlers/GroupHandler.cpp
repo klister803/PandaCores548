@@ -45,7 +45,8 @@ class Aura;
 -group_destroyed msg is sent but not shown
 -reduce xp gaining when in raid group
 -quest sharing has to be corrected
--FIX sending PartyMemberStats
+-Master Loor corrections in sending SMSG_LOOT_MASTER_LIST
+-raid markers
 */
 
 //! 5.4.1
@@ -1464,123 +1465,6 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
     // Send group target icons too
     if (Group* group = player->GetGroup())
         group->SendTargetIconList(this);
-
-    /*Pet* pet = player->GetPet();
-
-    WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 4+2+2+2+1+2*6+8+1+8);
-    data << uint8(0);                                       // only for SMSG_PARTY_MEMBER_STATS_FULL, probably arena/bg related
-    data.append(player->GetPackGUID());
-
-    uint32 mask1 = GROUP_UPDATE_FULL;
-
-    if (!pet)
-        mask1 &= ~GROUP_UPDATE_PET;
-
-    Powers powerType = player->getPowerType();
-    data << uint32(mask1);                                // group update mask
-    data << uint16(MEMBER_STATUS_ONLINE);                 // member's online status, GROUP_UPDATE_FLAG_STATUS
-    data << uint32(player->GetHealth());                  // GROUP_UPDATE_FLAG_CUR_HP
-    data << uint32(player->GetMaxHealth());               // GROUP_UPDATE_FLAG_MAX_HP
-    data << uint8 (powerType);                            // GROUP_UPDATE_FLAG_POWER_TYPE
-    data << uint16(player->GetPower(powerType));          // GROUP_UPDATE_FLAG_CUR_POWER
-    data << uint16(player->GetMaxPower(powerType));       // GROUP_UPDATE_FLAG_MAX_POWER
-    data << uint16(player->getLevel());                   // GROUP_UPDATE_FLAG_LEVEL
-    data << uint16(player->GetZoneId());                  // GROUP_UPDATE_FLAG_ZONE
-    data << uint16(player->GetPositionX());               // GROUP_UPDATE_FLAG_POSITION
-    data << uint16(player->GetPositionY());               // GROUP_UPDATE_FLAG_POSITION
-    data << uint16(player->GetPositionZ());               // GROUP_UPDATE_FLAG_POSITION
-
-    // GROUP_UPDATE_FLAG_AURAS
-    data << uint8(1);
-    uint64 auramask = 0;
-    size_t maskPos = data.wpos();
-    data << uint64(auramask);                          // placeholder
-    data << uint32(MAX_AURAS);                         // count
-    for (uint8 i = 0; i < MAX_AURAS; ++i)
-    {
-        if (AuraApplication const* aurApp = player->GetVisibleAura(i))
-        {
-            auramask |= (uint64(1) << i);
-
-            data << uint32(aurApp->GetBase()->GetId());
-            data << uint16(aurApp->GetFlags());
-
-            if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
-            {
-                size_t pos = data.wpos();
-                uint8 count = 0;
-
-                data << uint8(0);
-                for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                {
-                    if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
-                    {
-                        data << float(eff->GetAmount());
-                        count++;
-                    }
-                }
-                data.put(pos, count);
-            }
-        }
-    }
-    data.put<uint64>(maskPos, auramask);                    // GROUP_UPDATE_FLAG_AURAS
-
-    if (pet)
-    {
-        Powers petpowertype = pet->getPowerType();
-        data << uint64(pet->GetGUID());                     // GROUP_UPDATE_FLAG_PET_GUID
-        data << pet->GetName();                             // GROUP_UPDATE_FLAG_PET_NAME
-        data << uint16(pet->GetDisplayId());                // GROUP_UPDATE_FLAG_PET_MODEL_ID
-        data << uint32(pet->GetHealth());                   // GROUP_UPDATE_FLAG_PET_CUR_HP
-        data << uint32(pet->GetMaxHealth());                // GROUP_UPDATE_FLAG_PET_MAX_HP
-        data << uint8 (petpowertype);                       // GROUP_UPDATE_FLAG_PET_POWER_TYPE
-        data << uint16(pet->GetPower(petpowertype));        // GROUP_UPDATE_FLAG_PET_CUR_POWER
-        data << uint16(pet->GetMaxPower(petpowertype));     // GROUP_UPDATE_FLAG_PET_MAX_POWER
-
-        // GROUP_UPDATE_FLAG_PET_AURAS
-        data << uint8(1);
-        uint64 petauramask = 0;
-        size_t petMaskPos = data.wpos();
-        data << uint64(petauramask);                       // placeholder
-        data << uint32(MAX_AURAS);                         // count
-        for (uint8 i = 0; i < MAX_AURAS; ++i)
-        {
-            if (AuraApplication const* aurApp = pet->GetVisibleAura(i))
-            {
-                petauramask |= (uint64(1) << i);
-
-                data << uint32(aurApp->GetBase()->GetId());
-                data << uint16(aurApp->GetFlags());
-
-                if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
-                {
-                    size_t pos = data.wpos();
-                    uint8 count = 0;
-
-                    data << uint8(0);
-                    for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                    {
-                        if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
-                        {
-                            data << float(eff->GetAmount());
-                            count++;
-                        }
-                    }
-                    data.put(pos, count);
-                }
-            }
-        }
-
-        data.put<uint64>(petMaskPos, petauramask);           // GROUP_UPDATE_FLAG_PET_AURAS
-    }
-    // else not needed, flags do not include any PET_ update
-
-    // GROUP_UPDATE_FLAG_PHASE
-    data << uint32(8); // either 0 or 8, same unk found in SMSG_PHASESHIFT
-    data << uint32(0); // count
-    // for (count) *data << uint16(phaseId)
-
-    SendPacket(&data);*/
 }
 
 /*!*/void WorldSession::HandleRequestRaidInfoOpcode(WorldPacket & /*recvData*/)
@@ -1611,4 +1495,33 @@ void WorldSession::HandleOptOutOfLootOpcode(WorldPacket & recvData)
     }
 
     GetPlayer()->SetPassOnGroupLoot(passOnLoot);
+}
+
+void WorldSession::HandleRolePollBegin(WorldPacket & recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_ROLE_POLL_BEGIN");
+
+    uint8 unk;
+    recvData >> unk;
+
+    if (!GetPlayer()->GetGroup())
+        return;
+
+    Group* grp = GetPlayer()->GetGroup();
+    if (!grp)
+        return;
+
+    if (!grp->IsLeader(GetPlayer()->GetGUID()))
+        return;
+
+    ObjectGuid guid = grp->GetGUID();
+
+    //! 5.4.1
+    WorldPacket data(SMSG_ROLE_POLL_BEGIN, (8+4+4));
+    data.WriteGuidMask<0, 1, 7, 2, 3, 5, 4, 6>(guid);
+    data.WriteGuidBytes<0, 7>(guid);
+    data << unk;
+    data.WriteGuidBytes<1, 2, 4, 3, 5, 6>(guid);
+
+    grp->BroadcastPacket(&data, false);
 }

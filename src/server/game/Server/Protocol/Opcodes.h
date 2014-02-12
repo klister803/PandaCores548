@@ -1269,7 +1269,7 @@ enum Opcodes
     SMSG_RESPOND_INSPECT_ACHIEVEMENTS                 = 0x04AF, // 5.4.1 17538
     SMSG_RESURRECT_REQUEST                            = 0x966,  // 5.0.5 16048
     SMSG_RESYNC_RUNES                                 = 0xC05,  // 5.0.5 16048
-    SMSG_ROLE_POLL_BEGIN                              = 0,      // 0x70B0 in 4.3.4 @todo : Find me and BACON !
+    SMSG_ROLE_POLL_BEGIN                              = 0x0CA4, // 5.4.1 17538
     SMSG_RWHOIS                                       = 0xDCA,  // 5.0.5 16048
     SMSG_SELL_ITEM                                    = 0x002E, // 5.4.1 17538
     SMSG_SEND_MAIL_RESULT                             = 0xA4F,  // 5.0.5 16048
