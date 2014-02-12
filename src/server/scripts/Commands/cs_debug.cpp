@@ -285,9 +285,9 @@ public:
         data.WriteString(msg);
         //handler->GetSession()->SendPacket(&data);
 
-        WorldPacket buff;
-        buff.Compress(handler->GetSession()->GetCompressionStream(), &data);
-        handler->GetSession()->SendPacket(&buff);
+        //WorldPacket buff;
+        //buff.Compress(handler->GetSession()->GetCompressionStream(), &data);
+        //handler->GetSession()->SendPacket(&buff);
         return true;
     }
 
