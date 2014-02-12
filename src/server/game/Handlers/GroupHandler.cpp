@@ -1507,14 +1507,17 @@ void WorldSession::HandleRolePollBegin(WorldPacket & recvData)
     if (!GetPlayer()->GetGroup())
         return;
 
-    Group* grp = GetPlayer()->GetGroup();
-    if (!grp)
+    Group* group = GetPlayer()->GetGroup();
+    if (!group)
         return;
 
-    if (!grp->IsLeader(GetPlayer()->GetGUID()))
+    if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()) && !(group->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
+    {
+        SendPartyResult(PARTY_OP_INVITE, "", ERR_NOT_LEADER);
         return;
+    }
 
-    ObjectGuid guid = grp->GetGUID();
+    ObjectGuid guid = group->GetGUID();
 
     //! 5.4.1
     WorldPacket data(SMSG_ROLE_POLL_BEGIN, (8+4+4));
@@ -1523,5 +1526,5 @@ void WorldSession::HandleRolePollBegin(WorldPacket & recvData)
     data << unk;
     data.WriteGuidBytes<1, 2, 4, 3, 5, 6>(guid);
 
-    grp->BroadcastPacket(&data, false);
+    group->BroadcastPacket(&data, false);
 }
