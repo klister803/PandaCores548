@@ -631,7 +631,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
 
     if (!itemguid)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode - itemguid %u not fount.", itemguid);
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode - itemguid not fount.");
         return;
     }
 
@@ -1493,7 +1493,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
     }
     CharacterDatabase.CommitTransaction(trans);
 
-    uint32 count = 1;
+    count = 1;
     _player->DestroyItemCount(gift, count, true);
 }
 
