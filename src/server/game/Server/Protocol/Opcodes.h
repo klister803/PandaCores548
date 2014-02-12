@@ -1307,7 +1307,7 @@ enum Opcodes
     SMSG_SPELLBREAKLOG                                = 0,      // 5.4.1 17538 obsolete - use SMSG_SPELLDISPELLOG
     SMSG_SPELLDAMAGESHIELD                            = 0x10E4, // 5.4.1 17538
     SMSG_SPELLDISPELLOG                               = 0x086D, // 5.4.1 17538
-    SMSG_SPELLENERGIZELOG                             = 0x9C0,  // 5.0.5 16048
+    SMSG_SPELLENERGIZELOG                             = 0x10E0, // 5.4.1 17538
     SMSG_SPELLHEALLOG                                 = 0x890,  // 5.0.5 16048
     SMSG_SPELLINSTAKILLLOG                            = 0xC56,  // 5.0.5 16048
     SMSG_SPELLINTERRUPTLOG                            = 0xF8A,  // 5.0.5 16048
