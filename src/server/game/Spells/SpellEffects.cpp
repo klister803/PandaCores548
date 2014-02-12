@@ -1560,6 +1560,23 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
 
     // original caster guid only for GO cast
     m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
+
+    switch (m_spellInfo->Id)
+    {
+        case 8647: // Glyph of Expose Armor
+        {
+            if (!m_caster->HasAura(56803))
+                break;
+
+            if (Aura * aura = unitTarget->GetAura(113746, m_originalCasterGUID))
+            {
+                aura->SetStackAmount(3);
+            }
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
