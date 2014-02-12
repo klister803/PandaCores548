@@ -1493,8 +1493,8 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
     }
     CharacterDatabase.CommitTransaction(trans);
 
-    count = 1;
-    _player->DestroyItemCount(gift, count, true);
+    uint32 count_dest = 1;
+    _player->DestroyItemCount(gift, count_dest, true);
 }
 
 void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
