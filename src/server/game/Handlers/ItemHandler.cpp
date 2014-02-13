@@ -928,15 +928,15 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     bool hasExtendedCost[MAX_VENDOR_ITEMS];
 
     const float discountMod = _player->GetReputationPriceDiscount(vendor);
-    uint32 count = 0;
     uint32 realCount = 0;
     for (uint32 slot = 0; slot < rawItemCount; ++slot)
     {
-        ++count;
+        if (realCount >= MAX_VENDOR_ITEMS)
+            break;
 
         VendorItem const* vendorItem = vendorItems->GetItem(slot);
-        if (!vendorItem) continue;
-        if (realCount >= MAX_VENDOR_ITEMS) continue;
+        if (!vendorItem)
+            continue;
 
         if (vendorItem->Type == ITEM_VENDOR_TYPE_ITEM)
         {
@@ -1043,14 +1043,14 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             itemsData << uint32(price);
             if (vendorItem->ExtendedCost != 0)
             {
-                hasExtendedCost[slot] = true;
+                hasExtendedCost[realCount] = true;
                 itemsData << uint32(vendorItem->ExtendedCost);
             }
             else
-                hasExtendedCost[slot] = false;
+                hasExtendedCost[realCount] = false;
             itemsData << uint32(itemTemplate->DisplayInfoID);
             itemsData << uint32(itemTemplate->BuyCount);
-            itemsData << uint32(count);                 // client expects counting to start at 1
+            itemsData << uint32(slot + 1);              // client expects counting to start at 1
             itemsData << int32(leftInStock);
             itemsData << uint32(vendorItem->Type);      // 1 is items, 2 is currency
             itemsData << uint32(0);                     // upgrade id
@@ -1072,11 +1072,11 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
             itemsData << uint32(vendorItem->item);
             itemsData << uint32(0);                     // price, only seen currency types that have Extended cost
-            hasExtendedCost[slot] = true;
+            hasExtendedCost[realCount] = true;
             itemsData << uint32(vendorItem->ExtendedCost);
             itemsData << uint32(0);                     // displayId
             itemsData << uint32(vendorItem->maxcount * precision);
-            itemsData << uint32(count);                 // client expects counting to start at 1
+            itemsData << uint32(slot + 1);              // client expects counting to start at 1
             itemsData << int32(-1);
             itemsData << uint32(vendorItem->Type);      // 1 is items, 2 is currency
             itemsData << uint32(0);                     // upgrade id
@@ -1084,7 +1084,6 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
             ++realCount;
         }
-        // else error
     }
 
     ObjectGuid guid = vendorGuid;
@@ -1103,7 +1102,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     data.WriteBits(realCount, 18); // item count
     data.WriteGuidMask<4>(guid);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (uint32 i = 0; i < realCount; ++i)
     {
         data.WriteBit(!hasExtendedCost[i]);         // has extended cost
         data.WriteBit(1);                           // !has condition
@@ -1111,10 +1110,12 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     }
 
     data.WriteGuidMask<3, 6, 7>(guid);
-    data.FlushBits();
 
     if (!itemsData.empty())
+    {
+        data.FlushBits();
         data.append(itemsData);
+    }
 
     data.WriteGuidBytes<0, 2, 1, 3, 5, 7, 4, 6>(guid);
     SendPacket(&data);
