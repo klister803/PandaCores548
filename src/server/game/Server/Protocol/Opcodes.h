@@ -913,14 +913,13 @@ enum Opcodes
     SMSG_GMRESPONSE_DB_ERROR                          = 0x983,  // 5.0.5 16048
     SMSG_GMRESPONSE_RECEIVED                          = 0xC4E,  // 5.0.5 16048
     SMSG_GMRESPONSE_STATUS_UPDATE                     = 0xD2F,  // 5.0.5 16048
-    SMSG_GMTICKET_CREATE                              = 0xC32,  // 5.0.5 16048
-    SMSG_GMTICKET_DELETETICKET                        = 0x8D0,  // 5.0.5 16048
+    SMSG_GMTICKET_CREATE                              = 0,      // 5.4.1 17538 - obsolete. SMSG_GMTICKET_UPDATETEXT with GMTicketResponse
+    SMSG_GMTICKET_DELETETICKET                        = 0,      // 5.4.1 17538 - obsolete. SMSG_GMTICKET_UPDATETEXT with GMTICKET_RESPONSE_TICKET_DELETED
     SMSG_GMTICKET_GETTICKET                           = 0xBBD,  // 5.0.5 16048
     SMSG_GMTICKET_SYSTEMSTATUS                        = 0xD1F,  // 5.0.5 16048
     SMSG_GMTICKET_UPDATETEXT                          = 0xCFB,  // 5.0.5 16048
     SMSG_GM_MESSAGECHAT                               = 0x90F,  // 5.0.5 16048
     SMSG_GM_PLAYER_INFO                               = 0xD99,  // 5.0.5 16048
-    SMSG_GM_TICKET_STATUS_UPDATE                      = 0x821,  // 5.0.5 16048
     SMSG_GODMODE                                      = 0x9F3,  // 5.0.5 16048
     SMSG_GOSSIP_COMPLETE                              = 0x0AD6, // 5.4.1 17538
     SMSG_GOSSIP_MESSAGE                               = 0x03FC, // 5.4.1 17538
@@ -1009,7 +1008,7 @@ enum Opcodes
     SMSG_INSPECT_RESULTS_UPDATE                       = 0,      // 0x0C14 in 4.3.4 @todo : Find me and BACON !
     SMSG_INSPECT_TALENT                               = 0x1024, // 5.4.1 17538
     SMSG_INSTANCE_DIFFICULTY                          = 0,      // Not found in 4.3.4
-    SMSG_INSTANCE_LOCK_WARNING_QUERY                  = 0xDAA,  // 5.0.5 16048
+    SMSG_INSTANCE_LOCK_WARNING_QUERY                  = 0x148E, // 5.4.1 17538
     SMSG_INSTANCE_RESET                               = 0x0526, // 5.4.1 17538
     SMSG_INSTANCE_RESET_FAILED                        = 0x0CA7, // 5.4.1 17538
     SMSG_INSTANCE_SAVE_CREATED                        = 0x1105, // 5.4.1 17538
@@ -1019,7 +1018,7 @@ enum Opcodes
     SMSG_INVENTORY_CHANGE_FAILURE                     = 0x119E, // 5.4.1 17538
     SMSG_ITEM_ADD_PASSIVE                             = 0xF6A,  // 5.0.5 16048
     SMSG_ITEM_COOLDOWN                                = 0x0C18, // 5.4.1 17538
-    SMSG_ITEM_ENCHANT_TIME_UPDATE                     = 0x99E,  // 5.0.5 16048
+    SMSG_ITEM_ENCHANT_TIME_UPDATE                     = 0x001C, // 5.4.1 17538
     SMSG_ITEM_EXPIRE_PURCHASE_REFUND                  = 0xFC6,  // 5.0.5 16048
     SMSG_ITEM_PUSH_RESULT                             = 0x0D1F, // 5.4.1 17538
     SMSG_ITEM_REFUND_INFO_RESPONSE                    = 0xE80,  // 5.0.5 16048

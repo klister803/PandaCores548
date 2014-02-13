@@ -1357,12 +1357,33 @@ void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemI
 
 void WorldSession::SendItemEnchantTimeUpdate(uint64 Playerguid, uint64 Itemguid, uint32 slot, uint32 Duration)
 {
-                                                            // last check 2.0.10
-    WorldPacket data(SMSG_ITEM_ENCHANT_TIME_UPDATE, 8 + 1 + 4);
-    data.WriteGuidMask<7, 4, 2, 5, 3, 6, 0, 1>(Itemguid);
-    data.WriteGuidBytes<0>(Itemguid);
+    WorldPacket data(SMSG_ITEM_ENCHANT_TIME_UPDATE, 8 + 8 + 1 + 1 + 4 + 4);
+
+    data.WriteGuidMask<0, 3>(Itemguid);
+    data.WriteGuidMask<6, 7>(Playerguid);
+    data.WriteGuidMask<2>(Itemguid);
+    data.WriteGuidMask<3, 5>(Playerguid);
+    data.WriteGuidMask<5>(Itemguid);
+    data.WriteGuidMask<4>(Playerguid);
+    data.WriteGuidMask<6, 7, 1>(Itemguid);
+    data.WriteGuidMask<2, 1>(Playerguid);
+    data.WriteGuidMask<4>(Itemguid);
+    data.WriteGuidMask<0>(Playerguid);
+
+    data.WriteGuidBytes<3>(Playerguid);
+    data.WriteGuidBytes<6>(Itemguid);
+    data.WriteGuidBytes<5, 4>(Playerguid);
+    data.WriteGuidBytes<0, 3>(Itemguid);
+    data.WriteGuidBytes<2>(Playerguid);
     data << uint32(Duration);
-    data.WriteGuidBytes<4, 6, 2, 7, 3, 1, 5>(Itemguid);
+    data.WriteGuidBytes<1>(Itemguid);
+    data << uint32(slot);
+    data.WriteGuidBytes<1, 0>(Playerguid);
+    data.WriteGuidBytes<7, 5>(Itemguid);
+    data.WriteGuidBytes<6>(Playerguid);
+    data.WriteGuidBytes<2>(Itemguid);
+    data.WriteGuidBytes<7>(Playerguid);
+    data.WriteGuidBytes<4>(Itemguid);
 
     SendPacket(&data);
 }
