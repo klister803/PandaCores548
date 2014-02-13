@@ -1069,7 +1069,7 @@ enum Opcodes
     SMSG_LOGOUT_CANCEL_ACK                            = 0x0825, // 5.4.1 17538
     SMSG_LOGOUT_COMPLETE                              = 0x0D95, // 5.4.1 17538
     SMSG_LOGOUT_RESPONSE                              = 0x08B5, // 5.4.1 17538
-    SMSG_LOG_XPGAIN                                   = 0x98A,  // 5.0.5 16048
+    SMSG_LOG_XPGAIN                                   = 0x149E, // 5.4.1 17538
     SMSG_LOOT_ALL_PASSED                              = 0x009E, // 5.4.1 17538
     SMSG_LOOT_CONTENTS                                = 0xBFC,  // 5.0.5 16048
     SMSG_LOOT_LIST                                    = 0x14B5, // 5.4.1 17538
