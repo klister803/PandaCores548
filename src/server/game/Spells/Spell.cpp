@@ -497,7 +497,7 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
         && !m_spellInfo->IsPassive() && !m_spellInfo->IsPositive();
 
     CleanupTargetList();
-    memset(m_effectExecuteData, 0, MAX_SPELL_EFFECTS * sizeof(ByteBuffer*));
+    memset(m_effectExecuteData, 0, MAX_SPELL_EFFECTS * sizeof(EffectExecuteData*));
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         m_destTargets[i] = SpellDestination(*m_caster);
@@ -4921,103 +4921,229 @@ void Spell::SendSpellGo()
 
 void Spell::SendLogExecute()
 {
-    WorldPacket data(SMSG_SPELLLOGEXECUTE, (8+4+4+4+4+8));
+    ObjectGuid casterGuid = m_caster->GetObjectGuid();
 
-    data.append(m_caster->GetPackGUID());
+    WorldPacket data(SMSG_SPELLLOGEXECUTE, 8 + 4 + 4 + 4 + 4 + 8);
+    data.WriteGuidMask<7, 0, 6, 3, 1, 5>(casterGuid);
 
-    data << uint32(m_spellInfo->Id);
+    uint32 effectCount = 0;
+    uint32 bitpos = data.bitwpos();
+    data.WriteBits(effectCount, 19);
 
-    uint8 effCount = 0;
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-    {
-        if (m_effectExecuteData[i])
-            ++effCount;
-    }
-
-    if (!effCount)
-        return;
-
-    data << uint32(effCount);
+    ByteBuffer buff;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (!m_effectExecuteData[i])
             continue;
 
-        data << uint32(m_spellInfo->GetEffect(i, m_diffMode).Effect);             // spell effect
+        uint32 effect = m_spellInfo->GetEffect(i, m_diffMode).Effect;
 
-        data.append(*m_effectExecuteData[i]);
+        switch (effect)
+        {
+            case SPELL_EFFECT_POWER_DRAIN:
+            case SPELL_EFFECT_POWER_BURN:
+            {
+                data.WriteBits(0, 24);      // generic count
+                data.WriteBits(0, 22);      // trade count
+                data.WriteBit(0);           // no power data
+                data.WriteBits(0, 22);      // feed count
+                data.WriteBits(0, 21);      // extra count
+                data.WriteBits(0, 21);      // durability count
+                uint32 count = m_effectExecuteData[i]->guids.size();
+                data.WriteBits(count, 20);  // power count
+                for (uint32 i = 0; i < count; ++i)
+                {
+                    data.WriteGuidMask<0, 7, 5, 2, 3, 6, 1, 4>(m_effectExecuteData[i]->guids[i]);
+
+                    buff.WriteGuidBytes<3, 0, 7, 1>(m_effectExecuteData[i]->guids[i]);
+                    buff << uint32(m_effectExecuteData[i]->param2[i]);
+                    buff << float(m_effectExecuteData[i]->floatParam[i]);
+                    buff.WriteGuidBytes<6, 5>(m_effectExecuteData[i]->guids[i]);
+                    buff << uint32(m_effectExecuteData[i]->param1[i]);
+                    buff.WriteGuidBytes<4, 2>(m_effectExecuteData[i]->guids[i]);
+                }
+                break;
+            }
+            case SPELL_EFFECT_ADD_EXTRA_ATTACKS:
+            {
+                data.WriteBits(0, 24);      // generic count
+                data.WriteBits(0, 22);      // trade count
+                data.WriteBit(0);           // no power data
+                data.WriteBits(0, 22);      // feed count
+                uint32 count = m_effectExecuteData[i]->guids.size();
+                data.WriteBits(count, 21);  // extra count
+                for (uint32 i = 0; i < count; ++i)
+                {
+                    data.WriteGuidMask<7, 3, 4, 5, 1, 0, 2, 6>(m_effectExecuteData[i]->guids[i]);
+
+                    buff.WriteGuidBytes<3, 2, 4>(m_effectExecuteData[i]->guids[i]);
+                    buff << uint32(m_effectExecuteData[i]->param1[i]);
+                    buff.WriteGuidBytes<6, 0, 7, 5, 1>(m_effectExecuteData[i]->guids[i]);
+                }
+                data.WriteBits(0, 21);      // durability count
+                data.WriteBits(0, 20);      // power count
+
+                break;
+            }
+            case SPELL_EFFECT_DURABILITY_DAMAGE:
+            {
+                data.WriteBits(0, 24);      // generic count
+                data.WriteBits(0, 22);      // trade count
+                data.WriteBit(0);           // no power data
+                data.WriteBits(0, 22);      // feed count
+                data.WriteBits(0, 21);      // extra count
+                uint32 count = m_effectExecuteData[i]->guids.size();
+                data.WriteBits(count, 21);  // durability count
+                for (uint32 i = 0; i < count; ++i)
+                {
+                    data.WriteGuidMask<5, 0, 7, 6, 1, 3, 2, 4>(m_effectExecuteData[i]->guids[i]);
+
+                    buff.WriteGuidBytes<6>(m_effectExecuteData[i]->guids[i]);
+                    buff << uint32(m_effectExecuteData[i]->param2[i]);
+                    buff.WriteGuidBytes<4, 5>(m_effectExecuteData[i]->guids[i]);
+                    buff << uint32(m_effectExecuteData[i]->param1[i]);
+                    buff.WriteGuidBytes<2, 1, 3, 0, 7>(m_effectExecuteData[i]->guids[i]);
+                }
+                data.WriteBits(0, 20);      // power count
+                break;
+            }
+            case SPELL_EFFECT_RESURRECT:
+            case SPELL_EFFECT_SUMMON:
+            case SPELL_EFFECT_OPEN_LOCK:
+            case SPELL_EFFECT_TRANS_DOOR:
+            case SPELL_EFFECT_SUMMON_PET:
+            case SPELL_EFFECT_SUMMON_OBJECT_WILD:
+            case SPELL_EFFECT_CREATE_HOUSE:
+            case SPELL_EFFECT_DUEL:
+            case SPELL_EFFECT_DISMISS_PET:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
+            case SPELL_EFFECT_171:
+            case SPELL_EFFECT_RESURRECT_WITH_AURA:
+            case SPELL_EFFECT_RESURRECT_NEW:
+            {
+                uint32 count = m_effectExecuteData[i]->guids.size();
+                data.WriteBits(count, 24);  // generic count
+                for (uint32 i = 0; i < count; ++i)
+                {
+                    data.WriteGuidMask<3, 4, 5, 7, 0, 2, 6, 1>(m_effectExecuteData[i]->guids[i]);
+
+                    buff.WriteGuidBytes<3, 5, 1, 0, 4, 7, 6, 2>(m_effectExecuteData[i]->guids[i]);
+                }
+                data.WriteBits(0, 22);      // trade count
+                data.WriteBit(0);           // no power data
+                data.WriteBits(0, 22);      // feed count
+                data.WriteBits(0, 21);      // extra count
+                data.WriteBits(0, 21);      // durability count
+                data.WriteBits(0, 20);      // power count
+                break;
+            }
+            case SPELL_EFFECT_CREATE_ITEM:
+            case SPELL_EFFECT_CREATE_RANDOM_ITEM:
+            case SPELL_EFFECT_CREATE_ITEM_2:
+            case SPELL_EFFECT_LOOT_BONUS:
+            {
+                data.WriteBits(0, 24);      // generic count
+                uint32 count = m_effectExecuteData[i]->param1.size();
+                data.WriteBits(count, 22);  // trade count
+                data.WriteBit(0);           // no power data
+                data.WriteBits(0, 22);      // feed count
+                data.WriteBits(0, 21);      // extra count
+                data.WriteBits(0, 21);      // durability count
+                data.WriteBits(0, 20);      // power count
+
+                for (uint32 i = 0; i < count; ++i)
+                    buff << uint32(m_effectExecuteData[i]->param1[i]);
+                break;
+            }
+            case SPELL_EFFECT_FEED_PET:
+            {
+                data.WriteBits(0, 24);      // generic count
+                data.WriteBits(0, 22);      // trade count
+                data.WriteBit(0);           // no power data
+                uint32 count = m_effectExecuteData[i]->param1.size();
+                data.WriteBits(count, 22);  // feed count
+                data.WriteBits(0, 21);      // extra count
+                data.WriteBits(0, 21);      // durability count
+                data.WriteBits(0, 20);      // power count
+
+                for (uint32 i = 0; i < count; ++i)
+                    buff << uint32(m_effectExecuteData[i]->param1[i]);
+                break;
+            }
+            default:
+                continue;
+        }
+
+        ++effectCount;
+        buff << uint32(effect);             // spell effect
 
         delete m_effectExecuteData[i];
         m_effectExecuteData[i] = NULL;
     }
+
+    data.WriteGuidMask<2, 4>(casterGuid);
+
+    if (!buff.empty())
+    {
+        data.FlushBits();
+        data.append(buff);
+    }
+
+    data.WriteGuidBytes<4, 6, 0>(casterGuid);
+    data << uint32(m_spellInfo->Id);
+    data.WriteGuidBytes<2, 5, 1, 3, 7>(casterGuid);
+
+    data.PutBits<uint32>(bitpos, effectCount, 19);
+
     m_caster->SendMessageToSet(&data, true);
 }
 
-void Spell::ExecuteLogEffectTakeTargetPower(uint8 effIndex, Unit* target, uint32 powerType, uint32 powerTaken, float gainMultiplier)
+void Spell::ExecuteLogEffectGeneric(uint8 effIndex, uint64 guid)
 {
     InitEffectExecuteData(effIndex);
-    m_effectExecuteData[effIndex]->append(target->GetPackGUID());
-    *m_effectExecuteData[effIndex] << uint32(powerTaken);
-    *m_effectExecuteData[effIndex] << uint32(powerType);
-    *m_effectExecuteData[effIndex] << float(gainMultiplier);
+
+    m_effectExecuteData[effIndex]->guids.push_back(guid);
 }
 
-void Spell::ExecuteLogEffectExtraAttacks(uint8 effIndex, Unit* victim, uint32 attCount)
+void Spell::ExecuteLogEffectPowerDrain(uint8 effIndex, uint64 guid, uint32 powerType, uint32 powerTaken, float gainMultiplier)
 {
     InitEffectExecuteData(effIndex);
-    m_effectExecuteData[effIndex]->append(victim->GetPackGUID());
-    *m_effectExecuteData[effIndex] << uint32(attCount);
+
+    m_effectExecuteData[effIndex]->guids.push_back(guid);
+    m_effectExecuteData[effIndex]->param1.push_back(powerTaken);    // v may be swapped
+    m_effectExecuteData[effIndex]->param2.push_back(powerType);     // ^
+    m_effectExecuteData[effIndex]->floatParam.push_back(gainMultiplier);
 }
 
-void Spell::ExecuteLogEffectInterruptCast(uint8 effIndex, Unit* victim, uint32 spellId)
+void Spell::ExecuteLogEffectExtraAttacks(uint8 effIndex, uint64 guid, uint32 attCount)
 {
     InitEffectExecuteData(effIndex);
-    m_effectExecuteData[effIndex]->append(victim->GetPackGUID());
-    *m_effectExecuteData[effIndex] << uint32(spellId);
+
+    m_effectExecuteData[effIndex]->guids.push_back(guid);
+    m_effectExecuteData[effIndex]->param1.push_back(attCount);
 }
 
-void Spell::ExecuteLogEffectDurabilityDamage(uint8 effIndex, Unit* victim, uint32 /*itemslot*/, uint32 damage)
+void Spell::ExecuteLogEffectDurabilityDamage(uint8 effIndex, uint64 guid, uint32 /*itemslot*/, uint32 damage)
 {
     InitEffectExecuteData(effIndex);
-    m_effectExecuteData[effIndex]->append(victim->GetPackGUID());
-    *m_effectExecuteData[effIndex] << uint32(m_spellInfo->Id);
-    *m_effectExecuteData[effIndex] << uint32(damage);
+
+    m_effectExecuteData[effIndex]->guids.push_back(guid);
+    m_effectExecuteData[effIndex]->param1.push_back(damage);
+    m_effectExecuteData[effIndex]->param2.push_back(-1);
 }
 
-void Spell::ExecuteLogEffectOpenLock(uint8 effIndex, Object* obj)
+void Spell::ExecuteLogEffectTradeSkillItem(uint8 effIndex, uint32 entry)
 {
     InitEffectExecuteData(effIndex);
-    m_effectExecuteData[effIndex]->append(obj->GetPackGUID());
+
+    m_effectExecuteData[effIndex]->param1.push_back(entry);
 }
 
-void Spell::ExecuteLogEffectCreateItem(uint8 effIndex, uint32 entry)
+void Spell::ExecuteLogEffectFeedPet(uint8 effIndex, uint32 entry)
 {
     InitEffectExecuteData(effIndex);
-    *m_effectExecuteData[effIndex] << uint32(entry);
-}
 
-void Spell::ExecuteLogEffectDestroyItem(uint8 effIndex, uint32 entry)
-{
-    InitEffectExecuteData(effIndex);
-    *m_effectExecuteData[effIndex] << uint32(entry);
-}
-
-void Spell::ExecuteLogEffectSummonObject(uint8 effIndex, WorldObject* obj)
-{
-    InitEffectExecuteData(effIndex);
-    m_effectExecuteData[effIndex]->append(obj->GetPackGUID());
-}
-
-void Spell::ExecuteLogEffectUnsummonObject(uint8 effIndex, WorldObject* obj)
-{
-    InitEffectExecuteData(effIndex);
-    m_effectExecuteData[effIndex]->append(obj->GetPackGUID());
-}
-
-void Spell::ExecuteLogEffectResurrect(uint8 effIndex, Unit* target)
-{
-    InitEffectExecuteData(effIndex);
-    m_effectExecuteData[effIndex]->append(target->GetPackGUID());
+    m_effectExecuteData[effIndex]->param1.push_back(entry);
 }
 
 void Spell::SendInterrupted(uint8 result)
@@ -8022,17 +8148,7 @@ void Spell::InitEffectExecuteData(uint8 effIndex)
 {
     ASSERT(effIndex < MAX_SPELL_EFFECTS);
     if (!m_effectExecuteData[effIndex])
-    {
-        m_effectExecuteData[effIndex] = new ByteBuffer(0x20);
-        // first dword - target counter
-        *m_effectExecuteData[effIndex] << uint32(1);
-    }
-    else
-    {
-        // increase target counter by one
-        uint32 count = (*m_effectExecuteData[effIndex]).read<uint32>(0);
-        (*m_effectExecuteData[effIndex]).put<uint32>(0, ++count);
-    }
+        m_effectExecuteData[effIndex] = new EffectExecuteData();
 }
 
 void Spell::CheckEffectExecuteData()

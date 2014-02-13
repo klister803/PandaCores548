@@ -1311,7 +1311,7 @@ enum Opcodes
     SMSG_SPELLHEALLOG                                 = 0x0DE1, // 5.4.1 17538
     SMSG_SPELLINSTAKILLLOG                            = 0x0CC4, // 5.4.1 17538
     SMSG_SPELLINTERRUPTLOG                            = 0xF8A,  // 5.0.5 16048
-    SMSG_SPELLLOGEXECUTE                              = 0xC72,  // 5.0.5 16048
+    SMSG_SPELLLOGEXECUTE                              = 0x04E0, // 5.4.1 17538
     SMSG_SPELLLOGMISS                                 = 0x0545, // 5.4.1 17538
     SMSG_SPELLNONMELEEDAMAGELOG                       = 0x09E0, // 5.4.1 17538
     SMSG_SPELLORDAMAGE_IMMUNE                         = 0x116C, // 5.4.1 17538

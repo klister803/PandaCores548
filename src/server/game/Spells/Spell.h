@@ -204,6 +204,14 @@ enum SpellEffectHandleMode
     SPELL_EFFECT_HANDLE_HIT_TARGET,
 };
 
+struct EffectExecuteData
+{
+    std::vector<ObjectGuid> guids;
+    std::vector<uint32> param1;
+    std::vector<uint32> param2;
+    std::vector<float> floatParam;
+};
+
 class Spell
 {
     friend void Unit::SetCurrentCastedSpell(Spell* pSpell);
@@ -428,16 +436,13 @@ class Spell
         void SendSpellGo();
         void SendSpellCooldown();
         void SendLogExecute();
-        void ExecuteLogEffectTakeTargetPower(uint8 effIndex, Unit* target, uint32 powerType, uint32 powerTaken, float gainMultiplier);
-        void ExecuteLogEffectExtraAttacks(uint8 effIndex, Unit* victim, uint32 attCount);
-        void ExecuteLogEffectInterruptCast(uint8 effIndex, Unit* victim, uint32 spellId);
-        void ExecuteLogEffectDurabilityDamage(uint8 effIndex, Unit* victim, uint32 itemslot, uint32 damage);
-        void ExecuteLogEffectOpenLock(uint8 effIndex, Object* obj);
-        void ExecuteLogEffectCreateItem(uint8 effIndex, uint32 entry);
-        void ExecuteLogEffectDestroyItem(uint8 effIndex, uint32 entry);
-        void ExecuteLogEffectSummonObject(uint8 effIndex, WorldObject* obj);
-        void ExecuteLogEffectUnsummonObject(uint8 effIndex, WorldObject* obj);
-        void ExecuteLogEffectResurrect(uint8 effIndex, Unit* target);
+        void ExecuteLogEffectGeneric(uint8 effIndex, uint64 guid);
+        void ExecuteLogEffectPowerDrain(uint8 effIndex, uint64 guid, uint32 powerType, uint32 powerTaken, float gainMultiplier);
+        void ExecuteLogEffectExtraAttacks(uint8 effIndex, uint64 guid, uint32 attCount);
+        void ExecuteLogEffectDurabilityDamage(uint8 effIndex, uint64 guid, uint32 itemslot, uint32 damage);
+        void ExecuteLogEffectTradeSkillItem(uint8 effIndex, uint32 entry);
+        void ExecuteLogEffectFeedPet(uint8 effIndex, uint32 entry);
+
         void SendInterrupted(uint8 result);
         void SendChannelUpdate(uint32 time);
         void SendChannelStart(uint32 duration);
@@ -682,7 +687,7 @@ class Spell
         bool m_skipCheck;
         uint32 m_auraScaleMask;
 
-        ByteBuffer * m_effectExecuteData[MAX_SPELL_EFFECTS];
+        EffectExecuteData * m_effectExecuteData[MAX_SPELL_EFFECTS];
 
 #ifdef MAP_BASED_RAND_GEN
         int32 irand(int32 min, int32 max)       { return int32 (m_caster->GetMap()->mtRand.randInt(max - min)) + min; }

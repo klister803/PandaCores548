@@ -303,7 +303,7 @@ void Spell::EffectResurrectNew(SpellEffIndex effIndex)
 
     uint32 health = damage;
     uint32 mana = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
-    ExecuteLogEffectResurrect(effIndex, target);
+    ExecuteLogEffectGeneric(effIndex, target->GetGUID());
     target->SetResurrectRequestData(m_caster, health, mana, 0);
     SendResurrectRequest(target);
 }
@@ -2023,7 +2023,7 @@ void Spell::EffectPowerDrain(SpellEffIndex effIndex)
 
         m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, gain, powerType);
     }
-    ExecuteLogEffectTakeTargetPower(effIndex, unitTarget, powerType, newDamage, gainMultiplier);
+    ExecuteLogEffectPowerDrain(effIndex, unitTarget->GetGUID(), powerType, newDamage, gainMultiplier);
 }
 
 void Spell::EffectSendEvent(SpellEffIndex effIndex)
@@ -2094,7 +2094,7 @@ void Spell::EffectPowerBurn(SpellEffIndex effIndex)
     float dmgMultiplier = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValueMultiplier(m_originalCaster, this);
 
     // add log data before multiplication (need power amount, not damage)
-    ExecuteLogEffectTakeTargetPower(effIndex, unitTarget, powerType, newDamage, 0.0f);
+    ExecuteLogEffectPowerDrain(effIndex, unitTarget->GetGUID(), powerType, newDamage, 0.0f);
 
     newDamage = int32(newDamage* dmgMultiplier);
 
@@ -2489,7 +2489,7 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
     }
 
     DoCreateItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
-    ExecuteLogEffectCreateItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
+    ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
 }
 
 void Spell::EffectDestroyItem(SpellEffIndex effIndex)
@@ -2502,7 +2502,7 @@ void Spell::EffectDestroyItem(SpellEffIndex effIndex)
         return;
 
     player->DestroyItemCount(m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType, 1, true);
-    ExecuteLogEffectDestroyItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
+    ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
 }
 
 void Spell::EffectCreateItem2(SpellEffIndex effIndex)
@@ -2536,10 +2536,11 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
         else
             player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);    // create some random items
     }
-    // TODO: ExecuteLogEffectCreateItem(i, m_spellInfo->GetEffect(i, m_diffMode).ItemType);
+
+    ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
 }
 
-void Spell::EffectCreateRandomItem(SpellEffIndex /*effIndex*/)
+void Spell::EffectCreateRandomItem(SpellEffIndex effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -2550,7 +2551,7 @@ void Spell::EffectCreateRandomItem(SpellEffIndex /*effIndex*/)
 
     // create some random items
     player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);
-    // TODO: ExecuteLogEffectCreateItem(i, m_spellInfo->GetEffect(i, m_diffMode).ItemType);
+    ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
 }
 
 void Spell::EffectPersistentAA(SpellEffIndex effIndex)
@@ -2921,7 +2922,8 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
             }
         }
     }
-    ExecuteLogEffectOpenLock(effIndex, gameObjTarget ? (Object*)gameObjTarget : (Object*)itemTarget);
+
+    ExecuteLogEffectGeneric(effIndex, gameObjTarget ? gameObjTarget->GetGUID() : itemTarget->GetGUID());
 }
 
 void Spell::EffectSummonChangeItem(SpellEffIndex effIndex)
@@ -3257,7 +3259,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                         if (summon && m_spellInfo->Id == 113516)
                             m_originalCaster->CastSpell(m_originalCaster, 113517, true); // Wild Mushroom : Plague (periodic dummy)
 
-                        ExecuteLogEffectSummonObject(effIndex, summon);
+                        ExecuteLogEffectGeneric(effIndex, summon->GetGUID());
                     }
                     return;
                 }
@@ -3298,7 +3300,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
     if (summon)
     {
         summon->SetCreatorGUID(m_originalCaster->GetGUID());
-        ExecuteLogEffectSummonObject(effIndex, summon);
+        ExecuteLogEffectGeneric(effIndex, summon->GetGUID());
     }
 }
 
@@ -3992,7 +3994,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
             pet->SetName(new_name);
     }
 
-    ExecuteLogEffectSummonObject(effIndex, pet);
+    ExecuteLogEffectGeneric(effIndex, pet->GetGUID());
 }
 
 void Spell::EffectLearnPetSpell(SpellEffIndex effIndex)
@@ -4400,7 +4402,7 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                     int32 duration = m_spellInfo->GetDuration();
                     unitTarget->ProhibitSpellSchool(curSpellInfo->GetSchoolMask(), unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex, m_originalCaster));
                 }
-                ExecuteLogEffectInterruptCast(effIndex, unitTarget, curSpellInfo->Id);
+                ExecuteLogEffectGeneric(effIndex, unitTarget->GetGUID());
                 unitTarget->InterruptSpell(CurrentSpellTypes(i), false);
 
                 switch (m_spellInfo->Id)
@@ -4454,7 +4456,7 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
     pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
 
-    ExecuteLogEffectSummonObject(effIndex, pGameObj);
+    ExecuteLogEffectGeneric(effIndex, pGameObj->GetGUID());
 
     // Wild object not have owner and check clickable by players
     map->AddToMap(pGameObj);
@@ -4512,7 +4514,7 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
             linkedGO->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
             linkedGO->SetSpellId(m_spellInfo->Id);
 
-            ExecuteLogEffectSummonObject(effIndex, linkedGO);
+            ExecuteLogEffectGeneric(effIndex, linkedGO->GetGUID());
 
             // Wild object not have owner and check clickable by players
             map->AddToMap(linkedGO);
@@ -5317,7 +5319,7 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
     pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
 
-    ExecuteLogEffectSummonObject(effIndex, pGameObj);
+    ExecuteLogEffectGeneric(effIndex, pGameObj->GetGUID());
 
     m_caster->AddGameObject(pGameObj);
     map->AddToMap(pGameObj);
@@ -5605,7 +5607,7 @@ void Spell::EffectFeedPet(SpellEffIndex effIndex)
     if (!pet->isAlive())
         return;
 
-    ExecuteLogEffectDestroyItem(effIndex, foodItem->GetEntry());
+    ExecuteLogEffectFeedPet(effIndex, foodItem->GetEntry());
 
     uint32 count = 1;
     player->DestroyItemCount(foodItem, count, true);
@@ -5624,7 +5626,7 @@ void Spell::EffectDismissPet(SpellEffIndex effIndex)
 
     Pet* pet = unitTarget->ToPet();
 
-    ExecuteLogEffectUnsummonObject(effIndex, pet);
+    ExecuteLogEffectGeneric(effIndex, pet->GetGUID());
     pet->GetOwner()->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
     pet->GetOwner()->m_currentPetSlot = PET_SLOT_DELETED;
 }
@@ -5702,7 +5704,8 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
     pGameObj->SetSpellId(m_spellInfo->Id);
     m_caster->AddGameObject(pGameObj);
 
-    ExecuteLogEffectSummonObject(effIndex, pGameObj);
+    if (m_spellInfo->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_SUMMON_OBJECT_SLOT1)
+        ExecuteLogEffectGeneric(effIndex, pGameObj->GetGUID());
 
     map->AddToMap(pGameObj);
 
@@ -5775,7 +5778,7 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
         mana = target->CountPctFromMaxMana(20);
     }
 
-    ExecuteLogEffectResurrect(effIndex, target);
+    ExecuteLogEffectGeneric(effIndex, target->GetGUID());
 
     target->SetResurrectRequestData(m_caster, health, mana, 0);
     SendResurrectRequest(target);
@@ -5794,7 +5797,7 @@ void Spell::EffectAddExtraAttacks(SpellEffIndex effIndex)
 
     unitTarget->m_extraAttacks = damage;
 
-    ExecuteLogEffectExtraAttacks(effIndex, unitTarget->getVictim(), damage);
+    ExecuteLogEffectExtraAttacks(effIndex, unitTarget->getVictim()->GetGUID(), damage);
 }
 
 void Spell::EffectParry(SpellEffIndex /*effIndex*/)
@@ -6305,7 +6308,7 @@ void Spell::EffectDurabilityDamage(SpellEffIndex effIndex)
     if (Item* item = unitTarget->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
         unitTarget->ToPlayer()->DurabilityPointsLoss(item, damage);
 
-    ExecuteLogEffectDurabilityDamage(effIndex, unitTarget, slot, damage);
+    ExecuteLogEffectDurabilityDamage(effIndex, unitTarget->GetGUID(), slot, damage);
 }
 
 void Spell::EffectDurabilityDamagePCT(SpellEffIndex effIndex)
@@ -6461,7 +6464,7 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->getLevel());
     pGameObj->SetSpellId(m_spellInfo->Id);
 
-    ExecuteLogEffectSummonObject(effIndex, pGameObj);
+    ExecuteLogEffectGeneric(effIndex, pGameObj->GetGUID());
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AddObject at SpellEfects.cpp EffectTransmitted");
     //m_caster->AddGameObject(pGameObj);
@@ -6480,7 +6483,7 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
             linkedGO->SetSpellId(m_spellInfo->Id);
             linkedGO->SetOwnerGUID(m_caster->GetGUID());
 
-            ExecuteLogEffectSummonObject(effIndex, linkedGO);
+            ExecuteLogEffectGeneric(effIndex, linkedGO->GetGUID());
 
             linkedGO->GetMap()->AddToMap(linkedGO);
         }
@@ -6954,7 +6957,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
         summon->AI()->EnterEvadeMode();
 
-        ExecuteLogEffectSummonObject(i, summon);
+        ExecuteLogEffectGeneric(i, summon->GetGUID());
     }
 }
 
@@ -7510,7 +7513,7 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
     if (resurrectAura && target->HasAura(resurrectAura))
         return;
 
-    ExecuteLogEffectResurrect(effIndex, target);
+    ExecuteLogEffectGeneric(effIndex, target->GetGUID());
     target->SetResurrectRequestData(m_caster, health, mana, resurrectAura);
     SendResurrectRequest(target);
 }
