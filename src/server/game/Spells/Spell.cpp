@@ -4951,16 +4951,16 @@ void Spell::SendLogExecute()
                 data.WriteBits(0, 21);      // durability count
                 uint32 count = m_effectExecuteData[i]->guids.size();
                 data.WriteBits(count, 20);  // power count
-                for (uint32 i = 0; i < count; ++i)
+                for (uint32 j = 0; j < count; ++j)
                 {
-                    data.WriteGuidMask<0, 7, 5, 2, 3, 6, 1, 4>(m_effectExecuteData[i]->guids[i]);
+                    data.WriteGuidMask<0, 7, 5, 2, 3, 6, 1, 4>(m_effectExecuteData[i]->guids[j]);
 
-                    buff.WriteGuidBytes<3, 0, 7, 1>(m_effectExecuteData[i]->guids[i]);
-                    buff << uint32(m_effectExecuteData[i]->param2[i]);
-                    buff << float(m_effectExecuteData[i]->floatParam[i]);
-                    buff.WriteGuidBytes<6, 5>(m_effectExecuteData[i]->guids[i]);
-                    buff << uint32(m_effectExecuteData[i]->param1[i]);
-                    buff.WriteGuidBytes<4, 2>(m_effectExecuteData[i]->guids[i]);
+                    buff.WriteGuidBytes<3, 0, 7, 1>(m_effectExecuteData[i]->guids[j]);
+                    buff << uint32(m_effectExecuteData[i]->param2[j]);
+                    buff << float(m_effectExecuteData[i]->floatParam[j]);
+                    buff.WriteGuidBytes<6, 5>(m_effectExecuteData[i]->guids[j]);
+                    buff << uint32(m_effectExecuteData[i]->param1[j]);
+                    buff.WriteGuidBytes<4, 2>(m_effectExecuteData[i]->guids[j]);
                 }
                 break;
             }
@@ -4972,13 +4972,13 @@ void Spell::SendLogExecute()
                 data.WriteBits(0, 22);      // feed count
                 uint32 count = m_effectExecuteData[i]->guids.size();
                 data.WriteBits(count, 21);  // extra count
-                for (uint32 i = 0; i < count; ++i)
+                for (uint32 j = 0; j < count; ++j)
                 {
-                    data.WriteGuidMask<7, 3, 4, 5, 1, 0, 2, 6>(m_effectExecuteData[i]->guids[i]);
+                    data.WriteGuidMask<7, 3, 4, 5, 1, 0, 2, 6>(m_effectExecuteData[i]->guids[j]);
 
-                    buff.WriteGuidBytes<3, 2, 4>(m_effectExecuteData[i]->guids[i]);
-                    buff << uint32(m_effectExecuteData[i]->param1[i]);
-                    buff.WriteGuidBytes<6, 0, 7, 5, 1>(m_effectExecuteData[i]->guids[i]);
+                    buff.WriteGuidBytes<3, 2, 4>(m_effectExecuteData[i]->guids[j]);
+                    buff << uint32(m_effectExecuteData[i]->param1[j]);
+                    buff.WriteGuidBytes<6, 0, 7, 5, 1>(m_effectExecuteData[i]->guids[j]);
                 }
                 data.WriteBits(0, 21);      // durability count
                 data.WriteBits(0, 20);      // power count
@@ -4994,15 +4994,15 @@ void Spell::SendLogExecute()
                 data.WriteBits(0, 21);      // extra count
                 uint32 count = m_effectExecuteData[i]->guids.size();
                 data.WriteBits(count, 21);  // durability count
-                for (uint32 i = 0; i < count; ++i)
+                for (uint32 j = 0; j < count; ++j)
                 {
-                    data.WriteGuidMask<5, 0, 7, 6, 1, 3, 2, 4>(m_effectExecuteData[i]->guids[i]);
+                    data.WriteGuidMask<5, 0, 7, 6, 1, 3, 2, 4>(m_effectExecuteData[i]->guids[j]);
 
-                    buff.WriteGuidBytes<6>(m_effectExecuteData[i]->guids[i]);
-                    buff << uint32(m_effectExecuteData[i]->param2[i]);
-                    buff.WriteGuidBytes<4, 5>(m_effectExecuteData[i]->guids[i]);
-                    buff << uint32(m_effectExecuteData[i]->param1[i]);
-                    buff.WriteGuidBytes<2, 1, 3, 0, 7>(m_effectExecuteData[i]->guids[i]);
+                    buff.WriteGuidBytes<6>(m_effectExecuteData[i]->guids[j]);
+                    buff << uint32(m_effectExecuteData[i]->param2[j]);
+                    buff.WriteGuidBytes<4, 5>(m_effectExecuteData[i]->guids[j]);
+                    buff << uint32(m_effectExecuteData[i]->param1[j]);
+                    buff.WriteGuidBytes<2, 1, 3, 0, 7>(m_effectExecuteData[i]->guids[j]);
                 }
                 data.WriteBits(0, 20);      // power count
                 break;
@@ -5023,11 +5023,11 @@ void Spell::SendLogExecute()
             {
                 uint32 count = m_effectExecuteData[i]->guids.size();
                 data.WriteBits(count, 24);  // generic count
-                for (uint32 i = 0; i < count; ++i)
+                for (uint32 j = 0; j < count; ++j)
                 {
-                    data.WriteGuidMask<3, 4, 5, 7, 0, 2, 6, 1>(m_effectExecuteData[i]->guids[i]);
+                    data.WriteGuidMask<3, 4, 5, 7, 0, 2, 6, 1>(m_effectExecuteData[i]->guids[j]);
 
-                    buff.WriteGuidBytes<3, 5, 1, 0, 4, 7, 6, 2>(m_effectExecuteData[i]->guids[i]);
+                    buff.WriteGuidBytes<3, 5, 1, 0, 4, 7, 6, 2>(m_effectExecuteData[i]->guids[j]);
                 }
                 data.WriteBits(0, 22);      // trade count
                 data.WriteBit(0);           // no power data
@@ -5051,8 +5051,8 @@ void Spell::SendLogExecute()
                 data.WriteBits(0, 21);      // durability count
                 data.WriteBits(0, 20);      // power count
 
-                for (uint32 i = 0; i < count; ++i)
-                    buff << uint32(m_effectExecuteData[i]->param1[i]);
+                for (uint32 j = 0; j < count; ++j)
+                    buff << uint32(m_effectExecuteData[i]->param1[j]);
                 break;
             }
             case SPELL_EFFECT_FEED_PET:
@@ -5066,8 +5066,8 @@ void Spell::SendLogExecute()
                 data.WriteBits(0, 21);      // durability count
                 data.WriteBits(0, 20);      // power count
 
-                for (uint32 i = 0; i < count; ++i)
-                    buff << uint32(m_effectExecuteData[i]->param1[i]);
+                for (uint32 j = 0; j < count; ++j)
+                    buff << uint32(m_effectExecuteData[i]->param1[j]);
                 break;
             }
             default:
