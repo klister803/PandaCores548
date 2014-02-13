@@ -1162,7 +1162,7 @@ enum Opcodes
     SMSG_PARTY_COMMAND_RESULT                         = 0x0430, // 5.4.1 17538
     SMSG_PARTY_MEMBER_STATS_FULL                      = 0x0CB4, // 5.4.1 17538
     SMSG_PAUSE_MIRROR_TIMER                           = 0x8E9,  // 5.0.5 16048 
-    SMSG_PERIODICAURALOG                              = 0x449,  // 5.4.1 17538
+    SMSG_PERIODICAURALOG                              = 0x0449, // 5.4.1 17538
     SMSG_PETGODMODE                                   = 0x9E4,  // 5.0.5 16048
     SMSG_PETITION_ALREADY_SIGNED                      = 0xAA8,  // 5.0.5 16048
     SMSG_PETITION_QUERY_RESPONSE                      = 0xC62,  // 5.0.5 16048
