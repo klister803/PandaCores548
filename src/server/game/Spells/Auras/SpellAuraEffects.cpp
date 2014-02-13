@@ -851,6 +851,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
 
             switch (GetId())
             {
+                case 73651: // Recuperate
+                {
+                    amount = CalculatePct(caster->GetMaxHealth(), caster->HasAura(56806) ? 3.5f: 3);
+                    break;
+                }
                 case 28880:  // Warrior     - Gift of the Naaru
                 case 59542:  // Paladin     - Gift of the Naaru
                 case 59543:  // Hunter      - Gift of the Naaru

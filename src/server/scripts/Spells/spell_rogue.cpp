@@ -28,7 +28,6 @@
 enum RogueSpells
 {
     ROGUE_SPELL_SHIV_TRIGGERED                   = 5940,
-    ROGUE_SPELL_RECUPERATE                       = 73651,
     ROGUE_SPELL_DEADLY_POISON                    = 2823,
     ROGUE_SPELL_WOUND_POISON                     = 8679,
     ROGUE_SPELL_MIND_NUMBLING_POISON             = 5761,
@@ -1045,40 +1044,6 @@ class spell_rog_poisons : public SpellScriptLoader
         }
 };
 
-// Recuperate - 73651
-class spell_rog_recuperate : public SpellScriptLoader
-{
-    public:
-        spell_rog_recuperate() : SpellScriptLoader("spell_rog_recuperate") { }
-
-        class spell_rog_recuperate_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_recuperate_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Aura* recuperate = _player->GetAura(ROGUE_SPELL_RECUPERATE))
-                    {
-                        int32 bp = _player->CountPctFromMaxHealth(3);
-                        recuperate->GetEffect(0)->ChangeAmount(bp);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_rog_recuperate_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_recuperate_SpellScript();
-        }
-};
-
 // Preparation - 14185
 class spell_rog_preparation : public SpellScriptLoader
 {
@@ -1354,7 +1319,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_paralytic_poison();
     new spell_rog_shiv();
     new spell_rog_poisons();
-    new spell_rog_recuperate();
     new spell_rog_preparation();
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
