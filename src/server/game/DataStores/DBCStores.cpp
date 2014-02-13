@@ -921,6 +921,9 @@ char const* GetPetName(uint32 petfamily, uint32 /*dbclang*/)
 
 SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint8 difficulty)
 {
+    if(spellId == 9262) //hack fix Segmentation fault
+       return NULL;
+
     if(difficulty)
     {
         uint16 index = MAKE_PAIR16(effect, difficulty);
