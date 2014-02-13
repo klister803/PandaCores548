@@ -127,7 +127,7 @@ class boss_tsulong : public CreatureScript
                 me->AddAura(SPELL_DREAD_SHADOWS, me);
                 events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
                 events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
-                events.ScheduleEvent(EVENT_SUNBEAM,       urand(20000, 30000));
+                events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));
             }
 
             void JustDied(Unit* killer)
@@ -158,7 +158,7 @@ class boss_tsulong : public CreatureScript
                         break;
                     case EVENT_SUNBEAM:
                         me->SummonCreature(NPC_SUNBEAM, sunbeampos[urand(0, 3)]);
-                        events.ScheduleEvent(EVENT_SUNBEAM, urand(20000, 30000));                      
+                        events.ScheduleEvent(EVENT_SUNBEAM, urand(15000, 20000));                      
                         break;
                     }
                 }
@@ -204,11 +204,11 @@ class npc_sunbeam : public CreatureScript
                 {
                 case MAN10_DIFFICULTY :
                 case MAN10_HEROIC_DIFFICULTY:
-                    maxhitval = urand(6, 8);
+                    maxhitval = 20;
                     break;
                 case MAN25_DIFFICULTY:
                 case MAN25_HEROIC_DIFFICULTY:
-                    maxhitval = urand(14, 18);
+                    maxhitval = 50;
                     break;
                 }
             }
