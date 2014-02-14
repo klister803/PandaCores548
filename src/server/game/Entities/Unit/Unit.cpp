@@ -3716,6 +3716,9 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
 {
     SpellInfo const* spellProto = aura->GetSpellInfo();
 
+    if(!spellProto)
+        return;
+
     // passive spell special case (only non stackable with ranks)
     if (spellProto->IsPassiveStackableWithRanks())
         return;
