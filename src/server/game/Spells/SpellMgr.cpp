@@ -125,6 +125,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Seduction
             else if (spellproto->Id == 6358 || spellproto->Id == 132412)
                 return DIMINISHING_FEAR;
+            // Mesmerize
+            else if (spellproto->Id == 115268)
+                return DIMINISHING_FEAR;
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -3336,6 +3339,13 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 121093: // Monk - Gift of the Naaru
+                    spellInfo->SpellFamilyName = SPELLFAMILY_MONK;
+                    break;
+                case 83968:  // Mass Resurrection
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_PARTY;
+                    break;
                 case 125883: // Zen Flight
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_MELEE_ATTACK;
                     break;
@@ -3562,8 +3572,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
-                case 64422: // Sonic Screech (Auriaya)
+                case 64422:  // Sonic Screech (Auriaya)
                 case 122994: // Unseen Strike
+                case 117921: // Massive Attacks
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
@@ -3938,6 +3949,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].BasePoints = 100;
                     break;
                 case 6358:  // Seduce (succubus)
+                case 115268: // Mesmerize (succubus)
                     spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
                     break;
                 case 980:   // Agony
@@ -4276,7 +4288,54 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
                     spellInfo->Effects[1].Effect = 0;
                     break;
+                //
+                //Empress Shekzeer
+                case 123788: //Cry of terror
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 1;
+                    break;
+                case 123735: //Dread screetch
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 1;
+                    spellInfo->Effects[1].TargetB = 0;
+                    break;
+                case 123743: //Dread screetch trigger spell
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
+                    break;
+                case 124845: //Calamity
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
 
+
+                //Terrace of Endless Spring
+                //Protectors of Endless
+                case 117052: //Sha Corruption
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
+                //Tsulong
+                case 122767: //Dread Shadows
+                    spellInfo->Effects[1].TriggerSpell = 0;
+                    break;
+                case 122789: //SunBeam trigger aura
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    break;
+                //Lei Shi
+                case 123121: //Spray
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    break;
+                //Sha of Fear
+                case 119495: //Eerie skull trigger spell
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    break;
+                case 119086: //Penetrating bolt trigger spell
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    break;
 
                     
                 //World Boss
@@ -4396,9 +4455,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 37062: // To Catch A Thistlehead
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(4); // 120s
                     break;
-                case 76856: // Mastery: Unshackled Fury
-                    spellInfo->CasterAuraState = 0;
-                    break;
                 case 114714:// Grilled Plainshawk Leg
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     break;
@@ -4493,6 +4549,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 113901: // Demonic Gateway
                     spellInfo->ProcCharges = 6;
+                    break;
+                case 84964: // Rayne's Seed
+                case 101847: // Shoe Baby
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
                 default:
                     break;

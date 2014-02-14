@@ -30,7 +30,7 @@ enum eCreatures
     NPC_AMBER_MONSTER      = 62711,
     NPC_SHEKZEER           = 62837,
 
-    //Merjalak soldiers
+    //Meljarak soldiers
     NPC_SRATHIK            = 65499,
     NPC_ZARTHIK            = 62408,
     NPC_KORTHIK            = 65500,
@@ -63,6 +63,7 @@ enum eGameObjects
     GO_MELJARAK_EX_DOOR    = 214489,
     GO_UNSOK_EN_DOOR       = 214492,
     GO_UNSOK_EX_DOOR       = 214493,
+    GO_EMPRESS_COCOON      = 213277,
 };
 
 #endif HEARTOFFEAR

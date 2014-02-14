@@ -1685,9 +1685,9 @@ public:
             return false;
 
         int32 Value = (int32)atoi(cval);
-        player->HandleBaseModValue(CRIT_PERCENTAGE, FLAT_MOD, Value, true);
-        player->HandleBaseModValue(RANGED_CRIT_PERCENTAGE, FLAT_MOD, Value, true);
-        player->HandleBaseModValue(OFFHAND_CRIT_PERCENTAGE, FLAT_MOD, Value, true);
+        player->SetStatFloatValue(PLAYER_CRIT_PERCENTAGE, Value);
+        player->SetStatFloatValue(PLAYER_OFFHAND_CRIT_PERCENTAGE, Value);
+        player->SetStatFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, Value);
         for (int school = SPELL_SCHOOL_NORMAL; school != MAX_SPELL_SCHOOL; ++school)
             player->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1+school, Value);
         return true;

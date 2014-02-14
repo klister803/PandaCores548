@@ -29,9 +29,6 @@
 enum PaladinSpells
 {
     PALADIN_SPELL_DIVINE_PLEA                    = 54428,
-    PALADIN_SPELL_HOLY_SHOCK_R1                  = 20473,
-    PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE           = 25912,
-    PALADIN_SPELL_HOLY_SHOCK_R1_HEALING          = 25914,
     SPELL_BLESSING_OF_LOWER_CITY_DRUID           = 37878,
     SPELL_BLESSING_OF_LOWER_CITY_PALADIN         = 37879,
     SPELL_BLESSING_OF_LOWER_CITY_PRIEST          = 37880,
@@ -1096,127 +1093,6 @@ class spell_pal_blessing_of_faith : public SpellScriptLoader
         }
 };
 
-// PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE Hot Fix Blizzard
-class spell_pal_holy_shock_damage : public SpellScriptLoader
-{
-    public:
-        spell_pal_holy_shock_damage() : SpellScriptLoader("spell_pal_holy_shock_damage") { }
-
-        class spell_pal_holy_shock_damage_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_holy_shock_damage_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* caster = GetCaster()->ToPlayer())
-                {
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        if (caster->getLevel() < 85)
-                        {
-                            int32 damage = int32(GetHitDamage() * 0.15f);
-                            SetHitDamage(damage);
-                        }
-                        else if (caster->getLevel() < 90)
-                        {
-                            int32 damage = int32(GetHitDamage() * 0.61f);
-                            SetHitDamage(damage);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pal_holy_shock_damage_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_holy_shock_damage_SpellScript();
-        }
-};
-
-class spell_pal_holy_shock : public SpellScriptLoader
-{
-    public:
-        spell_pal_holy_shock() : SpellScriptLoader("spell_pal_holy_shock") { }
-
-        class spell_pal_holy_shock_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_holy_shock_SpellScript);
-
-            bool Validate(SpellInfo const* spell)
-            {
-                if (!sSpellMgr->GetSpellInfo(PALADIN_SPELL_HOLY_SHOCK_R1))
-                    return false;
-
-                // can't use other spell than holy shock due to spell_ranks dependency
-                if (sSpellMgr->GetFirstSpellInChain(PALADIN_SPELL_HOLY_SHOCK_R1) != sSpellMgr->GetFirstSpellInChain(spell->Id))
-                    return false;
-
-                uint8 rank = sSpellMgr->GetSpellRank(spell->Id);
-                if (!sSpellMgr->GetSpellWithRank(PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE, rank, true) || !sSpellMgr->GetSpellWithRank(PALADIN_SPELL_HOLY_SHOCK_R1_HEALING, rank, true))
-                    return false;
-
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                if (Player* caster = GetCaster()->ToPlayer())
-                {
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
-                        if (caster->IsFriendlyTo(unitTarget))
-                        {
-                            caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PALADIN_SPELL_HOLY_SHOCK_R1_HEALING, rank), true, 0);
-                            caster->ToPlayer()->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(NULL) + 6);
-                        }
-                        else
-                        {
-                            caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE, rank), true, 0);
-                            caster->ToPlayer()->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(NULL) + 6);
-                        }
-                    }
-                }
-            }
-
-            SpellCastResult CheckCast()
-            {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetExplTargetUnit())
-                {
-                    if (!caster->IsFriendlyTo(target))
-                    {
-                        if (!caster->IsValidAttackTarget(target))
-                            return SPELL_FAILED_BAD_TARGETS;
-
-                        if (!caster->isInFront(target))
-                            return SPELL_FAILED_UNIT_NOT_INFRONT;
-                    }
-                }
-                else
-                    return SPELL_FAILED_BAD_TARGETS;
-                return SPELL_CAST_OK;
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Holy Shock
-                OnCheckCast += SpellCheckCastFn(spell_pal_holy_shock_SpellScript::CheckCast);
-                OnEffectHitTarget += SpellEffectFn(spell_pal_holy_shock_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_holy_shock_SpellScript();
-        }
-};
-
 class spell_pal_divine_storm : public SpellScriptLoader
 {
     public:
@@ -1364,8 +1240,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_word_of_glory();
     new spell_pal_ardent_defender();
     new spell_pal_blessing_of_faith();
-    new spell_pal_holy_shock_damage();
-    new spell_pal_holy_shock();
     new spell_pal_divine_storm();
     new spell_pal_lay_on_hands();
     new spell_pal_righteous_defense();

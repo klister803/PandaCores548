@@ -1420,7 +1420,7 @@ namespace Trinity
                 if(!plr)
                     return false;
 
-                if (u->getDeathState() != CORPSE || !plr->isAllowedToLoot(u))
+                if (u->getDeathState() != CORPSE || !plr->isAllowedToLoot(u) || !u->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
                     return false;
 
                 return m_pObject->IsWithinDistInMap(u, i_range);

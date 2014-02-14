@@ -149,6 +149,7 @@ public:
                 case GO_ZHU_CHEST:
                 case GO_ZHU_CHEST2:
                     zhuchestGuid = go->GetGUID();
+                    break;
                 case GO_SNOWDRIFT_FIRE_WALL:
                     snowdriftFirewallGuid = go->GetGUID();
                     break;

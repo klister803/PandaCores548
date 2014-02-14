@@ -394,6 +394,20 @@ public:
             }
         }
 
+        void SpellHit(Unit* source, SpellInfo const* spell)
+        {
+            if(source)
+            {
+                Player* player = source->ToPlayer();
+                if(!player)
+                    return;
+                if (spell->Id == 589)
+                {
+                    player->KilledMonsterCredit(44175, 0);
+                }
+            }
+        }
+        
         void UpdateAI(const uint32 diff)
         {
             if (!UpdateVictim())

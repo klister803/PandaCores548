@@ -131,6 +131,9 @@ uint32 inversionMatching[MAX_INVERSION_SPELLS][2] =
 
 #define MAX_DIST    60
 
+float const minpullpos = 4007.9379f;
+float const maxpullpos = 4076.9135f;
+
 class boss_feng : public CreatureScript
 {
     public:
@@ -147,7 +150,7 @@ class boss_feng : public CreatureScript
             bool phaseone, phasetwo, phasethree;
             uint8 newphase;
             uint8 actualPhase;
-            uint32 dotSpellId;
+            uint32 dotSpellId, checkvictim;
 
             void Reset()
             {
@@ -155,6 +158,7 @@ class boss_feng : public CreatureScript
                 phaseone = false;
                 phasetwo = false;
                 phasethree = false;
+                checkvictim = 0; 
                 newphase = 0;
                 actualPhase = PHASE_NONE;
                 dotSpellId = 0;
@@ -176,10 +180,33 @@ class boss_feng : public CreatureScript
                 if (GameObject* cancelGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_CANCEL)))
                     cancelGob->Respawn();
             }
+
+            void JustReachedHome()
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+            }
+
+            bool CheckPullPlayerPos(Unit* who)
+            {
+                if (!who->ToPlayer() || who->GetPositionX() < minpullpos || who->GetPositionX() > maxpullpos)
+                    return false;
+
+                return true;
+            }
             
             void EnterCombat(Unit* who)
             {
-                _EnterCombat();
+                if (instance)
+                {
+                    if (!CheckPullPlayerPos(who))
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
+                }
+              _EnterCombat();
+              checkvictim = 1500;
             }
 
             void JustDied(Unit* attacker)
@@ -217,8 +244,7 @@ class boss_feng : public CreatureScript
             {
                 events.Reset();
                 events.ScheduleEvent(EVENT_DOT_ATTACK, 15000);
-                events.ScheduleEvent(EVENT_RE_ATTACK,  500);
-                me->SetReactState(REACT_PASSIVE);
+                events.ScheduleEvent(EVENT_RE_ATTACK,  1000);
                 me->GetMotionMaster()->Clear();
 
                 if (Creature* controler = me->FindNearestCreature(NPC_PHASE_CONTROLER, 60.0f, true))
@@ -291,6 +317,8 @@ class boss_feng : public CreatureScript
                 {
                     phaseone = true;
                     newphase = 1;
+                    me->AttackStop();
+                    me->SetReactState(REACT_PASSIVE);
                     if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
                         controler->AddAura(controlerVisualId[newphase - 1], controler);
                     me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
@@ -299,6 +327,8 @@ class boss_feng : public CreatureScript
                 {
                     phasetwo = true;
                     newphase = 2;
+                    me->AttackStop();
+                    me->SetReactState(REACT_PASSIVE);
                     if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
                         controler->AddAura(controlerVisualId[newphase - 1], controler);
                     me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
@@ -307,6 +337,8 @@ class boss_feng : public CreatureScript
                 {
                     phasethree = true;
                     newphase = 3;
+                    me->AttackStop();
+                    me->SetReactState(REACT_PASSIVE);
                     if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
                         controler->AddAura(controlerVisualId[newphase - 1], controler);
                     me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
@@ -317,6 +349,28 @@ class boss_feng : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
+
+                if (checkvictim && instance)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim())
+                        {
+                            if (!CheckPullPlayerPos(me->getVictim()))
+                            {
+                                me->AttackStop();
+                                me->SetReactState(REACT_PASSIVE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                EnterEvadeMode();
+                                checkvictim = 0;
+                            }
+                            else
+                                checkvictim = 1500;
+                        }
+                    }
+                    else
+                        checkvictim -= diff;
+                }
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;

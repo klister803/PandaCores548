@@ -1254,6 +1254,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         case SPELLFAMILY_PALADIN:
             switch (m_spellInfo->Id)
             {
+                case 20473: // Holy Shock
+                {
+                    uint32 spellid = unitTarget->IsFriendlyTo(m_caster) ? 25914: 25912;
+                    m_caster->CastSpell(unitTarget, spellid, true);
+                    break;
+                }
                 case 31789:                                 // Righteous Defense (step 1)
                 {
                     // Clear targets for eff 1
@@ -1577,6 +1583,23 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
 
     // original caster guid only for GO cast
     m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
+
+    switch (m_spellInfo->Id)
+    {
+        case 8647: // Glyph of Expose Armor
+        {
+            if (!m_caster->HasAura(56803))
+                break;
+
+            if (Aura * aura = unitTarget->GetAura(113746, m_originalCasterGUID))
+            {
+                aura->SetStackAmount(3);
+            }
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
@@ -4305,6 +4328,14 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
+        case 5221: // Shred
+        {
+            if (unitTarget->HasAuraWithMechanic((1<<MECHANIC_BLEED)))
+            {
+                AddPct(m_damage, 20);
+            }   
+            break;
+        }
         case 60103:        // Lava Lash
         {
             if (m_caster->GetTypeId() != TYPEID_PLAYER)

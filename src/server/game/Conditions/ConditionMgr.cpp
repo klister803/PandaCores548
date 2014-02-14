@@ -119,7 +119,10 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         case CONDITION_QUESTREWARDED:
         {
             if (Player* player = object->ToPlayer())
-                condMeets = player->GetQuestRewardStatus(ConditionValue1);
+            {
+                QuestStatus status = player->GetQuestStatus(ConditionValue1);
+                condMeets = (status == QUEST_STATUS_REWARDED);
+            }
             break;
         }
         case CONDITION_QUESTTAKEN:

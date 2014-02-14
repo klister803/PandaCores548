@@ -625,7 +625,7 @@ class ObjectMgr
         typedef std::map<uint32, uint32> CharacterConversionMap;
 
         typedef std::list<CurrencyLoot> CurrencysLoot;
-        std::list<CurrencyLoot> GetCurrencyLoot(uint32 entry, uint8 type);
+        std::list<CurrencyLoot> GetCurrencyLoot(uint32 entry, uint8 type, uint8 spawnMode);
 
         Player* GetPlayerByLowGUID(uint32 lowguid) const;
 

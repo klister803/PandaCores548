@@ -8044,6 +8044,7 @@ void Player::_LoadCurrency(PreparedQueryResult result)
         cur.totalCount  = fields[2].GetUInt32();
         cur.seasonTotal = fields[3].GetUInt32();
         uint8 flags     = fields[4].GetUInt8();
+        cur.curentCap   = fields[5].GetUInt32();
 
         cur.flags = flags & PLAYERCURRENCY_MASK_USED_BY_CLIENT;
         cur.currencyEntry = currency;
@@ -8072,6 +8073,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(3, itr->second.totalCount);
             stmt->setUInt32(4, itr->second.seasonTotal);
             stmt->setUInt8(5, itr->second.flags);
+            stmt->setUInt32(6, itr->second.curentCap);
             trans->Append(stmt);
             break;
         case PLAYERCURRENCY_CHANGED:
@@ -8080,8 +8082,9 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(1, itr->second.totalCount);
             stmt->setUInt32(2, itr->second.seasonTotal);
             stmt->setUInt8(3, itr->second.flags);
-            stmt->setUInt32(4, GetGUIDLow());
-            stmt->setUInt16(5, itr->first);
+            stmt->setUInt32(4, itr->second.curentCap);
+            stmt->setUInt32(5, GetGUIDLow());
+            stmt->setUInt16(6, itr->first);
             trans->Append(stmt);
             break;
         default:
@@ -8092,7 +8095,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
     }
 }
 
-void Player::SendNewCurrency(uint32 id) const
+void Player::SendNewCurrency(uint32 id)
 {
     PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
     if (itr == _currencyStorage.end())
@@ -8132,7 +8135,7 @@ void Player::SendNewCurrency(uint32 id) const
     GetSession()->SendPacket(&packet);
 }
 
-void Player::SendCurrencies() const
+void Player::SendCurrencies()
 {
     ByteBuffer currencyData;
 
@@ -8186,7 +8189,7 @@ void Player::ModifyCurrencyFlag(uint32 id, uint8 flag)
         _currencyStorage[id].state = PLAYERCURRENCY_CHANGED;
 }
 
-void Player::SendPvpRewards() const
+void Player::SendPvpRewards()
 {
     WorldPacket packet(SMSG_REQUEST_PVP_REWARDS_RESPONSE, 24);
     packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_POINTS, true);
@@ -8302,8 +8305,8 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    if (!modifyWeek && weekCap && newWeekCount > int32(weekCap))
-        newWeekCount = weekCap;
+    if (!modifyWeek)
+        newWeekCount = oldWeekCount;
 
     // if we get more then weekCap just set to limit
     if (modifyWeek && weekCap && (int32(weekCap) < newWeekCount))
@@ -8381,7 +8384,7 @@ void Player::SetCurrency(uint32 id, uint32 count, bool printLog /*= true*/)
    ModifyCurrency(id, int32(count) - GetCurrency(id, true), printLog);
 }
 
-uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision) const
+uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision)
 {
     CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(id);
     if (!entry)
@@ -8409,6 +8412,7 @@ void Player::ResetCurrencyWeekCap()
     for (PlayerCurrenciesMap::iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
     {
         itr->second.weekCount = 0;
+        itr->second.curentCap = 0;
         itr->second.state = PLAYERCURRENCY_CHANGED;
     }
 
@@ -8416,27 +8420,55 @@ void Player::ResetCurrencyWeekCap()
     SendDirectMessage(&data);
 }
 
-uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const
+uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
 {
     if(!currency)
         return 0;
 
     uint32 cap = currency->WeekCap;
+    uint32 curentCap = 0;
+
+    PlayerCurrenciesMap::iterator itr = _currencyStorage.find(currency->ID);
+    if (itr != _currencyStorage.end())
+        curentCap = itr->second.curentCap;
 
     switch (currency->ID)
     {
             //original conquest not have week cap
         case CURRENCY_TYPE_CONQUEST_POINTS:
-            cap = std::max(GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_ARENA, false), GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RBG, false));
+            if(curentCap == 0)
+            {
+                cap = std::max(GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_ARENA, false), GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RBG, false));
+                if (itr != _currencyStorage.end())
+                    itr->second.curentCap = cap;
+            }
+            else
+                cap = curentCap;
             break;
         case CURRENCY_TYPE_CONQUEST_META_ARENA:
             // should add precision mod = 100
-            cap = Trinity::Currency::ConquestRatingCalculator(_maxPersonalArenaRate) * currency->GetPrecision();
+            if(curentCap == 0)
+            {
+                cap = Trinity::Currency::ConquestRatingCalculator(_maxPersonalArenaRate) * currency->GetPrecision();
+                if (itr != _currencyStorage.end())
+                    itr->second.curentCap = cap;
+            }
+            else
+                cap = curentCap;
             break;
         case CURRENCY_TYPE_CONQUEST_META_RBG:
             // should add precision mod = 100
-            if(getRBG())
-                cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
+            if(curentCap == 0)
+            {
+                if(getRBG())
+                {
+                    cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
+                    if (itr != _currencyStorage.end())
+                        itr->second.curentCap = cap;
+                }
+            }
+            else
+                cap = curentCap;
             break;
     }
 
@@ -22256,17 +22288,19 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
         {
             if (opcode == SMSG_SET_PCT_SPELL_MODIFIER)
             {
-                float val = 1;
-
-                if (!apply)
-                    val += float(mod->value) / 100;
+                int32 amount = 100;
 
                 for (SpellModList::iterator itr = m_spellMods[mod->op].begin(); itr != m_spellMods[mod->op].end(); ++itr)
                     if ((*itr)->type == mod->type && (*itr)->mask & _mask)
-                        val += (*itr)->value/100;
+                        amount += (*itr)->value;
 
                 if (mod->value)
-                    val += apply ? float(mod->value)/100 : -(float(mod->value)/100);
+                    amount += apply ? mod->value : -mod->value;
+
+                if (amount < 0)
+                    amount = 0;
+
+                float val = amount / 100.0f;
 
                 data << float(val);
                 data << uint8(eff);
@@ -22871,6 +22905,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 void Player::InitDataForForm(bool reapplyMods)
 {
     ShapeshiftForm form = GetShapeshiftForm();
+    bool FierceTiger = false;
 
     SpellShapeshiftFormEntry const* ssEntry = sSpellShapeshiftFormStore.LookupEntry(form);
     if (ssEntry && ssEntry->attackSpeed)
@@ -22885,6 +22920,12 @@ void Player::InitDataForForm(bool reapplyMods)
     switch (form)
     {
         case FORM_FIERCE_TIGER:
+        {
+            FierceTiger = true;
+            if (getPowerType() != POWER_ENERGY)
+                setPowerType(POWER_ENERGY);
+            break;
+        }
         case FORM_STURDY_OX:
         case FORM_GHOUL:
         case FORM_CAT:
@@ -22915,7 +22956,7 @@ void Player::InitDataForForm(bool reapplyMods)
     }
 
     // update auras at form change, ignore this at mods reapply (.reset stats/etc) when form not change.
-    if (!reapplyMods)
+    if (!reapplyMods && !FierceTiger)
         UpdateEquipSpellsAtFormChange();
 
     UpdateAttackPowerAndDamage();
@@ -23620,53 +23661,6 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         // no cooldown after applying spell mods
         if (rec == 0 && catrec == 0)
             return;
-
-        // Sanctity of Battle - 25956
-        // Melee haste effects lower the cooldown and global cooldown of your ...
-        if (rec > 0 && HasAura(25956))
-        {
-            float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
-
-            switch (GetSpecializationId(GetActiveSpec()))
-            {
-                // ... Judgment, Crusader Strike, and Hammer of Wrath.
-                case SPEC_NONE:
-                case SPEC_PALADIN_HOLY:
-                    // In order
-                    if (spellInfo->Id == 20271 ||
-                        spellInfo->Id == 35395 ||
-                        spellInfo->Id == 24275)
-                        rec /= HastePct;
-
-                    break;
-                // ... Judgment, Crusader Strike, Hammer of the Righteous, Consecration, Holy Wrath, Avenger's Shield and Hammer of Wrath
-                case SPEC_PALADIN_PROTECTION:
-                    // In order
-                    if (spellInfo->Id == 20271 ||
-                        spellInfo->Id == 35395 ||
-                        spellInfo->Id == 53595 ||
-                        spellInfo->Id == 879 ||
-                        spellInfo->Id == 879 ||
-                        spellInfo->Id == 879 ||
-                        spellInfo->Id == 24275)
-                        rec /= HastePct;
-
-                    break;
-                // ... Judgment, Crusader Strike, Hammer of the Righteous, Exorcism and Hammer of Wrath
-                case SPEC_PALADIN_RETRIBUTION:
-                    // In order
-                    if (spellInfo->Id == 20271 ||
-                        spellInfo->Id == 35395 ||
-                        spellInfo->Id == 53595 ||
-                        spellInfo->Id == 879 ||
-                        spellInfo->Id == 24275)
-                        rec /= HastePct;
-
-                    break;
-                default:
-                    break;
-            }
-        }
 
         catrecTime = catrec ? curTime+catrec/IN_MILLISECONDS : 0;
         recTime    = rec ? curTime+rec/IN_MILLISECONDS : catrecTime;

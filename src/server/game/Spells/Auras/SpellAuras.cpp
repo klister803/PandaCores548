@@ -876,10 +876,6 @@ void Aura::RefreshTimers()
     m_maxDuration = CalcMaxDuration();
 
     RefreshDuration(false);
-    Unit* caster = GetCaster();
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (HasEffect(i))
-            GetEffect(i)->CalculatePeriodic(caster, false, false);
 }
 
 void Aura::SetCharges(uint8 charges)
@@ -2588,7 +2584,13 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
             if (existing != targets.end())
                 existing->second |= 1<<effIndex;
             else
+            {
+                if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
+                    if ((*itr)->GetTypeId() != TYPEID_PLAYER && (*itr) != caster)
+                        continue;
+
                 targets[*itr] = 1<<effIndex;
+            }
         }
     }
 }

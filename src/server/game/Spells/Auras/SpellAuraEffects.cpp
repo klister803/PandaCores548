@@ -721,6 +721,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 amount = GetBase()->GetUnitOwner()->SpellHealingBonusTaken(caster, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
             }
             break;
+        case SPELL_AURA_417:
+        {
+            switch (GetId())
+            {
+                case 25956: // Sanctity of Battle
+                {
+                    amount  = 100;
+                    amount -= CalculatePct(amount, caster->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2));
+                    amount -= CalculatePct(amount, caster->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MELEE_RANGED_HASTE));
+                    amount -= 100;
+
+                    if (amount > 0) amount = 0;
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_PERIODIC_DAMAGE:
         {
             if (!caster)
@@ -826,9 +845,34 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             }
             break;
         case SPELL_AURA_PERIODIC_HEAL:
+        {
             if (!caster)
                 break;
+
+            switch (GetId())
+            {
+                case 73651: // Recuperate
+                {
+                    amount = CalculatePct(caster->GetMaxHealth(), caster->HasAura(56806) ? 3.5f: 3);
+                    break;
+                }
+                case 28880:  // Warrior     - Gift of the Naaru
+                case 59542:  // Paladin     - Gift of the Naaru
+                case 59543:  // Hunter      - Gift of the Naaru
+                case 59544:  // Priest      - Gift of the Naaru
+                case 59545:  // Deathknight - Gift of the Naaru
+                case 59547:  // Shaman      - Gift of the Naaru
+                case 59548:  // Mage        - Gift of the Naaru
+                case 121093: // Monk        - Gift of the Naaru
+                {
+                    amount = CalculatePct(caster->GetMaxHealth(), m_spellInfo->Effects[1].BasePoints) / GetTotalTicks();
+                    break;
+                }
+                default:
+                    break;
+            }
             break;
+        }
         case SPELL_AURA_MOD_THREAT:
         {
             uint8 level_diff = 0;
@@ -1235,6 +1279,12 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
             else if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
                 m_amplitude = int32(m_amplitude * std::max<float>(caster->GetFloatValue(UNIT_MOD_CAST_SPEED), 0.5f));
         }
+        if (!resetPeriodicTimer && !load)
+        {
+            int32 dotduration = GetBase()->GetMaxDuration() + m_periodicTimer;
+            GetBase()->SetMaxDuration(dotduration);
+            GetBase()->SetDuration(dotduration);
+        }
     }
 
     if (load) // aura loaded from db
@@ -1290,21 +1340,24 @@ void AuraEffect::CalculateSpellMod()
                     break;
             }
             break;
+        case SPELL_AURA_417:
         case SPELL_AURA_ADD_FLAT_MODIFIER:
         case SPELL_AURA_ADD_PCT_MODIFIER:
+        {
             if (!m_spellmod)
             {
                 m_spellmod = new SpellModifier(GetBase());
                 m_spellmod->op = SpellModOp(GetMiscValue());
                 ASSERT(m_spellmod->op < MAX_SPELLMOD);
 
-                m_spellmod->type = SpellModType(GetAuraType());    // SpellModType value == spell aura types
+                m_spellmod->type = GetAuraType() == SPELL_AURA_417 ? SPELLMOD_PCT: SpellModType(GetAuraType());    // SpellModType value == spell aura types
                 m_spellmod->spellId = GetId();
                 m_spellmod->mask = GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).SpellClassMask;
                 m_spellmod->charges = GetBase()->GetCharges();
             }
             m_spellmod->value = GetAmount();
             break;
+        }
         default:
             break;
     }
@@ -4978,6 +5031,13 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
     {
         target->ToPlayer()->UpdateMeleeHastMod();
         target->ToPlayer()->UpdateRangeHastMod();
+
+        Unit::AuraEffectList const& GcdByMeleeHaste = target->GetAuraEffectsByType(SPELL_AURA_417);		
+        for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
+        {	
+            (*itr)->SetCanBeRecalculated(true);
+            (*itr)->RecalculateAmount(target);
+        }
     }
 }
 
@@ -5120,8 +5180,10 @@ void AuraEffect::HandleAuraModAttackPowerPercent(AuraApplication const* aurApp, 
             if (target->GetGUID() == pet->GetGUID())
                 return;
 
-    //UNIT_FIELD_ATTACK_POWER_MULTIPLIER = multiplier - 1
-    target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_PCT, float(GetAmount()), apply);
+    if (target->ToPlayer())
+        target->ToPlayer()->UpdateAttackPowerAndDamage(false);
+    else if (Pet* pet = target->ToPet())
+        pet->UpdateAttackPowerAndDamage(false);
 }
 
 void AuraEffect::HandleAuraModRangedAttackPowerPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5134,8 +5196,8 @@ void AuraEffect::HandleAuraModRangedAttackPowerPercent(AuraApplication const* au
     if ((target->getClassMask() & CLASSMASK_WAND_USERS) != 0)
         return;
 
-    //UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER = multiplier - 1
-    target->HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_PCT, float(GetAmount()), apply);
+    if (target->ToPlayer())
+        target->ToPlayer()->UpdateAttackPowerAndDamage(true);
 }
 
 void AuraEffect::HandleAuraModAttackPowerOfArmor(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
@@ -5509,11 +5571,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     if (caster)
                         target->GetMotionMaster()->MoveFall();
                     break;
-                case 52916: // Honor Among Thieves
-                    if (target->GetTypeId() == TYPEID_PLAYER)
-                        if (Unit* spellTarget = ObjectAccessor::GetUnit(*target, target->ToPlayer()->GetComboTarget()))
-                            target->CastSpell(spellTarget, 51699, true);
-                   break;
                 case 71563:
                     {
                         Aura* newAura = target->AddAura(71564, target);

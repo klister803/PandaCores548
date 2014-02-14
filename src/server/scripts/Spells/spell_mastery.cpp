@@ -32,7 +32,6 @@ enum MasterySpells
     MASTERY_SPELL_LAVA_BURST            = 77451,
     MASTERY_SPELL_ELEMENTAL_BLAST       = 120588,
     MASTERY_SPELL_HAND_OF_LIGHT         = 96172,
-    MASTERY_SPELL_IGNITE                = 12654,
     MASTERY_SPELL_BLOOD_SHIELD          = 77535,
     MASTERY_SPELL_COMBO_BREAKER_1       = 118864,
     MASTERY_SPELL_COMBO_BREAKER_2       = 116768,
@@ -177,107 +176,6 @@ class spell_mastery_blood_shield : public SpellScriptLoader
         }
 };
 
-// Called by 133 - Fireball, 44614 - Frostfire Bolt, 108853 - Inferno Blast, 2948 - Scorch and 11366 - Pyroblast
-// 12846 - Mastery : Ignite
-class spell_mastery_ignite : public SpellScriptLoader
-{
-    public:
-        spell_mastery_ignite() : SpellScriptLoader("spell_mastery_ignite") { }
-
-        class spell_mastery_ignite_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mastery_ignite_SpellScript);
-
-            void HandleAfterHit()
-            {
-                Unit* caster = GetCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER || caster->getLevel() < 80)
-                    return;
-
-                Unit* target = GetHitUnit();
-                if (!target)
-                    return;
-
-                if (GetSpellInfo()->Id != MASTERY_SPELL_IGNITE)
-                {
-                    AuraEffect const* ignite = caster->GetAuraEffect(12846, EFFECT_0);
-                    if (!ignite)
-                        return;
-
-                    float value = ignite->GetAmount() / 100.0f;
-
-                    int32 bp = GetHitDamage();
-                    bp = int32(bp * value / 2);
-
-                    if (target->HasAura(MASTERY_SPELL_IGNITE, caster->GetGUID()))
-                    {
-                        bp += target->GetRemainingPeriodicAmount(caster->GetGUID(), MASTERY_SPELL_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
-                        bp = int32(bp * 0.66f);
-                    }
-
-                    caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, NULL, NULL, true);
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_mastery_ignite_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mastery_ignite_SpellScript();
-        }
-};
-
-// Called by 35395 - Crusader Strike, 53595 - Hammer of the Righteous, 24275 - Hammer of Wrath, 85256 - Templar's Verdict and 53385 - Divine Storm
-// 76672 - Mastery : Hand of Light
-class spell_mastery_hand_of_light : public SpellScriptLoader
-{
-    public:
-        spell_mastery_hand_of_light() : SpellScriptLoader("spell_mastery_hand_of_light") { }
-
-        class spell_mastery_hand_of_light_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mastery_hand_of_light_SpellScript);
-
-            void HandleAfterHit()
-            {
-                Unit* caster = GetCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER || caster->getLevel() < 80)
-                    return;
-
-                Unit* target = GetHitUnit();
-                if (!target)
-                    return;
-
-                if (GetSpellInfo()->Id != MASTERY_SPELL_HAND_OF_LIGHT)
-                {
-                    AuraEffect const* aurEff = caster->GetAuraEffect(76672, EFFECT_0);
-                    if (!aurEff)
-                        return;
-
-                    float value = aurEff->GetAmount();
-
-                    int32 bp = int32(GetHitDamage() * value / 100);
-
-                    caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, NULL, NULL, true);
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_mastery_hand_of_light_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mastery_hand_of_light_SpellScript();
-        }
-};
-
 // Called by 403 - Lightning Bolt, 421 - Chain Lightning, 51505 - Lava Burst and 117014 - Elemental Blast
 // 77222 - Mastery : Elemental Overload
 class spell_mastery_elemental_overload : public SpellScriptLoader
@@ -357,7 +255,5 @@ void AddSC_mastery_spell_scripts()
     new spell_mastery_shield_discipline();
     new spell_mastery_combo_breaker();
     new spell_mastery_blood_shield();
-    new spell_mastery_ignite();
-    new spell_mastery_hand_of_light();
     new spell_mastery_elemental_overload();
 }

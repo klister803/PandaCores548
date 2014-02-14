@@ -924,7 +924,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     //if (rawItemCount > 300),
     //    rawItemCount = 300; // client cap but uint8 max value is 255
 
-    ByteBuffer itemsData(32 * rawItemCount);
+    ByteBuffer itemsData(32 * MAX_VENDOR_ITEMS);
     bool hasExtendedCost[MAX_VENDOR_ITEMS];
 
     const float discountMod = _player->GetReputationPriceDiscount(vendor);

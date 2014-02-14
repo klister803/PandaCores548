@@ -273,7 +273,7 @@ class AreaTrigger_at_sholazar_waygate : public AreaTriggerScript
 
 enum NatsLanding
 {
-    QUEST_NATS_BARGAIN = 11209,
+    QUEST_NATS_BARGAIN = 27220,
     SPELL_FISH_PASTE   = 42644,
     NPC_LURKING_SHARK  = 23928
 };
@@ -292,7 +292,7 @@ class AreaTrigger_at_nats_landing : public AreaTriggerScript
             {
                 if (!player->FindNearestCreature(NPC_LURKING_SHARK, 20.0f))
                 {
-                    if (Creature* shark = player->SummonCreature(NPC_LURKING_SHARK, -4246.243f, -3922.356f, -7.488f, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000))
+                    if (Creature* shark = player->SummonCreature(NPC_LURKING_SHARK, -4246.243f, -3922.356f, -7.488f, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000))
                         shark->AI()->AttackStart(player);
 
                     return false;

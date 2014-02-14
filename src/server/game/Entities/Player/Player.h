@@ -157,11 +157,12 @@ enum PlayerCurrencyState
 
 struct PlayerCurrency
 {
-   PlayerCurrencyState state;
-   uint32 totalCount;
-   uint32 weekCount;
-   uint32 seasonTotal;
+    PlayerCurrencyState state;
+    uint32 totalCount;
+    uint32 weekCount;
+    uint32 seasonTotal;
     uint8 flags;
+    uint32 curentCap;
     CurrencyTypesEntry const * currencyEntry;
 };
 
@@ -1453,10 +1454,10 @@ class Player : public Unit, public GridObject<Player>
         void DeleteRefundReference(uint32 it);
 
         /// send initialization of new currency for client
-        void SendNewCurrency(uint32 id) const;
+        void SendNewCurrency(uint32 id);
         /// send full data about all currencies to client
-        void SendCurrencies() const;
-        void SendPvpRewards() const;
+        void SendCurrencies();
+        void SendPvpRewards();
         /// return count of currency witch has plr
         uint32 GetCurrency(uint32 id, bool usePrecision) const;
         uint32 GetCurrencyOnWeek(uint32 id, bool usePrecision) const;
@@ -1466,9 +1467,9 @@ class Player : public Unit, public GridObject<Player>
         bool HasCurrencySeason(uint32 id, uint32 count) const { return GetCurrencyOnSeason(id, false) >= count; }
         /// @todo: not understand why it subtract from total count and for what it used. It should be remove and replaced by ModifyCurrency
         void SetCurrency(uint32 id, uint32 count, bool printLog = true);
-        uint32 GetCurrencyWeekCap(uint32 id, bool usePrecision) const;
+        uint32 GetCurrencyWeekCap(uint32 id, bool usePrecision);
         void ResetCurrencyWeekCap();
-        uint32 GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const;
+        uint32 GetCurrencyWeekCap(CurrencyTypesEntry const* currency);
         uint32 GetCurrencyTotalCap(CurrencyTypesEntry const* currency) const;
         void UpdateConquestCurrencyCap(uint32 currency);
         /// modify currency flag

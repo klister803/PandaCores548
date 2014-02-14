@@ -2123,6 +2123,10 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
         if (m_spellInfo->CheckTarget(m_caster, target, implicit) != SPELL_CAST_OK)
             return;
 
+    if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
+        if (target->GetTypeId() != TYPEID_PLAYER && target != m_caster)
+            return;
+
     // Check for effect immune skip if immuned
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         if (target->IsImmunedToSpellEffect(m_spellInfo, effIndex))
@@ -6129,6 +6133,21 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (m_caster->HasAura(5217) || m_caster->HasAura(106951))
                         {
                             return SPELL_FAILED_TRY_AGAIN;
+                        }
+                        break;
+                    }
+                    case 5171:  // Slice and Dice
+                    case 73651: // Recuperate
+                    {
+                        if (Aura * aura = m_caster->GetAura(m_spellInfo->Id))
+                        {
+                            int32 bonusDuration = m_spellInfo->Id == 5171 ? 6000: 0;
+                        
+                            if (Player * player = m_caster->ToPlayer())
+                            {
+                                if (aura->GetDuration() > player->GetComboPoints() * 6000 + bonusDuration)
+                                    return SPELL_FAILED_TRY_AGAIN;
+                            }
                         }
                         break;
                     }

@@ -400,6 +400,8 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         float base_attPower = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
         float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
 
+        AddPct(base_attPower, GetTotalAuraModifier(ranged ? SPELL_AURA_MOD_RANGED_ATTACK_POWER_PCT: SPELL_AURA_MOD_ATTACK_POWER_PCT));
+
         //add dynamic flat mods
         if (!ranged && HasAuraType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR))
         {
@@ -1205,6 +1207,8 @@ bool Guardian::UpdateAllStats()
     for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
         UpdateResistances(i);
 
+    UpdatePetMeleeHastMod();
+
     return true;
 }
 
@@ -1222,7 +1226,7 @@ void Guardian::UpdatePetMeleeHastMod()
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
 
-    amount += GetTotalForAurasModifier(&auratypelist);
+    amount += m_owner->GetTotalForAurasModifier(&auratypelist);
 
     float value = BASE_ATTACK_TIME;
 
@@ -1480,6 +1484,8 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
                 break;
             }
         }
+
+        AddPct(AP, GetMaxPositiveAuraModifier(SPELL_AURA_MOD_ATTACK_POWER_PCT));
 
         //UNIT_FIELD_(RANGED)_ATTACK_POWER field
         SetInt32Value(UNIT_FIELD_ATTACK_POWER, AP);

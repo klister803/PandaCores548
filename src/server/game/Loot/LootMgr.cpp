@@ -492,7 +492,7 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
         return;
 
     // Process currency items
-    std::list<CurrencyLoot> temp = sObjectMgr->GetCurrencyLoot(objEntry, objType);
+    std::list<CurrencyLoot> temp = sObjectMgr->GetCurrencyLoot(objEntry, objType, spawnMode);
     for (std::list<CurrencyLoot>::iterator i = temp.begin(); i != temp.end(); ++i)
         if(CurrencyTypesEntry const* proto = sCurrencyTypesStore.LookupEntry(i->CurrencyId))
         {

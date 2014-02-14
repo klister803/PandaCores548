@@ -47,8 +47,6 @@ enum WarriorSpells
     WARRIOR_SPELL_ALLOW_RAGING_BLOW             = 131116,
     WARRIOR_SPELL_MOCKING_BANNER_TAUNT          = 114198,
     WARRIOR_NPC_MOCKING_BANNER                  = 59390,
-    WARRIOR_SPELL_BERZERKER_RAGE_EFFECT         = 23691,
-    WARRIOR_SPELL_ENRAGE                        = 12880,
     WARRIOR_SPELL_COLOSSUS_SMASH                = 86346,
     WARRIOR_SPELL_MORTAL_STRIKE_AURA            = 12294,
     WARRIOR_SPELL_TASTE_FOR_BLOOD               = 56638,
@@ -480,37 +478,6 @@ class spell_warr_sudden_death : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warr_sudden_death_SpellScript();
-        }
-};
-
-// Berzerker Rage - 18499
-class spell_warr_berzerker_rage : public SpellScriptLoader
-{
-    public:
-        spell_warr_berzerker_rage() : SpellScriptLoader("spell_warr_berzerker_rage") { }
-
-        class spell_warr_berzerker_rage_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_berzerker_rage_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    _player->CastSpell(_player, WARRIOR_SPELL_ENRAGE, true);
-                    _player->CastSpell(_player, WARRIOR_SPELL_BERZERKER_RAGE_EFFECT, true);
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_berzerker_rage_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_berzerker_rage_SpellScript();
         }
 };
 
@@ -1118,7 +1085,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_second_wind();
     new spell_warr_taste_for_blood();
     new spell_warr_sudden_death();
-    new spell_warr_berzerker_rage();
     new spell_warr_mocking_banner();
     new spell_warr_raging_blow();
     new spell_warr_sword_and_board();

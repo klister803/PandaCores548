@@ -64,6 +64,9 @@ enum eEvents
     EVENT_SPIRITUAL_GRASP       = 7,
 };
 
+float const minpullpos = 4238.0410f; //x
+float const maxpullpos = 1380.4799f; //y
+
 class boss_garajal : public CreatureScript
 {
     public:
@@ -78,11 +81,13 @@ class boss_garajal : public CreatureScript
 
             InstanceScript* pInstance;
             uint64 voodooTargets[4];
+            uint32 checkvictim;
 
             void Reset()
             {
                 _Reset();
                 me->RemoveAllAuras();
+                checkvictim = 0;
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_VISUAL);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_VOODOO_DOLL_SHARE);
 
@@ -90,9 +95,32 @@ class boss_garajal : public CreatureScript
                     voodooTargets[n] = 0;
             }
 
+            void JustReachedHome()
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+            }
+
+             bool CheckPullPlayerPos(Unit* who)
+            {
+                if (!who->ToPlayer() || who->GetPositionX() < minpullpos || who->GetPositionY() > maxpullpos)
+                    return false;
+
+                return true;
+            }
+
             void EnterCombat(Unit* who)
             {
+                if (instance)
+                {
+                    if (!CheckPullPlayerPos(who))
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
+                }
                 _EnterCombat();
+                checkvictim = 1500;
                 events.ScheduleEvent(EVENT_SECONDARY_ATTACK,      urand(5000, 10000));
                 events.ScheduleEvent(EVENT_SUMMON_TOTEM,          urand(27500, 32500));
                 events.ScheduleEvent(EVENT_SUMMON_SHADOWY_MINION, urand(10000, 15000));
@@ -117,6 +145,28 @@ class boss_garajal : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
+
+                if (checkvictim && instance)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim())
+                        {
+                            if (!CheckPullPlayerPos(me->getVictim()))
+                            {
+                                me->AttackStop();
+                                me->SetReactState(REACT_PASSIVE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                EnterEvadeMode();
+                                checkvictim = 0;
+                            }
+                            else
+                                checkvictim = 1500;
+                        }
+                    }
+                    else
+                        checkvictim -= diff;
+                }
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
