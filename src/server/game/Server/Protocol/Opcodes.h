@@ -798,10 +798,10 @@ enum Opcodes
     SMSG_CHANNEL_NOTIFY                               = 0x1490, // 5.4.1 17538
     SMSG_CHARACTER_LOGIN_FAILED                       = 0xC6D,  // 5.0.5 16048
     SMSG_CHAR_CREATE                                  = 0x1007, // 5.4.1 17399
-    SMSG_CHAR_CUSTOMIZE                               = 0xD27,  // 5.0.5 16048
+    SMSG_CHAR_CUSTOMIZE                               = 0x041D, // 5.4.1 17538
     SMSG_CHAR_DELETE                                  = 0x017,  // 5.4.1 17538
     SMSG_CHAR_ENUM                                    = 0x40E,  // 5.4.1 17538
-    SMSG_CHAR_FACTION_CHANGE                          = 0x9E0,  // 5.0.5 16048
+    SMSG_CHAR_FACTION_CHANGE                          = 0x103B, // 5.4.1 17538
     SMSG_CHAR_RENAME                                  = 0x05BD, // 5.4.1 17538
     SMSG_CHAT_IGNORED_ACCOUNT_MUTED                   = 0x000,  // 5.0.5 16048
     SMSG_CHAT_NOT_IN_PARTY                            = 0x0835, // 5.4.1 17538
@@ -861,7 +861,7 @@ enum Opcodes
     SMSG_DESTRUCTIBLE_BUILDING_DAMAGE                 = 0x1434, // 5.4.1 17538
     SMSG_DIFFERENT_INSTANCE_FROM_PARTY                = 0xE26,  // 5.0.5 16048
     SMSG_DISENCHANT_CREDIT                            = 0xE2D,  // 5.0.5 16048
-    SMSG_DISMOUNT                                     = 0x9B3,  // 5.0.5 16048
+    SMSG_DISMOUNT                                     = 0x0C07, // 5.4.1 17538
     SMSG_DISMOUNTRESULT                               = 0xC02,  // 5.0.5 16048
     SMSG_DISPEL_FAILED                                = 0x10CD, // 5.4.1 17538
     SMSG_DISPLAY_GAME_ERROR                           = 0xA63,  // 5.0.5 16048
@@ -1101,7 +1101,7 @@ enum Opcodes
     SMSG_MONSTER_MOVE_TRANSPORT                       = 0xC35,  // 5.0.5 16048
     SMSG_MOTD                                         = 0x04AC, // 5.4.1 17538
     SMSG_MOUNTRESULT                                  = 0x9D9,  // 5.0.5 16048
-    SMSG_MOUNTSPECIAL_ANIM                            = 0x976,  // 5.0.5 16048
+    SMSG_MOUNTSPECIAL_ANIM                            = 0x050E, // 5.4.1 17538
     SMSG_MOVE_COLLISION_DISABLE                       = 0xA16,  // 5.0.5 16048
     SMSG_MOVE_COLLISION_ENABLE                        = 0xF22,  // 5.0.5 16048
     SMSG_MOVE_FEATHER_FALL                            = 0x060D, // 5.4.1 17538
@@ -1152,7 +1152,7 @@ enum Opcodes
     SMSG_NPC_TEXT_UPDATE                              = 0x101F, // 5.4.1 17538
     SMSG_NPC_WONT_TALK                                = 0,      // Not found in 4.3.4
     SMSG_OFFER_PETITION_ERROR                         = 0xCE7,  // 5.0.5 16048
-    SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA         = 0xCB3,  // 5.0.5 16048
+    SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA         = 0x0514, // 5.4.1 17538
     SMSG_OPEN_CONTAINER                               = 0x844,  // 5.0.5 16048
     SMSG_OPEN_LFG_DUNGEON_FINDER                      = 0x894,  // 5.0.5 16048
     SMSG_OVERRIDE_LIGHT                               = 0x8B3,  // 5.0.5 16048
@@ -1192,7 +1192,7 @@ enum Opcodes
     SMSG_PLAYER_MOVE                                  = 0x0337, // 5.4.1 17538
     SMSG_PLAYER_SKINNED                               = 0x8B2,  // 5.0.5 16048
     SMSG_PLAYER_UNK_DEAD_ALIVE                        = 0,      // Not found in 4.3.4
-    SMSG_PLAYER_VEHICLE_DATA                          = 0x9C1,  // 5.0.5 16048
+    SMSG_PLAYER_VEHICLE_DATA                          = 0x048E, // 5.4.1 17538
     SMSG_PLAY_DANCE                                   = 0x86C,  // 5.0.5 16048
     SMSG_PLAY_MUSIC                                   = 0x8EF,  // 5.0.5 16048
     SMSG_PLAY_OBJECT_SOUND                            = 0xCED,  // 5.0.5 16048
@@ -1261,7 +1261,7 @@ enum Opcodes
     SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0x040D, // 5.4.1 17538
     SMSG_REQUEST_PVP_REWARDS_RESPONSE                 = 0xE30,  // 5.0.5 16048
     SMSG_RESEARCH_COMPLETE                            = 0xBF3,  // 5.0.5 16048
-    SMSG_RESEARCH_SETUP_HISTORY                       = 0xBF1,  // 5.0.5 16048
+    SMSG_RESEARCH_SETUP_HISTORY                       = 0x14A5, // 5.4.1 17538
     SMSG_RESET_COMPRESSION_CONTEXT                    = 0x627,  // 5.0.5 16048
     SMSG_RESET_FAILED_NOTIFY                          = 0x0007, // 5.4.1 17538
     SMSG_RESISTLOG                                    = 0,      // Not found in 4.3.4
