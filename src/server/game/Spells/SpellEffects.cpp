@@ -2502,7 +2502,7 @@ void Spell::EffectDestroyItem(SpellEffIndex effIndex)
         return;
 
     player->DestroyItemCount(m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType, 1, true);
-    ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
+    //ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
 }
 
 void Spell::EffectCreateItem2(SpellEffIndex effIndex)

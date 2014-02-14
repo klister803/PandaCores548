@@ -5071,7 +5071,12 @@ void Spell::SendLogExecute()
                 break;
             }
             default:
+            {
+                sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::SendLogExecute: Effect %u should not have data, skipping", effect);
+                delete m_effectExecuteData[i];
+                m_effectExecuteData[i] = NULL;
                 continue;
+            }
         }
 
         ++effectCount;
