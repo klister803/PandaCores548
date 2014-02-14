@@ -72,12 +72,10 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
         recvData.ReadGuidMask<1, 0, 4, 5, 7, 3, 6, 2>(itemGUIDs[i]);
 
     recvData.ReadGuidMask<1>(mailbox);
-    bodyLength = recvData.ReadBits(11);                      // ??
-    receiverLength = recvData.ReadBits(8);                   // ??
-    recvData.ReadBit();                                      // receiverLength & 1
+    bodyLength = recvData.ReadBits(11);
+    receiverLength = recvData.ReadBits(9);
     recvData.ReadGuidMask<7, 5>(mailbox);
-    subjectLength = recvData.ReadBits(8);                    // ??
-    recvData.ReadBit();                                      // subjectLength & 1
+    subjectLength = recvData.ReadBits(9);
     recvData.ReadGuidMask<2, 3>(mailbox);
 
     for (uint8 i = 0; i < items_count; ++i)
@@ -87,11 +85,11 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
         recvData.ReadGuidBytes<0, 6>(itemGUIDs[i]);
     }
 
-    body = recvData.ReadString(bodyLength);
+    receiver = recvData.ReadString(receiverLength);
     recvData.ReadGuidBytes<6, 2>(mailbox);
     subject = recvData.ReadString(subjectLength);
     recvData.ReadGuidBytes<7, 4, 1, 5, 3>(mailbox);
-    receiver = recvData.ReadString(receiverLength);
+    body = recvData.ReadString(bodyLength);
     recvData.ReadGuidBytes<0>(mailbox);
 
     // packet read complete, now do check
