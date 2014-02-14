@@ -522,7 +522,7 @@ void PlayerMenu::SendQuestQueryResponse(uint32 questId) const
         data.WriteBit(0);
 
         _session->SendPacket(&data);
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u, does not exist", quest->GetQuestId());
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u, does not exist", questId);
         return;
     }
 

@@ -207,7 +207,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
 {
     if (remove)
     {
-        ASSERT(!_target->GetVisibleAura(_slot));
+        //ASSERT(!_target->GetVisibleAura(_slot));
         data << uint8(_slot);
         return;
     }
