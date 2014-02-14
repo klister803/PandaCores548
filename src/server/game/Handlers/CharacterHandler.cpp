@@ -2535,31 +2535,20 @@ void WorldSession::HandleRandomizeCharNameOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
 {
-    uint32 charactersCount = recvData.ReadBits(10);
+    uint32 charactersCount = recvData.ReadBits(9);
 
     std::vector<ObjectGuid> guids(charactersCount);
     uint8 position;
 
     for (uint8 i = 0; i < charactersCount; ++i)
-    {
-        uint8 bitOrder[8] = {1, 6, 2, 7, 3, 5, 4, 0};
-        recvData.ReadBitInOrder(guids[i], bitOrder);
-    }
+        recvData.ReadGuidMask<6, 2, 7, 0, 4, 3, 5, 1>(guids[i]);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     for (uint8 i = 0; i < charactersCount; ++i)
     {
-        recvData.ReadByteSeq(guids[i][7]);
-        recvData.ReadByteSeq(guids[i][1]);
-        recvData.ReadByteSeq(guids[i][4]);
-
+        recvData.ReadGuidBytes<0>(guids[i]);
         recvData >> position;
-
-        recvData.ReadByteSeq(guids[i][2]);
-        recvData.ReadByteSeq(guids[i][6]);
-        recvData.ReadByteSeq(guids[i][3]);
-        recvData.ReadByteSeq(guids[i][5]);
-        recvData.ReadByteSeq(guids[i][0]);
+        recvData.ReadGuidBytes<6, 4, 7, 1, 5, 3, 2>(guids[i]);
 
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_LIST_SLOT);
         stmt->setUInt8(0, position);

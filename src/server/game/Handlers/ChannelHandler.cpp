@@ -66,11 +66,10 @@ void WorldSession::HandleLeaveChannel(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
 
-    uint32 unk;
     std::string channelname;
-    recvPacket >> unk;
-    uint32 length = recvPacket.ReadBits(7);
-    channelname = recvPacket.ReadString(length);
+
+    recvPacket.read_skip<uint32>();
+    channelname = recvPacket.ReadString(recvPacket.ReadBits(7));
 
     if (channelname.empty())
         return;

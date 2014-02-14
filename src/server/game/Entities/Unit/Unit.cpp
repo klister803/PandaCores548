@@ -13370,9 +13370,10 @@ void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
                 GetVehicleKit()->Reset();
 
                 // Send others that we now have a vehicle
-                WorldPacket data(SMSG_PLAYER_VEHICLE_DATA, GetPackGUID().size()+4);
-                data.appendPackGUID(GetGUID());
+                WorldPacket data(SMSG_PLAYER_VEHICLE_DATA, 8 + 1 + 4);
                 data << uint32(VehicleId);
+                data.WriteGuidMask<5, 3, 6, 2, 1, 4, 0, 7>(GetObjectGuid());
+                data.WriteGuidBytes<6, 0, 1, 3, 5, 7, 2, 4>(GetObjectGuid());
                 SendMessageToSet(&data, true);
 
                 data.Initialize(SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA, 0);
@@ -13404,17 +13405,19 @@ void Unit::Dismount()
     if (Player* thisPlayer = ToPlayer())
         thisPlayer->SendMovementSetCollisionHeight(thisPlayer->GetCollisionHeight(false));
 
-    WorldPacket data(SMSG_DISMOUNT, 8);
-    data.appendPackGUID(GetGUID());
+    WorldPacket data(SMSG_DISMOUNT, 8 + 1);
+    data.WriteGuidMask<2, 3, 7, 1, 6, 4, 0, 5>(GetObjectGuid());
+    data.WriteGuidBytes<5, 7, 2, 0, 3, 1, 4, 6>(GetObjectGuid());
     SendMessageToSet(&data, true);
 
     // dismount as a vehicle
     if (GetTypeId() == TYPEID_PLAYER && GetVehicleKit())
     {
         // Send other players that we are no longer a vehicle
-        data.Initialize(SMSG_PLAYER_VEHICLE_DATA, 8+4);
-        data.appendPackGUID(GetGUID());
+        data.Initialize(SMSG_PLAYER_VEHICLE_DATA, 8 + 4 + 1);
         data << uint32(0);
+        data.WriteGuidMask<5, 3, 6, 2, 1, 4, 0, 7>(GetObjectGuid());
+        data.WriteGuidBytes<6, 0, 1, 3, 5, 7, 2, 4>(GetObjectGuid());
         ToPlayer()->SendMessageToSet(&data, true);
         // Remove vehicle from player
         RemoveVehicleKit();
