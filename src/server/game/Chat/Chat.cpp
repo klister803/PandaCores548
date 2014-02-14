@@ -634,6 +634,17 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
     c.message = message ? message : "";
     c.chatType = type;
     c.targetGuid = target_guid;
+    
+    if (speaker)
+    {
+        c.sourceGuid = speaker->GetGUID();
+        c.sourceName = speaker->GetName();
+    }
+    else if (session)
+    {
+        c.sourceGuid = session->GetPlayer()->GetGUID();
+        c.sourceName = session->GetPlayer()->GetName();
+    }
 
     if ((type != CHAT_MSG_CHANNEL && type != CHAT_MSG_WHISPER) || language == LANG_ADDON)
         c.language = uint8(language);
@@ -648,7 +659,6 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
             if (session && session->GetPlayer()->GetGroup())
                 c.groupGuid = session->GetPlayer()->GetGroup()->GetGUID();
             c.targetGuid = session ? session->GetPlayer()->GetGUID() : 0;
-            break;
         case CHAT_MSG_GUILD:
         case CHAT_MSG_OFFICER:
             if (session)
@@ -674,11 +684,7 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
         case CHAT_MSG_RAID_BOSS_WHISPER:
         case CHAT_MSG_RAID_BOSS_EMOTE:
         case CHAT_MSG_BATTLENET:
-        {
-            c.sourceGuid = speaker->GetGUID();
-            c.sourceName = speaker->GetName();
-            return;
-        }
+            break;
         default:
             if (type != CHAT_MSG_WHISPER_INFORM && type != CHAT_MSG_IGNORED && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
                 c.targetGuid = 0;                           // only for CHAT_MSG_WHISPER_INFORM used original value target_guid
