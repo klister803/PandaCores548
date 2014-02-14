@@ -848,17 +848,21 @@ void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
 }
 
+//! 5.4.1
 void WorldSession::SendPlayerNotFoundNotice(std::string name)
 {
     WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, name.size()+1);
-    data << name;
+    data.WriteBits(name.size(), 9);
+    data.WriteString(name);
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::SendPlayerAmbiguousNotice(std::string name)
 {
     WorldPacket data(SMSG_CHAT_PLAYER_AMBIGUOUS, name.size()+1);
-    data << name;
+    data.WriteBits(name.size(), 9);
+    data.WriteString(name);
     SendPacket(&data);
 }
 
@@ -868,6 +872,7 @@ void WorldSession::SendWrongFactionNotice()
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::SendChatRestrictedNotice(ChatRestrictionType restriction)
 {
     WorldPacket data(SMSG_CHAT_RESTRICTED, 1);
