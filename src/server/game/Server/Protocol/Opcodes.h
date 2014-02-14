@@ -900,7 +900,7 @@ enum Opcodes
     SMSG_FORCE_SET_VEHICLE_REC_ID                     = 0xAA7,  // 5.0.5 16048
     SMSG_FORGE_MASTER_SET                             = 0xF8F,  // 5.0.5 16048
     SMSG_FRIEND_STATUS                                = 0x180B, // 5.4.1 17538
-    SMSG_GAMEOBJECT_CUSTOM_ANIM                       = 0xCDC,  // 5.0.5 16048
+    SMSG_GAMEOBJECT_CUSTOM_ANIM                       = 0x09A7, // 5.4.1 17538
     SMSG_GAMEOBJECT_DESPAWN_ANIM                      = 0x1495, // 5.4.1 17538
     SMSG_GAMEOBJECT_PAGETEXT                          = 0x87D,  // 5.0.5 16048
     SMSG_GAMEOBJECT_QUERY_RESPONSE                    = 0x0916, // 5.4.1 17538

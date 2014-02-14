@@ -19,7 +19,7 @@
 #ifndef _UPDATEFIELDS_H
 #define _UPDATEFIELDS_H
 
-// Updatefields auto generated for version 5.0.4.16016
+// Updatefields auto generated for version 5.4.1 17538
 enum EObjectFields
 {
     OBJECT_FIELD_GUID                                = 0x0,                 // Size: 0x2

@@ -810,7 +810,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
             if (updateMask->GetBit(index))
             {
                 // send in current format (float as float, uint32 as uint32)
-                if (index == GAMEOBJECT_DYNAMIC)
+                if (index == OBJECT_FIELD_DYNAMIC_FLAGS)
                 {
                     if (IsActivateToQuest)
                     {
@@ -2434,8 +2434,9 @@ void WorldObject::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
 {
-    WorldPacket data(SMSG_GAMEOBJECT_DESPAWN_ANIM, 8);
-    data << uint64(guid);
+    WorldPacket data(SMSG_GAMEOBJECT_DESPAWN_ANIM, 8 + 1);
+    data.WriteGuidMask<6, 5, 0, 1, 3, 2, 7, 4>(guid);
+    data.WriteGuidBytes<2, 4, 1, 3, 0, 7, 5, 6>(guid);
     SendMessageToSet(&data, true);
 }
 

@@ -1747,9 +1747,20 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
 
 void GameObject::SendCustomAnim(uint32 anim)
 {
-    WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8+4);
-    data << GetGUID();
-    data << uint32(anim);
+    ObjectGuid guid = GetObjectGuid();
+
+    WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8 + 1 + 4 + 1);
+    data.WriteGuidMask<0, 4>(guid);
+    data.WriteBit(0);
+    data.WriteGuidMask<3, 6>(guid);
+    data.WriteBit(!anim);
+    data.WriteGuidMask<1, 7, 2, 5>(guid);
+
+    data.WriteGuidBytes<5>(guid);
+    if (anim)
+        data << uint32(anim);
+    data.WriteGuidBytes<6, 7, 3, 1, 0, 2, 4>(guid);
+
     SendMessageToSet(&data, true);
 }
 
