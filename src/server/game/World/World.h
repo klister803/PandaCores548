@@ -580,18 +580,6 @@ struct CharacterNameData
     uint8 m_level;
 };
 
-enum RecordDiffType
-{
-    RECORD_DIFF_MAP,
-    RECORD_DIFF_BATTLEGROUND,
-    RECORD_DIFF_SESSION,
-    RECORD_DIFF_BATTLEFIELD,
-    RECORD_DIFF_OUTDOORPVP,
-    RECORD_DIFF_LFG,
-    RECORD_DIFF_CALLBACK,
-    RECORD_DIFF_MAX
-};
-
 /// The World
 class World
 {
@@ -846,9 +834,6 @@ class World
 
         void DeleteCharName(std::string name) { nameMap.erase(name); }
 
-        void SetRecordDiff(RecordDiffType recordDiff, uint32 diff) { m_recordDiff[recordDiff] = diff; }
-        uint32 GetRecordDiff(RecordDiffType recordDiff) { return m_recordDiff[recordDiff]; }
-
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -954,7 +939,6 @@ class World
 
         void ProcessQueryCallbacks();
         ACE_Future_Set<PreparedQueryResult> m_realmCharCallbacks;
-        uint32 m_recordDiff[RECORD_DIFF_MAX];
 };
 
 extern uint32 realmID;
