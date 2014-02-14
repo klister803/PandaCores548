@@ -418,7 +418,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_RECLAIM_CORPSE,                          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleReclaimCorpseOpcode       );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REDIRECTION_AUTH_PROOF,                  STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REFORGE_ITEM,                            STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleReforgeItemOpcode         );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REORDER_CHARACTERS,                      STATUS_AUTHED,    PROCESS_INPLACE,      &WorldSession::HandleReorderCharacters         );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_REORDER_CHARACTERS,                      STATUS_AUTHED,    PROCESS_INPLACE,      &WorldSession::HandleReorderCharacters         );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REPAIR_ITEM,                             STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRepairItemOpcode          );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REPOP_REQUEST,                           STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRepopRequestOpcode        );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REPORT_PVP_AFK,                          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleReportPvPAFK              );
@@ -434,7 +434,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RAID_INFO,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestRaidInfoOpcode     );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RATED_INFO,                      STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestRatedInfo          );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RATED_BG_STATS,                  STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestRatedBgStats       );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RESEARCH_HISTORY,                STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestReaserchHistory    );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RESEARCH_HISTORY,                STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestReaserchHistory    );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_VEHICLE_EXIT,                    STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestVehicleExit        );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_VEHICLE_NEXT_SEAT,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleChangeSeatsOnControlledVehicle);
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_VEHICLE_PREV_SEAT,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleChangeSeatsOnControlledVehicle);
@@ -1146,7 +1146,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_REQUEST_CEMETERY_LIST_RESPONSE,          STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_REQUEST_PVP_REWARDS_RESPONSE,            STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESEARCH_COMPLETE,                       STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESEARCH_SETUP_HISTORY,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESEARCH_SETUP_HISTORY,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESET_COMPRESSION_CONTEXT,               STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESET_FAILED_NOTIFY,                     STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESPEC_WIPE_CONFIRM,                     STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );

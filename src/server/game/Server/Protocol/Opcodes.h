@@ -1261,7 +1261,7 @@ enum Opcodes
     SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0x040D, // 5.4.1 17538
     SMSG_REQUEST_PVP_REWARDS_RESPONSE                 = 0xE30,  // 5.0.5 16048
     SMSG_RESEARCH_COMPLETE                            = 0xBF3,  // 5.0.5 16048
-    SMSG_RESEARCH_SETUP_HISTORY                       = 0xBF1,  // 5.0.5 16048
+    SMSG_RESEARCH_SETUP_HISTORY                       = 0x14A5, // 5.4.1 17538
     SMSG_RESET_COMPRESSION_CONTEXT                    = 0x627,  // 5.0.5 16048
     SMSG_RESET_FAILED_NOTIFY                          = 0x0007, // 5.4.1 17538
     SMSG_RESISTLOG                                    = 0,      // Not found in 4.3.4
