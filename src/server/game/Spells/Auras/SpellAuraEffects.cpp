@@ -1279,7 +1279,12 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
             else if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
                 m_amplitude = int32(m_amplitude * std::max<float>(caster->GetFloatValue(UNIT_MOD_CAST_SPEED), 0.5f));
         }
-        GetBase()->SetDuration(GetBase()->GetMaxDuration() + m_periodicTimer);
+        if (!resetPeriodicTimer && !load)
+        {
+            int32 dotduration = GetBase()->GetMaxDuration() + m_periodicTimer;
+            GetBase()->SetMaxDuration(dotduration);
+            GetBase()->SetDuration(dotduration);
+        }
     }
 
     if (load) // aura loaded from db
