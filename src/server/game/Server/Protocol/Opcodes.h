@@ -798,10 +798,10 @@ enum Opcodes
     SMSG_CHANNEL_NOTIFY                               = 0x1490, // 5.4.1 17538
     SMSG_CHARACTER_LOGIN_FAILED                       = 0xC6D,  // 5.0.5 16048
     SMSG_CHAR_CREATE                                  = 0x1007, // 5.4.1 17399
-    SMSG_CHAR_CUSTOMIZE                               = 0xD27,  // 5.0.5 16048
+    SMSG_CHAR_CUSTOMIZE                               = 0x041D, // 5.4.1 17538
     SMSG_CHAR_DELETE                                  = 0x017,  // 5.4.1 17538
     SMSG_CHAR_ENUM                                    = 0x40E,  // 5.4.1 17538
-    SMSG_CHAR_FACTION_CHANGE                          = 0x9E0,  // 5.0.5 16048
+    SMSG_CHAR_FACTION_CHANGE                          = 0x103B, // 5.4.1 17538
     SMSG_CHAR_RENAME                                  = 0x05BD, // 5.4.1 17538
     SMSG_CHAT_IGNORED_ACCOUNT_MUTED                   = 0x000,  // 5.0.5 16048
     SMSG_CHAT_NOT_IN_PARTY                            = 0x0835, // 5.4.1 17538

@@ -1695,22 +1695,24 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recvData)
     }
 }
 
+//! 5.4.1
 void WorldSession::HandleCharCustomize(WorldPacket& recvData)
 {
     ObjectGuid guid;
     std::string newName;
-    uint8 gender, skin, face, hairStyle, hairColor, facialHair;
 
+    uint8 gender, skin, face, hairStyle, hairColor, facialHair;
     recvData >> skin >> face >> gender >> facialHair >> hairStyle >> hairColor;
+
     recvData.ReadGuidMask<6, 2, 1>(guid);
-    uint32 nameLen = recvData.ReadBits(6);
+    uint32 newNameLen = recvData.ReadBits(6);
     recvData.ReadGuidMask<3, 5, 4, 0, 7>(guid);
 
-    recvData.ReadGuidBytes<0, 3, 5, 7>(guid);
-    newName = recvData.ReadString(nameLen);
-    recvData.ReadGuidBytes<4, 6, 1, 2>(guid);
+    recvData.ReadFlush();
 
-    return;
+    recvData.ReadGuidBytes<0, 3, 5, 7>(guid);
+    newName = recvData.ReadString(newNameLen);
+    recvData.ReadGuidBytes<4, 6, 1, 2>(guid);
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_AT_LOGIN);
     stmt->setUInt32(0, GUID_LOPART(guid));
@@ -1719,7 +1721,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     if (!result)
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
-        data.WriteBits(0, 8);
+        data.WriteBits(0, 8);               //null guid
         data << uint8(CHAR_CREATE_ERROR);
         SendPacket(&data);
         return;
@@ -1968,12 +1970,34 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket& recvData)
 void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 {
     // TODO: Move queries to prepared statements
-    uint64 guid;
+    ObjectGuid guid;
     std::string newname;
-    uint8 gender, skin, face, hairStyle, hairColor, facialHair, race;
-    recvData >> guid;
-    recvData >> newname;
-    recvData >> gender >> skin >> hairColor >> hairStyle >> facialHair >> face >> race;
+    uint8 gender, skin, face, hairStyle, hairColor, facialHair, race = 0;
+
+    recvData >> race >> gender;
+    bool byte15 = recvData.ReadBit();
+    recvData.ReadGuidMask<1, 2, 4, 5, 0>(guid);
+    bool byte56 = recvData.ReadBit();
+    bool byte11 = recvData.ReadBit();
+    recvData.ReadGuidMask<3>(guid);
+    bool byte53 = recvData.ReadBit();
+    bool byte13 = recvData.ReadBit();
+    recvData.ReadGuidMask<6>(guid);
+    uint32 len = recvData.ReadBits(6);
+    bool isFactionChange = recvData.ReadBit();
+    recvData.ReadGuidMask<7>(guid);
+
+    recvData.ReadFlush();
+
+    recvData.ReadGuidBytes<2, 4, 6, 7, 3>(guid);
+    newname = recvData.ReadString(len);
+    recvData.ReadGuidBytes<0, 1, 5>(guid);
+
+    facialHair = byte56 ? recvData.read<uint8>() : 0;
+    hairColor = byte53 ? recvData.read<uint8>() : 0;
+    face = byte13 ? recvData.read<uint8>() : 0;
+    skin = byte15 ? recvData.read<uint8>() : 0;
+    hairStyle = byte11 ? recvData.read<uint8>() : 0;
 
     uint32 lowGuid = GUID_LOPART(guid);
 
@@ -1985,8 +2009,9 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 
     if (!result)
     {
-        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
         data << uint8(CHAR_CREATE_ERROR);
+        data << uint64(0);
         SendPacket(&data);
         return;
     }
@@ -1996,7 +2021,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     uint32 playerClass      = uint32(fields[1].GetUInt8());
     uint32 level            = uint32(fields[2].GetUInt8());
     uint32 at_loginFlags    = fields[3].GetUInt16();
-    uint32 used_loginFlag   = ((recvData.GetOpcode() == CMSG_CHAR_RACE_FACTION_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
+    uint32 used_loginFlag   = isFactionChange ? AT_LOGIN_CHANGE_FACTION : AT_LOGIN_CHANGE_RACE;
     char const* knownTitlesStr = fields[4].GetCString();
 
     BattlegroundTeamId oldTeam = BG_TEAM_ALLIANCE;
@@ -2021,7 +2046,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     // Because client always send neutral ID
     if (race == RACE_PANDAREN_NEUTRAL)
     {
-    	if ((recvData.GetOpcode() == CMSG_CHAR_RACE_FACTION_CHANGE))
+    	if (used_loginFlag == AT_LOGIN_CHANGE_RACE)
     		race = oldTeam == BG_TEAM_ALLIANCE ? RACE_PANDAREN_ALLI : RACE_PANDAREN_HORDE;
     	else
     		race = oldTeam == BG_TEAM_ALLIANCE ? RACE_PANDAREN_HORDE : RACE_PANDAREN_ALLI;
@@ -2029,16 +2054,18 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 
     if (!sObjectMgr->GetPlayerInfo(race, playerClass))
     {
-        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
         data << uint8(CHAR_CREATE_ERROR);
+        data << uint64(0);
         SendPacket(&data);
         return;
     }
 
     if (!(at_loginFlags & used_loginFlag))
     {
-        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
         data << uint8(CHAR_CREATE_ERROR);
+        data << uint64(0);
         SendPacket(&data);
         return;
     }
@@ -2048,8 +2075,9 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         uint32 raceMaskDisabled = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK);
         if ((1 << (race - 1)) & raceMaskDisabled)
         {
-            WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+            WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
             data << uint8(CHAR_CREATE_ERROR);
+            data << uint64(0);
             SendPacket(&data);
             return;
         }
@@ -2058,8 +2086,9 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     // prevent character rename to invalid name
     if (!normalizePlayerName(newname))
     {
-        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
         data << uint8(CHAR_NAME_NO_NAME);
+        data << uint64(0);
         SendPacket(&data);
         return;
     }
@@ -2067,8 +2096,9 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     uint8 res = ObjectMgr::CheckPlayerName(newname, true);
     if (res != CHAR_NAME_SUCCESS)
     {
-        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
         data << uint8(res);
+        data << uint64(0);
         SendPacket(&data);
         return;
     }
@@ -2076,8 +2106,9 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     // check name limitations
     if (AccountMgr::IsPlayerAccount(GetSecurity()) && sObjectMgr->IsReservedName(newname))
     {
-        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+        WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
         data << uint8(CHAR_NAME_RESERVED);
+        data << uint64(0);
         SendPacket(&data);
         return;
     }
@@ -2087,8 +2118,9 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     {
         if (newguid != guid)
         {
-            WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
+            WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
             data << uint8(CHAR_CREATE_NAME_IN_USE);
+            data << uint64(0);
             SendPacket(&data);
             return;
         }
@@ -2207,7 +2239,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         trans->Append(stmt);
     }
 
-    if (recvData.GetOpcode() == CMSG_CHAR_RACE_FACTION_CHANGE)
+    if (used_loginFlag == AT_LOGIN_CHANGE_FACTION)
     {
         // Delete all Flypaths
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_TAXI_PATH);
