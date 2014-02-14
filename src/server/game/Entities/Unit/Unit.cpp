@@ -6587,6 +6587,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 12846: // Mastery: Ignite
+                {
+                    if (effIndex != EFFECT_0)
+                        return false;
+
+                    basepoints0 = CalculatePct(damage, triggerAmount / 2);
+                    triggered_spell_id = 12654;
+                    basepoints0 += victim->GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_DAMAGE);
+                    break;
+                }
                 case 89926: // Glyph of Fire Blast
                 {
                     if (target->HasAura(112948, GetGUID())) // for Frost Bomb
