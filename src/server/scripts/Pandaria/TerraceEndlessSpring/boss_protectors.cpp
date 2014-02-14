@@ -275,7 +275,7 @@ class boss_protectors : public CreatureScript
             void JustDied(Unit* killer)
             {
                 if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
-                    me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                    me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             }
 
             void UpdateAI(const uint32 diff)
