@@ -56,6 +56,7 @@ static UNORDERED_MAP<uint16, std::list<uint16> > sResearchProjectsList;
 static UNORDERED_MAP<uint16, std::list<uint16> > sCriteriaTreeEntryList;
 static UNORDERED_MAP<uint16, std::list<uint16> > sModifierTreeEntryList;
 static UNORDERED_MAP<uint16, uint16 > sAchievementEntryParentList;
+static UNORDERED_MAP<uint32, std::list<uint32> > sItemSpecsList;
 
 typedef std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> WMOAreaInfoByTripple;
 
@@ -154,6 +155,7 @@ DBCStorage <ItemLimitCategoryEntry> sItemLimitCategoryStore(ItemLimitCategoryEnt
 DBCStorage <ItemRandomPropertiesEntry> sItemRandomPropertiesStore(ItemRandomPropertiesfmt);
 DBCStorage <ItemRandomSuffixEntry> sItemRandomSuffixStore(ItemRandomSuffixfmt);
 DBCStorage <ItemSetEntry> sItemSetStore(ItemSetEntryfmt);
+DBCStorage <ItemSpecEntry> sItemSpecStore(ItemSpecEntryfmt);
 
 DBCStorage <LFGDungeonEntry> sLFGDungeonStore(LFGDungeonEntryfmt);
 DBCStorage <LiquidTypeEntry> sLiquidTypeStore(LiquidTypefmt);
@@ -467,6 +469,13 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemRandomPropertiesStore,   dbcPath, "ItemRandomProperties.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemRandomSuffixStore,       dbcPath, "ItemRandomSuffix.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemSetStore,                dbcPath, "ItemSet.dbc");//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sItemSpecStore,               dbcPath, "ItemSpecOverride.dbc");//17538
+
+    for (uint32 i = 0; i < sItemSpecStore.GetNumRows(); ++i)
+    {
+        if (ItemSpecEntry const* isp = sItemSpecStore.LookupEntry(i))
+            sItemSpecsList[isp->m_itemID].push_back(isp->m_specID);
+    }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemArmorQualityStore,       dbcPath, "ItemArmorQuality.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemArmorShieldStore,        dbcPath, "ItemArmorShield.dbc");//14545
@@ -864,6 +873,11 @@ MaxCoordinat const* GetQuestPoints(uint32 id)
         return &itr->second;
 
     return NULL;
+}
+
+std::list<uint32> GetItemSpecsList(uint32 ItemID)
+{
+    return sItemSpecsList[ItemID];
 }
 
 std::vector<PolygonVector> const* GetPolygonQuestPOIPoints(uint32 SpellID)

@@ -292,7 +292,7 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             if (qRew->GetRewPackageItem())
             {
                 ItemTemplate const* iProto = NULL;
-                if (uint32 packId = qRew->GetItemFromPakage(GetPlayer()->getClassMask()))
+                if (uint32 packId = qRew->GetItemFromPakage(GetPlayer()->GetSpecializationId(GetPlayer()->GetActiveSpec())))
                 {
                     if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
                     {
@@ -754,7 +754,7 @@ void WorldSession::SendLfgPlayerReward(uint32 rdungeonEntry, uint32 sdungeonEntr
         if (qRew->GetRewPackageItem())
         {
             ItemTemplate const* iProto = NULL;
-            if (uint32 packId = qRew->GetItemFromPakage(GetPlayer()->getClassMask()))
+            if (uint32 packId = qRew->GetItemFromPakage(GetPlayer()->GetSpecializationId(GetPlayer()->GetActiveSpec())))
             {
                 if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
                 {

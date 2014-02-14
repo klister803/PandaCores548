@@ -1421,6 +1421,13 @@ struct ItemSetEntry
     uint32    required_skill_value;                         // 36       m_requiredSkillRank
 };
 
+struct ItemSpecEntry
+{
+    uint32      ID;                                         // 0        m_ID
+    uint32      m_itemID;                                   // 1,       m_itemID
+    uint32      m_specID;                                   // 2,       m_specID
+};
+
 struct LFGDungeonEntry
 {
     uint32  ID;                                             // 0

@@ -26,7 +26,6 @@
 
 typedef std::list<uint32> PackageItemList;
 typedef std::map<uint32, PackageItemList> PackageItemMap;
-static PackageItemMap sPackageItemMap;
 std::list<uint32> GetPackageItemList(uint32 packageEntry);
 
 extern DB2Storage <ItemEntry> sItemStore;

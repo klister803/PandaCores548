@@ -49,6 +49,7 @@ std::list<uint16> const* GetModifierTreeList(uint16 parent);
 uint16 GetsAchievementEntryByTreeList(uint16 criteriaTree);
 UNORDERED_MAP<uint16, std::list<uint16> > GetDigestZonesList();
 std::vector<PolygonVector> const* GetPolygonQuestPOIPoints(uint32 SpellID);
+std::list<uint32> GetItemSpecsList(uint32 ItemID);
 
 typedef std::list<uint32> ProjectRaseList;
 typedef UNORDERED_MAP<uint32, ProjectRaseList> ProjectRaseMap;
@@ -180,6 +181,7 @@ extern DBCStorage <ItemLimitCategoryEntry>       sItemLimitCategoryStore;
 extern DBCStorage <ItemRandomPropertiesEntry>    sItemRandomPropertiesStore;
 extern DBCStorage <ItemRandomSuffixEntry>        sItemRandomSuffixStore;
 extern DBCStorage <ItemSetEntry>                 sItemSetStore;
+extern DBCStorage <ItemSpecEntry>                sItemSpecStore;
 extern DBCStorage <LFGDungeonEntry>              sLFGDungeonStore;
 extern DBCStorage <LiquidTypeEntry>              sLiquidTypeStore;
 extern DBCStorage <LockEntry>                    sLockStore;
