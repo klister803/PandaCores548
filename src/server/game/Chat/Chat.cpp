@@ -659,6 +659,7 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
             if (session && session->GetPlayer()->GetGroup())
                 c.groupGuid = session->GetPlayer()->GetGroup()->GetGUID();
             c.targetGuid = session ? session->GetPlayer()->GetGUID() : 0;
+            break;
         case CHAT_MSG_GUILD:
         case CHAT_MSG_OFFICER:
             if (session)
