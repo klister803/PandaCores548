@@ -2366,7 +2366,7 @@ class Player : public Unit, public GridObject<Player>
         {
             if (GetFieldLootSpecID() > 0)
                 return GetFieldLootSpecID();
-            return GetSpecializationId(GetActiveSpec()));
+            return GetSpecializationId(GetActiveSpec());
         }
 
         uint64 GetLootGUID() const { return m_lootGuid; }
