@@ -1967,6 +1967,7 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket& recvData)
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 {
     // TODO: Move queries to prepared statements
@@ -2538,13 +2539,14 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleRandomizeCharNameOpcode(WorldPacket& recvData)
 {
     uint8 gender, race;
 
-    recvData >> race;
     recvData >> gender;
-
+    recvData >> race;
+    
     if (!Player::IsValidRace(race))
     {
         sLog->outError(LOG_FILTER_GENERAL, "Invalid race (%u) sent by accountId: %u", race, GetAccountId());
@@ -2560,7 +2562,7 @@ void WorldSession::HandleRandomizeCharNameOpcode(WorldPacket& recvData)
     std::string const* name = GetRandomCharacterName(race, gender);
     WorldPacket data(SMSG_RANDOMIZE_CHAR_NAME, 10);
     data.WriteBit(0); // unk
-    data.WriteBits(name->size(), 7);
+    data.WriteBits(name->size(), 6);
     data.WriteString(*name);
     SendPacket(&data);
 }

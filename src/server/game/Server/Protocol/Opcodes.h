@@ -1243,7 +1243,7 @@ enum Opcodes
     SMSG_RAID_READY_CHECK_STARTED                     = 0x1427, // 5.4.1 17538 
     SMSG_RAID_READY_CHECK_THROTTLED_ERROR             = 0,      // 0x2607 in 4.3.4 @todo : Find me and BACON !
     SMSG_RAID_SUMMON_FAILED                           = 0xA4E,  // 5.0.5 16048
-    SMSG_RANDOMIZE_CHAR_NAME                          = 0xA9B,  // 5.0.5 16048
+    SMSG_RANDOMIZE_CHAR_NAME                          = 0x081E, // 5.4.1 17538
     SMSG_RATED_BG_RATING                              = 0xA4B,  // 5.0.5 16048
     SMSG_RATED_BG_STATS                               = 0xB21,  // 5.0.5 16048
     SMSG_READ_ITEM_FAILED                             = 0x86D,  // 5.0.5 16048
