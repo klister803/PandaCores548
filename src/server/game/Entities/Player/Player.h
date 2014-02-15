@@ -1778,11 +1778,11 @@ class Player : public Unit, public GridObject<Player>
         bool CanCompleteQuest(uint32 quest_id);
         bool CanCompleteRepeatableQuest(Quest const* quest);
         bool CanRewardQuest(Quest const* quest, bool msg);
-        bool CanRewardQuest(Quest const* quest, uint32 reward, bool msg);
+        bool CanRewardQuest(Quest const* quest, uint32 reward, bool msg, uint32 packItemId);
         void AddQuest(Quest const* quest, Object* questGiver);
         void CompleteQuest(uint32 quest_id);
         void IncompleteQuest(uint32 quest_id);
-        void RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, bool announce = true);
+        void RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, bool announce = true, uint32 packItemId = 0);
         void FailQuest(uint32 quest_id);
         bool SatisfyQuestSkill(Quest const* qInfo, bool msg) const;
         bool SatisfyQuestLevel(Quest const* qInfo, bool msg);

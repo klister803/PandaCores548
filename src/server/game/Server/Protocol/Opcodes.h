@@ -1292,7 +1292,7 @@ enum Opcodes
     SMSG_SET_MOVEMENT_ANIM_KIT                        = 0,      // Not found in 4.3.4
     SMSG_SET_PCT_SPELL_MODIFIER                       = 0x0061, // 5.4.1 17538
     SMSG_SET_PET_SPECIALIZATION                       = 0x1115, // 5.4.1 17538
-    SMSG_SET_PHASE_SHIFT                              = 0xA93,  // 5.0.5 16048
+    SMSG_SET_PHASE_SHIFT                              = 0x0426, // 5.4.1 17538
     SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0x0085, // 5.4.1 17538
     SMSG_SET_PLAY_HOVER_ANIM                          = 0xE84,  // 5.0.5 16048
     SMSG_SET_PROFICIENCY                              = 0x05B6, // 5.4.1 17538

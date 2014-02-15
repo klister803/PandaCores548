@@ -205,6 +205,24 @@ struct SpellReagent
     SpellReagentsEntry const* reagents[MAX_SPELL_REAGENTS];
 };
 
+struct ItemUpgradeEntry
+{
+    uint32 id;                  // 0 rules id from RuleSetItemUpgrade startUpgrade
+    uint32 itemUpgradePathId;   // 1 extended-cost entry id
+    uint32 levelBonus;          // 2 total level bonus related to non-upgraded item
+    uint32 prevUpgradeId;       // 3 
+    uint32 currencyReqId;       // 4 currency Id
+    uint32 currencyReqAmt;      // 5 currency count
+};
+
+struct RuleSetItemUpgrade
+{
+    uint32 id;                  // 0 m_ID
+    uint32 levelUpd;            // 1 level upgrade
+    uint32 startUpgrade;        // 2 start update rules for ItemUpgradeEntry
+    uint32 itemEntry;           // 3 Item ID
+};
+
 typedef UNORDERED_MAP<uint32, SpellReagent> SpellReagentMap;
 
 // GCC has alternative #pragma pack(N) syntax and old gcc version does not support pack(push, N), also any gcc version does not support it at some platform

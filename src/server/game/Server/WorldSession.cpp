@@ -988,7 +988,7 @@ void WorldSession::SendAddonsInfo()
     for (AddonsList::iterator itr = m_addonsList.begin(); itr != m_addonsList.end(); ++itr)
     {
         bool bit0 = true;//itr->UsePublicKeyOrCRC;
-        bool bit1 = false;//itr->UsePublicKeyOrCRC && itr->CRC != STANDARD_ADDON_CRC;
+        bool bit1 = itr->CRC != STANDARD_ADDON_CRC;
         bool bit2 = false;
 
         data.WriteBit(bit0);                                // data.WriteBit(itr->CRC != 0x4c1c776d);
@@ -1271,7 +1271,7 @@ void WorldSession::SendAddonsInfo()
             buffer << uint32(0);
         }
 
-        buffer << uint8(2);//uint8(itr->State);
+        buffer << uint8(itr->State);
     }
 
     /*if (bannedAddons)
