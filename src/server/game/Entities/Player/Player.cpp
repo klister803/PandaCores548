@@ -16450,7 +16450,7 @@ bool Player::CanRewardQuest(Quest const* quest, uint32 reward, bool msg)
 
     if (quest->GetRewPackageItem() > 0)
     {
-        if (uint32 packId = quest->GetItemFromPakage(GetSpecializationId(GetActiveSpec())))
+        if (uint32 packId = quest->GetItemFromPakage(GetLootSpecID()))
         {
             if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
             {
@@ -16645,7 +16645,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
 
     if (quest->GetRewPackageItem() > 0)
     {
-        if (uint32 packId = quest->GetItemFromPakage(GetSpecializationId(GetActiveSpec())))
+        if (uint32 packId = quest->GetItemFromPakage(GetLootSpecID()))
         {
             if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
             {
