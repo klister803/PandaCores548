@@ -117,19 +117,6 @@ public:
         handler->PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
         handler->PSendSysMessage(LANG_UPTIME, uptime.c_str());
         handler->PSendSysMessage("Server delay: %u ms", updateTime);
-
-        //info diff
-        if (handler->GetSession()->GetSecurity() > 2)
-        {
-            handler->PSendSysMessage("Map: %u ms", sWorld->GetRecordDiff(RECORD_DIFF_MAP));
-            handler->PSendSysMessage("Battleground: %u ms", sWorld->GetRecordDiff(RECORD_DIFF_BATTLEGROUND));
-            handler->PSendSysMessage("Session: %u ms", sWorld->GetRecordDiff(RECORD_DIFF_SESSION));
-            handler->PSendSysMessage("Battlefield: %u ms", sWorld->GetRecordDiff(RECORD_DIFF_BATTLEFIELD));
-            handler->PSendSysMessage("Outdoor PVP: %u ms", sWorld->GetRecordDiff(RECORD_DIFF_OUTDOORPVP));
-            handler->PSendSysMessage("LFG Mgr: %u ms", sWorld->GetRecordDiff(RECORD_DIFF_LFG));
-            handler->PSendSysMessage("Callback: %u ms", sWorld->GetRecordDiff(RECORD_DIFF_CALLBACK));
-        }
-
         // Can't use sWorld->ShutdownMsg here in case of console command
         if (sWorld->IsShuttingDown())
             handler->PSendSysMessage(LANG_SHUTDOWN_TIMELEFT, secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());

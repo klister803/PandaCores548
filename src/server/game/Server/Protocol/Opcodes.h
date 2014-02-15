@@ -1083,7 +1083,7 @@ enum Opcodes
     SMSG_LOOT_ROLL_WON                                = 0x040C, // 5.4.1 17538
     SMSG_LOOT_START_ROLL                              = 0x04A6, // 5.4.1 17538
     SMSG_COIN_REMOVED                                 = 0x0C3E, // 5.4.1 17538
-    SMSG_MAIL_LIST_RESULT                             = 0x95E,  // 5.0.5 16048
+    SMSG_MAIL_LIST_RESULT                             = 0x0CB5, // 5.4.1 17538
     SMSG_MAP_OBJ_EVENTS                               = 0xBF6,  // 5.0.5 16048
     SMSG_MEETINGSTONE_COMPLETE                        = 0x8E0,  // 5.0.5 16048
     SMSG_MEETINGSTONE_IN_PROGRESS                     = 0xD5A,  // 5.0.5 16048
@@ -1490,7 +1490,7 @@ inline std::string GetOpcodeNameForLogging(Opcodes id, PacketType ptype = MAX_PA
             // Should not happend! Try to do strict definitions.
             std::ostringstream ss;
             ss << "CMSG: " << GetOpcodeNameForLogging(id, CMSG);
-            ss << " SMSG " << GetOpcodeNameForLogging(id, CMSG);
+            ss << " SMSG " << GetOpcodeNameForLogging(id, SMSG);
             return ss.str();
         }
 

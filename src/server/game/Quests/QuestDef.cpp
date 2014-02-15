@@ -380,7 +380,7 @@ uint32 Quest::CalculateHonorGain(uint8 level) const
     return honor;
 }
 
-uint32 Quest::GetItemFromPakage(uint32 classMask) const
+uint32 Quest::GetItemFromPakage(uint32 specialization) const
 {
     if(GetRewPackageItem() == 0)
         return 0;
@@ -390,9 +390,12 @@ uint32 Quest::GetItemFromPakage(uint32 classMask) const
     {
         for (std::list<uint32>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
             if (QuestPackageItem const* sp = sQuestPackageItemStore.LookupEntry((*itr)))
-                if(ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(sp->ItemID))
-                    if(itemProto->AllowableClass & classMask)
+            {
+                std::list<uint32> specList = GetItemSpecsList(sp->ItemID);
+                for (std::list<uint32>::const_iterator spec = specList.begin(); spec != specList.end(); ++spec)
+                    if(specialization == (*spec))
                         return (*itr);
+            }
     }
 
     return 0;

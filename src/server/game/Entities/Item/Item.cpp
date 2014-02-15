@@ -263,6 +263,8 @@ Item::Item()
         m_dynamicTab[i] = new uint32[32];
         m_dynamicChange[i] = new bool[32];
     }
+
+    memset(m_dynamicModInfo, 0, sizeof(uint32) * ITEM_DYN_MOD_END);
 }
 
 bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
@@ -1048,6 +1050,10 @@ Item* Item::CloneItem(uint32 count, Player const* player) const
     // player CAN be NULL in which case we must not update random properties because that accesses player's item update queue
     if (player)
         newItem->SetItemRandomProperties(GetItemRandomPropertyId());
+
+    memcpy(newItem->m_dynamicModInfo, m_dynamicModInfo, sizeof(uint32) * ITEM_DYN_MOD_END);
+    newItem->UpdateDynamicValues();
+
     return newItem;
 }
 
@@ -1503,47 +1509,51 @@ int32 Item::GetReforgableStat(ItemModType statType) const
 
 void Item::SetReforge(uint32 value)
 {
-    SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_REFORGE, value);
+    m_dynamicModInfo[ITEM_DYN_MOD_REFORGE] = value;
 
-    if (value)
-        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYNAMIC_MODIFIERS);
-    else if (!GetTransmogrification())
-        RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYNAMIC_MODIFIERS);
+    UpdateDynamicValues();
 }
 
 uint32 Item::GetReforge() const
 {
-    return GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_REFORGE);
+    return m_dynamicModInfo[ITEM_DYN_MOD_REFORGE];
 }
 
 void Item::SetTransmogrification(uint32 value)
 {
-    SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION, value);
+    m_dynamicModInfo[ITEM_DYN_MOD_TRANSMOGRIFICATION] = value;
 
-    if (value)
-        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYNAMIC_MODIFIERS);
-    else if (!GetReforge())
-        RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << ITEM_DYNAMIC_MODIFIERS);
+    UpdateDynamicValues();
 }
 
 uint32 Item::GetTransmogrification() const
 {
-    return GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, ITEM_DYN_MOD_TRANSMOGRIFICATION);
+    return m_dynamicModInfo[ITEM_DYN_MOD_TRANSMOGRIFICATION];
+}
+
+void Item::UpdateDynamicValues()
+{
+    uint32 offs = 0;
+    for (uint32 i = 0; i < ITEM_DYN_MOD_END; ++i)
+    {
+        if (uint32 value = m_dynamicModInfo[i])
+        {
+            SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << i);
+            SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, offs++, value);
+        }
+        else
+            RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << i);
+    }
+
+    for (; offs < ITEM_DYN_MOD_END; ++offs)
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, offs, 0);
 }
 
 void Item::AppendDynamicInfo(ByteBuffer& buff)
 {
-    uint32 dynamicMask = 0;
-    ByteBuffer buffer;
-    for (uint32 j = 0; j < ITEM_DYN_MOD_END; ++j)
-        if (uint32 value = GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, j))
-        {
-            dynamicMask |= 1 << j;
-            buffer << value;
-        }
-
-    buff << uint32(buffer.size() + 4);
+    uint32 dynamicMask = GetUInt32Value(ITEM_FIELD_MODIFIERS_MASK);
     buff << uint32(dynamicMask);
-    if (!buffer.empty())
-        buff.append(buffer);
+    for (uint32 i = 0; i < ITEM_DYN_MOD_END; ++i)
+        if (dynamicMask & (1 << i))
+            buff << uint32(m_dynamicModInfo[i]);
 }

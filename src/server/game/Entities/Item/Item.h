@@ -374,7 +374,9 @@ class Item : public Object
         uint32 GetReforge() const;
         void SetTransmogrification(uint32 value);
         uint32 GetTransmogrification() const;
+        void UpdateDynamicValues();
 
+        uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
         void AppendDynamicInfo(ByteBuffer& buff);
 
     private:
