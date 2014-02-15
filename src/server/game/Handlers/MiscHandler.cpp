@@ -1605,8 +1605,18 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 //! FinishIT
 void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
 {
-    ObjectGuid playerGuid = player->GetGUID();
-    WorldPacket packet(SMSG_PVP_BRACKET_DATA);
+    ObjectGuid playerGuid;
+    uint32 unk;
+
+    recvData >> unk;
+    recvData.ReadGuidMask<3, 4, 6, 5, 0, 7, 2, 1>(playerGuid);
+    recvData.ReadGuidBytes<6, 1, 7, 4, 2, 0, 5, 3>(playerGuid);
+
+    Player* player = ObjectAccessor::FindPlayer(playerGuid);
+    if (!player)
+        return;
+
+    WorldPacket data(SMSG_PVP_BRACKET_DATA);
     data.WriteGuidMask<0, 6, 3, 7, 4, 2>(playerGuid);
     data.WriteBits(0, 3);   //Arena brascets count data
     data.WriteGuidMask<5, 1>(playerGuid);
@@ -1624,7 +1634,7 @@ void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
     //}
 
     data.WriteGuidBytes<0, 2, 5, 7, 3, 6, 1, 4>(playerGuid);
-    SendPacket(&packet);
+    SendPacket(&data);
 }
 
 //! 5.4.1

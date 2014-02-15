@@ -445,7 +445,7 @@ enum Opcodes
     CMSG_REQUEST_CATEGORY_COOLDOWNS                   = 0x1AF4, // 5.4.1 17538
     CMSG_REQUEST_CEMETERY_LIST                        = 0x16C4, // 5.4.1 17538
     CMSG_REQUEST_HOTFIX                               = 0x01E4, // 5.4.1 17538
-    CMSG_REQUEST_INSPECT_RATED_BG_STATS               = 0x086C, // 5.4.1 17538 5.0.5 - wrong
+    CMSG_REQUEST_INSPECT_RATED_BG_STATS               = 0x086C, // 5.4.1 17538
     CMSG_REQUEST_PARTY_MEMBER_STATS                   = 0x0841, // 5.4.1 17538
     CMSG_REQUEST_PET_INFO                             = 0x037C, // 5.4.1 17538
     CMSG_REQUEST_PVP_OPTIONS_ENABLED                  = 0x0069, // 5.4.1 17538
