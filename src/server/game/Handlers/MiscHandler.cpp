@@ -1131,6 +1131,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
             player->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, at->target_Orientation, TELE_TO_NOT_LEAVE_TRANSPORT);
 }
 
+//! 5.4.1
 void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
@@ -1150,11 +1151,6 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
             return;
 
         SetAccountData(AccountDataType(type), 0, "");
-
-        //WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
-        //data << uint32(type);
-        //data << uint32(0);
-        //SendPacket(&data);
         return;
     }
 
@@ -1188,11 +1184,6 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
     recvData.rfinish(); 
 
     SetAccountData(AccountDataType(type), timestamp, adata);
-
-    //WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
-    //data << uint32(type);
-    //data << uint32(0);
-    //SendPacket(&data);
 }
 
 //! 5.4.1
@@ -1418,10 +1409,11 @@ void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
     GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, 2, actionBar);
 }
 
+//! 5.4.1
 void WorldSession::HandlePlayedTime(WorldPacket& recvData)
 {
     uint8 unk1;
-    recvData >> unk1;                                      // 0 or 1 expected
+    recvData >> unk1;                                      // 0 or 127 expected. not it's bit
 
     WorldPacket data(SMSG_PLAYED_TIME, 4 + 4 + 1);
     data << uint32(_player->GetTotalPlayedTime());
@@ -1577,14 +1569,12 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 {
     ObjectGuid guid;
-    uint8 bitOrder[8] = {0, 7, 6, 5, 2, 1, 3, 4};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {2, 5, 4, 7, 0, 6, 3, 1};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<2, 0, 3, 6, 1, 5, 4, 7>(guid);
+    recvData.ReadGuidBytes<3, 4, 7, 0, 5, 2, 6, 1>(guid);
 
     Player* player = ObjectAccessor::FindPlayer(guid);
 
@@ -1597,43 +1587,50 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
     ObjectGuid playerGuid = player->GetGUID();
     WorldPacket data(SMSG_INSPECT_HONOR_STATS, 8+1+4+4);
     
-    uint8 bitOrder2[8] = {2, 0, 3, 5, 1, 6, 7, 4};
-    data.WriteBitInOrder(playerGuid, bitOrder2);
-
-    data << uint16(4);
-    data.WriteByteSeq(playerGuid[3]);
+    data.WriteGuidMask<7, 3, 2, 6, 5, 1, 4, 0>(playerGuid);
+    data.WriteGuidBytes<6>(playerGuid);
+    data << uint16(2);
+    data.WriteGuidBytes<3, 0, 4, 5>(playerGuid);
     data << uint8(3);                                               // rank
     data << uint16(6);
-    data.WriteByteSeq(playerGuid[2]);
-    data.WriteByteSeq(playerGuid[7]);
-    data.WriteByteSeq(playerGuid[5]);
-    data.WriteByteSeq(playerGuid[0]);
-    data << uint32(5);
-    data.WriteByteSeq(playerGuid[4]);
-    data.WriteByteSeq(playerGuid[1]);
-    data.WriteByteSeq(playerGuid[6]);
+    data.WriteGuidBytes<2, 7, 1>(playerGuid);
+    data << uint32(361);
 
     //data << uint16(player->GetUInt16Value(PLAYER_FIELD_KILLS, 1));  // yesterday kills
     //data << uint16(player->GetUInt16Value(PLAYER_FIELD_KILLS, 0));  // today kills
     SendPacket(&data);
-
-    data.Initialize(SMSG_INSPECT_RATED_BG_STATS, 8+1+4*6);
-    ObjectGuid gguid = guid;
-    data << uint32(0); //SeasonWin
-    data << uint32(0); //SeasonPlayed
-    data << uint32(0); //Rating
-    
-    uint8 bitOrder3[8] = {5, 7, 2, 3, 4, 6, 0, 1};
-    data.WriteBitInOrder(gguid, bitOrder3);
-    
-    uint8 byteOrder2[8] = {6, 2, 3, 1, 7, 5, 4, 0};
-    data.WriteBytesSeq(gguid, byteOrder2);
-
-    SendPacket(&data);
 }
 
+//! 5.4.1
+//! FinishIT
+void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
+{
+    ObjectGuid playerGuid = player->GetGUID();
+    WorldPacket packet(SMSG_PVP_BRACKET_DATA);
+    data.WriteGuidMask<0, 6, 3, 7, 4, 2>(playerGuid);
+    data.WriteBits(0, 3);   //Arena brascets count data
+    data.WriteGuidMask<5, 1>(playerGuid);
+
+    data.FlushBits();
+    //for (var i = 0; i < dword10; ++i)
+    //{
+    //    p.ReadInt32("dword14_16", i);
+    //    p.ReadInt32("dword14_12", i);
+    //    p.ReadByte("byte14_28", i);
+    //    p.ReadInt32("dword14_24", i);
+    //    p.ReadInt32("dword14_0", i);
+    //    p.ReadInt32("dword14_20", i);
+    //    p.ReadInt32("dword14_4", i);
+    //}
+
+    data.WriteGuidBytes<0, 2, 5, 7, 3, 6, 1, 4>(playerGuid);
+    SendPacket(&packet);
+}
+
+//! 5.4.1
 void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 {
+    ObjectGuid guid;        // time?
     uint32 time;
     uint32 mapid;
     float PositionX;
@@ -1641,12 +1638,14 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
     float PositionZ;
     float Orientation;
 
-    recvData >> time;                                      // time in m.sec.
     recvData >> mapid;
+    recvData >> PositionZ;
     recvData >> PositionX;
-    recvData >> Orientation;     
     recvData >> PositionY;
-    recvData >> PositionZ;                          // o (3.141593 = 180 degrees)
+    recvData >> Orientation;                // o (3.141593 = 180 degrees)
+    
+    recvData.ReadGuidMask<7, 5, 0, 6, 1, 3, 4, 2>(guid);
+    recvData.ReadGuidBytes<3, 6, 1, 2, 0, 7, 5, 4>(guid);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_WORLD_TELEPORT");
 
@@ -2264,49 +2263,6 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
     delete[] guids;
 }
 
-void WorldSession::HandleUpdateMissileTrajectory(WorldPacket& recvPacket)
-{
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_UPDATE_MISSILE_TRAJECTORY");
-
-    uint64 guid;
-    uint32 spellId;
-    float elevation, speed;
-    float curX, curY, curZ;
-    float targetX, targetY, targetZ;
-    uint8 moveStop;
-
-    recvPacket >> guid >> spellId >> elevation >> speed;
-    recvPacket >> curX >> curY >> curZ;
-    recvPacket >> targetX >> targetY >> targetZ;
-    recvPacket >> moveStop;
-
-    Unit* caster = ObjectAccessor::GetUnit(*_player, guid);
-    Spell* spell = caster ? caster->GetCurrentSpell(CURRENT_GENERIC_SPELL) : NULL;
-    if (!spell || spell->m_spellInfo->Id != spellId || !spell->m_targets.HasDst() || !spell->m_targets.HasSrc())
-    {
-        recvPacket.rfinish();
-        return;
-    }
-
-    Position pos = *spell->m_targets.GetSrcPos();
-    pos.Relocate(curX, curY, curZ);
-    spell->m_targets.ModSrc(pos);
-
-    pos = *spell->m_targets.GetDstPos();
-    pos.Relocate(targetX, targetY, targetZ);
-    spell->m_targets.ModDst(pos);
-
-    spell->m_targets.SetElevation(elevation);
-    spell->m_targets.SetSpeed(speed);
-
-    if (moveStop)
-    {
-        uint32 opcode;
-        recvPacket >> opcode;
-        recvPacket.SetOpcode(MSG_MOVE_STOP); // always set to MSG_MOVE_STOP in client SetOpcode
-        HandleMovementOpcodes(recvPacket);
-    }
-}
 void WorldSession::HandleViolenceLevel(WorldPacket& recvPacket)
 {
     uint8 violenceLevel;
@@ -2372,10 +2328,11 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
     _player->SendMovieStart(116);
 }
 
+//! 5.4.1
 void WorldSession::HandleChangeCurrencyFlags(WorldPacket& recvPacket)
 {
     uint32 currencyId, flags;
-    recvPacket >> flags >> currencyId;
+    recvPacket >> currencyId >> flags;
 
     if (GetPlayer())
         GetPlayer()->ModifyCurrencyFlag(currencyId, uint8(flags));
@@ -2384,9 +2341,4 @@ void WorldSession::HandleChangeCurrencyFlags(WorldPacket& recvPacket)
 void WorldSession::HandleCemeteryListOpcode(WorldPacket& recvPacket)
 {
     GetPlayer()->SendCemeteryList(false);
-}
-
-void WorldSession::HandlerCategoryCooldownOpocde(WorldPacket& recvPacket)
-{
-    _player->SendCategoryCooldownMods();
 }

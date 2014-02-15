@@ -1409,3 +1409,52 @@ void WorldSession::HandleUpdateProjectilePosition(WorldPacket& recvPacket)
     data << float(z);
     caster->SendMessageToSet(&data, true);
 }
+
+void WorldSession::HandleUpdateMissileTrajectory(WorldPacket& recvPacket)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_UPDATE_MISSILE_TRAJECTORY");
+
+    uint64 guid;
+    uint32 spellId;
+    float elevation, speed;
+    float curX, curY, curZ;
+    float targetX, targetY, targetZ;
+    uint8 moveStop;
+
+    recvPacket >> guid >> spellId >> elevation >> speed;
+    recvPacket >> curX >> curY >> curZ;
+    recvPacket >> targetX >> targetY >> targetZ;
+    recvPacket >> moveStop;
+
+    Unit* caster = ObjectAccessor::GetUnit(*_player, guid);
+    Spell* spell = caster ? caster->GetCurrentSpell(CURRENT_GENERIC_SPELL) : NULL;
+    if (!spell || spell->m_spellInfo->Id != spellId || !spell->m_targets.HasDst() || !spell->m_targets.HasSrc())
+    {
+        recvPacket.rfinish();
+        return;
+    }
+
+    Position pos = *spell->m_targets.GetSrcPos();
+    pos.Relocate(curX, curY, curZ);
+    spell->m_targets.ModSrc(pos);
+
+    pos = *spell->m_targets.GetDstPos();
+    pos.Relocate(targetX, targetY, targetZ);
+    spell->m_targets.ModDst(pos);
+
+    spell->m_targets.SetElevation(elevation);
+    spell->m_targets.SetSpeed(speed);
+
+    if (moveStop)
+    {
+        uint32 opcode;
+        recvPacket >> opcode;
+        recvPacket.SetOpcode(MSG_MOVE_STOP); // always set to MSG_MOVE_STOP in client SetOpcode
+        HandleMovementOpcodes(recvPacket);
+    }
+}
+
+void WorldSession::HandlerCategoryCooldownOpocde(WorldPacket& recvPacket)
+{
+    _player->SendCategoryCooldownMods();
+}

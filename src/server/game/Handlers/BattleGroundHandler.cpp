@@ -729,55 +729,6 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
     sBattlegroundMgr->ScheduleQueueUpdate(matchmakerRating, arenatype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
 }
 
-void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
-{
-    WorldPacket packet(SMSG_RATED_BG_RATING);
-    packet << uint16(400);
-    SendPacket(&packet);
-//    ObjectGuid pGuid;
-//    pGuid[1] = recvData.ReadBit();
-//    pGuid[4] = recvData.ReadBit();
-//    pGuid[6] = recvData.ReadBit();
-//    pGuid[5] = recvData.ReadBit();
-//    pGuid[0] = recvData.ReadBit();
-//    pGuid[2] = recvData.ReadBit();
-//    pGuid[7] = recvData.ReadBit();
-//    pGuid[3] = recvData.ReadBit();
-
-//    recvData.ReadByteSeq(pGuid[4]);
-//    recvData.ReadByteSeq(pGuid[7]);
-//    recvData.ReadByteSeq(pGuid[2]);
-//    recvData.ReadByteSeq(pGuid[5]);
-//    recvData.ReadByteSeq(pGuid[6]);
-//    recvData.ReadByteSeq(pGuid[3]);
-//    recvData.ReadByteSeq(pGuid[0]);
-//    recvData.ReadByteSeq(pGuid[1]);
-
-//    WorldPacket data(SMSG_INSPECT_RATED_BG_STATS);
-//    data.WriteBit(pGuid[6]);
-//    data.WriteBit(pGuid[4]);
-//    data.WriteBit(pGuid[5]);
-//    data.WriteBit(pGuid[1]);
-//    data.WriteBit(pGuid[2]);
-//    data.WriteBit(pGuid[7]);
-//    data.WriteBit(pGuid[0]);
-//    data.WriteBit(pGuid[3]);
-
-//    data.WriteByteSeq(pGuid[4]);
-//    data << uint32(5);
-
-//    data.WriteByteSeq(pGuid[1]);
-//    data.WriteByteSeq(pGuid[7]);
-//    data.WriteByteSeq(pGuid[3]);
-//    data.WriteByteSeq(pGuid[6]);
-//    data << uint32(5);
-//    data << uint32(3);
-//    data.WriteByteSeq(pGuid[2]);
-//    data.WriteByteSeq(pGuid[5]);
-//    data.WriteByteSeq(pGuid[0]);
-//    SendPacket(&data);
-}
-
 void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
 {
     if (_player->InBattleground())

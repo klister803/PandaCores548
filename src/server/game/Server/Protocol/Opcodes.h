@@ -442,7 +442,7 @@ enum Opcodes
     CMSG_REPOP_REQUEST                                = 0x0A65, // 5.4.1 17538
     CMSG_REPORT_PVP_AFK                               = 0x0B44, // 5.4.1 17538
     CMSG_REQUEST_ACCOUNT_DATA                         = 0x0865, // 5.4.1 17538
-    CMSG_REQUEST_CATEGORY_COOLDOWNS                   = 0x1AF4, // 5.4.1 17538 5.0.5 - wrong
+    CMSG_REQUEST_CATEGORY_COOLDOWNS                   = 0x1AF4, // 5.4.1 17538
     CMSG_REQUEST_CEMETERY_LIST                        = 0x16C4, // 5.4.1 17538
     CMSG_REQUEST_HOTFIX                               = 0x01E4, // 5.4.1 17538
     CMSG_REQUEST_INSPECT_RATED_BG_STATS               = 0x086C, // 5.4.1 17538 5.0.5 - wrong
@@ -1004,7 +1004,7 @@ enum Opcodes
     SMSG_INIT_WORLD_STATES                            = 0x0D94, // 5.4.1 17538
     SMSG_INSPECT                                      = 0,      // Not found in 4.3.4
     SMSG_INSPECT_RATED_BG_STATS                       = 0xB42,  // 5.0.5 16048
-    SMSG_INSPECT_HONOR_STATS                          = 0xFD4,  // 5.0.5 16048
+    SMSG_INSPECT_HONOR_STATS                          = 0x0436, // 5.4.1 17538
     SMSG_INSPECT_RESULTS_UPDATE                       = 0,      // 0x0C14 in 4.3.4 @todo : Find me and BACON !
     SMSG_INSPECT_TALENT                               = 0x1024, // 5.4.1 17538
     SMSG_INSTANCE_DIFFICULTY                          = 0,      // Not found in 4.3.4
@@ -1185,7 +1185,7 @@ enum Opcodes
     SMSG_PET_SPELLS                                   = 0x1E4,  // 5.4.1 17538
     SMSG_PET_TAME_FAILURE                             = 0x1195, // 5.4.1 17538
     SMSG_PET_UPDATE_COMBO_POINTS                      = 0x9CD,  // 5.0.5 16048
-    SMSG_PLAYED_TIME                                  = 0xD59,  // 5.0.5 16048
+    SMSG_PLAYED_TIME                                  = 0x1086, // 5.4.1 17538
     SMSG_PLAYERBINDERROR                              = 0xC89,  // 5.0.5 16048
     SMSG_PLAYERBOUND                                  = 0xC95,  // 5.0.5 16048
     SMSG_PLAYER_DIFFICULTY_CHANGE                     = 0xCB4,  // 5.0.5 16048
@@ -1209,6 +1209,7 @@ enum Opcodes
     SMSG_PROPOSE_LEVEL_GRANT                          = 0xD8D,  // 5.0.5 16048
     SMSG_PUREMOUNT_CANCELLED_OBSOLETE                 = 0,      // Not found in 4.3.4
     SMSG_PVP_CREDIT                                   = 0xD43,  // 5.0.5 16048
+    SMSG_PVP_BRACKET_DATA                             = 0x11BF, // 5.4.1 17538
     SMSG_PVP_LOG_DATA                                 = 0x018D, // 5.4.1 17538
     SMSG_PVP_OPTIONS_ENABLED                          = 0xA09,  // 5.0.5 16048
     SMSG_QUERY_QUESTS_COMPLETED_RESPONSE              = 0x000,  // 5.0.5 16048 Deprecated
