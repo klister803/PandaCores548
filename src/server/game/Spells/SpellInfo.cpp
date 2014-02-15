@@ -1457,6 +1457,9 @@ bool SpellInfo::IsSingleTarget() const
 
 bool SpellInfo::IsSingleTargetWith(SpellInfo const* spellInfo) const
 {
+    if(!this || !spellInfo)
+        return false;
+
     // TODO - need better check
     // Equal icon and spellfamily
     if (SpellFamilyName == spellInfo->SpellFamilyName &&
