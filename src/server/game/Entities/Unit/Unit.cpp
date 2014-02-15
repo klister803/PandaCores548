@@ -17227,6 +17227,7 @@ void Unit::SetStandState(uint8 state)
 
     if (GetTypeId() == TYPEID_PLAYER)
     {
+        //! 5.4.1
         WorldPacket data(SMSG_STANDSTATE_UPDATE, 1);
         data << (uint8)state;
         ToPlayer()->GetSession()->SendPacket(&data);

@@ -880,6 +880,7 @@ void WorldSession::HandleDelIgnoreOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent motd (SMSG_FRIEND_STATUS)");
 }
 
+//! 5.4.1
 void WorldSession::HandleSetContactNotesOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_SET_CONTACT_NOTES");
@@ -889,14 +890,17 @@ void WorldSession::HandleSetContactNotesOpcode(WorldPacket& recvData)
     _player->GetSocial()->SetFriendNote(GUID_LOPART(guid), note);
 }
 
+//! 5.4.1
 void WorldSession::HandleBugOpcode(WorldPacket& recvData)
 {
-    uint32 suggestion, contentlen, typelen;
+    uint32 contentlen, typelen;
+    uint8 suggestion;   //bit
     std::string content, type;
 
-    recvData >> suggestion >> contentlen >> content;
-
-    recvData >> typelen >> type;
+    recvData >> suggestion >> contentlen;
+    content = recvData.ReadString(contentlen);
+    recvData >> typelen;
+    type = recvData.ReadString(typelen);
 
     if (suggestion == 0)
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_BUG [Bug Report]");
@@ -953,6 +957,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket& recvData)
     GetPlayer()->SpawnCorpseBones();
 }
 
+//! 5.4.1
 void WorldSession::HandleResurrectResponseOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RESURRECT_RESPONSE");

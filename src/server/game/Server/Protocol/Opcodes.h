@@ -1352,7 +1352,7 @@ enum Opcodes
     SMSG_SPLINE_MOVE_UNSET_FLYING                     = 0xEB1,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_UNSET_HOVER                      = 0xBC0,  // 5.0.5 16048
     SMSG_STABLE_RESULT                                = 0x0C26, // 5.4.1 17538
-    SMSG_STANDSTATE_UPDATE                            = 0x8BB,  // 5.0.5 16048
+    SMSG_STANDSTATE_UPDATE                            = 0x112F, // 5.4.1 17538
     SMSG_START_MIRROR_TIMER                           = 0xCA9,  // 5.0.5 16048
     SMSG_START_TIMER                                  = 0xEBA,  // 5.0.5 16048
     SMSG_STOP_DANCE                                   = 0x9B5,  // 5.0.5 16048
