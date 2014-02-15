@@ -327,8 +327,6 @@ class WorldSession
         void SendSpiritResurrect();
         void SendBindPoint(Creature* npc);
 
-        void SendAttackStop(Unit const* enemy);
-
         void SendBattleGroundList(uint64 guid, BattlegroundTypeId bgTypeId);
 
         void SendTradeStatus(TradeStatus status);

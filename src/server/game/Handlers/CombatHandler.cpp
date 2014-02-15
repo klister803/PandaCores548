@@ -39,14 +39,14 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket& recvData)
     if (!pEnemy)
     {
         // stop attack state at client
-        SendAttackStop(NULL);
+        GetPlayer()->SendMeleeAttackStop(NULL);
         return;
     }
 
     if (!_player->IsValidAttackTarget(pEnemy))
     {
         // stop attack state at client
-        SendAttackStop(pEnemy);
+        GetPlayer()->SendMeleeAttackStop(pEnemy);
         return;
     }
 
@@ -59,7 +59,7 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket& recvData)
         ASSERT(seat);
         if (!(seat->m_flags & VEHICLE_SEAT_FLAG_CAN_ATTACK))
         {
-            SendAttackStop(pEnemy);
+            GetPlayer()->SendMeleeAttackStop(pEnemy);
             return;
         }
     }
@@ -87,13 +87,4 @@ void WorldSession::HandleSetSheathedOpcode(WorldPacket& recvData)
     }
 
     GetPlayer()->SetSheath(SheathState(sheathed));
-}
-
-void WorldSession::SendAttackStop(Unit const* enemy)
-{
-    WorldPacket data(SMSG_ATTACKSTOP, (8+8+4));             // we guess size
-    data.append(GetPlayer()->GetPackGUID());
-    data.append(enemy ? enemy->GetPackGUID() : 0);          // must be packed guid
-    data << uint32(0);                                      // unk, can be 1 also
-    SendPacket(&data);
 }
