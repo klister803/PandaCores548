@@ -1328,9 +1328,10 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(MSG_NOTIFY_PARTY_SQUELCH,                     STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     //DEFINE_OPCODE_HANDLER(MSG_PETITION_DECLINE,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePetitionDeclineOpcode     );
     //DEFINE_OPCODE_HANDLER(MSG_PETITION_RENAME,                          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePetitionRenameOpcode      );
-    //DEFINE_OPCODE_HANDLER(MSG_QUERY_NEXT_MAIL_TIME,                     STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleQueryNextMailTime         );
-    DEFINE_OPCODE_HANDLER(CMSG, MSG_SET_RAID_DIFFICULTY,                STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleSetRaidDifficultyOpcode   );
-    DEFINE_OPCODE_HANDLER(SMSG, MSG_SET_RAID_DIFFICULTY,                STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(CMSG, MSG_QUERY_NEXT_MAIL_TIME,                     STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleQueryNextMailTime         );
+    DEFINE_OPCODE_HANDLER(SMSG, MSG_QUERY_NEXT_MAIL_TIME,                     STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(CMSG, MSG_SET_RAID_DIFFICULTY,                      STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleSetRaidDifficultyOpcode   );
+    DEFINE_OPCODE_HANDLER(SMSG, MSG_SET_RAID_DIFFICULTY,                      STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(MSG_BATTLEGROUND_PLAYER_POSITIONS,            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBattlegroundPlayerPositionsOpcode);
     //DEFINE_OPCODE_HANDLER(MSG_DELAY_GHOST_TELEPORT,                     STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     //DEFINE_OPCODE_HANDLER(MSG_DEV_SHOWLABEL,                            STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
