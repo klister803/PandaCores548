@@ -289,21 +289,6 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
                     data << uint8(0); // Is Currency
                 }
             }
-            if (qRew->GetRewPackageItem())
-            {
-                ItemTemplate const* iProto = NULL;
-                if (uint32 packId = qRew->GetItemFromPakage(GetPlayer()->GetSpecializationId(GetPlayer()->GetActiveSpec())))
-                {
-                    if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
-                    {
-                        iProto = sObjectMgr->GetItemTemplate(PackageItem->ItemID);
-                        data << uint32(PackageItem->ItemID);
-                        data << uint32(iProto ? iProto->DisplayInfoID : 0);
-                        data << uint32(PackageItem->count);
-                        data << uint8(0); // Is Currency
-                    }
-                }
-            }
             if (qRew->GetRewCurrencyCount())
             {
                 CurrencyTypesEntry const* iCurrencyType = NULL;
@@ -750,21 +735,6 @@ void WorldSession::SendLfgPlayerReward(uint32 rdungeonEntry, uint32 sdungeonEntr
             data << uint32(iProto ? iProto->DisplayInfoID : 0);
 
             data << uint8(qRew->RewardItemIdCount[i]);
-        }
-        if (qRew->GetRewPackageItem())
-        {
-            ItemTemplate const* iProto = NULL;
-            if (uint32 packId = qRew->GetItemFromPakage(GetPlayer()->GetSpecializationId(GetPlayer()->GetActiveSpec())))
-            {
-                if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
-                {
-                    iProto = sObjectMgr->GetItemTemplate(PackageItem->ItemID);
-                    data << uint32(PackageItem->ItemID);
-                    data << uint32(0); //unk
-                    data << uint32(iProto ? iProto->DisplayInfoID : 0);
-                    data << uint32(PackageItem->count);
-                }
-            }
         }
     }
     SendPacket(&data);

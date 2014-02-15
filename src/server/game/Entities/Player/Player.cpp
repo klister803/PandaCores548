@@ -16411,7 +16411,7 @@ bool Player::CanRewardQuest(Quest const* quest, bool msg)
     return true;
 }
 
-bool Player::CanRewardQuest(Quest const* quest, uint32 reward, bool msg)
+bool Player::CanRewardQuest(Quest const* quest, uint32 reward, bool msg, uint32 packItemId)
 {
     // prevent receive reward with quest items in bank or for not completed quest
     if (!CanRewardQuest(quest, msg))
@@ -16450,18 +16450,12 @@ bool Player::CanRewardQuest(Quest const* quest, uint32 reward, bool msg)
 
     if (quest->GetRewPackageItem() > 0)
     {
-        if (uint32 packId = quest->GetItemFromPakage(GetLootSpecID()))
+        ItemPosCountVec dest;
+        InventoryResult res = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, packItemId, 1);
+        if (res != EQUIP_ERR_OK)
         {
-            if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
-            {
-                ItemPosCountVec dest;
-                InventoryResult res = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, PackageItem->ItemID, PackageItem->count);
-                if (res != EQUIP_ERR_OK)
-                {
-                    SendEquipError(res, NULL, NULL, PackageItem->ItemID);
-                    return false;
-                }
-            }
+            SendEquipError(res, NULL, NULL, packItemId);
+            return false;
         }
     }
 
@@ -16579,7 +16573,7 @@ void Player::IncompleteQuest(uint32 quest_id)
     }
 }
 
-void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, bool announce)
+void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, bool announce, uint32 packItemId)
 {
     //this THING should be here to protect code from quest, which cast on player far teleport as a reward
     //should work fine, cause far teleport will be executed in Player::Update()
@@ -16645,7 +16639,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
 
     if (quest->GetRewPackageItem() > 0)
     {
-        if (uint32 packId = quest->GetItemFromPakage(GetLootSpecID()))
+        if (uint32 packId = quest->GetItemFromPakage(packItemId))
         {
             if (QuestPackageItem const* PackageItem = sQuestPackageItemStore.LookupEntry(packId))
             {

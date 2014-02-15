@@ -334,7 +334,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
     recvData.ReadGuidMask<0, 4, 7, 6, 2, 3, 5, 1>(guid);
     recvData.ReadGuidBytes<4, 3, 6, 0, 1, 2, 5, 7>(guid);
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_QUESTGIVER_CHOOSE_REWARD npc = %u, quest = %u, reward = %u", uint32(GUID_LOPART(guid)), questId, reward);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_QUESTGIVER_CHOOSE_REWARD npc = %u, quest = %u, slot = %u", uint32(GUID_LOPART(guid)), questId, slot);
 
     Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
     if (!quest)
@@ -370,9 +370,9 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
         return;
     }
 
-    if (_player->CanRewardQuest(quest, reward, true))
-    { 
-        _player->RewardQuest(quest, reward, object);
+    if (_player->CanRewardQuest(quest, reward, true, slot))
+    {
+        _player->RewardQuest(quest, reward, object, true, slot);
 
         switch (object->GetTypeId())
         { 
