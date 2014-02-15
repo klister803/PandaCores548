@@ -182,7 +182,7 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
 {
     if (!data.WriteBit(!remove))
     {
-        ASSERT(!_target->GetVisibleAura(_slot));
+        //ASSERT(!_target->GetVisibleAura(_slot));
         return;
     }
 
