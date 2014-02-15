@@ -502,13 +502,13 @@ void BattlegroundAV::HandleAreaTrigger(Player* Source, uint32 Trigger)
         case 95:
         case 2608:
             if (Source->GetTeam() != ALLIANCE)
-                Source->GetSession()->SendAreaTriggerMessage("Only The Alliance can use that portal");
+                Source->GetSession()->SendNotification("Only The Alliance can use that portal");
             else
                 Source->LeaveBattleground();
             break;
         case 2606:
             if (Source->GetTeam() != HORDE)
-                Source->GetSession()->SendAreaTriggerMessage("Only The Horde can use that portal");
+                Source->GetSession()->SendNotification("Only The Horde can use that portal");
             else
                 Source->LeaveBattleground();
             break;
@@ -522,7 +522,7 @@ void BattlegroundAV::HandleAreaTrigger(Player* Source, uint32 Trigger)
             break;
         default:
             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
-//            Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
+//            Source->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
 

@@ -680,7 +680,7 @@ enum Opcodes
     SMSG_AI_REACTION                                  = 0x0997, // 5.4.1 17538
     SMSG_ALL_ACHIEVEMENT_DATA                         = 0x005,  // 5.4.1 17538
     SMSG_AREA_SPIRIT_HEALER_TIME                      = 0x119C, // 5.4.1 17538
-    SMSG_AREA_TRIGGER_MESSAGE                         = 0xC31,  // 5.0.5 16048
+    SMSG_AREA_TRIGGER_MESSAGE                         = 0x1539, // 5.4.1 17538
     SMSG_AREA_TRIGGER_MOVEMENT_UPDATE                 = 0xFB8,  // 5.0.5 16048
     SMSG_AREA_TRIGGER_RESET                           = 0xB9B,  // 5.0.5 16048
     SMSG_ARENA_ERROR                                  = 0xCA5,  // 5.0.5 16048
