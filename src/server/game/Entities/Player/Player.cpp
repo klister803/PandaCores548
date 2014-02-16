@@ -1439,12 +1439,19 @@ uint32 Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 
     DealDamageMods(this, damage, &absorb);
 
-    WorldPacket data(SMSG_ENVIRONMENTALDAMAGELOG, (21));
-    data << uint64(GetGUID());
-    data << uint8(type != DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
-    data << uint32(damage);
-    data << uint32(absorb);
+    ObjectGuid guid = GetObjectGuid();
+    WorldPacket data(SMSG_ENVIRONMENTALDAMAGELOG, 8 + 1 + 1 + 4 + 4 + 4 + 1);
+    data.WriteGuidMask<6, 2, 7>(guid);
+    data.WriteBit(0);           // not has power data
+    data.WriteGuidMask<0, 4, 3, 5, 1>(guid);
+
     data << uint32(resist);
+    data << uint32(absorb);
+    data.WriteGuidBytes<1>(guid);
+    data << uint32(damage);
+    data << uint8(type != DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
+    data.WriteGuidBytes<0, 5, 4, 2, 6, 3, 7>(guid);
+
     SendMessageToSet(&data, true);
 
     uint32 final_damage = DealDamage(this, damage, NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -1667,10 +1674,14 @@ void Player::SetDrunkValue(uint8 newDrunkValue, uint32 itemId /*= 0*/)
     if (newDrunkenState == oldDrunkenState)
         return;
 
+    ObjectGuid guid = GetObjectGuid();
     WorldPacket data(SMSG_CROSSED_INEBRIATION_THRESHOLD, (8+4+4));
-    data << uint64(GetGUID());
+    data.WriteGuidMask<1, 2, 0, 4, 3, 7, 5, 6>(guid);
+    data.WriteGuidBytes<1, 4, 0, 3, 7>(guid);
     data << uint32(newDrunkenState);
     data << uint32(itemId);
+    data.WriteGuidBytes<6, 5, 2>(guid);
+
     SendMessageToSet(&data, true);
 }
 
@@ -25695,12 +25706,14 @@ void Player::SendCorpseReclaimDelay(bool load)
     else
         delay = GetCorpseReclaimDelay(pvp);
 
-    if (!delay)
+    if (load && !delay)
         return;
 
     //! corpse reclaim delay 30 * 1000ms or longer at often deaths
-    WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
-    data << uint32(delay*IN_MILLISECONDS);
+    WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4 + 1);
+    data.WriteBit(!delay);
+    if (delay)
+        data << uint32(delay * IN_MILLISECONDS);
     GetSession()->SendPacket(&data);
 }
 

@@ -841,12 +841,12 @@ enum Opcodes
     SMSG_COOLDOWN_CHEAT                               = 0x8AD,  // 5.0.5 16048
     SMSG_COOLDOWN_EVENT                               = 0x019C, // 5.4.1 17538
     SMSG_CORPSE_MAP_POSITION_QUERY_RESPONSE           = 0x836,  // 5.0.5 16048
-    SMSG_CORPSE_NOT_IN_INSTANCE                       = 0xD01,  // 5.0.5 16048
-    SMSG_CORPSE_RECLAIM_DELAY                         = 0xC9E,  // 5.0.5 16048
+    SMSG_CORPSE_NOT_IN_INSTANCE                       = 0x101E, // 5.4.1 17538
+    SMSG_CORPSE_RECLAIM_DELAY                         = 0x0137, // 5.4.1 17538
     SMSG_CREATURE_QUERY_RESPONSE                      = 0x011C, // 5.4.1 17538
-    SMSG_CRITERIA_DELETED                             = 0xC5B,  // 5.0.5 16048
+    SMSG_CRITERIA_DELETED                             = 0x0087, // 5.4.1 17538
     SMSG_CRITERIA_UPDATE                              = 0x837,  // 5.4.1 17538
-    SMSG_CROSSED_INEBRIATION_THRESHOLD                = 0xCAA,  // 5.0.5 16048
+    SMSG_CROSSED_INEBRIATION_THRESHOLD                = 0x0C94, // 5.4.1 17538
     SMSG_CURRENCY_LOOT_REMOVED                        = 0xE01,  // 5.0.5 16048
     SMSG_CURRENCY_LOOT_RESTORED                       = 0x000,  // 5.0.5 16048 Deprecated
     SMSG_CUSTOM_LOAD_SCREEN                           = 0xA5B,  // 5.0.5 16048
@@ -880,7 +880,7 @@ enum Opcodes
     SMSG_EMOTE                                        = 0x0D8B, // 5.4.1 17538
     SMSG_ENABLE_BARBER_SHOP                           = 0xC19,  // 5.0.5 16048
     SMSG_ENCHANTMENTLOG                               = 0xC49,  // 5.0.5 16048
-    SMSG_ENVIRONMENTALDAMAGELOG                       = 0x951,  // 5.0.5 16048
+    SMSG_ENVIRONMENTALDAMAGELOG                       = 0x0D48, // 5.4.1 17538
     SMSG_EQUIPMENT_SET_LIST                           = 0x0CBF, // 5.4.1 17538
     SMSG_EQUIPMENT_SET_SAVED                          = 0x1426, // 5.4.1 17538
     SMSG_EQUIPMENT_SET_USE_RESULT                     = 0x0516, // 5.4.1 17538
