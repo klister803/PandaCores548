@@ -5194,7 +5194,6 @@ void Spell::SendChannelUpdate(uint32 time)
     data.WriteGuidMask<7, 1, 2, 6, 4, 3, 0, 5>(guid);
     data << uint32(time);
     data.WriteGuidBytes<5, 7, 2, 0, 4, 1, 6, 3>(guid);
-    data << uint32(time);
 
     m_caster->SendMessageToSet(&data, true);
 }
@@ -5208,29 +5207,23 @@ void Spell::SendChannelStart(uint32 duration)
             if (!m_UniqueTargetInfo.empty())
                 channelTarget = !m_UniqueTargetInfo.empty() ? m_UniqueTargetInfo.front().targetGUID : m_UniqueGOTargetInfo.front().targetGUID;
 
+    ObjectGuid casterGuid = m_caster->GetObjectGuid();
     WorldPacket data(SMSG_CHANNEL_START, (8+4+4));
-    data.append(m_caster->GetPackGUID());
+    data.WriteGuidMask<7, 5, 2>(casterGuid);
+    data.WriteBit(0);                   // not has heal prediction
+    data.WriteGuidMask<6>(casterGuid);
+
+    data.WriteGuidMask<3, 4, 0, 1>(casterGuid);
+    data.WriteBit(0);                   // not has cast immunities
+
+    data.WriteGuidBytes<0>(casterGuid);
+    data.WriteGuidBytes<6>(casterGuid);
     data << uint32(m_spellInfo->Id);
+    data.WriteGuidBytes<5, 1>(casterGuid);
     data << uint32(duration);
-    data << uint8(0);                           // immunity (castflag & 0x04000000)
-    /*
-    if (immunity)
-    {
-        data << uint32();                       // CastSchoolImmunities
-        data << uint32();                       // CastImmunities
-    }
-    */
-    data << uint8(0);                           // healPrediction (castflag & 0x40000000)
-    /*
-    if (healPrediction)
-    {
-        data.appendPackGUID(channelTarget);     // target packguid
-        data << uint32();                       // spellid
-        data << uint8(0);                       // unk3
-        if (unk3 == 2)
-            data.append();                      // unk packed guid (unused ?)
-    }
-    */
+    data.WriteGuidBytes<3, 7, 2>(casterGuid);
+    data.WriteGuidBytes<4>(casterGuid);
+
     m_caster->SendMessageToSet(&data, true);
 
     m_timer = duration;

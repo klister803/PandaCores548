@@ -1202,10 +1202,11 @@ void WorldSession::HandleTotemDestroyed(WorldPacket& recvPacket)
         return;
 
     uint8 slotId;
-    uint64 guid;
+    ObjectGuid guid;
 
     recvPacket >> slotId;
-    recvPacket >> guid;
+    recvPacket.ReadGuidMask<3, 5, 2, 0, 4, 1, 6, 7>(guid);
+    recvPacket.ReadGuidBytes<4, 1, 5, 2, 3, 6, 7, 0>(guid);
 
     ++slotId;
     if (slotId >= MAX_TOTEM_SLOT)

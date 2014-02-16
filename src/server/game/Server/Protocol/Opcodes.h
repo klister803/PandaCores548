@@ -606,7 +606,7 @@ enum Opcodes
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0x000,  // 5.0.5 16048 deprecated
-    SMSG_CHANNEL_START                                = 0x831,  // 5.0.5 16048
+    SMSG_CHANNEL_START                                = 0x0565, // 5.4.1 17538
     SMSG_CHANNEL_UPDATE                               = 0x1148, // 5.4.1 17538
     MSG_GM_BIND_OTHER                                 = 0x000,  // Not found in 4.3.4
     MSG_GM_SHOWLABEL                                  = 0x000,  // Not found in 4.3.4
