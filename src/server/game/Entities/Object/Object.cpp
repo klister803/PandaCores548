@@ -3317,21 +3317,53 @@ void WorldObject::SetPhaseMask(uint32 newPhaseMask, bool update)
         UpdateObjectVisibility();
 }
 
+//! 5.4.1
 void WorldObject::PlayDistanceSound(uint32 sound_id, Player* target /*= NULL*/)
 {
-    WorldPacket data(SMSG_PLAY_OBJECT_SOUND, 4+8);
+    ObjectGuid guid = GetGUID();
+    ObjectGuid obj_guid = target ? target->GetGUID() : 0;
+    
+    WorldPacket data(SMSG_PLAY_OBJECT_SOUND, 10);
+    data.WriteGuidMask<5, 3>(obj_guid);
+    data.WriteGuidMask<6, 5>(guid);
+    data.WriteGuidMask<6>(obj_guid);
+    data.WriteGuidMask<0, 2>(guid);
+    data.WriteGuidMask<1>(obj_guid);
+    data.WriteGuidMask<7>(guid);
+    data.WriteGuidMask<2>(obj_guid);
+    data.WriteGuidMask<4, 3>(guid);
+    data.WriteGuidMask<4>(obj_guid);
+    data.WriteGuidMask<1>(guid);
+    data.WriteGuidMask<7, 0>(obj_guid);
+
+    data.WriteGuidBytes<0>(guid);
+    data.WriteGuidBytes<2, 7>(obj_guid);
+    data.WriteGuidBytes<5>(guid);
+    data.WriteGuidBytes<5>(obj_guid);
+    data.WriteGuidBytes<3>(guid);
+    data.WriteGuidBytes<0, 4>(obj_guid);
+    data.WriteGuidBytes<4, 1, 6, 7>(guid);
+    data.WriteGuidBytes<3, 6>(obj_guid);
     data << uint32(sound_id);
-    data << uint64(GetGUID());
+    data.WriteGuidBytes<1>(obj_guid);
+    data.WriteGuidBytes<2>(guid);
+
     if (target)
         target->SendDirectMessage(&data);
     else
         SendMessageToSet(&data, true);
 }
 
+//! 5.4.1
 void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= NULL*/)
 {
-    WorldPacket data(SMSG_PLAY_SOUND, 4);
+    ObjectGuid source = GetGUID();
+    WorldPacket data(SMSG_PLAY_SOUND, 12);
+    data.WriteGuidMask<0, 2, 4, 7, 6, 5, 1, 3>(source);
+    data.WriteGuidBytes<3, 4, 2, 6, 1, 5, 0>(source);
     data << uint32(sound_id);
+    data.WriteGuidBytes<7>(source);
+
     if (target)
         target->SendDirectMessage(&data);
     else

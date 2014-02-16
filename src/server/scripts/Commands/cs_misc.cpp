@@ -2940,11 +2940,7 @@ public:
             handler->SetSentErrorMessage(true);
             return false;
         }
-
-        WorldPacket data(SMSG_PLAY_SOUND, 4);
-        data << uint32(soundId) << handler->GetSession()->GetPlayer()->GetGUID();
-        sWorld->SendGlobalMessage(&data);
-
+        handler->GetSession()->GetPlayer()->PlayDirectSound(soundId, NULL);
         handler->PSendSysMessage(LANG_COMMAND_PLAYED_TO_ALL, soundId);
         return true;
     }

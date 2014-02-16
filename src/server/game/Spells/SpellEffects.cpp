@@ -7020,9 +7020,7 @@ void Spell::EffectPlayMusic(SpellEffIndex effIndex)
         return;
     }
 
-    WorldPacket data(SMSG_PLAY_MUSIC, 4);
-    data << uint32(soundid);
-    unitTarget->ToPlayer()->GetSession()->SendPacket(&data);
+    unitTarget->ToPlayer()->SendMusic(soundid);
 }
 
 void Spell::EffectSpecCount(SpellEffIndex /*effIndex*/)
@@ -7072,9 +7070,7 @@ void Spell::EffectPlaySound(SpellEffIndex effIndex)
         return;
     }
 
-    WorldPacket data(SMSG_PLAY_SOUND, 4);
-    data << uint32(soundId);
-    unitTarget->ToPlayer()->GetSession()->SendPacket(&data);
+    unitTarget->ToPlayer()->SendSound(soundId, NULL);
 }
 
 void Spell::EffectRemoveAura(SpellEffIndex effIndex)

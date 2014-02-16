@@ -755,9 +755,9 @@ enum Opcodes
     SMSG_BATTLEFIELD_STATUS_ACTIVE                    = 0x082F, // 5.4.1 17538
     SMSG_BATTLEFIELD_STATUS_WAITFORGROUPS             = 0xADA,  // 5.0.5 16048
     SMSG_BATTLEFIELD_STATUS_FAILED                    = 0x09B4, // 5.4.1 17538
-    SMSG_BATTLEGROUND_INFO_THROTTLED                  = 0xBEC,  // 5.0.5 16048
-    SMSG_BATTLEGROUND_PLAYER_JOINED                   = 0xAB5,  // 5.0.5 16048
-    SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0xAD3,  // 5.0.5 16048
+    SMSG_BATTLEGROUND_INFO_THROTTLED                  = 0x1127, // 5.4.1 17538
+    SMSG_BATTLEGROUND_PLAYER_JOINED                   = 0x1414, // 5.4.1 17538
+    SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0x1404, // 5.4.1 17538
     SMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0x000,  // 5.0.5 16048 Deprecated
     SMSG_BINDER_CONFIRM                               = 0x080F, // 5.4.1 17538
     SMSG_BINDPOINTUPDATE                              = 0x0517, // 5.4.1 17538
@@ -1194,9 +1194,9 @@ enum Opcodes
     SMSG_PLAYER_UNK_DEAD_ALIVE                        = 0,      // Not found in 4.3.4
     SMSG_PLAYER_VEHICLE_DATA                          = 0x048E, // 5.4.1 17538
     SMSG_PLAY_DANCE                                   = 0x86C,  // 5.0.5 16048
-    SMSG_PLAY_MUSIC                                   = 0x8EF,  // 5.0.5 16048
-    SMSG_PLAY_OBJECT_SOUND                            = 0xCED,  // 5.0.5 16048
-    SMSG_PLAY_SOUND                                   = 0x873,  // 5.0.5 16048
+    SMSG_PLAY_MUSIC                                   = 0x0DAD, // 5.4.1 17538
+    SMSG_PLAY_OBJECT_SOUND                            = 0x14A4, // 5.4.1 17538
+    SMSG_PLAY_SOUND                                   = 0x0505, // 5.4.1 17538
     SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0x0486, // 5.4.1 17538
     //SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048 removed in commit c041875
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048

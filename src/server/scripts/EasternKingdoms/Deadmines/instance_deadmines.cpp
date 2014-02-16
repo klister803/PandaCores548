@@ -103,9 +103,7 @@ class instance_deadmines : public InstanceMapScript
 
 			void DoPlaySound(GameObject* unit, uint32 sound)
             {
-                WorldPacket data(SMSG_PLAY_SOUND, 4);
-                data << uint32(sound);
-                unit->SendMessageToSet(&data, false);
+                unit->PlayDirectSound(sound);
             }
 
 			void SetData(uint32 type, uint32 data)

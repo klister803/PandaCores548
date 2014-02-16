@@ -10365,7 +10365,7 @@ void Player::SendNotifyLootItemRemoved(uint8 lootSlot, uint64 lguid)
 void Player::SendUpdateWorldState(uint32 Field, uint32 Value)
 {
     WorldPacket data(SMSG_UPDATE_WORLD_STATE, 4+4+1);
-    data.WriteBit(0);
+    data << uint8(0);   //zero bit
     data << uint32(Field);
     data << uint32(Value);
     GetSession()->SendPacket(&data);
@@ -28602,23 +28602,26 @@ void Player::RemovePassiveTalentSpell(uint32 spellId)
     }
 }
 
-void Player::SendMusic(uint32 musicId, uint64 source)
+//! 5.4.1
+void Player::SendMusic(uint32 musicId)
 {
     WorldPacket data(SMSG_PLAY_MUSIC, 12);
     data << uint32(musicId);
-    data << uint64(source);
     GetSession()->SendPacket(&data);
 }
 
-void Player::SendSound(uint32 soundId, uint64 source)
+//! 5.4.1
+void Player::SendSound(uint32 soundId, ObjectGuid source)
 {
     WorldPacket data(SMSG_PLAY_SOUND, 12);
+    data.WriteGuidMask<0, 2, 4, 7, 6, 5, 1, 3>(source);
+    data.WriteGuidBytes<3, 4, 2, 6, 1, 5, 0>(source);
     data << uint32(soundId);
-    data << uint64(source);
+    data.WriteGuidBytes<7>(source);
     GetSession()->SendPacket(&data);
 }
 
-void Player::SendSoundToAll(uint32 soundId, uint64 source)
+void Player::SendSoundToAll(uint32 soundId, ObjectGuid source)
 {
     Map* map = GetMap();
     Map::PlayerList const &_list = map->GetPlayers();

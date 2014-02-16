@@ -377,11 +377,15 @@ void Battlefield::EndBattle(bool endByTimer)
     SendInitWorldStatesToAll();
 }
 
+//! 5.4.1
 void Battlefield::DoPlaySoundToAll(uint32 SoundID)
 {
-    WorldPacket data;
-    data.Initialize(SMSG_PLAY_SOUND, 4);
+    ObjectGuid guid = 0;
+    WorldPacket data(SMSG_PLAY_SOUND, 12);
+    data.WriteGuidMask<0, 2, 4, 7, 6, 5, 1, 3>(guid);
+    data.WriteGuidBytes<3, 4, 2, 6, 1, 5, 0>(guid);
     data << uint32(SoundID);
+    data.WriteGuidBytes<7>(guid);
 
     for (int team = 0; team < BG_TEAMS_COUNT; team++)
         for (GuidSet::const_iterator itr = m_PlayersInWar[team].begin(); itr != m_PlayersInWar[team].end(); ++itr)

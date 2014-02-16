@@ -717,41 +717,41 @@ void BattlegroundMgr::BuildStatusFailedPacket(WorldPacket* data, Battleground* b
 void BattlegroundMgr::BuildUpdateWorldStatePacket(WorldPacket* data, uint32 field, uint32 value)
 {
     data->Initialize(SMSG_UPDATE_WORLD_STATE, 4+4);
-    data->WriteBit(0);
+    *data << uint8(0);   //zero bit
     *data << uint32(field);
     *data << uint32(value);
 }
 
+//! 5.4.1
 void BattlegroundMgr::BuildPlaySoundPacket(WorldPacket* data, uint32 soundid)
 {
-    data->Initialize(SMSG_PLAY_SOUND, 4);
+    ObjectGuid guid = 0;
+
+    data->Initialize(SMSG_PLAY_SOUND, 10);
+    data->WriteGuidMask<0, 2, 4, 7, 6, 5, 1, 3>(guid);
+    data->WriteGuidBytes<3, 4, 2, 6, 1, 5, 0>(guid);
     *data << uint32(soundid);
+    data->WriteGuidBytes<7>(guid);
 }
 
+//! 5.4.1
 void BattlegroundMgr::BuildPlayerLeftBattlegroundPacket(WorldPacket* data, uint64 guid)
 {
     ObjectGuid guidBytes = guid;
 
     data->Initialize(SMSG_BATTLEGROUND_PLAYER_LEFT, 8 + 1);
-
-    uint8 bitOrder[8] = { 7, 6, 2, 4, 5, 1, 3, 0 };
-    data->WriteBitInOrder(guidBytes, bitOrder);
-
-    uint8 byteOrder[8] = { 4, 2, 5, 7, 0, 6, 1, 3 };
-    data->WriteBytesSeq(guidBytes, byteOrder);
+    data->WriteGuidMask<7, 6, 2, 5, 0, 3, 1, 4>(guidBytes);
+    data->WriteGuidBytes<5, 1, 7, 6, 3, 2, 0, 4>(guidBytes);
 }
 
+//! 5.4.1
 void BattlegroundMgr::BuildPlayerJoinedBattlegroundPacket(WorldPacket* data, uint64 guid)
 {
     ObjectGuid guidBytes = guid;
 
     data->Initialize(SMSG_BATTLEGROUND_PLAYER_JOINED, 8);
-
-    uint8 bitOrder[8] = { 7, 1, 3, 0, 6, 4, 5, 2 };
-    data->WriteBitInOrder(guidBytes, bitOrder);
-
-    uint8 byteOrder[8] = { 2, 3, 6, 4, 5, 1, 0, 7 };
-    data->WriteBytesSeq(guidBytes, byteOrder);
+    data->WriteGuidMask<5, 1, 7, 6, 3, 0, 2, 4>(guidBytes);
+    data->WriteGuidBytes<4, 6, 2, 7, 0, 3, 1, 5>(guidBytes);
 }
 
 Battleground* BattlegroundMgr::GetBattlegroundThroughClientInstance(uint32 instanceId, BattlegroundTypeId bgTypeId)
