@@ -1032,7 +1032,7 @@ enum Opcodes
     SMSG_LEARNED_DANCE_MOVES                          = 0x8C4,  // 5.0.5 16048
     SMSG_SEND_KNOWN_SPELLS                            = 0x1164, // 5.4.1 17538
     SMSG_LEARNED_SPELL                                = 0x118E, // 5.4.1 17538
-    SMSG_LEVELUP_INFO                                 = 0x85A,  // 5.0.5 16048
+    SMSG_LEVELUP_INFO                                 = 0x000F, // 5.4.1 17538
     SMSG_LFG_BOOT_PROPOSAL_UPDATE                     = 0x91F,  // 5.0.5 16048
     SMSG_LFG_DISABLED                                 = 0x90C,  // 5.0.5 16048
     SMSG_LFG_JOIN_RESULT                              = 0xEA1,  // 5.0.5 16048
