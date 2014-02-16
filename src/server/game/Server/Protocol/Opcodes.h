@@ -1213,7 +1213,7 @@ enum Opcodes
     SMSG_PVP_LOG_DATA                                 = 0x018D, // 5.4.1 17538
     SMSG_PVP_OPTIONS_ENABLED                          = 0xA09,  // 5.0.5 16048
     SMSG_QUERY_QUESTS_COMPLETED_RESPONSE              = 0x000,  // 5.0.5 16048 Deprecated
-    SMSG_QUERY_TIME_RESPONSE                          = 0x935,  // 5.0.5 16048
+    SMSG_QUERY_TIME_RESPONSE                          = 0x000D, // 5.4.1 17538
     SMSG_QUESTGIVER_OFFER_REWARD                      = 0x0B5C, // 5.4.1 17538
     SMSG_QUESTGIVER_QUEST_COMPLETE                    = 0x0656, // 5.4.1 17538
     SMSG_QUESTGIVER_QUEST_DETAILS                     = 0x0E4E, // 5.4.1 17538

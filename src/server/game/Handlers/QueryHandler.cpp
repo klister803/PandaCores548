@@ -122,11 +122,12 @@ void WorldSession::HandleQueryTimeOpcode(WorldPacket & /*recvData*/)
     SendQueryTimeResponse();
 }
 
+//! 5.4.1
 void WorldSession::SendQueryTimeResponse()
 {
     WorldPacket data(SMSG_QUERY_TIME_RESPONSE, 4+4);
-    data << uint32(time(NULL));
     data << uint32(sWorld->GetNextDailyQuestsResetTime() - time(NULL));
+    data << uint32(time(NULL));    
     SendPacket(&data);
 }
 
@@ -561,21 +562,15 @@ void WorldSession::HandleCorpseMapPositionQuery(WorldPacket& recvData)
 
 void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
 {
-    uint32 count;
-    recvData >> count; // quest count, max=50
-
-    if (count >= 50)
-    {
-        recvData.rfinish();
-        return;
-    }
+    uint32 unk;
+    recvData >> unk; // quest count, max=50
 
     WorldPacket data(SMSG_QUEST_POI_QUERY_RESPONSE, 4 + (4 + 4) * count);
     data << uint32(count);
     data.WriteBits(count, 20);
 
     ByteBuffer buff;
-    for (uint32 i = 0; i < count; ++i)
+    for (uint32 i = 0; i < 50; ++i)
     {
         uint32 questId;
         recvData >> questId; // quest id
