@@ -1439,12 +1439,19 @@ uint32 Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 
     DealDamageMods(this, damage, &absorb);
 
-    WorldPacket data(SMSG_ENVIRONMENTALDAMAGELOG, (21));
-    data << uint64(GetGUID());
-    data << uint8(type != DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
-    data << uint32(damage);
-    data << uint32(absorb);
+    ObjectGuid guid = GetObjectGuid();
+    WorldPacket data(SMSG_ENVIRONMENTALDAMAGELOG, 8 + 1 + 1 + 4 + 4 + 4 + 1);
+    data.WriteGuidMask<6, 2, 7>(guid);
+    data.WriteBit(0);           // not has power data
+    data.WriteGuidMask<0, 4, 3, 5, 1>(guid);
+
     data << uint32(resist);
+    data << uint32(absorb);
+    data.WriteGuidBytes<1>(guid);
+    data << uint32(damage);
+    data << uint8(type != DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
+    data.WriteGuidBytes<0, 5, 4, 2, 6, 3, 7>(guid);
+
     SendMessageToSet(&data, true);
 
     uint32 final_damage = DealDamage(this, damage, NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -1667,10 +1674,14 @@ void Player::SetDrunkValue(uint8 newDrunkValue, uint32 itemId /*= 0*/)
     if (newDrunkenState == oldDrunkenState)
         return;
 
+    ObjectGuid guid = GetObjectGuid();
     WorldPacket data(SMSG_CROSSED_INEBRIATION_THRESHOLD, (8+4+4));
-    data << uint64(GetGUID());
+    data.WriteGuidMask<1, 2, 0, 4, 3, 7, 5, 6>(guid);
+    data.WriteGuidBytes<1, 4, 0, 3, 7>(guid);
     data << uint32(newDrunkenState);
     data << uint32(itemId);
+    data.WriteGuidBytes<6, 5, 2>(guid);
+
     SendMessageToSet(&data, true);
 }
 
@@ -3542,16 +3553,20 @@ void Player::GiveLevel(uint8 level)
     sObjectMgr->GetPlayerClassLevelInfo(getClass(), level, basehp, basemana);
 
     // send levelup info to client
-    WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_POWERS_PER_CLASS*4+MAX_STATS*4));
-    data << uint32(level);
+    WorldPacket data(SMSG_LEVELUP_INFO, 4 + 4 + MAX_POWERS_PER_CLASS * 4 + MAX_STATS * 4);
+    if ((level % 15) == 0)  // bonus talents
+        data << uint32(1);
+    else
+        data << uint32(0);
     data << uint32(int32(basehp) - int32(GetCreateHealth()));
-    // for (int i = 0; i < MAX_POWERS_PER_CLASS; ++i)          // Powers loop (0-10)
-    data << uint32(int32(basemana)   - int32(GetCreateMana()));
-    data << uint32(0);
-    data << uint32(0);
-    data << uint32(0);
-    data << uint32(0);
-    // end for
+    for (uint8 i = 0; i < MAX_POWERS_PER_CLASS; ++i)
+    {
+        if (i == 0)
+            data << uint32(int32(basemana) - int32(GetCreateMana()));
+        else
+            data << uint32(0);
+    }
+    data << uint32(level);
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)       // Stats loop (0-4)
         data << uint32(int32(info.stats[i]) - GetCreateStat(Stats(i)));
 
@@ -23062,11 +23077,17 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
     {
         uint32 new_count = pVendor->UpdateVendorItemCurrentCount(crItem, count);
 
-        WorldPacket data(SMSG_BUY_ITEM, (8+4+4+4));
-        data << uint64(pVendor->GetGUID());
+        ObjectGuid guid = pVendor->GetObjectGuid();
+        WorldPacket data(SMSG_BUY_ITEM, 8 + 1 + 4 + 4 + 4);
+        data.WriteGuidMask<3, 1, 5, 6, 7, 0, 4, 2>(guid);
+        data.WriteGuidBytes<3>(guid);
         data << uint32(vendorslot + 1);                   // numbered from 1 at client
+        data.WriteGuidBytes<0, 1>(guid);
         data << int32(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
-        data << uint32(count);
+        data.WriteGuidBytes<7, 5, 2>(guid);
+         data << uint32(count);
+        data.WriteGuidBytes<6, 4>(guid);
+
         GetSession()->SendPacket(&data);
         SendNewItem(it, count, true, false, false);
 
@@ -23746,9 +23767,12 @@ void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/
         AddSpellAndCategoryCooldowns(spellInfo, itemId, spell);
 
     // Send activate cooldown timer (possible 0) at client side
-    WorldPacket data(SMSG_COOLDOWN_EVENT, 4 + 8);
+    ObjectGuid guid = GetObjectGuid();
+    WorldPacket data(SMSG_COOLDOWN_EVENT, 4 + 8 + 1);
+    data.WriteGuidMask<6, 1, 5, 2, 7, 4, 3, 0>(guid);
+    data.WriteGuidBytes<1, 5, 3, 2, 7>(guid);
     data << uint32(spellInfo->Id);
-    data << uint64(GetGUID());
+    data.WriteGuidBytes<4, 6, 0>(guid);
     SendDirectMessage(&data);
 }
 
@@ -25686,12 +25710,14 @@ void Player::SendCorpseReclaimDelay(bool load)
     else
         delay = GetCorpseReclaimDelay(pvp);
 
-    if (!delay)
+    if (load && !delay)
         return;
 
     //! corpse reclaim delay 30 * 1000ms or longer at often deaths
-    WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
-    data << uint32(delay*IN_MILLISECONDS);
+    WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4 + 1);
+    data.WriteBit(!delay);
+    if (delay)
+        data << uint32(delay * IN_MILLISECONDS);
     GetSession()->SendPacket(&data);
 }
 
@@ -26347,8 +26373,8 @@ void Player::ConvertRune(uint8 index, RuneType newType)
     SetCurrentRune(index, newType);
 
     WorldPacket data(SMSG_CONVERT_RUNE, 2);
-    data << uint8(index);
     data << uint8(newType);
+    data << uint8(index);
     GetSession()->SendPacket(&data);
 }
 

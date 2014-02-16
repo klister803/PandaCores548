@@ -418,11 +418,11 @@ void WorldSession::SendArenaTeamCommandResult(uint32 teamAction, const std::stri
 
 void WorldSession::SendNotInArenaTeamPacket(uint8 type)
 {
-    WorldPacket data(SMSG_ARENA_ERROR, 4+1);
-    uint32 error = 0;
-    data << uint32(error);                                  // 0 = ERR_ARENA_NO_TEAM_II, 1 = ERR_ARENA_EXPIRED_CAIS, 2 = ERR_LFG_CANT_USE_BATTLEGROUND
-    if (!error)
-        data << uint8(type);                                // team type (2=2v2, 3=3v3, 5=5v5), can be used for custom types...
+    WorldPacket data(SMSG_ARENA_ERROR, 1 + 1);
+    uint32 error = 3;
+    data.WriteBits(error, 2);                               // 3 = ERR_ARENA_NO_TEAM_II, 2 = ERR_ARENA_EXPIRED_CAIS, 0 = ERR_LFG_CANT_USE_BATTLEGROUND
+    if (error == 3)
+        data << uint8(0);
     SendPacket(&data);
 }
 

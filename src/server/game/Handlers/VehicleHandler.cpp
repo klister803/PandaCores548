@@ -113,11 +113,8 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& recvData)
             int8 seatId;
             recvData >> seatId;
 
-            uint8 bitOrder[8] = {0, 3, 6, 5, 2, 4, 7, 1};
-            recvData.ReadBitInOrder(guid, bitOrder);
-
-            uint8 byteOrder[8] = {1, 6, 7, 2, 0, 3, 5, 4};
-            recvData.ReadBytesSeq(guid, byteOrder);
+            recvData.ReadGuidMask<7, 0, 1, 6, 2, 4, 5, 3>(guid);
+            recvData.ReadGuidBytes<6, 1, 3, 7, 2, 4, 5, 0>(guid);
 
             if (vehicle_base->GetGUID() == guid)
                 GetPlayer()->ChangeSeat(seatId);
@@ -137,11 +134,8 @@ void WorldSession::HandleEnterPlayerVehicle(WorldPacket& recvData)
     // Read guid
     ObjectGuid guid;
 
-    uint8 bitOrder[8] = {0, 7, 1, 2, 3, 4, 5, 6};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {4, 0, 5, 6, 1, 3, 7, 2};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<3, 7, 2, 1, 0, 5, 6, 4>(guid);
+    recvData.ReadGuidBytes<6, 5, 0, 7, 4, 2, 1, 3>(guid);
 
     if (Player* player = ObjectAccessor::FindPlayer(guid))
     {
