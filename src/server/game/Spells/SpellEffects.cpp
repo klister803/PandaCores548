@@ -5926,8 +5926,10 @@ void Spell::EffectForceDeselect(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    WorldPacket data(SMSG_CLEAR_TARGET, 8);
-    data << uint64(m_caster->GetGUID());
+    ObjectGuid guid = m_caster->GetGUID();
+    WorldPacket data(SMSG_CLEAR_TARGET, 8 + 1);
+    data.WriteGuidMask<3, 4, 2, 5, 1, 7, 0, 6>(guid);
+    data.WriteGuidBytes<4, 5, 2, 6, 7, 3, 1, 0>(guid);
     m_caster->SendMessageToSet(&data, true);
 }
 

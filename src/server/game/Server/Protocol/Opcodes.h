@@ -816,7 +816,7 @@ enum Opcodes
     SMSG_CLEAR_COOLDOWN                               = 0x00B7, // 5.4.1 17538
     SMSG_CLEAR_COOLDOWNS                              = 0xEB2,  // 5.0.5 16048
     SMSG_CLEAR_FAR_SIGHT_IMMEDIATE                    = 0xCDE,  // 5.0.5 16048
-    SMSG_CLEAR_TARGET                                 = 0xD0B,  // 5.0.5 16048
+    SMSG_CLEAR_TARGET                                 = 0x0814, // 5.4.1 17538
     SMSG_CLIENTCACHE_VERSION                          = 0x1037, // 5.4.1 17538
     SMSG_CLIENT_CONTROL_UPDATE                        = 0x0987, // 5.4.1 17538
     SMSG_COMBAT_EVENT_FAILED                          = 0x9EF,  // 5.0.5 16048
@@ -837,9 +837,9 @@ enum Opcodes
     SMSG_COMSAT_DISCONNECT                            = 0x9BC,  // 5.0.5 16048
     SMSG_COMSAT_RECONNECT_TRY                         = 0x961,  // 5.0.5 16048
     SMSG_CONTACT_LIST                                 = 0x05B8, // 5.4.1 17538
-    SMSG_CONVERT_RUNE                                 = 0xCE9,  // 5.0.5 16048
+    SMSG_CONVERT_RUNE                                 = 0x0DBE, // 5.4.1 17538
     SMSG_COOLDOWN_CHEAT                               = 0x8AD,  // 5.0.5 16048
-    SMSG_COOLDOWN_EVENT                               = 0x879,  // 5.0.5 16048
+    SMSG_COOLDOWN_EVENT                               = 0x019C, // 5.4.1 17538
     SMSG_CORPSE_MAP_POSITION_QUERY_RESPONSE           = 0x836,  // 5.0.5 16048
     SMSG_CORPSE_NOT_IN_INSTANCE                       = 0xD01,  // 5.0.5 16048
     SMSG_CORPSE_RECLAIM_DELAY                         = 0xC9E,  // 5.0.5 16048

@@ -23752,9 +23752,12 @@ void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/
         AddSpellAndCategoryCooldowns(spellInfo, itemId, spell);
 
     // Send activate cooldown timer (possible 0) at client side
-    WorldPacket data(SMSG_COOLDOWN_EVENT, 4 + 8);
+    ObjectGuid guid = GetObjectGuid();
+    WorldPacket data(SMSG_COOLDOWN_EVENT, 4 + 8 + 1);
+    data.WriteGuidMask<6, 1, 5, 2, 7, 4, 3, 0>(guid);
+    data.WriteGuidBytes<1, 5, 3, 2, 7>(guid);
     data << uint32(spellInfo->Id);
-    data << uint64(GetGUID());
+    data.WriteGuidBytes<4, 6, 0>(guid);
     SendDirectMessage(&data);
 }
 
@@ -26353,8 +26356,8 @@ void Player::ConvertRune(uint8 index, RuneType newType)
     SetCurrentRune(index, newType);
 
     WorldPacket data(SMSG_CONVERT_RUNE, 2);
-    data << uint8(index);
     data << uint8(newType);
+    data << uint8(index);
     GetSession()->SendPacket(&data);
 }
 
