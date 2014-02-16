@@ -1078,8 +1078,9 @@ void AchievementMgr<Player>::Reset()
 {
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
     {
-        WorldPacket data(SMSG_ACHIEVEMENT_DELETED, 4);
+        WorldPacket data(SMSG_ACHIEVEMENT_DELETED, 4 + 4);
         data << uint32(iter->first);
+        data << uint32(0);
         SendPacket(&data);
     }
 

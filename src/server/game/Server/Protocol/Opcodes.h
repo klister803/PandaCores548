@@ -671,12 +671,12 @@ enum Opcodes
     SMSG_ACCOUNT_DATA_TIMES                           = 0x1486, // 5.4.1 17538
     SMSG_ACCOUNT_INFO_RESPONSE                        = 0xF05,  // 5.0.5 16048
     SMSG_ACCOUNT_RESTRICTED_WARNING                   = 0xB66,  // 5.0.5 16048
-    SMSG_ACHIEVEMENT_DELETED                          = 0x920,  // 5.0.5 16048
+    SMSG_ACHIEVEMENT_DELETED                          = 0x0C85, // 5.4.1 17538
     SMSG_ACHIEVEMENT_EARNED                           = 0x089E, // 5.4.1 17538
     SMSG_ACTION_BUTTONS                               = 0x0406, // 5.4.1 17538
     SMSG_ACTIVATETAXIREPLY                            = 0x0816, // 5.4.1 17538
     SMSG_ADDON_INFO                                   = 0x1136, // 5.4.1 17538
-    SMSG_ADD_RUNE_POWER                               = 0x86A,  // 5.0.5 16048
+    SMSG_ADD_RUNE_POWER                               = 0x0926, // 5.4.1 17538
     SMSG_AI_REACTION                                  = 0x0997, // 5.4.1 17538
     SMSG_ALL_ACHIEVEMENT_DATA                         = 0x005,  // 5.4.1 17538
     SMSG_AREA_SPIRIT_HEALER_TIME                      = 0x119C, // 5.4.1 17538
