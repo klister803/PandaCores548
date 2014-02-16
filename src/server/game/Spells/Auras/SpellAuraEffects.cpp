@@ -3336,7 +3336,8 @@ void AuraEffect::HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode
     {
         target->RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
         target->m_movementInfo.SetFallTime(0);
-    }
+    }else
+        target->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
 
     Player* player = target->ToPlayer();
     if (!player)
@@ -3747,7 +3748,8 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
             {
                 target->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
                 target->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
-            }
+            }else
+                target->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
 
             Player* player = target->ToPlayer();
             if (!player)
