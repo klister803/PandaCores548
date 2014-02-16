@@ -3339,6 +3339,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 1943:  // Rupture
+                case 2818:  // Deadly Poison
+                case 703:   // Garrote
+                case 89775: // Hemo
+                    spellInfo->AttributesEx4 |= SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS;
+                    break;
                 case 121093: // Monk - Gift of the Naaru
                     spellInfo->SpellFamilyName = SPELLFAMILY_MONK;
                     break;
@@ -3919,6 +3925,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                     break;
+                case 6770:  // Sap
                 case 6346:  // Fear Ward
                 case 110717:// Fear Ward (Symbiosis)
                 case 48108: // Hot Streak
