@@ -508,9 +508,11 @@ void WorldSession::HandlePageTextQueryOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_PAGE_TEXT_QUERY");
 
+    ObjectGuid itemGuid;
     uint32 pageID;
     recvData >> pageID;
-    recvData.read_skip<uint64>();                          // guid
+    recvData.ReadGuidMask<3, 2, 5, 1, 4, 7, 6, 0>(itemGuid);
+    recvData.ReadGuidBytes<4, 6, 1, 5, 7, 3, 2, 0>(itemGuid);
 
     while (pageID)
     {
