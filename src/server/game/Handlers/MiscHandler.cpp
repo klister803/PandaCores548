@@ -55,6 +55,9 @@
 #include "BattlegroundMgr.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
+#include "RatedBattleground.h"
+#include "ArenaTeam.h"
+#include "ArenaTeamMgr.h"
 
 void WorldSession::HandleRepopRequestOpcode(WorldPacket& recvData)
 {
@@ -1584,31 +1587,25 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
         return;
     }
 
-    ObjectGuid playerGuid = player->GetGUID();
     WorldPacket data(SMSG_INSPECT_HONOR_STATS, 8+1+4+4);
-    
-    data.WriteGuidMask<7, 3, 2, 6, 5, 1, 4, 0>(playerGuid);
-    data.WriteGuidBytes<6>(playerGuid);
-    data << uint16(2);
-    data.WriteGuidBytes<3, 0, 4, 5>(playerGuid);
-    data << uint8(3);                                               // rank
-    data << uint16(6);
-    data.WriteGuidBytes<2, 7, 1>(playerGuid);
-    data << uint32(361);
-
-    //data << uint16(player->GetUInt16Value(PLAYER_FIELD_KILLS, 1));  // yesterday kills
-    //data << uint16(player->GetUInt16Value(PLAYER_FIELD_KILLS, 0));  // today kills
+    data.WriteGuidMask<7, 3, 2, 6, 5, 1, 4, 0>(guid);
+    data.WriteGuidBytes<6>(guid);
+    data << uint16(player->GetUInt16Value(PLAYER_FIELD_KILLS, 1));
+    data.WriteGuidBytes<3, 0, 4, 5>(guid);
+    data << uint8(0);                                               // rank?
+    data << uint16(player->GetUInt16Value(PLAYER_FIELD_KILLS, 0));
+    data.WriteGuidBytes<2, 7, 1>(guid);
+    data << uint32(player->GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));  //lifetime
     SendPacket(&data);
 }
 
 //! 5.4.1
-//! FinishIT
 void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
 {
     ObjectGuid playerGuid;
-    uint32 unk;
+    uint32 RealmID;
 
-    recvData >> unk;
+    recvData >> RealmID;
     recvData.ReadGuidMask<3, 4, 6, 5, 0, 7, 2, 1>(playerGuid);
     recvData.ReadGuidBytes<6, 1, 7, 4, 2, 0, 5, 3>(playerGuid);
 
@@ -1616,23 +1613,49 @@ void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
     if (!player)
         return;
 
+    uint8 count = 0;
     WorldPacket data(SMSG_PVP_BRACKET_DATA);
     data.WriteGuidMask<0, 6, 3, 7, 4, 2>(playerGuid);
-    data.WriteBits(0, 3);   //Arena brascets count data
+    uint32 bpos = data.bitwpos();                       //placeholdr
+    data.WriteBits(count, 3);                           //Arena brascets count data, 3 - rated bg
     data.WriteGuidMask<5, 1>(playerGuid);
 
     data.FlushBits();
-    //for (var i = 0; i < dword10; ++i)
-    //{
-    //    p.ReadInt32("dword14_16", i);
-    //    p.ReadInt32("dword14_12", i);
-    //    p.ReadByte("byte14_28", i);
-    //    p.ReadInt32("dword14_24", i);
-    //    p.ReadInt32("dword14_0", i);
-    //    p.ReadInt32("dword14_20", i);
-    //    p.ReadInt32("dword14_4", i);
-    //}
 
+    for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
+    {
+        if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(i)))
+        {
+            if (ArenaTeamMember* member = at->GetMember(playerGuid))
+            {
+                data << uint32(member->SeasonGames);
+                data << uint32(member->WeekWins);
+                data << uint8(i);
+                data << uint32(0);
+                data << uint32(member->PersonalRating);
+                data << uint32(member->SeasonWins);
+                data << uint32(member->MatchMakerRating);   //???
+                data << uint32(member->WeekGames);
+
+                ++count;
+            }
+        }
+    }
+
+    //! ToDo: Something wrong where
+    if (RatedBattleground* rb = player->getRBG())
+    {
+        data << uint32(rb->getGames());
+        data << uint32(rb->getWeekWins());
+        data << uint8(3);                       // BracketID of rated bg or something about it
+        data << uint32(1);                      // always 0
+        data << uint32(rb->getRating());
+        data << uint32(rb->getWins());
+        data << uint32(rb->ConquestPointReward);
+        data << uint32(rb->getWeekGames());
+        ++count;
+    }
+    data.PutBits<uint32>(bpos, count, 3);
     data.WriteGuidBytes<0, 2, 5, 7, 3, 6, 1, 4>(playerGuid);
     SendPacket(&data);
 }
@@ -1641,7 +1664,6 @@ void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
 void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 {
     ObjectGuid guid;        // time?
-    uint32 time;
     uint32 mapid;
     float PositionX;
     float PositionY;
@@ -1665,7 +1687,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
         return;
     }
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_WORLD_TELEPORT: Player = %s, Time = %u, map = %u, x = %f, y = %f, z = %f, o = %f", GetPlayer()->GetName(), time, mapid, PositionX, PositionY, PositionZ, Orientation);
+    //sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_WORLD_TELEPORT: Player = %s, Time = %u, map = %u, x = %f, y = %f, z = %f, o = %f", GetPlayer()->GetName(), time, mapid, PositionX, PositionY, PositionZ, Orientation);
 
     if (AccountMgr::IsAdminAccount(GetSecurity()))
         GetPlayer()->TeleportTo(mapid, PositionX, PositionY, PositionZ, Orientation);
