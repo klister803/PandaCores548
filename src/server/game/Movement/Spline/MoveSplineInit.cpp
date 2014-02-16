@@ -108,6 +108,11 @@ namespace Movement
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
         PacketBuilder::WriteMonsterMove(move_spline, data, unit);
         unit.SendMessageToSet(&data, true);
+        //blizz-hack.
+        //on retail if creature has loop emote and start run we remove emote, else client crash at getting object create.
+        //ToDo: more reseach.
+        if(unit.GetUInt32Value(UNIT_NPC_EMOTESTATE))
+            unit.SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
     }
 
     void MoveSplineInit::Stop(bool force)
