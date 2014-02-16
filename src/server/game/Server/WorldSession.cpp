@@ -991,8 +991,8 @@ void WorldSession::SendAddonsInfo()
         bool bit1 = itr->CRC != STANDARD_ADDON_CRC;
         bool bit2 = false;
 
-        data.WriteBit(bit0);                                // data.WriteBit(itr->CRC != 0x4c1c776d);
-        data.WriteBit(bit1);                                // non-standard CRC
+        data.WriteBit(bit0);
+        data.WriteBit(bit1);
         data.WriteBit(bit2);
 
         if (bit2)

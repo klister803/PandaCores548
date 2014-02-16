@@ -1807,11 +1807,8 @@ void WorldSession::HandleItemRefund(WorldPacket &recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_ITEM_REFUND");
     ObjectGuid guid;
 
-    uint8 bitOrder[8] = {6, 4, 1, 5, 2, 3, 7, 0};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {1, 3, 7, 5, 6, 0, 2, 4};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData.ReadGuidMask<4, 0, 7, 3, 6, 5, 1, 2>(guid);
+    recvData.ReadGuidBytes<5, 1, 0, 3, 7, 6, 4, 2>(guid);
 
     Item* item = _player->GetItemByGuid(guid);
     if (!item)
