@@ -20519,8 +20519,9 @@ uint32 Unit::GetRemainingPeriodicAmount(uint64 caster, uint32 spellId, AuraType 
 
 void Unit::SendClearTarget()
 {
-    WorldPacket data(SMSG_BREAK_TARGET, GetPackGUID().size());
-    data.append(GetPackGUID());
+    WorldPacket data(SMSG_BREAK_TARGET, 8 + 1);
+    data.WriteGuidMask<5, 6, 7, 3, 2, 0, 4, 1>(GetObjectGuid());
+    data.WriteGuidBytes<1, 6, 2, 4, 5, 3, 7, 0>(GetObjectGuid());
     SendMessageToSet(&data, false);
 }
 

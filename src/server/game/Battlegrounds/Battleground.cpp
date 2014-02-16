@@ -1329,8 +1329,9 @@ void Battleground::AddPlayer(Player* player)
         player->SetByteValue(PLAYER_BYTES_3, 3, player->GetBGTeam() == HORDE ? 0 : 1);
 
         WorldPacket teammate;
-        teammate.Initialize(SMSG_ARENA_OPPONENT_UPDATE, 8);
-        teammate << uint64(player->GetGUID());
+        teammate.Initialize(SMSG_ARENA_OPPONENT_UPDATE, 8 + 1);
+        teammate.WriteGuidMask<5, 4, 7, 0, 6, 1, 2, 3>(player->GetObjectGuid());
+        teammate.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(player->GetObjectGuid());
         SendPacketToTeam(team, &teammate, player, false);
     }
     else
