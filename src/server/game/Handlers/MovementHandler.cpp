@@ -856,22 +856,13 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
     MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
 
-    if (_player->m_mover->GetGUID() != guid)
+    if (_player->m_mover->GetGUID() != movementInfo.guid)
         return;
-
-    recvData.read_skip<uint32>();                          // unk
 
     _player->m_movementInfo = movementInfo;
 
     WorldPacket data(SMSG_MOVE_UPDATE_KNOCK_BACK, 66);
-    data.appendPackGUID(guid);
-    _player->BuildMovementPacket(&data);
-
-    // knockback specific info
-    data << movementInfo.j_sinAngle;
-    data << movementInfo.j_cosAngle;
-    data << movementInfo.j_xyspeed;
-    data << movementInfo.j_zspeed;
+    WriteMovementInfo(data, &movementInfo);
 
     _player->SendMessageToSet(&data, false);
 }
