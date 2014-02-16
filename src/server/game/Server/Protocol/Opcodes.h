@@ -1256,7 +1256,7 @@ enum Opcodes
     SMSG_REDIRECT_CLIENT                              = 0x423,  // 5.0.5 16048
     SMSG_REFER_A_FRIEND_EXPIRED                       = 0xC01,  // 5.0.5 16048
     SMSG_REFER_A_FRIEND_FAILURE                       = 0x8C5,  // 5.0.5 16048
-    SMSG_REFORGE_RESULT                               = 0xBA6,  // 5.0.5 16048
+    SMSG_REFORGE_RESULT                               = 0x11B7, // 5.4.1 17538
     SMSG_REMOVED_SPELL                                = 0x049E, // 5.4.1 17538
     SMSG_REPORT_PVP_AFK_RESULT                        = 0x897,  // 5.0.5 16048
     SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0x040D, // 5.4.1 17538

@@ -565,9 +565,9 @@ void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
     uint32 unk;
     recvData >> unk; // quest count, max=50
 
-    WorldPacket data(SMSG_QUEST_POI_QUERY_RESPONSE, 4 + (4 + 4) * count);
-    data << uint32(count);
-    data.WriteBits(count, 20);
+    WorldPacket data(SMSG_QUEST_POI_QUERY_RESPONSE, 557);
+    data << uint32(unk);
+    data.WriteBits(0, 20);
 
     ByteBuffer buff;
     for (uint32 i = 0; i < 50; ++i)

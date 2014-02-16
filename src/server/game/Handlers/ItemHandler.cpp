@@ -1854,9 +1854,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     Player* player = GetPlayer();
 
     ObjectGuid npcGuid;
-    npcGuid[6] = recvData.ReadBit();
-    // Read data
-    uint32 count = recvData.ReadBits(22);
+    uint32 count = recvData.ReadBits(21);
 
     if (count < EQUIPMENT_SLOT_START || count >= EQUIPMENT_SLOT_END)
     {
@@ -1866,41 +1864,48 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     }
 
     std::vector<ObjectGuid> itemGuids(count, ObjectGuid(0));
+    std::vector<ObjectGuid> itemGuids10(count, ObjectGuid(0));
     std::vector<uint32> newEntries(count, 0);
     std::vector<uint32> slots(count, 0);
+    std::vector<bool> HasItemGuid(count, 0);
+    std::vector<bool> HasItemGuid10(count, 0);
 
-    uint8 bitOrder[8] = {3, 2, 4, 0, 1, 6, 7, 5};
     for (uint8 i = 0; i < count; ++i)
-        recvData.ReadBitInOrder(itemGuids[i], bitOrder);
-    
-    npcGuid[5] = recvData.ReadBit();
-    npcGuid[0] = recvData.ReadBit();
-    npcGuid[1] = recvData.ReadBit();
-    npcGuid[4] = recvData.ReadBit();
-    npcGuid[3] = recvData.ReadBit();
-    npcGuid[2] = recvData.ReadBit();
-    npcGuid[7] = recvData.ReadBit();
+    {
+        HasItemGuid10[i] = recvData.ReadBit();
+        HasItemGuid[i] = recvData.ReadBit();
+    }
+
+    recvData.ReadGuidMask<0, 2, 7, 1, 4, 6, 5, 3>(npcGuid);
+
 
     for (uint32 i = 0; i < count; ++i)
     {
-        recvData.ReadByteSeq(itemGuids[i][2]);
-        recvData.ReadByteSeq(itemGuids[i][0]);
-        recvData.ReadByteSeq(itemGuids[i][1]);
-        recvData.ReadByteSeq(itemGuids[i][3]);
-        recvData.ReadByteSeq(itemGuids[i][5]);
+        if (HasItemGuid10[i])
+            recvData.ReadGuidMask<0, 2, 7, 1, 4, 6, 5, 3>(itemGuids10[i]);
 
-        recvData >> slots[i];
-
-        recvData.ReadByteSeq(itemGuids[i][7]);
-        recvData.ReadByteSeq(itemGuids[i][6]);
-
-        recvData >> newEntries[i];
-
-        recvData.ReadByteSeq(itemGuids[i][4]);
+        if (HasItemGuid[i])
+            recvData.ReadGuidMask<4, 5, 0, 1, 6, 2, 3, 7>(itemGuids[i]);
     }
 
-    uint8 byteOrder[8] = {4, 3, 5, 7, 0, 6, 1, 2};
-    recvData.ReadBytesSeq(npcGuid, byteOrder);
+    //
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        recvData >> newEntries[i];
+        recvData >> slots[i];
+    }
+
+    recvData.ReadGuidBytes<7, 4, 3, 0, 5, 6, 2, 1>(npcGuid);
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        if (HasItemGuid[i])
+            recvData.ReadGuidBytes<6, 7, 3, 0, 5, 2, 4, 1>(itemGuids[i]);
+
+        if (HasItemGuid10[i])
+            recvData.ReadGuidBytes<2, 3, 5, 0, 6, 7, 4, 1>(itemGuids10[i]);
+    }
 
     // Validate
 
@@ -1978,6 +1983,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
         {
             itemTransmogrified->SetTransmogrification(0);
             itemTransmogrified->SetState(ITEM_CHANGED, player);
+            player->SetVisibleItemSlot(slots[i], itemTransmogrified);
         }
         else
         {
@@ -2026,6 +2032,7 @@ void WorldSession::SendReforgeResult(bool success)
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
 {
     uint32 slot, reforgeEntry;
@@ -2033,13 +2040,9 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
     uint32 bag;
     Player* player = GetPlayer();
 
-    recvData >> slot >> reforgeEntry >> bag;
-
-    uint8 bitOrder[8] = {1, 5, 7, 4, 0, 3, 2, 6};
-    recvData.ReadBitInOrder(guid, bitOrder);
-
-    uint8 byteOrder[8] = {7, 0, 2, 3, 1, 4, 5, 6};
-    recvData.ReadBytesSeq(guid, byteOrder);
+    recvData >> bag >> reforgeEntry >> slot;
+    recvData.ReadGuidMask<1, 0, 5, 7, 2, 4, 6, 3>(guid);
+    recvData.ReadGuidBytes<5, 6, 2, 7, 3, 4, 1, 0>(guid);
 
     if (!player->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_REFORGER))
     {
