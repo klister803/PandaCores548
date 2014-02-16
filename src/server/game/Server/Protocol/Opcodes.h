@@ -358,6 +358,7 @@ enum Opcodes
     CMSG_MOVE_CHARM_TELEPORT_CHEAT                    = 0x000,  // 5.0.5 16048
     CMSG_MOVE_CHNG_TRANSPORT                          = 0x1361, // 5.4.1 17538
     CMSG_MOVE_ENABLE_SWIM_TO_FLY_TRANS_ACK            = 0x000,  // 5.0.5 16048
+    CMSG_MOVE_KNOCK_BACK_ACK                          = 0x13E9, // 5.4.1 17538
     CMSG_MOVE_NOT_ACTIVE_MOVER                        = 0,      // obsolete >= 5.0.5
     CMSG_MOVE_SET_RELATIVE_POSITION                   = 0x000,  // Not found in 4.3.4
     CMSG_MOVE_SET_VEHICLE_REC_ID_ACK                  = 0x000,  // 5.0.5 16048
@@ -1096,9 +1097,9 @@ enum Opcodes
     SMSG_MINIGAME_STATE                               = 0xC57,  // 5.0.5 16048
     SMSG_MIRRORIMAGE_DATA                             = 0x146D, // 5.4.1 17538
     SMSG_MISSILE_CANCEL                               = 0xFD1,  // 5.0.5 16048
-    SMSG_MODIFY_COOLDOWN                              = 0x9C7,  // 5.0.5 16048
+    SMSG_MODIFY_COOLDOWN                              = 0x0084, // 5.4.1 17538
     SMSG_MONSTER_MOVE                                 = 0x0216, // 5.4.1 17538
-    SMSG_MONSTER_MOVE_TRANSPORT                       = 0xC35,  // 5.0.5 16048
+    SMSG_MONSTER_MOVE_TRANSPORT                       = 0,      // 5.4.1 17538 obsolete
     SMSG_MOTD                                         = 0x04AC, // 5.4.1 17538
     SMSG_MOUNTRESULT                                  = 0x9D9,  // 5.0.5 16048
     SMSG_MOUNTSPECIAL_ANIM                            = 0x050E, // 5.4.1 17538
@@ -1132,7 +1133,7 @@ enum Opcodes
     SMSG_MOVE_UNSET_HOVER                             = 0x0304, // 5.4.1 17538
     SMSG_MOVE_UPDATE_COLLISION_HEIGHT                 = 0xE3E,  // 5.0.5 16048
     SMSG_MOVE_UPDATE_FLIGHT_BACK_SPEED                = 0xB2A,  // 5.0.5 16048
-    SMSG_MOVE_UPDATE_KNOCK_BACK                       = 0xAF1,  // 5.0.5 16048
+    SMSG_MOVE_UPDATE_KNOCK_BACK                       = 0x0215, // 5.4.1 17538
     SMSG_MOVE_UPDATE_PITCH_RATE                       = 0xE6C,  // 5.0.5 16048
     SMSG_MOVE_UPDATE_RUN_BACK_SPEED                   = 0xF4F,  // 5.0.5 16048
     SMSG_MOVE_UPDATE_SWIM_BACK_SPEED                  = 0xB24,  // 5.0.5 16048

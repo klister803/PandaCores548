@@ -853,16 +853,13 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_KNOCK_BACK_ACK");
 
-    uint64 guid;
-    recvData.readPackGUID(guid);
+    MovementInfo movementInfo;
+    ReadMovementInfo(recvData, &movementInfo);
 
     if (_player->m_mover->GetGUID() != guid)
         return;
 
     recvData.read_skip<uint32>();                          // unk
-
-    MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
 
     _player->m_movementInfo = movementInfo;
 
@@ -1111,6 +1108,9 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
             case MSEUnkInt32:
                 if (mi->hasUnkInt32)
                     data >> mi->unkInt32;
+                break;
+            case MSECounter:
+                data.read_skip<uint32>();
                 break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at ReadMovementInfo");
@@ -1398,6 +1398,9 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
             case MSEUnkInt32:
                 if (mi->hasUnkInt32)
                     data << mi->unkInt32;
+                break;
+            case MSECounter:
+                data << uint32(0);
                 break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at WriteMovementInfo");

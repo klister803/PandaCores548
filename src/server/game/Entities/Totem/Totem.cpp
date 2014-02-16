@@ -165,10 +165,13 @@ void Totem::UnSummon(uint32 msTime)
 
                     _player->AddSpellCooldown(spellId, 0, uint32(time(NULL) + newCooldownDelay));
 
-                    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-                    data << uint32(spellId);                  // Spell ID
-                    data << uint64(GetGUID());                // Player GUID
+                    ObjectGuid guid = GetObjectGuid();
+                    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4 + 8 + 4 + 1);
                     data << int32(-lessCooldown);             // Cooldown mod in milliseconds
+                    data << uint32(spellId);                  // Spell ID
+                    data.WriteGuidMask<1, 2, 0, 4, 3, 6, 5, 7>(guid);
+                    data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
+
                     _player->GetSession()->SendPacket(&data);
                 }
             }

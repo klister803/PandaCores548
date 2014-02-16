@@ -23733,10 +23733,13 @@ void Player::SpellCooldownReduction(uint32 spellid, time_t end_time)
 
     AddSpellCooldown(spellid, 0, uint32(time(NULL) + newCooldownDelay));
 
-    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-    data << uint32(spellid);
-    data << uint64(GetGUID());
+    ObjectGuid guid = GetObjectGuid();
+    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4 + 8 + 4 + 1);
     data << int32(-end_time);
+    data << uint32(spellid);
+    data.WriteGuidMask<1, 2, 0, 4, 3, 6, 5, 7>(guid);
+    data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
+
     GetSession()->SendPacket(&data);
 }
 
@@ -23753,10 +23756,13 @@ void Player::ChangeSpellCooldown(uint32 spellid, float second)
     if(newCooldownDelay > 0)
         AddSpellCooldown(spellid, 0, time(NULL) + newCooldownDelay);
 
-    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-    data << uint32(spellid);                  // Spell ID
-    data << uint64(GetGUID());              // Player GUID
-    data << int32(second*IN_MILLISECONDS);                 // Cooldown mod in milliseconds
+    ObjectGuid guid = GetObjectGuid();
+    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4 + 8 + 4 + 1);
+    data << int32(second * IN_MILLISECONDS);    // Cooldown mod in milliseconds
+    data << uint32(spellid);                    // Spell ID
+    data.WriteGuidMask<1, 2, 0, 4, 3, 6, 5, 7>(guid);
+    data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
+
     GetSession()->SendPacket(&data);
 }
 

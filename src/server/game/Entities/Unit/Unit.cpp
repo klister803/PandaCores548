@@ -5945,7 +5945,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                             if(delay > -1.0f)
                             {
                                 if(roll_chance_i(50))
-                                    player->ChangeSpellCooldown(spellid, -1.0f);
+                                    player->ChangeSpellCooldown(spellid, -1);
                             }
                             else
                                 player->ChangeSpellCooldown(spellid, delay);
@@ -8330,10 +8330,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                 newCooldownDelay -= 2;
                             ToPlayer()->AddSpellCooldown(16166, 0, uint32(time(NULL) + newCooldownDelay));
 
-                            WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-                            data << uint32(16166);                  // Spell ID
-                            data << uint64(GetGUID());              // Player GUID
+                            ObjectGuid guid = GetObjectGuid();
+                            WorldPacket data(SMSG_MODIFY_COOLDOWN, 4 + 8 + 4 + 1);
                             data << int32(-2000);                   // Cooldown mod in milliseconds
+                            data << uint32(16166);                  // Spell ID
+                            data.WriteGuidMask<1, 2, 0, 4, 3, 6, 5, 7>(guid);
+                            data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
                             ToPlayer()->GetSession()->SendPacket(&data);
                             return true;
                         }
