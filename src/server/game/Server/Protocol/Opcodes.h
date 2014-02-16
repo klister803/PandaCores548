@@ -332,7 +332,7 @@ enum Opcodes
     CMSG_MAIL_TAKE_ITEM                               = 0x0A46, // 5.4.1 17538
     CMSG_MAIL_TAKE_MONEY                              = 0x0646, // 5.4.1 17538
     CMSG_MEETINGSTONE_INFO                            = 0x000,  // Not found in 4.3.4
-    CMSG_MESSAGECHAT_ADDON_BATTLEGROUND               = 0x584,  // 5.0.5 16048
+    CMSG_MESSAGECHAT_ADDON_BATTLEGROUND               = 0,      // 5.4.1 17538 obsolete
     CMSG_MESSAGECHAT_ADDON_GUILD                      = 0x10F0, // 5.4.1 17538
     CMSG_MESSAGECHAT_ADDON_INSTANCE                   = 0x0055, // 5.4.1 17538
     CMSG_MESSAGECHAT_ADDON_OFFICER                    = 0x01F9, // 5.4.1 17538
@@ -340,7 +340,7 @@ enum Opcodes
     CMSG_MESSAGECHAT_ADDON_RAID                       = 0x04F0, // 5.4.1 17538
     CMSG_MESSAGECHAT_ADDON_WHISPER                    = 0x087D, // 5.4.1 17538
     CMSG_MESSAGECHAT_AFK                              = 0x0D58, // 5.4.1 17538
-    CMSG_MESSAGECHAT_BATTLEGROUND                     = 0x4CD,  // 5.0.5 16048
+    CMSG_MESSAGECHAT_BATTLEGROUND                     = 0,      // 5.4.1 17538 obsolete
     CMSG_MESSAGECHAT_CHANNEL                          = 0x01DD, // 5.4.1 17538
     CMSG_MESSAGECHAT_DND                              = 0x0175, // 5.4.1 17538
     CMSG_MESSAGECHAT_EMOTE                            = 0x0CDC, // 5.4.1 17538
@@ -358,7 +358,7 @@ enum Opcodes
     CMSG_MOVE_CHARM_TELEPORT_CHEAT                    = 0x000,  // 5.0.5 16048
     CMSG_MOVE_CHNG_TRANSPORT                          = 0x1361, // 5.4.1 17538
     CMSG_MOVE_ENABLE_SWIM_TO_FLY_TRANS_ACK            = 0x000,  // 5.0.5 16048
-    CMSG_MOVE_NOT_ACTIVE_MOVER                        = 0,      // 0x7A1A in 4.3.4
+    CMSG_MOVE_NOT_ACTIVE_MOVER                        = 0,      // obsolete >= 5.0.5
     CMSG_MOVE_SET_RELATIVE_POSITION                   = 0x000,  // Not found in 4.3.4
     CMSG_MOVE_SET_VEHICLE_REC_ID_ACK                  = 0x000,  // 5.0.5 16048
     CMSG_MOVE_SPLINE_DONE                             = 0x1A61, // 5.4.1 17538

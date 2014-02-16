@@ -152,8 +152,9 @@ void WorldSession::HandlePetAction(WorldPacket & recvData)
 
 void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
 {
-    uint64 guid;
-    recvData >> guid;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<3, 2, 0, 6, 1, 4, 5, 7>(guid);
+    recvData.ReadGuidBytes<3, 1, 2, 6, 5, 4, 0, 7>(guid);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_PET_STOP_ATTACK for GUID " UI64FMTD "", guid);
 
@@ -872,7 +873,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     WorldLocation srcPos;
     WorldLocation destPos;
     std::string targetString;
-    
+
     // Movement data
     MovementInfo movementInfo;
     ObjectGuid movementTransportGuid = 0;
@@ -913,7 +914,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     CasterGUID[7] = recvPacket.ReadBit();
     CasterGUID[3] = recvPacket.ReadBit();
     bool hasElevation = !recvPacket.ReadBit();
-    
+
     uint8 bitsOrder1[8] = { 4, 6, 3, 5, 0, 2, 1, 7 };
     recvPacket.ReadBitInOrder(targetGuid, bitsOrder1);
 
@@ -961,26 +962,26 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
         recvPacket.ReadBit();
         if (hasMovementFlags2)
             movementInfo.flags2 = recvPacket.ReadBits(13);
-        hasFallData = recvPacket.ReadBit();        
+        hasFallData = recvPacket.ReadBit();
         if (hasFallData)
-            hasFallDirection = recvPacket.ReadBit();    
+            hasFallDirection = recvPacket.ReadBit();
     }
-    
+
     if (hasDestLocation)
     {
         uint8 bitsOrder[8] = { 3, 5, 4, 2, 1, 7, 0, 6  };
         recvPacket.ReadBitInOrder(destTransportGuid, bitsOrder);
     }
-    
+
     if (hasSrcLocation)
     {
         uint8 bitsOrder[8] = { 7, 6, 2, 3, 5, 4, 1, 0  };
         recvPacket.ReadBitInOrder(srcTransportGuid, bitsOrder);
     }
-    
+
     if (hasTargetMask)
         targetMask = recvPacket.ReadBits(20);
-    
+
     if (hasTargetString)
         targetStringLength = recvPacket.ReadBits(7);
 
@@ -1134,7 +1135,6 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
 
     if (hasGlyphIndex)
         recvPacket >> glyphIndex;
-
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_PET_CAST_SPELL, castCount: %u, spellId %u, castFlags %u", castCount, spellId, castFlags);
 
