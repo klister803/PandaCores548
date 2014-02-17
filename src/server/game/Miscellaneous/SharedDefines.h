@@ -1103,7 +1103,14 @@ enum SpellEffects
     SPELL_EFFECT_199                                = 199, // Unused (5.0.5)
     SPELL_EFFECT_HEAL_BATTLEPET_PCT                 = 200, // Battle pet Healing  125439, 125801
     SPELL_EFFECT_BATTLE_PET                         = 201, // Battle pet first slot
-    TOTAL_SPELL_EFFECTS                             = 202
+    SPELL_EFFECT_202                                = 202,
+    SPELL_EFFECT_203                                = 203,
+    SPELL_EFFECT_204                                = 204,
+    SPELL_EFFECT_205                                = 205,
+    SPELL_EFFECT_206                                = 206,
+    SPELL_EFFECT_207                                = 207,
+    SPELL_EFFECT_208                                = 208,
+    TOTAL_SPELL_EFFECTS                             = 209
 };
 
 enum PetTameResult
@@ -1810,6 +1817,11 @@ enum Targets
     TARGET_UNK_136                     = 136,
     TARGET_UNK_137                     = 137,
     TARGET_UNIT_TARGET_SELECT          = 138,
+    TARGET_UNK_139                     = 139,
+    TARGET_UNK_140                     = 140,
+    TARGET_UNK_141                     = 141,
+    TARGET_UNK_142                     = 142,
+    TARGET_UNK_143                     = 143,
     TOTAL_SPELL_TARGETS
 };
 

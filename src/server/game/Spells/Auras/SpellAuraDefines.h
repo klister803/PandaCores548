@@ -470,13 +470,32 @@ enum AuraType
     SPELL_AURA_410                                          = 410,  // Glyph of Stampede
     SPELL_AURA_MOD_CHARGES                                  = 411,  // SPELL_AURA_MOD_CHARGES
     SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN                = 412,
-    SPELL_AURA_413                                          = 413,  // 0 auras
+    SPELL_AURA_413                                          = 413,  // 3 auras
     SPELL_AURA_414                                          = 414,  // 5.0.5 unk aura
     SPELL_AURA_415                                          = 415,  // 5.0.5 unk aura
     SPELL_AURA_416                                          = 416,  // SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE or SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE
     SPELL_AURA_417                                          = 417,  // SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE or SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE
     SPELL_AURA_418                                          = 418,  // 0 spells
-    TOTAL_AURAS                                             = 419   // 5.0.5
+    SPELL_AURA_419                                          = 419,
+    SPELL_AURA_420                                          = 420,
+    SPELL_AURA_421                                          = 421,
+    SPELL_AURA_422                                          = 422,
+    SPELL_AURA_423                                          = 423,
+    SPELL_AURA_424                                          = 424,
+    SPELL_AURA_425                                          = 425,
+    SPELL_AURA_426                                          = 426,
+    SPELL_AURA_427                                          = 427,
+    SPELL_AURA_428                                          = 428,
+    SPELL_AURA_429                                          = 429,
+    SPELL_AURA_430                                          = 430,
+    SPELL_AURA_431                                          = 431,
+    SPELL_AURA_432                                          = 432,
+    SPELL_AURA_433                                          = 433,
+    SPELL_AURA_434                                          = 434,
+    SPELL_AURA_435                                          = 435,
+    SPELL_AURA_436                                          = 436,
+    SPELL_AURA_437                                          = 437,
+    TOTAL_AURAS                                             = 438,
 };
 
 enum AuraObjectType
