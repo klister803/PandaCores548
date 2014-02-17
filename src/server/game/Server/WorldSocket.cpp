@@ -63,7 +63,10 @@ struct ServerPktHeader
     {
         if (_authCrypt->IsInitialized())
         {
-            uint32 data =  (size << 13) | cmd & 0x1FFF;
+            uint64 data =  (size << 13) | cmd & 0x1FFF;
+            if (isLargePacket())    // like on cata mark last bit.
+                                    // but in any way we should find compression method and find handler where 
+                data |= 0x8000000000;
             memcpy(&header[0], &data, getHeaderLength());
             _authCrypt->EncryptSend((uint8*)&header[0], getHeaderLength());
         }
