@@ -2123,8 +2123,8 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
                     {
                         if (uint32 enchantId = tabItem->GetEnchantmentId(EnchantmentSlot(ench)))
                         {
-                            tabData << uint32(ench);
                             tabData << uint32(enchantId);
+                            tabData << uint32(ench);
                             ++enchants;
                         }
                     }
@@ -3155,8 +3155,8 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
                 {
                     if (uint32 enchantId = tabItem->GetEnchantmentId(EnchantmentSlot(enchSlot)))
                     {
-                        tabData << uint32(enchSlot);
                         tabData << uint32(enchantId);
+                        tabData << uint32(enchSlot);
                         ++enchantCount;
                     }
                 }
