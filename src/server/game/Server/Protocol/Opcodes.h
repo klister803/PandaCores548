@@ -1415,10 +1415,10 @@ enum Opcodes
     SMSG_VOICE_SESSION_ROSTER_UPDATE                  = 0xCCE,  // 5.0.5 16048
     SMSG_VOICE_SET_TALKER_MUTED                       = 0x97B,  // 5.0.5 16048
     SMSG_VOID_ITEM_SWAP_RESPONSE                      = 0xFB1,  // 5.0.5 16048
-    SMSG_VOID_STORAGE_CONTENTS                        = 0xE85,  // 5.0.5 16048
-    SMSG_VOID_STORAGE_FAILED                          = 0xF40,  // 5.0.5 16048
-    SMSG_VOID_STORAGE_TRANSFER_CHANGES                = 0xBD9,  // 5.0.5 16048
-    SMSG_VOID_TRANSFER_RESULT                         = 0xE02,  // 5.0.5 16048
+    SMSG_VOID_STORAGE_CONTENTS                        = 0x098C, // 5.4.1 17538
+    SMSG_VOID_STORAGE_FAILED                          = 0x1005, // 5.4.1 17538
+    SMSG_VOID_STORAGE_TRANSFER_CHANGES                = 0x0D07, // 5.4.1 17538
+    SMSG_VOID_TRANSFER_RESULT                         = 0x103E, // 5.4.1 17538
     SMSG_WAIT_QUEUE_FINISH                            = 0xF17,  // 5.0.5 16048
     SMSG_WAIT_QUEUE_UPDATE                            = 0xAC8,  // 5.0.5 16048
     SMSG_WARDEN_DATA                                  = 0x09AC, // 5.4.1 17538

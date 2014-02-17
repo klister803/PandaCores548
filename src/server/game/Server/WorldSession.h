@@ -984,6 +984,7 @@ class WorldSession
         void HandleVoidStorageTransfer(WorldPacket& recvData);
         void HandleVoidSwapItem(WorldPacket& recvData);
         void SendVoidStorageTransferResult(VoidTransferError result);
+        void SendVoidStorageFailed(bool unk = false);
 
         // Transmogrification
         void HandleTransmogrifyItems(WorldPacket& recvData);
