@@ -3143,11 +3143,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
         case SUMMON_CATEGORY_WILD:
         case SUMMON_CATEGORY_ALLY:
         case SUMMON_CATEGORY_UNK:
-            if (properties->Flags & 512)
-            {
-                SummonGuardian(effIndex, entry, properties, numSummons);
-                break;
-            }
+        {
             switch (properties->Type)
             {
                 case SUMMON_TYPE_PET:
@@ -3263,6 +3259,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 }
             }//switch
             break;
+        }
         case SUMMON_CATEGORY_PET:
             SummonGuardian(effIndex, entry, properties, numSummons);
             break;
