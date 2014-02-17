@@ -1941,8 +1941,12 @@ void World::SetInitialWorldSettings()
 
     m_realmName = "Mist of Pandaria servers";
     QueryResult realmResult = LoginDatabase.PQuery("SELECT name FROM realmlist WHERE id = %u", realmID);
-    if(realmResult)
+    if (realmResult)
         m_realmName = (*realmResult)[0].GetString();
+
+    for (uint8 i = 0; i < m_realmName.size(); ++i)
+        if (m_realmName[i] != ' ')
+            m_trimmedRealmName += m_realmName[i];
 
     sLog->outInfo(LOG_FILTER_GENERAL, "Loading area skip update...");
     sObjectMgr->LoadSkipUpdateZone();
