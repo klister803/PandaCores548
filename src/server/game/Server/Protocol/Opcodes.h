@@ -1397,7 +1397,7 @@ enum Opcodes
     SMSG_UPDATE_CURRENCY                              = 0x897,  // 5.4.1 17538
     SMSG_UPDATE_CURRENCY_WEEK_LIMIT                   = 0x050D, // 5.4.1 17538
     SMSG_UPDATE_DUNGEON_ENCOUNTER_FOR_LOOT            = 0xA53,  // 5.0.5 16048
-    SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT               = 0xCA3,  // 5.0.5 16048
+    SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT               = 0x09B0, // 5.4.1 17538
     SMSG_UPDATE_INSTANCE_OWNERSHIP                    = 0x01BF, // 5.4.1 17538
     SMSG_UPDATE_ITEM_ENCHANTMENTS                     = 0x98E,  // 5.0.5 16048
     SMSG_UPDATE_LAST_INSTANCE                         = 0x112E, // 5.4.1 17538
