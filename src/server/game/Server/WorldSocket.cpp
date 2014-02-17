@@ -62,11 +62,11 @@ struct ServerPktHeader
     ServerPktHeader(uint32 size, uint16 cmd) : size(size)
     {
         uint8 headerIndex = 0;
-        if (isLargePacket())
+        /*if (isLargePacket())
         {
             sLog->outDebug(LOG_FILTER_NETWORKIO, "initializing large server to client packet. Size: %u, cmd: %u", size, cmd);
             header[headerIndex++] = 0x80 | (0xFF & (size >> 16));
-        }
+        }*/
         header[headerIndex++] = 0xFF & size;
         header[headerIndex++] = 0xFF & (size >> 8);
 
@@ -77,7 +77,8 @@ struct ServerPktHeader
     uint8 getHeaderLength()
     {
         // cmd = 2 bytes, size= 2||3bytes
-        return 2 + (isLargePacket() ? 3 : 2);
+        //return 2 + (isLargePacket() ? 3 : 2);
+        return 4;
     }
 
     bool isLargePacket() const
