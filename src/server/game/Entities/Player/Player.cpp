@@ -27715,53 +27715,31 @@ bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount)
 
 void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece, uint8 error)
 {
-    ObjectGuid guid = item->GetGUID();
-    WorldPacket data(SMSG_ITEM_REFUND_RESULT, 2 + 8 + 1 + 5 * 8 + 4 + 5 * 8 + 1);
-
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(!error);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[0]);
-
-    data.FlushBits();
-
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[4]);
+    ObjectGuid guid = item->GetObjectGuid();
+    WorldPacket data(SMSG_ITEM_REFUND_RESULT, 8 + 1 + 1 + 1 + 4 * 5 + 4 * 5 + 4);
     data << uint8(error);
-    data.WriteByteSeq(guid[6]);
-
+    data.WriteGuidMask<0, 2, 7>(guid);
+    data.WriteBit(!error);
+    data.WriteGuidMask<5, 3, 4, 6, 1>(guid);
     if (!error)
     {
         for (uint8 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
         {
-            //data << uint32(iece->RequiredCurrencyCount[i]);
-            //data << uint32(iece->RequiredCurrency[i]);
-            if(CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(iece->RequiredCurrency[i]))
+            data << uint32(iece->RequiredCurrency[i]);
+            if (CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(iece->RequiredCurrency[i]))
                 data << uint32(iece->RequiredCurrencyCount[i] / entry->GetPrecision());
             else
                 data << uint32(iece->RequiredCurrencyCount[i]);
-            data << uint32(iece->RequiredCurrency[i]);
         }
-
-        data << uint32(item->GetPaidMoney());               // money cost
-
         for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i) // item cost data
         {
             data << uint32(iece->RequiredItemCount[i]);
             data << uint32(iece->RequiredItem[i]);
         }
+        data << uint32(item->GetPaidMoney());               // money cost
     }
 
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[7]);
+    data.WriteGuidBytes<5, 2, 3, 4, 1, 6, 0, 7>(guid);
 
     GetSession()->SendPacket(&data);
 }
