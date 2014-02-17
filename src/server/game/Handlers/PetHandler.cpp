@@ -156,7 +156,7 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
     recvData.ReadGuidMask<3, 2, 0, 6, 1, 4, 5, 7>(guid);
     recvData.ReadGuidBytes<3, 1, 2, 6, 5, 4, 0, 7>(guid);
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_PET_STOP_ATTACK for GUID %u", uint32(GUID_LOPART(guid))));
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_PET_STOP_ATTACK for GUID %u", uint32(GUID_LOPART(guid)));
 
     Unit* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);
 
