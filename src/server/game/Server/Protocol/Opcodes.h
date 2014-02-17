@@ -1426,7 +1426,7 @@ enum Opcodes
     SMSG_WARGAME_REQUEST_SENT                         = 0xF48,  // 5.0.5 16048
     SMSG_WEATHER                                      = 0x0485, // 5.4.1 17538
     SMSG_WEEKLY_LAST_RESET                            = 0xB2D,  // 5.0.5 16048
-    SMSG_WEEKLY_RESET_CURRENCY                        = 0xEBB,  // 5.0.5 16048
+    SMSG_WEEKLY_RESET_CURRENCY                        = 0x011E, // 5.4.1 17538
     SMSG_WEEKLY_SPELL_USAGE                           = 0xB6D,  // 5.0.5 16048 //unused
     SMSG_WEEKLY_SPELL_USAGE_UPDATE                    = 0,      //
     SMSG_WHO                                          = 0x053C, // 5.4.1 17538
@@ -1434,7 +1434,7 @@ enum Opcodes
     SMSG_WORLD_SERVER_INFO                            = 0x0427, // 5.4.1 17538
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x05AC, // 5.4.1 17538
     SMSG_XP_GAIN_ABORTED                              = 0xB76,  // 5.0.5 16048
-    SMSG_ZONE_UNDER_ATTACK                            = 0x8BD,  // 5.0.5 16048
+    SMSG_ZONE_UNDER_ATTACK                            = 0x148D, // 5.4.1 17538
 };
 
 /// Player state
