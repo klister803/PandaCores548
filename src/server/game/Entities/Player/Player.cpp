@@ -27660,42 +27660,30 @@ void Player::SendRefundInfo(Item* item)
     }
 
     ObjectGuid guid = item->GetGUID();
-    WorldPacket data(SMSG_ITEM_REFUND_INFO_RESPONSE, 8+4+4+4+4*4+4*4+4+4);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[7]);
+    WorldPacket data(SMSG_ITEM_REFUND_INFO_RESPONSE, 8 + 1 + 5 * 4 + 5 * 4 + 3 * 4);
 
-    data.WriteByteSeq(guid[0]);
+    data.WriteGuidMask<3, 2, 0, 1, 5, 6, 7, 4>(guid);
+    data.WriteGuidBytes<4, 5>(guid);
+    data << uint32(0);
     for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)                             // item cost data
     {
-        if(iece->RequiredItem[i] == 38186)
+        data << uint32(iece->RequiredItem[i]);
+        if (iece->RequiredItem[i] == 38186)
             data << uint32(iece->RequiredItemCount[i] * sWorld->getRate(RATE_DONATE));
         else
             data << uint32(iece->RequiredItemCount[i]);
-        data << uint32(iece->RequiredItem[i]);
     }
+    data.WriteGuidBytes<3>(guid);
     data << uint32(GetTotalPlayedTime() - item->GetPlayedTime());
-
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[7]);
-    data << uint32(0);    
-    data.WriteByteSeq(guid[5]);
+    data.WriteGuidBytes<7, 0, 1, 2>(guid);
     for (uint8 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)                       // currency cost data
     {
         data << uint32(iece->RequiredCurrencyCount[i]);
         data << uint32(iece->RequiredCurrency[i]);
     }
     data << uint32(item->GetPaidMoney());               // money cost
+    data.WriteGuidBytes<6>(guid);
 
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[4]);
     GetSession()->SendPacket(&data);
 }
 

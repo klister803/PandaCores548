@@ -1022,7 +1022,7 @@ enum Opcodes
     SMSG_ITEM_ENCHANT_TIME_UPDATE                     = 0x001C, // 5.4.1 17538
     SMSG_ITEM_EXPIRE_PURCHASE_REFUND                  = 0xFC6,  // 5.0.5 16048
     SMSG_ITEM_PUSH_RESULT                             = 0x0D1F, // 5.4.1 17538
-    SMSG_ITEM_REFUND_INFO_RESPONSE                    = 0xE80,  // 5.0.5 16048
+    SMSG_ITEM_REFUND_INFO_RESPONSE                    = 0x05A7, // 5.4.1 17538
     SMSG_ITEM_REFUND_RESULT                           = 0xB43,  // 5.0.5 16048
     SMSG_ITEM_REMOVE_PASSIVE                          = 0xA19,  // 5.0.5 16048
     SMSG_ITEM_SEND_PASSIVE                            = 0xF80,  // 5.0.5 16048
