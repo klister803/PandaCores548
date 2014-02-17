@@ -27678,7 +27678,10 @@ void Player::SendRefundInfo(Item* item)
     data.WriteGuidBytes<7, 0, 1, 2>(guid);
     for (uint8 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)                       // currency cost data
     {
-        data << uint32(iece->RequiredCurrencyCount[i]);
+        if (CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(iece->RequiredCurrency[i]))
+            data << uint32(iece->RequiredCurrencyCount[i] / entry->GetPrecision());
+        else
+            data << uint32(iece->RequiredCurrencyCount[i]);
         data << uint32(iece->RequiredCurrency[i]);
     }
     data << uint32(item->GetPaidMoney());               // money cost
