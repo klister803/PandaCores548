@@ -5238,19 +5238,26 @@ void Spell::SendResurrectRequest(Player* target)
 {
     // get ressurector name for creature resurrections, otherwise packet will be not accepted
     // for player resurrections the name is looked up by guid
-    char const* resurrectorName = m_caster->GetTypeId() == TYPEID_PLAYER ? "" : m_caster->GetNameForLocaleIdx(target->GetSession()->GetSessionDbLocaleIndex());
+    std::string resurrectorName = m_caster->GetTypeId() == TYPEID_PLAYER ? "" : m_caster->GetNameForLocaleIdx(target->GetSession()->GetSessionDbLocaleIndex());
 
-    WorldPacket data(SMSG_RESURRECT_REQUEST, (8+4+strlen(resurrectorName)+1+1+1+4));
-    data << uint64(m_caster->GetGUID()); // resurrector guid
-    data << uint32(strlen(resurrectorName) + 1);
-
-    data << resurrectorName;
-    data << uint8(0); // use timer according to client symbols
-
-    data << uint8(m_caster->GetTypeId() == TYPEID_PLAYER ? 0 : 1); // "you'll be afflicted with resurrection sickness"
-    // override delay sent with SMSG_CORPSE_RECLAIM_DELAY, set instant resurrection for spells with this attribute
+    ObjectGuid guid = m_caster->GetObjectGuid();
+    WorldPacket data(SMSG_RESURRECT_REQUEST, 8 + 1 + 1 + 4 + 4 + 4 + resurrectorName.size());
+    data.WriteBits(resurrectorName.size(), 6);
+    data.WriteBit(m_caster->GetTypeId() == TYPEID_PLAYER ? 0 : 1);          // "you'll be afflicted with resurrection sickness"
+                                                                            // override delay sent with SMSG_CORPSE_RECLAIM_DELAY, set instant resurrection for spells with this attribute
+    data.WriteBit(0);                                                       // use timer according to client symbols
+    data.WriteGuidMask<7, 2, 4, 5, 3, 0, 6, 1>(guid);
+    data.WriteGuidBytes<4>(guid);
+    data << uint32(realmID);
+    data.WriteGuidBytes<0>(guid);
+    data << uint32(0);                                                      // pet counter?
+    data.WriteGuidBytes<3>(guid);
     // 4.2.2 edit : id of the spell used to resurect. (used client-side for Mass Resurect)
     data << uint32(m_spellInfo->Id);
+    data.WriteGuidBytes<6, 2, 5>(guid);
+    data.WriteString(resurrectorName);
+    data.WriteGuidBytes<1, 7>(guid);
+
     target->GetSession()->SendPacket(&data);
 }
 

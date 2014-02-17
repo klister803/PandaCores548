@@ -1188,7 +1188,7 @@ enum Opcodes
     SMSG_PET_UPDATE_COMBO_POINTS                      = 0x9CD,  // 5.0.5 16048
     SMSG_PLAYED_TIME                                  = 0x1086, // 5.4.1 17538
     SMSG_PLAYERBINDERROR                              = 0xC89,  // 5.0.5 16048
-    SMSG_PLAYERBOUND                                  = 0xC95,  // 5.0.5 16048
+    SMSG_PLAYERBOUND                                  = 0x05AD, // 5.4.1 17538
     SMSG_PLAYER_DIFFICULTY_CHANGE                     = 0xCB4,  // 5.0.5 16048
     SMSG_PLAYER_MOVE                                  = 0x0337, // 5.4.1 17538
     SMSG_PLAYER_SKINNED                               = 0x8B2,  // 5.0.5 16048
@@ -1209,7 +1209,7 @@ enum Opcodes
     SMSG_PROCRESIST                                   = 0X80F,  // 5.0.5 16048
     SMSG_PROPOSE_LEVEL_GRANT                          = 0xD8D,  // 5.0.5 16048
     SMSG_PUREMOUNT_CANCELLED_OBSOLETE                 = 0,      // Not found in 4.3.4
-    SMSG_PVP_CREDIT                                   = 0xD43,  // 5.0.5 16048
+    SMSG_PVP_CREDIT                                   = 0x0585, // 5.4.1 17538
     SMSG_PVP_BRACKET_DATA                             = 0x11BF, // 5.4.1 17538
     SMSG_PVP_LOG_DATA                                 = 0x018D, // 5.4.1 17538
     SMSG_PVP_OPTIONS_ENABLED                          = 0xA09,  // 5.0.5 16048
@@ -1238,7 +1238,7 @@ enum Opcodes
     SMSG_QUEST_QUERY_RESPONSE                         = 0x02F5, // 5.4.1 17538
     SMSG_RAID_GROUP_ONLY                              = 0xDA4,  // 5.0.5 16048
     SMSG_RAID_INSTANCE_INFO                           = 0x05B5, // 5.4.1 17538
-    SMSG_RAID_INSTANCE_MESSAGE                        = 0xD0E,  // 5.0.5 16048
+    SMSG_RAID_INSTANCE_MESSAGE                        = 0x11B6, // 5.4.1 17538
     SMSG_RAID_MARKERS_CHANGED                         = 0xBAA,  // 5.0.5 16048
     SMSG_RAID_READY_CHECK_COMPLETED                   = 0x09AF, // 5.4.1 17538
     SMSG_RAID_READY_CHECK_RESPONSE                    = 0x14AE, // 5.4.1 17538
@@ -1269,7 +1269,7 @@ enum Opcodes
     SMSG_RESISTLOG                                    = 0,      // Not found in 4.3.4
     SMSG_RESPEC_WIPE_CONFIRM                          = 0x099F, // 5.4.1 17538
     SMSG_RESPOND_INSPECT_ACHIEVEMENTS                 = 0x04AF, // 5.4.1 17538
-    SMSG_RESURRECT_REQUEST                            = 0x966,  // 5.0.5 16048
+    SMSG_RESURRECT_REQUEST                            = 0x109E, // 5.4.1 17538
     SMSG_RESYNC_RUNES                                 = 0xC05,  // 5.0.5 16048
     SMSG_ROLE_POLL_BEGIN                              = 0x0CA4, // 5.4.1 17538
     SMSG_RWHOIS                                       = 0xDCA,  // 5.0.5 16048

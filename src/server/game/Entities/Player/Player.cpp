@@ -7992,9 +7992,11 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
     // victim_rank [1..4]  HK: <dishonored rank>
     // victim_rank [5..19] HK: <alliance\horde rank>
     // victim_rank [0, 20+] HK: <>
-    WorldPacket data(SMSG_PVP_CREDIT, 4+8+4);
+    WorldPacket data(SMSG_PVP_CREDIT, 4 + 8 + 4 + 1);
+    data.WriteGuidMask<0, 3, 6, 4, 5, 2, 1, 7>(victim_guid);
+    data.WriteGuidBytes<0, 7, 1, 6, 2>(victim_guid);
     data << uint32(honor);
-    data << uint64(victim_guid);
+    data.WriteGuidBytes<5, 3, 4>(victim_guid);
     data << uint32(victim_rank);
 
     GetSession()->SendPacket(&data);
@@ -24664,16 +24666,13 @@ void Player::SendInstanceResetWarning(uint32 mapid, Difficulty difficulty, uint3
     else
         type = RAID_INSTANCE_WARNING_MIN_SOON;
 
-    WorldPacket data(SMSG_RAID_INSTANCE_MESSAGE, 4+4+4+4);
+    WorldPacket data(SMSG_RAID_INSTANCE_MESSAGE, 4 + 4 + 4 + 4 + 1);
+    data << uint32(difficulty);
     data << uint32(type);
-    data << uint32(mapid);
-    data << uint32(difficulty);                             // difficulty
     data << uint32(time);
-    if (type == RAID_INSTANCE_WELCOME)
-    {
-        data << uint8(0);                                   // is locked
-        data << uint8(0);                                   // is extended, ignored if prev field is 0
-    }
+    data << uint32(mapid);
+    data.WriteBit(0);                                   // is locked or next
+    data.WriteBit(0);                                   // is extended, ignored if prev field is 0 or prev
     GetSession()->SendPacket(&data);
 }
 

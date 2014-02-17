@@ -7237,9 +7237,13 @@ void Spell::EffectBind(SpellEffIndex effIndex)
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "New homebind AreaId : %u", area_id);
 
     // zone update
-    data.Initialize(SMSG_PLAYERBOUND, 8+4);
-    data << uint64(player->GetGUID());
+    ObjectGuid guid = player->GetObjectGuid();
+    data.Initialize(SMSG_PLAYERBOUND, 8 + 4 + 1);
+    data.WriteGuidMask<1, 3, 4, 2, 0, 5, 7, 6>(guid);
+    data.WriteGuidBytes<5>(guid);
     data << uint32(area_id);
+    data.WriteGuidBytes<4, 2, 6, 7, 0, 3, 1>(guid);
+
     player->SendDirectMessage(&data);
 }
 
