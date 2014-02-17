@@ -2607,6 +2607,14 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     int level_diff = 0;
     switch (m_spellInfo->Id)
     {
+        case 23922: // Shield Slam
+        {
+            if (!m_caster->HasAura(71))
+            {
+                damage = 0;
+            }
+            break;
+        }
         case 1454: // Life Tap
         {
             damage = CalculatePct(m_caster->GetMaxHealth(), damage);
