@@ -1398,13 +1398,13 @@ void Player::SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 Curre
             StopMirrorTimer(Type);
         return;
     }
-    WorldPacket data(SMSG_START_MIRROR_TIMER, (21));
-    data << (uint32)Type;
-    data << CurrentValue;
-    data << MaxValue;
-    data << Regen;
-    data << (uint8)0;
-    data << (uint32)0;                                      // spell id
+    WorldPacket data(SMSG_START_MIRROR_TIMER, 5 * 4 + 1);
+    data << uint32(CurrentValue);
+    data << uint32(Type);
+    data << uint32(0);                                      // spell id
+    data << uint32(MaxValue);
+    data << uint32(Regen);
+    data.WriteBit(0);                                       // paused - 1
     GetSession()->SendPacket(&data);
 }
 
@@ -1412,7 +1412,7 @@ void Player::StopMirrorTimer(MirrorTimerType Type)
 {
     m_MirrorTimer[Type] = DISABLED_MIRROR_TIMER;
     WorldPacket data(SMSG_STOP_MIRROR_TIMER, 4);
-    data << (uint32)Type;
+    data << uint32(Type);
     GetSession()->SendPacket(&data);
 }
 
@@ -26124,9 +26124,8 @@ void Player::SetTitle(CharTitlesEntry const* title, bool lost)
         SetFlag(PLAYER_FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
     }
 
-    WorldPacket data(SMSG_TITLE_EARNED, 4 + 4);
+    WorldPacket data(lost ? SMSG_TITLE_REMOVED: SMSG_TITLE_EARNED, 4);
     data << uint32(title->bit_index);
-    data << uint32(lost ? 0 : 1);                           // 1 - earned, 0 - lost
     GetSession()->SendPacket(&data);
 }
 
@@ -26385,8 +26384,8 @@ void Player::ConvertRune(uint8 index, RuneType newType)
 
 void Player::ResyncRunes(uint8 count)
 {
-    WorldPacket data(SMSG_RESYNC_RUNES, 4 + count * 2);
-    data << uint32(count);
+    WorldPacket data(SMSG_RESYNC_RUNES, 3 + count * 2);
+    data.WriteBits(count, 23);
     for (uint32 i = 0; i < count; ++i)
     {
         data << uint8(GetCurrentRune(i));                   // rune type

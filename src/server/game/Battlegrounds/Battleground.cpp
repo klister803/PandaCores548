@@ -453,8 +453,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
     {
         uint32 countdownMaxForBGType = isArena() ? ARENA_COUNTDOWN_MAX : BATTLEGROUND_COUNTDOWN_MAX;
 
-        WorldPacket data(SMSG_START_TIMER, 4+4+4);
-        data << uint32(0); // unk
+        WorldPacket data(SMSG_START_TIMER, 4 + 4 + 4);
+        data << uint32(0);  // timer type
         data << uint32(countdownMaxForBGType - (m_CountdownTimer / 1000));
         data << uint32(countdownMaxForBGType);
 
@@ -1341,8 +1341,8 @@ void Battleground::AddPlayer(Player* player)
             player->CastSpell(player, SPELL_PREPARATION, true);   // reduces all mana cost of spells.
 
             int32 countdownMaxForBGType = isArena() ? ARENA_COUNTDOWN_MAX : BATTLEGROUND_COUNTDOWN_MAX;
-            WorldPacket data(SMSG_START_TIMER, 4+4+4);
-            data << uint32(0); // unk
+            WorldPacket data(SMSG_START_TIMER, 4 + 4 + 4);
+            data << uint32(0);  // timer type
             data << uint32(countdownMaxForBGType - (GetElapsedTime() / 1000));
             data << uint32(countdownMaxForBGType);
             player->GetSession()->SendPacket(&data);

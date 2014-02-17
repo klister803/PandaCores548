@@ -1154,11 +1154,18 @@ void AchievementMgr<T>::SendAchievementEarned(AchievementEntry const* achievemen
     if (achievement->flags & (ACHIEVEMENT_FLAG_REALM_FIRST_KILL | ACHIEVEMENT_FLAG_REALM_FIRST_REACH))
     {
         // broadcast realm first reached
+        ObjectGuid guid = GetOwner()->GetGUID();
+        std::string name = GetOwner()->GetName();
         WorldPacket data(SMSG_SERVER_FIRST_ACHIEVEMENT, strlen(GetOwner()->GetName()) + 1 + 8 + 4 + 4);
-        data << GetOwner()->GetName();
-        data << uint64(GetOwner()->GetGUID());
+        data.WriteGuidMask<6, 4, 0, 1, 3, 7, 5>(guid);
+        data.WriteBit(name.size(), 7);
+        data.WriteBit(1);                                   // 0=link supplied string as player name, 1=display plain string
+        data.WriteGuidMask<2>(guid);
+        data.WriteGuidBytes<6, 1, 5>(guid);
+        data.WriteString(name);
+        data.WriteGuidBytes<3, 7, 4, 0, 2>(guid);
         data << uint32(achievement->ID);
-        data << uint32(0);                                  // 1=link supplied string as player name, 0=display plain string
+
         sWorld->SendGlobalMessage(&data);
     }
     // if player is in world he can tell his friends about new achievement

@@ -5435,10 +5435,13 @@ void Spell::EffectSummonPlayer(SpellEffIndex /*effIndex*/)
 
     unitTarget->ToPlayer()->SetSummonPoint(m_caster->GetMapId(), x, y, z);
 
-    WorldPacket data(SMSG_SUMMON_REQUEST, 8+4+4);
-    data << uint64(m_caster->GetGUID());                    // summoner guid
+    ObjectGuid guid = m_caster->GetObjectGuid();
+    WorldPacket data(SMSG_SUMMON_REQUEST, 8 + 4 + 4 + 1);
+    data.WriteGuidMask<5, 6, 0, 2, 7, 3, 1, 4>(guid);
+    data.WriteGuidBytes<4, 2>(guid);
     data << uint32(m_caster->GetZoneId());                  // summoner zone
-    data << uint32(MAX_PLAYER_SUMMON_DELAY*IN_MILLISECONDS); // auto decline after msecs
+    data.WriteGuidBytes<0, 1, 5, 7, 6, 3>(guid);
+    data << uint32(realmID);
     unitTarget->ToPlayer()->GetSession()->SendPacket(&data);
 }
 
