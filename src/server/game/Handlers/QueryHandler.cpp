@@ -563,18 +563,21 @@ void WorldSession::HandleCorpseMapPositionQuery(WorldPacket& recvData)
 
 void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
 {
-    uint32 unk;
-    recvData >> unk; // quest count, max=50
+    uint32 count;
+    recvData >> count; // quest count, max=50
 
     WorldPacket data(SMSG_QUEST_POI_QUERY_RESPONSE, 557);
-    data << uint32(unk);
-    data.WriteBits(0, 20);
+    data << uint32(count);
+    data.WriteBits(count, 20);
 
     ByteBuffer buff;
     for (uint32 i = 0; i < 50; ++i)
     {
         uint32 questId;
         recvData >> questId; // quest id
+
+        if (i >= count)
+            continue;
 
         bool questOk = false;
 

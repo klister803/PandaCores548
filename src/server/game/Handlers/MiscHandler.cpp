@@ -1823,19 +1823,25 @@ void WorldSession::HandleRealmQueryNameOpcode(WorldPacket& recvData)
 
     uint32 realmId = recvData.read<uint32>();
 
-    if(realmId != realmID)
-        return; // Cheater ?
+    WorldPacket data(SMSG_REALM_QUERY_RESPONSE, 10 + 10 + 1 + 1 + 1 + 4);
+    if(realmId != realmID)  // Cheater ?
+    {
+        data << uint8(1);
+        data << uint32(realmId);
+        SendPacket(&data);
+        return;
+    }
 
     std::string realmName = sWorld->GetRealmName();
+    std::string trimmedName = sWorld->GetTrimmedRealmName();
 
-    WorldPacket data(SMSG_REALM_QUERY_RESPONSE);
     data << uint8(0); // ok, realmId exist server-side
-    data << realmId;
+    data << uint32(realmId);
     data.WriteBits(realmName.size(), 8);
     data.WriteBit(1); // unk, if it's main realm ?
-    data.WriteBits(realmName.size(), 8);
+    data.WriteBits(trimmedName.size(), 8);
     data.WriteString(realmName);
-    data.WriteString(realmName);
+    data.WriteString(trimmedName);
     SendPacket(&data);
 }
 

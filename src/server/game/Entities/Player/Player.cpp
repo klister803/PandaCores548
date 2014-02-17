@@ -15685,10 +15685,10 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
     data.WriteGuidBytes<0>(guid2);
     data << uint8(item->GetBagSlot());                      // bagslot
     data << uint32(0);                                      // battle pet unk
-    data << uint32(item->GetItemSuffixFactor());            // SuffixFactor
+    data << uint32(item->GetItemRandomPropertyId());        // random property
     data << uint32(item->GetEntry());                       // item id
     data.WriteGuidBytes<6>(guid);
-    data << uint32(item->GetGUIDLow());                     // unique counter
+    data << uint32(item->GetItemSuffixFactor());            // suffix factor
 
     if (broadcast && GetGroup())
         GetGroup()->BroadcastPacket(&data, true);

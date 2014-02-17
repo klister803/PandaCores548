@@ -821,6 +821,7 @@ class World
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
         void   ResetEventSeasonalQuests(uint16 event_id);
         std::string GetRealmName() { return m_realmName; }
+        std::string GetTrimmedRealmName() { return m_trimmedRealmName; }
         void UpdatePhaseDefinitions();
 
         bool AddCharacterName(std::string name)
@@ -878,6 +879,7 @@ class World
 
         std::string m_newCharString;
         std::string m_realmName;
+        std::string m_trimmedRealmName;
 
         float rate_values[MAX_RATES];
         uint32 m_int_configs[INT_CONFIG_VALUE_COUNT];

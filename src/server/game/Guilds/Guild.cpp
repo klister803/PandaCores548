@@ -2111,12 +2111,12 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
                 {
                     ++itemCount;
 
-                    tabData << uint32(tabItem->GetItemRandomPropertyId());
-                    tabData << uint32(0);
                     tabData << uint32(tabItem->GetItemSuffixFactor());      // SuffixFactor
                     tabData << uint32(0);
+                    tabData << uint32(tabItem->GetItemRandomPropertyId());
+                    tabData << uint32(0);
                     tabData << uint32(slotId);
-                    tabData << uint32(0);          // dynamic bytes count
+                    tabItem->AppendDynamicInfo(tabData);
 
                     uint32 enchants = 0;
                     for (uint32 ench = 0; ench < MAX_ENCHANTMENT_SLOT; ++ench)
@@ -3138,12 +3138,15 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
         {
             Item const* tabItem = tab->GetItem(*itr);
 
-            tabData << uint32(tabItem ? tabItem->GetItemRandomPropertyId() : 0);
-            tabData << uint32(0);
             tabData << uint32(tabItem ? tabItem->GetItemSuffixFactor() : 0);        // SuffixFactor
             tabData << uint32(0);
+            tabData << uint32(tabItem ? tabItem->GetItemRandomPropertyId() : 0);
+            tabData << uint32(0);
             tabData << uint32(*itr);
-            tabData << uint32(0);          // dynamic bytes count
+            if (tabItem)
+                tabItem->AppendDynamicInfo(tabData);
+            else
+                tabData << uint32(0);
 
             uint32 enchantCount = 0;
             if (tabItem)

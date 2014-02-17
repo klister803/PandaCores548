@@ -1549,11 +1549,16 @@ void Item::UpdateDynamicValues()
         SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, offs, 0);
 }
 
-void Item::AppendDynamicInfo(ByteBuffer& buff)
+void Item::AppendDynamicInfo(ByteBuffer& buff) const
 {
-    uint32 count = 1;
     uint32 dynamicMask = GetUInt32Value(ITEM_FIELD_MODIFIERS_MASK);
+    if (!dynamicMask)
+    {
+        buff << uint32(0);
+        return;
+    }
 
+    uint32 count = 1;
     uint32 countPos = buff.wpos();
     buff << uint32(0);
     buff << uint32(dynamicMask);
