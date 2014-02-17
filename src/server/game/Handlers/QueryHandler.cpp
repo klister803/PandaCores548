@@ -571,10 +571,13 @@ void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
     data.WriteBits(count, 20);
 
     ByteBuffer buff;
-    for (uint32 i = 0; i < count; ++i)
+    for (uint32 i = 0; i < 50; ++i)
     {
         uint32 questId;
         recvData >> questId; // quest id
+
+        if (i >= count)
+            continue;
 
         bool questOk = false;
 
