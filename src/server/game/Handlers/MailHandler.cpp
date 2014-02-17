@@ -721,6 +721,7 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         data << float(((*itr)->expire_time-time(NULL))/DAY);    // time to expire
     }
 
+    data.FlushBits();
     data.put<uint32>(0, realCount);                         // this will display warning about undelivered mail to player if realCount > mailsCount
     data.PutBits<uint8>(bit_pos, mailsCount, 18);
     SendPacket(&data);
