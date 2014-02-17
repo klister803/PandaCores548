@@ -359,6 +359,10 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         uint16 movementFlagsExtra = self->m_movementInfo.GetExtraMovementFlags();
         if (GetTypeId() == TYPEID_UNIT)
             movementFlags &= MOVEMENTFLAG_MASK_CREATURE_ALLOWED;
+        else
+            if (movementFlags & MOVEMENTFLAG_FLYING)
+                movementFlags &= ~(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLINGFAR);
+
         ObjectGuid transGuid = self->m_movementInfo.t_guid;
 
         data->WriteGuidMask<4, 1>(guid);
