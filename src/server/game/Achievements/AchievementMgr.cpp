@@ -1158,7 +1158,7 @@ void AchievementMgr<T>::SendAchievementEarned(AchievementEntry const* achievemen
         std::string name = GetOwner()->GetName();
         WorldPacket data(SMSG_SERVER_FIRST_ACHIEVEMENT, strlen(GetOwner()->GetName()) + 1 + 8 + 4 + 4);
         data.WriteGuidMask<6, 4, 0, 1, 3, 7, 5>(guid);
-        data.WriteBit(name.size(), 7);
+        data.WriteBits(name.size(), 7);
         data.WriteBit(1);                                   // 0=link supplied string as player name, 1=display plain string
         data.WriteGuidMask<2>(guid);
         data.WriteGuidBytes<6, 1, 5>(guid);
