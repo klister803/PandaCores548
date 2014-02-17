@@ -1212,7 +1212,7 @@ enum Opcodes
     SMSG_PVP_CREDIT                                   = 0x0585, // 5.4.1 17538
     SMSG_PVP_BRACKET_DATA                             = 0x11BF, // 5.4.1 17538
     SMSG_PVP_LOG_DATA                                 = 0x018D, // 5.4.1 17538
-    SMSG_PVP_OPTIONS_ENABLED                          = 0xA09,  // 5.0.5 16048
+    SMSG_PVP_OPTIONS_ENABLED                          = 0x0515, // 5.4.1 17538
     SMSG_QUERY_QUESTS_COMPLETED_RESPONSE              = 0x000,  // 5.0.5 16048 Deprecated
     SMSG_QUERY_TIME_RESPONSE                          = 0x000D, // 5.4.1 17538
     SMSG_QUESTGIVER_OFFER_REWARD                      = 0x0B5C, // 5.4.1 17538
@@ -1261,7 +1261,7 @@ enum Opcodes
     SMSG_REMOVED_SPELL                                = 0x049E, // 5.4.1 17538
     SMSG_REPORT_PVP_AFK_RESULT                        = 0x897,  // 5.0.5 16048
     SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0x040D, // 5.4.1 17538
-    SMSG_REQUEST_PVP_REWARDS_RESPONSE                 = 0xE30,  // 5.0.5 16048
+    SMSG_REQUEST_PVP_REWARDS_RESPONSE                 = 0x00BE, // 5.4.1 17538
     SMSG_RESEARCH_COMPLETE                            = 0xBF3,  // 5.0.5 16048
     SMSG_RESEARCH_SETUP_HISTORY                       = 0x14A5, // 5.4.1 17538
     SMSG_RESET_COMPRESSION_CONTEXT                    = 0x627,  // 5.0.5 16048

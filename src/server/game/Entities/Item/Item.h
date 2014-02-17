@@ -377,7 +377,7 @@ class Item : public Object
         void UpdateDynamicValues();
 
         uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
-        void AppendDynamicInfo(ByteBuffer& buff);
+        void AppendDynamicInfo(ByteBuffer& buff) const;
 
     private:
         std::string m_text;
