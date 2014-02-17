@@ -59,19 +59,20 @@ struct ServerPktHeader
     /**
     * size is the length of the payload _plus_ the length of the opcode
     */
-    ServerPktHeader(uint32 size, uint16 cmd) : size(size)
+    ServerPktHeader(uint32 size, uint16 cmd, AuthCrypt* _authCrypt) : size(size)
     {
-        uint8 headerIndex = 0;
-        if (isLargePacket())
+        if (_authCrypt->IsInitialized())
         {
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "initializing large server to client packet. Size: %u, cmd: %u", size, cmd);
-            header[headerIndex++] = 0x80 | (0xFF & (size >> 16));
+            uint32 data =  (size << 13) | cmd & 0x1FFF;
+            memcpy(&header[0], &data, getHeaderLength());
+            _authCrypt->EncryptSend((uint8*)&header[0], getHeaderLength());
         }
-        header[headerIndex++] = 0xFF & size;
-        header[headerIndex++] = 0xFF & (size >> 8);
-
-        header[headerIndex++] = 0xFF & cmd;
-        header[headerIndex++] = 0xFF & (cmd >> 8);
+        else
+        {
+            // Dynamic header size is not needed anymore, we are using not encrypted part for only the first few packets
+            memcpy(&header[0], &size, 2);
+            memcpy(&header[2], &cmd, 2);
+        }
     }
 
     uint8 getHeaderLength()
@@ -82,7 +83,7 @@ struct ServerPktHeader
 
     bool isLargePacket() const
     {
-        return size > 0x7FFF;
+        return size > 0x7FFFF;
     }
 
     const uint32 size;
@@ -191,20 +192,7 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
 
     sScriptMgr->OnPacketSend(this, *pct);
 
-    ServerPktHeader header(pct->wpos() + 2, pct->GetOpcode());
-    if (m_Crypt.IsInitialized())
-    {
-        uint32 totalLength = pct->wpos();
-        totalLength <<= 13;
-        totalLength |= ((uint32)pct->GetOpcode() & 0x1FFF);
-
-        header.header[0] = (uint32)((totalLength & 0xFF));
-        header.header[1] = (uint32)((totalLength >> 8) & 0xFF);
-        header.header[2] = (uint32)((totalLength >> 16) & 0xFF);
-        header.header[3] = (uint32)((totalLength >> 24) & 0xFF);
-
-        m_Crypt.EncryptSend((uint8*)header.header, header.getHeaderLength());
-    }
+    ServerPktHeader header(!m_Crypt.IsInitialized() ? pct->size() + 2 : pct->size(), pct->GetOpcode(), &m_Crypt);
 
     if (m_OutBuffer->space() >= pct->wpos() + header.getHeaderLength() && msg_queue()->is_empty())
     {
