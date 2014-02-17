@@ -1004,9 +1004,12 @@ void Item::SendTimeUpdate(Player* owner)
     if (!duration)
         return;
 
-    WorldPacket data(SMSG_ITEM_TIME_UPDATE, (8+4));
-    data << uint64(GetGUID());
+    ObjectGuid guid = GetObjectGuid();
+    WorldPacket data(SMSG_ITEM_TIME_UPDATE, 8 + 4 + 1);
+    data.WriteGuidMask<7, 4, 5, 1, 2, 0, 6, 3>(guid);
+    data.WriteGuidBytes<5, 1, 0, 2>(guid);
     data << uint32(duration);
+    data.WriteGuidBytes<7, 3, 4, 6>(guid);
     owner->GetSession()->SendPacket(&data);
 }
 

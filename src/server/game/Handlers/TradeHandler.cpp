@@ -119,7 +119,7 @@ void WorldSession::SendUpdateTrade(bool trader_data /*= true*/)
             data.WriteBit(item->GetTemplate()->LockID != 0);
             data.WriteGuidMask<6, 5, 2, 4, 7>(creatorGuid);
 
-            itemData << uint32(item->GetItemSuffixFactor());
+            itemData << uint32(item->GetItemRandomPropertyId());
 
             item->AppendDynamicInfo(itemData);
 
@@ -129,7 +129,7 @@ void WorldSession::SendUpdateTrade(bool trader_data /*= true*/)
             for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT+MAX_GEM_SOCKETS; ++enchant_slot)
                 itemData << uint32(item->GetEnchantmentId(EnchantmentSlot(enchant_slot)));
             itemData << uint32(item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT));
-            itemData << uint32(item->GetItemRandomPropertyId());
+            itemData << uint32(item->GetItemSuffixFactor());
             itemData.WriteGuidBytes<4, 1, 6, 7, 0, 3>(creatorGuid);
             itemData << uint32(item->GetUInt32Value(ITEM_FIELD_DURABILITY));
             itemData << uint32(item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY));
