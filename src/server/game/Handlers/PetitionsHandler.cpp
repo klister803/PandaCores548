@@ -308,7 +308,7 @@ void WorldSession::HandlePetitionQueryOpcode(WorldPacket & recvData)
 
 void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
 {
-    uint64 ownerguid = 0;
+    ObjectGuid ownerguid;
     uint32 type;
     std::string name = "NO_NAME_FOR_GUID";
 
@@ -331,41 +331,51 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
         return;
     }
 
-    WorldPacket data(SMSG_PETITION_QUERY_RESPONSE, (4+8+name.size()+1+1+4*12+2+10));
-    data << uint32(GUID_LOPART(petitionguid));              // guild/team guid (in Trinity always same as GUID_LOPART(petition guid)
-    data << uint64(ownerguid);                              // charter owner guid
-    data << name;                                           // name (guild/arena team)
-    data << uint8(0);                                       // some string
-    if (type == GUILD_CHARTER_TYPE)
+    WorldPacket data(SMSG_PETITION_QUERY_RESPONSE);
+    bool unk = data.WriteBit(1);
+    if (unk)
     {
-        data << uint32(4);
-        data << uint32(4);
-        data << uint32(0);                                  // bypass client - side limitation, a different value is needed here for each petition
+        data.WriteGuidMask<5>(ownerguid);
+        data.WriteBits(name.size(), 7);              // guild name->length
+        data.WriteGuidMask<3, 6, 1>(ownerguid);
+
+        for (uint32 i = 0; i < 10; i++)
+            data.WriteBits(0, 6);                    // unk strings[]->length
+
+        data.WriteGuidMask<0>(ownerguid);
+        data.WriteBits(0, 12);                       // unk string 1->length
+        data.WriteGuidMask<2, 7, 4>(ownerguid);
+
+        data.WriteGuidBytes<0>(ownerguid);
+        data << uint32(GUID_LOPART(petitionguid));   // petition low guid
+        data << uint32(0);
+        data << uint32(GUILD_CHARTER_TYPE);          // unk number 4 in sniffs, type?
+        //std::string unkStr = "tes1";
+        data << uint8(0);                            // unk string 1
+        data << uint32(0);
+        data.WriteGuidBytes<5>(ownerguid);
+        data << uint32(0);
+        data.WriteGuidBytes<6, 4>(ownerguid);
+        data << name;                                // guild name
+        data.WriteGuidBytes<3>(ownerguid);
+        data << uint32(GUILD_CHARTER_TYPE);          // unk number 4 in sniffs, type?
+        data.WriteGuidBytes<2>(ownerguid);
+        data << uint16(0);
+        data << uint32(0);
+        data << uint32(0);
+        data << uint32(0);
+        data << uint32(0);
+        data.WriteGuidBytes<7, 1>(ownerguid);
+
+        for (uint32 i = 0; i < 10; i++)
+            data << uint8(0);                         // unk strings[]
+
+        data << uint32(0);
+        data << uint32(0);
+        data << uint32(0);
     }
-    else
-    {
-        data << uint32(type-1);
-        data << uint32(type-1);
-        data << uint32(type);                               // bypass client - side limitation, a different value is needed here for each petition
-    }
-    data << uint32(0);                                      // 5
-    data << uint32(0);                                      // 6
-    data << uint32(0);                                      // 7
-    data << uint32(0);                                      // 8
-    data << uint16(0);                                      // 9 2 bytes field
-    data << uint32(0);                                      // 10
-    data << uint32(0);                                      // 11
-    data << uint32(0);                                      // 13 count of next strings?
 
-    for (int i = 0; i < 10; ++i)
-        data << uint8(0);                                   // some string
-
-    data << uint32(0);                                      // 14
-
-    if (type == GUILD_CHARTER_TYPE)
-        data << uint32(0);                                  // 15 0 - guild, 1 - arena team
-    else
-        data << uint32(1);
+    data << uint32(GUID_LOPART(petitionguid));        // petition low guid
 
     SendPacket(&data);
 }

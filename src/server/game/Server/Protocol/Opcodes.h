@@ -1152,7 +1152,7 @@ enum Opcodes
     SMSG_NOTIFY_DEST_LOC_SPELL_CAST                   = 0x8FA,  // 5.0.5 16048
     SMSG_NPC_TEXT_UPDATE                              = 0x101F, // 5.4.1 17538
     SMSG_NPC_WONT_TALK                                = 0,      // Not found in 4.3.4
-    SMSG_OFFER_PETITION_ERROR                         = 0xCE7,  // 5.0.5 16048
+    SMSG_OFFER_PETITION_ERROR                         = 0x04AE, // 5.4.1 17538
     SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA         = 0x0514, // 5.4.1 17538
     SMSG_OPEN_CONTAINER                               = 0x844,  // 5.0.5 16048
     SMSG_OPEN_LFG_DUNGEON_FINDER                      = 0x894,  // 5.0.5 16048
@@ -1165,7 +1165,7 @@ enum Opcodes
     SMSG_PERIODICAURALOG                              = 0x0449, // 5.4.1 17538
     SMSG_PETGODMODE                                   = 0x9E4,  // 5.0.5 16048
     SMSG_PETITION_ALREADY_SIGNED                      = 0xAA8,  // 5.0.5 16048
-    SMSG_PETITION_QUERY_RESPONSE                      = 0xC62,  // 5.0.5 16048
+    SMSG_PETITION_QUERY_RESPONSE                      = 0x0DB4, // 5.4.1 17538
     SMSG_PETITION_SHOWLIST                            = 0x11A6, // 5.4.1 17538
     SMSG_PETITION_SHOW_SIGNATURES                     = 0xCBC,  // 5.0.5 16048
     SMSG_PETITION_SIGN_RESULTS                        = 0x148F, // 5.4.1 17538
