@@ -570,7 +570,6 @@ void WorldSession::HandleMailTakeMoney(WorldPacket& recvData)
     recvData.ReadGuidMask<4, 0, 1, 7, 5, 2, 3, 6>(mailbox);
     recvData.ReadGuidBytes<6, 1, 2, 0, 4, 5, 7, 3>(mailbox);
 
-
     if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
         return;
 
