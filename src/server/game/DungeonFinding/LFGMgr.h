@@ -87,23 +87,26 @@ enum LfgTeleportError
 enum LfgJoinResult
 {
     // 3 = No client reaction | 18 = "Rolecheck failed"
-    LFG_JOIN_OK                                  = 0,      // Joined (no client msg)
-    LFG_JOIN_FAILED                              = 1,      // RoleCheck Failed
-    LFG_JOIN_GROUPFULL                           = 2,      // Your group is full
-    LFG_JOIN_INTERNAL_ERROR                      = 4,      // Internal LFG Error
-    LFG_JOIN_NOT_MEET_REQS                       = 5,      // You do not meet the requirements for the chosen dungeons
-    LFG_JOIN_PARTY_NOT_MEET_REQS                 = 6,      // One or more party members do not meet the requirements for the chosen dungeons
-    LFG_JOIN_MIXED_RAID_DUNGEON                  = 7,      // You cannot mix dungeons, raids, and random when picking dungeons
-    LFG_JOIN_MULTI_REALM                         = 8,      // The dungeon you chose does not support players from multiple realms
-    LFG_JOIN_DISCONNECTED                        = 9,      // One or more party members are pending invites or disconnected
-    LFG_JOIN_PARTY_INFO_FAILED                   = 10,     // Could not retrieve information about some party members
-    LFG_JOIN_DUNGEON_INVALID                     = 11,     // One or more dungeons was not valid
-    LFG_JOIN_DESERTER                            = 12,     // You can not queue for dungeons until your deserter debuff wears off
-    LFG_JOIN_PARTY_DESERTER                      = 13,     // One or more party members has a deserter debuff
-    LFG_JOIN_RANDOM_COOLDOWN                     = 14,     // You can not queue for random dungeons while on random dungeon cooldown
-    LFG_JOIN_PARTY_RANDOM_COOLDOWN               = 15,     // One or more party members are on random dungeon cooldown
-    LFG_JOIN_TOO_MUCH_MEMBERS                    = 16,     // You can not enter dungeons with more that 5 party members
-    LFG_JOIN_USING_BG_SYSTEM                     = 17      // You can not use the dungeon system while in BG or arenas
+    LFG_JOIN_FAILED                              = 28,     // +RoleCheck Failed
+    LFG_JOIN_GROUPFULL                           = 29,     // Your group is full
+    LFG_JOIN_INTERNAL_ERROR                      = 31,     // Internal LFG Error
+    LFG_JOIN_OK                                  = 32,     // +Joined (no client msg)
+    LFG_JOIN_NOT_MEET_REQS                       = 32,     // You do not meet the requirements for the chosen dungeons
+    LFG_JOIN_PARTY_NOT_MEET_REQS                 = 33,     // One or more party members do not meet the requirements for the chosen dungeons
+    //LFG_JOIN_MIXED_RAID_DUNGEON                  = 7,      // You cannot mix dungeons, raids, and random when picking dungeons
+    LFG_JOIN_MULTI_REALM                         = 34,     // The dungeon you chose does not support players from multiple realms
+    LFG_JOIN_DISCONNECTED                        = 35,     // One or more party members are pending invites or disconnected
+    LFG_JOIN_PARTY_INFO_FAILED                   = 36,     // Could not retrieve information about some party members
+    LFG_JOIN_DUNGEON_INVALID                     = 37,     // One or more dungeons was not valid
+    LFG_JOIN_DESERTER                            = 38,     // You can not queue for dungeons until your deserter debuff wears off
+    LFG_JOIN_PARTY_DESERTER                      = 39,     // One or more party members has a deserter debuff
+    LFG_JOIN_RANDOM_COOLDOWN                     = 40,     // You can not queue for random dungeons while on random dungeon cooldown
+    LFG_JOIN_PARTY_RANDOM_COOLDOWN               = 41,     // One or more party members are on random dungeon cooldown
+    LFG_JOIN_TOO_MUCH_MEMBERS                    = 42,     // You can not enter dungeons with more that 5 party members
+    LFG_JOIN_USING_BG_SYSTEM                     = 43,     // You can not use the dungeon system while in BG or arenas
+    LFG_ROLE_CHECK_FAILED_2                      = 44,
+    LFG_TOO_FEW_MEMBERS                          = 50,
+    LFG_REASON_TOO_MANY_LFG                      = 51,
 };
 
 /// Role check states

@@ -717,12 +717,14 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
                 case LFG_TYPE_HEROIC:
                 case LFG_TYPE_DUNGEON:
                     if (isRaid)
-                        joinData.result = LFG_JOIN_MIXED_RAID_DUNGEON;
+                        //joinData.result = LFG_JOIN_MIXED_RAID_DUNGEON;
+                        joinData.result = LFG_JOIN_INTERNAL_ERROR;
                     isDungeon = true;
                     break;
                 case LFG_TYPE_RAID:
                     if (isDungeon)
-                        joinData.result = LFG_JOIN_MIXED_RAID_DUNGEON;
+                        //joinData.result = LFG_JOIN_MIXED_RAID_DUNGEON;
+                        joinData.result = LFG_JOIN_INTERNAL_ERROR;
                     isRaid = true;
                     break;
                 default:
