@@ -94,27 +94,28 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     //END
 
     // Send request
+    ObjectGuid playerGuid = caster->GetGUID();
+    ObjectGuid goGuid = pGameObj->GetGUID();
     WorldPacket data(SMSG_DUEL_REQUESTED);
+    data.WriteGuidMask<5>(goGuid);
+    data.WriteGuidMask<5, 2>(playerGuid);
+    data.WriteGuidMask<7>(goGuid);
+    data.WriteGuidMask<7>(playerGuid);
+    data.WriteGuidMask<2, 0, 6, 1, 3>(goGuid);
+    data.WriteGuidMask<6, 4, 3, 0>(playerGuid);
+    data.WriteGuidMask<4>(goGuid);
+    data.WriteGuidMask<1>(playerGuid);
 
-    data.WriteGuidMask<5>(pGameObj->GetGUID());
-    data.WriteGuidMask<5, 2>(caster->GetGUID());
-    data.WriteGuidMask<7>(pGameObj->GetGUID());
-    data.WriteGuidMask<7>(caster->GetGUID());
-    data.WriteGuidMask<2, 0, 6, 1, 3>(pGameObj->GetGUID());
-    data.WriteGuidMask<6, 4, 3, 0>(caster->GetGUID());
-    data.WriteGuidMask<4>(pGameObj->GetGUID());
-    data.WriteGuidMask<2>(caster->GetGUID());
-
-    data.WriteGuidBytes<1, 4>(caster->GetGUID());
-    data.WriteGuidBytes<0>(pGameObj->GetGUID());
-    data.WriteGuidBytes<6, 7>(caster->GetGUID());
-    data.WriteGuidBytes<7, 5>(pGameObj->GetGUID());
-    data.WriteGuidBytes<3>(caster->GetGUID());
-    data.WriteGuidBytes<6>(pGameObj->GetGUID());
-    data.WriteGuidBytes<2>(caster->GetGUID());
-    data.WriteGuidBytes<3>(pGameObj->GetGUID());
-    data.WriteGuidBytes<0, 5>(caster->GetGUID());
-    data.WriteGuidBytes<2, 4, 1>(pGameObj->GetGUID());
+    data.WriteGuidBytes<1, 4>(playerGuid);
+    data.WriteGuidBytes<0>(goGuid);
+    data.WriteGuidBytes<6, 7>(playerGuid);
+    data.WriteGuidBytes<7, 5>(goGuid);
+    data.WriteGuidBytes<3>(playerGuid);
+    data.WriteGuidBytes<6>(goGuid);
+    data.WriteGuidBytes<2>(playerGuid);
+    data.WriteGuidBytes<3>(goGuid);
+    data.WriteGuidBytes<0, 5>(playerGuid);
+    data.WriteGuidBytes<2, 4, 1>(goGuid);
 
     caster->GetSession()->SendPacket(&data);
     target->GetSession()->SendPacket(&data);
