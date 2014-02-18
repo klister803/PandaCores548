@@ -634,17 +634,6 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
     c.message = message ? message : "";
     c.chatType = type;
     c.targetGuid = target_guid;
-    
-    if (speaker)
-    {
-        c.sourceGuid = speaker->GetGUID();
-        c.sourceName = speaker->GetName();
-    }
-    else if (session)
-    {
-        c.sourceGuid = session->GetPlayer()->GetGUID();
-        c.sourceName = session->GetPlayer()->GetName();
-    }
 
     if ((type != CHAT_MSG_CHANNEL && type != CHAT_MSG_WHISPER) || language == LANG_ADDON)
         c.language = uint8(language);
@@ -656,15 +645,19 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
         case CHAT_MSG_RAID_WARNING:
         case CHAT_MSG_PARTY:
         case CHAT_MSG_PARTY_LEADER:
+        case CHAT_MSG_INSTANCE:
+        case CHAT_MSG_INSTANCE_LEADER:
             if (session && session->GetPlayer()->GetGroup())
                 c.groupGuid = session->GetPlayer()->GetGroup()->GetGUID();
             c.targetGuid = session ? session->GetPlayer()->GetGUID() : 0;
+            c.sourceGuid = c.targetGuid;
             break;
         case CHAT_MSG_GUILD:
         case CHAT_MSG_OFFICER:
             if (session)
                 c.guildGuid = session->GetPlayer()->GetUInt64Value(OBJECT_FIELD_DATA);
             c.targetGuid = session ? session->GetPlayer()->GetGUID() : 0;
+            c.sourceGuid = c.targetGuid;
             break;
         case CHAT_MSG_SAY:
         case CHAT_MSG_YELL:
@@ -673,8 +666,6 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
         case CHAT_MSG_BG_SYSTEM_NEUTRAL:
         case CHAT_MSG_BG_SYSTEM_ALLIANCE:
         case CHAT_MSG_BG_SYSTEM_HORDE:
-        case CHAT_MSG_BATTLEGROUND:
-        case CHAT_MSG_BATTLEGROUND_LEADER:
             c.targetGuid = session ? session->GetPlayer()->GetGUID() : 0;
             break;
         case CHAT_MSG_MONSTER_SAY:
@@ -685,7 +676,11 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
         case CHAT_MSG_RAID_BOSS_WHISPER:
         case CHAT_MSG_RAID_BOSS_EMOTE:
         case CHAT_MSG_BATTLENET:
-            break;
+        {
+            c.sourceGuid = speaker->GetGUID();
+            c.sourceName = speaker->GetName();
+            return;
+        }
         default:
             if (type != CHAT_MSG_WHISPER_INFORM && type != CHAT_MSG_IGNORED && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
                 c.targetGuid = 0;                           // only for CHAT_MSG_WHISPER_INFORM used original value target_guid
