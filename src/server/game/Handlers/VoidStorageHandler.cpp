@@ -116,33 +116,33 @@ void WorldSession::HandleVoidStorageQuery(WorldPacket& recvData)
         ObjectGuid itemId = item->ItemId;
         ObjectGuid creatorGuid = item->CreatorGuid;
 
-        data.WriteGuidMask<3>(itemId);
-        data.WriteGuidMask<3, 5>(creatorGuid);
-        data.WriteGuidMask<1>(itemId);
-        data.WriteGuidMask<0, 7, 2>(creatorGuid);
-        data.WriteGuidMask<0>(itemId);
-        data.WriteGuidMask<6>(creatorGuid);
-        data.WriteGuidMask<4, 5, 2, 7, 6>(itemId);
-        data.WriteGuidMask<4, 1>(creatorGuid);
+        data.WriteGuidMask<3>(creatorGuid);
+        data.WriteGuidMask<3, 5>(itemId);
+        data.WriteGuidMask<1>(creatorGuid);
+        data.WriteGuidMask<0, 7, 2>(itemId);
+        data.WriteGuidMask<0>(creatorGuid);
+        data.WriteGuidMask<6>(itemId);
+        data.WriteGuidMask<4, 5, 2, 7, 6>(creatorGuid);
+        data.WriteGuidMask<4, 1>(itemId);
 
 
-        itemData.WriteGuidBytes<3>(itemId);
-        itemData.WriteGuidBytes<6>(creatorGuid);
+        itemData.WriteGuidBytes<3>(creatorGuid);
         itemData.WriteGuidBytes<6>(itemId);
+        itemData.WriteGuidBytes<6>(creatorGuid);
         itemData << uint32(0);                      //unk
-        itemData.WriteGuidBytes<7, 4>(creatorGuid);
-        itemData.WriteGuidBytes<7>(itemId);
+        itemData.WriteGuidBytes<7, 4>(itemId);
+        itemData.WriteGuidBytes<7>(creatorGuid);
         itemData << uint32(item->ItemEntry);
         itemData << uint32(item->ItemSuffixFactor);
-        itemData.WriteGuidBytes<4>(itemId);
-        itemData.WriteGuidBytes<0, 1>(creatorGuid);
-        itemData.WriteGuidBytes<1>(itemId);
+        itemData.WriteGuidBytes<4>(creatorGuid);
+        itemData.WriteGuidBytes<0, 1>(itemId);
+        itemData.WriteGuidBytes<1>(creatorGuid);
         itemData << uint32(i);
-        itemData.WriteGuidBytes<5, 2>(itemId);
-        itemData.WriteGuidBytes<5, 3>(creatorGuid);
-        itemData.WriteGuidBytes<0>(itemId);
+        itemData.WriteGuidBytes<5, 2>(creatorGuid);
+        itemData.WriteGuidBytes<5, 3>(itemId);
+        itemData.WriteGuidBytes<0>(creatorGuid);
         itemData << uint32(item->ItemRandomPropertyId);
-        itemData.WriteGuidBytes<2>(creatorGuid);
+        itemData.WriteGuidBytes<2>(itemId);
     }
 
     data.FlushBits();
@@ -375,6 +375,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     SendVoidStorageTransferResult(VOID_TRANSFER_ERROR_NO_ERROR);
 }
 
+//! 5.4.1
 void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_VOID_SWAP_ITEM");
@@ -385,40 +386,20 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
     ObjectGuid itemId;
 
     recvData >> newSlot;
+    recvData.ReadGuidMask<2, 3, 5, 7>(npcGuid);
+    recvData.ReadGuidMask<0, 2>(itemId);
+    recvData.ReadGuidMask<6>(npcGuid);
+    recvData.ReadGuidMask<4, 1, 6, 5>(itemId);
+    recvData.ReadGuidMask<4, 1>(npcGuid);
+    recvData.ReadGuidMask<7, 3>(itemId);
+    recvData.ReadGuidMask<0>(npcGuid);
 
-    itemId[4] = recvData.ReadBit();
-    npcGuid[2] = recvData.ReadBit();
-    itemId[3] = recvData.ReadBit();
-    itemId[0] = recvData.ReadBit();
-    npcGuid[0] = recvData.ReadBit();
-    npcGuid[4] = recvData.ReadBit();
-    itemId[1] = recvData.ReadBit();
-    npcGuid[3] = recvData.ReadBit();
-    npcGuid[1] = recvData.ReadBit();
-    npcGuid[5] = recvData.ReadBit();
-    itemId[6] = recvData.ReadBit();
-    itemId[2] = recvData.ReadBit();
-    npcGuid[7] = recvData.ReadBit();
-    itemId[5] = recvData.ReadBit();
-    itemId[7] = recvData.ReadBit();
-    npcGuid[6] = recvData.ReadBit();
-
-    recvData.ReadByteSeq(itemId[2]);
-    recvData.ReadByteSeq(itemId[3]);
-    recvData.ReadByteSeq(npcGuid[0]);
-    recvData.ReadByteSeq(npcGuid[3]);
-    recvData.ReadByteSeq(npcGuid[1]);
-    recvData.ReadByteSeq(itemId[4]);
-    recvData.ReadByteSeq(npcGuid[6]);
-    recvData.ReadByteSeq(npcGuid[2]);
-    recvData.ReadByteSeq(npcGuid[7]);
-    recvData.ReadByteSeq(npcGuid[5]);
-    recvData.ReadByteSeq(itemId[0]);
-    recvData.ReadByteSeq(itemId[7]);
-    recvData.ReadByteSeq(npcGuid[4]);
-    recvData.ReadByteSeq(itemId[1]);
-    recvData.ReadByteSeq(itemId[5]);
-    recvData.ReadByteSeq(itemId[6]);
+    recvData.ReadGuidBytes<0>(itemId);
+    recvData.ReadGuidBytes<0, 1, 2, 7, 4>(npcGuid);
+    recvData.ReadGuidBytes<7, 1, 5>(itemId);
+    recvData.ReadGuidBytes<3, 5>(npcGuid);
+    recvData.ReadGuidBytes<6, 4, 3, 2>(itemId);
+    recvData.ReadGuidBytes<6>(npcGuid);
 
     Creature* unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
     if (!unit)
@@ -454,48 +435,17 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
 
     WorldPacket data(SMSG_VOID_ITEM_SWAP_RESPONSE, 1 + (usedSrcSlot + usedDestSlot) * (1 + 7 + 4));
     
-    data.WriteBit(!usedDestSlot);
     data.WriteBit(!usedSrcSlot);
-    data.WriteBit(!usedSrcSlot);
+    data.WriteBit(!itemIdDest);
+    data.WriteGuidMask<2, 5, 4, 1, 7, 6, 0, 3>(itemIdDest);
+    data.WriteBit(!itemId);
     data.WriteBit(!usedDestSlot);
-    data.WriteBit(itemIdDest[5]);
-    data.WriteBit(itemIdDest[0]);
-    data.WriteBit(itemIdDest[2]);
-    data.WriteBit(itemIdDest[7]);
-
-    data.WriteBit(itemIdDest[1]);
-    data.WriteBit(itemIdDest[6]);
-    data.WriteBit(itemIdDest[3]);
-    data.WriteBit(itemIdDest[4]);
-    data.WriteBit(itemId[0]);
-    data.WriteBit(itemId[3]);
-    data.WriteBit(itemId[4]);
-    data.WriteBit(itemId[6]);
-    
-    data.WriteBit(itemId[5]);
-    data.WriteBit(itemId[1]);
-    data.WriteBit(itemId[7]);
-    data.WriteBit(itemId[2]);
+    data.WriteGuidMask<6, 1, 4, 3, 0, 7, 2, 5>(itemId);
 
     data.FlushBits();
 
-    data.WriteByteSeq(itemId[5]);
-    data.WriteByteSeq(itemId[6]);
-    data.WriteByteSeq(itemId[2]);
-    data.WriteByteSeq(itemId[4]);
-    data.WriteByteSeq(itemId[1]);
-    data.WriteByteSeq(itemId[7]);
-    data.WriteByteSeq(itemId[0]);
-    data.WriteByteSeq(itemId[3]);
-
-    data.WriteByteSeq(itemIdDest[3]);
-    data.WriteByteSeq(itemIdDest[0]);
-    data.WriteByteSeq(itemIdDest[7]);
-    data.WriteByteSeq(itemIdDest[5]);
-    data.WriteByteSeq(itemIdDest[6]);
-    data.WriteByteSeq(itemIdDest[4]);
-    data.WriteByteSeq(itemIdDest[1]);
-    data.WriteByteSeq(itemIdDest[2]);
+    data.WriteGuidBytes<7, 2, 6, 1, 0, 4, 3, 5>(itemId);
+    data.WriteGuidBytes<5, 6, 7, 0, 2, 4, 1, 3>(itemIdDest);
     
     if (usedSrcSlot)
         data << uint32(newSlot);
