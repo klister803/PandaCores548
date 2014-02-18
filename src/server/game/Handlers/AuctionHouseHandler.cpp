@@ -83,8 +83,22 @@ void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action
     data << uint32(auction ? auction->Id : 0);
     data << uint32(action);
     data << uint32(errorCode);
+    data << uint32(0);
 
-    switch (errorCode)
+    bool h_bid = data.ReadBit();
+    data.ReadBit();
+
+    data.WriteGuidMask<7, 0, 1, 6, 3, 4, 5, 2>(auction->bidder);
+    data.ReadBit();
+    data.WriteGuidBytes<2, 7, 3, 1, 5, 0, 6, 4>(auction->bidder);
+
+    if (h_bid)
+    {
+        data << uint64(auction->bid);
+        data << uint64(auction->bid ? auction->GetAuctionOutBid() : 0);
+    }
+
+    /*switch (errorCode)
     {
         case ERR_AUCTION_OK:
             if (action == AUCTION_PLACE_BID)
@@ -98,7 +112,7 @@ void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action
             data << uint64(auction->bid);
             data << uint64(auction->bid ? auction->GetAuctionOutBid() : 0);
             break;
-    }
+    }*/
 
     SendPacket(&data);
 }
@@ -106,14 +120,16 @@ void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action
 //this function sends notification, if bidder is online
 void WorldSession::SendAuctionBidderNotification(uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 itemEntry)
 {
-    WorldPacket data(SMSG_AUCTION_BIDDER_NOTIFICATION, (8*4));
+    WorldPacket data(SMSG_AUCTION_BIDDER_NOTIFICATION);
+    data.WriteGuidMask<4, 5, 0, 7, 2, 3, 1, 6>(bidder);
+    data.WriteGuidBytes<2, 7, 5, 0>(bidder);
+    data << uint32(0);
+    data.WriteGuidBytes<3>(bidder);
     data << uint32(location);
     data << uint32(auctionId);
-    data << uint64(bidder);
-    data << uint64(bidSum);
-    data << uint64(diff);
     data << uint32(itemEntry);
     data << uint32(0);
+    data.WriteGuidBytes<1, 4, 6>(bidder);
     SendPacket(&data);
 }
 
@@ -121,13 +137,13 @@ void WorldSession::SendAuctionBidderNotification(uint32 location, uint32 auction
 void WorldSession::SendAuctionOwnerNotification(AuctionEntry* auction)
 {
     WorldPacket data(SMSG_AUCTION_OWNER_NOTIFICATION, 40);
-    data << uint32(auction->Id);
+    data.ReadBit();
     data << uint64(auction->bid);
-    data << uint64(0);                                     //unk
-    data << uint64(0);                                     //unk
+    data << uint32(auction->Id);                           // unk
+    data << uint32(0);                                     // unk
+    data << float(0);                                      // unk
     data << uint32(auction->itemEntry);
-    data << uint32(0);                                     //unk
-    data << float(0);                                      //unk
+    data << uint32(0);                                     // unk
     SendPacket(&data);
 }
 
@@ -143,12 +159,21 @@ void WorldSession::SendAuctionRemovedNotification(uint32 auctionId, uint32 itemE
 //this void creates new auction and adds auction to some auctionhouse
 void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
 {
-    uint64 auctioneer, bid, buyout;
+    ObjectGuid auctioneerGUID;
+    uint64 bid, buyout;
     uint32 itemsCount, etime;
-    recvData >> auctioneer;
-    recvData >> itemsCount;
 
-    uint64 itemGUIDs[MAX_AUCTION_ITEMS]; // 160 slot = 4x 36 slot bag + backpack 16 slot
+    recvData >> bid;
+    recvData >> buyout;
+    recvData >> etime;
+
+    if (!bid || !etime)
+        return;
+
+    recvData.ReadGuidMask<5, 0, 1, 4, 3, 6>(auctioneerGUID);
+    itemsCount = recvData.ReadBits(5);
+
+    ObjectGuid itemGUIDs[MAX_AUCTION_ITEMS]; // 160 slot = 4x 36 slot bag + backpack 16 slot
     uint32 count[MAX_AUCTION_ITEMS];
 
     if (itemsCount > MAX_AUCTION_ITEMS)
@@ -158,32 +183,34 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
     }
 
     for (uint32 i = 0; i < itemsCount; ++i)
+        recvData.ReadGuidMask<7, 0, 5, 1, 4, 6, 3, 2>(itemGUIDs[i]);
+
+    recvData.ReadGuidMask<2, 7>(auctioneerGUID);
+    recvData.ReadGuidBytes<6>(auctioneerGUID);
+
+    for (uint32 i = 0; i < itemsCount; ++i)
     {
-        recvData >> itemGUIDs[i];
+        recvData.ReadGuidBytes<0, 5, 6, 3, 1, 7>(itemGUIDs[i]);
         recvData >> count[i];
+        recvData.ReadGuidBytes<2, 4>(itemGUIDs[i]);
 
         if (!itemGUIDs[i] || !count[i] || count[i] > 1000 )
             return;
     }
+    
+    recvData.ReadGuidBytes<7, 5, 3, 4, 0, 2, 1>(auctioneerGUID);
 
-    recvData >> bid;
-    recvData >> buyout;
-    recvData >> etime;
-
-    if (!bid || !etime)
-        return;
-
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(auctioneer, UNIT_NPC_FLAG_AUCTIONEER);
+    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(auctioneerGUID, UNIT_NPC_FLAG_AUCTIONEER);
     if (!creature)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionSellItem - Unit (GUID: %u) not found or you can't interact with him.", GUID_LOPART(auctioneer));
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionSellItem - Unit (GUID: %u) not found or you can't interact with him.", GUID_LOPART(auctioneerGUID));
         return;
     }
 
     AuctionHouseEntry const* auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(creature->getFaction());
     if (!auctionHouseEntry)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionSellItem - Unit (GUID: %u) has wrong faction.", GUID_LOPART(auctioneer));
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionSellItem - Unit (GUID: %u) has wrong faction.", GUID_LOPART(auctioneerGUID));
         return;
     }
 
@@ -273,7 +300,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
         if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
             AH->auctioneer = 174444;
         else
-            AH->auctioneer = GUID_LOPART(auctioneer);
+            AH->auctioneer = GUID_LOPART(auctioneerGUID);
 
         ASSERT(sObjectMgr->GetCreatureData(AH->auctioneer)); // Tentative de vendre un item a un pnj qui n'existe pas, mieux vaut crash ici sinon l'item en question risque de disparaitre tout simplement
 
@@ -394,20 +421,21 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_PLACE_BID");
 
-    uint64 auctioneer;
+    ObjectGuid auctioneerGUID;
     uint32 auctionId;
     uint64 price;
-    recvData >> auctioneer;
-    recvData >> auctionId;
     recvData >> price;
+    recvData >> auctionId;
+    recvData.ReadGuidMask<2, 1, 0, 7, 5, 4, 3, 6>(auctioneerGUID);
+    recvData.ReadGuidBytes<0, 5, 4, 6, 1, 2, 7, 3>(auctioneerGUID);
 
     if (!auctionId || !price)
         return;                                             // check for cheaters
 
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(auctioneer, UNIT_NPC_FLAG_AUCTIONEER);
+    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(auctioneerGUID, UNIT_NPC_FLAG_AUCTIONEER);
     if (!creature)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionPlaceBid - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneer)));
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionPlaceBid - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneerGUID)));
         return;
     }
 
@@ -523,15 +551,16 @@ void WorldSession::HandleAuctionRemoveItem(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_REMOVE_ITEM");
 
-    uint64 auctioneer;
+    ObjectGuid auctioneerGUID;
     uint32 auctionId;
-    recvData >> auctioneer;
     recvData >> auctionId;
+    recvData.ReadGuidMask<0, 1, 4, 7, 2, 3, 5, 6>(auctioneerGUID);
+    recvData.ReadGuidBytes<1, 5, 3, 4, 2, 6, 7, 0>(auctioneerGUID);
 
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(auctioneer, UNIT_NPC_FLAG_AUCTIONEER);
+    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(auctioneerGUID, UNIT_NPC_FLAG_AUCTIONEER);
     if (!creature)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionRemoveItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneer)));
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionRemoveItem - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneerGUID)));
         return;
     }
 
@@ -598,23 +627,33 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_LIST_BIDDER_ITEMS");
 
-    uint64 guid;                                            //NPC guid
-    uint32 listfrom;                                        //page of auctions
-    uint32 outbiddedCount;                                  //count of outbidded auctions
+    ObjectGuid auctioneerGUID;
+    uint32 listfrom;                                        // page of auctions
+    uint32 outbiddedCount;                                  // count of outbidded auctions
 
-    recvData >> guid;
-    recvData >> listfrom;                                  // not used in fact (this list not have page control in client)
-    recvData >> outbiddedCount;
-    if (recvData.size() != (16 + outbiddedCount * 4))
+    recvData >> listfrom;                                   // not used in fact (this list not have page control in client)
+    recvData.ReadGuidMask<6, 2, 1, 0, 3, 4>(auctioneerGUID);
+    outbiddedCount = recvData.ReadBits(7);
+    recvData.ReadGuidMask<7, 5>(auctioneerGUID);
+
+    if (outbiddedCount)
+    {
+        for (uint32 i = 0; i < outbiddedCount; i++)
+            recvData.read_skip<uint32>();                  // unk
+    }
+
+    recvData.ReadGuidBytes<0, 4, 7, 3, 5, 6, 2, 1>(auctioneerGUID);
+
+    /*if (recvData.size() != (16 + outbiddedCount * 4))
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Client sent bad opcode!!! with count: %u and size : %lu (must be: %u)", outbiddedCount, (unsigned long)recvData.size(), (16 + outbiddedCount * 4));
         outbiddedCount = 0;
-    }
+    }*/
 
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
+    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(auctioneerGUID, UNIT_NPC_FLAG_AUCTIONEER);
     if (!creature)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionListBidderItems - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)));
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleAuctionListBidderItems - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneerGUID)));
         recvData.rfinish();
         return;
     }
@@ -692,31 +731,32 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_LIST_ITEMS");
 
+    ObjectGuid guid;
     std::string searchedname;
     uint8 levelmin, levelmax, usable;
     uint32 listfrom, auctionSlotID, auctionMainCategory, auctionSubCategory, quality;
-    uint64 guid;
 
-    recvData >> guid;
-    recvData >> listfrom;                                  // start, used for page control listing by 50 elements
-    recvData >> searchedname;
-
-    recvData >> levelmin >> levelmax;
-    recvData >> auctionSlotID >> auctionMainCategory >> auctionSubCategory;
-    recvData >> quality >> usable;
-
-    recvData.read_skip<uint8>();                           // unk
-    recvData.read_skip<uint8>();                           // unk
-
-    uint8 countSkip;
-    recvData >> countSkip;
-
-    // this block looks like it uses some lame byte packing or similar...
-    for (uint8 i = 0; i < countSkip; ++i)
-    {
-        recvData.read_skip<uint8>();
-        recvData.read_skip<uint8>();
-    }
+    recvData >> listfrom;
+    recvData >> levelmax;
+    recvData >> auctionSlotID;
+    recvData >> levelmin;
+    recvData >> auctionMainCategory;
+    recvData >> auctionSubCategory;
+    recvData >> usable;
+    recvData >> quality;
+    uint32 strLen;
+    recvData >> strLen;
+    searchedname = recvData.ReadString(strLen);
+    recvData.ReadGuidMask<4, 0, 1, 5, 3, 6>(guid);
+    uint32 strLen1 = recvData.ReadBits(8);
+    recvData.ReadGuidMask<2>(guid);
+    recvData.ReadBit();
+    recvData.ReadGuidMask<7>(guid);
+    recvData.ReadBit();
+    recvData.ReadGuidBytes<0, 7, 3, 1, 4>(guid);
+    std::string unkStr1 = recvData.ReadString(strLen);
+    sLog->outError(LOG_FILTER_GENERAL, "Unk Str - %s, Unk Str 1 - %s", searchedname, unkStr1);
+    recvData.ReadGuidBytes<5, 6, 2>(guid);
 
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
     if (!creature)

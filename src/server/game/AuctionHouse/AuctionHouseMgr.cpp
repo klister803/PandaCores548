@@ -620,7 +620,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket& data) const
         data << uint32(item->GetEnchantmentCharges(EnchantmentSlot(i)));
     }
     
-    data <<  uint32(0);
+    item->AppendDynamicInfo(data);
 
     data << int32(item->GetItemRandomPropertyId());                 // Random item property id
     data << uint32(item->GetItemSuffixFactor());                    // SuffixFactor
