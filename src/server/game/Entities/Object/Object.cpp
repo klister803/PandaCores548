@@ -361,7 +361,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             movementFlags &= MOVEMENTFLAG_MASK_CREATURE_ALLOWED;
         else
             if (movementFlags & MOVEMENTFLAG_FLYING)
-                movementFlags &= ~(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLINGFAR);
+                movementFlags &= ~(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
 
         ObjectGuid transGuid = self->m_movementInfo.t_guid;
 
