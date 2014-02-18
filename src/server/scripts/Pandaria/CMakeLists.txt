@@ -81,6 +81,23 @@ set(scripts_STAT_SRCS
   Pandaria/TerraceEndlessSpring/boss_tsulong.cpp
   Pandaria/TerraceEndlessSpring/boss_lei_shi.cpp
   Pandaria/TerraceEndlessSpring/boss_sha_of_fear.cpp
+
+  Pandaria/SiegeofOrgrimmar/instance_siege_of_orgrimmar.cpp
+  Pandaria/SiegeofOrgrimmar/siege_of_orgrimmar.h
+  Pandaria/SiegeofOrgrimmar/boss_immerseus.cpp
+  Pandaria/SiegeofOrgrimmar/boss_fallen_protectors.cpp
+  Pandaria/SiegeofOrgrimmar/boss_norushen.cpp
+  Pandaria/SiegeofOrgrimmar/boss_sha_of_pride.cpp
+  Pandaria/SiegeofOrgrimmar/boss_galakras.cpp
+  Pandaria/SiegeofOrgrimmar/boss_iron_juggernaut.cpp
+  Pandaria/SiegeofOrgrimmar/boss_korkron_dark_shaman.cpp
+  Pandaria/SiegeofOrgrimmar/boss_general_nazgrim.cpp
+  Pandaria/SiegeofOrgrimmar/boss_malkorok.cpp
+  Pandaria/SiegeofOrgrimmar/boss_spoils_of_pandaria.cpp
+  Pandaria/SiegeofOrgrimmar/boss_thok_the_bloodthirsty.cpp
+  Pandaria/SiegeofOrgrimmar/boss_siegecrafter_blackfuse.cpp
+  Pandaria/SiegeofOrgrimmar/boss_paragons_of_the_klaxxi.cpp
+  Pandaria/SiegeofOrgrimmar/boss_garrosh_hellscream.cpp
   
   Pandaria/WanderingIsland/WanderingIsland_North.cpp
   Pandaria/WanderingIsland/WanderingIsland_East.cpp
