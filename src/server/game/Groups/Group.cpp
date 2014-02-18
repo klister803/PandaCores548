@@ -1060,7 +1060,7 @@ void Group::SendLootAllPassed(Roll const& roll)
                                                 // DisplayID
     data << uint32(sObjectMgr->GetItemTemplate(roll.itemid)->DisplayInfoID);   
     data << uint32(roll.itemid);
-    data << uint32(0);                          // unk data with string
+    data << uint32(0);                          // Dynamic Info
     data << uint32(roll.itemid);
     data << uint32(roll.itemid);
     data.WriteGuidBytes<1>(guid);

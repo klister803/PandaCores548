@@ -858,7 +858,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                     bitBuffer.WriteBit(1);
 
                     dataBuffer << uint32(l.items[i].itemid);
-                    dataBuffer << uint32(0);    //unk counter
+                    dataBuffer << uint32(0);    //Dynamic Info
                     dataBuffer << uint32(l.items[i].randomPropertyId);
                     dataBuffer << uint32(sObjectMgr->GetItemTemplate(l.items[i].itemid)->DisplayInfoID);
                     dataBuffer << uint32(l.items[i].count);
@@ -889,7 +889,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                     bitBuffer.WriteBit(1);
                     
                     dataBuffer << uint32(l.items[i].itemid);
-                    dataBuffer << uint32(0);    //unk counter
+                    dataBuffer << uint32(0);    //Dynamic Info
                     dataBuffer << uint32(l.items[i].randomPropertyId);
                     dataBuffer << uint32(sObjectMgr->GetItemTemplate(l.items[i].itemid)->DisplayInfoID);
                     dataBuffer << uint32(l.items[i].count);
@@ -931,7 +931,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                     bitBuffer.WriteBit(1);
                     
                     dataBuffer << uint32(l.items[i].itemid);
-                    dataBuffer << uint32(0);    //unk counter
+                    dataBuffer << uint32(0);    //Dynamic Info
                     dataBuffer << uint32(l.items[i].randomPropertyId);
                     dataBuffer << uint32(sObjectMgr->GetItemTemplate(l.items[i].itemid)->DisplayInfoID);
                     dataBuffer << uint32(l.items[i].count);
@@ -990,7 +990,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                 bitBuffer.WriteBit(1);
 
                 dataBuffer << uint32(item.itemid);
-                dataBuffer << uint32(0);    //unk counter
+                dataBuffer << uint32(0);    //Dynamic Info
                 dataBuffer << uint32(item.randomPropertyId);
                 dataBuffer << uint32(sObjectMgr->GetItemTemplate(item.itemid)->DisplayInfoID);
                 dataBuffer << uint32(item.count);
@@ -1021,7 +1021,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                 bitBuffer.WriteBit(1);
                 
                 dataBuffer << uint32(item.itemid);
-                dataBuffer << uint32(0);    //unk counter
+                dataBuffer << uint32(0);    //Dynamic Info
                 dataBuffer << uint32(item.randomPropertyId);
                 dataBuffer << uint32(sObjectMgr->GetItemTemplate(item.itemid)->DisplayInfoID);
                 dataBuffer << uint32(item.count);
@@ -1076,7 +1076,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                 bitBuffer.WriteBit(1);
                 
                 dataBuffer << uint32(item.itemid);
-                dataBuffer << uint32(0);    //unk counter
+                dataBuffer << uint32(0);    //Dynamic Info
                 dataBuffer << uint32(item.randomPropertyId);
                 dataBuffer << uint32(sObjectMgr->GetItemTemplate(item.itemid)->DisplayInfoID);
                 dataBuffer << uint32(item.count);
