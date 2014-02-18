@@ -1274,7 +1274,7 @@ enum Opcodes
     SMSG_ROLE_POLL_BEGIN                              = 0x0CA4, // 5.4.1 17538
     SMSG_RWHOIS                                       = 0xDCA,  // 5.0.5 16048
     SMSG_SELL_ITEM                                    = 0x002E, // 5.4.1 17538
-    SMSG_SEND_MAIL_RESULT                             = 0xA4F,  // 5.0.5 16048
+    SMSG_SEND_MAIL_RESULT                             = 0x0C8D, // 5.4.1 17538
     SMSG_SEND_UNLEARN_SPELLS                          = 0x14C4, // 5.4.1 17538
     SMSG_SERVERTIME                                   = 0x999,  // 5.0.5 16048
     SMSG_SERVER_FIRST_ACHIEVEMENT                     = 0x082E, // 5.4.1 17538

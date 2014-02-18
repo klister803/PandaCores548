@@ -344,7 +344,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-//called when mail is read
+// Called when mail is read
 void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData)
 {
     ObjectGuid mailbox;
@@ -369,11 +369,11 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData)
     }
 }
 
-//called when client deletes mail
+// Called when client deletes mail
 void WorldSession::HandleMailDelete(WorldPacket & recvData)
 {
-    uint32 mailId;
-    recvData.read_skip<uint32>();
+    uint32 unk, mailId;
+    recvData >> unk;                          // this+20
     recvData >> mailId;                       // mailTemplateId
 
     //if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
