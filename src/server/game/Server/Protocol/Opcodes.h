@@ -1156,7 +1156,7 @@ enum Opcodes
     SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA         = 0x0514, // 5.4.1 17538
     SMSG_OPEN_CONTAINER                               = 0x844,  // 5.0.5 16048
     SMSG_OPEN_LFG_DUNGEON_FINDER                      = 0x894,  // 5.0.5 16048
-    SMSG_OVERRIDE_LIGHT                               = 0x052D, // 5.4.1 17538
+    SMSG_OVERRIDE_LIGHT                               = 0x0094, // 5.4.1 17538
     SMSG_PAGE_TEXT_QUERY_RESPONSE                     = 0xCE2,  // 5.0.5 16048
     SMSG_PARTYKILLLOG                                 = 0x04B5, // 5.4.1 17538
     SMSG_PARTY_COMMAND_RESULT                         = 0x0430, // 5.4.1 17538
