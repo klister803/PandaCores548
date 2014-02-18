@@ -8331,12 +8331,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                             ToPlayer()->AddSpellCooldown(16166, 0, uint32(time(NULL) + newCooldownDelay));
 
                             ObjectGuid guid = GetObjectGuid();
-                            WorldPacket data(SMSG_MODIFY_COOLDOWN, 4 + 8 + 4 + 1);
-                            data << int32(-2000);                   // Cooldown mod in milliseconds
-                            data << uint32(16166);                  // Spell ID
-                            data.WriteGuidMask<1, 2, 0, 4, 3, 6, 5, 7>(guid);
-                            data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
-                            ToPlayer()->GetSession()->SendPacket(&data);
+                            ToPlayer()->SendModifyCooldown(16166, -2000);
                             return true;
                         }
                     }

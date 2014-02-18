@@ -262,12 +262,14 @@ public:
         uint8 failArg2 = fail2 ? (uint8)atoi(fail2) : 0;
 
         WorldPacket data(SMSG_CAST_FAILED, 5);
-        data << uint8(0);
-        data << uint32(133);
-        data << uint8(failNum);
-        if (fail1 || fail2)
-            data << uint32(failArg1);
-        if (fail2)
+        data.WriteBit(!failArg2);
+        data.WriteBit(!failArg1);
+        data << uint32(failNum);                                // problem
+        data << uint32(133);                                    // spellId
+        if (failArg2)
+            data << uint32(failArg2);
+        data << uint8(0);                                       // single cast or multi 2.3 (0/1)
+        if (failArg1)
             data << uint32(failArg2);
 
         handler->GetSession()->SendPacket(&data);
@@ -553,12 +555,12 @@ public:
         char const* name = "test";
         uint8 code = atoi(args);
 
-        WorldPacket data(SMSG_CHANNEL_NOTIFY, (1+10));
+        /*WorldPacket data(SMSG_CHANNEL_NOTIFY, (1+10));
         data << code;                                           // notify type
         data << name;                                           // channel name
         data << uint32(0);
         data << uint32(0);
-        handler->GetSession()->SendPacket(&data);
+        handler->GetSession()->SendPacket(&data);*/
         return true;
     }
 

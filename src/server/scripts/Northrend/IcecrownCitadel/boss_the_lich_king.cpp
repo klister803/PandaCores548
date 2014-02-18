@@ -1183,8 +1183,8 @@ class boss_the_lich_king : public CreatureScript
             void SendLightOverride(uint32 overrideId, uint32 fadeInTime) const
             {
                 WorldPacket data(SMSG_OVERRIDE_LIGHT, 12);
-                data << uint32(2488);       // Light.dbc entry (map default)
                 data << uint32(overrideId); // Light.dbc entry (override)
+                data << uint32(2488);       // Light.dbc entry (map default)
                 data << uint32(fadeInTime);
                 SendPacketToPlayers(&data);
             }

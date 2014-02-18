@@ -23735,14 +23735,7 @@ void Player::SpellCooldownReduction(uint32 spellid, time_t end_time)
 
     AddSpellCooldown(spellid, 0, uint32(time(NULL) + newCooldownDelay));
 
-    ObjectGuid guid = GetObjectGuid();
-    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4 + 8 + 4 + 1);
-    data << int32(-end_time);
-    data << uint32(spellid);
-    data.WriteGuidMask<1, 2, 0, 4, 3, 6, 5, 7>(guid);
-    data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
-
-    GetSession()->SendPacket(&data);
+    SendModifyCooldown(spellid, -int32(end_time));
 }
 
 void Player::ChangeSpellCooldown(uint32 spellid, float second)
@@ -23758,14 +23751,7 @@ void Player::ChangeSpellCooldown(uint32 spellid, float second)
     if(newCooldownDelay > 0)
         AddSpellCooldown(spellid, 0, time(NULL) + newCooldownDelay);
 
-    ObjectGuid guid = GetObjectGuid();
-    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4 + 8 + 4 + 1);
-    data << int32(second * IN_MILLISECONDS);    // Cooldown mod in milliseconds
-    data << uint32(spellid);                    // Spell ID
-    data.WriteGuidMask<1, 2, 0, 4, 3, 6, 5, 7>(guid);
-    data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
-
-    GetSession()->SendPacket(&data);
+    SendModifyCooldown(spellid, second * IN_MILLISECONDS);
 }
 
 void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
@@ -28068,9 +28054,9 @@ void Player::SendMovementSetCanFly(bool apply)
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 1 + 8 + 4);
 
         data.WriteGuidMask<6, 2, 4, 1, 0, 5, 7, 3>(guid);
-        data.WriteGuidBytes< 7, 6, 4>(guid);
+        data.WriteGuidBytes<7, 6, 4>(guid);
         data << uint32(0);          //! movement counter
-        data.WriteGuidBytes< 2, 3, 1, 0, 5>(guid);
+        data.WriteGuidBytes<2, 3, 1, 0, 5>(guid);
     }
     else
     {
@@ -28078,9 +28064,9 @@ void Player::SendMovementSetCanFly(bool apply)
         data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 1 + 8 + 4);
 
         data.WriteGuidMask<7, 6, 5, 1, 2, 4, 3, 0>(guid);
-        data.WriteGuidBytes< 0, 6, 3, 7, 2, 1, 5>(guid);
+        data.WriteGuidBytes<0, 6, 3, 7, 2, 1, 5>(guid);
         data << uint32(0);          //! movement counter
-        data.WriteGuidBytes< 4>(guid);
+        data.WriteGuidBytes<4>(guid);
     }
     SendDirectMessage(&data);
 }
@@ -29445,6 +29431,18 @@ void Player::SendCategoryCooldownMods()
         data << uint32(itr->first);
         data << int32(-itr->second);
     }
+
+    SendDirectMessage(&data);
+}
+
+void Player::SendModifyCooldown(uint32 spellId, int32 value)
+{
+    ObjectGuid guid = GetObjectGuid();
+    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4 + 8 + 4 + 1);
+    data << int32(value);                   // Cooldown mod in milliseconds
+    data << uint32(spellId);                // Spell ID
+    data.WriteGuidMask<1, 2, 0, 4, 3, 6, 5, 7>(guid);
+    data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
 
     SendDirectMessage(&data);
 }

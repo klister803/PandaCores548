@@ -210,8 +210,8 @@ public:
         void SendLightOverride(uint32 overrideId, uint32 fadeInTime) const
         {
             WorldPacket data(SMSG_OVERRIDE_LIGHT, 12);
-            data << uint32(1773);       // Light.dbc entry (map default)
             data << uint32(overrideId); // Light.dbc entry (override)
+            data << uint32(1773);       // Light.dbc entry (map default)
             data << uint32(fadeInTime);
             SendPacketToPlayers(&data);
         }

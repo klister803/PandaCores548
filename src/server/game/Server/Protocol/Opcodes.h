@@ -1156,7 +1156,7 @@ enum Opcodes
     SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA         = 0x0514, // 5.4.1 17538
     SMSG_OPEN_CONTAINER                               = 0x844,  // 5.0.5 16048
     SMSG_OPEN_LFG_DUNGEON_FINDER                      = 0x894,  // 5.0.5 16048
-    SMSG_OVERRIDE_LIGHT                               = 0x8B3,  // 5.0.5 16048
+    SMSG_OVERRIDE_LIGHT                               = 0x052D, // 5.4.1 17538
     SMSG_PAGE_TEXT_QUERY_RESPONSE                     = 0xCE2,  // 5.0.5 16048
     SMSG_PARTYKILLLOG                                 = 0x04B5, // 5.4.1 17538
     SMSG_PARTY_COMMAND_RESULT                         = 0x0430, // 5.4.1 17538
@@ -1325,7 +1325,7 @@ enum Opcodes
     SMSG_SPELL_GO                                     = 0x14EC, // 5.4.1 17538
     SMSG_SPELL_START                                  = 0x0CCC, // 5.4.1 17538
     SMSG_SPELL_UPDATE_CHAIN_TARGETS                   = 0x858,  // 5.0.5 16048
-    SMSG_SPIRIT_HEALER_CONFIRM                        = 0xC7F,  // 5.0.5 16048
+    SMSG_SPIRIT_HEALER_CONFIRM                        = 0x009C, // 5.4.1 17538
     SMSG_SPLINE_MOVE_COLLISION_DISABLE                = 0xE81,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_COLLISION_ENABLE                 = 0xE12,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_GRAVITY_DISABLE                  = 0x07B5, // 5.4.1 17538

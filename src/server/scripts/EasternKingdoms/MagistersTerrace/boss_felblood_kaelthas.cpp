@@ -248,24 +248,10 @@ public:
                     // Use packet hack
                     WorldPacket data(SMSG_MOVE_SET_CAN_FLY, 12);
                     ObjectGuid guid = unit->GetGUID();
-                    data.WriteBit(guid[0]);
-                    data.WriteBit(guid[6]);
-                    data.WriteBit(guid[5]);
-                    data.WriteBit(guid[1]);
-                    data.WriteBit(guid[3]);
-                    data.WriteBit(guid[7]);
-                    data.WriteBit(guid[4]);
-                    data.WriteBit(guid[2]);
-
-                    data.WriteByteSeq(guid[7]);
-                    data.WriteByteSeq(guid[1]);
-                    data.WriteByteSeq(guid[3]);
-                    data.WriteByteSeq(guid[4]);
+                    data.WriteGuidMask<6, 2, 4, 1, 0, 5, 7, 3>(guid);
+                    data.WriteGuidBytes<7, 6, 4>(guid);
                     data << uint32(0);          //! movement counter
-                    data.WriteByteSeq(guid[6]);
-                    data.WriteByteSeq(guid[0]);
-                    data.WriteByteSeq(guid[2]);
-                    data.WriteByteSeq(guid[5]);
+                    data.WriteGuidBytes<2, 3, 1, 0, 5>(guid);
                     unit->SendMessageToSet(&data, true);
                 }
             }
@@ -284,24 +270,10 @@ public:
 
                     WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 12);
                     ObjectGuid guid = unit->GetGUID();
-                    data.WriteBit(guid[5]);
-                    data.WriteBit(guid[7]);
-                    data.WriteBit(guid[2]);
-                    data.WriteBit(guid[3]);
-                    data.WriteBit(guid[6]);
-                    data.WriteBit(guid[0]);
-                    data.WriteBit(guid[4]);
-                    data.WriteBit(guid[1]);
-
-                    data.WriteByteSeq(guid[7]);
-                    data.WriteByteSeq(guid[1]);
-                    data.WriteByteSeq(guid[0]);
-                    data.WriteByteSeq(guid[2]);
-                    data.WriteByteSeq(guid[5]);
-                    data.WriteByteSeq(guid[4]);
+                    data.WriteGuidMask<7, 6, 5, 1, 2, 4, 3, 0>(guid);
+                    data.WriteGuidBytes<0, 6, 3, 7, 2, 1, 5>(guid);
                     data << uint32(0);          //! movement counter
-                    data.WriteByteSeq(guid[6]);
-                    data.WriteByteSeq(guid[3]);
+                    data.WriteGuidBytes<4>(guid);
                     unit->SendMessageToSet(&data, true);
                 }
             }

@@ -971,48 +971,20 @@ public:
 
         WorldPacket data(SMSG_MOVE_SET_RUN_SPEED, (8+4+1+4));
         ObjectGuid guid = target->GetGUID();
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
-
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[4]);
-        data << uint32(0);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[6]);
+        data.WriteGuidMask<3, 6, 7, 1, 4, 0, 2, 5>(guid);
+        data.WriteGuidBytes<7, 5>(guid);
         data << float(speed);
-        data.WriteByteSeq(guid[3]);
+        data.WriteGuidBytes<6, 2, 0, 3, 1, 4>(guid);
+        data << uint32(0); // Unk Int32
         target->SendMessageToSet(&data, true);
 
         data.Initialize(SMSG_MOVE_SET_SWIM_SPEED, (8+4+4));
+        data.WriteGuidMask<6, 3, 1, 2, 0, 4, 7, 5>(guid);
+        data.WriteGuidBytes<2>(guid);
         data << float(speed);
-        data << uint32(0);
-
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[5]);
-
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[5]);
+        data.WriteGuidBytes<1, 6>(guid);
+        data << uint32(0); // Unk Int32
+        data.WriteGuidBytes<3, 4, 0, 7, 5>(guid);
         target->SendMessageToSet(&data, true);
 
         return true;

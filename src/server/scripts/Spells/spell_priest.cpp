@@ -814,21 +814,13 @@ class spell_pri_train_of_thought : public SpellScriptLoader
                                     {
                                         _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + (newCooldownDelay / IN_MILLISECONDS)));
 
-                                        WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-                                        data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
-                                        data << uint64(_player->GetGUID());                 // Player GUID
-                                        data << int32(-500);                                // Cooldown mod in milliseconds
-                                        _player->GetSession()->SendPacket(&data);
+                                        _player->SendModifyCooldown(PRIEST_SPELL_PENANCE, -500);
                                     }
                                     else
                                     {
                                         _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + 0));
 
-                                        WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-                                        data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
-                                        data << uint64(_player->GetGUID());                 // Player GUID
-                                        data << int32(-newCooldownDelay);                                // Cooldown mod in milliseconds
-                                        _player->GetSession()->SendPacket(&data);
+                                        _player->SendModifyCooldown(PRIEST_SPELL_PENANCE, -newCooldownDelay);
                                     }
                                 }
                             }
@@ -843,11 +835,7 @@ class spell_pri_train_of_thought : public SpellScriptLoader
 
                                     _player->AddSpellCooldown(PRIEST_INNER_FOCUS, 0, uint32(time(NULL) + newCooldownDelay));
 
-                                    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
-                                    data << uint32(PRIEST_INNER_FOCUS);                 // Spell ID
-                                    data << uint64(_player->GetGUID());                 // Player GUID
-                                    data << int32(-5000);                               // Cooldown mod in milliseconds
-                                    _player->GetSession()->SendPacket(&data);
+                                    _player->SendModifyCooldown(PRIEST_INNER_FOCUS, -5000);
                                 }
                             }
                         }
