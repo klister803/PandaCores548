@@ -1167,7 +1167,7 @@ enum Opcodes
     SMSG_PETITION_ALREADY_SIGNED                      = 0xAA8,  // 5.0.5 16048
     SMSG_PETITION_QUERY_RESPONSE                      = 0x0DB4, // 5.4.1 17538
     SMSG_PETITION_SHOWLIST                            = 0x11A6, // 5.4.1 17538
-    SMSG_PETITION_SHOW_SIGNATURES                     = 0xCBC,  // 5.0.5 16048
+    SMSG_PETITION_SHOW_SIGNATURES                     = 0x00A7, // 5.4.1 17538
     SMSG_PETITION_SIGN_RESULTS                        = 0x148F, // 5.4.1 17538
     SMSG_PET_ACTION_FEEDBACK                          = 0x0C1C, // 5.4.1 17538
     SMSG_PET_ACTION_SOUND                             = 0x0015, // 5.4.1 17538
