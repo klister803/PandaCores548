@@ -755,7 +755,7 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
     recvData.ReadBit();
     recvData.ReadGuidBytes<0, 7, 3, 1, 4>(guid);
     std::string unkStr1 = recvData.ReadString(strLen);
-    sLog->outError(LOG_FILTER_GENERAL, "Unk Str - %s, Unk Str 1 - %s", searchedname, unkStr1);
+    sLog->outError(LOG_FILTER_GENERAL, "Unk Str - %s, Unk Str 1 - %s", searchedname.c_str(), unkStr1.c_str());
     recvData.ReadGuidBytes<5, 6, 2>(guid);
 
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
