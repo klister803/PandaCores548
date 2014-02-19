@@ -102,6 +102,7 @@ public:
             { "jump",           SEC_ADMINISTRATOR,  false, &HandleDebugMoveJump,               "", NULL },
             { "backward",       SEC_ADMINISTRATOR,  false, &HandleDebugMoveBackward,           "", NULL },
             { "load_z",         SEC_ADMINISTRATOR,  false, &HandleDebugLoadZ,                  "", NULL },
+            { "movement",       SEC_ADMINISTRATOR,  false, &HandleDebugMovement,               "", NULL },
 
             // stats debug
             { "spellpower",     SEC_ADMINISTRATOR,  false, &HandleDebugModifySpellpowerCommand,     "", NULL },
@@ -1762,6 +1763,17 @@ public:
 
         int32 Value = (int32)atoi(cval);
         player->ApplyRatingMod(CR_MASTERY, Value, true);
+        return true;
+    }
+
+    static bool HandleDebugMovement(ChatHandler* handler, const char* args)
+    {
+        Unit* target = handler->getSelectedUnit();
+        if (!target)
+            target = handler->GetSession()->GetPlayer();
+
+        handler->PSendSysMessage("MoveFlags: 0x%X, MoveFlags2: 0x%X", target->GetUnitMovementFlags(), target->GetExtraUnitMovementFlags());
+
         return true;
     }
 };
