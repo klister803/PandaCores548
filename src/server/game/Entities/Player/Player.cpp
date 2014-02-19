@@ -8864,8 +8864,8 @@ void Player::DuelComplete(DuelCompleteType type)
         data.WriteBit(type == DUEL_WON ? 0 : 1);            // 0 = just won; 1 = fled
         data.WriteBits(strlen(duel->opponent->GetName()), 6);
         data.WriteBits(strlen(GetName()), 6);
-        data << duel->opponent->GetName();
-        data << GetName();
+        data.WriteString(GetName());
+        data.WriteString(duel->opponent->GetName());
         SendMessageToSet(&data, true);
     }
 

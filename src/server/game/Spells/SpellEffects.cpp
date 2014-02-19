@@ -5364,9 +5364,28 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
     //END
 
     // Send request
-    WorldPacket data(SMSG_DUEL_REQUESTED);
-    data << uint64(pGameObj->GetGUID());
-    data << uint64(caster->GetGUID());
+    ObjectGuid goGuid = pGameObj->GetGUID();
+    ObjectGuid playerGuid = caster->GetGUID();
+    WorldPacket data(SMSG_DUEL_REQUESTED, 8 + 8 + 1 + 1);
+    data.WriteGuidMask<5>(goGuid);
+    data.WriteGuidMask<5, 2>(playerGuid);
+    data.WriteGuidMask<7>(goGuid);
+    data.WriteGuidMask<7>(playerGuid);
+    data.WriteGuidMask<2, 0, 6, 1, 3>(goGuid);
+    data.WriteGuidMask<6, 4, 3, 0>(playerGuid);
+    data.WriteGuidMask<4>(goGuid);
+    data.WriteGuidMask<1>(playerGuid);
+
+    data.WriteGuidBytes<1, 4>(playerGuid);
+    data.WriteGuidBytes<0>(goGuid);
+    data.WriteGuidBytes<6, 7>(playerGuid);
+    data.WriteGuidBytes<7, 5>(goGuid);
+    data.WriteGuidBytes<3>(playerGuid);
+    data.WriteGuidBytes<6>(goGuid);
+    data.WriteGuidBytes<2>(playerGuid);
+    data.WriteGuidBytes<3>(goGuid);
+    data.WriteGuidBytes<0, 5>(playerGuid);
+    data.WriteGuidBytes<2, 4, 1>(goGuid);
     caster->GetSession()->SendPacket(&data);
     target->GetSession()->SendPacket(&data);
 
