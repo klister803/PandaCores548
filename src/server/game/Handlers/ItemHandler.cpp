@@ -2112,3 +2112,48 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
     if (item->IsEquipped())
         player->ApplyReforgeEnchantment(item, true);
 }
+
+void WorldSession::HandleUpgradeItem(WorldPacket& recvData)
+{
+    uint32 unk1, unk2, updateEntry;
+    ObjectGuid itemGuid, npcGuid;
+
+    Player* player = GetPlayer();
+
+    recvData >> updateEntry >> unk1 >> unk2;
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_TRANSMOGRIFY_ITEMS updateEntry %u, unk1 %u, unk2 %u", updateEntry, unk1, unk2);
+
+    recvData.ReadGuidMask<4, 3>(itemGuid);
+    recvData.ReadGuidMask<4, 6, 7, 3>(npcGuid);
+    recvData.ReadGuidMask<7>(itemGuid);
+    recvData.ReadGuidMask<1, 0>(npcGuid);
+    recvData.ReadGuidMask<0>(itemGuid);
+    recvData.ReadGuidMask<5>(npcGuid);
+    recvData.ReadGuidMask<6, 2, 5>(itemGuid);
+    recvData.ReadGuidMask<2>(npcGuid);
+    recvData.ReadGuidMask<1>(itemGuid);
+
+    recvData.ReadGuidBytes<0>(itemGuid);
+    recvData.ReadGuidBytes<2, 3>(npcGuid);
+    recvData.ReadGuidBytes<5, 3>(itemGuid);
+    recvData.ReadGuidBytes<5>(npcGuid);
+    recvData.ReadGuidBytes<2, 7>(itemGuid);
+    recvData.ReadGuidBytes<1, 6>(npcGuid);
+    recvData.ReadGuidBytes<4>(itemGuid);
+    recvData.ReadGuidBytes<7>(npcGuid);
+    recvData.ReadGuidBytes<1, 6>(itemGuid);
+    recvData.ReadGuidBytes<0, 4>(npcGuid);
+
+    // if (!player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG2_UPGRADE_MASTER))
+    // {
+        // sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleTransmogrifyItems - Unit (GUID: %u) not found or player can't interact with it.", GUID_LOPART(npcGuid));
+        // return;
+    // }
+
+    if(Item* item = player->GetItemByGuid(itemGuid))
+    {
+        item->SetUpgradeItem(updateEntry);
+        item->SetState(ITEM_CHANGED, player);
+    }
+}

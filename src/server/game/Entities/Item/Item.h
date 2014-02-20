@@ -375,9 +375,12 @@ class Item : public Object
         void SetTransmogrification(uint32 value);
         uint32 GetTransmogrification() const;
         void UpdateDynamicValues();
+        void SetUpgradeItem(uint32 value);
+        uint32 GetUpgradeItem() const;
 
         uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
         void AppendDynamicInfo(ByteBuffer& buff) const;
+        uint32 ItemLevel;
 
     private:
         std::string m_text;

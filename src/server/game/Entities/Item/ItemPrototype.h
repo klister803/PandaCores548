@@ -722,9 +722,9 @@ struct ItemTemplate
         return (Stackable == 2147483647 || Stackable <= 0) ? uint32(0x7FFFFFFF-1) : uint32(Stackable);
     }
 
-    float GetItemLevelIncludingQuality() const
+    float GetItemLevelIncludingQuality(uint32 level) const
     {
-        float itemLevel = (float)ItemLevel;
+        float itemLevel = (float)level;
         switch (Quality)
         {
             case ITEM_QUALITY_POOR:
