@@ -73,14 +73,14 @@ enum LfgProposalState
 /// Teleport errors
 enum LfgTeleportError
 {
-    LFG_TELEPORTERROR_OK                         = 0,      // Internal use
-    LFG_TELEPORTERROR_NOT_WHILE_FATIGUED         = 4,
-    LFG_TELEPORTERROR_DONT_REPORT                = 7,
-    LFG_TELEPORTERROR_PLAYER_DEAD                = 8,
-    LFG_TELEPORTERROR_NOT_WHILE_FALLING          = 10,
+    LFG_TELEPORTERROR_OK                         = 1,      // Internal use
+    LFG_TELEPORTERROR_NOT_WHILE_FALLING          = 4,
+    LFG_TELEPORTERROR_DONT_REPORT_3              = 5,
+    LFG_TELEPORTERROR_DONT_REPORT                = 8,
+    LFG_TELEPORTERROR_NOT_WHILE_FATIGUED         = 9,
+    LFG_TELEPORTERROR_PLAYER_DEAD                = 10,
     LFG_TELEPORTERROR_DONT_REPORT_2              = 11,
-    LFG_TELEPORTERROR_DONT_REPORT_3              = 12,
-    LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION  = 15,
+    LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION  = 13,
 };
 
 /// Queue join results
