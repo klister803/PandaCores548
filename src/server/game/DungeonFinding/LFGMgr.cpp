@@ -2102,7 +2102,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         }
     }
 
-    if (error != LFG_TELEPORTERROR_OK)
+    //if (error != LFG_TELEPORTERROR_OK)
         player->GetSession()->SendLfgTeleportError(uint8(error));
 }
 
