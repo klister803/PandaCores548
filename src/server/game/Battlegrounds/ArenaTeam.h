@@ -113,9 +113,6 @@ struct ArenaTeamStats
     uint32 Rank;
 };
 
-#define MAX_ARENA_SLOT 3                                    // 0..2 slots
-#define MAX_ARENA_TYPE 6                                    // type : 2, 3 or 5
-
 class ArenaTeam
 {
     public:

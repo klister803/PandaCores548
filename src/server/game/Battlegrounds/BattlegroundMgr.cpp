@@ -176,6 +176,7 @@ void BattlegroundMgr::Update(uint32 diff)
     }
 }
 
+//! ToDo: arenatype -> JoinType
 void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, Player * pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame)
 {
     // we can be in 2 queues in same time...
@@ -1276,6 +1277,45 @@ bool BattlegroundMgr::IsArenaType(BattlegroundTypeId bgTypeId)
         bgTypeId == BATTLEGROUND_RL ||
         //bgTypeId == BATTLEGROUND_TTP ||
         bgTypeId == BATTLEGROUND_TV);
+}
+
+BracketType BattlegroundMgr::BracketByJoinType(uint8 joinType)
+{
+    switch (joinType)
+    {
+        case ARENA_TYPE_2v2:
+            return BRACKET_TYPE_ARENA_2;
+        case ARENA_TYPE_3v3:
+            return BRACKET_TYPE_ARENA_3;
+        case ARENA_TYPE_5v5:
+            return BRACKET_TYPE_ARENA_5;
+        case JOIN_TYPE_RATED_BG:
+            return BRACKET_TYPE_RATED_BG;
+        default:
+            break;
+    }
+
+    ASSERT(false);
+    return BRACKET_TYPE_MAX;
+}
+
+uint8 BattlegroundMgr::GetJoinTypeByBracketSlot(uint8 slot)
+{
+    switch (slot)
+    {
+    case BRACKET_TYPE_ARENA_2:
+        return ARENA_TYPE_2v2;
+    case BRACKET_TYPE_ARENA_3:
+        return ARENA_TYPE_3v3;
+    case BRACKET_TYPE_ARENA_5:
+        return ARENA_TYPE_5v5;
+    case BRACKET_TYPE_RATED_BG:
+        return JOIN_TYPE_RATED_BG;
+    default:
+        break;
+    }
+    sLog->outError(LOG_FILTER_ARENAS, "FATAL: Unknown arena slot %u", slot);
+    return 0xFF;
 }
 
 BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgTypeId, uint8 arenaType)

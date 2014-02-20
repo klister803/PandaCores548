@@ -19,7 +19,7 @@
 #include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "Chat.h"
-#include "RatedBattleground.h"
+#include "Bracket.h"
 
 class rbg_commandscript : public CommandScript
 {
@@ -39,8 +39,9 @@ public:
     static bool HandleRBGCommand(ChatHandler* handler, const char* args)
     {
         Player* player = handler->GetSession()->GetPlayer();
-        handler->PSendSysMessage("Rating: %u;", player->getRBG()->getRating());
-        handler->PSendSysMessage("Wins: %u; Losses: %u;", player->getRBG()->getWeekWins(), player->getRBG()->getWeekGames()-player->getRBG()->getWeekWins());
+        RatedBattleground* rbg = player->getBracket(BRACKET_TYPE_RATED_BG);
+        handler->PSendSysMessage("Rating: %u;", rbg->getRating());
+        handler->PSendSysMessage("Wins: %u; Total: %u;", rbg->getWeekWins(), rbg->getWeekGames());
         return true;
     }
 };

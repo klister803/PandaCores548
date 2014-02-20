@@ -36,7 +36,7 @@
 #include "Util.h"
 #include "Guild.h"
 #include "GuildMgr.h"
-#include "RatedBattleground.h"
+#include "Bracket.h"
 
 namespace Trinity
 {
@@ -793,6 +793,7 @@ void Battleground::EndBattleground(uint32 winner)
     SetRemainingTime(TIME_AUTOCLOSE_BATTLEGROUND);
 
     // arena rating calculation
+    // ToDo: set to PlayerScores groupID and by it do reward for rated game
     if (isArena() && isRated())
     {
         winner_arena_team = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(winner));
@@ -825,12 +826,13 @@ void Battleground::EndBattleground(uint32 winner)
                     maxChartID = fields[0].GetUInt32();
                 }
                 uint32 gameID = maxChartID+1;
+                //TODOOO
                 for(BattlegroundScoreMap::const_iterator itr = PlayerScores.begin(); itr != PlayerScores.end(); ++itr)
                 {
                     Player *plr = ObjectAccessor::FindPlayer(itr->first);
                     if (!plr)
                         continue;
-                    uint32 plTeamID = plr->GetArenaTeamId(winner_arena_team->GetSlot());
+                    uint32 plTeamID = 0/*plr->GetArenaTeamId(winner_arena_team->GetSlot())*/;
                     int changeType;
                     uint32 resultRating;
                     uint32 resultTeamID;
@@ -863,7 +865,7 @@ void Battleground::EndBattleground(uint32 winner)
                 if (sWorld->getBoolConfig(CONFIG_ARENA_LOG_EXTENDED_INFO))
                     for (Battleground::BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin(); itr != GetPlayerScoresEnd(); ++itr)
                         if (Player* player = ObjectAccessor::FindPlayer(itr->first))
-                            sLog->outArena("Statistics match Type: %u for %s (GUID: " UI64FMTD ", Team: %d, IP: %s): %u damage, %u healing, %u killing blows", m_ArenaType, player->GetName(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
+                            sLog->outArena("Statistics match Type: %u for %s (GUID: " UI64FMTD ", Team: %d, IP: %s): %u damage, %u healing, %u killing blows", m_ArenaType, player->GetName(), itr->first, 0, player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
             }
             // Deduct 16 points from each teams arena-rating if there are no winners after 45+2 minutes
             else
@@ -932,8 +934,9 @@ void Battleground::EndBattleground(uint32 winner)
         {
             if (team == winner)
             {
-                // update achievement BEFORE personal rating update
-                uint32 rating = player->GetArenaPersonalRating(winner_arena_team->GetSlot());
+                // update achievement BEFORE personal rating update.
+                // TODOOo
+                uint32 rating = player->GetBracketInfo(/*winner_arena_team->GetSlot()*/BRACKET_TYPE_ARENA_2, BRACKET_RATING);
                 player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, rating ? rating : 1);
                 player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA, GetMapId());
                 player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA, sWorld->getIntConfig(CONFIG_CURRENCY_CONQUEST_POINTS_ARENA_REWARD));
@@ -1009,7 +1012,7 @@ void Battleground::EndBattleground(uint32 winner)
                 player->setFactionForRace(player->getRace());
 
             uint32 loser = winner == HORDE ? ALLIANCE : HORDE;
-            player->getRBG()->FinishGame(team == winner, GetArenaMatchmakerRating(team == winner ? loser : winner));
+            player->getBracket(BRACKET_TYPE_RATED_BG)->FinishGame(team == winner, GetArenaMatchmakerRating(team == winner ? loser : winner));
 
             if (team == winner)
                 player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RBG, RatedBattleground::ConquestPointReward * 100);

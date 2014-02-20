@@ -743,16 +743,16 @@ enum InstanceResetWarningType
 };
 
 // PLAYER_FIELD_ARENA_TEAM_INFO_1_1 offsets
-enum ArenaTeamInfoType
+enum BracketInfoType
 {
-    ARENA_TEAM_ID                = 0,
-    ARENA_TEAM_TYPE              = 1,                       // new in 3.2 - team type?
-    ARENA_TEAM_MEMBER            = 2,                       // 0 - captain, 1 - member
-    ARENA_TEAM_GAMES_WEEK        = 3,
-    ARENA_TEAM_GAMES_SEASON      = 4,
-    ARENA_TEAM_WINS_SEASON       = 5,
-    ARENA_TEAM_PERSONAL_RATING   = 6,
-    ARENA_TEAM_END               = 7
+    BRACKET_RATING               = 0,
+    BRACKET_MMV                  = 1,                       // unk.
+    BRACKET_GAMES_WEEK           = 2,
+    BRACKET_WIN_WEEK             = 3,
+    BRACKET_GAMES_SEASON         = 4,
+    BRACKET_WINS_SEASON          = 5,
+    //BRACKET_TYPE                 = 6,                       // new in 3.2 - team type? 
+    BRACKET_END               = 6
 };
 
 class InstanceSave;
@@ -856,7 +856,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS           = 15,
     PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES            = 16,
     PLAYER_LOGIN_QUERY_LOADGUILD                    = 17,
-    PLAYER_LOGIN_QUERY_LOADARENAINFO                = 18,
+    PLAYER_LOGIN_QUERY_LOADBRACKETS                 = 18,
     PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS             = 19,
     PLAYER_LOGIN_QUERY_LOADACCOUNTACHIEVEMENTS      = 20,
     PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS         = 21,
@@ -1227,6 +1227,8 @@ struct PlayerTalentInfo
 private:
     PlayerTalentInfo(PlayerTalentInfo const&);
 };
+
+typedef UNORDERED_MAP<BracketType, RatedBattleground*> BracketList;
 
 class Player : public Unit, public GridObject<Player>
 {
@@ -2268,27 +2270,23 @@ class Player : public Unit, public GridObject<Player>
         int GetGuildIdInvited() { return m_GuildIdInvited; }
         static void RemovePetitionsAndSigns(uint64 guid, uint32 type);
 
-        // Arena Team
-        void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot, uint8 type)
+
+        // Bracket System
+        void InitBrackets();
+
+        //! Use for get all data
+        uint32 GetBracketInfo(BracketType slot, BracketInfoType type) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * BRACKET_END) + type); }
+
+        void SetBracketInfoField(BracketType slot, BracketInfoType type, uint32 value)
         {
-            SetArenaTeamInfoField(slot, ARENA_TEAM_ID, ArenaTeamId);
-            SetArenaTeamInfoField(slot, ARENA_TEAM_TYPE, type);
-        }
-        void SetArenaTeamInfoField(uint8 slot, ArenaTeamInfoType type, uint32 value)
-        {
-            SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + type, value);
-            if (type == ARENA_TEAM_PERSONAL_RATING && value > _maxPersonalArenaRate)
+            SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * BRACKET_END) + type, value);
+            if (type == BRACKET_RATING && value > _maxPersonalArenaRate)
             {
                 _maxPersonalArenaRate = value;
                 UpdateConquestCurrencyCap(CURRENCY_TYPE_CONQUEST_META_ARENA);
             }
         }
-        static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
-        static void LeaveAllArenaTeams(uint64 guid);
-        uint32 GetArenaTeamId(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_ID); }
-        uint32 GetArenaPersonalRating(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_PERSONAL_RATING); }
-        void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
-        uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
+
 
         Difficulty GetDifficulty(bool isRaid) const { return isRaid ? m_raidDifficulty : m_dungeonDifficulty; }
         Difficulty GetDungeonDifficulty() const { return m_dungeonDifficulty; }
@@ -2506,7 +2504,7 @@ class Player : public Unit, public GridObject<Player>
         // TODO: Properly implement correncies as of Cataclysm
         void UpdateHonorFields();
         bool RewardHonor(Unit* victim, uint32 groupsize, int32 honor = -1, bool pvptoken = false);
-        uint32 GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot) const;
+        uint32 GetMaxPersonalArenaRatingRequirement(BracketType minarenaslot) const;
 
         //End of PvP System
 
@@ -2907,8 +2905,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetLastPetNumber() const { return m_lastpetnumber; }
         void SetLastPetNumber(uint32 petnumber) { m_lastpetnumber = petnumber; }
 
-        RatedBattleground* getRBG() const { return m_rbg; }
-
         /*********************************************************/
         /***                   GROUP SYSTEM                    ***/
         /*********************************************************/
@@ -3086,7 +3082,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SendBattlePetJournal();
 
-
+        RatedBattleground* getBracket(BracketType slot) const;
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3162,7 +3158,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadFriendList(PreparedQueryResult result);
         bool _LoadHomeBind(PreparedQueryResult result);
         void _LoadDeclinedNames(PreparedQueryResult result);
-        void _LoadArenaTeamInfo(PreparedQueryResult result);
+        void _LoadBracketsInfo(PreparedQueryResult result);
         void _LoadEquipmentSets(PreparedQueryResult result);
         void _LoadBGData(PreparedQueryResult result);
         void _LoadGlyphs(PreparedQueryResult result);
@@ -3259,7 +3255,6 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_GuildIdInvited;
         uint64 m_GuildInviterGuid;
-        uint32 m_ArenaTeamIdInvited;
 
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
@@ -3489,7 +3484,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool m_Store;
 
-        RatedBattleground* m_rbg;
+        BracketList m_BracketsList;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

@@ -4200,6 +4200,21 @@ enum BattlegroundTypeId
 
 #define MAX_BATTLEGROUND_TYPE_ID 758
 
+enum BracketType
+{
+    BRACKET_TYPE_ARENA_2  = 0,
+    BRACKET_TYPE_ARENA_3  = 1,
+    BRACKET_TYPE_ARENA_5  = 2,
+    BRACKET_TYPE_RATED_BG = 3,
+    BRACKET_TYPE_MAX
+};
+
+inline BracketType &operator++(BracketType &i){ return i = BracketType(i + 1); }
+
+#define MAX_ARENA_SLOT 3                                    // 0..2 slots
+#define MAX_BRACKET_SLOT 4
+#define MAX_ARENA_TYPE 6                                    // type : 2, 3 or 5
+
 enum MailResponseType
 {
     MAIL_SEND               = 0,

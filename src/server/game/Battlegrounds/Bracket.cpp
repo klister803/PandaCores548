@@ -17,7 +17,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "RatedBattleground.h"
+#include "Bracket.h"
 #include "DatabaseEnv.h"
 
 
@@ -82,8 +82,8 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
     return (int)ceil(mod);
 }
 
-RatedBattleground::RatedBattleground(uint64 pGuid) :
-    m_owner(pGuid)
+RatedBattleground::RatedBattleground(uint64 pGuid, BracketType type) :
+    m_owner(pGuid), m_Type(type)
 {
     m_gamesStats.week_games = 0;
     m_gamesStats.week_wins  = 0;
@@ -96,6 +96,17 @@ RatedBattleground::RatedBattleground(uint64 pGuid) :
 
 RatedBattleground::~RatedBattleground()
 {
+}
+
+void RatedBattleground::InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins)
+{
+    m_rating = rating;
+    m_mmv = mmr;
+
+    m_gamesStats.games      = games;
+    m_gamesStats.wins       = wins;
+    m_gamesStats.week_games = week_games;
+    m_gamesStats.week_wins  = week_wins;
 }
 
 uint32 RatedBattleground::getGames()
@@ -118,28 +129,18 @@ uint32 RatedBattleground::getWeekWins()
     return m_gamesStats.week_wins;
 }
 
-void RatedBattleground::LoadStats()
-{
-    if (QueryResult result = CharacterDatabase.PQuery("SELECT `rating`, `mmv`, `games`, `wins`, `weekGames`, `weekWins` FROM character_rated_bg WHERE id = %u", GUID_LOPART(m_owner)))
-    {
-        Field* fields = result->Fetch();
-
-        m_rating = fields[0].GetUInt16();
-        m_mmv = fields[1].GetUInt16();
-
-        sLog->outInfo(LOG_FILTER_WORLDSERVER, "rating: %u", m_rating);
-
-        m_gamesStats.games      = fields[2].GetUInt32();
-        m_gamesStats.wins       = fields[3].GetUInt32();
-        m_gamesStats.week_games = fields[4].GetUInt16();
-        m_gamesStats.week_wins  = fields[5].GetUInt16();
-    }
-}
-
 void RatedBattleground::SaveStats()
 {
-    CharacterDatabase.PExecute("REPLACE INTO `character_rated_bg` VALUES(%u, %u, %u, %u, %u, %u, %u)",
-                               GUID_LOPART(m_owner), m_rating, m_mmv, m_gamesStats.games, m_gamesStats.wins, m_gamesStats.week_games, m_gamesStats.week_wins);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHARACTER_BRACKETS_STATS);
+    stmt->setUInt32(0, GUID_LOPART(m_owner));
+    stmt->setUInt8(0, m_Type);
+    stmt->setUInt16(0, m_rating);
+    stmt->setUInt16(0, m_mmv);
+    stmt->setUInt32(0, m_gamesStats.games);
+    stmt->setUInt32(0, m_gamesStats.wins);
+    stmt->setUInt32(0, m_gamesStats.week_games);
+    stmt->setUInt32(0, m_gamesStats.week_wins);
+    CharacterDatabase.Execute(stmt);
 }
 
 uint16 RatedBattleground::FinishGame(bool win, uint16 opponents_mmv)

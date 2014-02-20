@@ -86,7 +86,7 @@ bool ArenaTeam::Create(uint64 captainGuid, uint8 type, std::string teamName, uin
 
 bool ArenaTeam::AddMember(uint64 playerGuid)
 {
-    std::string playerName;
+    /*std::string playerName;
     uint8 playerClass;
 
     // Check if arena team is full (Can't have more than type * 2 players)
@@ -178,7 +178,7 @@ bool ArenaTeam::AddMember(uint64 playerGuid)
     }
 
     sLog->outArena("Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", playerName.c_str(), GUID_LOPART(playerGuid), GetType(), GetId());
-
+    */
     return true;
 }
 
@@ -270,7 +270,7 @@ bool ArenaTeam::LoadMembersFromDB(QueryResult result)
 void ArenaTeam::SetCaptain(uint64 guid)
 {
     // Disable remove/promote buttons
-    Player* oldCaptain = ObjectAccessor::FindPlayer(GetCaptain());
+    /*Player* oldCaptain = ObjectAccessor::FindPlayer(GetCaptain());
     if (oldCaptain)
         oldCaptain->SetArenaTeamInfoField(GetSlot(), ARENA_TEAM_MEMBER, 1);
 
@@ -292,13 +292,13 @@ void ArenaTeam::SetCaptain(uint64 guid)
         uint32 oldCaptainLowGuid = oldCaptain ? oldCaptain->GetGUIDLow() : 0;
         sLog->outArena("Player: %s [GUID: %u] promoted player: %s [GUID: %u] to leader of arena team [Id: %u] [Type: %u].",
                         oldCaptainName, oldCaptainLowGuid, newCaptain->GetName(), newCaptain->GetGUIDLow(), GetId(), GetType());
-    }
+    }*/
 }
 
 void ArenaTeam::DelMember(uint64 guid, bool cleanDb)
 {
     // Remove member from team
-    for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
+    /*for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
     {
         if (itr->Guid == guid)
         {
@@ -324,13 +324,13 @@ void ArenaTeam::DelMember(uint64 guid, bool cleanDb)
         stmt->setUInt32(0, GetId());
         stmt->setUInt32(1, GUID_LOPART(guid));
         CharacterDatabase.Execute(stmt);
-    }
+    }*/
 }
 
 void ArenaTeam::Disband(WorldSession* session)
 {
     // Remove all members from arena team
-    while (!Members.empty())
+    /*while (!Members.empty())
         DelMember(Members.front().Guid, false);
 
     // Broadcast update
@@ -356,12 +356,12 @@ void ArenaTeam::Disband(WorldSession* session)
     CharacterDatabase.CommitTransaction(trans);
 
     // Remove arena team from ObjectMgr
-    sArenaTeamMgr->RemoveArenaTeam(TeamId);
+    sArenaTeamMgr->RemoveArenaTeam(TeamId);*/
 }
 
 void ArenaTeam::Roster(WorldSession* session)
 {
-    Player* player = NULL;
+    /*Player* player = NULL;
 
     uint8 unk308 = 0;
 
@@ -394,12 +394,12 @@ void ArenaTeam::Roster(WorldSession* session)
     }
 
     session->SendPacket(&data);
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_ARENA_TEAM_ROSTER");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_ARENA_TEAM_ROSTER");*/
 }
 
 void ArenaTeam::Query(WorldSession* session)
 {
-    WorldPacket data(SMSG_ARENA_TEAM_QUERY_RESPONSE, 4*7+GetName().size()+1);
+    /*WorldPacket data(SMSG_ARENA_TEAM_QUERY_RESPONSE, 4*7+GetName().size()+1);
     data << uint32(GetId());                                // team id
     data << GetName();                                      // team name
     data << uint32(GetType());                              // arena team type (2=2x2, 3=3x3 or 5=5x5)
@@ -409,7 +409,7 @@ void ArenaTeam::Query(WorldSession* session)
     data << uint32(BorderStyle);                            // border style
     data << uint32(BorderColor);                            // border color
     session->SendPacket(&data);
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_ARENA_TEAM_QUERY_RESPONSE");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_ARENA_TEAM_QUERY_RESPONSE");*/
 }
 
 void ArenaTeam::SendStats(WorldSession* session)
@@ -453,7 +453,7 @@ void ArenaTeam::Inspect(WorldSession* session, uint64 guid)
 
 void ArenaTeamMember::ModifyPersonalRating(Player* player, int32 mod, uint32 type)
 {
-    if (int32(PersonalRating) + mod < 0)
+    /*if (int32(PersonalRating) + mod < 0)
         PersonalRating = 0;
     else
         PersonalRating += mod;
@@ -462,7 +462,7 @@ void ArenaTeamMember::ModifyPersonalRating(Player* player, int32 mod, uint32 typ
     {
         player->SetArenaTeamInfoField(ArenaTeam::GetSlotByType(type), ARENA_TEAM_PERSONAL_RATING, PersonalRating);
         player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, PersonalRating, type);
-    }
+    }*/
 }
 
 void ArenaTeamMember::ModifyMatchmakerRating(int32 mod, uint32 /*slot*/)
@@ -689,7 +689,7 @@ int32 ArenaTeam::LostAgainst(uint32 Own_MMRating, uint32 Opponent_MMRating, int3
 void ArenaTeam::MemberLost(Player* player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
 {
     // Called for each participant of a match after losing
-    for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
+    /*for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
     {
         if (itr->Guid == player->GetGUID())
         {
@@ -709,7 +709,7 @@ void ArenaTeam::MemberLost(Player* player, uint32 againstMatchmakerRating, int32
             player->SetArenaTeamInfoField(GetSlot(), ARENA_TEAM_GAMES_SEASON,  itr->SeasonGames);
             return;
         }
-    }
+    }*/
 }
 
 void ArenaTeam::OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
@@ -737,7 +737,7 @@ void ArenaTeam::OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, i
 void ArenaTeam::MemberWon(Player* player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
 {
     // called for each participant after winning a match
-    for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
+    /*for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
     {
         if (itr->Guid == player->GetGUID())
         {
@@ -758,7 +758,7 @@ void ArenaTeam::MemberWon(Player* player, uint32 againstMatchmakerRating, int32 
             player->SetArenaTeamInfoField(GetSlot(), ARENA_TEAM_GAMES_SEASON, itr->SeasonGames);
             return;
         }
-    }
+    }*/
 }
 
 void ArenaTeam::SaveToDB()

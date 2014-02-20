@@ -233,11 +233,12 @@ enum ScoreType
     /** World of Warcraft Armory **/
 };
 
-enum ArenaType
+enum JoinType
 {
     ARENA_TYPE_2v2          = 2,
     ARENA_TYPE_3v3          = 3,
-    ARENA_TYPE_5v5          = 5
+    ARENA_TYPE_5v5          = 5,
+    JOIN_TYPE_RATED_BG      = 10,
 };
 
 enum BattlegroundType
@@ -532,7 +533,7 @@ class Battleground
         }
 
         // used for rated arena battles
-        void SetArenaTeamIdForTeam(uint32 Team, uint32 ArenaTeamId) { m_ArenaTeamIds[GetTeamIndexByTeamId(Team)] = ArenaTeamId; }
+        void SetGroupForTeam(uint32 Team, uint32 GroupId) { m_ArenaTeamIds[GetTeamIndexByTeamId(Team)] = GroupId; }
         uint32 GetArenaTeamIdForTeam(uint32 Team) const             { return m_ArenaTeamIds[GetTeamIndexByTeamId(Team)]; }
         uint32 GetArenaTeamIdByIndex(uint32 index) const { return m_ArenaTeamIds[index]; }
         void SetArenaTeamRatingChangeForTeam(uint32 Team, int32 RatingChange) { m_ArenaTeamRatingChanges[GetTeamIndexByTeamId(Team)] = RatingChange; }

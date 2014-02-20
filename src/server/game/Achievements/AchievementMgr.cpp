@@ -41,6 +41,7 @@
 #include "Map.h"
 #include "InstanceScript.h"
 #include "Group.h"
+#include "Bracket.h"
 
 namespace Trinity
 {
@@ -1624,15 +1625,10 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
                     {
                         for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
                         {
-                            uint32 teamId = referencePlayer->GetArenaTeamId(arena_slot);
-                            if (!teamId)
+                            RatedBattleground* bracket = referencePlayer->getBracket(BracketType(arena_slot));
+                            if (!bracket || arena_slot != reqTeamType)
                                 continue;
-
-
-                            ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(teamId);
-                            if (!team || team->GetType() != reqTeamType)
-                                continue;
-                            SetCriteriaProgress(criteriaTree, achievementCriteria, team->GetStats().Rating, referencePlayer, PROGRESS_HIGHEST);
+                            SetCriteriaProgress(criteriaTree, achievementCriteria, bracket->getRating(), referencePlayer, PROGRESS_HIGHEST);
                             break;
                         }
                     }
@@ -1654,19 +1650,10 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
                 {
                     for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
                     {
-                        uint32 teamId = referencePlayer->GetArenaTeamId(arena_slot);
-                        if (!teamId)
+                        RatedBattleground* bracket = referencePlayer->getBracket(BracketType(arena_slot));
+                        if (!bracket || arena_slot != reqTeamType)
                             continue;
-
-                        ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(teamId);
-                        if (!team || team->GetType() != reqTeamType)
-                            continue;
-
-                        if (ArenaTeamMember const* member = team->GetMember(referencePlayer->GetGUID()))
-                        {
-                            SetCriteriaProgress(criteriaTree, achievementCriteria, member->PersonalRating, referencePlayer, PROGRESS_HIGHEST);
-                            break;
-                        }
+                        SetCriteriaProgress(criteriaTree, achievementCriteria, bracket->getRating(), referencePlayer, PROGRESS_HIGHEST);
                     }
                 }
 

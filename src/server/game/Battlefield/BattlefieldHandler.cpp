@@ -26,7 +26,7 @@
 #include "BattlefieldMgr.h"
 #include "Opcodes.h"
 
-#include "RatedBattleground.h"
+#include "Bracket.h"
 
 //This send to player windows for invite player to join the war
 //Param1:(m_Guid) the BattleId of Bf
@@ -375,7 +375,7 @@ void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
     data << uint32(2);      // BgWeeklyPlayed20vs20
     data << uint32(3);      // BgWeeklyPlayed15vs15
     data << uint32(4);
-    data << uint32(_player->getRBG()->getWeekWins());      // BgWeeklyWins10vs10
+    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_WIN_WEEK));      // BgWeeklyWins10vs10
     data << uint32(5);
     data << uint32(6);
     data << uint32(7);
@@ -386,7 +386,7 @@ void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
     data << uint32(12);
     data << uint32(13);
     data << uint32(14);
-    data << uint32(_player->getRBG()->getWeekGames());      // BgWeeklyPlayed10vs10 wins
+    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_GAMES_WEEK));      // BgWeeklyPlayed10vs10 wins
     data << uint32(15);
     data << uint32(16);
 
@@ -420,7 +420,7 @@ void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_BG_STATS");
 
     WorldPacket data(SMSG_BATTLEFIELD_RATED_INFO, 29);
-    data << uint32(_player->getRBG()->getRating());  //rating
+    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_RATING));  //rating
     data << uint32(0);  //unk1
     data << uint32(0);  //unk2
     //data << _player->GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_BG, true);

@@ -55,7 +55,7 @@
 #include "BattlegroundMgr.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
-#include "RatedBattleground.h"
+#include "Bracket.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 
@@ -1622,39 +1622,20 @@ void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
 
     data.FlushBits();
 
-    for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
+    for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
     {
-        if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(i)))
-        {
-            if (ArenaTeamMember* member = at->GetMember(playerGuid))
-            {
-                data << uint32(member->SeasonGames);
-                data << uint32(member->WeekWins);
-                data << uint8(i);
-                data << uint32(0);
-                data << uint32(member->PersonalRating);
-                data << uint32(member->SeasonWins);
-                data << uint32(member->MatchMakerRating);   //???
-                data << uint32(member->WeekGames);
+        data << uint32(player->GetBracketInfo(i, BRACKET_GAMES_SEASON));
+        data << uint32(player->GetBracketInfo(i, BRACKET_GAMES_WEEK));
+        data << uint8(i);
+        data << uint32(0);
+        data << uint32(player->GetBracketInfo(i, BRACKET_RATING));
+        data << uint32(player->GetBracketInfo(i, BRACKET_WINS_SEASON));
+        data << uint32(player->GetBracketInfo(i, BRACKET_MMV));   //???
+        data << uint32(player->GetBracketInfo(i, BRACKET_WIN_WEEK));
 
-                ++count;
-            }
-        }
-    }
-
-    //! ToDo: Something wrong where
-    if (RatedBattleground* rb = player->getRBG())
-    {
-        data << uint32(rb->getGames());
-        data << uint32(rb->getWeekWins());
-        data << uint8(3);                       // BracketID of rated bg or something about it
-        data << uint32(1);                      // always 0
-        data << uint32(rb->getRating());
-        data << uint32(rb->getWins());
-        data << uint32(rb->ConquestPointReward);
-        data << uint32(rb->getWeekGames());
         ++count;
     }
+
     data.PutBits<uint32>(bpos, count, 3);
     data.WriteGuidBytes<0, 2, 5, 7, 3, 6, 1, 4>(playerGuid);
     SendPacket(&data);

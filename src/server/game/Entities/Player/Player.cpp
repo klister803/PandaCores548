@@ -80,7 +80,7 @@
 #include "BattlefieldMgr.h"
 #include "BattlefieldMgr.h"
 #include "TicketMgr.h"
-#include "RatedBattleground.h"
+#include "Bracket.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -772,7 +772,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_GuildIdInvited = 0;
     m_GuildInviterGuid = 0;
-    m_ArenaTeamIdInvited = 0;
 
     m_atLoginFlags = AT_LOGIN_NONE;
 
@@ -962,8 +961,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_groupUpdateDelay = 5000;
 
-    m_rbg = NULL;
-
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 
     m_Store = false;
@@ -997,11 +994,11 @@ Player::~Player()
 
     delete m_declinedname;
 
-    if (m_rbg)
-        delete m_rbg;
-
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
+
+    for(BracketList::iterator itr = m_BracketsList.begin(); itr != m_BracketsList.end(); ++itr)
+        delete itr->second;
 
     ClearResurrectRequestData();
 
@@ -5429,9 +5426,6 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         if (Guild* guild = sGuildMgr->GetGuildById(guildId))
             guild->DeleteMember(guid);
 
-    // remove from arena teams
-    LeaveAllArenaTeams(playerguid);
-
     // the player was uninvited already on logout so just remove from group
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GROUP_MEMBER);
     stmt->setUInt32(0, guid);
@@ -8415,17 +8409,6 @@ uint32 Player::GetCurrencyWeekCap(uint32 id, bool usePrecision)
 
 void Player::ResetCurrencyWeekCap()
 {
-    for (uint32 arenaSlot = 0; arenaSlot < MAX_ARENA_SLOT; arenaSlot++)
-    {
-        if (uint32 arenaTeamId = GetArenaTeamId(arenaSlot))
-        {
-            ArenaTeam* arenaTeam = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);
-            arenaTeam->FinishWeek();                              // set played this week etc values to 0 in memory, too
-            arenaTeam->SaveToDB();                                // save changes
-            arenaTeam->NotifyStatsChanged();                      // notify the players of the changes
-        }
-    }
-
     for (PlayerCurrenciesMap::iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
     {
         itr->second.weekCount = 0;
@@ -8477,9 +8460,9 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
             // should add precision mod = 100
             if(curentCap == 0)
             {
-                if(getRBG())
+                if(RatedBattleground* rbg = getBracket(BRACKET_TYPE_RATED_BG))
                 {
-                    cap = Trinity::Currency::BgConquestRatingCalculator(getRBG()->getRating()) * currency->GetPrecision();
+                    cap = Trinity::Currency::BgConquestRatingCalculator(rbg->getRating()) * currency->GetPrecision();
                     if (itr != _currencyStorage.end())
                         itr->second.curentCap = cap;
                 }
@@ -8576,20 +8559,6 @@ uint8 Player::GetRankFromDB(uint64 guid)
         return result->Fetch()[1].GetUInt8();
 
     return 0;
-}
-
-uint32 Player::GetArenaTeamIdFromDB(uint64 guid, uint8 type)
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ARENA_TEAM_ID_BY_PLAYER_GUID);
-    stmt->setUInt32(0, GUID_LOPART(guid));
-    stmt->setUInt8(1, type);
-    PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-    if (!result)
-        return 0;
-
-    uint32 id = (*result)[0].GetUInt32();
-    return id;
 }
 
 uint32 Player::GetZoneIdFromDB(uint64 guid)
@@ -18182,12 +18151,12 @@ void Player::_LoadDeclinedNames(PreparedQueryResult result)
         m_declinedname->name[i] = (*result)[i].GetString();
 }
 
-void Player::_LoadArenaTeamInfo(PreparedQueryResult result)
+void Player::_LoadBracketsInfo(PreparedQueryResult result)
 {
-    // arenateamid, played_week, played_season, personal_rating
-    memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32) * MAX_ARENA_SLOT * ARENA_TEAM_END);
+    InitBrackets();
 
-    uint16 personalRatingCache[] = {0, 0, 0};
+    // arenateamid, played_week, played_season, personal_rating
+    memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32) * MAX_BRACKET_SLOT * BRACKET_END);
 
     if (result)
     {
@@ -18195,32 +18164,29 @@ void Player::_LoadArenaTeamInfo(PreparedQueryResult result)
         {
             Field* fields = result->Fetch();
 
-            uint32 arenaTeamId = fields[0].GetUInt32();
+            BracketType bType = (BracketType)fields[0].GetUInt8();
+            RatedBattleground * bracket = m_BracketsList[bType];
 
-            ArenaTeam* arenaTeam = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);
-            if (!arenaTeam)
-            {
-                sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadArenaTeamInfo: couldn't load arenateam %u", arenaTeamId);
-                continue;
-            }
+            uint16 rating = fields[1].GetUInt16();
+            uint16 mmv = fields[2].GetUInt16();
 
-            uint8 arenaSlot = arenaTeam->GetSlot();
+            sLog->outInfo(LOG_FILTER_WORLDSERVER, "bracket %i rating: %u", bType, rating);
 
-            personalRatingCache[arenaSlot] = fields[4].GetUInt16();
+            uint32 games      = fields[3].GetUInt32();
+            uint32 wins       = fields[4].GetUInt32();
+            uint32 week_games = fields[5].GetUInt16();
+            uint32 week_wins  = fields[6].GetUInt16();
 
-            SetArenaTeamInfoField(arenaSlot, ARENA_TEAM_ID, arenaTeamId);
-            SetArenaTeamInfoField(arenaSlot, ARENA_TEAM_TYPE, arenaTeam->GetType());
-            SetArenaTeamInfoField(arenaSlot, ARENA_TEAM_MEMBER, (arenaTeam->GetCaptain() == GetGUID()) ? 0 : 1);
-            SetArenaTeamInfoField(arenaSlot, ARENA_TEAM_GAMES_WEEK, uint32(fields[1].GetUInt16()));
-            SetArenaTeamInfoField(arenaSlot, ARENA_TEAM_GAMES_SEASON, uint32(fields[2].GetUInt16()));
-            SetArenaTeamInfoField(arenaSlot, ARENA_TEAM_WINS_SEASON, uint32(fields[3].GetUInt16()));
+            bracket->InitStats(rating, mmv, games, wins, week_games, week_wins);
+
+            SetBracketInfoField(bType, BRACKET_RATING, rating);
+            SetBracketInfoField(bType, BRACKET_MMV, mmv);
+            SetBracketInfoField(bType, BRACKET_GAMES_WEEK, week_games);
+            SetBracketInfoField(bType, BRACKET_WIN_WEEK, week_wins);
+            SetBracketInfoField(bType, BRACKET_GAMES_SEASON, games);
+            SetBracketInfoField(bType, BRACKET_WINS_SEASON, wins);
         }
         while (result->NextRow());
-    }
-
-    for (uint8 slot = 0; slot <= 2; ++slot)
-    {
-        SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, uint32(personalRatingCache[slot]));
     }
 }
 
@@ -18491,26 +18457,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadGroup(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGROUP));
 
-    _LoadArenaTeamInfo(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADARENAINFO));
-
-    m_rbg = new RatedBattleground(GetGUID());
-    m_rbg->LoadStats();
-
-    // check arena teams integrity
-    for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
-    {
-        uint32 arena_team_id = GetArenaTeamId(arena_slot);
-        if (!arena_team_id)
-            continue;
-
-        if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(arena_team_id))
-            if (at->IsMember(GetGUID()))
-                continue;
-
-        // arena team not exist or not member, cleanup fields
-        for (int j = 0; j < 6; ++j)
-            SetArenaTeamInfoField(arena_slot, ArenaTeamInfoType(j), 0);
-    }
+    _LoadBracketsInfo(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBRACKETS));
 
     _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCURRENCY));
     SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[40].GetUInt32());
@@ -22549,29 +22496,6 @@ void Player::RemovePetitionsAndSigns(uint64 guid, uint32 type)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void Player::LeaveAllArenaTeams(uint64 guid)
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PLAYER_ARENA_TEAMS);
-    stmt->setUInt32(0, GUID_LOPART(guid));
-    PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-    if (!result)
-        return;
-
-    do
-    {
-        Field* fields = result->Fetch();
-        uint32 arenaTeamId = fields[0].GetUInt32();
-        if (arenaTeamId != 0)
-        {
-            ArenaTeam* arenaTeam = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);
-            if (arenaTeam)
-                arenaTeam->DelMember(guid, true);
-        }
-    }
-    while (result->NextRow());
-}
-
 void Player::SetRestBonus (float rest_bonus_new)
 {
     // Prevent resting on max level
@@ -23212,7 +23136,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
         }
 
         // check for personal arena rating requirement
-        if (GetMaxPersonalArenaRatingRequirement(iece->RequiredArenaSlot) < iece->RequiredPersonalArenaRating)
+        if (GetMaxPersonalArenaRatingRequirement((BracketType)iece->RequiredArenaSlot) < iece->RequiredPersonalArenaRating)
         {
             // probably not the proper equip err
             SendEquipError(EQUIP_ERR_CANT_EQUIP_RANK, NULL, NULL);
@@ -23385,7 +23309,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         }
 
         // check for personal arena rating requirement
-        if (GetMaxPersonalArenaRatingRequirement(iece->RequiredArenaSlot) < iece->RequiredPersonalArenaRating)
+        if (GetMaxPersonalArenaRatingRequirement((BracketType)iece->RequiredArenaSlot) < iece->RequiredPersonalArenaRating)
         {
             // probably not the proper equip err
             SendEquipError(EQUIP_ERR_CANT_EQUIP_RANK, NULL, NULL);
@@ -23485,22 +23409,17 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     return false;
 }
 
-uint32 Player::GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot) const
+uint32 Player::GetMaxPersonalArenaRatingRequirement(BracketType minarenaslot) const
 {
     // returns the maximal personal arena rating that can be used to purchase items requiring this condition
     // the personal rating of the arena team must match the required limit as well
     // so return max[in arenateams](min(personalrating[teamtype], teamrating[teamtype]))
     uint32 max_personal_rating = 0;
-    for (uint8 i = minarenaslot; i < MAX_ARENA_SLOT; ++i)
+    for (BracketType i = minarenaslot; i < MAX_ARENA_SLOT; ++i)
     {
-        if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamId(i)))
-        {
-            uint32 p_rating = GetArenaPersonalRating(i);
-            uint32 t_rating = at->GetRating();
-            p_rating = p_rating < t_rating ? p_rating : t_rating;
-            if (max_personal_rating < p_rating)
-                max_personal_rating = p_rating;
-        }
+        uint32 p_rating = GetBracketInfo(i, BRACKET_RATING);
+        if (max_personal_rating < p_rating)
+           max_personal_rating = p_rating;
     }
     return max_personal_rating;
 }
@@ -29445,4 +29364,19 @@ void Player::SendModifyCooldown(uint32 spellId, int32 value)
     data.WriteGuidBytes<6, 1, 3, 0, 4, 5, 2, 7>(guid);
 
     SendDirectMessage(&data);
+}
+
+//! con't do on construct as we not now char guid at init it
+void Player::InitBrackets()
+{
+    for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
+        m_BracketsList[i] = new RatedBattleground(GetGUID(), i);
+}
+
+RatedBattleground* Player::getBracket(BracketType slot) const
+{ 
+    BracketList::const_iterator itr = m_BracketsList.find(slot);
+    if (itr == m_BracketsList.end())
+        return NULL;
+    return itr->second;
 }

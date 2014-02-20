@@ -347,6 +347,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SEL_PETITION_SIG_BY_GUID, "SELECT ownerguid, petitionguid FROM petition_sign WHERE playerguid = ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SEL_PETITION_SIG_BY_GUID_TYPE, "SELECT ownerguid, petitionguid FROM petition_sign WHERE playerguid = ? AND type = ?", CONNECTION_SYNCH);
 
+    // Brackets    
+    PREPARE_STATEMENT(CHAR_SEL_CHARACTER_BRACKETS, "SELECT `bracket`, `rating`, `mmv`, `games`, `wins`, `weekGames`, `weekWins` FROM character_rated_bg WHERE guid = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_REP_CHARACTER_BRACKETS_STATS, "REPLACE INTO `character_rated_bg` (guid, bracket, rating, mmv, games, wins, weekGames, weekWins) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+
     // Arena teams
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_ARENAINFO, "SELECT arenaTeamId, weekGames, seasonGames, seasonWins, personalRating FROM arena_team_member WHERE guid = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_INS_ARENA_TEAM, "INSERT INTO arena_team (arenaTeamId, name, captainGuid, type, rating, backgroundColor, emblemStyle, emblemColor, borderStyle, borderColor) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);

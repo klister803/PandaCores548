@@ -149,6 +149,8 @@ class BattlegroundMgr
 
         static bool IsArenaType(BattlegroundTypeId bgTypeId);
         static bool IsBattlegroundType(BattlegroundTypeId bgTypeId) { return !IsArenaType(bgTypeId); }
+        static BracketType BracketByJoinType(uint8 joinType);
+        static uint8 GetJoinTypeByBracketSlot(uint8 slot);
         static BattlegroundQueueTypeId BGQueueTypeId(BattlegroundTypeId bgTypeId, uint8 arenaType);
         static BattlegroundTypeId BGTemplateId(BattlegroundQueueTypeId bgQueueTypeId);
         static uint8 BGArenaType(BattlegroundQueueTypeId bgQueueTypeId);

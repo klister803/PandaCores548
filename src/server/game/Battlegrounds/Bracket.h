@@ -34,18 +34,19 @@ enum RatedBattlegroundTypes
 class RatedBattleground
 {
 public:
-    RatedBattleground(uint64 pGuid);
+    RatedBattleground(uint64 pGuid, BracketType type);
     ~RatedBattleground();
 
-    uint16 getRating() { return m_rating; }
-    uint16 getMMV()    { return m_mmv;    }
+    void InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins);
+
+    uint16 getRating() const { return m_rating; }
+    uint16 getMMV()    const { return m_mmv;    }
 
     uint32 getGames();
     uint32 getWins();
     uint32 getWeekGames();
     uint32 getWeekWins();
-
-    void LoadStats();
+    
     void SaveStats();
 
     uint16 FinishGame(bool win, uint16 opponents_mmv);
@@ -67,6 +68,7 @@ private:
 
     uint16 m_rating;
     uint16 m_mmv;
+    BracketType m_Type;
 
     GamesStats m_gamesStats;
 

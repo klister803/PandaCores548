@@ -22,7 +22,7 @@
 #include "Group.h"
 #include "BattlegroundMgr.h"
 #include "BattlegroundQueue.h"
-#include "RatedBattleground.h"
+#include "Bracket.h"
 
 RatedBattlegroundQueue::RatedBattlegroundQueue()
 {
@@ -135,8 +135,12 @@ GroupQueueInfo* RatedBattlegroundQueue::AddGroup(Player *leader)
         if (!member)
             continue;   // this should never happen
 
+        RatedBattleground* rbg = member->getBracket(BRACKET_TYPE_RATED_BG);
+        if (!rbg)
+            continue;
+
         onlineMembers++;
-        mmv += member->getRBG()->getMMV();
+        mmv += rbg->getMMV();
 
         PlayerQueueInfo* pl_info = new PlayerQueueInfo;
         pl_info->LastOnlineTime  = queueInfo->JoinTime;
