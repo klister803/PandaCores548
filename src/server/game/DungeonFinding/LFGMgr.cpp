@@ -2124,16 +2124,16 @@ void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, const 
     data.WriteBits(0, 24);                          // guids size
     data.WriteGuidMask<5>(guid);
 
-    data.WriteBit(1);                               // !Pause               --0 on first packet, 1 on second, 0 for last one
-    data.WriteBit(0);                               // unk bit, lfg join ?   --1 on first packet, then 0
+    data.WriteBit(0);
+    data.WriteBit(1);
     data.WriteBit(!quit);                           // display or not the lfr button, lfg join ?, 0 for last one
 
     data.WriteGuidMask<3, 7, 1>(guid);
-    data.WriteBit(0);                               // unk bit, lfg join ?   --1 on first packet, then 0
+    data.WriteBit(1);                               // 1 - show notification
     data.WriteGuidMask<0>(guid);
     data.WriteBits(selectedDungeons.size(), 22);
     data.WriteGuidMask<6, 4>(guid);
-    data.WriteBit(0);                               // unk 0 or 1
+    data.WriteBit(1);                               // 1 - active, 0 - paused
     data.WriteGuidMask<2>(guid);
 
     data.WriteString(comment);

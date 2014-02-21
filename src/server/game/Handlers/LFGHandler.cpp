@@ -684,6 +684,7 @@ void WorldSession::SendLfgJoinResult(const LfgJoinResultData& joinData)
     data.WriteGuidBytes<7>(guid);
     data << uint32(_player->GetTeam());                     // group id
     data << uint32(3);                                      // lfg queue id?
+    //data << uint8(joinData.result == LFG_JOIN_OK ? 0 : joinData.result);    // Check Result
     data << uint8(joinData.result);                         // Check Result
     data.WriteGuidBytes<0, 5, 1, 6, 3>(guid);
     data << uint8(joinData.state);                          // Check Value
@@ -811,7 +812,7 @@ void WorldSession::SendLfgBootPlayer(const LfgPlayerBoot* pBoot)
 
     data.WriteGuidBytes<5, 7>(victimGuid);
     if (pBoot->reason.size())
-        data.WriteString(pBoot->reason);
+        data.WriteString(pBoot->reason);                    // Kick reason
     data.WriteGuidBytes<2>(victimGuid);
     data << uint32(votesNum);                               // Total Votes
     data.WriteGuidBytes<6, 4, 3>(victimGuid);
@@ -820,8 +821,6 @@ void WorldSession::SendLfgBootPlayer(const LfgPlayerBoot* pBoot)
     data << uint32(agreeNum);                               // Agree Count
     data.WriteGuidBytes<0>(victimGuid);
     data << uint32(secsleft);                               // Time Left
-
-    data << pBoot->reason.c_str();                          // Kick reason
     SendPacket(&data);
 }
 
