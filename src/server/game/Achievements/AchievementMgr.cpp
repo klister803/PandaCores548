@@ -1197,7 +1197,7 @@ void AchievementMgr<T>::SendAchievementEarned(AchievementEntry const* achievemen
     data.WriteGuidMask<0>(firstPlayerOnAccountGuid);
     data.WriteGuidMask<7>(thisPlayerGuid);
     data.WriteGuidMask<3, 4, 2>(firstPlayerOnAccountGuid);
-    data.WriteBit(1);
+    data.WriteBit(0);
     data.WriteGuidMask<4, 3>(thisPlayerGuid);
     data.WriteGuidMask<6>(firstPlayerOnAccountGuid);
 
