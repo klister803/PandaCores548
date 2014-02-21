@@ -39,6 +39,19 @@ Position const sumprpos[3] =
     {-1017.72f, -2885.31f, 19.6366f},
 };
 
+bool CheckTsulong(InstanceScript* instance, Creature* caller)
+{
+    if (instance && caller)
+    {
+        if (Creature* ts = caller->GetCreature(*caller, instance->GetData64(NPC_TSULONG)))
+        {
+            if (ts->isAlive())
+                return true;
+        }
+    }
+    return false;
+}
+
 class boss_lei_shi : public CreatureScript
 {
     public:
@@ -49,6 +62,14 @@ class boss_lei_shi : public CreatureScript
             boss_lei_shiAI(Creature* creature) : BossAI(creature, DATA_LEI_SHI)
             {
                 instance = creature->GetInstanceScript();
+                if (instance)
+                {
+                    if (CheckTsulong(instance, me))
+                    {
+                        me->SetVisible(false);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    }
+                }
             }
 
             InstanceScript* instance;
@@ -101,7 +122,15 @@ class boss_lei_shi : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
-                _JustDied();
+                if (instance)
+                {
+                    _JustDied();
+                    if (Creature* sha = me->GetCreature(*me, instance->GetData64(NPC_SHA_OF_FEAR)))
+                    {
+                        sha->SetVisible(true);
+                        sha->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    }
+                }
             }
 
             void UpdateAI(const uint32 diff)

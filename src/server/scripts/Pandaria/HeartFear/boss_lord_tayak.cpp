@@ -172,7 +172,8 @@ class boss_lord_tayak : public CreatureScript
                         {
                             Position pos;
                             target->GetPosition(&pos);
-                            me->SummonCreature(90901, pos);
+                            if (Creature* t = me->SummonCreature(90901, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
+                                t->GetMotionMaster()->MoveCharge(pos.GetPositionX(), pos.GetPositionY(), me->GetPositionZ(), 20.0f);
                         }
                         events.ScheduleEvent(EVENT_SUMMON_TEMPEST, urand(20000, 30000));
                         break;
@@ -219,7 +220,6 @@ class mob_tempest_slash : public CreatureScript
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->AddAura(SPELL_TEMPEST_SLASH, me);
-                me->GetMotionMaster()->MoveRandom(3.0f);
             }
 
             void EnterCombat(Unit* who){}
