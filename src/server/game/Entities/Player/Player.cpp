@@ -18153,10 +18153,10 @@ void Player::_LoadDeclinedNames(PreparedQueryResult result)
 
 void Player::_LoadBracketsInfo(PreparedQueryResult result)
 {
-    InitBrackets();
-
     // arenateamid, played_week, played_season, personal_rating
     memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32) * MAX_BRACKET_SLOT * BRACKET_END);
+
+    InitBrackets();
 
     if (result)
     {
@@ -29370,7 +29370,7 @@ void Player::SendModifyCooldown(uint32 spellId, int32 value)
 void Player::InitBrackets()
 {
     for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
-        m_BracketsList[i] = new RatedBattleground(GetGUID(), i);
+        m_BracketsList[i] = new RatedBattleground(this, i);
 }
 
 RatedBattleground* Player::getBracket(BracketType slot) const

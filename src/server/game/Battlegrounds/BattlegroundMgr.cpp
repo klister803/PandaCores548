@@ -139,17 +139,17 @@ void BattlegroundMgr::Update(uint32 diff)
 
         for (uint8 i = 0; i < scheduled.size(); i++)
         {
-            uint32 arenaMMRating = scheduled[i]->_MMRating;
-            uint8 arenaType = scheduled[i]->_joinType;
+            uint32 MMRating = scheduled[i]->_MMRating;
+            uint8 joinType = scheduled[i]->_joinType;
             BattlegroundQueueTypeId bgQueueTypeId = scheduled[i]->_bgQueueTypeId;
             BattlegroundTypeId bgTypeId = scheduled[i]->_bgTypeId;
             BattlegroundBracketId bracket_id = scheduled[i]->_bracket_id;
-            m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(diff, bgTypeId, bracket_id, arenaType, arenaMMRating > 0, arenaMMRating);
+            m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(diff, bgTypeId, bracket_id, joinType, MMRating > 0, MMRating);
         }
            
-        /*for (std::vector<QueueSchedulerItem*>::iterator itr = scheduled.begin();
+        for (std::vector<QueueSchedulerItem*>::iterator itr = scheduled.begin();
             itr != scheduled.end(); ++itr)
-            delete *itr;*/
+            delete *itr;
     }
 
     // if rating difference counts, maybe force-update queues
@@ -163,8 +163,7 @@ void BattlegroundMgr::Update(uint32 diff)
             for (int qtype = BATTLEGROUND_QUEUE_2v2; qtype <= BATTLEGROUND_QUEUE_5v5; ++qtype)
                 for (int bracket = BG_BRACKET_ID_FIRST; bracket < MAX_BATTLEGROUND_BRACKETS; ++bracket)
                 {
-                    m_BattlegroundQueues[qtype].BattlegroundQueueUpdate(diff,
-                        BATTLEGROUND_AA, BattlegroundBracketId(bracket),
+                    m_BattlegroundQueues[qtype].BattlegroundQueueUpdate(diff, BATTLEGROUND_AA, BattlegroundBracketId(bracket),
                         BattlegroundMgr::BGJoinType(BattlegroundQueueTypeId(qtype)), false, 0);
                 }
 
@@ -1289,7 +1288,9 @@ BracketType BattlegroundMgr::BracketByJoinType(uint8 joinType)
             return BRACKET_TYPE_ARENA_3;
         case ARENA_TYPE_5v5:
             return BRACKET_TYPE_ARENA_5;
-        case JOIN_TYPE_RATED_BG:
+        case JOIN_TYPE_RATED_BG_10v10:
+        case JOIN_TYPE_RATED_BG_15v15:
+        case JOIN_TYPE_RATED_BG_25v25:
             return BRACKET_TYPE_RATED_BG;
         default:
             break;
@@ -1310,7 +1311,7 @@ uint8 BattlegroundMgr::GetJoinTypeByBracketSlot(uint8 slot)
     case BRACKET_TYPE_ARENA_5:
         return ARENA_TYPE_5v5;
     case BRACKET_TYPE_RATED_BG:
-        return JOIN_TYPE_RATED_BG;
+        return JOIN_TYPE_RATED_BG_10v10;
     default:
         break;
     }
@@ -1424,7 +1425,7 @@ uint8 BattlegroundMgr::BGJoinType(BattlegroundQueueTypeId bgQueueTypeId)
         case BATTLEGROUND_QUEUE_5v5:
             return ARENA_TYPE_5v5;
         case BATTLEGROUND_QUEUE_RBG:
-            return JOIN_TYPE_RATED_BG;
+            return JOIN_TYPE_RATED_BG_10v10;
         default:
             return 0;
     }
@@ -1486,6 +1487,8 @@ void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaMatchmakerRating, uint8 ar
     }
     if (!found)
         m_QueueUpdateScheduler.push_back(schedule_id);
+    else
+        delete schedule_id;
 }
 
 uint32 BattlegroundMgr::GetMaxRatingDifference() const

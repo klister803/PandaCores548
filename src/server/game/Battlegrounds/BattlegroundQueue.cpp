@@ -128,7 +128,7 @@ bool BattlegroundQueue::SelectionPool::AddGroup(GroupQueueInfo* ginfo, uint32 de
 /*********************************************************/
 
 // add group or player (grp == NULL) to bg queue with the given leader and bg specifications
-GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, BattlegroundTypeId BgTypeId, PvPDifficultyEntry const*  bracketEntry, uint8 JoinType, bool isRated, bool isPremade)
+GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, BattlegroundTypeId BgTypeId, PvPDifficultyEntry const*  bracketEntry, uint8 JoinType, bool isRated, bool isPremade, uint32 mmr)
 {
     BattlegroundBracketId bracketId = bracketEntry->GetBracketId();
     BracketType bracket = BattlegroundMgr::BracketByJoinType(JoinType);
@@ -143,7 +143,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
     ginfo->JoinTime                  = getMSTime();
     ginfo->RemoveInviteTime          = 0;
     ginfo->Team                      = leader->GetTeam();
-    ginfo->MatchmakerRating          = grp ? grp->GetAverageMMR(bracket) : 0;
+    ginfo->MatchmakerRating          = mmr;
     ginfo->OpponentsMatchmakerRating = 0;
 
     ginfo->Players.clear();
@@ -154,7 +154,8 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
         index += BG_TEAMS_COUNT;
     if (ginfo->Team == HORDE)
         index++;
-    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Adding Group to BattlegroundQueue bgTypeId : %u, bracket_id : %u, index : %u", BgTypeId, bracketId, index);
+
+    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Adding Group to BattlegroundQueue bgTypeId : %u, bracket_id : %u, bracket_type: %u, mmr: %i, index : %u", BgTypeId, bracketId, bracket, ginfo->MatchmakerRating, index);
 
     uint32 lastOnlineTime = getMSTime();
 
@@ -735,7 +736,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE].empty() &&
         m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].empty())
         return;
-
+    
     //battleground with free slot for player should be always in the beggining of the queue
     // maybe it would be better to create bgfreeslotqueue for each bracket_id
     BGFreeSlotQueueType::iterator itr, next;

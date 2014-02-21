@@ -673,11 +673,13 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
     err = grp->CanJoinBattlegroundQueue(bg, bgQueueTypeId, Jointype, Jointype, true, arenaslot);
     if (!err || (err && sBattlegroundMgr->isArenaTesting()))
     {
-        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Battleground: leader %s queued type %u", _player->GetName(), Jointype);
+        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Battleground: leader %s join type %u", _player->GetName(), Jointype);
 
-        ginfo = bgQueue.AddGroup(_player, grp, bgTypeId, bracketEntry, Jointype, true, false);
-        avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
-    }
+        matchmakerRating = grp->GetAverageMMR(BracketType(arenaslot));
+        ginfo = bgQueue.AddGroup(_player, grp, bgTypeId, bracketEntry, Jointype, true, false, matchmakerRating);
+        avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());        
+    }else
+        return;
 
     for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
     {

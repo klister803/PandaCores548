@@ -34,7 +34,7 @@ enum RatedBattlegroundTypes
 class RatedBattleground
 {
 public:
-    RatedBattleground(uint64 pGuid, BracketType type);
+    RatedBattleground(Player *plr, BracketType type);
     ~RatedBattleground();
 
     void InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins);

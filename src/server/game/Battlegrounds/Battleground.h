@@ -235,10 +235,12 @@ enum ScoreType
 
 enum JoinType
 {
-    ARENA_TYPE_2v2          = 2,
-    ARENA_TYPE_3v3          = 3,
-    ARENA_TYPE_5v5          = 5,
-    JOIN_TYPE_RATED_BG      = 10,
+    ARENA_TYPE_2v2                = 2,
+    ARENA_TYPE_3v3                = 3,
+    ARENA_TYPE_5v5                = 5,
+    JOIN_TYPE_RATED_BG_10v10      = 10,
+    JOIN_TYPE_RATED_BG_15v15      = 15,
+    JOIN_TYPE_RATED_BG_25v25      = 25,
 };
 
 enum BattlegroundType

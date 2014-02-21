@@ -82,8 +82,8 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
     return (int)ceil(mod);
 }
 
-RatedBattleground::RatedBattleground(uint64 pGuid, BracketType type) :
-    m_owner(pGuid), m_Type(type)
+RatedBattleground::RatedBattleground(Player *player, BracketType type) :
+    m_owner(player->GetGUID()), m_Type(type)
 {
     m_gamesStats.week_games = 0;
     m_gamesStats.week_wins  = 0;
@@ -91,7 +91,9 @@ RatedBattleground::RatedBattleground(uint64 pGuid, BracketType type) :
     m_gamesStats.wins       = 0;
 
     m_rating = 0;
-    m_mmv    = 1500;
+    m_mmv    = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
+
+    player->SetBracketInfoField(type, BRACKET_MMV, m_mmv);
 }
 
 RatedBattleground::~RatedBattleground()
