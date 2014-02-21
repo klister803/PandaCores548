@@ -263,6 +263,37 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
     for (LfgDungeonSet::const_iterator it = randomDungeons.begin(); it != randomDungeons.end(); ++it)
     {
         LfgReward const* reward = sLFGMgr->GetRandomDungeonReward(*it, level);
+        if (!reward)
+        {
+            data.WriteBits(0, 20);
+            data.WriteBits(0, 21);
+            data.WriteBit(0);
+            data.WriteBits(0, 21);
+            data.WriteBits(0, 19);
+            data.WriteBit(1);               // unk
+
+            buff << uint32(0);
+            buff << uint32(*it);
+            buff << uint32(0);
+
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            buff << uint32(0);
+            continue;
+        }
+
         Quest const* qRew[2] = { NULL, NULL };
         qRew[0] = sObjectMgr->GetQuestTemplate(reward->reward[0].questId);
         if (qRew[0])
