@@ -67,6 +67,8 @@ private:
     };
 
     uint16 m_rating;
+    uint16 m_rating_best;
+    uint16 m_rating_best_week;
     uint16 m_mmv;
     BracketType m_Type;
 

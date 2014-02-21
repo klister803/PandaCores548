@@ -18177,14 +18177,16 @@ void Player::_LoadBracketsInfo(PreparedQueryResult result)
             RatedBattleground * bracket = m_BracketsList[bType];
 
             uint16 rating = fields[1].GetUInt16();
-            uint16 mmv = fields[2].GetUInt16();
+            uint16 rating_best = fields[2].GetUInt16();
+            uint16 rating_best_week = fields[3].GetUInt16();
+            uint16 mmv = fields[4].GetUInt16();
 
             sLog->outInfo(LOG_FILTER_WORLDSERVER, "bracket %i rating: %u", bType, rating);
 
-            uint32 games      = fields[3].GetUInt32();
-            uint32 wins       = fields[4].GetUInt32();
-            uint32 week_games = fields[5].GetUInt16();
-            uint32 week_wins  = fields[6].GetUInt16();
+            uint32 games      = fields[5].GetUInt32();
+            uint32 wins       = fields[6].GetUInt32();
+            uint32 week_games = fields[7].GetUInt16();
+            uint32 week_wins  = fields[8].GetUInt16();
 
             bracket->InitStats(rating, mmv, games, wins, week_games, week_wins);
 

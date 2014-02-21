@@ -83,14 +83,14 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
 }
 
 RatedBattleground::RatedBattleground(Player *player, BracketType type) :
-    m_owner(player->GetGUID()), m_Type(type)
+    m_owner(player->GetGUID()), m_Type(type), m_rating(0), m_rating_best(0), 
+    m_rating_best_week(0)
 {
     m_gamesStats.week_games = 0;
     m_gamesStats.week_wins  = 0;
     m_gamesStats.games      = 0;
     m_gamesStats.wins       = 0;
 
-    m_rating = 0;
     m_mmv    = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
 
     player->SetBracketInfoField(type, BRACKET_MMV, m_mmv);
@@ -133,15 +133,18 @@ uint32 RatedBattleground::getWeekWins()
 
 void RatedBattleground::SaveStats()
 {
+    int32 index = 0;
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHARACTER_BRACKETS_STATS);
-    stmt->setUInt32(0, GUID_LOPART(m_owner));
-    stmt->setUInt8(0, m_Type);
-    stmt->setUInt16(0, m_rating);
-    stmt->setUInt16(0, m_mmv);
-    stmt->setUInt32(0, m_gamesStats.games);
-    stmt->setUInt32(0, m_gamesStats.wins);
-    stmt->setUInt32(0, m_gamesStats.week_games);
-    stmt->setUInt32(0, m_gamesStats.week_wins);
+    stmt->setUInt32(index++, GUID_LOPART(m_owner));
+    stmt->setUInt8(index++, m_Type);
+    stmt->setUInt16(index++, m_rating);
+    stmt->setUInt16(index++, m_rating_best);
+    stmt->setUInt16(index++, m_rating_best_week);
+    stmt->setUInt16(index++, m_mmv);
+    stmt->setUInt32(index++, m_gamesStats.games);
+    stmt->setUInt32(index++, m_gamesStats.wins);
+    stmt->setUInt32(index++, m_gamesStats.week_games);
+    stmt->setUInt32(index++, m_gamesStats.week_wins);
     CharacterDatabase.Execute(stmt);
 }
 
@@ -160,6 +163,12 @@ uint16 RatedBattleground::FinishGame(bool win, uint16 opponents_mmv)
 
     m_rating += mod;
     m_mmv += GetMatchmakerRatingMod(m_mmv, opponents_mmv, win);
+
+    if (m_rating > m_rating_best)
+        m_rating_best = m_rating;
+
+    if (m_rating > m_rating_best_week)
+        m_rating_best_week = m_rating;
 
     SaveStats();
 

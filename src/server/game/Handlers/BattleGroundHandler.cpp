@@ -789,7 +789,7 @@ void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
         data << uint32(_player->GetBracketInfo(i, BRACKET_GAMES_WEEK));          // games week
         data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));              // weeklyBest
         data << uint32(_player->GetBracketInfo(i, BRACKET_WINS_SEASON)); 
-        data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));              //seasonBest       
+        data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));              //seasonBest
     }
 
     SendPacket(&data);
