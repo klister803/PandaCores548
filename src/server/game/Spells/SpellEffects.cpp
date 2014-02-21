@@ -3206,6 +3206,11 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 }
                 default:
                 {
+                    if (properties->Flags & 512)
+                    {
+                        SummonGuardian(effIndex, entry, properties, numSummons);
+                        break;
+                    }
                     float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius();
 
                     TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
@@ -3275,6 +3280,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
             summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id);
             break;
         case SUMMON_CATEGORY_VEHICLE:
+        {
             // Summoning spells (usually triggered by npc_spellclick) that spawn a vehicle and that cause the clicker
             // to cast a ride vehicle spell on the summoned unit.
             float x, y, z;
@@ -3298,6 +3304,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
             summon->setFaction(faction);
             break;
+        }
     }
 
     if (summon)
