@@ -58,8 +58,7 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recvData)
 {
-    std::string message;
-    recvData >> message;
+    std::string message = recvData.ReadString(recvData.ReadBits(11));
 
     GMTicketResponse response = GMTICKET_RESPONSE_UPDATE_ERROR;
     if (GmTicket* ticket = sTicketMgr->GetTicketByPlayer(GetPlayer()->GetGUID()))
@@ -73,8 +72,8 @@ void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recvData)
         response = GMTICKET_RESPONSE_UPDATE_SUCCESS;
     }
 
-    WorldPacket data(SMSG_GMTICKET_UPDATETEXT, 4);
-    data << uint32(response);
+    WorldPacket data(SMSG_GMTICKET_UPDATETEXT, 1);
+    data << uint8(response);
     SendPacket(&data);
 }
 

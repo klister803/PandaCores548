@@ -46,6 +46,7 @@ enum GMTicketResponse
     GMTICKET_RESPONSE_UPDATE_SUCCESS              = 4,
     GMTICKET_RESPONSE_UPDATE_ERROR                = 5,
     GMTICKET_RESPONSE_TICKET_DELETED              = 9,
+    GMTICKET_RESPONSE_DB_ERROR                    = 10,
 };
 
 // from Blizzard LUA:

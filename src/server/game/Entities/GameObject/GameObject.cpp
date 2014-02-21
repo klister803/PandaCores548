@@ -1246,8 +1246,10 @@ void GameObject::Use(Unit* user)
 
                 if (info->goober.pageId)                    // show page...
                 {
-                    WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8);
-                    data << GetGUID();
+                    ObjectGuid guid = GetObjectGuid();
+                    WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8 + 1);
+                    data.WriteGuidMask<5, 7, 2, 6, 1, 3, 4, 0>(guid);
+                    data.WriteGuidBytes<3, 0, 2, 7, 1, 4, 5, 6>(guid);
                     player->GetSession()->SendPacket(&data);
                 }
                 else if (info->goober.gossipID)

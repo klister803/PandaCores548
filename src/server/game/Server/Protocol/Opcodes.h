@@ -902,7 +902,7 @@ enum Opcodes
     SMSG_FRIEND_STATUS                                = 0x180B, // 5.4.1 17538
     SMSG_GAMEOBJECT_CUSTOM_ANIM                       = 0x09A7, // 5.4.1 17538
     SMSG_GAMEOBJECT_DESPAWN_ANIM                      = 0x1495, // 5.4.1 17538
-    SMSG_GAMEOBJECT_PAGETEXT                          = 0x87D,  // 5.0.5 16048
+    SMSG_GAMEOBJECT_PAGETEXT                          = 0x042C, // 5.4.1 17538
     SMSG_GAMEOBJECT_QUERY_RESPONSE                    = 0x0916, // 5.4.1 17538
     SMSG_GAMEOBJECT_RESET_STATE                       = 0x8C6,  // 5.0.5 16048
     SMSG_GAMESPEED_SET                                = 0xD8F,  // 5.0.5 16048
@@ -917,7 +917,7 @@ enum Opcodes
     SMSG_GMTICKET_DELETETICKET                        = 0,      // 5.4.1 17538 - obsolete. SMSG_GMTICKET_UPDATETEXT with GMTICKET_RESPONSE_TICKET_DELETED
     SMSG_GMTICKET_GETTICKET                           = 0xBBD,  // 5.0.5 16048
     SMSG_GMTICKET_SYSTEMSTATUS                        = 0xD1F,  // 5.0.5 16048
-    SMSG_GMTICKET_UPDATETEXT                          = 0xCFB,  // 5.0.5 16048
+    SMSG_GMTICKET_UPDATETEXT                          = 0x0C1E, // 5.4.1 17538
     SMSG_GM_MESSAGECHAT                               = 0x90F,  // 5.0.5 16048
     SMSG_GM_PLAYER_INFO                               = 0xD99,  // 5.0.5 16048
     SMSG_GODMODE                                      = 0x9F3,  // 5.0.5 16048
@@ -1156,7 +1156,7 @@ enum Opcodes
     SMSG_OPEN_CONTAINER                               = 0x844,  // 5.0.5 16048
     SMSG_OPEN_LFG_DUNGEON_FINDER                      = 0x894,  // 5.0.5 16048
     SMSG_OVERRIDE_LIGHT                               = 0x0094, // 5.4.1 17538
-    SMSG_PAGE_TEXT_QUERY_RESPONSE                     = 0xCE2,  // 5.0.5 16048
+    SMSG_PAGE_TEXT_QUERY_RESPONSE                     = 0x0D2E, // 5.4.1 17538
     SMSG_PARTYKILLLOG                                 = 0x04B5, // 5.4.1 17538
     SMSG_PARTY_COMMAND_RESULT                         = 0x0430, // 5.4.1 17538
     SMSG_PARTY_MEMBER_STATS_FULL                      = 0x0CB4, // 5.4.1 17538

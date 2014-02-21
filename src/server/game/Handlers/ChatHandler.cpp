@@ -366,7 +366,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && senderIsPlayer && receiverIsPlayer)
                 if (GetPlayer()->GetTeam() != receiver->GetTeam())
                 {
-                    SendWrongFactionNotice();
+                    //SendWrongFactionNotice();
+                    SendPlayerNotFoundNotice(to);
                     return;
                 }
 
