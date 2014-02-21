@@ -1269,6 +1269,20 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     break;
             }
             break;
+        case SPELLFAMILY_WARRIOR:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 100: // Charge
+                {
+                    m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, damage, POWER_RAGE);
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELLFAMILY_HUNTER:
             switch (m_spellInfo->Id)
             {
@@ -6023,6 +6037,18 @@ void Spell::EffectCharge(SpellEffIndex /*effIndex*/)
         unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetObjectSize(), angle);
 
         m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ + unitTarget->GetObjectSize());
+
+        switch (m_spellInfo->Id)
+        {
+            case 100: // Charge
+            {
+                uint32 stunspell = m_caster->HasAura(103828) ? 105771: 7922;
+                m_caster->CastSpell(unitTarget, stunspell, true);
+                break;
+            }
+            default:
+                break;
+        }
     }
 
     if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT_TARGET)

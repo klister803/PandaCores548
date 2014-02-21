@@ -975,71 +975,6 @@ class spell_warr_deep_wounds : public SpellScriptLoader
         }
 };
 
-enum Charge
-{
-    SPELL_CHARGE                            = 100,
-    SPELL_CHARGE_STUN                       = 7922,
-    SPELL_WARBRINGER                        = 103828,
-    SPELL_CHARGE_WARBRINGER_STUN            = 105771
-};
-
-class spell_warr_charge : public SpellScriptLoader
-{
-    public:
-        spell_warr_charge() : SpellScriptLoader("spell_warr_charge") { }
-
-        class spell_warr_charge_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_charge_SpellScript);
-
-            bool Validate(SpellInfo const* /*SpellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_CHARGE))
-                    return false;
-                return true;
-            }
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(SPELL_WARBRINGER))
-                            _player->CastSpell(target, SPELL_CHARGE_WARBRINGER_STUN, true);
-                        else
-                            _player->CastSpell(target, SPELL_CHARGE_STUN, true);
-
-                        _player->SetPower(POWER_RAGE, _player->GetPower(POWER_RAGE) + 75);
-                    }
-                }
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                Unit* caster = GetCaster();
-                if (caster)
-                {
-                    if (caster->GetTypeId() == TYPEID_PLAYER)
-                    {
-                        caster->ToPlayer()->KilledMonsterCredit(44175, 0);
-                        caster->ToPlayer()->KilledMonsterCredit(44548, 0);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_charge_SpellScript::HandleOnHit);
-                OnEffectHitTarget += SpellEffectFn(spell_warr_charge_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_charge_SpellScript();
-        }
-};
-
 // Curse of Enfeeblement - 109466
 class spell_warr_curse_of_enfeeblement : public SpellScriptLoader
 {
@@ -1098,6 +1033,5 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_last_stand();
     new spell_warr_thunder_clap();
     new spell_warr_deep_wounds();
-    new spell_warr_charge();
     new spell_warr_curse_of_enfeeblement();
 }
