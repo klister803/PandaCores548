@@ -1025,7 +1025,7 @@ enum Opcodes
     SMSG_ITEM_REFUND_RESULT                           = 0x0C3D, // 5.4.1 17538
     SMSG_ITEM_REMOVE_PASSIVE                          = 0xA19,  // 5.0.5 16048
     SMSG_ITEM_SEND_PASSIVE                            = 0xF80,  // 5.0.5 16048
-    SMSG_ITEM_TEXT_QUERY_RESPONSE                     = 0xCB9,  // 5.0.5 16048
+    SMSG_ITEM_TEXT_QUERY_RESPONSE                     = 0x0039, // 5.4.1 17538
     SMSG_ITEM_TIME_UPDATE                             = 0x0936, // 5.4.1 17538
     SMSG_JOINED_BATTLEGROUND_QUEUE                    = 0,      // Not found in 4.3.4
     SMSG_KICK_REASON                                  = 0x923,  // 5.0.5 16048
