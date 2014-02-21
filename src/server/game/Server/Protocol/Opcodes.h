@@ -878,7 +878,7 @@ enum Opcodes
     SMSG_DURABILITY_DAMAGE_DEATH                      = 0x0934, // 5.4.1 17538
     SMSG_ECHO_PARTY_SQUELCH                           = 0,      // 0x0814 in 4.3.4 @todo : Find me and BACON !
     SMSG_EMOTE                                        = 0x0D8B, // 5.4.1 17538
-    SMSG_ENABLE_BARBER_SHOP                           = 0xC19,  // 5.0.5 16048
+    SMSG_ENABLE_BARBER_SHOP                           = 0x142E, // 5.4.1 17538
     SMSG_ENCHANTMENTLOG                               = 0xC49,  // 5.0.5 16048
     SMSG_ENVIRONMENTALDAMAGELOG                       = 0x0D48, // 5.4.1 17538
     SMSG_EQUIPMENT_SET_LIST                           = 0x0CBF, // 5.4.1 17538
