@@ -643,7 +643,7 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 
         uint8 item_count = (*itr)->items.size();                 // max count is MAX_MAIL_ITEMS (12)
         bool normalMail = (*itr)->messageType == MAIL_NORMAL;
-        bool creatureMail = (*itr)->messageType != MAIL_NORMAL;
+        bool otherMail = (*itr)->messageType != MAIL_NORMAL;
 
         data.WriteBits((*itr)->subject.size(), 8);               // mail subject size
         data.WriteBit(otherMail);                                // non-player sender
