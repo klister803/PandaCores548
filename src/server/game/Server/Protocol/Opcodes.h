@@ -1247,7 +1247,7 @@ enum Opcodes
     SMSG_RAID_SUMMON_FAILED                           = 0xA4E,  // 5.0.5 16048
     SMSG_RANDOMIZE_CHAR_NAME                          = 0x081E, // 5.4.1 17538
     SMSG_RATED_BG_RATING                              = 0xA4B,  // 5.0.5 16048
-    SMSG_RATED_BG_STATS                               = 0xB21,  // 5.0.5 16048
+    SMSG_PVP_RATED_STATS                              = 0x108F, // 5.4.1 17538
     SMSG_READ_ITEM_FAILED                             = 0x86D,  // 5.0.5 16048
     SMSG_READ_ITEM_OK                                 = 0xD80,  // 5.0.5 16048
     SMSG_REALM_QUERY_RESPONSE                         = 0x052D, // 5.4.1 17538

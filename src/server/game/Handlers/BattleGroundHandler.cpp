@@ -777,26 +777,20 @@ void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_INFO");
 
-    /// @Todo: perfome research in this case
-    WorldPacket data(SMSG_RATED_BG_STATS, 72);
-    data << uint32(1);      // BgWeeklyWins20vs20
-    data << uint32(2);      // BgWeeklyPlayed20vs20
-    data << uint32(3);      // BgWeeklyPlayed15vs15
-    data << uint32(4);
-    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_WIN_WEEK));      // BgWeeklyWins10vs10
-    data << uint32(5);
-    data << uint32(6);
-    data << uint32(7);
-    data << uint32(8);      // BgWeeklyWins15vs15
-    data << uint32(9);
-    data << uint32(10);
-    data << uint32(11);
-    data << uint32(12);
-    data << uint32(13);
-    data << uint32(14);
-    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_GAMES_WEEK));      // BgWeeklyPlayed10vs10 wins
-    data << uint32(15);
-    data << uint32(16);
+    WorldPacket data(SMSG_PVP_RATED_STATS, 128);
+    for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
+    {
+        RatedBattleground* bracket = _player->getBracket(i);
+
+        data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));
+        data << uint32(0);                                                       //not used
+        data << uint32(_player->GetBracketInfo(i, BRACKET_GAMES_SEASON));        // games season
+        data << uint32(_player->GetBracketInfo(i, BRACKET_WIN_WEEK));            // wins_week   
+        data << uint32(_player->GetBracketInfo(i, BRACKET_GAMES_WEEK));          // games week
+        data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));              // weeklyBest
+        data << uint32(_player->GetBracketInfo(i, BRACKET_WINS_SEASON)); 
+        data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));              //seasonBest       
+    }
 
     SendPacket(&data);
 }

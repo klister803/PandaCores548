@@ -8200,16 +8200,20 @@ void Player::ModifyCurrencyFlag(uint32 id, uint8 flag)
         _currencyStorage[id].state = PLAYERCURRENCY_CHANGED;
 }
 
+//! 5.4.1
 void Player::SendPvpRewards()
 {
-    WorldPacket packet(SMSG_REQUEST_PVP_REWARDS_RESPONSE, 24);
-    packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_POINTS, true);
+    WorldPacket packet(SMSG_REQUEST_PVP_REWARDS_RESPONSE, 40);
     packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_POINTS, true);
+    packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_RUNDOM, true);
+    packet << uint32(sWorld->getIntConfig(CONFIG_CURRENCY_CONQUEST_POINTS_ARENA_REWARD)/100);
+    packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_POINTS, true);
     packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_ARENA, true);
     packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_ARENA, true);
+    packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RUNDOM, true);
     packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_RBG, true);
-    packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_POINTS, true);
     packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RBG, true);
+    packet << uint32(RatedBattleground::ConquestPointReward);
     GetSession()->SendPacket(&packet);
 }
 
@@ -8470,16 +8474,21 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
             else
                 cap = curentCap;
             break;
+        //ToDo: do something with it.
+        case CURRENCY_TYPE_CONQUEST_META_RUNDOM:
+            cap = 135000;
+            break;
     }
 
-    if (cap != currency->WeekCap && IsInWorld() && !GetSession()->PlayerLoading())
+    //WTF????
+    /*if (cap != currency->WeekCap && IsInWorld() && !GetSession()->PlayerLoading())
     {
         //! 5.4.1
         WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
         packet << uint32(currency->ID);
         packet << uint32(cap / currency->GetPrecision());
         GetSession()->SendPacket(&packet);
-    }
+    }*/
 
     return cap;
 }
