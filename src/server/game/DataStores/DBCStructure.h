@@ -2592,4 +2592,7 @@ typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 
 #define TaxiMaskSize 142
 typedef uint8 TaxiMask[TaxiMaskSize];
+
+float GetCurrencyPrecision(uint32 currencyId);
+
 #endif
