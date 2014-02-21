@@ -773,3 +773,68 @@ void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
         sRBGQueue->Update();
     }
 }
+void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_INFO");
+
+    /// @Todo: perfome research in this case
+    WorldPacket data(SMSG_RATED_BG_STATS, 72);
+    data << uint32(1);      // BgWeeklyWins20vs20
+    data << uint32(2);      // BgWeeklyPlayed20vs20
+    data << uint32(3);      // BgWeeklyPlayed15vs15
+    data << uint32(4);
+    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_WIN_WEEK));      // BgWeeklyWins10vs10
+    data << uint32(5);
+    data << uint32(6);
+    data << uint32(7);
+    data << uint32(8);      // BgWeeklyWins15vs15
+    data << uint32(9);
+    data << uint32(10);
+    data << uint32(11);
+    data << uint32(12);
+    data << uint32(13);
+    data << uint32(14);
+    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_GAMES_WEEK));      // BgWeeklyPlayed10vs10 wins
+    data << uint32(15);
+    data << uint32(16);
+
+    SendPacket(&data);
+}
+
+void WorldSession::HandleRequestPvpOptions(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_PVP_OPTIONS_ENABLED");
+
+    /// @Todo: perfome research in this case
+    WorldPacket data(SMSG_PVP_OPTIONS_ENABLED, 1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.FlushBits();
+    SendPacket(&data);
+}
+
+void WorldSession::HandleRequestPvpReward(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_PVP_REWARDS");
+
+    _player->SendPvpRewards();
+}
+
+void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_BG_STATS");
+
+    WorldPacket data(SMSG_BATTLEFIELD_RATED_INFO, 29);
+    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_RATING));  //rating
+    data << uint32(0);  //unk1
+    data << uint32(0);  //unk2
+    //data << _player->GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_BG, true);
+    data << uint32(0);  //unk3
+    data << _player->GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS, true);
+    data << uint8(3);   //unk4
+    data << uint32(0);  //unk5
+    SendPacket(&data);
+}
