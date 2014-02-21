@@ -49,6 +49,19 @@ Position const dspos[2] =
     {-981.31f,  -2782.95f, 38.2682f},
 };
 
+bool CheckLeiShi(InstanceScript* instance, Creature* caller)
+{
+    if (instance && caller)
+    {
+        if (Creature* ls = caller->GetCreature(*caller, instance->GetData64(NPC_LEI_SHI)))
+        {
+            if (ls->isAlive())
+                return true;
+        }
+    }
+    return false;
+}
+
 class boss_sha_of_fear : public CreatureScript
 {
     public:
@@ -59,6 +72,14 @@ class boss_sha_of_fear : public CreatureScript
             boss_sha_of_fearAI(Creature* creature) : BossAI(creature, DATA_SHA_OF_FEAR)
             {
                 instance = creature->GetInstanceScript();
+                if (instance)
+                {
+                    if (CheckLeiShi(instance, me))
+                    {
+                        me->SetVisible(false);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    }
+                }
             }
 
             InstanceScript* instance;
