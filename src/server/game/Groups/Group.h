@@ -336,6 +336,7 @@ class Group
         uint8 GetReadyCheckCount() { return m_readyCheckCount; }
         uint8 GetGroupType() const { return m_groupType; }
 
+        uint32 GetAverageMMR(BracketType bracket) const;
     protected:
         bool _setMembersGroup(uint64 guid, uint8 group);
         void _homebindIfInstance(Player* player);

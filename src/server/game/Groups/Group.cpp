@@ -3044,3 +3044,28 @@ bool Group::leaderInstanceCheckFail()
 
     return false;
 }
+
+uint32 Group::GetAverageMMR(BracketType bracket) const
+{
+    uint32 matchMakerRating = 0;
+    uint32 playerDivider = 0;
+
+    Player *pMember = NULL;
+    for (member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
+    {
+        pMember = ObjectAccessor::FindPlayer(citr->guid);
+        if (pMember)
+        {
+            matchMakerRating += pMember->GetBracketInfo(bracket, BRACKET_MMV);
+            ++playerDivider;
+        }
+    }
+
+    // x/0 = crash
+    if (playerDivider == 0)
+        playerDivider = 1;
+
+    matchMakerRating /= playerDivider;
+
+    return matchMakerRating;
+}

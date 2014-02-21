@@ -130,8 +130,8 @@ bool BattlegroundQueue::SelectionPool::AddGroup(GroupQueueInfo* ginfo, uint32 de
 // add group or player (grp == NULL) to bg queue with the given leader and bg specifications
 GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, BattlegroundTypeId BgTypeId, PvPDifficultyEntry const*  bracketEntry, uint8 JoinType, bool isRated, bool isPremade)
 {
-    //, uint32 ArenaRating, uint32 MatchmakerRating, uint32 arenateamid
     BattlegroundBracketId bracketId = bracketEntry->GetBracketId();
+    BracketType bracket = BattlegroundMgr::BracketByJoinType(JoinType);
 
     // create new ginfo
     GroupQueueInfo* ginfo            = new GroupQueueInfo;
@@ -143,7 +143,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
     ginfo->JoinTime                  = getMSTime();
     ginfo->RemoveInviteTime          = 0;
     ginfo->Team                      = leader->GetTeam();
-    ginfo->MatchmakerRating          = 0;
+    ginfo->MatchmakerRating          = grp ? grp->GetAverageMMR(bracket) : 0;
     ginfo->OpponentsMatchmakerRating = 0;
 
     ginfo->Players.clear();
@@ -727,7 +727,7 @@ this method is called when group is inserted, or player / group is removed from 
 it must be called after fully adding the members of a group to ensure group joining
 should be called from Battleground::RemovePlayer function in some cases
 */
-void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType, bool isRated, uint32 arenaRating)
+void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType, bool isRated, uint32 mmr)
 {
     //if no players in queue - do nothing
     if (m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].empty() &&
@@ -872,37 +872,37 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             bg2->StartBattleground();
         }
     }
-    else if (bg_template->isArena())
+    else if (bg_template->isArena() || bg_template->IsRBG())
     {
         // found out the minimum and maximum ratings the newly added team should battle against
         // arenaRating is the rating of the latest joined team, or 0
         // 0 is on (automatic update call) and we must set it to team's with longest wait time
-        if (!arenaRating)
+        if (!mmr)
         {
             GroupQueueInfo* front1 = NULL;
             GroupQueueInfo* front2 = NULL;
             if (!m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].empty())
             {
                 front1 = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].front();
-                arenaRating = front1->MatchmakerRating;
+                mmr = front1->MatchmakerRating;
             }
             if (!m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].empty())
             {
                 front2 = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].front();
-                arenaRating = front2->MatchmakerRating;
+                mmr = front2->MatchmakerRating;
             }
             if (front1 && front2)
             {
                 if (front1->JoinTime < front2->JoinTime)
-                    arenaRating = front1->MatchmakerRating;
+                    mmr = front1->MatchmakerRating;
             }
             else if (!front1 && !front2)
                 return; //queues are empty
         }
 
         //set rating range
-        uint32 arenaMinRating = (arenaRating <= sBattlegroundMgr->GetMaxRatingDifference()) ? 0 : arenaRating - sBattlegroundMgr->GetMaxRatingDifference();
-        uint32 arenaMaxRating = arenaRating + sBattlegroundMgr->GetMaxRatingDifference();
+        uint32 MinRating = (mmr <= sBattlegroundMgr->GetMaxRatingDifference()) ? 0 : mmr - sBattlegroundMgr->GetMaxRatingDifference();
+        uint32 MaxRating = mmr + sBattlegroundMgr->GetMaxRatingDifference();
         // if max rating difference is set and the time past since server startup is greater than the rating discard time
         // (after what time the ratings aren't taken into account when making teams) then
         // the discard time is current_time - time_to_discard, teams that joined after that, will have their ratings taken into account
@@ -922,7 +922,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             {
                 // if group match conditions, then add it to pool
                 if (!(*itr2)->IsInvitedToBGInstanceGUID
-                    && (((*itr2)->MatchmakerRating >= arenaMinRating && (*itr2)->MatchmakerRating <= arenaMaxRating)
+                    && (((*itr2)->MatchmakerRating >= MinRating && (*itr2)->MatchmakerRating <= MaxRating)
                         || (*itr2)->JoinTime < discardTime))
                 {
                     itr_teams[found++] = itr2;
@@ -940,7 +940,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             for (GroupsQueueType::iterator itr3 = itr_teams[0]; itr3 != m_QueuedGroups[bracket_id][team].end(); ++itr3)
             {
                 if (!(*itr3)->IsInvitedToBGInstanceGUID
-                    && (((*itr3)->MatchmakerRating >= arenaMinRating && (*itr3)->MatchmakerRating <= arenaMaxRating)
+                    && (((*itr3)->MatchmakerRating >= MinRating && (*itr3)->MatchmakerRating <= MaxRating)
                         || (*itr3)->JoinTime < discardTime)
                     && (*itr_teams[0])->GroupId != (*itr3)->GroupId)
                 {
