@@ -139,8 +139,8 @@ void BattlegroundMgr::Update(uint32 diff)
 
         for (uint8 i = 0; i < scheduled.size(); i++)
         {
-            uint32 arenaMMRating = scheduled[i]->_arenaMMRating;
-            uint8 arenaType = scheduled[i]->_arenaType;
+            uint32 arenaMMRating = scheduled[i]->_MMRating;
+            uint8 arenaType = scheduled[i]->_joinType;
             BattlegroundQueueTypeId bgQueueTypeId = scheduled[i]->_bgQueueTypeId;
             BattlegroundTypeId bgTypeId = scheduled[i]->_bgTypeId;
             BattlegroundBracketId bracket_id = scheduled[i]->_bracket_id;
@@ -165,8 +165,7 @@ void BattlegroundMgr::Update(uint32 diff)
                 {
                     m_BattlegroundQueues[qtype].BattlegroundQueueUpdate(diff,
                         BATTLEGROUND_AA, BattlegroundBracketId(bracket),
-                        BattlegroundMgr::BGArenaType(BattlegroundQueueTypeId(qtype)), false, 0);
-
+                        BattlegroundMgr::BGJoinType(BattlegroundQueueTypeId(qtype)), false, 0);
                 }
 
             m_NextRatedArenaUpdate = sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER);
@@ -580,7 +579,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         buff << uint32(itr2->second->KillingBlows);
         buff.WriteGuidBytes<6, 4>(guid);
         if(isArena)
-            buff << int32(bg->GetArenaTeamRatingChangeByIndex(bg->GetPlayerTeam(guid) == HORDE));
+            buff << int32(bg->GetArenaMatchmakerRatingByIndex(bg->GetPlayerTeam(guid) == HORDE));
         buff << uint32(itr2->second->DamageDone);                   // damage done
         buff.WriteGuidBytes<5, 0, 1>(guid);
         buff << uint32(itr2->second->HealingDone);                  // healing done
@@ -636,7 +635,8 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         // it seems this must be according to BG_WINNER_A/H and _NOT_ BG_TEAM_A/H
         for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
         {
-            rating_change[i] = bg->GetArenaTeamRatingChangeByIndex(i);
+            //! ToDo: what exacly print where, may be we should do this for every player?
+            rating_change[i] = bg->GetArenaMatchmakerRatingByIndex(i);
 
             pointsLost[i] = rating_change[i] < 0 ? -rating_change[i] : 0;
             pointsGained[i] = rating_change[i] > 0 ? rating_change[i] : 0;
@@ -823,7 +823,7 @@ uint32 BattlegroundMgr::CreateClientVisibleInstanceId(BattlegroundTypeId bgTypeI
 }
 
 // create a new battleground that will really be used to play
-Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 arenaType, bool isRated)
+Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 joinType, bool isRated)
 {
     // get the template BG
     Battleground* bg_template = GetBattlegroundTemplate(bgTypeId);
@@ -982,7 +982,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
 
     // start the joining of the bg
     bg->SetStatus(STATUS_WAIT_JOIN);
-    bg->SetArenaType(arenaType);
+    bg->SetJoinType(joinType);
     bg->SetRated(isRated);
     bg->SetRandom(isRandom);
     bg->SetTypeID(isRandom ? BATTLEGROUND_RB : bgTypeId);
@@ -1413,7 +1413,7 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
     }
 }
 
-uint8 BattlegroundMgr::BGArenaType(BattlegroundQueueTypeId bgQueueTypeId)
+uint8 BattlegroundMgr::BGJoinType(BattlegroundQueueTypeId bgQueueTypeId)
 {
     switch (bgQueueTypeId)
     {
@@ -1423,6 +1423,8 @@ uint8 BattlegroundMgr::BGArenaType(BattlegroundQueueTypeId bgQueueTypeId)
             return ARENA_TYPE_3v3;
         case BATTLEGROUND_QUEUE_5v5:
             return ARENA_TYPE_5v5;
+        case BATTLEGROUND_QUEUE_RBG:
+            return JOIN_TYPE_RATED_BG;
         default:
             return 0;
     }
@@ -1472,8 +1474,8 @@ void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaMatchmakerRating, uint8 ar
     bool found = false;
     for (uint8 i = 0; i < m_QueueUpdateScheduler.size(); i++)
     {
-        if (m_QueueUpdateScheduler[i]->_arenaMMRating == arenaMatchmakerRating
-            && m_QueueUpdateScheduler[i]->_arenaType == arenaType
+        if (m_QueueUpdateScheduler[i]->_MMRating == arenaMatchmakerRating
+            && m_QueueUpdateScheduler[i]->_joinType == arenaType
             && m_QueueUpdateScheduler[i]->_bgQueueTypeId == bgQueueTypeId
             && m_QueueUpdateScheduler[i]->_bgTypeId == bgTypeId
             && m_QueueUpdateScheduler[i]->_bracket_id == bracket_id)

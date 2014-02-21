@@ -58,21 +58,15 @@ struct CreateBattlegroundData
 
 struct QueueSchedulerItem
 {
-    QueueSchedulerItem(uint32 arenaMMRating,
-        uint8 arenaType,
-        BattlegroundQueueTypeId bgQueueTypeId,
-        BattlegroundTypeId bgTypeId,
-        BattlegroundBracketId bracketid)
-        : _arenaMMRating (arenaMMRating),
-        _arenaType (arenaType),
-        _bgQueueTypeId (bgQueueTypeId),
-        _bgTypeId (bgTypeId),
-        _bracket_id (bracketid)
+    QueueSchedulerItem(uint32 MMRating, uint8 joinType, BattlegroundQueueTypeId bgQueueTypeId, 
+        BattlegroundTypeId bgTypeId, BattlegroundBracketId bracketid)
+        : _MMRating (MMRating), _joinType (joinType), _bgQueueTypeId (bgQueueTypeId),
+        _bgTypeId (bgTypeId), _bracket_id (bracketid)
     {
     }
 
-    const uint32 _arenaMMRating;
-    const uint8 _arenaType;
+    const uint32 _MMRating;
+    const uint8 _joinType;
     const BattlegroundQueueTypeId _bgQueueTypeId;
     const BattlegroundTypeId _bgTypeId;
     const BattlegroundBracketId _bracket_id;
@@ -153,7 +147,7 @@ class BattlegroundMgr
         static uint8 GetJoinTypeByBracketSlot(uint8 slot);
         static BattlegroundQueueTypeId BGQueueTypeId(BattlegroundTypeId bgTypeId, uint8 arenaType);
         static BattlegroundTypeId BGTemplateId(BattlegroundQueueTypeId bgQueueTypeId);
-        static uint8 BGArenaType(BattlegroundQueueTypeId bgQueueTypeId);
+        static uint8 BGJoinType(BattlegroundQueueTypeId bgQueueTypeId);
 
         static HolidayIds BGTypeToWeekendHolidayId(BattlegroundTypeId bgTypeId);
         static BattlegroundTypeId WeekendHolidayIdToBGType(HolidayIds holiday);

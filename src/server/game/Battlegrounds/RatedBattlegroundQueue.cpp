@@ -97,8 +97,8 @@ void RatedBattlegroundQueue::Update()
                     qInfo1->Team = ALLIANCE;
                     qInfo2->Team = HORDE;
 
-                    rbg->SetArenaMatchmakerRating(ALLIANCE, qInfo1->RbgMMV);
-                    rbg->SetArenaMatchmakerRating(   HORDE, qInfo2->RbgMMV);
+                    rbg->SetMatchmakerRating(ALLIANCE, qInfo1->RbgMMV);
+                    rbg->SetMatchmakerRating(   HORDE, qInfo2->RbgMMV);
 
                     InviteGroup(qInfo1, rbg, ALLIANCE);
                     InviteGroup(qInfo2, rbg, HORDE);
@@ -179,7 +179,7 @@ void RatedBattlegroundQueue::RemovePlayer(uint64 playerGuid)
                 continue;
 
             Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(gInfo->BgTypeId);
-            BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(gInfo->BgTypeId, gInfo->ArenaType);
+            BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(gInfo->BgTypeId, gInfo->JoinType);
             uint32 queueSlot = player->GetBattlegroundQueueIndex(bgQueueTypeId);
 
             player->RemoveBattlegroundQueueId(bgQueueTypeId); // must be called this way, because if you move this call to
@@ -245,7 +245,7 @@ bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg
         // set invitation
         ginfo->IsInvitedToBGInstanceGUID = bg->GetInstanceID();
         BattlegroundTypeId bgTypeId = bg->GetTypeID();
-        BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, bg->GetArenaType());
+        BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, bg->GetJoinType());
 
         ginfo->RemoveInviteTime = getMSTime() + INVITE_ACCEPT_WAIT_TIME;
 
@@ -280,7 +280,7 @@ bool RatedBattlegroundQueue::InviteGroup(GroupQueueInfo *ginfo, Battleground *bg
                  player->GetName(), player->GetGUIDLow(), bg->GetInstanceID(), queueSlot, bg->GetTypeID());
 
             // send status packet
-            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, player, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, player->GetBattlegroundQueueJoinTime(bgTypeId), ginfo->ArenaType);
+            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, player, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, player->GetBattlegroundQueueJoinTime(bgTypeId), ginfo->JoinType);
             player->GetSession()->SendPacket(&data);
         }
         return true;
