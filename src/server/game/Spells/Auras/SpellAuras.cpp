@@ -1552,6 +1552,15 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                 switch (GetId())
                 {
+                    case 121471: // Item - Rogue T14 4P Bonus
+                    {
+                        if (caster->HasAura(123122))
+                        {
+                            uint32 bonustime = caster->HasAura(79096) ? 6000: 12000;
+                            SetDuration(GetMaxDuration() + bonustime);
+                        }
+                        break;
+                    }
                     case 2094: // Blind
                     {
                         // Glyph of Blind
