@@ -41,4 +41,7 @@ void LoadDB2Stores(const std::string& dataPath);
 
 SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent);
 
+typedef UNORDERED_MAP<uint32, BattlePetSpeciesEntry const*> BattlePetSpeciesBySpellIdMap;
+extern BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
+
 #endif

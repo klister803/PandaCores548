@@ -164,8 +164,24 @@ struct ItemExtendedCostEntry
 
 struct BattlePetSpeciesEntry
 {
-    uint32 ID;
-    uint32 CreatureEntry;
+    uint32 ID;                  // 0
+    uint32 CreatureEntry;       // 1
+    //uint32 fileDataEntry;     // 2
+    uint32 spellId;             // 3
+    //uint32 petType;           // 4
+    //uint32                    // 5
+    uint32 flags;               // 6
+    //string                    // 7
+    //string                    // 8
+};
+
+enum BattlePetSpeciesFlags
+{
+    SPECIES_FLAG_CAPTURABLE = 0x08,
+    SPECIES_FLAG_TRADEABLE  = 0x10,
+    SPECIES_FLAG_OBTAINABLE = 0x20,
+    SPECIES_FLAG_UNIQUE     = 0x40,
+    SPECIES_FLAG_CAN_BATTLE = 0x80,
 };
 
 struct QuestPackageItem

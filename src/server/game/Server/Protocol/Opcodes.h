@@ -723,7 +723,7 @@ enum Opcodes
     SMSG_BATTLE_PET_FIRST_ROUND                       = 0xF31,  // 5.0.5 16048
     SMSG_BATTLE_PET_FULL_UPDATE                       = 0xB08,  // 5.0.5 16048
     SMSG_BATTLE_PET_HEALED                            = 0xADC,  // 5.0.5 16048
-    SMSG_BATTLE_PET_JOURNAL                           = 0xB2E,  // 5.0.5 16048
+    SMSG_BATTLE_PET_JOURNAL                           = 0x148C, // 5.4.1 17538
     SMSG_BATTLE_PET_JOURNAL_LOCK_ACQUIRED             = 0xE1E,  // 5.0.5 16048
     SMSG_BATTLE_PET_JOURNAL_LOCK_DENIED               = 0xFE6,  // 5.0.5 16048
     SMSG_BATTLE_PET_LICENSE_CHANGED                   = 0xFC4,  // 5.0.5 16048

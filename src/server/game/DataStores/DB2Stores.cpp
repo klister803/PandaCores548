@@ -38,6 +38,7 @@ DB2Storage <RuleSetItemUpgrade> sRuleSetItemUpgradeStore(RuleSetItemUpgradefmt);
 typedef std::list<std::string> StoreProblemList1;
 static std::map<uint32, std::list<uint32> > sPackageItemList;
 static std::map<uint32, std::list<uint32> > sRuleSetItemList;
+BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 
 uint32 DB2FilesCount = 0;
 
@@ -96,6 +97,14 @@ void LoadDB2Stores(const std::string& dataPath)
     StoreProblemList1 bad_db2_files;
 
     LoadDB2(bad_db2_files, sBattlePetSpeciesStore,  db2Path, "BattlePetSpecies.db2");
+    for (uint32 i = 0; i < sBattlePetSpeciesStore.GetNumRows(); ++i)
+    {
+        BattlePetSpeciesEntry const* entry = sBattlePetSpeciesStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        sBattlePetSpeciesBySpellId[entry->spellId] = entry;
+    }
     LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");
     LoadDB2(bad_db2_files, sItemCurrencyCostStore,  db2Path, "ItemCurrencyCost.db2");
     LoadDB2(bad_db2_files, sItemSparseStore,        db2Path, "Item-sparse.db2");

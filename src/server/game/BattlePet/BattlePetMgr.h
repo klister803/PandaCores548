@@ -31,19 +31,19 @@
 
 struct PetBattleData
 {
-    PetBattleData(uint32 entry, uint32 display, uint32 spell, uint32 power, uint32 speed, uint32 health, uint32 maxHealth, uint32 quality, uint32 experience, uint32 species) : m_entry(entry), m_displayID(display), m_speciesID(species), m_summonSpellID(spell),
-    m_power(power), m_speed(speed), m_maxHealth(maxHealth), m_health(health), m_quality(quality), m_experience(experience) {}
+    PetBattleData(BattlePetSpeciesEntry const* speciesEntry, uint32 display, uint32 power, uint32 speed, uint32 health, uint32 maxHealth, uint32 quality, uint32 experience) :
+        m_displayID(display), m_power(power), m_speed(speed), m_maxHealth(maxHealth),
+        m_health(health), m_quality(quality), m_experience(experience), m_speciesEntry(speciesEntry) {}
 
-    uint32 m_entry;
     uint32 m_displayID;
-    uint32 m_speciesID;
-    uint32 m_summonSpellID;
     uint32 m_power;
     uint32 m_speed;
     uint32 m_health;
     uint32 m_maxHealth;
     uint32 m_quality;
     uint32 m_experience;
+
+    BattlePetSpeciesEntry const* m_speciesEntry;
 };
 
 typedef std::list<PetBattleData> PetBattleDataList;
@@ -59,6 +59,13 @@ public:
 
 private:
     Player* m_player;
+};
+
+enum BattlePetFlags
+{
+    BATTLE_PET_FLAG_FAVORITE            = 1,
+    BATTLE_PET_FLAG_REVOKED             = 4,
+    BATTLE_PET_FLAG_LOCKED_FOR_CONVERT  = 8,
 };
 
 #endif

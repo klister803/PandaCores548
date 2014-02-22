@@ -3229,6 +3229,12 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
                     summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
 
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER && sBattlePetSpeciesBySpellId.find(m_spellInfo->Id) != sBattlePetSpeciesBySpellId.end())
+                    {
+                        m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, uint64(m_spellInfo->Id));
+                        summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, uint64(m_spellInfo->Id));
+                    }
+
                     summon->AI()->EnterEvadeMode();
                     break;
                 }
