@@ -143,7 +143,6 @@ Battleground::Battleground()
     m_IsArena           = false;
     m_Winner            = 2;
     m_StartTime         = 0;
-    m_CountdownTimer    = 0;
     m_ResetStatTimer    = 0;
     m_ValidStartPositionTimer = 0;
     m_Events            = 0;
@@ -299,7 +298,6 @@ void Battleground::Update(uint32 diff)
     if (GetStatus() == STATUS_WAIT_JOIN)
     {
         m_ResetStatTimer += diff;
-        m_CountdownTimer += diff;
     }
     m_ValidStartPositionTimer += diff;
 
@@ -443,23 +441,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
             if (Player* player = ObjectAccessor::FindPlayer(itr->first))
                 player->ResetAllPowers();
-    }
-
-    // Send packet every 10 seconds until the 2nd field reach 0
-    if (m_CountdownTimer >= 10000)
-    {
-        uint32 countdownMaxForBGType = isArena() ? ARENA_COUNTDOWN_MAX : BATTLEGROUND_COUNTDOWN_MAX;
-
-        WorldPacket data(SMSG_START_TIMER, 4 + 4 + 4);
-        data << uint32(0);  // timer type
-        data << uint32(countdownMaxForBGType - (m_CountdownTimer / 1000));
-        data << uint32(countdownMaxForBGType);
-
-        for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-            if (Player* player = ObjectAccessor::FindPlayer(itr->first))
-                player->GetSession()->SendPacket(&data);
-
-        m_CountdownTimer = 0;
     }
 
     if (!(m_Events & BG_STARTING_EVENT_1))
@@ -773,6 +754,8 @@ void Battleground::EndBattleground(uint32 winner)
         SetWinner(3);
     }
 
+    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: EndBattleground. JounType: %u, Bracket %u, Winer %u", GetJoinType(), bType, winner);
+
     SetStatus(STATUS_WAIT_LEAVE);
     //we must set it this way, because end time is sent in packet!
     SetRemainingTime(TIME_AUTOCLOSE_BATTLEGROUND);
@@ -799,7 +782,7 @@ void Battleground::EndBattleground(uint32 winner)
         if (!player)
             continue;
 
-        Bracket* bracket = bType ? player->getBracket(bType) : NULL;
+        Bracket* bracket = GetJoinType() ? player->getBracket(bType) : NULL;
 
         // should remove spirit of redemption
         if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
@@ -1217,16 +1200,16 @@ void Battleground::AddPlayer(Player* player)
     else
     {
         if (GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
-        {
             player->CastSpell(player, SPELL_PREPARATION, true);   // reduces all mana cost of spells.
+    }
 
-            int32 countdownMaxForBGType = isArena() ? ARENA_COUNTDOWN_MAX : BATTLEGROUND_COUNTDOWN_MAX;
-            WorldPacket data(SMSG_START_TIMER, 4 + 4 + 4);
-            data << uint32(0);  // timer type
-            data << uint32(countdownMaxForBGType - (GetElapsedTime() / 1000));
-            data << uint32(countdownMaxForBGType);
-            player->GetSession()->SendPacket(&data);
-        }
+    if (GetStatus() == STATUS_WAIT_JOIN)
+    {
+        WorldPacket data(SMSG_START_TIMER, 12);
+        data << uint32(0);  // timer type
+        data << uint32(GetStartDelayTime() / 1000);
+        data << uint32(StartDelayTimes[BG_STARTING_EVENT_FIRST] / 1000);
+        SendPacketToAll(&data);
     }
 
     player->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP, GetMapId(), true);

@@ -903,7 +903,7 @@ void World::LoadConfigSettings(bool reload)
     }
     m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_ARENA_REWARD] *= 100;     //precision mod
 
-    m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD] = ConfigMgr::GetIntDefault("Currency.ConquestPointsArenaReward", 400);
+    m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD] = ConfigMgr::GetIntDefault("Currency.ConquestPointsRbgReward", 400);
     if (int32(m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD]) <= 0)
     {
         sLog->outError(LOG_FILTER_SERVER_LOADING, "Currency.ConquestPointsRbgReward (%i) must be > 0, set to default 180.", m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD]);
