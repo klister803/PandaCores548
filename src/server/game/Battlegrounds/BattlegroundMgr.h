@@ -36,6 +36,7 @@ struct CreateBattlegroundData
 {
     BattlegroundTypeId bgTypeId;
     bool IsArena;
+    bool IsRbg;
     uint32 MinPlayersPerTeam;
     uint32 MaxPlayersPerTeam;
     uint32 LevelMin;

@@ -1027,6 +1027,7 @@ uint32 BattlegroundMgr::CreateBattleground(CreateBattlegroundData& data)
     bg->InitGUID();
     bg->SetInstanceID(0);
     bg->SetArenaorBGType(data.IsArena);
+    bg->SetRBG(data.IsRbg);
     bg->SetMinPlayersPerTeam(data.MinPlayersPerTeam);
     bg->SetMaxPlayersPerTeam(data.MaxPlayersPerTeam);
     bg->SetMinPlayers(data.MinPlayersPerTeam* 2);
@@ -1083,6 +1084,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         CreateBattlegroundData data;
         data.bgTypeId = BattlegroundTypeId(bgTypeID_);
         data.IsArena = (bl->type == TYPE_ARENA);
+        data.IsRbg  = (bl->ReatedData == 2);
         data.MinPlayersPerTeam = fields[1].GetUInt16();
         data.MaxPlayersPerTeam = fields[2].GetUInt16();
         data.LevelMin = fields[3].GetUInt8();

@@ -686,7 +686,7 @@ struct BattlemasterListEntry
     //uint32 maxGroupSizeRated;                             // 24 4.0.1
     //uint32 unk;                                           // 25 - 4.0.6.13596
     //uint32 maxPlayers;                                    // 26 4.0.1
-    //uint32 unk1;                                          // 27 4.0.3, value 2 for Rated Battlegrounds
+    uint32 ReatedData;                                      // 27 4.0.3, value 2 for Rated Battlegrounds
     //uint32                                                // 28 5.4.1
     //uint32                                                // 29 5.4.1
 };
