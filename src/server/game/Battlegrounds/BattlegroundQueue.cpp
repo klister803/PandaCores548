@@ -736,7 +736,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE].empty() &&
         m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].empty())
         return;
-    
+
     //battleground with free slot for player should be always in the beggining of the queue
     // maybe it would be better to create bgfreeslotqueue for each bracket_id
     BGFreeSlotQueueType::iterator itr, next;
@@ -771,7 +771,6 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             }
         }
     }
-
     // finished iterating through the bgs with free slots, maybe we need to create a new bg
 
     Battleground* bg_template = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
@@ -826,7 +825,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
     m_SelectionPools[BG_TEAM_ALLIANCE].Init();
     m_SelectionPools[BG_TEAM_HORDE].Init();
 
-    if (bg_template->isBattleground())
+    if (bg_template->isBattleground() && !bg_template->IsRBG())
     {
         //check if there is premade against premade match
         if (CheckPremadeMatch(bracket_id, MinPlayersPerTeam, MaxPlayersPerTeam))

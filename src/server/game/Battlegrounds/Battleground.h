@@ -448,6 +448,7 @@ class Battleground
 
         bool isArena() const        { return m_IsArena; }
         bool isBattleground() const { return !m_IsArena; }
+        bool IsRBG()          const { return m_IsRBG; }
         bool isRated() const        { return m_IsRated; }
 
         typedef std::map<uint64, BattlegroundPlayer> BattlegroundPlayerMap;
@@ -618,8 +619,8 @@ class Battleground
 
         virtual uint64 GetFlagPickerGUID(int32 /*team*/ = -1) const { return 0; }
 
-        bool IsRBG() const { return m_rbgFlag; }
-        void SetRBG(bool enable) { m_rbgFlag = enable; }
+        
+        void SetRBG(bool enable) { m_IsRBG = enable; }
 
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
@@ -754,7 +755,7 @@ class Battleground
         uint32 m_holiday;
         uint32 ScriptId;
 
-        bool m_rbgFlag;
+        bool m_IsRBG;
 };
 
 // helper functions for world state list fill

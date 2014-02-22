@@ -204,7 +204,7 @@ Battleground::Battleground()
     StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_WS_START_HALF_MINUTE;
     StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_BG_WS_HAS_BEGUN;
 
-    m_rbgFlag = false;
+    m_IsRBG = false;
 
     m_sameBgTeamId = false;
 }
