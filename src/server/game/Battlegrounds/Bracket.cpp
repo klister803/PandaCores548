@@ -20,8 +20,25 @@
 #include "Bracket.h"
 #include "DatabaseEnv.h"
 
+RatedBattleground::RatedBattleground(Player *player, BracketType type) :
+    m_owner(player->GetGUID()), m_Type(type), m_rating(0)
+{
+    m_mmv    = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
+    memset(values, 0, sizeof(uint32) * BRACKET_END);
+}
 
-uint16 RatedBattleground::ConquestPointReward = 400;
+void RatedBattleground::InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins, uint16 best_week, uint16 best)
+{
+    m_rating = rating;
+    m_mmv = mmr;
+
+    values[BRACKET_SEASON_GAMES] = games;
+    values[BRACKET_SEASON_WIN] = wins;
+    values[BRACKET_WEEK_GAMES] = week_games;
+    values[BRACKET_WEEK_WIN] = week_wins;
+    values[BRACKET_WEEK_BEST] = best_week;
+    values[BRACKET_BEST] = best;
+}
 
 float GetChanceAgainst(int ownRating, int opponentRating)
 {
@@ -82,55 +99,6 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
     return (int)ceil(mod);
 }
 
-RatedBattleground::RatedBattleground(Player *player, BracketType type) :
-    m_owner(player->GetGUID()), m_Type(type), m_rating(0), m_rating_best(0), 
-    m_rating_best_week(0)
-{
-    m_gamesStats.week_games = 0;
-    m_gamesStats.week_wins  = 0;
-    m_gamesStats.games      = 0;
-    m_gamesStats.wins       = 0;
-
-    m_mmv    = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
-
-    player->SetBracketInfoField(type, BRACKET_MMV, m_mmv);
-}
-
-RatedBattleground::~RatedBattleground()
-{
-}
-
-void RatedBattleground::InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins)
-{
-    m_rating = rating;
-    m_mmv = mmr;
-
-    m_gamesStats.games      = games;
-    m_gamesStats.wins       = wins;
-    m_gamesStats.week_games = week_games;
-    m_gamesStats.week_wins  = week_wins;
-}
-
-uint32 RatedBattleground::getGames()
-{
-    return m_gamesStats.games;
-}
-
-uint32 RatedBattleground::getWins()
-{
-    return m_gamesStats.wins;
-}
-
-uint32 RatedBattleground::getWeekGames()
-{
-    return m_gamesStats.week_games;
-}
-
-uint32 RatedBattleground::getWeekWins()
-{
-    return m_gamesStats.week_wins;
-}
-
 void RatedBattleground::SaveStats()
 {
     int32 index = 0;
@@ -138,25 +106,25 @@ void RatedBattleground::SaveStats()
     stmt->setUInt32(index++, GUID_LOPART(m_owner));
     stmt->setUInt8(index++, m_Type);
     stmt->setUInt16(index++, m_rating);
-    stmt->setUInt16(index++, m_rating_best);
-    stmt->setUInt16(index++, m_rating_best_week);
+    stmt->setUInt16(index++, values[BRACKET_BEST]);
+    stmt->setUInt16(index++, values[BRACKET_WEEK_BEST]);
     stmt->setUInt16(index++, m_mmv);
-    stmt->setUInt32(index++, m_gamesStats.games);
-    stmt->setUInt32(index++, m_gamesStats.wins);
-    stmt->setUInt32(index++, m_gamesStats.week_games);
-    stmt->setUInt32(index++, m_gamesStats.week_wins);
+    stmt->setUInt32(index++, values[BRACKET_SEASON_GAMES]);
+    stmt->setUInt32(index++, values[BRACKET_SEASON_WIN]);
+    stmt->setUInt32(index++, values[BRACKET_WEEK_GAMES]);
+    stmt->setUInt32(index++, values[BRACKET_WEEK_WIN]);
     CharacterDatabase.Execute(stmt);
 }
 
 uint16 RatedBattleground::FinishGame(bool win, uint16 opponents_mmv)
 {
-    m_gamesStats.games++;
-    m_gamesStats.week_games++;
+    values[BRACKET_SEASON_GAMES]++;
+    values[BRACKET_WEEK_GAMES]++;
 
     if (win)
     {
-        m_gamesStats.wins++;
-        m_gamesStats.week_wins++;
+        values[BRACKET_SEASON_WIN]++;
+        values[BRACKET_WEEK_WIN]++;
     }
 
     int16 mod = (win) ? WonAgainst(opponents_mmv) : LostAgainst(opponents_mmv);
@@ -164,11 +132,17 @@ uint16 RatedBattleground::FinishGame(bool win, uint16 opponents_mmv)
     m_rating += mod;
     m_mmv += GetMatchmakerRatingMod(m_mmv, opponents_mmv, win);
 
-    if (m_rating > m_rating_best)
-        m_rating_best = m_rating;
+    if (m_rating > values[BRACKET_WEEK_BEST])
+        values[BRACKET_WEEK_BEST] = m_rating;
 
-    if (m_rating > m_rating_best_week)
-        m_rating_best_week = m_rating;
+    if (m_rating > values[BRACKET_BEST])
+        values[BRACKET_BEST] = m_rating;
+
+    if (Player* player = ObjectAccessor::FindPlayer(m_owner))
+    {
+        if (m_rating > player->GetMaxPersonalArenaRatingRequirement(BRACKET_TYPE_ARENA_2))
+            player->UpdateConquestCurrencyCap(CURRENCY_TYPE_CONQUEST_META_ARENA);        
+    }
 
     SaveStats();
 

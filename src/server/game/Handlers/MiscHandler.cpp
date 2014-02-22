@@ -1624,14 +1624,17 @@ void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
 
     for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
     {
-        data << uint32(player->GetBracketInfo(i, BRACKET_GAMES_SEASON));
-        data << uint32(player->GetBracketInfo(i, BRACKET_GAMES_WEEK));
+        RatedBattleground* bracket = player->getBracket(i);
+        ASSERT(bracket);
+
+        data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_GAMES));
+        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_GAMES));
         data << uint8(i);
         data << uint32(0);
-        data << uint32(player->GetBracketInfo(i, BRACKET_RATING));
-        data << uint32(player->GetBracketInfo(i, BRACKET_WINS_SEASON));
-        data << uint32(player->GetBracketInfo(i, BRACKET_MMV));   //???
-        data << uint32(player->GetBracketInfo(i, BRACKET_WIN_WEEK));
+        data << uint32(bracket->getRating());
+        data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_WIN));
+        data << uint32(0);
+        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_WIN));
 
         ++count;
     }

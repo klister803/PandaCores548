@@ -781,15 +781,16 @@ void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
     for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
     {
         RatedBattleground* bracket = _player->getBracket(i);
+        ASSERT(bracket);
 
-        data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));
-        data << uint32(0);                                                       //not used
-        data << uint32(_player->GetBracketInfo(i, BRACKET_GAMES_SEASON));        // games season
-        data << uint32(_player->GetBracketInfo(i, BRACKET_WIN_WEEK));            // wins_week   
-        data << uint32(_player->GetBracketInfo(i, BRACKET_GAMES_WEEK));          // games week
-        data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));              // weeklyBest
-        data << uint32(_player->GetBracketInfo(i, BRACKET_WINS_SEASON)); 
-        data << uint32(_player->GetBracketInfo(i, BRACKET_RATING));              //seasonBest
+        data << uint32(bracket->getRating());
+        data << uint32(0);                                                       // not used
+        data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_GAMES));           // games season
+        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_WIN));               // wins_week   
+        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_GAMES));             // games week
+        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_BEST));              // weeklyBest
+        data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_WIN));             // Season Win
+        data << uint32(bracket->GetBracketInfo(BRACKET_BEST));                   // seasonBest
     }
 
     SendPacket(&data);
@@ -821,8 +822,11 @@ void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_BG_STATS");
 
+    RatedBattleground* bracket = _player->getBracket(BRACKET_TYPE_RATED_BG);
+    ASSERT(bracket);
+
     WorldPacket data(SMSG_BATTLEFIELD_RATED_INFO, 29);
-    data << uint32(_player->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_RATING));  //rating
+    data << uint32(bracket->getRating());  //rating
     data << uint32(0);  //unk1
     data << uint32(0);  //unk2
     //data << _player->GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_BG, true);

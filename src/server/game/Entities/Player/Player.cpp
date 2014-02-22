@@ -949,7 +949,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     SetPendingBind(0, 0);
 
     _activeCheats = CHEAT_NONE;
-    _maxPersonalArenaRate = 0;
 
     _lastTargetedGO = 0;
 
@@ -8213,7 +8212,7 @@ void Player::SendPvpRewards()
     packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RUNDOM, true);
     packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_RBG, true);
     packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RBG, true);
-    packet << uint32(RatedBattleground::ConquestPointReward);
+    packet << uint32(sWorld->getIntConfig(CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD)/100); //RatedBattleground::ConquestPointReward
     GetSession()->SendPacket(&packet);
 }
 
@@ -8453,7 +8452,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
             // should add precision mod = 100
             if(curentCap == 0)
             {
-                cap = Trinity::Currency::ConquestRatingCalculator(_maxPersonalArenaRate) * currency->GetPrecision();
+                cap = Trinity::Currency::ConquestRatingCalculator(GetMaxPersonalArenaRatingRequirement(BRACKET_TYPE_ARENA_2)) * currency->GetPrecision();
                 if (itr != _currencyStorage.end())
                     itr->second.curentCap = cap;
             }
@@ -18188,14 +18187,14 @@ void Player::_LoadBracketsInfo(PreparedQueryResult result)
             uint32 week_games = fields[7].GetUInt16();
             uint32 week_wins  = fields[8].GetUInt16();
 
-            bracket->InitStats(rating, mmv, games, wins, week_games, week_wins);
+            bracket->InitStats(rating, mmv, games, wins, week_games, week_wins, rating_best_week, rating_best);
 
-            SetBracketInfoField(bType, BRACKET_RATING, rating);
-            SetBracketInfoField(bType, BRACKET_MMV, mmv);
-            SetBracketInfoField(bType, BRACKET_GAMES_WEEK, week_games);
-            SetBracketInfoField(bType, BRACKET_WIN_WEEK, week_wins);
-            SetBracketInfoField(bType, BRACKET_GAMES_SEASON, games);
-            SetBracketInfoField(bType, BRACKET_WINS_SEASON, wins);
+            SetBracketInfoField(bType, BRACKET_WEEK_GAMES, week_games);
+            SetBracketInfoField(bType, BRACKET_WEEK_WIN, week_wins);
+            SetBracketInfoField(bType, BRACKET_SEASON_GAMES, games);
+            SetBracketInfoField(bType, BRACKET_SEASON_WIN, wins);
+            SetBracketInfoField(bType, BRACKET_BEST, rating_best);
+            SetBracketInfoField(bType, BRACKET_WEEK_BEST, rating_best_week);
         }
         while (result->NextRow());
     }
@@ -23428,7 +23427,7 @@ uint32 Player::GetMaxPersonalArenaRatingRequirement(BracketType minarenaslot) co
     uint32 max_personal_rating = 0;
     for (BracketType i = minarenaslot; i < MAX_ARENA_SLOT; ++i)
     {
-        uint32 p_rating = GetBracketInfo(i, BRACKET_RATING);
+        uint32 p_rating = getBracket(i)->getRating();
         if (max_personal_rating < p_rating)
            max_personal_rating = p_rating;
     }

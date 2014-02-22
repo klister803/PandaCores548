@@ -743,16 +743,17 @@ enum InstanceResetWarningType
 };
 
 // PLAYER_FIELD_ARENA_TEAM_INFO_1_1 offsets
+/// @Posible that where is only 3 arena slots with 8 fields
 enum BracketInfoType
 {
-    BRACKET_RATING               = 0,
-    BRACKET_MMV                  = 1,                       // unk.
-    BRACKET_GAMES_WEEK           = 2,
-    BRACKET_WIN_WEEK             = 3,
-    BRACKET_GAMES_SEASON         = 4,
-    BRACKET_WINS_SEASON          = 5,
-    //BRACKET_TYPE                 = 6,                       // new in 3.2 - team type? 
-    BRACKET_END               = 6
+    //BRACKET_RATING               = 0,
+    BRACKET_SEASON_GAMES         = 0,
+    BRACKET_SEASON_WIN           = 1,
+    BRACKET_WEEK_GAMES           = 2,
+    BRACKET_WEEK_WIN             = 3,
+    BRACKET_WEEK_BEST            = 4,                       // Best rating on this week
+    BRACKET_BEST                 = 5,                       // Best rating on this season
+    BRACKET_END                  = 6
 };
 
 class InstanceSave;
@@ -2276,15 +2277,9 @@ class Player : public Unit, public GridObject<Player>
 
         //! Use for get all data
         uint32 GetBracketInfo(BracketType slot, BracketInfoType type) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * BRACKET_END) + type); }
-
         void SetBracketInfoField(BracketType slot, BracketInfoType type, uint32 value)
         {
             SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * BRACKET_END) + type, value);
-            if (type == BRACKET_RATING && value > _maxPersonalArenaRate)
-            {
-                _maxPersonalArenaRate = value;
-                UpdateConquestCurrencyCap(CURRENCY_TYPE_CONQUEST_META_ARENA);
-            }
         }
 
 
@@ -3470,7 +3465,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
-        uint32 _maxPersonalArenaRate;
 
         PhaseMgr phaseMgr;
 

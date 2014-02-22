@@ -36,6 +36,7 @@
 #include "LFGMgr.h"
 #include "UpdateFieldFlags.h"
 #include "GuildMgr.h"
+#include "Bracket.h"
 
 Roll::Roll(uint64 _guid, LootItem const& li) : itemGUID(_guid), itemid(li.itemid),
     itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix), itemCount(li.count),
@@ -2253,7 +2254,10 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
     if (!bracketEntry)
         return ERR_BATTLEGROUND_JOIN_FAILED;
 
-    uint32 mmr = reference->GetBracketInfo(BRACKET_TYPE_RATED_BG, BRACKET_MMV);
+    RatedBattleground* bracket = reference->getBracket(BracketType(arenaSlot));
+    ASSERT(bracket);
+
+    uint32 mmr = bracket->getMMV();
     uint32 team = reference->GetTeam();
 
     BattlegroundQueueTypeId bgQueueTypeIdRandom = BattlegroundMgr::BGQueueTypeId(BATTLEGROUND_RB, 0);
@@ -3056,7 +3060,7 @@ uint32 Group::GetAverageMMR(BracketType bracket) const
         pMember = ObjectAccessor::FindPlayer(citr->guid);
         if (pMember)
         {
-            matchMakerRating += pMember->GetBracketInfo(bracket, BRACKET_MMV);
+            matchMakerRating += pMember->getBracket(bracket)->getMMV();
             ++playerDivider;
         }
     }

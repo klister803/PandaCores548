@@ -924,7 +924,7 @@ void Battleground::EndBattleground(uint32 winner)
             {
                 // update achievement BEFORE personal rating update.
                 // TODOOo
-                uint32 rating = player->GetBracketInfo(/*winner_arena_team->GetSlot()*/BRACKET_TYPE_ARENA_2, BRACKET_RATING);
+                uint32 rating = 0/*player->GetBracketInfo(/*winner_arena_team->GetSlot()BRACKET_TYPE_ARENA_2, BRACKET_RATING)*/;
                 player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, rating ? rating : 1);
                 player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA, GetMapId());
                 player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA, sWorld->getIntConfig(CONFIG_CURRENCY_CONQUEST_POINTS_ARENA_REWARD));
@@ -1003,7 +1003,7 @@ void Battleground::EndBattleground(uint32 winner)
             player->getBracket(BRACKET_TYPE_RATED_BG)->FinishGame(team == winner, GetArenaMatchmakerRating(team == winner ? loser : winner));
 
             if (team == winner)
-                player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RBG, RatedBattleground::ConquestPointReward * 100);
+                player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RBG, sWorld->getIntConfig(CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD));
         }
 
         BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(GetTypeID(), GetJoinType());

@@ -903,6 +903,14 @@ void World::LoadConfigSettings(bool reload)
     }
     m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_ARENA_REWARD] *= 100;     //precision mod
 
+    m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD] = ConfigMgr::GetIntDefault("Currency.ConquestPointsArenaReward", 400);
+    if (int32(m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD]) <= 0)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Currency.ConquestPointsRbgReward (%i) must be > 0, set to default 180.", m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD]);
+        m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD] = 400;
+    }
+    m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD] *= 100;     //precision mod
+
     m_int_configs[CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL] = ConfigMgr::GetIntDefault("RecruitAFriend.MaxLevel", 60);
     if (m_int_configs[CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL] > m_int_configs[CONFIG_MAX_PLAYER_LEVEL])
     {

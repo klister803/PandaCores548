@@ -21,6 +21,7 @@
 #define __RATEDBATTLEGROUND_H
 
 #include "Common.h"
+#include "Player.h"
 
 enum RatedBattlegroundTypes
 {
@@ -35,44 +36,27 @@ class RatedBattleground
 {
 public:
     RatedBattleground(Player *plr, BracketType type);
-    ~RatedBattleground();
+    ~RatedBattleground() {};
 
-    void InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins);
+    void InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins, uint16 best_week, uint16 best);
 
     uint16 getRating() const { return m_rating; }
     uint16 getMMV()    const { return m_mmv;    }
-
-    uint32 getGames();
-    uint32 getWins();
-    uint32 getWeekGames();
-    uint32 getWeekWins();
     
     void SaveStats();
 
     uint16 FinishGame(bool win, uint16 opponents_mmv);
-
-    static uint16 ConquestPointReward;
-
+    uint32 GetBracketInfo(BracketInfoType i) const { return values[i]; }
 private:
 
     int16 WonAgainst(uint16 opponents_mmv);
     int16 LostAgainst(uint16 opponents_mmv);
 
-    struct GamesStats
-    {
-        uint32 week_games;
-        uint32 week_wins;
-        uint32 games;
-        uint32 wins;
-    };
+    uint32 values[BRACKET_END];                 //used for store data from Player::PLAYER_FIELD_ARENA_TEAM_INFO_1_1
 
     uint16 m_rating;
-    uint16 m_rating_best;
-    uint16 m_rating_best_week;
     uint16 m_mmv;
     BracketType m_Type;
-
-    GamesStats m_gamesStats;
 
     uint64 m_owner;
 };
