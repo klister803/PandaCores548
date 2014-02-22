@@ -2131,44 +2131,6 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
         }
 };
 
-class spell_warl_immolate : public SpellScriptLoader
-{
-    public:
-        spell_warl_immolate() : SpellScriptLoader("spell_warl_immolate") { }
-
-        class spell_warl_immolate_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_immolate_SpellScript)
-
-            bool Validate(SpellEntry const * /*spellEntry*/)
-            {
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit * caster = GetCaster())
-                {
-                    if (caster->GetTypeId() == TYPEID_PLAYER)
-                    {
-                        caster->ToPlayer()->KilledMonsterCredit(44175, 0);
-                        caster->ToPlayer()->KilledMonsterCredit(44548, 0);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHit += SpellEffectFn(spell_warl_immolate_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_immolate_SpellScript();
-        }
-};
-
 // Unbound Will - 108482
 class spell_warl_unbound_will : public SpellScriptLoader
 {
@@ -2367,7 +2329,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_demonic_circle_summon();
     new spell_warl_demonic_circle_teleport();
     new spell_warl_unstable_affliction();
-    new spell_warl_immolate();
     new spell_warl_unbound_will();
     new spell_warl_seed_of_corruption_dota();
     new spell_warl_havoc();
