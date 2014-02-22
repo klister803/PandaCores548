@@ -2102,7 +2102,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         }
     }
 
-    if (error != LFG_TELEPORTERROR_OK)
+    //if (error != LFG_TELEPORTERROR_OK)
         player->GetSession()->SendLfgTeleportError(uint8(error));
 }
 
@@ -2119,44 +2119,42 @@ void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, const 
     if (!info)
         return;
 
-    WorldPacket data(SMSG_LFG_UPDATE_STATUS);
-    data.WriteBit(1);                               //unk bit, lfg join ? always 1
-    data.WriteBits(comment.size(), 9);              //unk NameLen
-    data.WriteBit(guid[0]);                         //unk guid0
-    data.WriteBit(guid[6]);                         //unk guid6
-    data.WriteBit(guid[7]);                         //unk guid7
-    data.WriteBit(!quit);                           //display or not the lfr button, lfg join ?, 0 for last one
-    data.WriteBits(selectedDungeons.size(), 24);    //unk count
-    data.WriteBit(guid[5]);                         //unk guid5
-    data.WriteBit(guid[2]);                         //unk guid2
-    data.WriteBit(0);                               //unk, always 0 ?             
-    data.WriteBit(0);                               //unk bit, lfg join ?   --1 on first packet, then 0
-    data.WriteBit(1);                               //!Pause               --0 on first packet, 1 on second, 0 for last one
-    data.WriteBit(guid[4]);                         //unk guid4
-    data.WriteBit(guid[3]);                         //unk guid3
-    data.WriteBit(guid[1]);                         //unk guid1
+    WorldPacket data(SMSG_LFG_UPDATE_STATUS, 60);
+    data.WriteBits(comment.size(), 8);              // comment
+    data.WriteBits(0, 24);                          // guids size
+    data.WriteGuidMask<5>(guid);
 
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[5]);
-    data << uint8(13);                              //unk byte, 24, 13, doesn't depend on the player
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(!quit);                           // display or not the lfr button, lfg join ?, 0 for last one
+
+    data.WriteGuidMask<3, 7, 1>(guid);
+    data.WriteBit(1);                               // 1 - show notification
+    data.WriteGuidMask<0>(guid);
+    data.WriteBits(selectedDungeons.size(), 22);
+    data.WriteGuidMask<6, 4>(guid);
+    data.WriteBit(1);                               // 1 - active, 0 - paused
+    data.WriteGuidMask<2>(guid);
+
     data.WriteString(comment);
-
+    data << uint8(1);                               // 1, 2, 3
+    data << uint8(11);                              // error?   1, 11, 17 - succed, other - failed
+    data.WriteGuidBytes<4>(guid);
+    data << uint32(8);                              // unk
+    data.WriteGuidBytes<5, 7>(guid);
+    data << uint32(3);                              // queue id
+    data.WriteGuidBytes<3>(guid);
     for (LfgDungeonSet::const_iterator i = selectedDungeons.begin(); i != selectedDungeons.end(); ++i)
-        data << uint32(*i);                         //Dungeon entries
-
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[2]);
-    data << uint32(3);                              //unk32
-    data.WriteByteSeq(guid[4]);
+        data << uint32(*i);                         // Dungeon entries
+    data.WriteGuidBytes<0>(guid);
+    data << uint32(player->GetTeam());              // group id?
+    data.WriteGuidBytes<1>(guid);
     data << uint32(info->joinTime);
-    data.WriteByteSeq(guid[1]);
-    data << uint32(player->GetTeam());              //queueId
-    data << uint8(1);                               //unk byte, 0 most of the time
-    data.WriteByteSeq(guid[7]);
-    data << uint32(8);                              //unk32; 8 most of the time
+    data.WriteGuidBytes<6>(guid);
     for (int i = 0; i < 3; ++i)
         data << uint8(0);                           //unk8 always 0 ?
+    data.WriteGuidBytes<2>(guid);
+
     player->GetSession()->SendPacket(&data);
 }
 

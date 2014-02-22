@@ -636,11 +636,9 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
     outbiddedCount = recvData.ReadBits(7);
     recvData.ReadGuidMask<7, 5>(auctioneerGUID);
 
-    if (outbiddedCount)
-    {
-        for (uint32 i = 0; i < outbiddedCount; i++)
-            recvData.read_skip<uint32>();                  // unk
-    }
+    std::vector<uint32> outbiddedAuctionIds;
+    for (uint32 i = 0; i < outbiddedCount; i++)
+        recvData >> outbiddedAuctionIds[i];
 
     recvData.ReadGuidBytes<0, 4, 7, 3, 5, 6, 2, 1>(auctioneerGUID);
 
@@ -669,12 +667,11 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
     data << uint32(0);                                     //add 0 as count
     uint32 count = 0;
     uint32 totalcount = 0;
-    while (outbiddedCount > 0)                             //add all data, which client requires
+
+    for (uint32 i = 0; i < outbiddedCount; i++)
     {
-        --outbiddedCount;
-        uint32 outbiddedAuctionId;
-        recvData >> outbiddedAuctionId;
-        AuctionEntry* auction = auctionHouse->GetAuction(outbiddedAuctionId);
+        AuctionEntry* auction = auctionHouse->GetAuction(outbiddedAuctionIds[i]);
+
         if (auction && auction->BuildAuctionInfo(data))
         {
             ++totalcount;
@@ -682,10 +679,9 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
         }
     }
 
-    auctionHouse->BuildListBidderItems(data, player, count, totalcount);
     data.put<uint32>(0, count);                           // add count to placeholder
-    data << totalcount;
-    data << uint32(300);                                  //unk 2.3.0
+    data << totalcount;                                   // CGAuctionHouse__m_numTotalBid
+    data << uint32(5000);                                 // CGAuctionHouse__m_desiredDelayTime
     SendPacket(&data);
 }
 
@@ -694,11 +690,13 @@ void WorldSession::HandleAuctionListOwnerItems(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_LIST_OWNER_ITEMS");
 
+    ObjectGuid guid;
     uint32 listfrom;
-    uint64 guid;
 
-    recvData >> guid;
     recvData >> listfrom;                                  // not used in fact (this list not have page control in client)
+
+    recvData.ReadGuidMask<6, 0, 4, 3, 2, 5, 7, 1>(guid);
+    recvData.ReadGuidBytes<2, 4, 6, 0, 5, 7, 3, 1>(guid);
 
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
     if (!creature)
@@ -755,7 +753,7 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
     recvData.ReadBit();
     recvData.ReadGuidBytes<0, 7, 3, 1, 4>(guid);
     std::string unkStr1 = recvData.ReadString(strLen);
-    sLog->outError(LOG_FILTER_GENERAL, "Unk Str - %s, Unk Str 1 - %s", searchedname, unkStr1);
+    sLog->outError(LOG_FILTER_GENERAL, "Unk Str - %s, Unk Str 1 - %s", searchedname.c_str(), unkStr1.c_str());
     recvData.ReadGuidBytes<5, 6, 2>(guid);
 
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
@@ -800,9 +798,6 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
 void WorldSession::HandleAuctionListPendingSales(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_LIST_PENDING_SALES");
-
-    recvData.read_skip<uint64>();
-
     uint32 count = 0;
 
     WorldPacket data(SMSG_AUCTION_LIST_PENDING_SALES, 4);

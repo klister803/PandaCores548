@@ -1392,3 +1392,10 @@ uint32 ScalingStatValuesEntry::GetDPSAndDamageMultiplier(uint32 subClass, bool i
     return 0;
 }
 
+float GetCurrencyPrecision(uint32 currencyId)
+{
+    CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(currencyId);
+
+    return entry ? entry->GetPrecision() : 1.0f;
+}
+

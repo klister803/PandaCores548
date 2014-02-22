@@ -22,9 +22,11 @@ const char Itemfmt[]="niiiiiii";
 const char ItemCurrencyCostfmt[]="xn";
 const char ItemSparsefmt[]="niiixffiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiifiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiisssssiiiiiiiiiiiiiiiiiiiiiifiiifii";
 const char ItemExtendedCostEntryfmt[]="nxxiiiiiiiiiiiixiiiiiiiiiixxixx";
-const char BattlePetSpeciesEntryfmt[]="inxxxxxxx";
+const char BattlePetSpeciesEntryfmt[]="nixixxixx";
 const char QuestPackageItemfmt[]="iiiix";
 const char SpellReagentsEntryfmt[]="diiiiiiiiiiiiiiiixx";
+const char ItemUpgradeEntryfmt[]="niiiii";
+const char RuleSetItemUpgradefmt[]="niii";
 const std::string CustomItemExtendedCostEntryfmt="paappppppppppppappppppppppaapaa";
 const std::string CustomItemExtendedCostEntryIndex = "ID";
 

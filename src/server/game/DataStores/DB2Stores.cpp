@@ -32,9 +32,13 @@ DB2Storage <ItemSparseEntry> sItemSparseStore (ItemSparsefmt);
 DB2Storage <BattlePetSpeciesEntry> sBattlePetSpeciesStore(BattlePetSpeciesEntryfmt);
 DB2Storage <QuestPackageItem> sQuestPackageItemStore(QuestPackageItemfmt);
 DB2Storage <SpellReagentsEntry> sSpellReagentsStore(SpellReagentsEntryfmt);
+DB2Storage <ItemUpgradeEntry> sItemUpgradeStore(ItemUpgradeEntryfmt);
+DB2Storage <RuleSetItemUpgrade> sRuleSetItemUpgradeStore(RuleSetItemUpgradefmt);
 
 typedef std::list<std::string> StoreProblemList1;
 static std::map<uint32, std::list<uint32> > sPackageItemList;
+static std::map<uint32, std::list<uint32> > sRuleSetItemList;
+BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 
 uint32 DB2FilesCount = 0;
 
@@ -92,19 +96,36 @@ void LoadDB2Stores(const std::string& dataPath)
 
     StoreProblemList1 bad_db2_files;
 
-    LoadDB2(bad_db2_files, sBattlePetSpeciesStore, db2Path, "BattlePetSpecies.db2");
-    LoadDB2(bad_db2_files, sItemStore, db2Path, "Item.db2");
-    LoadDB2(bad_db2_files, sItemCurrencyCostStore, db2Path, "ItemCurrencyCost.db2");
-    LoadDB2(bad_db2_files, sItemSparseStore, db2Path, "Item-sparse.db2");
-    LoadDB2(bad_db2_files, sItemExtendedCostStore, db2Path, "ItemExtendedCost.db2", &CustomItemExtendedCostEntryfmt, &CustomItemExtendedCostEntryIndex);
-    LoadDB2(bad_db2_files, sQuestPackageItemStore, db2Path, "QuestPackageItem.db2");
+    LoadDB2(bad_db2_files, sBattlePetSpeciesStore,  db2Path, "BattlePetSpecies.db2");
+    for (uint32 i = 0; i < sBattlePetSpeciesStore.GetNumRows(); ++i)
+    {
+        BattlePetSpeciesEntry const* entry = sBattlePetSpeciesStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        sBattlePetSpeciesBySpellId[entry->spellId] = entry;
+    }
+    LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");
+    LoadDB2(bad_db2_files, sItemCurrencyCostStore,  db2Path, "ItemCurrencyCost.db2");
+    LoadDB2(bad_db2_files, sItemSparseStore,        db2Path, "Item-sparse.db2");
+    LoadDB2(bad_db2_files, sItemExtendedCostStore,  db2Path, "ItemExtendedCost.db2", &CustomItemExtendedCostEntryfmt, &CustomItemExtendedCostEntryIndex);
+    LoadDB2(bad_db2_files, sQuestPackageItemStore,  db2Path, "QuestPackageItem.db2");
+
     for (uint32 i = 0; i < sQuestPackageItemStore.GetNumRows(); ++i)
     {
         if (QuestPackageItem const* sp = sQuestPackageItemStore.LookupEntry(i))
             sPackageItemList[sp->packageEntry].push_back(i);
     }
 
-    LoadDB2(bad_db2_files, sSpellReagentsStore, db2Path,"SpellReagents.db2");
+    LoadDB2(bad_db2_files, sSpellReagentsStore,     db2Path,"SpellReagents.db2");
+    LoadDB2(bad_db2_files, sItemUpgradeStore,       db2Path,"ItemUpgrade.db2");
+    LoadDB2(bad_db2_files, sRuleSetItemUpgradeStore,db2Path,"RulesetItemUpgrade.db2");
+
+    for (uint32 i = 0; i < sRuleSetItemUpgradeStore.GetNumRows(); ++i)
+    {
+        if (RuleSetItemUpgrade const* rsiu = sRuleSetItemUpgradeStore.LookupEntry(i))
+            sRuleSetItemList[rsiu->itemEntry].push_back(i);
+    }
 
     if (false)
     {
@@ -177,6 +198,11 @@ void LoadDB2Stores(const std::string& dataPath)
 std::list<uint32> GetPackageItemList(uint32 packageEntry)
 {
     return sPackageItemList[packageEntry];
+}
+
+std::list<uint32> GetRuleSetItemList(uint32 itemEntry)
+{
+    return sRuleSetItemList[itemEntry];
 }
 
 SpellReagentMap sSpellReagentMap;

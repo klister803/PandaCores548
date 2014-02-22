@@ -48,13 +48,15 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     uint64 money, COD;
     std::string receiver, subject, body;
     uint32 bodyLength, subjectLength, receiverLength;
-    uint32 unk1, unk2;
+    uint32 stationery, package;
     
-    recvData >> unk1 >> COD;                                 // money? cod?
-    recvData >> money >> unk2;                               // stationery? package?
+    recvData >> stationery;                                 // CGMailInfo__m_selectedStationery
+    recvData >> package;                                    // CGMailInfo__m_selectedPackage
+    recvData >> money;                                      // CGMailInfo__m_sendMoney
+    recvData >> COD;                                        // CGMailInfo__m_sendCOD
     
     recvData.ReadGuidMask<0, 4, 6>(mailbox);
-    uint8 items_count = recvData.ReadBits(5);                // attached items count
+    uint8 items_count = recvData.ReadBits(5);               // attached items count
 
     if (items_count > MAX_MAIL_ITEMS)                       // client limit
     {
@@ -63,8 +65,8 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
         return;
     }
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with unk1 = %u, unk2 = %u",
-    _player->GetGUIDLow(), items_count, money, COD, unk1, unk2);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u",
+    _player->GetGUIDLow(), items_count, money, COD, stationery, package);
 
     ObjectGuid itemGUIDs[MAX_MAIL_ITEMS];
 
@@ -81,7 +83,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     for (uint8 i = 0; i < items_count; ++i)
     {
         recvData.ReadGuidBytes<1, 7, 2, 3, 5, 4>(itemGUIDs[i]);
-        recvData.read_skip<uint8>();           // item slot in mail, not used
+        recvData.read_skip<uint8>();           // item slot in mail, not used? researching...
         recvData.ReadGuidBytes<0, 6>(itemGUIDs[i]);
     }
 
@@ -131,13 +133,13 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
     if (!rc)
     {
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u is sending mail to %s (GUID: not existed!) with subject %s and body %s includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with unk1 = %u, unk2 = %u",
-            player->GetGUIDLow(), receiver.c_str(), subject.c_str(), body.c_str(), items_count, money, COD, unk1, unk2);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u is sending mail to %s (GUID: not existed!) with subject %s and body %s includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u",
+            player->GetGUIDLow(), receiver.c_str(), subject.c_str(), body.c_str(), items_count, money, COD, stationery, package);
         player->SendMailResult(0, MAIL_SEND, MAIL_ERR_RECIPIENT_NOT_FOUND);
         return;
     }
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u is sending mail to %s (GUID: %u) with subject %s and body %s includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with unk1 = %u, unk2 = %u", player->GetGUIDLow(), receiver.c_str(), GUID_LOPART(rc), subject.c_str(), body.c_str(), items_count, money, COD, unk1, unk2);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u is sending mail to %s (GUID: %u) with subject %s and body %s includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u", player->GetGUIDLow(), receiver.c_str(), GUID_LOPART(rc), subject.c_str(), body.c_str(), items_count, money, COD, stationery, package);
 
     if (player->GetGUID() == rc)
     {
@@ -440,13 +442,8 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
         {
             for (MailItemInfoVec::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
             {
-                Item* item = player->GetMItem(itr2->item_guid);
-                if (item)
+                if (Item* item = player->GetMItem(itr2->item_guid))
                     draft.AddItem(item);
-                else
-                {
-                    //WTF?
-                }
 
                 player->RemoveMItem(itr2->item_guid);
             }
@@ -618,6 +615,7 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 
     uint32 mailsCount = 0;                                 // real send to client mails amount
     uint32 realCount  = 0;                                 // real mails amount
+    time_t cur_time = time(NULL);
 
     GameObject* _mailbox = NULL;
     Trinity::MailBoxMasterCheck check(player);
@@ -629,8 +627,6 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
     data << uint32(0);                                    // real mail's count
     uint32 bit_pos = data.bitwpos();
     data.WriteBits(0, 18);                                // placeholder, client mail show count
-
-    time_t cur_time = time(NULL);
 
     for (PlayerMails::iterator itr = player->GetMailBegin(); itr != player->GetMailEnd(); ++itr)
     {
@@ -645,27 +641,29 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
             continue;
 
-        uint8 item_count = (*itr)->items.size();            // max count is MAX_MAIL_ITEMS (12)
+        uint8 item_count = (*itr)->items.size();                 // max count is MAX_MAIL_ITEMS (12)
+        bool normalMail = (*itr)->messageType == MAIL_NORMAL;
+        bool otherMail = (*itr)->messageType != MAIL_NORMAL;
 
-        data.WriteBits((*itr)->subject.size(), 8);          // mail subject size
-        data.WriteBit(0);                                   // creature sender bit? testing
-        data.WriteBits(item_count, 17);                     // items count
+        data.WriteBits((*itr)->subject.size(), 8);               // mail subject size
+        data.WriteBit(otherMail);                                // non-player sender
+        data.WriteBits(item_count, 17);                          // attached items count
 
         if (item_count)
         {
             for (int i = 0; i < item_count; i++)
-                data.WriteBit(0);                           // unk bit
+                data.WriteBit(0);                                // unk bit, maybe related to accBound items
         }
 
-        data.WriteBit(0);                                   // unk bit, related to some GUID
+        data.WriteBit(normalMail);                               // player sender
 
-        /*unk2[i] = p.ReadBit("Unk bit_3", i);
+        if (normalMail)
+        {
+            ObjectGuid plSender = MAKE_NEW_GUID((*itr)->sender, 0, HIGHGUID_PLAYER);
+            data.WriteGuidMask<2, 0, 3, 7, 1, 4, 5, 6>(plSender);
+        }
 
-        guid[i] = new byte[8];
-        if (unk2[i])
-            p.StartBitStream(guid[i], 2, 0, 3, 7, 1, 4, 5, 6);*/
-
-        data.WriteBits((*itr)->body.size(), 13);            // mail body size
+        data.WriteBits((*itr)->body.size(), 13);                 // mail body size
 
         ++realCount;
         ++mailsCount;
@@ -673,7 +671,9 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 
     for (PlayerMails::iterator itr = player->GetMailBegin(); itr != player->GetMailEnd(); ++itr)
     {
-        uint8 item_count = (*itr)->items.size();            // max count is MAX_MAIL_ITEMS (12)
+        uint8 item_count = (*itr)->items.size();                 // max count is MAX_MAIL_ITEMS (12)
+        bool normalMail = (*itr)->messageType == MAIL_NORMAL;
+        bool otherMail = (*itr)->messageType != MAIL_NORMAL;
 
         if (item_count)
         {
@@ -681,47 +681,50 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
             {
                 Item* item = player->GetMItem((*itr)->items[i].item_guid);
 
-                data << uint32(1);                              // unk
-                data << uint8(0);                               // item index (0-6?)
-                data << uint32(4);                              // next data size
-                data << uint32(0);                              // unk
-                data << uint32(776153494);                      // unk, item low guid?
-                data << uint32(186725120);                      // unk, item low guid?
-                data << uint32((item ? item->GetEntry() : 0));  // item entry
+                data << uint32((item ? item->GetCount() : 0));   // stack count
+                data << uint8(i);                                // item index, order in attachments
+                data << uint32(4);                               // next data size for some client packet? sniffs has only number 4
+                data << uint32(0);                               // some unk data X
+                data << uint32((item ? item->GetGUIDLow() : 0)); // unk, item low guid?
+                data << uint32(0);                               // unk
+                data << uint32((item ? item->GetEntry() : 0));   // item entry
                 for (uint8 j = 0; j < MAX_INSPECTED_ENCHANTMENT_SLOT; j++)
                 {
                     data << uint32((item ? item->GetEnchantmentId((EnchantmentSlot)j) : 0));
                     data << uint32((item ? item->GetEnchantmentDuration((EnchantmentSlot)j) : 0));
                     data << uint32((item ? item->GetEnchantmentCharges((EnchantmentSlot)j) : 0));
                 }
-                data << uint32(0);                              // unk
-                data << uint32(0);                              // unk
-                data << uint32(0);                              // unk
-                data << uint32(0);                              // unk
+                data << uint32((item ? item->GetUInt32Value(ITEM_FIELD_DURABILITY) : 0));
+                data << uint32((item ? item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY) : 0));
+                data << int32((item ? item->GetItemRandomPropertyId() : 0));
+                data << uint32((item ? item->GetSpellCharges() : 0));
             }
         }
 
-        data << uint32(0);                                      // unk
-        data << uint8((*itr)->messageType);                     // message type
+        data << uint32((*itr)->messageID);                       // message ID?
+        data << uint8((*itr)->messageType);                      // message type
 
-        /*if (unk2[i])
-            p.ParseBitStream(guid[i], 2, 6, 0, 5, 4, 7, 3, 1);*/
+        if (normalMail)
+        {
+            ObjectGuid plSender = MAKE_NEW_GUID((*itr)->sender, 0, HIGHGUID_PLAYER);
+            data.WriteGuidBytes<2, 6, 0, 5, 4, 7, 3, 1>(plSender);
+        }
 
-        data << (*itr)->body;                                   // mail body
-        data << uint64(0);                                      // unk
-        data << uint32(0);                                      // unk
-        data << (*itr)->subject;                                // mail subject
-        /*if (unk3[i])
-            p.ReadInt32("Sender Entry?", i);*/
-        data << uint32(0);                                      // unk
-        data << uint64(0);                                      // unk
-        data << uint32(0);                                      // unk
-        data << uint32(0);                                      // unk
-        data << float(((*itr)->expire_time-time(NULL))/DAY);    // time to expire
+        data.WriteString((*itr)->body);                          // mail body
+        data << uint64((*itr)->money);                           // money
+        data << uint32((*itr)->mailTemplateId);                  // mail template ID (MailTemplate.dbc)
+        data.WriteString((*itr)->subject);                       // mail subject
+        if (otherMail)
+            data << uint32((*itr)->sender);                      // non-player sender : creatureID or AuctionHouseID
+        data << uint32(0);                                       // package, 2 - some interesting icon (Package.dbc)
+        data << uint64((*itr)->COD);                             // COD
+        data << uint32((*itr)->checked);                         // checked
+        data << uint32((*itr)->stationery);                      // stationery (Stationery.dbc)
+        data << float(((*itr)->expire_time-time(NULL))/DAY);     // time to expire
     }
 
-    data.FlushBits();
     data.put<uint32>(0, realCount);                         // this will display warning about undelivered mail to player if realCount > mailsCount
+    data.FlushBits();
     data.PutBits<uint8>(bit_pos, mailsCount, 18);
     SendPacket(&data);
 

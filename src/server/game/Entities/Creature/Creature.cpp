@@ -370,13 +370,15 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     else
         setFaction(cInfo->faction_A);
 
-    uint32 npcflag, unit_flags, dynamicflags;
-    ObjectMgr::ChooseCreatureFlags(cInfo, npcflag, unit_flags, dynamicflags, data);
+    uint32 npcflag, npcflag2, unit_flags, dynamicflags;
+    ObjectMgr::ChooseCreatureFlags(cInfo, npcflag, npcflag2, unit_flags, dynamicflags, data);
 
     if (cInfo->flags_extra & CREATURE_FLAG_EXTRA_WORLDEVENT)
         SetUInt32Value(UNIT_NPC_FLAGS, npcflag | sGameEventMgr->GetNPCFlag(this));
     else
         SetUInt32Value(UNIT_NPC_FLAGS, npcflag);
+
+    SetUInt32Value(UNIT_NPC_FLAGS2, npcflag2);
 
     SetAttackTime(BASE_ATTACK,  cInfo->baseattacktime);
     SetAttackTime(OFF_ATTACK,   cInfo->baseattacktime);
@@ -1097,6 +1099,7 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
 
     uint32 displayId = GetNativeDisplayId();
     uint32 npcflag = GetUInt32Value(UNIT_NPC_FLAGS);
+    uint32 npcflag2 = GetUInt32Value(UNIT_NPC_FLAGS2);
     uint32 unit_flags = GetUInt32Value(UNIT_FIELD_FLAGS);
     uint32 dynamicflags = GetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS);
 
@@ -1110,6 +1113,9 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
 
         if (npcflag == cinfo->npcflag)
             npcflag = 0;
+
+        if (npcflag2 == cinfo->npcflag2)
+            npcflag2 = 0;
 
         if (unit_flags == cinfo->unit_flags)
             unit_flags = 0;
@@ -1145,6 +1151,7 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
         ? IDLE_MOTION_TYPE : GetDefaultMovementType();
     data.spawnMask = spawnMask;
     data.npcflag = npcflag;
+    data.npcflag2 = npcflag2;
     data.unit_flags = unit_flags;
     data.dynamicflags = dynamicflags;
     data.isActive = isActiveObject();
@@ -1690,6 +1697,7 @@ void Creature::setDeathState(DeathState s)
         if (cinfo->InhabitType & INHABIT_WATER)
             AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
+        SetUInt32Value(UNIT_NPC_FLAGS2, cinfo->npcflag2);
         ClearUnitState(uint32(UNIT_STATE_ALL_STATE));
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);

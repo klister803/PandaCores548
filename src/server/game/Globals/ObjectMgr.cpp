@@ -388,19 +388,19 @@ void ObjectMgr::LoadCreatureTemplates()
 
     //                                                 0         1            2          3         4         5
     QueryResult result = WorldDatabase.Query("SELECT entry, KillCredit1, KillCredit2, modelid1, modelid2, modelid3, "
-    //                                           6       7       8        9           10           11        12     13      14        15        16         17         18        19
-                                             "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, exp_unk, faction_A, faction_H, npcflag, speed_walk, speed_run, "
-    //                                             20      21    22     23     24        25           26            27              28               29            30         31           32
+    //                                           6       7       8        9           10           11        12     13      14        15        16         17         18        19         20
+                                             "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, exp_unk, faction_A, faction_H, npcflag, npcflag2, speed_walk, speed_run, "
+    //                                             21      22    23     24     25        26           27            28              29               30            31         32           33
                                              "speed_fly, scale, rank, mindmg, maxdmg, dmgschool, attackpower, dmg_multiplier, baseattacktime, rangeattacktime, unit_class, unit_flags, unit_flags2, "
-    //                                             33         33         35             36             37             38          39           40              41           42
+    //                                             34         35         36             37             38             39          40           41              42           43
                                              "dynamicflags, family, trainer_type, trainer_spell, trainer_class, trainer_race, minrangedmg, maxrangedmg, rangedattackpower, type, "
-    //                                            43           44        45         46            47          48          49           50           51           52           53
+    //                                            44           45        46         47            48          49          50           51           52           53           54
                                              "type_flags, type_flags2, lootid, pickpocketloot, skinloot, resistance1, resistance2, resistance3, resistance4, resistance5, resistance6, "
-    //                                          54      55      56      57      58      59      60      61         62            63       64       65       66         67
+    //                                          55      56      57      58      59      60      61      62         63            64       65       66       67         68
                                              "spell1, spell2, spell3, spell4, spell5, spell6, spell7, spell8, PetSpellDataId, VehicleId, mingold, maxgold, AIName, MovementType, "
-    //                                             68          69          70         71            72            73          74           75          76          77           78          79
+    //                                             69          70          71         72            73            74          75           76          77          78           79          80
                                              "InhabitType, HoverHeight, Health_mod, Mana_mod, Mana_mod_extra, Armor_mod, RacialLeader, questItem1, questItem2, questItem3, questItem4, questItem5, "
-    //                                            80           81            82         83               84                  85          86
+    //                                            81           82            83         84               85                  86          87
                                              " questItem6, movementId, RegenHealth, equipment_id, mechanic_immune_mask, flags_extra, ScriptName "
                                              "FROM creature_template;");
 
@@ -442,6 +442,7 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.faction_A         = uint32(fields[index++].GetUInt16());
         creatureTemplate.faction_H         = uint32(fields[index++].GetUInt16());
         creatureTemplate.npcflag           = fields[index++].GetUInt32();
+        creatureTemplate.npcflag2          = fields[index++].GetUInt32();
         creatureTemplate.speed_walk        = fields[index++].GetFloat();
         creatureTemplate.speed_run         = fields[index++].GetFloat();
         creatureTemplate.speed_fly         = fields[index++].GetFloat();
@@ -1023,9 +1024,10 @@ uint32 ObjectMgr::ChooseDisplayId(uint32 /*team*/, const CreatureTemplate* cinfo
     return display_id;
 }
 
-void ObjectMgr::ChooseCreatureFlags(const CreatureTemplate* cinfo, uint32& npcflag, uint32& unit_flags, uint32& dynamicflags, const CreatureData* data /*= NULL*/)
+void ObjectMgr::ChooseCreatureFlags(const CreatureTemplate* cinfo, uint32& npcflag, uint32& npcflag2, uint32& unit_flags, uint32& dynamicflags, const CreatureData* data /*= NULL*/)
 {
     npcflag = cinfo->npcflag;
+    npcflag2 = cinfo->npcflag2;
     unit_flags = cinfo->unit_flags;
     dynamicflags = cinfo->dynamicflags;
 
@@ -1033,6 +1035,9 @@ void ObjectMgr::ChooseCreatureFlags(const CreatureTemplate* cinfo, uint32& npcfl
     {
         if (data->npcflag)
             npcflag = data->npcflag;
+
+        if (data->npcflag2)
+            npcflag2 = data->npcflag2;
 
         if (data->unit_flags)
             unit_flags = data->unit_flags;

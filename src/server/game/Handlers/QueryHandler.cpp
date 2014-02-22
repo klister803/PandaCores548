@@ -519,12 +519,11 @@ void WorldSession::HandlePageTextQueryOpcode(WorldPacket& recvData)
         PageText const* pageText = sObjectMgr->GetPageText(pageID);
                                                             // guess size
         WorldPacket data(SMSG_PAGE_TEXT_QUERY_RESPONSE, 50);
-        data << pageID;
+        data << uint32(pageID);
 
         if (!pageText)
         {
-            data << "Item page missing.";
-            data << uint32(0);
+            data.WriteBit(0);
             pageID = 0;
         }
         else
@@ -536,8 +535,11 @@ void WorldSession::HandlePageTextQueryOpcode(WorldPacket& recvData)
                 if (PageTextLocale const* player = sObjectMgr->GetPageTextLocale(pageID))
                     ObjectMgr::GetLocaleString(player->Text, loc_idx, Text);
 
-            data << Text;
+            data.WriteBit(1);
+            data.WriteBits(Text.size(), 12);
+            data.WriteString(Text);
             data << uint32(pageText->NextPage);
+            data << uint32(pageID);
             pageID = pageText->NextPage;
         }
         SendPacket(&data);

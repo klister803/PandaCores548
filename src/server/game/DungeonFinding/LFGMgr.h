@@ -73,24 +73,24 @@ enum LfgProposalState
 /// Teleport errors
 enum LfgTeleportError
 {
-    LFG_TELEPORTERROR_OK                         = 0,      // Internal use
-    LFG_TELEPORTERROR_NOT_WHILE_FATIGUED         = 4,
-    LFG_TELEPORTERROR_DONT_REPORT                = 7,
-    LFG_TELEPORTERROR_PLAYER_DEAD                = 8,
-    LFG_TELEPORTERROR_NOT_WHILE_FALLING          = 10,
+    LFG_TELEPORTERROR_OK                         = 1,      // Internal use
+    LFG_TELEPORTERROR_NOT_WHILE_FALLING          = 4,
+    LFG_TELEPORTERROR_DONT_REPORT_3              = 5,
+    LFG_TELEPORTERROR_DONT_REPORT                = 8,
+    LFG_TELEPORTERROR_NOT_WHILE_FATIGUED         = 9,
+    LFG_TELEPORTERROR_PLAYER_DEAD                = 10,
     LFG_TELEPORTERROR_DONT_REPORT_2              = 11,
-    LFG_TELEPORTERROR_DONT_REPORT_3              = 12,
-    LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION  = 15,
+    LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION  = 13,
 };
 
 /// Queue join results
 enum LfgJoinResult
 {
     // 3 = No client reaction | 18 = "Rolecheck failed"
-    LFG_JOIN_FAILED                              = 28,     // +RoleCheck Failed
+    LFG_JOIN_OK                                  = 27,     // Joined (no client msg)
+    LFG_JOIN_FAILED                              = 28,     // RoleCheck Failed
     LFG_JOIN_GROUPFULL                           = 29,     // Your group is full
     LFG_JOIN_INTERNAL_ERROR                      = 31,     // Internal LFG Error
-    LFG_JOIN_OK                                  = 32,     // +Joined (no client msg)
     LFG_JOIN_NOT_MEET_REQS                       = 32,     // You do not meet the requirements for the chosen dungeons
     LFG_JOIN_PARTY_NOT_MEET_REQS                 = 33,     // One or more party members do not meet the requirements for the chosen dungeons
     //LFG_JOIN_MIXED_RAID_DUNGEON                  = 7,      // You cannot mix dungeons, raids, and random when picking dungeons

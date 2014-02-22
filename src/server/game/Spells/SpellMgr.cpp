@@ -4550,8 +4550,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 113901: // Demonic Gateway
                     spellInfo->ProcCharges = 6;
                     break;
-                case 84964: // Rayne's Seed
+                case 84964:  // Rayne's Seed
                 case 101847: // Shoe Baby
+                case 65203:  // Throw Oil
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
                 default:

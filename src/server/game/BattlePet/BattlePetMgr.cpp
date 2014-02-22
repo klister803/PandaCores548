@@ -58,102 +58,112 @@ void BattlePetMgr::GetBattlePetList(PetBattleDataList &battlePetList) const
         if (!itr->second->active || itr->second->disabled)
             continue;
 
+        BattlePetSpeciesBySpellIdMap::const_iterator it = sBattlePetSpeciesBySpellId.find(itr->first);
+        if (it == sBattlePetSpeciesBySpellId.end())
+            continue;
+
         SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
         if (!spell)
             continue;
 
-        // Is summon pet spell
-        if (spell->Effects[0].Effect != SPELL_EFFECT_SUMMON || spell->Effects[0].MiscValueB != 3221)
-            continue;
-
-        CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(spell->Effects[0].MiscValue);
+        CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(it->second->CreatureEntry);
         if (!creature)
             continue;
 
-        BattlePetSpeciesEntry const* species = sBattlePetSpeciesStore.LookupEntry(creature->Entry);
-        if (!species)
-            continue;
-
-        PetBattleData pet(creature->Entry, creature->Modelid1, spell->Id, 10, 5, 100, 100, 4, 0, species->ID);
-        battlePetList.push_back(pet);
+        battlePetList.push_back(PetBattleData(it->second, creature->Modelid1, 10, 5, 100, 100, 4, 0));
     }
 }
 
 void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
 {
     PetBattleDataList petList;
-    bool hasQuality = true;
+    GetBattlePetList(petList);
+
     bool hasBreed = false;
 
-    data->Initialize(SMSG_BATTLE_PET_JOURNAL);
-    *data << uint16(0);         // unk
-    data->WriteBit(1);          // unk
-
-    uint32 unk_count = 3;       // unk counter, may be related to battle pet slot
-    data->WriteBits(unk_count, 20);
-
-    for (uint32 i = 0; i < unk_count; i++)
-        data->WriteBit(0);           // unk bit
-
-    GetBattlePetList(petList);
+    data->Initialize(SMSG_BATTLE_PET_JOURNAL, 400);
     data->WriteBits(petList.size(), 19);
 
     for (PetBattleDataList::const_iterator pet = petList.begin(); pet != petList.end(); ++pet)
     {
-        data->WriteBit(!hasBreed);    // hasBreed, inverse
-        data->WriteBit(!hasQuality);  // hasQuality, inverse
-        data->WriteBit(true);         // hasUnk, inverse
-        data->WriteBits(0, 7);        // custom name length
-        data->WriteBit(false);        // unk bit
-        data->WriteBit(false);        // has guid
+        ObjectGuid guid = uint64(pet->m_speciesEntry->spellId);
+
+        data->WriteBit(!hasBreed);          // hasBreed, inverse
+        data->WriteGuidMask<1, 5, 3>(guid);
+        data->WriteBit(0);                  // has guid
+        data->WriteBit(!pet->m_quality);    // hasQuality, inverse
+        data->WriteGuidMask<6, 7>(guid);
+        data->WriteBit(1);                  // has flags, inverse
+        data->WriteGuidMask<0, 4>(guid);
+        data->WriteBits(0, 7);              // custom name length
+        data->WriteGuidMask<2>(guid);
+        data->WriteBit(1);                  // hasUnk, inverse
     }
 
-    data->FlushBits();
+    uint32 unk_count = 3;                   // unk counter, may be related to battle pet slot
+    data->WriteBits(unk_count, 25);
+
+    for (uint32 i = 0; i < unk_count; ++i)
+    {
+        data->WriteBit(!i);
+        data->WriteBit(1);
+        data->WriteBit(1);
+        data->WriteBits(0, 8);
+        data->WriteBit(1);
+    }
+
+    data->WriteBit(1);                      // unk
+
+    for (uint32 i = 0; i < unk_count; ++i)
+    {
+        if (i)
+            *data << uint8(i);
+    }
 
     for (PetBattleDataList::const_iterator pet = petList.begin(); pet != petList.end(); ++pet)
     {
+        ObjectGuid guid = uint64(pet->m_speciesEntry->spellId);
+
         if (hasBreed)
-            *data << uint8(7);
-
+            *data << uint16(7);
+        *data << uint32(pet->m_speciesEntry->ID);
+        *data << uint32(pet->m_speed);                          // speed
+        data->WriteGuidBytes<1, 6, 4>(guid);
         *data << uint32(pet->m_displayID);
-        *data << uint32(pet->m_summonSpellID); // Pet Entry
-        *data << uint16(pet->m_experience);    // xp
-        *data << uint32(pet->m_health);        // health
-        *data << uint16(15);                   // level
-        // name
-        // packet.ReadWoWString("Name", pet->customName);
-        // quality
-        if (hasQuality)
+        *data << uint32(pet->m_maxHealth);                      // max health
+        *data << uint32(pet->m_power);                          // power
+        data->WriteGuidBytes<2>(guid);
+        *data << uint32(pet->m_speciesEntry->CreatureEntry);    // Creature ID
+        *data << uint16(15);                                    // level
+        *data << uint32(pet->m_health);                         // health
+        *data << uint16(pet->m_experience);                     // xp
+        if (pet->m_quality)
             *data << uint8(pet->m_quality);
-
-        *data << uint32(pet->m_speed);     // speed
-        *data << uint32(pet->m_maxHealth); // max health
-        *data << uint32(pet->m_entry);     // Creature ID
-        *data << uint32(pet->m_power);     // power
-        *data << uint32(pet->m_speciesID); // species
+        data->WriteGuidBytes<3, 7, 0, 5>(guid);
     }
 
-    /*
-    for (int i = 0; i < unk_count; ++i)
-    {
-        *data << uint32(0);                        // always 0 in sniff
-        
-        for (var j = 0; j < 3; ++j)
-            *data << uint32(currentSpellID);       // current spell ability ID for each spell slot
-
-        *data << uint32(0);                        // some strange value, same as spell summon ID                        
-        *data << uint8(i);                         // pet slot index
-     }
-     */
+    *data << uint16(0);         // unk
 }
 
 void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
 {
-    uint32 spellID;
-    recvData >> spellID;
+    ObjectGuid guid;
+    recvData.ReadGuidMask<6, 0, 1, 5, 3, 4, 7, 2>(guid);
+    recvData.ReadGuidBytes<2, 5, 3, 7, 1, 0, 6, 4>(guid);
 
-    if (!_player->HasActiveSpell(spellID))
+    uint32 spellId = (uint64(guid) & 0xFFFFFFFF);
+
+    if (!_player->HasActiveSpell(spellId))
         return;
 
-    _player->CastSpell(_player, spellID, true);
+    if (_player->m_SummonSlot[SUMMON_SLOT_MINIPET])
+    {
+        Creature* oldSummon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]);
+        if (oldSummon && oldSummon->isSummon() && oldSummon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) == guid)
+            oldSummon->ToTempSummon()->UnSummon();
+        else
+            _player->CastSpell(_player, spellId, true);
+    }
+    else
+        _player->CastSpell(_player, spellId, true);
 }

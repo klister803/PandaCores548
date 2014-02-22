@@ -24,9 +24,8 @@
 
 #include <list>
 
-typedef std::list<uint32> PackageItemList;
-typedef std::map<uint32, PackageItemList> PackageItemMap;
 std::list<uint32> GetPackageItemList(uint32 packageEntry);
+std::list<uint32> GetRuleSetItemList(uint32 itemEntry);
 
 extern DB2Storage <ItemEntry> sItemStore;
 extern DB2Storage <ItemCurrencyCostEntry> sItemCurrencyCostStore;
@@ -35,9 +34,14 @@ extern DB2Storage <ItemSparseEntry> sItemSparseStore;
 extern DB2Storage <BattlePetSpeciesEntry> sBattlePetSpeciesStore;
 extern DB2Storage <QuestPackageItem> sQuestPackageItemStore;
 extern DB2Storage <SpellReagentsEntry> sSpellReagentsStore;
+extern DB2Storage <ItemUpgradeEntry> sItemUpgradeStore;
+extern DB2Storage <RuleSetItemUpgrade> sRuleSetItemUpgradeStore;
 
 void LoadDB2Stores(const std::string& dataPath);
 
 SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent);
+
+typedef UNORDERED_MAP<uint32, BattlePetSpeciesEntry const*> BattlePetSpeciesBySpellIdMap;
+extern BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 
 #endif

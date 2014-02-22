@@ -2469,7 +2469,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
         // create the new item and store it
         Item* pItem = player->StoreNewItem(dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid));
 
-        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
+        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pItem->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
             if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
                 guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_CRAFTED, time(NULL), player->GetGUID(), 0, pProto->ItemId);
 
@@ -3228,6 +3228,12 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     summon->SetUInt32Value(UNIT_NPC_FLAGS, summon->GetCreatureTemplate()->npcflag);
 
                     summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER && sBattlePetSpeciesBySpellId.find(m_spellInfo->Id) != sBattlePetSpeciesBySpellId.end())
+                    {
+                        m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, uint64(m_spellInfo->Id));
+                        summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, uint64(m_spellInfo->Id));
+                    }
 
                     summon->AI()->EnterEvadeMode();
                     break;
