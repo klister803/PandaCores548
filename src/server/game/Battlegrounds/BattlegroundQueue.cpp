@@ -793,7 +793,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
     uint32 MaxPlayersPerTeam = bg_template->GetMaxPlayersPerTeam();
     if (sBattlegroundMgr->isTesting())
         MinPlayersPerTeam = 1;
-    if (bg_template->isArena())
+    if (bg_template->isArena() || bg_template->IsRBG())
     {
         if (sBattlegroundMgr->isArenaTesting())
         {
