@@ -233,7 +233,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->WriteGuidBytes<3>(guidBytes1);
             data->WriteGuidBytes<1>(guidBytes2);
             data->WriteGuidBytes<2>(guidBytes1);
-            *data << uint32(bg->isArena() ? arenatype : (bg->GetTypeID() == BATTLEGROUND_RATED_10_VS_10) ? 10 : 1);
+            *data << uint32((bg->isArena() || bg->IsRBG()) ? arenatype : 1);
             *data << uint32(Time1);                     // Estimated Wait Time
             data->WriteGuidBytes<7>(guidBytes2);
             data->WriteGuidBytes<4>(guidBytes1);
@@ -282,7 +282,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             *data << uint32(QueueSlot);
             data->WriteGuidBytes<7>(guidBytes2);
             *data << uint32(bg->GetMapId());
-            *data << uint32(bg->isArena() ? arenatype : (bg->GetTypeID() == BATTLEGROUND_RATED_10_VS_10) ? 10 : 1);
+            *data << uint32((bg->isArena() || bg->IsRBG()) ? arenatype : 1);
             data->WriteGuidBytes<0, 2>(guidBytes1);
             *data << uint32(Time1);
             data->WriteGuidBytes<5>(guidBytes1);
@@ -827,6 +827,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
     // get the template BG
     Battleground* bg_template = GetBattlegroundTemplate(bgTypeId);
     BattlegroundSelectionWeightMap* selectionWeights = NULL;
+    BattlegroundTypeId oldbgTypeId = bgTypeId;
 
     if (!bg_template)
     {
@@ -984,7 +985,8 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
     bg->SetJoinType(joinType);
     bg->SetRated(isRated);
     bg->SetRandom(isRandom);
-    bg->SetTypeID(isRandom ? BATTLEGROUND_RB : bgTypeId);
+    bg->SetTypeID(isRandom ? oldbgTypeId : bgTypeId);       //oldbgTypeId can be BATTLEGROUND_RATED_10_VS_10 || BATTLEGROUND_RB
+    bg->SetRBG(oldbgTypeId == BATTLEGROUND_RATED_10_VS_10);
     bg->SetRandomTypeID(bgTypeId);
     bg->InitGUID();
 
