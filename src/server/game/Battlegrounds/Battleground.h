@@ -102,6 +102,7 @@ enum BattlegroundSpells
     SPELL_HONORABLE_DEFENDER_25Y    = 68652,                // +50% honor when standing at a capture point that you control, 25yards radius (added in 3.2)
     SPELL_HONORABLE_DEFENDER_60Y    = 66157,                // +50% honor when standing at a capture point that you control, 60yards radius (added in 3.2), probably for 40+ player battlegrounds
     SPELL_THE_LAST_STANDING         = 26549,                // Arena achievement related
+    SPELL_CROWD_CHOSE_YOU           = 144389                // Arena. Cast on all after 5 min.
 };
 
 enum BattlegroundTimeIntervals
@@ -535,12 +536,12 @@ class Battleground
         }
 
         // used for rated arena battles
-        void SetGroupForTeam(uint32 Team, uint32 GroupId) { m_ArenaTeamIds[GetTeamIndexByTeamId(Team)] = GroupId; }
-        uint32 GetArenaTeamIdForTeam(uint32 Team) const             { return m_ArenaTeamIds[GetTeamIndexByTeamId(Team)]; }
-        uint32 GetArenaTeamIdByIndex(uint32 index) const { return m_ArenaTeamIds[index]; }
+        void SetGroupForTeam(uint32 Team, uint32 GroupId) { m_GroupIds[GetTeamIndexByTeamId(Team)] = GroupId; }
+        uint32 GetGroupIdForTeam(uint32 Team) const             { return m_GroupIds[GetTeamIndexByTeamId(Team)]; }
+        uint32 GetGroupIdByIndex(uint32 index) const { return m_GroupIds[index]; }
         void SetMatchmakerRating(uint32 Team, uint32 MMR){ m_ArenaTeamMMR[GetTeamIndexByTeamId(Team)] = MMR; }
-        uint32 GetArenaMatchmakerRating(uint32 Team) const          { return m_ArenaTeamMMR[GetTeamIndexByTeamId(Team)]; }
-        uint32 GetArenaMatchmakerRatingByIndex(uint32 index) const  { return m_ArenaTeamMMR[index]; }
+        uint32 GetMatchmakerRating(uint32 Team) const          { return m_ArenaTeamMMR[GetTeamIndexByTeamId(Team)]; }
+        uint32 GetMatchmakerRatingByIndex(uint32 index) const  { return m_ArenaTeamMMR[index]; }
         void CheckArenaAfterTimerConditions();
         void CheckArenaWinConditions();
         void UpdateArenaWorldState();
@@ -731,7 +732,7 @@ class Battleground
         uint32 m_PlayersCount[BG_TEAMS_COUNT];
 
         // Arena team ids by team
-        uint32 m_ArenaTeamIds[BG_TEAMS_COUNT];
+        uint32 m_GroupIds[BG_TEAMS_COUNT];
 
         uint32 m_ArenaTeamMMR[BG_TEAMS_COUNT];
 

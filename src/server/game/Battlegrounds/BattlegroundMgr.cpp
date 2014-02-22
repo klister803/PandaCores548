@@ -578,7 +578,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         buff << uint32(itr2->second->KillingBlows);
         buff.WriteGuidBytes<6, 4>(guid);
         if(isArena)
-            buff << int32(bg->GetArenaMatchmakerRatingByIndex(bg->GetPlayerTeam(guid) == HORDE));
+            buff << int32(bg->GetMatchmakerRatingByIndex(bg->GetPlayerTeam(guid) == HORDE));
         buff << uint32(itr2->second->DamageDone);                   // damage done
         buff.WriteGuidBytes<5, 0, 1>(guid);
         buff << uint32(itr2->second->HealingDone);                  // healing done
@@ -600,12 +600,12 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
     {
         for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
         {
-            if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
-            {
-                data->WriteBits(at->GetName().length(), 7);
-                data->WriteBits(0, 8);                              //guid part
-            }
-            else
+            //if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
+            //{
+            //    data->WriteBits(at->GetName().length(), 7);
+            //    data->WriteBits(0, 8);                              //guid part
+            //}
+            //else
             {
                 data->WriteBits(0, 7);
                 data->WriteBits(0, 8);                              //guid part
@@ -617,10 +617,10 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
 
     data->PutBits<int32>(count_pos, count, 19);
 
-    if (isArena)
-        for (int8 i = 0; i < BG_TEAMS_COUNT; ++i)
-            if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
-                data->WriteString(at->GetName());
+    //if (isArena)
+    //    for (int8 i = 0; i < BG_TEAMS_COUNT; ++i)
+    //        if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
+    //            data->WriteString(at->GetName());
 
     data->append(buff);
     
@@ -635,21 +635,21 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
         {
             //! ToDo: what exacly print where, may be we should do this for every player?
-            rating_change[i] = bg->GetArenaMatchmakerRatingByIndex(i);
+            rating_change[i] = bg->GetMatchmakerRatingByIndex(i);
 
             pointsLost[i] = rating_change[i] < 0 ? -rating_change[i] : 0;
             pointsGained[i] = rating_change[i] > 0 ? rating_change[i] : 0;
-            MatchmakerRating[i] = bg->GetArenaMatchmakerRatingByIndex(i);
+            MatchmakerRating[i] = bg->GetMatchmakerRatingByIndex(i);
 
             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "rating change: %d", rating_change);
         }
 
-        *data << uint32(MatchmakerRating[TEAM_HORDE]);                 // Matchmaking Value
-        *data << uint32(pointsGained[TEAM_ALLIANCE]);                  // Rating gained
-        *data << uint32(pointsLost[TEAM_ALLIANCE]);                    // Rating Lost
-        *data << uint32(pointsGained[TEAM_HORDE]);                     // Rating gained
-        *data << uint32(pointsLost[TEAM_HORDE]);                       // Rating Lost
-        *data << uint32(MatchmakerRating[TEAM_ALLIANCE]);              // Matchmaking Value            
+        *data << uint32(MatchmakerRating[TEAM_HORDE]+1);                 // Matchmaking Value
+        *data << uint32(pointsGained[TEAM_ALLIANCE]+2);                  // Rating gained
+        *data << uint32(pointsLost[TEAM_ALLIANCE]+3);                    // Rating Lost
+        *data << uint32(pointsGained[TEAM_HORDE]+4);                     // Rating gained
+        *data << uint32(pointsLost[TEAM_HORDE]+5);                       // Rating Lost
+        *data << uint32(MatchmakerRating[TEAM_ALLIANCE]+6);              // Matchmaking Value            
     }
 
     *data << uint8(counta2);
