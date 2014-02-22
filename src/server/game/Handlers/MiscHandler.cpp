@@ -1624,7 +1624,7 @@ void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
 
     for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
     {
-        RatedBattleground* bracket = player->getBracket(i);
+        Bracket* bracket = player->getBracket(i);
         ASSERT(bracket);
 
         data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_GAMES));

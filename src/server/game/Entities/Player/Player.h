@@ -59,7 +59,7 @@ class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
 class PhaseMgr;
-class RatedBattleground;
+class Bracket;
 class Guild;
 
 typedef std::deque<Mail*> PlayerMails;
@@ -1229,7 +1229,7 @@ private:
     PlayerTalentInfo(PlayerTalentInfo const&);
 };
 
-typedef UNORDERED_MAP<BracketType, RatedBattleground*> BracketList;
+typedef UNORDERED_MAP<BracketType, Bracket*> BracketList;
 
 class Player : public Unit, public GridObject<Player>
 {
@@ -3077,7 +3077,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SendBattlePetJournal();
 
-        RatedBattleground* getBracket(BracketType slot) const;
+        Bracket* getBracket(BracketType slot) const;
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;

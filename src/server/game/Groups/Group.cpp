@@ -2254,7 +2254,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
     if (!bracketEntry)
         return ERR_BATTLEGROUND_JOIN_FAILED;
 
-    RatedBattleground* bracket = reference->getBracket(BracketType(arenaSlot));
+    Bracket* bracket = reference->getBracket(BracketType(arenaSlot));
     ASSERT(bracket);
 
     uint32 mmr = bracket->getMMV();

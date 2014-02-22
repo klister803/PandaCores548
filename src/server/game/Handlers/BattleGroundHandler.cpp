@@ -514,7 +514,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
             if (ginfo.IsRated && ginfo.IsInvitedToBGInstanceGUID)
             {
                 BracketType bType = BattlegroundMgr::BracketByJoinType(ginfo.JoinType);
-                if (RatedBattleground* bracket = _player->getBracket(bType))
+                if (Bracket* bracket = _player->getBracket(bType))
                     bracket->FinishGame(false, ginfo.OpponentsMatchmakerRating);          
             }
             //send bg command result to show nice message
@@ -780,7 +780,7 @@ void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
     WorldPacket data(SMSG_PVP_RATED_STATS, 128);
     for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
     {
-        RatedBattleground* bracket = _player->getBracket(i);
+        Bracket* bracket = _player->getBracket(i);
         ASSERT(bracket);
 
         data << uint32(bracket->getRating());
@@ -822,7 +822,7 @@ void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_BG_STATS");
 
-    RatedBattleground* bracket = _player->getBracket(BRACKET_TYPE_RATED_BG);
+    Bracket* bracket = _player->getBracket(BRACKET_TYPE_RATED_BG);
     ASSERT(bracket);
 
     WorldPacket data(SMSG_BATTLEFIELD_RATED_INFO, 29);

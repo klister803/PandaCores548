@@ -17,26 +17,19 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __RATEDBATTLEGROUND_H
-#define __RATEDBATTLEGROUND_H
+#ifndef __BRACKET_H
+#define __BRACKET_H
 
 #include "Common.h"
 #include "Player.h"
 
-enum RatedBattlegroundTypes
-{
-    RATED_BATTLEGROUND_TYPE_10X10,
-    RATED_BATTLEGROUND_TYPE_15X15,
-    RATED_BATTLEGROUND_TYPE_MAX
-};
-
 #define WORLD_STATE_ENABLE_RATED_BG 5508
 
-class RatedBattleground
+class Bracket
 {
 public:
-    RatedBattleground(Player *plr, BracketType type);
-    ~RatedBattleground() {};
+    Bracket(Player *plr, BracketType type);
+    ~Bracket() {};
 
     void InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins, uint16 best_week, uint16 best);
 

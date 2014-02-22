@@ -1625,7 +1625,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
                     {
                         for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
                         {
-                            RatedBattleground* bracket = referencePlayer->getBracket(BracketType(arena_slot));
+                            Bracket* bracket = referencePlayer->getBracket(BracketType(arena_slot));
                             if (!bracket || arena_slot != reqTeamType)
                                 continue;
                             SetCriteriaProgress(criteriaTree, achievementCriteria, bracket->getRating(), referencePlayer, PROGRESS_HIGHEST);
@@ -1650,7 +1650,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
                 {
                     for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
                     {
-                        RatedBattleground* bracket = referencePlayer->getBracket(BracketType(arena_slot));
+                        Bracket* bracket = referencePlayer->getBracket(BracketType(arena_slot));
                         if (!bracket || arena_slot != reqTeamType)
                             continue;
                         SetCriteriaProgress(criteriaTree, achievementCriteria, bracket->getRating(), referencePlayer, PROGRESS_HIGHEST);

@@ -39,7 +39,7 @@ public:
     static bool HandleRBGCommand(ChatHandler* handler, const char* args)
     {
         Player* player = handler->GetSession()->GetPlayer();
-        RatedBattleground* rbg = player->getBracket(BRACKET_TYPE_RATED_BG);
+        Bracket* rbg = player->getBracket(BRACKET_TYPE_RATED_BG);
         handler->PSendSysMessage("Rating: %u;", rbg->getRating());
         handler->PSendSysMessage("Wins: %u; Total: %u;", rbg->GetBracketInfo(BRACKET_SEASON_WIN), rbg->GetBracketInfo(BRACKET_SEASON_GAMES));
         return true;

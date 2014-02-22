@@ -362,7 +362,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
         BracketType bType = BattlegroundMgr::BracketByJoinType(group->JoinType);
         if (Player* player = ObjectAccessor::FindPlayer(guid))
         {
-            if (RatedBattleground* bracket = player->getBracket(bType))
+            if (Bracket* bracket = player->getBracket(bType))
                 bracket->FinishGame(false, group->OpponentsMatchmakerRating);            
         }
     }

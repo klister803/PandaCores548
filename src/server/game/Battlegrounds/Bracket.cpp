@@ -20,14 +20,14 @@
 #include "Bracket.h"
 #include "DatabaseEnv.h"
 
-RatedBattleground::RatedBattleground(Player *player, BracketType type) :
+Bracket::Bracket(Player *player, BracketType type) :
     m_owner(player->GetGUID()), m_Type(type), m_rating(0)
 {
     m_mmv    = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
     memset(values, 0, sizeof(uint32) * BRACKET_END);
 }
 
-void RatedBattleground::InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins, uint16 best_week, uint16 best)
+void Bracket::InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins, uint16 best_week, uint16 best)
 {
     m_rating = rating;
     m_mmv = mmr;
@@ -99,7 +99,7 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
     return (int)ceil(mod);
 }
 
-void RatedBattleground::SaveStats()
+void Bracket::SaveStats()
 {
     int32 index = 0;
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHARACTER_BRACKETS_STATS);
@@ -116,7 +116,7 @@ void RatedBattleground::SaveStats()
     CharacterDatabase.Execute(stmt);
 }
 
-uint16 RatedBattleground::FinishGame(bool win, uint16 opponents_mmv)
+uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
 {
     values[BRACKET_SEASON_GAMES]++;
     values[BRACKET_WEEK_GAMES]++;
@@ -149,12 +149,12 @@ uint16 RatedBattleground::FinishGame(bool win, uint16 opponents_mmv)
     return mod;
 }
 
-int16 RatedBattleground::WonAgainst(uint16 opponents_mmv)
+int16 Bracket::WonAgainst(uint16 opponents_mmv)
 {
     return GetRatingMod(m_rating, opponents_mmv, true);
 }
 
-int16 RatedBattleground::LostAgainst(uint16 opponents_mmv)
+int16 Bracket::LostAgainst(uint16 opponents_mmv)
 {
     return GetRatingMod(m_rating, opponents_mmv, false);
 }

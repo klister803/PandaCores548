@@ -135,7 +135,7 @@ GroupQueueInfo* RatedBattlegroundQueue::AddGroup(Player *leader)
         if (!member)
             continue;   // this should never happen
 
-        RatedBattleground* rbg = member->getBracket(BRACKET_TYPE_RATED_BG);
+        Bracket* rbg = member->getBracket(BRACKET_TYPE_RATED_BG);
         if (!rbg)
             continue;
 

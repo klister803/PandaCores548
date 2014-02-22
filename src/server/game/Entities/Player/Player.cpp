@@ -8463,7 +8463,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
             // should add precision mod = 100
             if(curentCap == 0)
             {
-                if(RatedBattleground* rbg = getBracket(BRACKET_TYPE_RATED_BG))
+                if(Bracket* rbg = getBracket(BRACKET_TYPE_RATED_BG))
                 {
                     cap = Trinity::Currency::BgConquestRatingCalculator(rbg->getRating()) * currency->GetPrecision();
                     if (itr != _currencyStorage.end())
@@ -18173,7 +18173,7 @@ void Player::_LoadBracketsInfo(PreparedQueryResult result)
             Field* fields = result->Fetch();
 
             BracketType bType = (BracketType)fields[0].GetUInt8();
-            RatedBattleground * bracket = m_BracketsList[bType];
+            Bracket * bracket = m_BracketsList[bType];
 
             uint16 rating = fields[1].GetUInt16();
             uint16 rating_best = fields[2].GetUInt16();
@@ -29380,10 +29380,10 @@ void Player::SendModifyCooldown(uint32 spellId, int32 value)
 void Player::InitBrackets()
 {
     for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
-        m_BracketsList[i] = new RatedBattleground(this, i);
+        m_BracketsList[i] = new Bracket(this, i);
 }
 
-RatedBattleground* Player::getBracket(BracketType slot) const
+Bracket* Player::getBracket(BracketType slot) const
 { 
     BracketList::const_iterator itr = m_BracketsList.find(slot);
     if (itr == m_BracketsList.end())
