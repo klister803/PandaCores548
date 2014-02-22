@@ -1050,9 +1050,6 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Removed player %s from Battleground.", player->GetName());
     }
 
-    if (IsRBG())
-        sRBGQueue->RemovePlayer(guid);
-
     //battleground object will be deleted next Battleground::Update() call
 }
 

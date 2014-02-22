@@ -28,10 +28,17 @@ public:
 
     ChatCommand* GetCommands() const
     {
+        static ChatCommand rgbSetCommandTable[] =
+        {
+            { "info",          SEC_PLAYER,               false,  &HandleRBGCommand,    "", NULL },
+            { "join",          SEC_MODERATOR,            false,  &HandleJoinCommand,   "", NULL },
+            { NULL,            SEC_PLAYER,               false,  NULL,                 "", NULL }
+        };
+
         static ChatCommand commandTable[] =
         {
-            { "rbg",            SEC_PLAYER,         false, &HandleRBGCommand,                  "", NULL },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "rbg",            SEC_PLAYER,         true,  NULL,                   "", rgbSetCommandTable },
+            { NULL,             0,                  false, NULL,                   "", NULL }
         };
         return commandTable;
     }
@@ -42,6 +49,12 @@ public:
         Bracket* rbg = player->getBracket(BRACKET_TYPE_RATED_BG);
         handler->PSendSysMessage("Rating: %u;", rbg->getRating());
         handler->PSendSysMessage("Wins: %u; Total: %u;", rbg->GetBracketInfo(BRACKET_SEASON_WIN), rbg->GetBracketInfo(BRACKET_SEASON_GAMES));
+        return true;
+    }
+
+    static bool HandleJoinCommand(ChatHandler* handler, const char* args)
+    {
+        handler->GetSession()->JoinBracket(BRACKET_TYPE_RATED_BG);
         return true;
     }
 };
