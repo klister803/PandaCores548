@@ -9614,7 +9614,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         case 76857:     // Mastery : Critical Block
         case 58410:     // Master Poisoner
         case 79147:     // Sanguinary Vein
-        case 91023:     // Find Weakness
         case 113043:    // Omen of Clarity (new)
         case 122464:    // Dematerialize
             return false;
@@ -16227,10 +16226,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             target->ToPlayer()->AddSpellCooldown(122465, 0, time(NULL) + 10);
         }
     }
-
-    // Find Weakness - 91023
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(91023) && procSpell && (procSpell->Id == 8676 || procSpell->Id == 703 || procSpell->Id == 1833))
-        CastSpell(target, 91021, true);
 
     // Revealing Strike - 84617
     if (GetTypeId() == TYPEID_PLAYER && target && target->HasAura(84617, GetGUID()) && procSpell && procSpell->Id == 1752)
