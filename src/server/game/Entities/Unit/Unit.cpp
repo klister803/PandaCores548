@@ -7339,8 +7339,20 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     }
                     break;
                 }
-                // Anticipation
-                case 114015:
+                case 79096: // Restless Blades
+                {
+                    if (Player * plr = ToPlayer())
+                    {
+                        float ChangeCooldown = plr->GetComboPoints() * -2;
+
+                        plr->ChangeSpellCooldown(51690, ChangeCooldown);  // Killing Spree
+                        plr->ChangeSpellCooldown(13750, ChangeCooldown);  // Adrenaline Rush
+                        plr->ChangeSpellCooldown(2983, ChangeCooldown);   // Sprint
+                        plr->ChangeSpellCooldown(121471, ChangeCooldown); // Shadow Blades
+                    }
+                    break;
+                }
+                case 114015: // Anticipation
                 {
                     if (GetTypeId() != TYPEID_PLAYER)
                         return false;
