@@ -21924,8 +21924,8 @@ void Player::PetSpellInitialize()
         if (!spellInfo)
         {
             data << uint32(0);
-            data << uint16(0);
             data << uint32(0);
+            data << uint16(0);
             data << uint32(0);
             continue;
         }
@@ -21937,7 +21937,7 @@ void Player::PetSpellInitialize()
             time_t categoryCooldown = (categoryitr->second > curTime) ? (categoryitr->second - curTime) * IN_MILLISECONDS : 0;
             data << uint32(categoryCooldown);       // category cooldown
             data << uint32(itr->first);             // spell ID
-            data << uint16(spellInfo->Category);    // spell category        
+            data << uint16(spellInfo->Category);    // spell category
         }
         else
         {
@@ -21952,7 +21952,7 @@ void Player::PetSpellInitialize()
     data << uint16(0);                              // word18
     data.WriteByteSeq(petGuid[0]);
     data << uint16(pet->GetCreatureTemplate()->family);         // creature family (required for pet talents)
-    
+
     // action bar loop
     charmInfo->BuildActionBar(&data);
 
@@ -22041,9 +22041,10 @@ void Player::VehicleSpellInitialize()
     data.WriteBit(vGuid[6]);
     data.WriteBit(vGuid[7]);
     data.WriteBit(vGuid[2]);
+
     data.WriteBits(0, 21);
 
-    data.WriteBits(CREATURE_MAX_SPELLS, 22);
+    data.WriteBits(0, 22);
     data.WriteBit(vGuid[3]);
 
     data.FlushBits();
@@ -22070,7 +22071,7 @@ void Player::VehicleSpellInitialize()
             time_t categoryCooldown = (categoryitr->second > now) ? (categoryitr->second - now) * IN_MILLISECONDS : 0;
             data << uint32(categoryCooldown);       // category cooldown
             data << uint32(itr->first);             // spell ID
-            data << uint16(spellInfo->Category);    // spell category          
+            data << uint16(spellInfo->Category);    // spell category
         }
         else
         {
@@ -22087,21 +22088,13 @@ void Player::VehicleSpellInitialize()
     data.WriteByteSeq(vGuid[0]);
     data << uint16(0);                          // Pet Family (0 for all vehicles)
 
-    for (uint32 i = CREATURE_MAX_SPELLS; i < MAX_SPELL_CONTROL_BAR; ++i)
-        data << uint32(0);
-
-    data.WriteByteSeq(vGuid[1]);
-    data.WriteByteSeq(vGuid[3]);
-    data.WriteByteSeq(vGuid[7]);
-
-    // spells count
-    for (uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
+    for (uint32 i = 0; i < MAX_SPELL_CONTROL_BAR; ++i)
     {
-        uint32 spellId = vehicle->m_spells[i];
+        uint32 spellId = i < CREATURE_MAX_SPELLS ? vehicle->m_spells[i] : 0;
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!spellInfo)
         {
-            data << uint16(0) << uint8(0) << uint8(i+8);
+            data << uint32(MAKE_UNIT_ACTION_BUTTON(0, i + 8));
             continue;
         }
 
@@ -22109,15 +22102,19 @@ void Player::VehicleSpellInitialize()
         if (!sConditionMgr->IsObjectMeetToConditions(this, vehicle, conditions))
         {
             sLog->outDebug(LOG_FILTER_CONDITIONSYS, "VehicleSpellInitialize: conditions not met for Vehicle entry %u spell %u", vehicle->ToCreature()->GetEntry(), spellId);
-            data << uint16(0) << uint8(0) << uint8(i+8);
+            data << uint32(MAKE_UNIT_ACTION_BUTTON(0, i + 8));
             continue;
         }
 
         if (spellInfo->IsPassive())
             vehicle->CastSpell(vehicle, spellId, true);
 
-        data << uint32(MAKE_UNIT_ACTION_BUTTON(spellId, i+8));
+        data << uint32(MAKE_UNIT_ACTION_BUTTON(spellId, i + 8));
     }
+
+    data.WriteByteSeq(vGuid[1]);
+    data.WriteByteSeq(vGuid[3]);
+    data.WriteByteSeq(vGuid[7]);
 
     data.WriteByteSeq(vGuid[6]);
     data << uint32(vehicle->isSummon() ? vehicle->ToTempSummon()->GetTimer() : 0); // Duration
