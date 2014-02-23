@@ -648,19 +648,34 @@ void WorldSession::JoinBracket(uint8 slot)
     if (!bracketEntry)
         return;
     
+    uint32 avgTime = 0;
+    GroupQueueInfo* ginfo;
     GroupJoinBattlegroundResult err = ERR_BATTLEGROUND_NONE;
+    Group* grp = _player->GetGroup();
 
-     Group* grp = _player->GetGroup();
+    //! Custom conection for join withoud group
+    if (!grp && sBattlegroundMgr->isArenaTesting())
+    {
+        BattlegroundQueue &bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
+
+        ginfo = bgQueue.AddGroup(_player, NULL, bgTypeId, bracketEntry, Jointype, true, false, 1500);
+        avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId()); 
+
+        uint32 queueSlot = _player->AddBattlegroundQueueId(bgQueueTypeId);
+        _player->AddBattlegroundQueueJoinTime(bgTypeId, ginfo->JoinTime);
+
+        WorldPacket data; // send status packet (in queue)
+        sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, _player, queueSlot, STATUS_WAIT_QUEUE, avgTime, ginfo->JoinTime, Jointype);
+        _player->GetSession()->SendPacket(&data);
+        sBattlegroundMgr->ScheduleQueueUpdate(matchmakerRating, Jointype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
+        return;
+    }
+
      // no group found, error
-     if (!grp)
-         return;
-     if (grp->GetLeaderGUID() != _player->GetGUID())
+     if (!grp || grp->GetLeaderGUID() != _player->GetGUID())
          return;
 
     BattlegroundQueue &bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
-
-    uint32 avgTime = 0;
-    GroupQueueInfo* ginfo;
 
     err = grp->CanJoinBattlegroundQueue(bg, bgQueueTypeId, Jointype, Jointype, true, slot);
     if (!err || (err && sBattlegroundMgr->isArenaTesting()))

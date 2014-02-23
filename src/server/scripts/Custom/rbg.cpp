@@ -30,14 +30,14 @@ public:
     {
         static ChatCommand rgbSetCommandTable[] =
         {
-            { "info",          SEC_PLAYER,               false,  &HandleRBGCommand,    "", NULL },
-            { "join",          SEC_MODERATOR,            false,  &HandleJoinCommand,   "", NULL },
-            { NULL,            SEC_PLAYER,               false,  NULL,                 "", NULL }
+            { "info",          SEC_PLAYER,               false,  &HandleRBGCommand,         "", NULL },
+            { "join",          SEC_MODERATOR,            false,  &HandleJoinCommand,     "", NULL },
+            { NULL,            SEC_PLAYER,               false,  NULL,                      "", NULL }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "rbg",            SEC_PLAYER,         true,  NULL,                   "", rgbSetCommandTable },
+            { "bracket",            SEC_PLAYER,         true,  NULL,                   "", rgbSetCommandTable },
             { NULL,             0,                  false, NULL,                   "", NULL }
         };
         return commandTable;
@@ -52,9 +52,23 @@ public:
         return true;
     }
 
+    //! 0 - BRACKET_TYPE_ARENA_2, 3 - BRACKET_TYPE_RATED_BG, look at enum of BracketType
     static bool HandleJoinCommand(ChatHandler* handler, const char* args)
     {
-        handler->GetSession()->JoinBracket(BRACKET_TYPE_RATED_BG);
+        if (!*args)
+        {
+            handler->SendSysMessage(LANG_CMD_SYNTAX);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        char* br = strtok((char*)args, " ");
+        BracketType BracketID = (BracketType)atoi(br);
+
+        if (BracketID >= BRACKET_TYPE_MAX)
+            return false;
+
+        handler->GetSession()->JoinBracket(BracketID);
         return true;
     }
 };
