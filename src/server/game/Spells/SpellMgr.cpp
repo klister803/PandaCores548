@@ -3344,20 +3344,20 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 83968:  // Mass Resurrection
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_PARTY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_PARTY;
                     break;
                 case 125883: // Zen Flight
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_MELEE_ATTACK;
                     break;
                 case 31665: // Master of subtlety
-                    spellInfo->Effects[0].BasePoints = 10;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 10;
                     break;
                 case 115834: // Shroud of Concealment
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_TARGET_IN_COMBAT;
                     break;
                 case 1850:   // Dash
                 case 113636: // Cat Form (Passive)
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_SPEED;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_SPEED;
                     break;
                 case 9005: // Pounce
                     spellInfo->Mechanic = MECHANIC_STUN;
@@ -3369,21 +3369,21 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->PreventionType = 1;
                     break;
                 case 16213: // Purification
-                    spellInfo->Effects[0].SpellClassMask[0] &= ~8192;
-                    spellInfo->Effects[0].SpellClassMask[3] &= ~16384;
-                    spellInfo->Effects[0].SpellClassMask[2] |= 64;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] &= ~8192;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[3] &= ~16384;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[2] |= 64;
                     break;
                 case 52042: // Healing Stream Totem
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
                     spellInfo->ScalingClass = 11;
-                    spellInfo->Effects[0].ScalingMultiplier = 0.029f;
+                    spellInfo->Effects[EFFECT_0].ScalingMultiplier = 0.029f;
                     break;
                 case 379: // Earth Shield
                     spellInfo->ScalingClass = 11;
-                    spellInfo->Effects[0].ScalingMultiplier = 1.862f;
+                    spellInfo->Effects[EFFECT_0].ScalingMultiplier = 1.862f;
                     break;
                 case 115450: // Detox
-                    spellInfo->Effects[2].BasePoints = 0;
+                    spellInfo->Effects[EFFECT_2].BasePoints = 0;
                     break;
                 case 65148:  // Sacred Shield
                 case 113092: // Frost Bomb
@@ -3408,7 +3408,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36);
                     break;
                 case 8676:   // Ambush
-                    spellInfo->Effects[0].ScalingMultiplier = 1.787f;
+                    spellInfo->Effects[EFFECT_0].ScalingMultiplier = 1.787f;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
                 case 124487: // Zen Focus
@@ -3416,12 +3416,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 = SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
                     break;
                 case 53: // Backstab
-                    spellInfo->Effects[0].ScalingMultiplier = 0.845f;
+                    spellInfo->Effects[EFFECT_0].ScalingMultiplier = 0.845f;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
                 case 127424:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 1776: // Gouge
                 case 1777:
@@ -3495,7 +3495,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 120876:
                 case 120964:
                 case 124347:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CONE_ENEMY_54;
                     break;
                 case 26029: // Dark Glare
                 case 37433: // Spout
@@ -3587,34 +3587,34 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 // Custom MoP Script
                 case 82691: // Ring of Frost
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     break;
                 case 91021: // Find Weakness
-                    spellInfo->Effects[0].BasePoints = 70;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 70;
                     break;
                 case 76577: // Smoke Bomb
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
                     break;
                 case 130616:// Glyph of Fear
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_STUN;
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 118699:// Fear Effect
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 124991:// Nature's Vigil (Damage)
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 124988:// Nature's Vigil (Heal)
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ALLY;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 122355:// Molten Core
                     spellInfo->StackAmount = 255;
@@ -3624,70 +3624,70 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 118291:// Greater Fire Elemental
                 case 118323:// Greater Earth Elemental
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_SUMMON_PET;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_SUMMON_PET;
                     break;
                 case 114942:// Healing Tide
                     spellInfo->SpellFamilyFlags[0] = 0x00002000;
                     break;
                 case 108283:// Echo of the Elements
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                     break;
                 case 116943:// Earthgrab
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 6544:  // Heroic Leap
-                    spellInfo->Effects[2].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[2].TargetA = TARGET_UNIT_CASTER;
-                    spellInfo->Effects[2].TargetB = 0;
-                    spellInfo->Effects[2].BasePoints = 0;
+                    spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_CASTER;
+                    spellInfo->Effects[EFFECT_2].TargetB = 0;
+                    spellInfo->Effects[EFFECT_2].BasePoints = 0;
                     break;
                 case 116198:// Enfeeblement Aura
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[1].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[1].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    spellInfo->Effects[2].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[2].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_DEST_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_1].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                    spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_DEST_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                     spellInfo->Effects[4].TargetA = TARGET_DEST_TARGET_ENEMY;
                     spellInfo->Effects[4].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                     break;
                 case 116202:// Elements Aura
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    spellInfo->Effects[2].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_DEST_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                     break;
                 case 94339: // Fungal Area
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(18); // 20s
                     break;
                 case 81282: // Fungal Growth
-                    spellInfo->Effects[0].BasePoints = 100;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 100;
                     break;
                 case 108446:// Soul Link
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[1].TargetA = TARGET_UNIT_PET;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_PET;
                     break;
                 case 974:   // Earth Shield
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
                     break;
                 case 86529: // Mail Specialization (Shaman)
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                     break;
                 case 61999: // Raise Ally
-                    spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ALLY;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ALLY;
                     break;
                 case 49016: // Unholy Frenzy
-                    spellInfo->Effects[0].BasePoints = 30;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 30;
                     break;
                 case 31935: // Avenger's Shield
                     spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
@@ -3707,23 +3707,23 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 126215:
                 case 126216:
                 case 132764:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 19574: // Bestial Wrath
                     spellInfo->Effects[3].Effect = 0;
                     spellInfo->Effects[3].ApplyAuraName = 0;
                     break;
                 case 87935: // Serpent Spread
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
                     break;
                 case 53257: // Cobra Strikes
-                    spellInfo->Effects[0].ApplyAuraName = 0;
-                    spellInfo->Effects[0].Effect = 0;
-                    spellInfo->Effects[0].BasePoints = 0;
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_CRIT_PCT;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = 0;
+                    spellInfo->Effects[EFFECT_0].Effect = 0;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_CRIT_PCT;
                     break;
                 case 1126:  // Mark of the Wild
                 case 19740: // Blessing of Might
@@ -3733,38 +3733,38 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 109773:// Dark Intent
                 case 116781:// Legacy of the White Tiger
                 case 127830:// Spirit Beast Blessing
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_CASTER_AREA_RAID;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER;
+                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_CASTER_AREA_RAID;
                     break;
                 case 1459:  // Arcane Illumination
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
-                    spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     break;
                 case 61316: // Dalaran Illumination
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
-                    spellInfo->Effects[2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     break;
                 case 116033:// Sparring (stacks)
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
                     break;
                 case 115073:// Spinning Fire Blossom
-                    spellInfo->Effects[0].TargetA = 0;
-                    spellInfo->Effects[0].Effect = 0;
-                    spellInfo->Effects[0].BasePoints = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = 0;
+                    spellInfo->Effects[EFFECT_0].Effect = 0;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
                     break;
                 case 86150: // Guardian of Ancient Kings
-                    spellInfo->Effects[0].TargetA = TARGET_CHECK_ENTRY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_CHECK_ENTRY;
                     break;
                 case 86674: // Ancient Healer
                     spellInfo->ProcCharges = 5;
                     break;
                 case 86657: // Ancient Guardian
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
                 case 5782:  // Fear
                     spellInfo->Mechanic = 0;
-                    spellInfo->Effects[0].Mechanic = MECHANIC_NONE;
+                    spellInfo->Effects[EFFECT_0].Mechanic = MECHANIC_NONE;
                     break;
                 case 51460: // Runic Corruption
                     spellInfo->Effects[EFFECT_1].Effect = 0;
@@ -3781,7 +3781,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 63416:
                 case 69891:
                 case 69892:
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_DUMMY;
                     spellInfo->Mechanic = 0;
                     break;
                 case 115175:// Soothing Mists
@@ -3790,24 +3790,24 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     break;
                 case 102793:
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
                     break;
                 case 172:   // Corruption
                 case 30108: // Unstable Affliction
-                    spellInfo->Effects[2].Effect = 0;
-                    spellInfo->Effects[2].ApplyAuraName = 0;
-                    spellInfo->Effects[2].BasePoints = 0;
+                    spellInfo->Effects[EFFECT_2].Effect = 0;
+                    spellInfo->Effects[EFFECT_2].ApplyAuraName = 0;
+                    spellInfo->Effects[EFFECT_2].BasePoints = 0;
                     break;
                 case 64904: // Hymn of Hope
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
                     break;
                 case 81751: // Atonement
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ALLY;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 47515: // Divine Aegis
-                    spellInfo->Effects[0].BasePoints = 50;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 50;
                     break;
                 case 108201:// Desecrated Ground
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
@@ -3816,8 +3816,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
                     break;
                 case 61336: // Survival Instincts
-                    spellInfo->Effects[0].BasePoints = -50;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                    spellInfo->Effects[EFFECT_0].BasePoints = -50;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
                 case 33763: // Lifebloom
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
@@ -3829,20 +3829,20 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH;
                     break;
                 case 130493:// Nightstalker
-                    spellInfo->Effects[1].Effect = 0;
-                    spellInfo->Effects[1].ApplyAuraName = 0;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-                    spellInfo->Effects[0].MiscValue = SPELL_SCHOOL_MASK_ALL;
+                    spellInfo->Effects[EFFECT_1].Effect = 0;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = 0;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+                    spellInfo->Effects[EFFECT_0].MiscValue = SPELL_SCHOOL_MASK_ALL;
                     break;
                 case 84745: // Shallow Insight
                 case 84746: // Moderate Insight
                 case 84747: // Deep Insight
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-                    spellInfo->Effects[0].MiscValue = SPELL_SCHOOL_MASK_ALL;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+                    spellInfo->Effects[EFFECT_0].MiscValue = SPELL_SCHOOL_MASK_ALL;
                     break;
                 case 117895:// Eminence (statue)
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
-                    spellInfo->Effects[0].TargetB = NULL;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ALLY;
+                    spellInfo->Effects[EFFECT_0].TargetB = NULL;
                     break;
                 case 44457: // Living Bomb
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
@@ -3852,72 +3852,72 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 23691: // Berzerker Rage Effect
-                    spellInfo->Effects[0].BasePoints = 100;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 100;
                     break;
                 case 114205:// Demoralizing Banner
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8); // 15s
                     break;
                 case 127630:// Cascade - damage trigger
                 case 120786:// Cascade - heal trigger
-                    spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ANY;
-                    spellInfo->Effects[1].TargetB = 0;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[EFFECT_1].TargetB = 0;
                     break;
                 case 122507:// Rallying Cry
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                     break;
                 case 111771:// Demonic Gateway
-                    spellInfo->Effects[1].Effect = 0;
-                    spellInfo->Effects[1].TriggerSpell = 0;
-                    spellInfo->Effects[2].Effect = 0;
-                    spellInfo->Effects[2].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = 0;
+                    spellInfo->Effects[EFFECT_1].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_2].Effect = 0;
+                    spellInfo->Effects[EFFECT_2].TriggerSpell = 0;
                     break;
                 case 109259:// Powershot
-                    spellInfo->Effects[1].BasePoints = 60;
-                    spellInfo->Effects[2].BasePoints = 800;
+                    spellInfo->Effects[EFFECT_1].BasePoints = 60;
+                    spellInfo->Effects[EFFECT_2].BasePoints = 800;
                     break;
                 case 82926: // Fire ! (for Master Marksman)
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
-                    spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
-                    spellInfo->Effects[0].BasePoints = -100;
-                    spellInfo->Effects[0].SpellClassMask[0] |= 0x20000;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                    spellInfo->Effects[EFFECT_0].MiscValue = SPELLMOD_CASTING_TIME;
+                    spellInfo->Effects[EFFECT_0].BasePoints = -100;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 0x20000;
                     break;
                 case 7384: // Overpower
                     spellInfo->AttributesEx |= SPELL_ATTR1_ENABLE_AT_DODGE;
                     break;
                 case 114695:// Pursuit of Justice
-                    spellInfo->Effects[0].BasePoints = 0;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
                     break;
                 case 6262:  // Health Stone
                 case 34299: // Leader of the pack - healing
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_HEAL_PCT;
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
                 case 90259: // Glyph of Frost Pillar (Root Aura)
-                    spellInfo->Effects[0].MiscValue = 0;
-                    spellInfo->Effects[0].MiscValueB = 0;
+                    spellInfo->Effects[EFFECT_0].MiscValue = 0;
+                    spellInfo->Effects[EFFECT_0].MiscValueB = 0;
                     break;
                 case 49821: // Mind Sear
-                    spellInfo->Effects[0].TargetA = TARGET_DEST_CHANNEL_TARGET;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_CHANNEL_TARGET;
+                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                     break;
                 case 10326: // Turn Evil
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                     break;
                 case 117418:// Fists of Fury (damage)
                 case 114083:// Ascendance
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
                 case 113656:// Fists of Fury
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     break;
                 case 115315:// Summon Black Ox Statue
-                    spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
+                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_CASTER;
                     break;
                 case 6346:  // Fear Ward
                 case 110717:// Fear Ward (Symbiosis)
@@ -3938,15 +3938,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ProcCharges = 1;
                     break;
                 case 110600:// Ice Trap (Symbiosis)
-                    spellInfo->Effects[0].MiscValue = 164639;
+                    spellInfo->Effects[EFFECT_0].MiscValue = 164639;
                     break;
                 case 110588:// Misdirection (Symbiosis)
-                    spellInfo->Effects[2].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_SCALE;
-                    spellInfo->Effects[2].BasePoints = 30;
+                    spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_MOD_SCALE;
+                    spellInfo->Effects[EFFECT_2].BasePoints = 30;
                     break;
                 case 122292:// Intervene (Symbiosis)
-                    spellInfo->Effects[1].BasePoints = 100;
+                    spellInfo->Effects[EFFECT_1].BasePoints = 100;
                     break;
                 case 6358:  // Seduce (succubus)
                 case 115268: // Mesmerize (succubus)
@@ -3966,13 +3966,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 44544: // Fingers of Frost
                     // affect Ice Lance
-                    spellInfo->Effects[0].SpellClassMask[0] |= 0x20000;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 0x20000;
                     break;
                 case 85222: // Light of Dawn
                     spellInfo->MaxAffectedTargets = 6;
                     break;
                 case 8122:  // Psychic Scream
-                    spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
+                    spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                     spellInfo->MaxAffectedTargets = 5;
                     break;
                 case 2641:  // Dismiss Pet
@@ -3986,61 +3986,61 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 117993:// Chi Torpedo : Heal
                 case 124040:// Chi Torpedo : Damage
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
                     break;
                 case 80325: // Camouflage
                 case 119450:// Glyph of Camouflage
-                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = 0;
                     break;
                 case 115295:// Guard
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
-                    spellInfo->Effects[1].BasePoints = 30;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
+                    spellInfo->Effects[EFFECT_1].BasePoints = 30;
                     break;
                 case 124273:// Heavy Stagger
                 case 124274:// Moderate Stagger
                 case 124275:// Light Stagger
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
-                    spellInfo->Effects[0].Amplitude = 1000;
-                    spellInfo->Effects[0].BasePoints = 0;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+                    spellInfo->Effects[EFFECT_0].Amplitude = 1000;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
                     break;
                 case 126451:// Clash - Impact
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                     break;
                 case 121253:// Keg Smash
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                     spellInfo->MaxAffectedTargets = 3;
                     break;
                 case 115308:// Elusive Brew
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                     break;
                 case 115129:// Expel Harm - Damage to a nearby ennemy within 10 yards
-                    spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_NEARBY_ENEMY;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_SRC_CASTER;
+                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_NEARBY_ENEMY;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     break;
                 case 126892:// Zen Pilgrimage
                 case 126895:// Zen Pilgrimage : Return
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_DUMMY;
                     break;
                 case 130320:// Rising Sun Kick - Monks abilities deal 10% more damage
-                    spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_SRC_CASTER;
+                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                     break;
                 case 101546:// Spinning Crane Kick - Decrease Speed
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
-                    spellInfo->Effects[1].BasePoints = -30;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
+                    spellInfo->Effects[EFFECT_1].BasePoints = -30;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                     break;
                 case 107270:// Spinning Crane Kick - Radius
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                     break;
                 case 127626:// Devouring plague - Heal
-                    spellInfo->Effects[0].BasePoints = 1;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 1;
                     break;
                 case 107223:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;
                 case 106909:
                     {
@@ -4059,12 +4059,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     }
                     break;
                 case 106736:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                     break;
                 case 106113:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                     break;
                 case 119922: //Shockwave
                 case 119929:
@@ -4080,49 +4080,49 @@ void SpellMgr::LoadSpellCustomAttr()
                         if (!radius)
                             break;
 
-                        spellInfo->Effects[0].RadiusEntry = radius; //200yards.
+                        spellInfo->Effects[EFFECT_0].RadiusEntry = radius; //200yards.
                     }
                     break;
                 case 106847:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
                     // Wise Mari Hydrolance damage
                 case 106267:
-                    //spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                    //spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                     break;
                     // Wise Mari Wash Away
                 case 106334:
                     spellInfo->AttributesEx3 &= ~ SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                     break;
                 case 120552:
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(16);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(16);
                     break;
                 case 119684:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
-                    spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = TARGET_UNIT_CONE_ENEMY_24;
-                    spellInfo->Effects[1].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_CONE_ENEMY_24;
+                    spellInfo->Effects[EFFECT_1].TargetB = 0;
                     break;
                 case 106853:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 112060:
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 118685:
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(5);
                     break;
                  // Malygos Enrage
                 case 60670:
-                    spellInfo->Effects[1].TriggerSpell = 0;
-                    spellInfo->Effects[2].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_1].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_2].TriggerSpell = 0;
                     break;
                 case 114746:
-                    spellInfo->Effects[2].TargetA = TARGET_UNIT_TARGET_ALLY;
-                    spellInfo->Effects[2].TargetB = 0;
+                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_TARGET_ALLY;
+                    spellInfo->Effects[EFFECT_2].TargetB = 0;
                     break;
                 case 104855:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
                     break;
                 // Add Server-Side dummy spell for Fishing
                 // TODO : Add more generic system to load server-side spell
@@ -4136,27 +4136,27 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 110412:
                 {
                     SpellInfo* fishingDummy = new SpellInfo(sSpellStore.LookupEntry(131474));
-                    fishingDummy->Id = spellInfo->Effects[0].TriggerSpell;
-                    mSpellInfoMap[spellInfo->Effects[0].TriggerSpell] = fishingDummy;
+                    fishingDummy->Id = spellInfo->Effects[EFFECT_0].TriggerSpell;
+                    mSpellInfoMap[spellInfo->Effects[EFFECT_0].TriggerSpell] = fishingDummy;
                     break;
                 }
 
                 // Siege of the Niuzoa temple
                 case 119941: //Puddle Void Zone
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(22);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(22);
                     break;
                 case 124290: //Blade Rush Dmg trigger(sword)
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);
-                    spellInfo->Effects[0].TargetA = 22;
-                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);
+                    spellInfo->Effects[EFFECT_0].TargetA = 22;
+                    spellInfo->Effects[EFFECT_0].TargetB = 15;
                     break;
                 case 124312: //Blade Rush Charge
-                    spellInfo->Effects[0].TargetA = 25;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = 25;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 119875: //Templest
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
                     break;
 
                 // Stormstout brewery
@@ -4166,20 +4166,20 @@ void SpellMgr::LoadSpellCustomAttr()
 
                 //Scholomance
                 case 114062: //Gravity Flux
-                    spellInfo->Effects[1].Effect = 0;
-                    spellInfo->Effects[1].ApplyAuraName = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = 0;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = 0;
                     break;
                 case 113996: //Bone Armor
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                     break;
                 case 111628: //Shadow blaze dmg
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(44);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(44);
                     break;
 
                 // Mogu'shan Vault
                 // Stone Guards
                 case 129428: //Dummy Searcher(cobalt mine)
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                     break;
                 //
                 // Feng
@@ -4190,42 +4190,42 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CasterAuraSpell = 0;
                     break;
                 case 116417: //Arcane Resonance
-                    spellInfo->Effects[0].TargetA = 6;
-                    spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = 6;
-                    spellInfo->Effects[1].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = 6;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_1].TargetA = 6;
+                    spellInfo->Effects[EFFECT_1].TargetB = 0;
                     break;
                 case 116040: //Epicenter(trigger dmg)
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
-                    spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                    spellInfo->Effects[EFFECT_2].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
                     break;
                 case 116365: //Arcane Velocrity (trigger dmg)
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
                     break;
                 case 116434: //Arcane Resonance(trigger dmg)
-                    spellInfo->Effects[0].TargetB = 30;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                    spellInfo->Effects[EFFECT_0].TargetB = 30;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     break;
                 //
                 //Elegon
                 case 129724: //Energy tendrols (trigger spell - grip)
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_JUMP;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_JUMP;
                     break;
                 //
                 //Will of the Imperator
                 case 116782:
                 case 116803: //Titan Gase (trigger spell)
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //150yards
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //150yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //150yards
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //150yards
                     break;
                 case 118327: //Titan Gase (trigger spell)
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //150yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //150yards
                     break;
                 case 116550: //Emergizing Smash
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
-                    spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
+                    spellInfo->Effects[EFFECT_2].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
                     break;
                 //
                 case 116000:
@@ -4264,107 +4264,107 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Lord Meljarak
                 case 122193: //Heal
                     spellInfo->TargetAuraSpell = 0;
-                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[EFFECT_1].TargetA = 25;
                     break;
                 case 122147: //Heal trigger
                     spellInfo->TargetAuraSpell = 0;
-                    spellInfo->Effects[0].TargetA = 25;
-                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = 25;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 //
                 //Unsok
                 case 122408: //Massive Stomp
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(18);//15 yards
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(18);
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(18);//15 yards
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(18);
                     break;
                 case 121995: //Amber Scalpel trigger spell
                     spellInfo->TargetAuraSpell = 0;
-                    spellInfo->Effects[0].TargetA = 25;
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(15);//3yards
+                    spellInfo->Effects[EFFECT_0].TargetA = 25;
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(15);//3yards
                     break;
                 case 122532: //Explose
-                    spellInfo->Effects[0].TargetA = 22;
-                    spellInfo->Effects[0].TargetB = 15;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
-                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = 22;
+                    spellInfo->Effects[EFFECT_0].TargetB = 15;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
+                    spellInfo->Effects[EFFECT_1].Effect = 0;
                     break;
                 //
                 //Empress Shekzeer
                 case 123788: //Cry of terror
-                    spellInfo->Effects[0].TargetA = 1;
-                    spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = 1;
+                    spellInfo->Effects[EFFECT_0].TargetA = 1;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_1].TargetA = 1;
                     break;
                 case 123735: //Dread screetch
-                    spellInfo->Effects[0].TargetA = 1;
-                    spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = 1;
-                    spellInfo->Effects[1].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = 1;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_1].TargetA = 1;
+                    spellInfo->Effects[EFFECT_1].TargetB = 0;
                     break;
                 case 123743: //Dread screetch trigger spell
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
                     break;
                 case 124845: //Calamity
-                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = 0;
                     break;
 
 
                 //Terrace of Endless Spring
                 //Protectors of Endless
                 case 117052: //Sha Corruption
-                    spellInfo->Effects[0].TargetA = 1;
-                    spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[EFFECT_0].TargetA = 1;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = 0;
                     break;
                 //Tsulong
                 case 122767: //Dread Shadows
-                    spellInfo->Effects[1].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_1].TriggerSpell = 0;
                     break;
                 case 122789: //SunBeam trigger aura
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
                 //Lei Shi
                 case 123121: //Spray
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
                     break;
                 //Sha of Fear
                 case 119495: //Eerie skull trigger spell
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
                     break;
                 case 119086: //Penetrating bolt trigger spell
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
 
                     
                 //World Boss
                 //Sha of Anger
                 case 119487: //Anger
-                    spellInfo->Effects[0].TargetA = 22;
-                    spellInfo->Effects[0].TargetB = 15;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(30);
-                    spellInfo->Effects[1].TargetA = 22;
-                    spellInfo->Effects[1].TargetB = 15;
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(30);
+                    spellInfo->Effects[EFFECT_0].TargetA = 22;
+                    spellInfo->Effects[EFFECT_0].TargetB = 15;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(30);
+                    spellInfo->Effects[EFFECT_1].TargetA = 22;
+                    spellInfo->Effects[EFFECT_1].TargetB = 15;
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(30);
                     break;
                 case 119610: //Bitter thoughts
-                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[EFFECT_0].TargetB = 15;
                     break;
                 case 119489: //Unleashed Wrath
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
                     break;
                 // Galion
                 case 121787: //Stomp
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(12);
-                    spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(12);
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(12);
+                    spellInfo->Effects[EFFECT_2].RadiusEntry = sSpellRadiusStore.LookupEntry(12);
                     break;
                 case 121577: //Barrage
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
                     break;
                 case 121600: //Barrage Dmg
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
-                    spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                    spellInfo->Effects[EFFECT_2].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     break;
 
                 // Dalaran arena knockback
@@ -4378,17 +4378,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(1);
                     spellInfo->EquippedItemClass = -1;
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
-                    spellInfo->Effects[0].TargetA = SpellImplicitTargetInfo(25);
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_DUMMY;
+                    spellInfo->Effects[EFFECT_0].TargetA = SpellImplicitTargetInfo(25);
                     break;
                 case 130649: // Life Spirit
-                    spellInfo->Effects[0]. BasePoints = 10000;
+                    spellInfo->Effects[EFFECT_0]. BasePoints = 10000;
                     break;
                 case 130650: // Water Spirit
-                    spellInfo->Effects[0]. BasePoints = 5000;
+                    spellInfo->Effects[EFFECT_0]. BasePoints = 5000;
                     break;
                 case 105709: // Master Mana Potion
-                    spellInfo->Effects[0]. BasePoints = 30000;   
+                    spellInfo->Effects[EFFECT_0]. BasePoints = 30000;   
                     break;
                 case 126349:
                 case 126413:
@@ -4397,27 +4397,27 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(26); // 240 seconds
                     break; 
                 case 88764:// Rolling Thunder
-                    spellInfo->Effects[0].TriggerSpell = 0;    
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;    
                     break;
                 case 58423:
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[0].SpellClassMask[2] = 0;
-                    spellInfo->Effects[0].SpellClassMask[1] = 0;
-                    spellInfo->Effects[0].SpellClassMask[0] = 0;
-                    spellInfo->Effects[0].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[2] = 0;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[1] = 0;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] = 0;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
                     break;
                 case 115191:
                     spellInfo->AuraInterruptFlags = 0;
                     break;
                 case 50371: // Improved Blood Presence disable not need efect
-                    spellInfo->Effects[1].BasePoints = 0;
+                    spellInfo->Effects[EFFECT_1].BasePoints = 0;
                     break;
                 case 43265: //Death and Decay
-                    spellInfo->Effects[1].BasePoints = 260;
-                    spellInfo->Effects[1].TargetA = 28;
-                    spellInfo->Effects[1].TargetB = 0;
-                    spellInfo->Effects[1].Amplitude = 1100;
-                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+                    spellInfo->Effects[EFFECT_1].BasePoints = 260;
+                    spellInfo->Effects[EFFECT_1].TargetA = 28;
+                    spellInfo->Effects[EFFECT_1].TargetB = 0;
+                    spellInfo->Effects[EFFECT_1].Amplitude = 1100;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
                     break;
                 case 11327: //Vanish
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_TRIGGERED;
@@ -4435,10 +4435,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Attributes &= ~SPELL_ATTR0_CANT_CANCEL;
                     break;
                 case 55442: //Glyph of Capacitor Totem
-                    spellInfo->Effects[0].SpellClassMask[0] = 0x00008000;
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] = 0x00008000;
                     break;
                 case 116186:    // Glyph of Prowl
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
                     break;
                 case 132402:    // Savage Defense
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(32); // 6s
@@ -4456,7 +4456,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(4); // 120s
                     break;
                 case 114714:// Grilled Plainshawk Leg
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER;
                     break;
                 // Hack these until proc flags of CC auras are implemented
                 case 339:       // Entangling Roots
@@ -4475,68 +4475,68 @@ void SpellMgr::LoadSpellCustomAttr()
                     }
                     break;
                 case 122137: // Summon Ghosts from Urns - Summons
-                    spellInfo->Effects[0].BasePoints = 5;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 5;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(25); // 180s
                     break;
                 case 30451: // Arcane Blast
                     // trigger spell is handled in script
-                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = 0;
                     break;
                 case 74793:// Summoning Ritual
                     spellInfo->AreaGroupId = -1;
                     break;
                 case 75478:// Summon Charbringer
-                    spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_RANDOM;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_CASTER_RANDOM;
                     break;
                 case 61784: // Feast On Turkey
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
-                    spellInfo->Effects[0].TriggerSpell = 61842;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 61842;
                     spellInfo->ProcChance = 100;
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_MASTER;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_MASTER;
                     break;
                 case 61786: // Feast On Sweet Potatoes
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
-                    spellInfo->Effects[0].TriggerSpell = 61844;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 61844;
                     spellInfo->ProcChance = 100;
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_MASTER;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_MASTER;
                     break;
                 case 61788: // Feast On Stuffing
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
-                    spellInfo->Effects[0].TriggerSpell = 61843;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 61843;
                     spellInfo->ProcChance = 100;
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_MASTER;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_MASTER;
                     break;
                 case 61787: // Feast On Pie
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
-                    spellInfo->Effects[0].TriggerSpell = 61845;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 61845;
                     spellInfo->ProcChance = 100;
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_MASTER;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_MASTER;
                     break;
                 case 61785: // Feast On Cranberries
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
-                    spellInfo->Effects[0].TriggerSpell = 61841;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 61841;
                     spellInfo->ProcChance = 100;
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_MASTER;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_MASTER;
                     break;
                 case 112897: // Battle Ring
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(27); // 3s
                     break;
                 case 20711:
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[0].BasePoints = 1;
-                    spellInfo->Effects[0].MiscValue = 0;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 1;
+                    spellInfo->Effects[EFFECT_0].MiscValue = 0;
                     break;
                 case 110745: // Divine Star
                 case 122128: // Divine Star
-                    spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
-                    spellInfo->Effects[1].TargetA = TARGET_DEST_DEST;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4m
-                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4m
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4m
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4m
                     break;
                 case 119914: //Felstorm
                 case 119915: //Felstorm
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
-                    spellInfo->Effects[0].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_DUMMY;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
                     break;
                 case 70781: // Light's Hammer Teleport
                 case 70856: // Oratory of the Damned Teleport
@@ -4545,7 +4545,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 70859: // Upper Spire Teleport
                 case 70860: // Frozen Throne Teleport
                 case 70861: // Sindragosa's Lair Teleport
-                    spellInfo->Effects[0].TargetA = TARGET_DEST_DB;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DB;
                     break;
                 case 113901: // Demonic Gateway
                     spellInfo->ProcCharges = 6;
@@ -4553,7 +4553,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 84964:  // Rayne's Seed
                 case 101847: // Shoe Baby
                 case 65203:  // Throw Oil
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
                 case 110310: // Arena. Dumpening
                     spellInfo->StackAmount = 100;   //miss in dbc aura option
