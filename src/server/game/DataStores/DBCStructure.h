@@ -920,13 +920,13 @@ struct CurrencyTypesEntry
     uint32 Category;                                        // 1        may be category
     //char* name;                                           // 2
     //char* iconName;                                       // 3
-    //uint32 unk4;                                          // 4        all 0
-    //uint32 unk5;                                          // 5        archaeology-related (?)
+    //uint32 unk4;                                          // 4
+    //uint32 substitutionId;                                // 5
     uint32 SubstitutionId;                                  // 6
     uint32 TotalCap;                                        // 7
     uint32 WeekCap;                                         // 8
     uint32 Flags;                                           // 9
-    //uint32                                                // 10       5.4.1
+    //uint32 rarity;                                        // 10
     //char* description;                                    // 11
 
     bool HasPrecision() const   { return Flags & CURRENCY_FLAG_HAS_PRECISION; }

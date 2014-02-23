@@ -639,9 +639,10 @@ enum CurrencyCategory
 
 enum CurrencyFlags
 {
-    CURRENCY_FLAG_TRADEABLE         = 0x01,
-    CURRENCY_FLAG_HAS_PRECISION     = 0x08,
-    CURRENCY_FLAG_HAS_SEASON_COUNT  = 0x80, // guessed
+    CURRENCY_FLAG_TRADEABLE         = 0x0001,
+    CURRENCY_FLAG_HAS_PRECISION     = 0x0008,
+    CURRENCY_FLAG_HAS_SEASON_COUNT  = 0x0080,
+    CURRENCY_FLAG_UNK               = 0x2000,
 };
 
 #endif

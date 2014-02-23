@@ -8105,46 +8105,6 @@ void Player::_SaveCurrency(SQLTransaction& trans)
     }
 }
 
-void Player::SendNewCurrency(uint32 id)
-{
-    PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
-    if (itr == _currencyStorage.end())
-        return;
-
-    ByteBuffer currencyData;
-
-    //! 5.4.1
-    WorldPacket packet(SMSG_INIT_CURRENCY, 4 + 1*(5*4 + 1));
-    packet.WriteBits(1, 22);
-
-    CurrencyTypesEntry const* entry = itr->second.currencyEntry;
-
-    uint32 precision = entry->GetPrecision();
-    uint32 weekCount = itr->second.weekCount;
-    uint32 weekCap = GetCurrencyWeekCap(entry);
-    uint32 seasonTotal = itr->second.seasonTotal;
-    bool hasSeason = entry->HasSeasonCount();
-
-    packet.WriteBit(hasSeason);                                         // season total earned
-    packet.WriteBit(weekCap);
-    packet.WriteBits(itr->second.flags, 5);                             // some flags
-    packet.WriteBit(weekCap && weekCount);                              // hasWeekCount
-
-    packet.FlushBits();
-
-    packet << uint32(itr->second.totalCount / precision);               // Currency count
-    packet << uint32(entry->ID);                                        // Currency Id
-
-    if (hasSeason)
-        packet << uint32(seasonTotal / precision);
-    if (weekCap && weekCount)
-        packet << uint32(weekCount / precision);
-    if (weekCap)
-        packet << uint32(weekCap / precision);
-
-    GetSession()->SendPacket(&packet);
-}
-
 void Player::SendCurrencies()
 {
     ByteBuffer currencyData;
@@ -8364,24 +8324,17 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
                 return;
             }
 
-             // on new case just set init.
-            if(itr->second.state == PLAYERCURRENCY_NEW)
-            {
-                SendNewCurrency(id);
-                return;
-            }
-
             //! 5.4.1
             WorldPacket packet(SMSG_UPDATE_CURRENCY, 12);
-            
+
             packet << uint32(id);
             packet << uint32(newTotalCount / precision);
             packet << uint32(0);                                //unk
-            
+
             packet.WriteBit(!printLog);                         //printLog); // print in log
             packet.WriteBit(weekCap != 0);
             packet.WriteBit(itr->second.seasonTotal); // hasSeasonCount
-            
+
             if (weekCap)
                 packet << uint32(newWeekCount / precision);
 
