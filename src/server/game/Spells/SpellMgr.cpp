@@ -4555,6 +4555,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 65203:  // Throw Oil
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
+                case 110310: // Arena. Dumpening
+                    spellInfo->StackAmount = 100;   //miss in dbc aura option
+                    //! Part from Battleground - Dampening(74411)
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
+                    spellInfo->Effects[EFFECT_0].MiscValue = 127;
+                    //! End.Part from Battleground - Dampening(74411)
+                    spellInfo->Effects[EFFECT_0].BasePoints = 1;
+                    spellInfo->Effects[EFFECT_1].BasePoints = 1;
+                    //! periodic tick remove aura. WTF?
+                    spellInfo->Effects[EFFECT_1].Amplitude = 0;
+                    break;
                 default:
                     break;
             }

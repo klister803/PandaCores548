@@ -270,11 +270,24 @@ void Battleground::Update(uint32 diff)
             // after 47 minutes without one team losing, the arena closes with no winner and no rating change
             if (isArena())
             {
-                if (GetElapsedTime() >= 47*MINUTE*IN_MILLISECONDS)
+                //! Patch 5.4: If neither team has won after 20 minutes, the Arena match will end in a draw.
+                if (GetElapsedTime() >= 20*MINUTE*IN_MILLISECONDS)
                 {
                     UpdateArenaWorldState();
                     CheckArenaAfterTimerConditions();
                     return;
+                //! Patch 5.4: For Arena matches that last more than 10 minutes, all players in the Arena will begin to receive Dampening.
+                //! Patch 5.4.7: Dampening is now applied to an Arena match starting at the 5 minute mark (down from 10 minutes).
+                }else if (GetElapsedTime() >= 5*MINUTE*IN_MILLISECONDS)
+                {
+                    ModifyStartDelayTime(diff);
+                    if (GetStartDelayTime() <= 0 || GetStartDelayTime() > 10000)
+                    {
+                        SetStartDelayTime(10000);
+                        for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+                            if (Player* player = sObjectAccessor->FindPlayer(itr->first))
+                                player->SetAuraStack(SPELL_ARENA_DUMPENING, player, 1);
+                    }
                 }
             }
             else

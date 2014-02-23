@@ -1298,7 +1298,9 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
             else if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
                 m_amplitude = int32(m_amplitude * std::max<float>(caster->GetFloatValue(UNIT_MOD_CAST_SPEED), 0.5f));
         }
-        if (!resetPeriodicTimer && !load)
+
+        //! If duration nod defined should we change duration? this remove aura.
+        if (!resetPeriodicTimer && !load/* && GetBase()->GetMaxDuration() >= 0*/)
         {
             int32 dotduration = GetBase()->GetMaxDuration() + m_periodicTimer;
             GetBase()->SetMaxDuration(dotduration);

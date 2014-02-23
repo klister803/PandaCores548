@@ -841,7 +841,8 @@ int32 Aura::CalcMaxDuration(Unit* caster) const
 
 void Aura::SetDuration(int32 duration, bool withMods)
 {
-    if (withMods)
+     //! no need chech for -1 or 0
+    if (withMods && duration > 0)
     {
         if (Unit* caster = GetCaster())
             if (Player* modOwner = caster->GetSpellModOwner())
