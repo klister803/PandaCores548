@@ -250,7 +250,7 @@ class ByteBuffer
             _bitpos = 8;
         }
 
-        void ReadFlush()
+        void ResetBitReader()
         {
             if (_bitpos == 8)
                 return;

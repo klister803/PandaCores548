@@ -123,8 +123,6 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
     recvData.ReadGuidMask<0, 3, 4, 6, 7, 5, 1>(crossRealmGuid);
     uint8 nameLen = recvData.ReadBits(9);
 
-    recvData.ReadFlush();
-
     recvData.ReadGuidBytes<5>(crossRealmGuid);
     realmName = recvData.ReadString(realmLen); // unused
     memberName = recvData.ReadString(nameLen);

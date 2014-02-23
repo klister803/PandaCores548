@@ -231,8 +231,6 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     for (uint8 i = 0; i < str_count; i++)
         unkLens[i] = recvData.ReadBits(7);
 
-    recvData.ReadFlush();
-
     std::wstring str[4];                                    // 4 is client limit
     for (uint32 i = 0; i < str_count; ++i)
     {
@@ -1179,12 +1177,9 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
 
     recvData.read_skip(decompressedSize);       //uncompress not move packet
     type = recvData.ReadBits(3);
-    recvData.ReadFlush();
 
     if (type > NUM_ACCOUNT_DATA_TYPES)
         return;
-
-    recvData.rfinish(); 
 
     SetAccountData(AccountDataType(type), timestamp, adata);
 }

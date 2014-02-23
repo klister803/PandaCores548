@@ -705,8 +705,6 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
     if (namepart)
         len = recvData.ReadBits(8);
 
-    recvData.ReadFlush();
-
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     if (namepart)
     {
@@ -987,8 +985,6 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
 
     if (hasCastFlags)
         castFlags = recvPacket.ReadBits(5);
-
-    recvPacket.ReadFlush();
 
     recvPacket.ReadByteSeq(CasterGUID[4]);
     for (uint32 i = 0; i < researchDataCount; ++i)
