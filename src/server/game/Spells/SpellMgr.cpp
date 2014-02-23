@@ -3828,6 +3828,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 33763: // Lifebloom
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
                     break;
+                case 96219: // Diamond Soul
                 case 1160:  // Demoralizing Shout
                 case 1966:  // Feint
                 case 50256:  // Demoralizing Roar
