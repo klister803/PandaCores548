@@ -302,7 +302,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->WriteGuidMask<7, 6>(guidBytes1);
             data->WriteGuidMask<1, 2>(guidBytes2);
             data->WriteGuidMask<1, 4>(guidBytes1);
-            data->WriteBit(bg->isRated());                              // Is Rated
+            data->WriteBit(bg->isRated() && bg->GetStatus() != STATUS_WAIT_LEAVE);  // Block
             data->WriteGuidMask<3>(guidBytes2);
             data->WriteGuidMask<0, 3>(guidBytes1);
             data->WriteGuidMask<6, 5, 4>(guidBytes2);
@@ -573,16 +573,14 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         data->WriteBit(!isArena);                                   // Unk 3 -- Prolly if (bg)
         data->WriteGuidMask<0>(guid);
 
-
         //byte part
         buff << uint32(itr2->second->KillingBlows);
         buff.WriteGuidBytes<6, 4>(guid);
         if(isArena)
-            buff << int32(bg->GetMatchmakerRatingByIndex(bg->GetPlayerTeam(guid) == HORDE));
+            buff << int32(bg->GetMatchmakerRatingByIndex(bg->GetPlayerTeam(guid) == HORDE));    //something else?
         buff << uint32(itr2->second->DamageDone);                   // damage done
         buff.WriteGuidBytes<5, 0, 1>(guid);
         buff << uint32(itr2->second->HealingDone);                  // healing done
-
         if (player->GetBGTeam() == ALLIANCE)
             ++counta2;
         else
@@ -644,12 +642,12 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "rating change: %d", rating_change);
         }
 
-        *data << uint32(MatchmakerRating[TEAM_HORDE]+1);                 // Matchmaking Value
-        *data << uint32(pointsGained[TEAM_ALLIANCE]+2);                  // Rating gained
-        *data << uint32(pointsLost[TEAM_ALLIANCE]+3);                    // Rating Lost
-        *data << uint32(pointsGained[TEAM_HORDE]+4);                     // Rating gained
-        *data << uint32(pointsLost[TEAM_HORDE]+5);                       // Rating Lost
-        *data << uint32(MatchmakerRating[TEAM_ALLIANCE]+6);              // Matchmaking Value            
+        *data << uint32(MatchmakerRating[TEAM_HORDE]);                 // Matchmaking Value
+        *data << uint32(pointsGained[TEAM_ALLIANCE]);                  // Rating gained
+        *data << uint32(pointsLost[TEAM_ALLIANCE]);                    // Rating Lost
+        *data << uint32(pointsGained[TEAM_HORDE]);                     // Rating gained
+        *data << uint32(pointsLost[TEAM_HORDE]);                       // Rating Lost
+        *data << uint32(MatchmakerRating[TEAM_ALLIANCE]);              // Matchmaking Value            
     }
 
     *data << uint8(counta2);
