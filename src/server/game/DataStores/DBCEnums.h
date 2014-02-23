@@ -618,13 +618,13 @@ enum CurrencyTypes
     CURRENCY_TYPE_IRONPAW                   = 402, // Cook token MoP
     CURRENCY_TYPE_WORLD_TREE                = 416, // 4.2 token Molten front
     CURRENCY_TYPE_CONQUEST_META_ARENA       = 483, // PvP
-    CURRENCY_TYPE_CONQUEST_META_RBG         = 484, // PvP
+    CURRENCY_TYPE_CONQUEST_META_RATED_BG    = 484, // PvP
     CURRENCY_TYPE_DARKMOON_TICKET           = 515, // Darkmoon fair
     CURRENCY_TYPE_MOTE_OF_DARKNESS          = 614, // 4.3.4 token Dragon soul
     CURRENCY_TYPE_CORRUPTED_ESSENCE         = 615, // 4.3.4 Deathwing token
     CURRENCY_TYPE_ARCHAEOLOGY_PANDAREN      = 676, // ARCHAEOLOGY MoP
     CURRENCY_TYPE_ARCHAEOLOGY_MOGU          = 677, // ARCHAEOLOGY MoP
-    CURRENCY_TYPE_CONQUEST_META_RUNDOM      = 692, //
+    CURRENCY_TYPE_CONQUEST_META_RANDOM_BG   = 692, //
     CURRENCY_TYPE_ELDER_CHARM_GOOD_FORTUNE  = 697, // LFR roll chance MoP
     CURRENCY_TYPE_ZEN_JEWEL                 = 698  // Jewelcrafting token MoP NYI
 };

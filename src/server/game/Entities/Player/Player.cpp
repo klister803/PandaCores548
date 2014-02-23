@@ -8164,14 +8164,14 @@ void Player::SendPvpRewards()
 {
     WorldPacket packet(SMSG_REQUEST_PVP_REWARDS_RESPONSE, 40);
     packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_POINTS, true);
-    packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_RUNDOM, true);
+    packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_RANDOM_BG, true);
     packet << uint32(sWorld->getIntConfig(CONFIG_CURRENCY_CONQUEST_POINTS_ARENA_REWARD)/100);
     packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_POINTS, true);
     packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_ARENA, true);
     packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_ARENA, true);
-    packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RUNDOM, true);
-    packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_RBG, true);
-    packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RBG, true);
+    packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RANDOM_BG, true);
+    packet << GetCurrencyOnWeek(CURRENCY_TYPE_CONQUEST_META_RATED_BG, true);
+    packet << GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RATED_BG, true);
     packet << uint32(sWorld->getIntConfig(CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD)/100); //RatedBattleground::ConquestPointReward
     GetSession()->SendPacket(&packet);
 }
@@ -8394,7 +8394,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
         case CURRENCY_TYPE_CONQUEST_POINTS:
             if(curentCap == 0)
             {
-                cap = std::max(GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_ARENA, false), GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RBG, false));
+                cap = std::max(GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_ARENA, false), GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_RATED_BG, false));
                 if (itr != _currencyStorage.end())
                     itr->second.curentCap = cap;
             }
@@ -8412,7 +8412,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
             else
                 cap = curentCap;
             break;
-        case CURRENCY_TYPE_CONQUEST_META_RBG:
+        case CURRENCY_TYPE_CONQUEST_META_RATED_BG:
             // should add precision mod = 100
             if(curentCap == 0)
             {
@@ -8427,7 +8427,7 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
                 cap = curentCap;
             break;
         //ToDo: do something with it.
-        case CURRENCY_TYPE_CONQUEST_META_RUNDOM:
+        case CURRENCY_TYPE_CONQUEST_META_RANDOM_BG:
             cap = 135000;
             break;
     }
