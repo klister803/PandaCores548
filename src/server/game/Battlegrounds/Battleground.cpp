@@ -35,6 +35,7 @@
 #include "Guild.h"
 #include "GuildMgr.h"
 #include "Bracket.h"
+#include "BracketMgr.h"
 
 namespace Trinity
 {
@@ -782,9 +783,9 @@ void Battleground::EndBattleground(uint32 winner)
             //if rated arena match - make member lost!
             if (isArena() && isRated() && winner != WINNER_NONE)
             {
-                //ToDo: Cache system
-                //RatedBattleground* bracket = player->getBracket(bType);
-                //bracket->FinishGame(team == winner, GetMatchmakerRating(team == winner ? GetOtherTeam(winner) : winner));
+                Bracket* bracket = sBracketMgr->TryGetOrCreateBracket(itr->first, bType);
+                ASSERT(bracket);    //unreal
+                bracket->FinishGame(team == winner, GetMatchmakerRating(team == winner ? GetOtherTeam(winner) : winner));
             }
             continue;
         }
@@ -1017,12 +1018,11 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         {
             if (isRated() && GetStatus() == STATUS_IN_PROGRESS)
             {
-                //ToDo: cache system
                 //left a rated match while the encounter was in progress, consider as loser
-                //BracketType bType = BattlegroundMgr::BracketByJoinType(GetJoinType());
-                //Bracket* bracket = player->getBracket(bType);
-                //ASSERT(bracket);    //shouldn't happend
-                //bracket->FinishGame(false/*lost*/, GetMatchmakerRating(GetOtherTeam(team)));
+                BracketType bType = BattlegroundMgr::BracketByJoinType(GetJoinType());
+                Bracket* bracket = sBracketMgr->TryGetOrCreateBracket(guid, bType);
+                ASSERT(bracket);    //shouldn't happend
+                bracket->FinishGame(false/*lost*/, GetMatchmakerRating(GetOtherTeam(team)));
             }
         }
 
