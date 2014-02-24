@@ -132,7 +132,15 @@ class boss_tsulong : public CreatureScript
 
             void JustDied(Unit* killer)
             {
-                _JustDied();
+                if (instance)
+                {
+                    _JustDied();
+                    if (Creature* leishi = me->GetCreature(*me, instance->GetData64(NPC_LEI_SHI)))
+                    {
+                        leishi->SetVisible(true);
+                        leishi->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    }
+                }
             }
 
             void UpdateAI(const uint32 diff)

@@ -129,21 +129,6 @@ class boss_jindo_the_godbreaker : public CreatureScript
 
             void EnterCombat(Unit* /*who*/)
             {
-                if (instance->GetData(DATA_BOSSES) < 2)
-                {
-                    EnterEvadeMode();
-
-                    Map::PlayerList const &pList = me->GetMap()->GetPlayers();
-                        if (pList.isEmpty())
-                            return;
-
-                    for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-                        if (Player* pPlayer = itr->getSource())
-                            pPlayer->NearTeleportTo(enterPos.GetPositionX(), enterPos.GetPositionY(), enterPos.GetPositionZ(), enterPos.GetOrientation());
- 
-                    return;
-                }
-
                 Talk(SAY_AGGRO);
                 bTwoPhase = false;
                 chains = 0;
@@ -162,11 +147,6 @@ class boss_jindo_the_godbreaker : public CreatureScript
                 summons.Summon(summon);
                 if (me->isInCombat() && (summon->GetEntry() != NPC_GURUBASHI_SPIRIT))
                     DoZoneInCombat(summon);
-
-                if (summon->GetEntry() == NPC_GURUBASHI_SPIRIT || 
-                    summon->GetEntry() == NPC_HAKKAR_CHAINS ||
-                    summon->GetEntry() == NPC_SPIRIT_OF_HAKKAR)
-                    summon->SetPhaseMask(2, true);
             }
 
             void SummonedCreatureDies(Creature* summon, Unit* killer)
@@ -210,13 +190,8 @@ class boss_jindo_the_godbreaker : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (!UpdateVictim())
-                    return;
-
-                events.Update(diff);
-
                 if (me->HealthBelowPct(70) && !bTwoPhase)
                 {
                     bTwoPhase = true;
@@ -229,13 +204,20 @@ class boss_jindo_the_godbreaker : public CreatureScript
 
                     if (Creature* pHakkar = me->SummonCreature(NPC_SPIRIT_OF_HAKKAR, hakkarPos))
                     {
+                        pHakkar->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         pHakkar->CastSpell(pHakkar, SPELL_SPIRIT_FORM, true);
                         pHakkar->CastSpell(pHakkar, SPELL_HAKKAR_CHAINS_VISUAL, true);
                     }
-
                     me->GetMotionMaster()->MovePoint(POINT_JINDO, jindoPos);
-                    return;
                 }
+            }
+
+            void UpdateAI(uint32 const diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;

@@ -1299,6 +1299,20 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     break;
             }
             break;
+        case SPELLFAMILY_WARRIOR:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 100: // Charge
+                {
+                    m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, damage, POWER_RAGE);
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELLFAMILY_HUNTER:
             switch (m_spellInfo->Id)
             {
@@ -2638,6 +2652,14 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     int level_diff = 0;
     switch (m_spellInfo->Id)
     {
+        case 23922: // Shield Slam
+        {
+            if (!m_caster->HasAura(71))
+            {
+                damage = 0;
+            }
+            break;
+        }
         case 1454: // Life Tap
         {
             damage = CalculatePct(m_caster->GetMaxHealth(), damage);
@@ -3175,11 +3197,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
         case SUMMON_CATEGORY_WILD:
         case SUMMON_CATEGORY_ALLY:
         case SUMMON_CATEGORY_UNK:
-            if (properties->Flags & 512)
-            {
-                SummonGuardian(effIndex, entry, properties, numSummons);
-                break;
-            }
+        {
             switch (properties->Type)
             {
                 case SUMMON_TYPE_PET:
@@ -3240,6 +3258,11 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 }
                 default:
                 {
+                    if (properties->Flags & 512)
+                    {
+                        SummonGuardian(effIndex, entry, properties, numSummons);
+                        break;
+                    }
                     float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius();
 
                     TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
@@ -3301,6 +3324,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 }
             }//switch
             break;
+        }
         case SUMMON_CATEGORY_PET:
             SummonGuardian(effIndex, entry, properties, numSummons);
             break;
@@ -3308,6 +3332,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
             summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id);
             break;
         case SUMMON_CATEGORY_VEHICLE:
+        {
             // Summoning spells (usually triggered by npc_spellclick) that spawn a vehicle and that cause the clicker
             // to cast a ride vehicle spell on the summoned unit.
             float x, y, z;
@@ -3331,6 +3356,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
             summon->setFaction(faction);
             break;
+        }
     }
 
     if (summon)
@@ -6058,6 +6084,18 @@ void Spell::EffectCharge(SpellEffIndex /*effIndex*/)
         unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetObjectSize(), angle);
 
         m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ + unitTarget->GetObjectSize());
+
+        switch (m_spellInfo->Id)
+        {
+            case 100: // Charge
+            {
+                uint32 stunspell = m_caster->HasAura(103828) ? 105771: 7922;
+                m_caster->CastSpell(unitTarget, stunspell, true);
+                break;
+            }
+            default:
+                break;
+        }
     }
 
     if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT_TARGET)

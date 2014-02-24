@@ -54,11 +54,6 @@ enum RogueSpells
     ROGUE_SPELL_GARROTE_DOT                      = 703,
     ROGUE_SPELL_RUPTURE_DOT                      = 1943,
     ROGUE_SPELL_CUT_TO_THE_CHASE_AURA            = 51667,
-    ROGUE_SPELL_ADRENALINE_RUSH                  = 13750,
-    ROGUE_SPELL_KILLING_SPREE                    = 51690,
-    ROGUE_SPELL_REDIRECT                         = 73981,
-    ROGUE_SPELL_SHADOW_BLADES                    = 121471,
-    ROGUE_SPELL_SPRINT                           = 2983,
     ROGUE_SPELL_HEMORRHAGE_DOT                   = 89775,
     ROGUE_SPELL_SANGUINARY_VEIN_DEBUFF           = 124271,
     ROGUE_SPELL_NIGHTSTALKER_AURA                = 14062,
@@ -454,107 +449,6 @@ class spell_rog_hemorrhage : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_rog_hemorrhage_SpellScript();
-        }
-};
-
-// Called by Crimson Tempest - 121411, Rupture - 1943 and Eviscerate - 2098
-// Restless Blades - 79096
-class spell_rog_restless_blades : public SpellScriptLoader
-{
-    public:
-        spell_rog_restless_blades() : SpellScriptLoader("spell_rog_restless_blades") { }
-
-        class spell_rog_restless_blades_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_restless_blades_SpellScript);
-
-            int32 comboPoints;
-
-            bool Validate()
-            {
-                comboPoints = 0;
-
-                if (!sSpellMgr->GetSpellInfo(121411) || !sSpellMgr->GetSpellInfo(1943) || !sSpellMgr->GetSpellInfo(2098))
-                    return false;
-                return true;
-            }
-
-            void HandleBeforeCast()
-            {
-                if (GetCaster()->ToPlayer())
-                    comboPoints = GetCaster()->ToPlayer()->GetComboPoints();
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (comboPoints)
-                        {
-                            if (_player->HasSpellCooldown(ROGUE_SPELL_ADRENALINE_RUSH))
-                            {
-                                uint32 newCooldownDelay = _player->GetSpellCooldownDelay(ROGUE_SPELL_ADRENALINE_RUSH);
-                                newCooldownDelay -= comboPoints * 2;
-
-                                _player->AddSpellCooldown(ROGUE_SPELL_ADRENALINE_RUSH, 0, uint32(time(NULL) + newCooldownDelay));
-
-                                _player->SendModifyCooldown(ROGUE_SPELL_ADRENALINE_RUSH, -1 * comboPoints * 2000);
-                            }
-                            if (_player->HasSpellCooldown(ROGUE_SPELL_KILLING_SPREE))
-                            {
-                                uint32 newCooldownDelay = _player->GetSpellCooldownDelay(ROGUE_SPELL_KILLING_SPREE);
-                                newCooldownDelay -= comboPoints * 2;
-
-                                _player->AddSpellCooldown(ROGUE_SPELL_KILLING_SPREE, 0, uint32(time(NULL) + newCooldownDelay));
-
-                                _player->SendModifyCooldown(ROGUE_SPELL_KILLING_SPREE, -1 * comboPoints * 2000);
-                            }
-                            if (_player->HasSpellCooldown(ROGUE_SPELL_REDIRECT))
-                            {
-                                uint32 newCooldownDelay = _player->GetSpellCooldownDelay(ROGUE_SPELL_REDIRECT);
-                                newCooldownDelay -= comboPoints * 2;
-
-                                _player->AddSpellCooldown(ROGUE_SPELL_REDIRECT, 0, uint32(time(NULL) + newCooldownDelay));
-
-                                _player->SendModifyCooldown(ROGUE_SPELL_REDIRECT, -1 * comboPoints * 2000);
-                            }
-                            if (_player->HasSpellCooldown(ROGUE_SPELL_SHADOW_BLADES))
-                            {
-                                uint32 newCooldownDelay = _player->GetSpellCooldownDelay(ROGUE_SPELL_SHADOW_BLADES);
-                                newCooldownDelay -= comboPoints * 2;
-
-                                _player->AddSpellCooldown(ROGUE_SPELL_SHADOW_BLADES, 0, uint32(time(NULL) + newCooldownDelay));
-
-                                _player->SendModifyCooldown(ROGUE_SPELL_SHADOW_BLADES, -1 * comboPoints * 2000);
-                            }
-                            if (_player->HasSpellCooldown(ROGUE_SPELL_SPRINT))
-                            {
-                                uint32 newCooldownDelay = _player->GetSpellCooldownDelay(ROGUE_SPELL_SPRINT);
-                                newCooldownDelay -= comboPoints * 2;
-
-                                _player->AddSpellCooldown(ROGUE_SPELL_SPRINT, 0, uint32(time(NULL) + newCooldownDelay));
-
-                                _player->SendModifyCooldown(ROGUE_SPELL_SPRINT, -1 * comboPoints * 2000);
-                            }
-
-                            comboPoints = 0;
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                BeforeCast += SpellCastFn(spell_rog_restless_blades_SpellScript::HandleBeforeCast);
-                OnHit += SpellHitFn(spell_rog_restless_blades_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_restless_blades_SpellScript();
         }
 };
 
@@ -1289,7 +1183,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_nightstalker();
     new spell_rog_sanguinary_vein();
     new spell_rog_hemorrhage();
-    new spell_rog_restless_blades();
     new spell_rog_venomous_wounds();
     new spell_rog_redirect();
     new spell_rog_shroud_of_concealment();

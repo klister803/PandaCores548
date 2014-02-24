@@ -7587,8 +7587,20 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     }
                     break;
                 }
-                // Anticipation
-                case 114015:
+                case 79096: // Restless Blades
+                {
+                    if (Player * plr = ToPlayer())
+                    {
+                        float ChangeCooldown = plr->GetComboPoints() * -2;
+
+                        plr->ChangeSpellCooldown(51690, ChangeCooldown);  // Killing Spree
+                        plr->ChangeSpellCooldown(13750, ChangeCooldown);  // Adrenaline Rush
+                        plr->ChangeSpellCooldown(2983, ChangeCooldown);   // Sprint
+                        plr->ChangeSpellCooldown(121471, ChangeCooldown); // Shadow Blades
+                    }
+                    break;
+                }
+                case 114015: // Anticipation
                 {
                     if (GetTypeId() != TYPEID_PLAYER)
                         return false;
@@ -9847,7 +9859,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         case 76857:     // Mastery : Critical Block
         case 58410:     // Master Poisoner
         case 79147:     // Sanguinary Vein
-        case 91023:     // Find Weakness
         case 113043:    // Omen of Clarity (new)
         case 122464:    // Dematerialize
             return false;
@@ -11903,13 +11914,11 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         Unit::AuraEffectList const& doneFromManaPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_FROM_PCT_POWER);
         if (!doneFromManaPctAuras.empty())
         {
-            float powerPct = float(GetPower(POWER_MANA)) / GetMaxPower(POWER_MANA);
-            powerPct = std::min(1.0f, powerPct);
-            powerPct = std::max(0.0f, powerPct);
+            float powerPct = 100.f * GetPower(POWER_MANA) / GetMaxPower(POWER_MANA);
             for (Unit::AuraEffectList::const_iterator itr = doneFromManaPctAuras.begin(); itr != doneFromManaPctAuras.end(); ++itr)
             {
                 if (spellProto->SchoolMask & (*itr)->GetMiscValue())
-                    DoneTotalMod *= (100.0f + (*itr)->GetAmount() * powerPct) / 100.0f;
+                    AddPct(DoneTotalMod, CalculatePct((*itr)->GetAmount(), powerPct));
             }
         }
     }
@@ -16377,10 +16386,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             target->ToPlayer()->AddSpellCooldown(122465, 0, time(NULL) + 10);
         }
     }
-
-    // Find Weakness - 91023
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(91023) && procSpell && (procSpell->Id == 8676 || procSpell->Id == 703 || procSpell->Id == 1833))
-        CastSpell(target, 91021, true);
 
     // Revealing Strike - 84617
     if (GetTypeId() == TYPEID_PLAYER && target && target->HasAura(84617, GetGUID()) && procSpell && procSpell->Id == 1752)
