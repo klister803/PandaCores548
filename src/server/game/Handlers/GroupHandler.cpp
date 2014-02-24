@@ -596,7 +596,10 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
     recvData.ReadGuidMask<6, 2>(target_playerguid);
     
     if (count > 100)
+    {
+        recvData.rfinish();
         return;
+    }
 
     for (uint32 i = 0; i < count; ++i)
         recvData.ReadGuidMask<1, 0, 5, 2, 3, 6, 7, 4>(guids[i]);
@@ -660,6 +663,11 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
         }
 
         LootItem& item = slotid >= loot->items.size() ? loot->quest_items[slotid - loot->items.size()] : loot->items[slotid];
+        if (item.currency)
+        {
+            sLog->outDebug(LOG_FILTER_LOOT, "WorldSession::HandleLootMasterGiveOpcode: player %s tried to give currency via master loot! Hack alert! Slot %u, currency id %u", GetPlayer()->GetName(), slotid, item.itemid);
+            return;
+        }
 
         ItemPosCountVec dest;
         InventoryResult msg = target->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item.itemid, item.count);

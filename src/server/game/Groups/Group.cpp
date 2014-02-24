@@ -1124,7 +1124,7 @@ void Group::GroupLoot(Loot* loot, WorldObject* pLootedObject)
 
     for (i = loot->items.begin(); i != loot->items.end(); ++i, ++itemSlot)
     {
-        if (i->freeforall)
+        if (i->freeforall || i->currency)
             continue;
 
         item = sObjectMgr->GetItemTemplate(i->itemid);
@@ -1278,7 +1278,7 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
     uint8 itemSlot = 0;
     for (std::vector<LootItem>::iterator i = loot->items.begin(); i != loot->items.end(); ++i, ++itemSlot)
     {
-        if (i->freeforall)
+        if (i->freeforall || i->currency)
             continue;
 
         item = sObjectMgr->GetItemTemplate(i->itemid);

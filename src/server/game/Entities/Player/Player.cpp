@@ -9901,6 +9901,21 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             return;
         }
 
+        /*if (go->GetGoType() == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.lockId)
+        {
+            uint32 go_min = go->GetGOInfo()->chest.minSuccessOpens;
+            uint32 go_max = go->GetGOInfo()->chest.maxSuccessOpens;
+            uint32 chestRestockTime = go->GetGOInfo()->chest.chestRestockTime;
+            uint32 consumable = go->GetGOInfo()->chest.consumable;
+            uint32 lootid =  go->GetGOInfo()->GetLootId();
+
+            if (go_min == 1 && go_max == 1 && consumable == 1 && chestRestockTime == 0 && lootid)
+            {
+                AutoStoreLoot(lootid, LootTemplates_Gameobject);
+                return;
+            }
+        }*/
+
         loot = &go->loot;
 
         if (go->getLootState() == GO_READY)
@@ -10189,25 +10204,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
     // need know merged fishing/corpse loot type for achievements
     loot->loot_type = loot_type;
-
-    if (IS_GAMEOBJECT_GUID(guid))
-    {
-        GameObject *go = GetMap()->GetGameObject(guid);
-        if (go && go->GetGoType() == GAMEOBJECT_TYPE_CHEST)
-        {
-            uint32 go_min = go->GetGOInfo()->chest.minSuccessOpens;
-            uint32 go_max = go->GetGOInfo()->chest.maxSuccessOpens;
-            uint32 chestRestockTime = go->GetGOInfo()->chest.chestRestockTime;
-            uint32 consumable = go->GetGOInfo()->chest.consumable;
-            uint32 lootid =  go->GetGOInfo()->GetLootId();
-
-            if(go_min == 1 && go_max ==1 && consumable == 1 && chestRestockTime == 0 && lootid)
-            {
-                AutoStoreLoot(lootid, LootTemplates_Gameobject);
-                loot->clear();
-            }
-        }
-    }
 
     //! 5.4.1
     WorldPacket data(SMSG_LOOT_RESPONSE);
@@ -26280,22 +26276,45 @@ bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore cons
     {
         LootItem* lootItem = loot.LootItemInSlot(i, this);
 
-        ItemPosCountVec dest;
-        InventoryResult msg = CanStoreNewItem(bag, slot, dest, lootItem->itemid, lootItem->count);
-        if (msg != EQUIP_ERR_OK && slot != NULL_SLOT)
-            msg = CanStoreNewItem(bag, NULL_SLOT, dest, lootItem->itemid, lootItem->count);
-        if (msg != EQUIP_ERR_OK && bag != NULL_BAG)
-            msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, lootItem->itemid, lootItem->count);
-        if (msg != EQUIP_ERR_OK)
+        if (lootItem->currency)
         {
-            SendEquipError(msg, NULL, NULL, lootItem->itemid);
-            continue;
-        }
+            uint32 id = lootItem->itemid;
+            CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(id);
+            if (!id)
+                continue;
 
-        Item* pItem = StoreNewItem(dest, lootItem->itemid, true, lootItem->randomPropertyId);
-        SendNewItem(pItem, lootItem->count, false, false, broadcast);
+            uint32 amount = lootItem->count * entry->GetPrecision();
+
+            if (uint32 totalCap = GetCurrencyTotalCap(entry))
+            {
+                if (GetCurrency(id) + amount > totalCap)
+                {
+                    SendEquipError(EQUIP_ERR_ITEM_MAX_COUNT, NULL);
+                    continue;
+                }
+            }
+
+            ModifyCurrency(id, amount, true);
+        }
+        else
+        {
+            ItemPosCountVec dest;
+            InventoryResult msg = CanStoreNewItem(bag, slot, dest, lootItem->itemid, lootItem->count);
+            if (msg != EQUIP_ERR_OK && slot != NULL_SLOT)
+                msg = CanStoreNewItem(bag, NULL_SLOT, dest, lootItem->itemid, lootItem->count);
+            if (msg != EQUIP_ERR_OK && bag != NULL_BAG)
+                msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, lootItem->itemid, lootItem->count);
+            if (msg != EQUIP_ERR_OK)
+            {
+                SendEquipError(msg, NULL, NULL, lootItem->itemid);
+                continue;
+            }
+
+            Item* pItem = StoreNewItem(dest, lootItem->itemid, true, lootItem->randomPropertyId);
+            SendNewItem(pItem, lootItem->count, false, false, broadcast);
+        }
     }
-    if(max_slot > 0)
+    if (max_slot > 0)
         return true;
 
     return false;
@@ -26306,8 +26325,9 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
     QuestItem* qitem = NULL;
     QuestItem* ffaitem = NULL;
     QuestItem* conditem = NULL;
+    QuestItem* currency = NULL;
 
-    LootItem* item = loot->LootItemInSlot(lootSlot, this, &qitem, &ffaitem, &conditem);
+    LootItem* item = loot->LootItemInSlot(lootSlot, this, &qitem, &ffaitem, &conditem, &currency);
 
     if (!item)
     {
@@ -26319,6 +26339,17 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
     if (!qitem && item->is_blocked)
     {
         SendLootRelease(GetLootGUID());
+        return;
+    }
+
+    if (currency)
+    {
+        if (CurrencyTypesEntry const * currencyEntry = sCurrencyTypesStore.LookupEntry(item->itemid))
+            ModifyCurrency(item->itemid, int32(item->count * currencyEntry->GetPrecision()));
+
+        SendNotifyLootItemRemoved(lootSlot, loot->objGuid);
+        currency->is_looted = true;
+        --loot->unlootedCount;
         return;
     }
 
