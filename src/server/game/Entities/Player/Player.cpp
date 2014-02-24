@@ -2771,8 +2771,14 @@ void Player::RegenerateAll()
 
     if (m_holyPowerRegenTimerCount >= 10000 && getClass() == CLASS_PALADIN)
     {
-        Regenerate(POWER_HOLY_POWER);
-        m_holyPowerRegenTimerCount -= 10000;
+        if (!isInCombat())
+        {
+            Regenerate(POWER_HOLY_POWER);
+        }
+        else
+        {
+            m_holyPowerRegenTimerCount -= 10000;
+        }
     }
 
     if (m_chiPowerRegenTimerCount >= 10000 && getClass() == CLASS_MONK)
@@ -2877,12 +2883,9 @@ void Player::Regenerate(Powers power)
 
             break;
         }
+        case POWER_HOLY_POWER:
         case POWER_CHI:
             addvalue += -1.0f; // remove 1 each 10 sec
-            break;
-        case POWER_HOLY_POWER:
-            if (!isInCombat())
-                addvalue += -1.0f; // remove 1 each 10 sec
             break;
         case POWER_RUNES:
         case POWER_HEALTH:
@@ -29237,6 +29240,11 @@ void Player::ResetRegenTimerCount(Powers power)
         case POWER_CHI:
         {
             m_chiPowerRegenTimerCount = 0;
+            break;
+        }
+        case POWER_HOLY_POWER:
+        {
+            m_holyPowerRegenTimerCount = 0;
             break;
         }
         default:

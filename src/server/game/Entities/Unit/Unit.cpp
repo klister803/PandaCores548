@@ -13489,8 +13489,13 @@ void Unit::ClearInCombat()
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 
-    if (getClass() == CLASS_MONK)
-        ToPlayer()->ResetRegenTimerCount(POWER_CHI);
+    switch (getClass())
+    {
+        case CLASS_MONK:    ToPlayer()->ResetRegenTimerCount(POWER_CHI);        break;
+        case CLASS_PALADIN: ToPlayer()->ResetRegenTimerCount(POWER_HOLY_POWER); break;
+        default:
+            break;
+    }
 }
 
 bool Unit::isTargetableForAttack(bool checkFakeDeath) const
