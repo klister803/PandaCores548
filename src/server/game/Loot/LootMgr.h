@@ -307,7 +307,7 @@ struct Loot
     QuestItemMap const& GetPlayerCurrencies() const { return PlayerCurrencies; }
     QuestItemMap const& GetPlayerQuestItems() const { return PlayerQuestItems; }
     QuestItemMap const& GetPlayerFFAItems() const { return PlayerFFAItems; }
-    QuestItemMap const& GetPlayerNonQuestNonFFAConditionalItems() const { return PlayerNonQuestNonFFAConditionalItems; }
+    QuestItemMap const& GetPlayerNonQuestNonFFANonCurrencyConditionalItems() const { return PlayerNonQuestNonFFANonCurrencyConditionalItems; }
 
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;
@@ -346,9 +346,9 @@ struct Loot
             delete itr->second;
         PlayerFFAItems.clear();
 
-        for (QuestItemMap::const_iterator itr = PlayerNonQuestNonFFAConditionalItems.begin(); itr != PlayerNonQuestNonFFAConditionalItems.end(); ++itr)
+        for (QuestItemMap::const_iterator itr = PlayerNonQuestNonFFANonCurrencyConditionalItems.begin(); itr != PlayerNonQuestNonFFANonCurrencyConditionalItems.end(); ++itr)
             delete itr->second;
-        PlayerNonQuestNonFFAConditionalItems.clear();
+        PlayerNonQuestNonFFANonCurrencyConditionalItems.clear();
 
         PlayersLooting.clear();
         items.clear();
@@ -391,7 +391,7 @@ struct Loot
         QuestItemMap PlayerCurrencies;
         QuestItemMap PlayerQuestItems;
         QuestItemMap PlayerFFAItems;
-        QuestItemMap PlayerNonQuestNonFFAConditionalItems;
+        QuestItemMap PlayerNonQuestNonFFANonCurrencyConditionalItems;
 
         // All rolls are registered here. They need to know, when the loot is not valid anymore
         LootValidatorRefManager i_LootValidatorRefManager;
