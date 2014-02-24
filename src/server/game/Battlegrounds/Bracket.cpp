@@ -20,8 +20,8 @@
 #include "Bracket.h"
 #include "DatabaseEnv.h"
 
-Bracket::Bracket(Player *player, BracketType type) :
-    m_owner(player->GetGUID()), m_Type(type), m_rating(0)
+Bracket::Bracket(uint64 guid, BracketType type) :
+    m_owner(guid), m_Type(type), m_rating(0), m_state(BRACKET_NEW)
 {
     m_mmv    = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
     memset(values, 0, sizeof(uint32) * BRACKET_END);
@@ -38,6 +38,8 @@ void Bracket::InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, ui
     values[BRACKET_WEEK_WIN] = week_wins;
     values[BRACKET_WEEK_BEST] = best_week;
     values[BRACKET_BEST] = best;
+
+    m_state = BRACKET_UNCHANGED;
 }
 
 float GetChanceAgainst(int ownRating, int opponentRating)
@@ -102,21 +104,47 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
 void Bracket::SaveStats(SQLTransaction* trans)
 {
     int32 index = 0;
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHARACTER_BRACKETS_STATS);
-    stmt->setUInt32(index++, GUID_LOPART(m_owner));
-    stmt->setUInt8(index++, m_Type);
-    stmt->setUInt16(index++, m_rating);
-    stmt->setUInt16(index++, values[BRACKET_BEST]);
-    stmt->setUInt16(index++, values[BRACKET_WEEK_BEST]);
-    stmt->setUInt16(index++, m_mmv);
-    stmt->setUInt32(index++, values[BRACKET_SEASON_GAMES]);
-    stmt->setUInt32(index++, values[BRACKET_SEASON_WIN]);
-    stmt->setUInt32(index++, values[BRACKET_WEEK_GAMES]);
-    stmt->setUInt32(index++, values[BRACKET_WEEK_WIN]);
+    PreparedStatement* stmt = NULL;
+
+    switch(m_state)
+    {
+        case BRACKET_NEW:
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHARACTER_BRACKETS_STATS);
+            stmt->setUInt32(index++, GUID_LOPART(m_owner));
+            stmt->setUInt8(index++, m_Type);
+            stmt->setUInt16(index++, m_rating);
+            stmt->setUInt16(index++, values[BRACKET_BEST]);
+            stmt->setUInt16(index++, values[BRACKET_WEEK_BEST]);
+            stmt->setUInt16(index++, m_mmv);
+            stmt->setUInt32(index++, values[BRACKET_SEASON_GAMES]);
+            stmt->setUInt32(index++, values[BRACKET_SEASON_WIN]);
+            stmt->setUInt32(index++, values[BRACKET_WEEK_GAMES]);
+            stmt->setUInt32(index++, values[BRACKET_WEEK_WIN]);
+            break;
+        case BRACKET_CHANGED:
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_BRACKETS_STATS);
+            stmt->setUInt16(index++, m_rating);
+            stmt->setUInt16(index++, values[BRACKET_BEST]);
+            stmt->setUInt16(index++, values[BRACKET_WEEK_BEST]);
+            stmt->setUInt16(index++, m_mmv);
+            stmt->setUInt32(index++, values[BRACKET_SEASON_GAMES]);
+            stmt->setUInt32(index++, values[BRACKET_SEASON_WIN]);
+            stmt->setUInt32(index++, values[BRACKET_WEEK_GAMES]);
+            stmt->setUInt32(index++, values[BRACKET_WEEK_WIN]);
+            stmt->setUInt32(index++, GUID_LOPART(m_owner));
+            stmt->setUInt8(index++, m_Type);
+            break;
+        default:
+            //Do nothing.
+            return;
+    }
+
     if (trans)
         (*trans)->Append(stmt);
     else
         CharacterDatabase.Execute(stmt);
+
+    m_state = BRACKET_UNCHANGED;
 }
 
 uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
@@ -147,6 +175,9 @@ uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
     //    if (m_rating > player->GetMaxPersonalArenaRatingRequirement(BRACKET_TYPE_ARENA_2))
     //        player->UpdateConquestCurrencyCap(CURRENCY_TYPE_CONQUEST_META_ARENA);        
     //}
+
+    if (m_state == BRACKET_UNCHANGED)
+        m_state = BRACKET_CHANGED;
 
     SaveStats();
 

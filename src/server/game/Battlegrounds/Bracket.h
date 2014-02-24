@@ -25,10 +25,18 @@
 
 #define WORLD_STATE_ENABLE_RATED_BG 5508
 
+enum BracketState
+{
+   BRACKET_UNCHANGED = 0,
+   BRACKET_CHANGED   = 1,
+   BRACKET_NEW       = 2,
+   BRACKET_REMOVED   = 3     //not removed just set count == 0
+};
+
 class Bracket
 {
 public:
-    Bracket(Player *plr, BracketType type);
+    Bracket(uint64 guid, BracketType type);
     ~Bracket() {};
 
     void InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins, uint16 best_week, uint16 best);
@@ -40,6 +48,8 @@ public:
 
     uint16 FinishGame(bool win, uint16 opponents_mmv);
     uint32 GetBracketInfo(BracketInfoType i) const { return values[i]; }
+
+    void SetState(uint8 s) { m_state = s; }
 private:
 
     int16 WonAgainst(uint16 opponents_mmv);
@@ -52,6 +62,7 @@ private:
     BracketType m_Type;
 
     uint64 m_owner;
+    uint8 m_state;
 };
 
 #endif

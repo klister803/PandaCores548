@@ -858,7 +858,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS           = 15,
     PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES            = 16,
     PLAYER_LOGIN_QUERY_LOADGUILD                    = 17,
-    PLAYER_LOGIN_QUERY_LOADBRACKETS                 = 18,
+    PLAYER_LOGIN_QUERY_LOADACCOUNTMOUNTS            = 18,
     PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS             = 19,
     PLAYER_LOGIN_QUERY_LOADACCOUNTACHIEVEMENTS      = 20,
     PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS         = 21,
@@ -879,7 +879,6 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
     //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 37, //id on TC.
     PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 38,
-    PLAYER_LOGIN_QUERY_LOADACCOUNTMOUNTS            = 39,
     MAX_PLAYER_LOGIN_QUERY
 };
 
@@ -3152,7 +3151,6 @@ class Player : public Unit, public GridObject<Player>
         void _LoadFriendList(PreparedQueryResult result);
         bool _LoadHomeBind(PreparedQueryResult result);
         void _LoadDeclinedNames(PreparedQueryResult result);
-        void _LoadBracketsInfo(PreparedQueryResult result);
         void _LoadEquipmentSets(PreparedQueryResult result);
         void _LoadBGData(PreparedQueryResult result);
         void _LoadGlyphs(PreparedQueryResult result);

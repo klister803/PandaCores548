@@ -79,6 +79,7 @@
 #include "BattlefieldMgr.h"
 #include "TicketMgr.h"
 #include "Bracket.h"
+#include "BracketMgr.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -993,9 +994,6 @@ Player::~Player()
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
-
-    for(BracketList::iterator itr = m_BracketsList.begin(); itr != m_BracketsList.end(); ++itr)
-        delete itr->second;
 
     ClearResurrectRequestData();
 
@@ -5703,6 +5701,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
+            sBracketMgr->DeleteBracketInfo(guid);
             CharacterDatabase.CommitTransaction(trans);
             break;
         }
@@ -18082,47 +18081,6 @@ void Player::_LoadDeclinedNames(PreparedQueryResult result)
         m_declinedname->name[i] = (*result)[i].GetString();
 }
 
-void Player::_LoadBracketsInfo(PreparedQueryResult result)
-{
-    // arenateamid, played_week, played_season, personal_rating
-    memset((void*)&m_uint32Values[PLAYER_FIELD_ARENA_TEAM_INFO_1_1], 0, sizeof(uint32) * MAX_BRACKET_SLOT * BRACKET_END);
-
-    InitBrackets();
-
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            BracketType bType = (BracketType)fields[0].GetUInt8();
-            Bracket * bracket = m_BracketsList[bType];
-
-            uint16 rating = fields[1].GetUInt16();
-            uint16 rating_best = fields[2].GetUInt16();
-            uint16 rating_best_week = fields[3].GetUInt16();
-            uint16 mmv = fields[4].GetUInt16();
-
-            sLog->outInfo(LOG_FILTER_WORLDSERVER, "bracket %i rating: %u", bType, rating);
-
-            uint32 games      = fields[5].GetUInt32();
-            uint32 wins       = fields[6].GetUInt32();
-            uint32 week_games = fields[7].GetUInt16();
-            uint32 week_wins  = fields[8].GetUInt16();
-
-            bracket->InitStats(rating, mmv, games, wins, week_games, week_wins, rating_best_week, rating_best);
-
-            SetBracketInfoField(bType, BRACKET_WEEK_GAMES, week_games);
-            SetBracketInfoField(bType, BRACKET_WEEK_WIN, week_wins);
-            SetBracketInfoField(bType, BRACKET_SEASON_GAMES, games);
-            SetBracketInfoField(bType, BRACKET_SEASON_WIN, wins);
-            SetBracketInfoField(bType, BRACKET_BEST, rating_best);
-            SetBracketInfoField(bType, BRACKET_WEEK_BEST, rating_best_week);
-        }
-        while (result->NextRow());
-    }
-}
-
 void Player::_LoadEquipmentSets(PreparedQueryResult result)
 {
     // SetPQuery(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS,   "SELECT setguid, setindex, name, iconname, item0, item1, item2, item3, item4, item5, item6, item7, item8, item9, item10, item11, item12, item13, item14, item15, item16, item17, item18 FROM character_equipmentsets WHERE guid = '%u' ORDER BY setindex", GUID_LOPART(m_guid));
@@ -18392,7 +18350,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCURRENCY));
 
-    _LoadBracketsInfo(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBRACKETS));
+    InitBrackets();
 
     SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[40].GetUInt32());
     SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[41].GetUInt16());
@@ -20620,7 +20578,6 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveInstanceTimeRestrictions(trans);
     _SaveCurrency(trans);
     _SaveArchaelogy(trans);
-    _SaveBrackets(trans);
     _SaveHonor();
 
     // check if stats should only be saved on logout
@@ -29320,7 +29277,7 @@ void Player::SendModifyCooldown(uint32 spellId, int32 value)
 void Player::InitBrackets()
 {
     for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
-        m_BracketsList[i] = new Bracket(this, i);
+        m_BracketsList[i] = sBracketMgr->TryGetOrCreateBracket(GetGUID(), i);
 }
 
 Bracket* Player::getBracket(BracketType slot) const
