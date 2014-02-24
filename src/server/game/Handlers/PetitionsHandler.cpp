@@ -32,12 +32,6 @@
 
 #define CHARTER_DISPLAY_ID 16161
 
-/*enum PetitionType // dbc data
-{
-    PETITION_TYPE_GUILD      = 1,
-    PETITION_TYPE_ARENA_TEAM = 3
-};*/
-
 // Charters ID in item_template
 enum CharterItemIDs
 {
@@ -90,73 +84,19 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
         cost = GUILD_CHARTER_COST;
         type = GUILD_CHARTER_TYPE;
     }
-    // TODO : cleanup dead code
-    /*else
+
+    if (sGuildMgr->GetGuildByName(name))
     {
-        // TODO: find correct opcode
-        if (_player->getLevel() < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
-        {
-            SendNotification(LANG_ARENA_ONE_TOOLOW, sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
-            return;
-        }
-
-        switch (clientIndex)                                 // arenaSlot+1 as received from client (1 from 3 case)
-        {
-            case 1:
-                charterid = ARENA_TEAM_CHARTER_2v2;
-                cost = ARENA_TEAM_CHARTER_2v2_COST;
-                type = ARENA_TEAM_CHARTER_2v2_TYPE;
-                break;
-            case 2:
-                charterid = ARENA_TEAM_CHARTER_3v3;
-                cost = ARENA_TEAM_CHARTER_3v3_COST;
-                type = ARENA_TEAM_CHARTER_3v3_TYPE;
-                break;
-            case 3:
-                charterid = ARENA_TEAM_CHARTER_5v5;
-                cost = ARENA_TEAM_CHARTER_5v5_COST;
-                type = ARENA_TEAM_CHARTER_5v5_TYPE;
-                break;
-            default:
-                sLog->outDebug(LOG_FILTER_NETWORKIO, "unknown selection at buy arena petition: %u", clientIndex);
-                return;
-        }
-
-        if (_player->GetArenaTeamId(clientIndex - 1))        // arenaSlot+1 as received from client
-        {
-            SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ALREADY_IN_ARENA_TEAM);
-            return;
-        }
-    }*/
-
-    if (type == GUILD_CHARTER_TYPE)
-    {
-        if (sGuildMgr->GetGuildByName(name))
-        {
-            Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_EXISTS_S, name);
-            return;
-        }
-        if (sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name)  ||
-            (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(name).empty()))
-        {
-            Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_INVALID, name);
-            return;
-        }
+        Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_EXISTS_S, name);
+        return;
     }
-    /*else
+    
+    if (sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name)  ||
+        (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(name).empty()))
     {
-        if (sArenaTeamMgr->GetArenaTeamByName(name))
-        {
-            SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_EXISTS_S);
-            return;
-        }
-        if (sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name) ||
-            (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(name).empty()))
-        {
-            SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_INVALID);
-            return;
-        }
-    }*/
+        Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_INVALID, name);
+        return;
+    }
 
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(charterid);
     if (!pProto)
@@ -184,9 +124,10 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     if (!charter)
         return;
 
-    charter->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1, charter->GetGUIDLow());
-    // ITEM_FIELD_ENCHANTMENT_1_1 is guild/arenateam id
+    // ITEM_FIELD_ENCHANTMENT_1_1 is guild id 
     // ITEM_FIELD_ENCHANTMENT_1_1+1 is current signatures count (showed on item)
+    charter->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1, charter->GetGUIDLow());
+    charter->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, 0);
     charter->SetState(ITEM_CHANGED, _player);
     _player->SendNewItem(charter, 1, true, false);
 
@@ -254,12 +195,11 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
     Field* fields = result->Fetch();
     uint32 type = fields[0].GetUInt8();
 
-    // if guild petition and has guild => error, return;
-    if (type == GUILD_CHARTER_TYPE && _player->GetGuildId())
+    // if has guild => error, return;
+    if (_player->GetGuildId())
         return;
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_SIGNATURE);
-
     stmt->setUInt32(0, petitionGuidLow);
 
     result = CharacterDatabase.Query(stmt);
@@ -449,19 +389,16 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
         return;
     }
 
-    if (type == GUILD_CHARTER_TYPE)
+    if (sGuildMgr->GetGuildByName(newName))
     {
-        if (sGuildMgr->GetGuildByName(newName))
-        {
-            Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_EXISTS_S, newName);
-            return;
-        }
-        if (sObjectMgr->IsReservedName(newName) || !ObjectMgr::IsValidCharterName(newName) ||
-            (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(newName).empty()))
-        {
-            Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_INVALID, newName);
-            return;
-        }
+        Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_EXISTS_S, newName);
+        return;
+    }
+    if (sObjectMgr->IsReservedName(newName) || !ObjectMgr::IsValidCharterName(newName) ||
+        (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(newName).empty()))
+    {
+        Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_INVALID, newName);
+        return;
     }
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PETITION_NAME);
@@ -529,6 +466,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
         Guild::SendCommandResult(this, GUILD_INVITE_S, ERR_ALREADY_IN_GUILD_S, _player->GetName());
         return;
     }
+
     if (_player->GetGuildIdInvited())
     {
         Guild::SendCommandResult(this, GUILD_INVITE_S, ERR_ALREADY_INVITED_TO_GUILD_S, _player->GetName());
@@ -689,11 +627,6 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
         Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NOT_ALLIED);
         return;
     }
-
-    if (type != GUILD_CHARTER_TYPE)
-    {
-        return;
-    }
     
     if (player->GetGuildId())
     {
@@ -708,7 +641,6 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
     }
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_SIGNATURE);
-
     stmt->setUInt32(0, GUID_LOPART(petitionguid));
 
     result = CharacterDatabase.Query(stmt);
@@ -717,20 +649,57 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
     if (result)
         signs = uint8(result->GetRowCount());
 
-    WorldPacket data(SMSG_PETITION_SHOW_SIGNATURES, (8+8+4+signs+signs*12));
-    data << uint64(petitionguid);                           // petition guid
-    data << uint64(_player->GetGUID());                     // owner guid
-    data << uint32(GUID_LOPART(petitionguid));              // guild guid
-    data << uint8(signs);                                   // sign's count
+    ObjectGuid playerGUID = _player->GetGUID();
 
-    for (uint8 i = 1; i <= signs; ++i)
+    WorldPacket data(SMSG_PETITION_SHOW_SIGNATURES, (8+8+4+1+signs*12));
+    data.WriteGuidMask<3>(playerGUID);
+    data.WriteGuidMask<2>(petitionguid);
+    data.WriteGuidMask<0>(playerGUID);
+    data.WriteGuidMask<0>(petitionguid);
+    data.WriteGuidMask<1>(playerGUID);
+    data.WriteGuidMask<6, 7, 1>(petitionguid);
+    data.WriteGuidMask<5, 6>(playerGUID);
+    data.WriteGuidMask<5>(petitionguid);
+    data.WriteGuidMask<4>(playerGUID);
+    data.WriteGuidMask<3>(petitionguid);
+    data.WriteGuidMask<2>(playerGUID);
+
+    data.WriteBits(signs, 21);                              // sign's count
+
+    for (uint8 i = 0; i < signs; i++)
     {
         Field* fields2 = result->Fetch();
-        data << uint64(MAKE_NEW_GUID(fields2[0].GetUInt32(), 0, HIGHGUID_PLAYER)); // Player GUID
-        data << uint32(0);                                  // there 0 ...
+        uint32 lowGuid = fields2[0].GetUInt32();
+        ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
 
-        result->NextRow();
+        data.WriteGuidMask<2, 0, 3, 6, 4, 5, 7, 1>(plSignGuid);
     }
+
+    data.WriteGuidMask<4>(petitionguid);
+    data.WriteGuidMask<7>(playerGUID);
+
+    for (uint8 i = 0; i < signs; i++)
+    {
+        Field* fields2 = result->Fetch();
+        uint32 lowGuid = fields2[0].GetUInt32();
+        ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
+
+        data.WriteGuidMask<6, 3, 0, 4, 7, 5, 1, 2>(plSignGuid);
+        data << uint32(0);
+    }
+
+    data.WriteGuidBytes<2>(playerGUID);
+    data.WriteGuidBytes<4, 2, 3, 0>(petitionguid);
+    data.WriteGuidBytes<0>(playerGUID);
+    data.WriteGuidBytes<6>(petitionguid);
+
+    data << uint32(0);
+
+    data.WriteGuidBytes<5, 1>(playerGUID);
+    data.WriteGuidBytes<7>(petitionguid);
+    data.WriteGuidBytes<6>(playerGUID);
+    data.WriteGuidBytes<5, 1>(petitionguid);
+    data.WriteGuidBytes<4, 7, 3>(playerGUID);
 
     player->GetSession()->SendPacket(&data);
 }
@@ -819,7 +788,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
         return;
     }
 
-    // Proceed with guild/arena team creation
+    // Proceed with guild creation
 
     // Delete charter item
     _player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
