@@ -42,7 +42,9 @@ public:
     void InitStats(uint16 rating, uint16 mmr, uint32 games, uint32 wins, uint32 week_games, uint32 week_wins, uint16 best_week, uint16 best);
 
     uint16 getRating() const { return m_rating; }
+    int16 getRatingLastChange() const { return m_ratingLastChange; }
     uint16 getMMV()    const { return m_mmv;    }
+    int16 getLastMMRChange() const{ return m_mmr_lastChage; }
     
     void SaveStats(SQLTransaction* trans = NULL);
 
@@ -58,7 +60,9 @@ private:
     uint32 values[BRACKET_END];                 //used for store data from Player::PLAYER_FIELD_ARENA_TEAM_INFO_1_1
 
     uint16 m_rating;
+    int16 m_ratingLastChange;
     uint16 m_mmv;
+    int16 m_mmr_lastChage;
     BracketType m_Type;
 
     uint64 m_owner;

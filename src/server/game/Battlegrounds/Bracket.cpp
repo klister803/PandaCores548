@@ -21,7 +21,7 @@
 #include "DatabaseEnv.h"
 
 Bracket::Bracket(uint64 guid, BracketType type) :
-    m_owner(guid), m_Type(type), m_rating(0), m_state(BRACKET_NEW)
+    m_owner(guid), m_Type(type), m_rating(0), m_state(BRACKET_NEW), m_ratingLastChange(0), m_mmr_lastChage(0)
 {
     m_mmv    = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
     memset(values, 0, sizeof(uint32) * BRACKET_END);
@@ -158,10 +158,10 @@ uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
         values[BRACKET_WEEK_WIN]++;
     }
 
-    int16 mod = (win) ? WonAgainst(opponents_mmv) : LostAgainst(opponents_mmv);
-
-    m_rating += mod;
-    m_mmv += GetMatchmakerRatingMod(m_mmv, opponents_mmv, win);
+    m_ratingLastChange = (win) ? WonAgainst(opponents_mmv) : LostAgainst(opponents_mmv);
+    m_rating += m_ratingLastChange;
+    m_mmr_lastChage = GetMatchmakerRatingMod(m_mmv, opponents_mmv, win);
+    m_mmv += m_mmr_lastChage;
 
     if (m_rating > values[BRACKET_WEEK_BEST])
         values[BRACKET_WEEK_BEST] = m_rating;
@@ -181,7 +181,7 @@ uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
 
     SaveStats();
 
-    return mod;
+    return m_ratingLastChange;
 }
 
 int16 Bracket::WonAgainst(uint16 opponents_mmv)
