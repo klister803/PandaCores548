@@ -254,16 +254,14 @@ void BattlegroundSSM::CheckSomeoneJoinedPoint()
 
 void BattlegroundSSM::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
     //create score and add it to map
-    BattleGroundSSMScore* sc = new BattleGroundSSMScore;
+    AddPlayerScore(player->GetGUID(), new BattleGroundSSMScore);
+    Battleground::AddPlayer(player);
 
     this->UpdateWorldStateForPlayer(SSM_POINTS_ALLIANCE, 30, player);
     this->UpdateWorldStateForPlayer(SSM_POINTS_HORDE, 40, player);
 
     m_PlayersNearPoint[SSM_POINTS_MAX].push_back(player->GetGUID());
-
-    PlayerScores[player->GetGUID()] = sc;
 }
 
 void BattlegroundSSM::UpdateScore()

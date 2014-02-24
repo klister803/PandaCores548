@@ -940,13 +940,6 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         participant = true;
     }
 
-    BattlegroundScoreMap::iterator itr2 = PlayerScores.find(guid);
-    if (itr2 != PlayerScores.end())
-    {
-        delete itr2->second;                                // delete player's score
-        PlayerScores.erase(itr2);
-    }
-
     RemovePlayerFromResurrectQueue(guid);
 
     Player* player = ObjectAccessor::FindPlayer(guid);
@@ -1128,6 +1121,8 @@ void Battleground::AddPlayer(Player* player)
 
     // Add to list/maps
     m_Players[guid] = bp;
+    ASSERT(PlayerScores[guid]);                             //not add bg score???? First add score after add to bg
+    PlayerScores[guid]->Team = team;
 
     UpdatePlayersCountByTeam(team, false);                  // +1 player
 

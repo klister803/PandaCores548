@@ -209,11 +209,9 @@ void BattlegroundBFG::StartingEventOpenDoors()
 
 void BattlegroundBFG::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
     // Create score and add it to map, default values are set in constructor
-    BattlegroundBFGScore* score = new BattlegroundBFGScore;
-
-    PlayerScores[player->GetGUID()] = score;
+    AddPlayerScore(player->GetGUID(), new BattlegroundBFGScore);
+    Battleground::AddPlayer(player);
 }
 
 void BattlegroundBFG::RemovePlayer(Player* /*player*/, uint64 /*guid*/) { }

@@ -58,12 +58,10 @@ void BattlegroundTV::StartingEventOpenDoors()
 
 void BattlegroundTV::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
-    BattlegroundTVScore* sc = new BattlegroundTVScore;
+    AddPlayerScore(player->GetGUID(), new BattlegroundTVScore);
 
-    PlayerScores[player->GetGUID()] = sc;
-
+    Battleground::AddPlayer(player);
     UpdateArenaWorldState();
 }
 

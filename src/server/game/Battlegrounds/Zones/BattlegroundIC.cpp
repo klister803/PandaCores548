@@ -292,11 +292,9 @@ bool BattlegroundIC::IsAllNodesConrolledByTeam(uint32 team) const
 
 void BattlegroundIC::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
-    BattlegroundICScore* sc = new BattlegroundICScore;
-
-    PlayerScores[player->GetGUID()] = sc;
+    AddPlayerScore(player->GetGUID(), new BattlegroundICScore);
+    Battleground::AddPlayer(player);
 
     if (nodePoint[NODE_TYPE_QUARRY].nodeState == (player->GetTeamId() == TEAM_ALLIANCE ? NODE_STATE_CONTROLLED_A : NODE_STATE_CONTROLLED_H))
         player->CastSpell(player, SPELL_QUARRY, true);

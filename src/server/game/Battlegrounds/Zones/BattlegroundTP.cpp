@@ -181,11 +181,9 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
 
 void BattlegroundTP::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
-
     ///Create score for player
-    BattlegroundTPScore* sc = new BattlegroundTPScore;
-    PlayerScores[player->GetGUID()] = sc;
+    AddPlayerScore(player->GetGUID(), new BattlegroundTPScore);
+    Battleground::AddPlayer(player);
 }
 
 

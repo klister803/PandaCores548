@@ -336,13 +336,10 @@ void BattlegroundEY::UpdatePointsIcons(uint32 Team, uint32 Point)
 
 void BattlegroundEY::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
     //create score and add it to map
-    BattlegroundEYScore* sc = new BattlegroundEYScore;
-
+    AddPlayerScore(player->GetGUID(), new BattlegroundEYScore);
+    Battleground::AddPlayer(player);
     m_PlayersNearPoint[EY_POINTS_MAX].push_back(player->GetGUID());
-
-    PlayerScores[player->GetGUID()] = sc;
 }
 
 void BattlegroundEY::RemovePlayer(Player* player, uint64 guid, uint32 /*team*/)

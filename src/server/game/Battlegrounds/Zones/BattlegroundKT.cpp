@@ -118,14 +118,12 @@ void BattlegroundKT::StartingEventOpenDoors()
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, BG_KT_EVENT_START_BATTLE);
 }
 
-void BattlegroundKT::AddPlayer(Player *plr)
+void BattlegroundKT::AddPlayer(Player *player)
 {
-    Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
-    BattleGroundKTScore* sc = new BattleGroundKTScore;
-
-    PlayerScores[plr->GetGUID()] = sc;
-    m_playersZone[plr->GetGUID()] = KT_ZONE_OUT;
+    AddPlayerScore(player->GetGUID(), new BattleGroundKTScore);
+    Battleground::AddPlayer(player);
+    m_playersZone[player->GetGUID()] = KT_ZONE_OUT;
 }
 
 void BattlegroundKT::EventPlayerClickedOnOrb(Player* source, GameObject* target_obj)

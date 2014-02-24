@@ -102,12 +102,9 @@ void BattlegroundRV::StartingEventOpenDoors()
 
 void BattlegroundRV::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
-    BattlegroundRVScore* sc = new BattlegroundRVScore;
-
-    PlayerScores[player->GetGUID()] = sc;
-
+    AddPlayerScore(player->GetGUID(), new BattlegroundRVScore);
+    Battleground::AddPlayer(player);
     UpdateWorldState(BG_RV_WORLD_STATE_A, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(BG_RV_WORLD_STATE_H, GetAlivePlayersCountByTeam(HORDE));
 }

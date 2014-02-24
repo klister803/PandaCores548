@@ -50,6 +50,7 @@
 #include "SharedDefines.h"
 #include "Formulas.h"
 #include "DisableMgr.h"
+#include "BracketMgr.h"
 
 /*********************************************************/
 /***            BATTLEGROUND MANAGER                   ***/
@@ -399,6 +400,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
 
 void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
 {
+    BracketType bType = BattlegroundMgr::BracketByJoinType(bg->GetJoinType());
     uint8 isRated = (bg->isRated() ? 1 : 0);               // type (normal=0/rated=1) -- ATM arena or bg, RBG NYI
     uint8 isArena = (bg->isArena() ? 1 : 0);               // Arena names
     uint8 counta2 = 0;
@@ -411,26 +413,38 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
     data->WriteBits(0, 19);     // Placeholder
 
     int32 count = 0;
+    uint32 team = 0;
     ByteBuffer buff;
-
+    Player* player = NULL;
+    Bracket* bracket = NULL;
+    ObjectGuid guid = 0;
     Battleground::BattlegroundScoreMap::const_iterator itr2 = bg->GetPlayerScoresBegin();
     for (Battleground::BattlegroundScoreMap::const_iterator itr = itr2; itr != bg->GetPlayerScoresEnd();)
     {
         itr2 = itr++;
+        team = itr2->second->Team;
+
+        // Check if player finish game. If he leave game he will be true untill _ProcessOfflineQueue
         if (!bg->IsPlayerInBattleground(itr2->first))
         {
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "Player " UI64FMTD " has scoreboard entry for battleground %u but is not in battleground!", itr->first, bg->GetTypeID(true));
+            //sLog->outError(LOG_FILTER_BATTLEGROUND, "Player " UI64FMTD " has scoreboard entry for battleground %u but is not in battleground!", itr->first, bg->GetTypeID(true));
             continue;
         }
 
-        ObjectGuid guid = itr2->first;
-        Player* player = ObjectAccessor::FindPlayer(itr2->first);
-        if (!player)
-            continue;
-        
+        guid = itr2->first;
+        player = ObjectAccessor::FindPlayer(itr2->first);
+
+        if (isRated)    //bracket used only on rated bg, no need find it for non ranked
+            bracket = player ? player->getBracket(bType) : sBracketMgr->TryGetOrCreateBracket(itr2->first, bType);
+        else
+            bracket = NULL;
+
         buff.WriteGuidBytes<2, 7>(guid);
-        buff << int32(player->GetSpecializationId(player->GetActiveSpec()));
+        buff << int32(player ? player->GetSpecializationId(player->GetActiveSpec()) : 0);
         buff.WriteGuidBytes<3>(guid);
+
+        if (isRated)
+            buff << uint32(bracket->getMMV() - bracket->getLastMMRChange());
 
         if (!isArena) // Unk 3 prolly is (bg)
         {
@@ -559,27 +573,31 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         data->WriteGuidMask<2, 4, 6, 7>(guid);
         data->WriteBit(isArena);
         data->WriteGuidMask<5>(guid);
-        data->WriteBit(0);                                          // PLR_SCORE::field_2C
-        if (isArena)                                                // Reversed team
-            data->WriteBit(bg->GetPlayerTeam(guid) == ALLIANCE);
-        else
-            data->WriteBit(player->GetBGTeam() == ALLIANCE);
-        data->WriteBit(0);
-        data->WriteBit(isArena);                                    // rating changed
+        data->WriteBit(isRated);                                    // Has Plr rating
+        data->WriteBit(team == ALLIANCE);                           // Reversed team
+        data->WriteBit(isRated);                                    // Pre-match mmr
+        data->WriteBit(isRated);                                    // rating changed
         data->WriteGuidMask<3, 1>(guid);
-        data->WriteBit(0);                                          // PLR_SCORE_field_44
+        data->WriteBit(isRated);                                    // Has MMR Change
         data->WriteBit(!isArena);                                   // Unk 3 -- Prolly if (bg)
         data->WriteGuidMask<0>(guid);
 
         //byte part
         buff << uint32(itr2->second->KillingBlows);
         buff.WriteGuidBytes<6, 4>(guid);
-        if(isArena)
-            buff << int32(bg->GetMatchmakerRatingByIndex(bg->GetPlayerTeam(guid) == HORDE));    //something else?
+        if (isRated)
+        {
+            buff << uint32(bracket->getRating()-bracket->getRatingLastChange());
+            buff << uint32(bracket->getRating());
+        }
         buff << uint32(itr2->second->DamageDone);                   // damage done
         buff.WriteGuidBytes<5, 0, 1>(guid);
         buff << uint32(itr2->second->HealingDone);                  // healing done
-        if (player->GetBGTeam() == ALLIANCE)
+
+        if (isRated)
+            buff << uint32(bracket->getMMV());
+
+        if (team == ALLIANCE)
             ++counta2;
         else
             ++counth2;
@@ -587,74 +605,21 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         ++count;
     }
 
-    data->WriteBit(isRated);
+    data->WriteBit(false);                                          // not used. old isRated
     data->WriteBit(bg->GetStatus() == STATUS_WAIT_LEAVE);           // If Ended
-    data->WriteBit(isArena);
-
-
-    if (isArena)
-    {
-        for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
-        {
-            //if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
-            //{
-            //    data->WriteBits(at->GetName().length(), 7);
-            //    data->WriteBits(0, 8);                              //guid part
-            //}
-            //else
-            {
-                data->WriteBits(0, 7);
-                data->WriteBits(0, 8);                              //guid part
-            }
-        }
-    }
+    data->WriteBit(false);                                          // not used. old isArena
 
     data->FlushBits();
 
     data->PutBits<int32>(count_pos, count, 19);
 
-    //if (isArena)
-    //    for (int8 i = 0; i < BG_TEAMS_COUNT; ++i)
-    //        if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
-    //            data->WriteString(at->GetName());
-
     data->append(buff);
     
-    if (isRated)
-    {
-        int32 rating_change[BG_TEAMS_COUNT];
-        uint32 pointsLost[BG_TEAMS_COUNT];
-        uint32 pointsGained[BG_TEAMS_COUNT];
-        uint32 MatchmakerRating[BG_TEAMS_COUNT];
-
-        // it seems this must be according to BG_WINNER_A/H and _NOT_ BG_TEAM_A/H
-        for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
-        {
-            //! ToDo: what exacly print where, may be we should do this for every player?
-            rating_change[i] = bg->GetMatchmakerRatingByIndex(i);
-
-            pointsLost[i] = rating_change[i] < 0 ? -rating_change[i] : 0;
-            pointsGained[i] = rating_change[i] > 0 ? rating_change[i] : 0;
-            MatchmakerRating[i] = bg->GetMatchmakerRatingByIndex(i);
-
-            sLog->outDebug(LOG_FILTER_BATTLEGROUND, "rating change: %d", rating_change);
-        }
-
-        *data << uint32(MatchmakerRating[TEAM_HORDE]);                 // Matchmaking Value
-        *data << uint32(pointsGained[TEAM_ALLIANCE]);                  // Rating gained
-        *data << uint32(pointsLost[TEAM_ALLIANCE]);                    // Rating Lost
-        *data << uint32(pointsGained[TEAM_HORDE]);                     // Rating gained
-        *data << uint32(pointsLost[TEAM_HORDE]);                       // Rating Lost
-        *data << uint32(MatchmakerRating[TEAM_ALLIANCE]);              // Matchmaking Value            
-    }
-
     *data << uint8(counta2);
     *data << uint8(counth2);
 
     if (bg->GetStatus() == STATUS_WAIT_LEAVE)
         *data << uint8(bg->GetWinner());                               // who win
-
-
 }
 
 void BattlegroundMgr::BuildStatusFailedPacket(WorldPacket* data, Battleground* bg, Player* player, uint8 QueueSlot, GroupJoinBattlegroundResult result)

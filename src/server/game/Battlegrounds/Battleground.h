@@ -318,7 +318,7 @@ class BattlegroundScore
 {
     public:
         BattlegroundScore() : KillingBlows(0), Deaths(0), HonorableKills(0),
-            BonusHonor(0), DamageDone(0), HealingDone(0), DamageTaken(0), HealingTaken(0)
+            BonusHonor(0), DamageDone(0), HealingDone(0), DamageTaken(0), HealingTaken(0), Team(0)
         {}
         virtual ~BattlegroundScore() {}                     //virtual destructor is used when deleting score from scores map
 
@@ -328,6 +328,7 @@ class BattlegroundScore
         uint32 BonusHonor;
         uint32 DamageDone;
         uint32 HealingDone;
+        uint32 Team;
     /** World of Warcraft Armory **/
     uint32 DamageTaken;
     uint32 HealingTaken;
@@ -459,6 +460,17 @@ class Battleground
         BattlegroundScoreMap::const_iterator GetPlayerScoresBegin() const { return PlayerScores.begin(); }
         BattlegroundScoreMap::const_iterator GetPlayerScoresEnd() const { return PlayerScores.end(); }
         uint32 GetPlayerScoresSize() const { return PlayerScores.size(); }
+
+        void AddPlayerScore(uint64 guid, BattlegroundScore* s)
+        {
+            BattlegroundScoreMap::const_iterator itr =  PlayerScores.find(guid);
+            if (itr != PlayerScores.end())
+            {
+                delete s;
+                return;
+            }
+            PlayerScores[guid] = s;
+        }
 
         uint32 GetReviveQueueSize() const { return m_ReviveQueue.size(); }
 

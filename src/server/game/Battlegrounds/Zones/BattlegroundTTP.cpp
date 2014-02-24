@@ -54,12 +54,9 @@ void BattlegroundTTP::StartingEventOpenDoors()
 
 void BattlegroundTTP::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
-    BattlegroundTTPScore* sc = new BattlegroundTTPScore;
-
-    PlayerScores[player->GetGUID()] = sc;
-
+    AddPlayerScore(player->GetGUID(), new BattlegroundTTPScore);
+    Battleground::AddPlayer(player);
     UpdateArenaWorldState();
 }
 

@@ -440,10 +440,9 @@ void BattlegroundSA::FillInitialWorldStates(WorldPacket& data)
 
 void BattlegroundSA::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
-    BattlegroundSAScore* sc = new BattlegroundSAScore;
-
+    AddPlayerScore(player->GetGUID(), new BattlegroundSAScore);
+    Battleground::AddPlayer(player);
     if (!ShipsStarted)
     {
         if (player->GetTeamId() == Attackers)
@@ -467,7 +466,6 @@ void BattlegroundSA::AddPlayer(Player* player)
             player->TeleportTo(607, 1209.7f, -65.16f, 70.1f, 0.0f, 0);
     }
     SendTransportInit(player);
-    PlayerScores[player->GetGUID()] = sc;
 }
 
 void BattlegroundSA::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
