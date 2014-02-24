@@ -839,12 +839,12 @@ void Battleground::EndBattleground(uint32 winner)
                 if (!player->GetRandomWinner())
                 {
                     // 100cp awarded for the first rated battleground won each day 
-                    player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RANDOM_BG, BG_REWARD_WINNER_CONQUEST_FIRST);
+                    player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA/*CURRENCY_TYPE_CONQUEST_META_RANDOM_BG*/, BG_REWARD_WINNER_CONQUEST_FIRST);
                     player->SetRandomWinner(true);
                 }
             }
             //else // 50cp awarded for each non-rated battleground won 
-             //   player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RATED_BG, BG_REWARD_WINNER_CONQUEST_LAST );
+             //   player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA/*CURRENCY_TYPE_CONQUEST_META_RANDOM_BG*/, BG_REWARD_WINNER_CONQUEST_LAST );
 
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
             if (!guildAwarded)
