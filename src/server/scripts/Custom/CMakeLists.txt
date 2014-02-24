@@ -14,9 +14,8 @@ set(scripts_STAT_SRCS
 	Custom/Loskutik.cpp
 	Custom/midsummer_fire_festival.cpp
 	Custom/multi_vendor.cpp
-	Custom/rbg.cpp
+	Custom/bracket.cpp
 	Custom/traffic_log.cpp
-	Custom/command_arena.cpp
 	Custom/custom_reward.cpp
 )
 

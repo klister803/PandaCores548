@@ -73,7 +73,7 @@ public:
     }
 };
 
-void AddSC_rbg_commandscript()
+void AddSC_bracket_commandscript()
 {
     new rbg_commandscript();
 }

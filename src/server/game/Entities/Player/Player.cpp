@@ -41,7 +41,6 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ObjectMgr.h"
-#include "ArenaTeamMgr.h"
 #include "GuildMgr.h"
 #include "GroupMgr.h"
 #include "ObjectAccessor.h"
@@ -58,7 +57,6 @@
 #include "BattlegroundMgr.h"
 #include "OutdoorPvP.h"
 #include "OutdoorPvPMgr.h"
-#include "ArenaTeam.h"
 #include "Chat.h"
 #include "Spell.h"
 #include "SocialMgr.h"
@@ -5698,6 +5696,10 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             trans->Append(stmt);
 
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SKILLS);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_BRACKETS_INFO);
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 

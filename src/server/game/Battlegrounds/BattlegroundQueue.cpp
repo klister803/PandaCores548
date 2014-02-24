@@ -17,11 +17,9 @@
  */
 
 #include "BattlegroundQueue.h"
-#include "ArenaTeam.h"
 #include "BattlegroundMgr.h"
 #include "Chat.h"
 #include "ObjectMgr.h"
-#include "ArenaTeamMgr.h"
 #include "Log.h"
 #include "Group.h"
 #include "Bracket.h"

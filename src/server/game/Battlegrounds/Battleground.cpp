@@ -18,10 +18,8 @@
 
 #include "Player.h"
 #include "ObjectMgr.h"
-#include "ArenaTeamMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "ArenaTeam.h"
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
 #include "Creature.h"
@@ -986,9 +984,10 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             if (!team) team = player->GetTeam();
 
             // if arena, remove the specific arena auras
-            if (isArena())
+            if (isArena() || IsRBG())
             {
-                bgTypeId=BATTLEGROUND_AA;                   // set the bg type to all arenas (it will be used for queue refreshing)
+                // set the bg type to all arenas & rbg (it will be used for queue refreshing)
+                bgTypeId = isArena() ? BATTLEGROUND_AA : BATTLEGROUND_RATED_10_VS_10;                   
 
                 // unsummon current and summon old pet if there was one and there isn't a current pet
                 player->RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT);
@@ -997,10 +996,10 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 if (isRated() && GetStatus() == STATUS_IN_PROGRESS)
                 {
                     //left a rated match while the encounter was in progress, consider as loser
-                    ArenaTeam* winner_arena_team = sArenaTeamMgr->GetArenaTeamById(GetGroupIdForTeam(GetOtherTeam(team)));
-                    ArenaTeam* loser_arena_team = sArenaTeamMgr->GetArenaTeamById(GetGroupIdForTeam(team));
-                    if (winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
-                        loser_arena_team->MemberLost(player, GetMatchmakerRating(GetOtherTeam(team)));
+                    BracketType bType = BattlegroundMgr::BracketByJoinType(GetJoinType());
+                    Bracket* bracket = player->getBracket(bType);
+                    ASSERT(bracket);    //shouldn't happend
+                    bracket->FinishGame(false/*lost*/, GetMatchmakerRating(GetOtherTeam(team)));
                 }
             }
             if (SendPacket)
@@ -1018,11 +1017,12 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         {
             if (isRated() && GetStatus() == STATUS_IN_PROGRESS)
             {
+                //ToDo: cache system
                 //left a rated match while the encounter was in progress, consider as loser
-                ArenaTeam* others_arena_team = sArenaTeamMgr->GetArenaTeamById(GetGroupIdForTeam(GetOtherTeam(team)));
-                ArenaTeam* players_arena_team = sArenaTeamMgr->GetArenaTeamById(GetGroupIdForTeam(team));
-                if (others_arena_team && players_arena_team)
-                    players_arena_team->OfflineMemberLost(guid, GetMatchmakerRating(GetOtherTeam(team)));
+                //BracketType bType = BattlegroundMgr::BracketByJoinType(GetJoinType());
+                //Bracket* bracket = player->getBracket(bType);
+                //ASSERT(bracket);    //shouldn't happend
+                //bracket->FinishGame(false/*lost*/, GetMatchmakerRating(GetOtherTeam(team)));
             }
         }
 

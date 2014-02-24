@@ -19,11 +19,9 @@
 #include "Common.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "ArenaTeamMgr.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 
-#include "ArenaTeam.h"
 #include "BattlegroundMgr.h"
 #include "Battleground.h"
 #include "Chat.h"

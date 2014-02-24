@@ -19,13 +19,11 @@
 #include "Common.h"
 #include "DBCEnums.h"
 #include "ObjectMgr.h"
-#include "ArenaTeamMgr.h"
 #include "GuildMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
 #include "DatabaseEnv.h"
 #include "AchievementMgr.h"
-#include "ArenaTeam.h"
 #include "CellImpl.h"
 #include "GameEventMgr.h"
 #include "GridNotifiersImpl.h"
@@ -37,6 +35,7 @@
 #include "ScriptMgr.h"
 #include "MapManager.h"
 #include "Battleground.h"
+#include "BattlegroundMgr.h"
 #include "BattlegroundAB.h"
 #include "Map.h"
 #include "InstanceScript.h"
@@ -2871,7 +2870,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
                 if (achievIdByArenaSlot[j] == achievement->ID)
                 {
                     Battleground* bg = referencePlayer->GetBattleground();
-                    if (!bg || !bg->isArena() || ArenaTeam::GetSlotByType(bg->GetJoinType()) != j)
+                    if (!bg || !bg->isArena() || BattlegroundMgr::BracketByJoinType(bg->GetJoinType()) != j)
                         notfit = true;
                     break;
                 }

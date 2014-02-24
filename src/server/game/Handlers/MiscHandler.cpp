@@ -56,8 +56,6 @@
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
 #include "Bracket.h"
-#include "ArenaTeam.h"
-#include "ArenaTeamMgr.h"
 
 void WorldSession::HandleRepopRequestOpcode(WorldPacket& recvData)
 {
