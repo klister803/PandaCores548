@@ -1182,7 +1182,7 @@ void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid 
 
     ByteBuffer dataBuffer;
 
-    data->Initialize(SMSG_BATTLEFIELD_LIST, 7 * 4 + 2 * 1 + 8 + 1 + 3 + 1 + 4 * 10);
+    data->Initialize(SMSG_BATTLEFIELD_LIST, 83);
     *data << uint32(winner_honor);              // holiday
     *data << uint32(winner_honor);              // random
     *data << uint8(0);                          // min level
