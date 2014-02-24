@@ -1176,13 +1176,13 @@ void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid 
     if (!player)
         return;
 
-    uint32 winner_conquest = (player->GetRandomWinner() ? BG_REWARD_WINNER_HONOR_LAST : BG_REWARD_WINNER_HONOR_FIRST) / 100;
-    uint32 winner_honor = (player->GetRandomWinner() ? BG_REWARD_WINNER_HONOR_FIRST : BG_REWARD_WINNER_HONOR_LAST) / 100;
+    uint32 winner_conquest = (player->GetRandomWinner() ? BG_REWARD_WINNER_CONQUEST_LAST : BG_REWARD_WINNER_CONQUEST_FIRST) / 100;
+    uint32 winner_honor = (player->GetRandomWinner() ? BG_REWARD_WINNER_HONOR_LAST : BG_REWARD_WINNER_HONOR_FIRST) / 100;
     uint32 loser_honor = (player->GetRandomWinner() ? BG_REWARD_LOSER_HONOR_LAST : BG_REWARD_LOSER_HONOR_FIRST) / 100;
 
     ByteBuffer dataBuffer;
 
-    data->Initialize(SMSG_BATTLEFIELD_LIST);
+    data->Initialize(SMSG_BATTLEFIELD_LIST, 7 * 4 + 2 * 1 + 8 + 1 + 3 + 1 + 4 * 10);
     *data << uint32(winner_honor);              // holiday
     *data << uint32(winner_honor);              // random
     *data << uint8(0);                          // min level

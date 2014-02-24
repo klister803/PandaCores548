@@ -1495,7 +1495,6 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
         declinedNamesLength[i] = recvData.ReadBits(7);
 
     recvData.ReadGuidMask<2, 7>(guid);
-    recvData.ReadFlush();
     recvData.ReadGuidBytes<6, 1, 2>(guid);
 
     bool decl_checl = true;
@@ -1696,8 +1695,6 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     recvData.ReadGuidMask<6, 2, 1>(guid);
     uint32 newNameLen = recvData.ReadBits(6);
     recvData.ReadGuidMask<3, 5, 4, 0, 7>(guid);
-
-    recvData.ReadFlush();
 
     recvData.ReadGuidBytes<0, 3, 5, 7>(guid);
     newName = recvData.ReadString(newNameLen);
@@ -1976,8 +1973,6 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     uint32 len = recvData.ReadBits(6);
     bool isFactionChange = recvData.ReadBit();
     recvData.ReadGuidMask<7>(guid);
-
-    recvData.ReadFlush();
 
     recvData.ReadGuidBytes<2, 4, 6, 7, 3>(guid);
     newname = recvData.ReadString(len);

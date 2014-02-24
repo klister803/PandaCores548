@@ -229,8 +229,6 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     for (uint8 i = 0; i < str_count; i++)
         unkLens[i] = recvData.ReadBits(7);
 
-    recvData.ReadFlush();
-
     std::wstring str[4];                                    // 4 is client limit
     for (uint32 i = 0; i < str_count; ++i)
     {
@@ -1177,12 +1175,9 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
 
     recvData.read_skip(decompressedSize);       //uncompress not move packet
     type = recvData.ReadBits(3);
-    recvData.ReadFlush();
 
     if (type > NUM_ACCOUNT_DATA_TYPES)
         return;
-
-    recvData.rfinish(); 
 
     SetAccountData(AccountDataType(type), timestamp, adata);
 }
@@ -1617,8 +1612,8 @@ void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
     uint8 count = 0;
     WorldPacket data(SMSG_PVP_BRACKET_DATA);
     data.WriteGuidMask<0, 6, 3, 7, 4, 2>(playerGuid);
-    uint32 bpos = data.bitwpos();                       //placeholdr
-    data.WriteBits(count, 3);                           //Arena brascets count data, 3 - rated bg
+    uint32 bpos = data.bitwpos();                       //placeholder
+    data.WriteBits(count, 3);                           //Arena brackets count data, 3 - rated bg
     data.WriteGuidMask<5, 1>(playerGuid);
 
     data.FlushBits();
@@ -1648,7 +1643,7 @@ void WorldSession::HandleInspectRatedBGStats(WorldPacket &recvData)
 //! 5.4.1
 void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 {
-    ObjectGuid guid;        // time?
+    ObjectGuid guid;
     uint32 mapid;
     float PositionX;
     float PositionY;

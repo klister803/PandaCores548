@@ -36,7 +36,7 @@ public:
     uint16 getRating() const { return m_rating; }
     uint16 getMMV()    const { return m_mmv;    }
     
-    void SaveStats();
+    void SaveStats(SQLTransaction* trans = NULL);
 
     uint16 FinishGame(bool win, uint16 opponents_mmv);
     uint32 GetBracketInfo(BracketInfoType i) const { return values[i]; }

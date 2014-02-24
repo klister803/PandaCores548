@@ -103,7 +103,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_AUTO_DECLINE_GUILD_INVITES,              STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleAutoDeclineGuildInvites   );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BANKER_ACTIVATE,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBankerActivateOpcode      );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLEFIELD_LEAVE,                       STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleBfExitRequest             );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLEFIELD_LIST,                        STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBattlefieldListOpcode     );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLEFIELD_LIST,                        STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBattlefieldListOpcode     );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE,   STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleBfEntryInviteResponse     );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLEFIELD_MGR_EXIT_REQUEST,            STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleBfExitQueueRequest        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_LEAVE_BATTLEFIELD,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleLeaveBattlefieldOpcode    );

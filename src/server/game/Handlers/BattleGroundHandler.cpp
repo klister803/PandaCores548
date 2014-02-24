@@ -354,9 +354,9 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     uint32 unk;                                                  // type id from dbc
     uint8 action;                                                // enter battle 0x1, leave queue 0x0
     ObjectGuid guid;
-    
+
     action = recvData.ReadBit();
-    recvData.ReadFlush();
+    recvData.ResetBitReader();
 
     recvData >> queueSlot;
     recvData >> time;
@@ -790,7 +790,7 @@ void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
     data << uint32(0);  //unk2
     //data << _player->GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_BG, true);
     data << uint32(0);  //unk3
-    data << _player->GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS, true);
+    data << _player->GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS) / GetCurrencyPrecision(CURRENCY_TYPE_CONQUEST_POINTS);
     data << uint8(3);   //unk4
     data << uint32(0);  //unk5
     SendPacket(&data);

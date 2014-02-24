@@ -1457,21 +1457,18 @@ class Player : public Unit, public GridObject<Player>
         void AddRefundReference(uint32 it);
         void DeleteRefundReference(uint32 it);
 
-        /// send initialization of new currency for client
-        void SendNewCurrency(uint32 id);
         /// send full data about all currencies to client
         void SendCurrencies();
         void SendPvpRewards();
         /// return count of currency witch has plr
-        uint32 GetCurrency(uint32 id, bool usePrecision) const;
-        uint32 GetCurrencyOnWeek(uint32 id, bool usePrecision) const;
-        uint32 GetCurrencyOnSeason(uint32 id, bool usePrecision) const;
+        uint32 GetCurrency(uint32 id) const;
+        uint32 GetCurrencyOnWeek(uint32 id) const;
+        uint32 GetCurrencyOnSeason(uint32 id) const;
         /// return presence related currency
         bool HasCurrency(uint32 id, uint32 count) const;
-        bool HasCurrencySeason(uint32 id, uint32 count) const { return GetCurrencyOnSeason(id, false) >= count; }
-        /// @todo: not understand why it subtract from total count and for what it used. It should be remove and replaced by ModifyCurrency
+        bool HasCurrencySeason(uint32 id, uint32 count) const { return GetCurrencyOnSeason(id) >= count; }
         void SetCurrency(uint32 id, uint32 count, bool printLog = true);
-        uint32 GetCurrencyWeekCap(uint32 id, bool usePrecision);
+        uint32 GetCurrencyWeekCap(uint32 id);
         void ResetCurrencyWeekCap();
         uint32 GetCurrencyWeekCap(CurrencyTypesEntry const* currency);
         uint32 GetCurrencyTotalCap(CurrencyTypesEntry const* currency) const;
@@ -2501,6 +2498,7 @@ class Player : public Unit, public GridObject<Player>
         void UpdateHonorFields();
         bool RewardHonor(Unit* victim, uint32 groupsize, int32 honor = -1, bool pvptoken = false);
         uint32 GetMaxPersonalArenaRatingRequirement(BracketType minarenaslot) const;
+        uint32 GetMaxMMR() const;
 
         //End of PvP System
 
@@ -3187,6 +3185,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveInstanceTimeRestrictions(SQLTransaction& trans);
         void _SaveCurrency(SQLTransaction& trans);
         void _SaveArchaelogy(SQLTransaction& trans);
+        void _SaveBrackets(SQLTransaction& trans);
         void _SaveHonor();
 
         /*********************************************************/
