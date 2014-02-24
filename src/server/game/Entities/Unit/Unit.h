@@ -1260,7 +1260,7 @@ enum ReactiveType
 #define SUMMON_SLOT_QUEST   6
 #define MAX_SUMMON_SLOT     7
 
-#define MAX_GAMEOBJECT_SLOT 4
+#define MAX_GAMEOBJECT_SLOT 5
 
 enum PlayerTotemType
 {

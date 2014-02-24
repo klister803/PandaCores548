@@ -173,10 +173,10 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectFeedPet,                                  //101 SPELL_EFFECT_FEED_PET
     &Spell::EffectDismissPet,                               //102 SPELL_EFFECT_DISMISS_PET
     &Spell::EffectReputation,                               //103 SPELL_EFFECT_REPUTATION
-    &Spell::EffectSummonObject,                             //104 SPELL_EFFECT_SUMMON_OBJECT_SLOT1
-    &Spell::EffectSummonObject,                             //105 SPELL_EFFECT_SUMMON_OBJECT_SLOT2
-    &Spell::EffectSummonObject,                             //106 SPELL_EFFECT_SUMMON_OBJECT_SLOT3
-    &Spell::EffectSummonObject,                             //107 SPELL_EFFECT_SUMMON_OBJECT_SLOT4
+    &Spell::EffectSummonObject,                             //104 SPELL_EFFECT_SUMMON_OBJECT_SLOT
+    &Spell::EffectSurvey,                                   //105 SPELL_EFFECT_SURVEY
+    &Spell::EffectNULL,                                     //106 SPELL_EFFECT_SUMMON_RAID_MARKER
+    &Spell::EffectNULL,                                     //107 SPELL_EFFECT_LOOT_CORPSE
     &Spell::EffectDispelMechanic,                           //108 SPELL_EFFECT_DISPEL_MECHANIC
     &Spell::EffectSummonDeadPet,                            //109 SPELL_EFFECT_SUMMON_DEAD_PET
     &Spell::EffectDestroyAllTotems,                         //110 SPELL_EFFECT_DESTROY_ALL_TOTEMS
@@ -5728,33 +5728,79 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    uint32 go_id;
+    uint8 slot = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValueB;
+    if (slot >= MAX_GAMEOBJECT_SLOT)
+        return;
+
+    uint32 go_id = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
+    float x, y, z, o;
+
+    uint64 guid = m_caster->m_ObjectSlot[slot];
+    if (guid != 0)
+    {
+        GameObject* obj = NULL;
+        if (m_caster)
+            obj = m_caster->GetMap()->GetGameObject(guid);
+
+        if (obj)
+        {
+            // Recast case - null spell id to make auras not be removed on object remove from world
+            if (m_spellInfo->Id == obj->GetSpellId())
+                obj->SetSpellId(0);
+            m_caster->RemoveGameObject(obj, true);
+        }
+        m_caster->m_ObjectSlot[slot] = 0;
+    }
+
+    GameObject* pGameObj = new GameObject;
+
+    // If dest location if present
+    if (m_targets.HasDst())
+        destTarget->GetPosition(x, y, z);
+    // Summon in random point all other units if location present
+    else
+        m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
+
+    o = m_caster->GetOrientation();
+
+    Map* map = m_caster->GetMap();
+    if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map,
+        m_caster->GetPhaseMask(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
+    {
+        delete pGameObj;
+        return;
+    }
+
+    //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->getLevel());
+    int32 duration = m_spellInfo->GetDuration();
+    pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
+    pGameObj->SetSpellId(m_spellInfo->Id);
+    m_caster->AddGameObject(pGameObj);
+
+    ExecuteLogEffectGeneric(effIndex, pGameObj->GetGUID());
+
+    map->AddToMap(pGameObj);
+
+    m_caster->m_ObjectSlot[slot] = pGameObj->GetGUID();
+}
+
+void Spell::EffectSurvey(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+    if (!player)
+        return;
+
     int32 duration = 0;
     float x, y, z, o;
-    bool archael = false;
 
-    if(m_spellInfo->Id == 80451 && m_caster->ToPlayer())
-    {
-        go_id = m_caster->ToPlayer()->GetSurveyBotEntry(x, y, z, o, duration);
-        if(!duration)
-            duration = 10000;
-    }
-    else
-    {
-        go_id = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
-        o = m_caster->GetOrientation();
-    }
+    uint32 go_id = m_caster->ToPlayer()->GetSurveyBotEntry(x, y, z, o, duration);
+    if(!duration)
+        duration = 10000;
 
-    uint8 slot = 0;
-    switch (m_spellInfo->GetEffect(effIndex, m_diffMode).Effect)
-    {
-        case SPELL_EFFECT_SUMMON_OBJECT_SLOT1: slot = 0; break;
-        case SPELL_EFFECT_SUMMON_OBJECT_SLOT2: slot = 1; break;
-        case SPELL_EFFECT_SUMMON_OBJECT_SLOT3: slot = 2; break;
-        case SPELL_EFFECT_SUMMON_OBJECT_SLOT4: slot = 3; break;
-        default: return;
-    }
-
+    uint8 slot = 4;
     uint64 guid = m_caster->m_ObjectSlot[slot];
     if (guid != 0)
     {
@@ -5789,15 +5835,11 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
         return;
     }
 
-    //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->getLevel());
     if(!duration)
         duration = m_spellInfo->GetDuration();
     pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
     m_caster->AddGameObject(pGameObj);
-
-    if (m_spellInfo->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_SUMMON_OBJECT_SLOT1)
-        ExecuteLogEffectGeneric(effIndex, pGameObj->GetGUID());
 
     map->AddToMap(pGameObj);
 

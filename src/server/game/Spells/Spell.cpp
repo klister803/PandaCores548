@@ -5020,7 +5020,7 @@ void Spell::SendLogExecute()
             case SPELL_EFFECT_CREATE_HOUSE:
             case SPELL_EFFECT_DUEL:
             case SPELL_EFFECT_DISMISS_PET:
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:
+            case SPELL_EFFECT_SUMMON_OBJECT_SLOT:
             case SPELL_EFFECT_171:
             case SPELL_EFFECT_RESURRECT_WITH_AURA:
             case SPELL_EFFECT_RESURRECT_NEW:
