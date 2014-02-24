@@ -2777,8 +2777,14 @@ void Player::RegenerateAll()
 
     if (m_chiPowerRegenTimerCount >= 10000 && getClass() == CLASS_MONK)
     {
-        Regenerate(POWER_CHI);
-        m_chiPowerRegenTimerCount -= 10000;
+        if (!isInCombat())
+        {
+            Regenerate(POWER_CHI);
+        }
+        else
+        {
+            m_chiPowerRegenTimerCount -= 10000;
+        }
     }
 
     if (m_demonicFuryPowerRegenTimerCount >= 100 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY))
@@ -2871,18 +2877,15 @@ void Player::Regenerate(Powers power)
 
             break;
         }
-        // Regenerate Holy Power
+        case POWER_CHI:
+            addvalue += -1.0f; // remove 1 each 10 sec
+            break;
         case POWER_HOLY_POWER:
             if (!isInCombat())
                 addvalue += -1.0f; // remove 1 each 10 sec
             break;
         case POWER_RUNES:
         case POWER_HEALTH:
-            break;
-        // Regenerate Chi
-        case POWER_CHI:
-            if (!isInCombat())
-                addvalue += -1.0f; // remove 1 each 10 sec
             break;
         // Regenerate Demonic Fury
         case POWER_DEMONIC_FURY:
@@ -3030,6 +3033,7 @@ void Player::Regenerate(Powers power)
             break;
         }
         case POWER_HOLY_POWER:
+        case POWER_CHI:
         {
             SetPower(power, curValue);
             break;
@@ -29224,4 +29228,18 @@ void Player::SendCategoryCooldownMods()
     }
 
     SendDirectMessage(&data);
+}
+
+void Player::ResetRegenTimerCount(Powers power)
+{
+    switch (power)
+    {
+        case POWER_CHI:
+        {
+            m_chiPowerRegenTimerCount = 0;
+            break;
+        }
+        default:
+            break;
+    }
 }

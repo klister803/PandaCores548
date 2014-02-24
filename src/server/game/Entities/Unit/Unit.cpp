@@ -13488,6 +13488,9 @@ void Unit::ClearInCombat()
         ToPlayer()->UpdatePotionCooldown();
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+
+    if (getClass() == CLASS_MONK)
+        ToPlayer()->ResetRegenTimerCount(POWER_CHI);
 }
 
 bool Unit::isTargetableForAttack(bool checkFakeDeath) const
@@ -15491,33 +15494,29 @@ void Unit::SetPower(Powers power, int32 val)
         data << int32(val);
         SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
     }
-
-    // Custom MoP Script
-    // Pursuit of Justice - 26023
-    if (Player* _player = ToPlayer())
+    
+    if (Player* player = ToPlayer())
     {
-        if (_player->HasAura(26023))
+        player->ResetRegenTimerCount(power);
+
+        if (player->HasAura(26023)) // Pursuit of Justice - 26023 Custom MoP Script
         {
-            Aura* aura = _player->GetAura(26023);
+            Aura* aura = player->GetAura(26023);
             if (aura)
             {
-                int32 holyPower = _player->GetPower(POWER_HOLY_POWER) >= 3 ? 3 : _player->GetPower(POWER_HOLY_POWER);
+                int32 holyPower = player->GetPower(POWER_HOLY_POWER) >= 3 ? 3 : player->GetPower(POWER_HOLY_POWER);
                 int32 AddValue = 5 * holyPower;
 
                 aura->GetEffect(0)->ChangeAmount(15 + AddValue);
 
-                Aura* aura2 = _player->AddAura(114695, _player);
+                Aura* aura2 = player->AddAura(114695, player);
                 if (aura2)
                     aura2->GetEffect(0)->ChangeAmount(AddValue);
             }
         }
-        else if (_player->HasAura(114695))
-            _player->RemoveAura(114695);
-    }
+        else if (player->HasAura(114695))
+            player->RemoveAura(114695);
 
-    // group update
-    if (Player* player = ToPlayer())
-    {
         if (player->GetGroup())
             player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
     }

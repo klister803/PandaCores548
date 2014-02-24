@@ -2569,6 +2569,8 @@ class Player : public Unit, public GridObject<Player>
         void SendNotifyLootItemRemoved(uint8 lootSlot, uint64 guid);
         void SendNotifyLootMoneyRemoved(uint64 gold, uint64 guid);
 
+        void ResetRegenTimerCount(Powers power);
+
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/
         /*********************************************************/
