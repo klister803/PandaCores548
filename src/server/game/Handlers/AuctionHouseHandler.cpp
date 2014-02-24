@@ -638,7 +638,11 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
 
     std::vector<uint32> outbiddedAuctionIds;
     for (uint32 i = 0; i < outbiddedCount; i++)
-        recvData >> outbiddedAuctionIds[i];
+    {
+        uint32 auctionID;
+        recvData >> auctionID;
+        outbiddedAuctionIds.push_back(auctionID);
+    }
 
     recvData.ReadGuidBytes<0, 4, 7, 3, 5, 6, 2, 1>(auctioneerGUID);
 
