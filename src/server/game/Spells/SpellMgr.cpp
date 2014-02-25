@@ -3340,6 +3340,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 126462: // Thermal Anvil
+                    spellInfo->Effects[1].MiscValue = 0;
+                    break;
                 case 1943:  // Rupture
                 case 2818:  // Deadly Poison
                 case 703:   // Garrote
