@@ -195,6 +195,7 @@ class boss_tsulong : public CreatureScript
 
             void SendDone()
             {
+                summons.DespawnAll();
                 me->SetVisible(false);
                 me->Kill(me, true);
                 if (instance)
