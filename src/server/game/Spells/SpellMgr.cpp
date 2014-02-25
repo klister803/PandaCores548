@@ -332,6 +332,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
         case DIMINISHING_CONTROLLED_STUN:
         case DIMINISHING_CONTROLLED_ROOT:
         case DIMINISHING_CYCLONE:
+        case DIMINISHING_DISARM:
         case DIMINISHING_DISORIENT:
         case DIMINISHING_ENTRAPMENT:
         case DIMINISHING_FEAR:
