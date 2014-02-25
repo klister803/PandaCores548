@@ -1229,7 +1229,7 @@ private:
     PlayerTalentInfo(PlayerTalentInfo const&);
 };
 
-typedef UNORDERED_MAP<BracketType, Bracket*> BracketList;
+typedef UNORDERED_MAP<uint8, Bracket*> BracketList;
 
 class Player : public Unit, public GridObject<Player>
 {
