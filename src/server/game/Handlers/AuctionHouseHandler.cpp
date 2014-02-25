@@ -194,7 +194,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
         recvData >> stackCount[i];
         recvData.ReadGuidBytes<2, 4>(itemGUIDs[i]);
 
-        if (!itemGUIDs[i] || !count[i] || count[i] > 1000 )
+        if (!itemGUIDs[i] || !stackCount[i] || stackCount[i] > 1000 )
             return;
     }
     
@@ -245,7 +245,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
 
         if (sAuctionMgr->GetAItem(item->GetGUIDLow()) || !item->CanBeTraded() || item->IsNotEmptyBag() ||
             item->GetTemplate()->Flags & ITEM_PROTO_FLAG_CONJURED || item->GetUInt32Value(ITEM_FIELD_DURATION) ||
-            item->GetCount() < count[i] || _player->GetItemCount(item->GetEntry(), false) < count[i])
+            item->GetCount() < stackCount[i] || _player->GetItemCount(item->GetEntry(), false) < stackCount[i])
         {
             SendAuctionCommandResult(NULL, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
             return;
@@ -258,7 +258,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
         }
 
         items[i] = item;
-        finalCount += count[i];
+        finalCount += stackCount[i];
     }
 
     if (!finalCount)
@@ -305,7 +305,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
         ASSERT(sObjectMgr->GetCreatureData(AH->auctioneer)); // Tentative de vendre un item a un pnj qui n'existe pas, mieux vaut crash ici sinon l'item en question risque de disparaitre tout simplement
 
         // Required stack size of auction matches to current item stack size, just move item to auctionhouse
-        if (itemsCount == 1 && item->GetCount() == count[i])
+        if (itemsCount == 1 && item->GetCount() == stackCount[i])
         {
             if (GetSecurity() > SEC_PLAYER && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
             {
@@ -380,7 +380,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 Item* item2 = items[j];
 
                 // Item stack count equals required count, ready to delete item - cloned item will be used for auction
-                if (item2->GetCount() == count[j])
+                if (item2->GetCount() == stackCount[j])
                 {
                     _player->MoveItemFromInventory(item2->GetBagSlot(), item2->GetSlot(), true);
 
@@ -391,9 +391,9 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 }
                 else // Item stack count is bigger than required count, update item stack count and save to database - cloned item will be used for auction
                 {
-                    item2->SetCount(item2->GetCount() - count[j]);
+                    item2->SetCount(item2->GetCount() - stackCount[j]);
                     item2->SetState(ITEM_CHANGED, _player);
-                    _player->ItemRemovedQuestCheck(item2->GetEntry(), count[j]);
+                    _player->ItemRemovedQuestCheck(item2->GetEntry(), stackCount[j]);
                     item2->SendUpdateToPlayer(_player);
 
                     SQLTransaction trans = CharacterDatabase.BeginTransaction();
