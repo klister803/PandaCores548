@@ -699,9 +699,9 @@ enum Opcodes
     SMSG_AUCTION_BIDDER_LIST_RESULT                   = 0x113A, // 5.4.1 17538
     SMSG_AUCTION_BIDDER_NOTIFICATION                  = 0x092E, // 5.4.1 17538
     SMSG_AUCTION_COMMAND_RESULT                       = 0x0C9D, // 5.4.1 17538
-    SMSG_AUCTION_LIST_PENDING_SALES                   = 0x05B9, // 5.4.1 17538
+    SMSG_AUCTION_LIST_PENDING_SALES                   = 0x1800, // 5.4.1 17538
     SMSG_AUCTION_LIST_RESULT                          = 0x0992, // 5.4.1 17538
-    SMSG_AUCTION_OWNER_LIST_RESULT                    = 0x1800, // 5.4.1 17538
+    SMSG_AUCTION_OWNER_LIST_RESULT                    = 0x05B9, // 5.4.1 17538
     SMSG_AUCTION_OWNER_NOTIFICATION                   = 0x0CA6, // 5.4.1 17538
     SMSG_AUCTION_REMOVED_NOTIFICATION                 = 0x882,  // 5.0.5 16048
     SMSG_AURACASTLOG                                  = 0x000,  // Not found in 4.3.4

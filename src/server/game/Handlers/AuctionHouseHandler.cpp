@@ -756,7 +756,7 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
     recvData.ReadGuidMask<7>(guid);
     recvData.ReadBit();
     recvData.ReadGuidBytes<0, 7, 3, 1, 4>(guid);
-    std::string unkStr1 = recvData.ReadString(strLen);
+    std::string unkStr1 = recvData.ReadString(strLen1);
     sLog->outError(LOG_FILTER_GENERAL, "Unk Str - %s, Unk Str 1 - %s", searchedname.c_str(), unkStr1.c_str());
     recvData.ReadGuidBytes<5, 6, 2>(guid);
 
@@ -794,8 +794,8 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
         count, totalcount);
 
     data.put<uint32>(0, count);
-    data << uint32(totalcount);
-    data << uint32(300);                                  //unk 2.3.0
+    data << totalcount;                                   // CGAuctionHouse__m_numTotalBid
+    data << uint32(5000);                                 // CGAuctionHouse__m_desiredDelayTime
     SendPacket(&data);
 }
 
