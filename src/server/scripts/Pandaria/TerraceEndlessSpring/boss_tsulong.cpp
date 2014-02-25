@@ -46,6 +46,7 @@ enum eEvents
     EVENT_SHADOW_BREATH       = 1,
     EVENT_NIGHTMARE           = 2,
     EVENT_SUNBEAM             = 3,
+    EVENT_SUN_BREATH          = 4,
 };
 
 enum Phase
@@ -53,6 +54,12 @@ enum Phase
     PHASE_NULL           = 0, 
     PHASE_NIGHT          = 1,
     PHASE_DAY            = 2,
+};
+
+enum Action
+{
+    ACTION_INTRO_DAY     = 1,
+    ACTION_INTRO_NIGHT   = 2,
 };
 
 Position const sunbeampos[4] = 
@@ -63,7 +70,11 @@ Position const sunbeampos[4] =
     {-1044.39f, -3049.58f, 12.5793f},
 };
 
-//Work only night phase
+enum DisplayId
+{
+    NIGHT_ID = 42532,
+    DAY_ID   = 42533,
+};
 
 bool CheckProtectors(InstanceScript* instance, Creature* caller)
 {
@@ -99,12 +110,19 @@ class boss_tsulong : public CreatureScript
             }
 
             InstanceScript* instance;
+            uint32 checkpower, lowpower;
+            bool done;
             Phase phase;
 
             void Reset()
             {              
                 _Reset();
                 phase = PHASE_NULL;
+                done = false;
+                lowpower = 0;
+                checkpower = 0;
+                me->setFaction(16);
+                me->SetDisplayId(NIGHT_ID);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
@@ -113,10 +131,41 @@ class boss_tsulong : public CreatureScript
             
             void RegeneratePower(Powers power, int32 &value)
             {
-                if (!me->isInCombat() || phase == PHASE_NULL)
-                    value = 0;
-                else 
+                if (phase == PHASE_NIGHT)
                     value = 2;
+                else
+                    value = 0;
+            }
+
+            void DoAction(int32 const action)
+            {
+                switch (action)
+                {
+                case ACTION_INTRO_DAY:
+                    me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
+                    me->setFaction(35);
+                    me->SetDisplayId(DAY_ID);
+                    me->AttackStop();
+                    me->SetReactState(REACT_PASSIVE);
+                    me->GetMotionMaster()->MoveTargetedHome();
+                    me->SetHealth(me->GetMaxHealth() - me->GetHealth());
+                    lowpower = 1000;
+                    events.ScheduleEvent(EVENT_SUN_BREATH,    urand(10000, 15000));
+                    break;
+                case ACTION_INTRO_NIGHT:
+                    me->SetHealth(me->GetMaxHealth() - me->GetHealth());
+                    me->setFaction(16);
+                    me->SetDisplayId(NIGHT_ID);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                    if (me->getVictim())
+                        me->GetMotionMaster()->MoveChase(me->getVictim());
+                    me->AddAura(SPELL_DREAD_SHADOWS, me);
+                    events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
+                    events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
+                    events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));
+                    break;
+                }
             }
 
             void EnterCombat(Unit* who)
@@ -124,17 +173,32 @@ class boss_tsulong : public CreatureScript
                 _EnterCombat();
                 events.SetPhase(PHASE_NIGHT);
                 phase = PHASE_NIGHT;
+                checkpower = 1000; 
                 me->AddAura(SPELL_DREAD_SHADOWS, me);
                 events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
                 events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
                 events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));
             }
 
-            void JustDied(Unit* killer)
+            void DamageTaken(Unit* attacker, uint32 &damage)
             {
+                if (phase == PHASE_NIGHT)
+                {
+                    if (damage >= me->GetHealth() && !done)
+                    {
+                        done = true;
+                        damage = 0;
+                        SendDone();
+                    }
+                }
+            }
+
+            void SendDone()
+            {
+                me->Kill(me, true);
                 if (instance)
                 {
-                    _JustDied();
+                    instance->SetBossState(DATA_TSULONG, DONE);
                     if (Creature* leishi = me->GetCreature(*me, instance->GetData64(NPC_LEI_SHI)))
                     {
                         leishi->SetVisible(true);
@@ -142,10 +206,66 @@ class boss_tsulong : public CreatureScript
                     }
                 }
             }
-
+            
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
+                    return;
+
+                if (checkpower)
+                {
+                    if (checkpower <= diff)
+                    {
+                        if (me->GetPower(POWER_ENERGY) == 100 && phase == PHASE_NIGHT)
+                        {
+                            phase = PHASE_DAY;
+                            checkpower = 0; 
+                            events.Reset();
+                            DoAction(ACTION_INTRO_DAY);
+                        }
+                    }
+                    else 
+                        checkpower -= diff;
+                }
+
+                if (lowpower && phase == PHASE_DAY)
+                {
+                    if (lowpower <= diff)
+                    {
+                        if (instance)
+                        {
+                            if (instance->IsWipe())
+                            {
+                                EnterEvadeMode();
+                                return;
+                            }
+                        }
+
+                        if (me->GetHealth() == me->GetMaxHealth() && !done)
+                        {
+                            done = true;
+                            SendDone();
+                            return;
+                        }
+
+                        if (me->GetPower(POWER_ENERGY) >= 1)
+                            me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) - 1);
+
+                        if (me->GetPower(POWER_ENERGY) == 0 && phase == PHASE_DAY)
+                        {
+                            phase = PHASE_NIGHT;
+                            lowpower = 0;
+                            events.Reset();
+                            DoAction(ACTION_INTRO_NIGHT);
+                        }
+                        else
+                            lowpower = 1000;
+                    }
+                    else
+                        lowpower -= diff;
+                }
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -167,6 +287,14 @@ class boss_tsulong : public CreatureScript
                     case EVENT_SUNBEAM:
                         me->SummonCreature(NPC_SUNBEAM, sunbeampos[urand(0, 3)]);
                         events.ScheduleEvent(EVENT_SUNBEAM, urand(15000, 20000));                      
+                        break;
+                    case EVENT_SUN_BREATH:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                        {
+                            me->SetFacingToObject(target);
+                            DoCastAOE(SPELL_SUN_BREATH);
+                        }
+                        events.ScheduleEvent(EVENT_SUN_BREATH, urand(10000, 15000));
                         break;
                     }
                 }
@@ -287,9 +415,43 @@ class spell_sunbeam : public SpellScriptLoader
         }
 };
 
+class spell_sun_breath : public SpellScriptLoader
+{
+    public:
+        spell_sun_breath() : SpellScriptLoader("spell_sun_breath") { }
+
+        class spell_sun_breath_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sun_breath_SpellScript);
+
+            void DealDamage()
+            {
+                if (GetCaster() && GetHitUnit())
+                {
+                    if (GetHitUnit()->ToPlayer())
+                    {
+                        SetHitDamage(0);
+                        GetCaster()->CastSpell(GetHitUnit(), SPELL_BATHED_INLIGHT);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sun_breath_SpellScript::DealDamage);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sun_breath_SpellScript();
+        }
+};
+
 void AddSC_boss_tsulong()
 {
     new boss_tsulong();
     new npc_sunbeam();
     new spell_sunbeam();
+    new spell_sun_breath();
 }
