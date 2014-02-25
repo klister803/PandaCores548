@@ -163,8 +163,8 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
     uint64 bid, buyout;
     uint32 itemsCount, etime;
 
-    recvData >> bid;
     recvData >> buyout;
+    recvData >> bid;
     recvData >> etime;
 
     if (!bid || !etime)
@@ -174,7 +174,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
     itemsCount = recvData.ReadBits(5);
 
     ObjectGuid itemGUIDs[MAX_AUCTION_ITEMS]; // 160 slot = 4x 36 slot bag + backpack 16 slot
-    uint32 count[MAX_AUCTION_ITEMS];
+    uint32 stackCount[MAX_AUCTION_ITEMS];
 
     if (itemsCount > MAX_AUCTION_ITEMS)
     {
@@ -191,7 +191,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
     for (uint32 i = 0; i < itemsCount; ++i)
     {
         recvData.ReadGuidBytes<0, 5, 6, 3, 1, 7>(itemGUIDs[i]);
-        recvData >> count[i];
+        recvData >> stackCount[i];
         recvData.ReadGuidBytes<2, 4>(itemGUIDs[i]);
 
         if (!itemGUIDs[i] || !count[i] || count[i] > 1000 )
