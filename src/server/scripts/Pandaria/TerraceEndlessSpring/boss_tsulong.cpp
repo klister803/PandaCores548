@@ -207,15 +207,7 @@ class boss_tsulong : public CreatureScript
                         leishi->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                     }
                 }
-                uint32 chest = 0;
-                if (IsHeroic())
-                    chest = 215355;
-                else
-                    chest = 212922;
-
-                if (chest)
-                    me->SummonGameObject(chest, me->GetPositionX() + 6, me->GetPositionY(), me->GetPositionZ(), 0, 0, 0, 0, 0, 604800);
-
+                me->SummonGameObject(212922, me->GetPositionX() + 6, me->GetPositionY(), me->GetPositionZ(), 0, 0, 0, 0, 0, 604800);
             }
 
             void JustDied(Unit* killer)
