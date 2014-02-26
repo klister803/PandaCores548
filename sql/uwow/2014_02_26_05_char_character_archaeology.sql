@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `character_archaeology`;
 CREATE TABLE `character_archaeology` (
   `guid` int(11) NOT NULL,
   `sites` text NOT NULL,
