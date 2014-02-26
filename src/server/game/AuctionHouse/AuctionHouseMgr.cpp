@@ -511,7 +511,7 @@ void AuctionHouseObject::BuildListOwnerItems(WorldPacket& data, Player* player, 
 }
 
 void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player,
-    std::wstring const& wsearchedname, uint32 listfrom, uint8 levelmin, uint8 levelmax, uint8 usable,
+    std::wstring const& wsearchedname, uint32 page, uint8 levelmin, uint8 levelmax, uint8 canUse,
     uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality,
     uint32& count, uint32& totalcount)
 {
@@ -527,22 +527,23 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
 
         ItemTemplate const* proto = item->GetTemplate();
 
-        if (itemClass != 0xffffffff && proto->Class != itemClass)
+        // 0xFFFFFFFF = -1
+        if (itemClass != 0xFFFFFFFF && proto->Class != itemClass)
             continue;
 
-        if (itemSubClass != 0xffffffff && proto->SubClass != itemSubClass)
+        if (itemSubClass != 0xFFFFFFFF && proto->SubClass != itemSubClass)
             continue;
 
-        if (inventoryType != 0xffffffff && proto->InventoryType != inventoryType)
+        if (inventoryType != 0xFFFFFFFF && proto->InventoryType != inventoryType)
             continue;
 
-        if (quality != 0xffffffff && proto->Quality != quality)
+        if (quality != 0xFFFFFFFF && proto->Quality != quality)
             continue;
 
-        if (levelmin != 0x00 && (proto->RequiredLevel < levelmin || (levelmax != 0x00 && proto->RequiredLevel > levelmax)))
+        if (levelmin != 0 && (proto->RequiredLevel < levelmin || (levelmax != 0 && proto->RequiredLevel > levelmax)))
             continue;
 
-        if (usable != 0x00 && player->CanUseItem(item) != EQUIP_ERR_OK)
+        if (canUse != 0 && player->CanUseItem(item) != EQUIP_ERR_OK)
             continue;
 
         // Allow search by suffix (ie: of the Monkey) or partial name (ie: Monkey)
@@ -592,11 +593,12 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
         }
 
         // Add the item if no search term or if entered search term was found
-        if (count < 50 && totalcount >= listfrom)
+        if (count < 50 && totalcount >= page)
         {
             ++count;
             Aentry->BuildAuctionInfo(data);
         }
+
         ++totalcount;
     }
 }

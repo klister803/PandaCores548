@@ -672,7 +672,7 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
     uint32 count = 0;
     uint32 totalcount = 0;
 
-    for (uint32 i = 0; i < outbiddedCount; i++)
+    for (uint32 i = 0; i < outbiddedCount; ++i)
     {
         AuctionEntry* auction = auctionHouse->GetAuction(outbiddedAuctionIds[i]);
 
@@ -685,7 +685,7 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
 
     data.put<uint32>(0, count);                           // add count to placeholder
     data << totalcount;                                   // CGAuctionHouse__m_numTotalBid
-    data << uint32(5000);                                 // CGAuctionHouse__m_desiredDelayTime
+    data << uint32(300);                                  // CGAuctionHouse__m_desiredDelayTime
     SendPacket(&data);
 }
 
@@ -735,29 +735,28 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
 
     ObjectGuid guid;
     std::string searchedname;
-    uint8 levelmin, levelmax, usable;
-    uint32 listfrom, auctionSlotID, auctionMainCategory, auctionSubCategory, quality;
+    uint8 levelmin, levelmax, canUse, auctionId;
+    uint32 page, classIndex, subClassIndex, invTypeIndex, quality;
 
-    recvData >> listfrom;
-    recvData >> levelmax;
-    recvData >> auctionSlotID;
+    recvData >> page;
+    recvData >> auctionId;
+    recvData >> subClassIndex;
     recvData >> levelmin;
-    recvData >> auctionMainCategory;
-    recvData >> auctionSubCategory;
-    recvData >> usable;
     recvData >> quality;
+    recvData >> classIndex;
+    recvData >> levelmax;
+    recvData >> invTypeIndex;
     uint32 strLen;
     recvData >> strLen;
-    searchedname = recvData.ReadString(strLen);
+    std::string unkStr1 = recvData.ReadString(strLen);
     recvData.ReadGuidMask<4, 0, 1, 5, 3, 6>(guid);
-    uint32 strLen1 = recvData.ReadBits(8);
+    uint32 searchedname_length = recvData.ReadBits(8);
     recvData.ReadGuidMask<2>(guid);
-    recvData.ReadBit();
+    bool unk = recvData.ReadBit();
     recvData.ReadGuidMask<7>(guid);
-    recvData.ReadBit();
+    canUse = recvData.ReadBit();
     recvData.ReadGuidBytes<0, 7, 3, 1, 4>(guid);
-    std::string unkStr1 = recvData.ReadString(strLen1);
-    sLog->outError(LOG_FILTER_GENERAL, "Unk Str - %s, Unk Str 1 - %s", searchedname.c_str(), unkStr1.c_str());
+    searchedname = recvData.ReadString(searchedname_length);
     recvData.ReadGuidBytes<5, 6, 2>(guid);
 
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
@@ -789,13 +788,13 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
     wstrToLower(wsearchedname);
 
     auctionHouse->BuildListAuctionItems(data, _player,
-        wsearchedname, listfrom, levelmin, levelmax, usable,
-        auctionSlotID, auctionMainCategory, auctionSubCategory, quality,
+        wsearchedname, page, levelmin, levelmax, canUse,
+        invTypeIndex, classIndex, subClassIndex, quality,
         count, totalcount);
 
     data.put<uint32>(0, count);
     data << totalcount;                                   // CGAuctionHouse__m_numTotalBid
-    data << uint32(5000);                                 // CGAuctionHouse__m_desiredDelayTime
+    data << uint32(300);                                  // CGAuctionHouse__m_desiredDelayTime
     SendPacket(&data);
 }
 
