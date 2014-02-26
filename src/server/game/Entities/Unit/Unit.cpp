@@ -13489,12 +13489,15 @@ void Unit::ClearInCombat()
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 
-    switch (getClass())
+    if (GetTypeId() == TYPEID_PLAYER)
     {
-        case CLASS_MONK:    ToPlayer()->ResetRegenTimerCount(POWER_CHI);        break;
-        case CLASS_PALADIN: ToPlayer()->ResetRegenTimerCount(POWER_HOLY_POWER); break;
-        default:
-            break;
+        switch (getClass())
+        {
+            case CLASS_MONK:    ToPlayer()->ResetRegenTimerCount(POWER_CHI);        break;
+            case CLASS_PALADIN: ToPlayer()->ResetRegenTimerCount(POWER_HOLY_POWER); break;
+            default:
+                break;
+        }
     }
 }
 
