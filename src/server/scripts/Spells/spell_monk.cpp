@@ -1675,7 +1675,7 @@ class spell_monk_chi_torpedo : public SpellScriptLoader
 
                         for (std::list<Unit*>::const_iterator itr = tempUnitMap.begin(); itr != tempUnitMap.end(); ++itr)
                         {
-                            if (!(*itr)->isInFront(_player, M_PI / 3) && (*itr)->GetGUID() != _player->GetGUID())
+                            if (!(_player)->isInFront((*itr), M_PI / 3) && (*itr)->GetGUID() != _player->GetGUID())
                                 continue;
 
                             uint32 spell = _player->IsValidAttackTarget(*itr) ? SPELL_MONK_CHI_TORPEDO_DAMAGE : SPELL_MONK_CHI_TORPEDO_HEAL;
