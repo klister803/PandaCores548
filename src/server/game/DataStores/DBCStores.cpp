@@ -47,12 +47,6 @@ struct WMOAreaTableTripple
     int32 adtId;
 };
 
-typedef UNORDERED_MAP<uint32, MaxCoordinat> QuestPOIPointMap;
-typedef UNORDERED_MAP<uint32, std::vector<PolygonVector> > PolygonQuestPOIPointMap;
-static QuestPOIPointMap m_questpoipoints;
-static PolygonQuestPOIPointMap m_polygonquestpoipoints;
-static UNORDERED_MAP<uint16, std::list<uint16> > sDigestZonesList;
-static UNORDERED_MAP<uint16, std::list<uint16> > sResearchProjectsList;
 static UNORDERED_MAP<uint16, std::list<uint16> > sCriteriaTreeEntryList;
 static UNORDERED_MAP<uint16, std::list<uint16> > sModifierTreeEntryList;
 static UNORDERED_MAP<uint16, uint16 > sAchievementEntryParentList;
@@ -186,6 +180,8 @@ DBCStorage <RandomPropertiesPointsEntry> sRandomPropertiesPointsStore(RandomProp
 DBCStorage <ResearchBranchEntry> sResearchBranchStore(ResearchBranchfmt);
 DBCStorage <ResearchProjectEntry> sResearchProjectStore(ResearchProjectfmt);
 DBCStorage <ResearchSiteEntry> sResearchSiteStore(ResearchSitefmt);
+std::set<ResearchProjectEntry const*> sResearchProjectSet;
+ResearchSiteDataMap sResearchSiteDataMap;
 DBCStorage <QuestPOIBlobEntry> sQuestPOIBlobStore(QuestPOIBlobfmt);
 DBCStorage <QuestPOIPointEntry> sQuestPOIPointStore(QuestPOIPointfmt);
 DBCStorage <ScalingStatDistributionEntry> sScalingStatDistributionStore(ScalingStatDistributionfmt);
@@ -526,61 +522,40 @@ void LoadDBCStores(const std::string& dataPath)
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sQuestXPStore,                dbcPath, "QuestXP.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sQuestFactionRewardStore,     dbcPath, "QuestFactionReward.dbc");//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sQuestPOIPointStore,          dbcPath, "QuestPOIPoint.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sQuestSortStore,              dbcPath, "QuestSort.dbc");//14545
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sRandomPropertiesPointsStore, dbcPath, "RandPropPoints.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sResearchBranchStore,         dbcPath, "ResearchBranch.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sResearchProjectStore,        dbcPath, "ResearchProject.dbc");//14545
-    LoadDBC(availableDbcLocales, bad_dbc_files, sResearchSiteStore,           dbcPath, "ResearchSite.dbc");//14545
-    LoadDBC(availableDbcLocales, bad_dbc_files, sQuestPOIPointStore,          dbcPath, "QuestPOIPoint.dbc");//14545
-    for (uint32 i = 0; i < sQuestPOIPointStore.GetNumRows(); ++i)
+    for (uint32 i = 0; i < sResearchProjectStore.GetNumRows(); ++i)
     {
-        if (QuestPOIPointEntry const* info = sQuestPOIPointStore.LookupEntry(i))
-        {
-            QuestPOIPointMap::iterator itr = m_questpoipoints.find(info->SpellID);
-            if(itr != m_questpoipoints.end())
-            {
-                MaxCoordinat point = itr->second;
-                if (point.minX > info->x)
-                    point.minX = info->x;
-                if (point.maxX < info->x)
-                    point.maxX = info->x;
-                if (point.minY > info->y)
-                    point.minY = info->y;
-                if (point.maxY < info->y)
-                    point.maxY = info->y;
+        ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(i);
+        if (!rp || !rp->IsVaid())
+            continue;
 
-                m_questpoipoints[info->SpellID] = point;
-            }
-            else
-            {
-                MaxCoordinat point;
-                point.minX = info->x;
-                point.maxX = info->x;
-                point.minY = info->y;
-                point.maxY = info->y;
-                m_questpoipoints[info->SpellID] = point;
-            }
-            PolygonVector polygon;
-            polygon.x = info->x;
-            polygon.y = info->y;
-            m_polygonquestpoipoints[info->SpellID].push_back(polygon);
-        }
+        sResearchProjectSet.insert(rp);
     }
-    for (uint16 i = 0; i < sResearchProjectStore.GetNumRows(); ++i)
+    LoadDBC(availableDbcLocales, bad_dbc_files, sResearchSiteStore,           dbcPath, "ResearchSite.dbc");//14545
+    for (uint32 i = 0; i < sResearchSiteStore.GetNumRows(); ++i)
     {
-        if (ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry(i))
-        {
-            ProjectRaseList &plist = sRaseProjectMap[rs->RaceID];
-            plist.push_back(i);
-            sResearchProjectsList[rs->RaceID].push_back(i);
-        }
+        ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(i);
+        if (!rs || !rs->IsValid())
+            continue;
+
+        ResearchSiteData& data = sResearchSiteDataMap[rs->ID];
+
+        data.entry = rs;
+
+        for (uint32 i = 0; i < sQuestPOIPointStore.GetNumRows(); ++i)
+            if (QuestPOIPointEntry const* poi = sQuestPOIPointStore.LookupEntry(i))
+                if (poi->POIId == rs->POIid)
+                    data.points.push_back(ResearchPOIPoint(poi->x, poi->y));
+
+        if (data.points.size() == 0)
+            sLog->outDebug(LOG_FILTER_SERVER_LOADING,"Research site %u POI %u map %u has 0 POI points in DBC!", rs->ID, rs->POIid, rs->MapID);
     }
-    for (uint16 i = 0; i < sResearchSiteStore.GetNumRows(); ++i)
-    {
-        if (ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(i))
-            sDigestZonesList[rs->MapID].push_back(i);
-    }
+
     //LoadDBC(availableDbcLocales, bad_dbc_files, sQuestPOIBlobStore,           dbcPath, "QuestPOIBlob.dbc");//14545
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sScalingStatDistributionStore, dbcPath, "ScalingStatDistribution.dbc");//14545
@@ -857,46 +832,9 @@ SimpleFactionsList const* GetFactionTeamList(uint32 faction)
     return NULL;
 }
 
-ProjectRaseList const* GetProjectRaseList(uint32 RaceID)
-{
-    ProjectRaseMap::const_iterator itr = sRaseProjectMap.find(RaceID);
-    if (itr != sRaseProjectMap.end())
-        return &itr->second;
-
-    return NULL;
-}
-
-MaxCoordinat const* GetQuestPoints(uint32 id)
-{
-    QuestPOIPointMap::const_iterator itr = m_questpoipoints.find(id);
-    if (itr != m_questpoipoints.end())
-        return &itr->second;
-
-    return NULL;
-}
-
 std::list<uint32> GetItemSpecsList(uint32 ItemID)
 {
     return sItemSpecsList[ItemID];
-}
-
-std::vector<PolygonVector> const* GetPolygonQuestPOIPoints(uint32 SpellID)
-{
-    PolygonQuestPOIPointMap::const_iterator itr = m_polygonquestpoipoints.find(SpellID);
-    if (itr != m_polygonquestpoipoints.end())
-        return &itr->second;
-
-    return NULL;
-}
-
-UNORDERED_MAP<uint16, std::list<uint16> > GetDigestZonesList()
-{
-    return sDigestZonesList;
-}
-
-UNORDERED_MAP<uint16, std::list<uint16> > GetResearchProjectsList()
-{
-    return sResearchProjectsList;
 }
 
 uint16 GetsAchievementEntryByTreeList(uint16 criteriaTree)
@@ -1397,5 +1335,14 @@ float GetCurrencyPrecision(uint32 currencyId)
     CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(currencyId);
 
     return entry ? entry->GetPrecision() : 1.0f;
+}
+
+ResearchSiteEntry const* GetResearchSiteEntryById(uint32 id)
+{
+    ResearchSiteDataMap::const_iterator itr = sResearchSiteDataMap.find(id);
+    if (itr == sResearchSiteDataMap.end())
+        return NULL;
+
+    return itr->second.entry;
 }
 

@@ -21,6 +21,7 @@
 
 #include "Common.h"
 #include "SharedDefines.h"
+#include "DBCEnums.h"
 
 enum ItemModType
 {
@@ -756,6 +757,8 @@ struct ItemTemplate
                SubClass == ITEM_SUBCLASS_WEAPON_GUN ||
                SubClass == ITEM_SUBCLASS_WEAPON_CROSSBOW;
     }
+
+    uint32 GetCurrencySubstitutionId() const;
 };
 
 // Benchmarked: Faster than std::map (insert/find)

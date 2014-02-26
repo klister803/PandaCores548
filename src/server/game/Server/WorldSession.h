@@ -1005,7 +1005,7 @@ class WorldSession
         void HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket);
         void HandleSetFactionOpcode(WorldPacket& recvPacket);
         int32 HandleEnableNagleAlgorithm();
-        void HandleRequestReaserchHistory(WorldPacket& recvPacket);
+        void HandleRequestResearchHistory(WorldPacket& recvPacket);
         void HandleChangeCurrencyFlags(WorldPacket& recvPacket);
         void HandleCemeteryListOpcode(WorldPacket& recvPacket);
         void HandlerCategoryCooldownOpocde(WorldPacket& recvPacket);

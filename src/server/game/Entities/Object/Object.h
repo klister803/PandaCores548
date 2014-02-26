@@ -324,7 +324,7 @@ class Object
 
         uint32 GetDynamicUInt32Value(uint32 tab, uint16 index) const
         {
-            ASSERT(tab < m_dynamicTab.size() || index < 32);
+            ASSERT(tab < m_dynamicTab.size() && index < 32);
             return m_dynamicTab[tab][index];
         }
 

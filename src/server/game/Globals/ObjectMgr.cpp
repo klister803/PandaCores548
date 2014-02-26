@@ -9073,3 +9073,122 @@ void ObjectMgr::RestructGameObjectGUID(uint32 nbLigneToRestruct)
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "%u lignes ont ete restructuree.", nbLigneToRestruct);
 }
+
+void ObjectMgr::LoadResearchSiteToZoneData()
+{
+    QueryResult result = WorldDatabase.Query("SELECT site_id, zone_id, branch_id FROM archaeology_zones");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 archaeology zones. DB table `archaeology_zones` is empty.");
+        return;
+    }
+
+    uint32 counter = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 site_id = fields[0].GetUInt32();
+        uint32 zone_id = fields[1].GetUInt32();
+        uint32 branch_id = fields[2].GetUInt32();
+
+        ResearchSiteDataMap::iterator itr = sResearchSiteDataMap.find(site_id);
+        if (itr == sResearchSiteDataMap.end())
+        {
+            sLog->outError(LOG_FILTER_SQL, "DB table `archaeology_zones` has data for nonexistant site id %u", site_id);
+            continue;
+        }
+
+        ResearchSiteData& data = itr->second;
+        data.zone = zone_id;
+        data.branch_id = branch_id;
+
+        for (uint32 i = 0; i < sAreaStore.GetNumRows(); ++i)
+        {
+            AreaTableEntry const* area = sAreaStore.LookupEntry(i);
+            if (!area)
+                continue;
+
+            if (area->zone == zone_id)
+            {
+                data.level = area->area_level;
+                break;
+            }
+        }
+
+        ++counter;
+    }
+    while (result->NextRow());
+
+    // recheck all research sites
+    for (ResearchSiteDataMap::const_iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
+    {
+        if (itr->second.zone == 0 || itr->second.level == 0xFF || itr->second.branch_id == 0)
+            sLog->outError(LOG_FILTER_SQL, "DB table `archaeology_zones` has not full or does not have data for site id %u: "
+            "zone %u level %u branch_id %u",
+            itr->second.entry->areaName, itr->second.zone, itr->second.level, itr->second.branch_id);
+    }
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u archaeology zones.", counter);
+}
+
+void ObjectMgr::LoadDigSitePositions()
+{
+    QueryResult result = WorldDatabase.Query("SELECT map, x, y FROM archaeology_digsites");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 dig site positions. DB table `archaeology_digsites` is empty.");
+        return;
+    }
+
+    uint32 counter = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 map = fields[0].GetUInt32();
+        float x = fields[1].GetFloat();
+        float y = fields[2].GetFloat();
+
+        bool added = false;
+        for (ResearchSiteDataMap::iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
+        {
+            ResearchSiteData& data = itr->second;
+
+            if (data.entry->MapID != map)
+                continue;
+
+            ResearchPOIPoint p;
+            p.x = int32(x);
+            p.y = int32(y);
+
+            if (Player::IsPointInZone(p, data.points))
+            {
+                data.digSites.push_back(DigSitePosition(x, y));
+                added = true;
+            }
+        }
+
+        if (!added)
+        {
+            sLog->outError(LOG_FILTER_SQL, "DB table `archaeology_digsites` has data for point x:%f y:%f at map %u that does not belong to any digsite!",
+                x, y, map);
+            continue;
+        }
+
+        ++counter;
+    }
+    while (result->NextRow());
+
+    for (ResearchSiteDataMap::iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
+    {
+        ResearchSiteData& data = itr->second;
+
+        if (data.digSites.size() < MAX_DIGSITE_FINDS)
+            sLog->outError(LOG_FILTER_SQL, "Archaeology research site %u has less that %u dig site positions!", data.entry->ID, MAX_DIGSITE_FINDS);
+    }
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u dig site positions.", counter);
+}

@@ -270,14 +270,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SAVE_GUILD_NEWS, "INSERT INTO guild_news_log (guild, id, eventType, playerGuid, data, flags, date) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 
     // Archaelogy
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHAELOGY, "SELECT pointId, count, active, resetTime FROM character_archaelogy WHERE guid = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_UPD_PLAYER_ARCHAELOGY, "UPDATE character_archaelogy SET active = ? WHERE guid = ? AND pointId = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHAELOGY, "REPLACE INTO character_archaelogy (guid, pointId, count, active, resetTime) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHPROJECT, "SELECT projectId, RaceID FROM character_archproject WHERE guid = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHPROJECT, "REPLACE INTO character_archproject (guid, projectId, RaceID) VALUES (?, ?, ?)", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHPROJECTHISTORY, "SELECT projectId, count, TimeCreated FROM character_archprojecthistory WHERE guid = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_UPD_PLAYER_ARCHPROJECTHISTORY, "UPDATE character_archprojecthistory SET count = count + 1 WHERE guid = ? AND projectId = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHPROJECTHISTORY, "REPLACE INTO character_archprojecthistory (guid, projectId, count, TimeCreated) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHAELOGY, "SELECT sites, counts, projects FROM character_archaeology WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHAEOLOGY_FINDS, "SELECT id, count, UNIX_TIMESTAMP(date) FROM character_archaeology_finds WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHAEOLOGY, "REPLACE INTO character_archaeology (guid, sites, counts, projects) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHAEOLOGY_FINDS, "REPLACE INTO character_archaeology_finds (guid, id, count, date) VALUES (?, ?, ?, FROM_UNIXTIME(?))", CONNECTION_ASYNC);
 
     // Chat channel handling
     PREPARE_STATEMENT(CHAR_SEL_CHANNEL, "SELECT announce, ownership, password, bannedList FROM channels WHERE name = ? AND team = ?", CONNECTION_SYNCH)

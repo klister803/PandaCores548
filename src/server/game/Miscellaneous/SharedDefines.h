@@ -809,7 +809,6 @@ enum SpellAttr11
 #define MAX_TALENT_SPECS        2
 #define MAX_GLYPH_SLOT_INDEX    6
 #define REQ_PRIMARY_TREE_TALENTS 31
-#define MAX_RESEARCH_SITES 8
 
 // Custom values
 enum SpellClickUserTypes
@@ -3859,6 +3858,29 @@ enum UnitDynFlags
 enum CorpseDynFlags
 {
     CORPSE_DYNFLAG_LOOTABLE        = 0x0001
+};
+
+enum ArchaeologyFinds
+{
+    GO_DWARF_FIND       = 204282,
+    GO_DRAENEI_FIND     = 207188,
+    GO_FOSSIL_FIND      = 206836,
+    GO_NIGHT_ELF_FIND   = 203071,
+    GO_NERUBIAN_FIND    = 203078,
+    GO_ORC_FIND         = 207187,
+    GO_TOLVIR_FIND      = 207190,
+    GO_TROLL_FIND       = 202655,
+    GO_VRYKUL_FIND      = 207189,
+    GO_PANDAREN_FIND    = 211163,
+    GO_MOGU_FIND        = 211174,
+    GO_MANTID_FIND      = 218950,
+};
+
+enum ArchaeologyBots
+{
+    GO_FAR_SURVEYBOT    = 206590,
+    GO_MEDIUM_SURVEYBOT = 206589,
+    GO_CLOSE_SURVEYBOT  = 204272
 };
 
 enum WeatherType

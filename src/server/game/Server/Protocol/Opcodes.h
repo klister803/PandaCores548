@@ -1261,7 +1261,7 @@ enum Opcodes
     SMSG_REPORT_PVP_AFK_RESULT                        = 0x897,  // 5.0.5 16048
     SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0x040D, // 5.4.1 17538
     SMSG_REQUEST_PVP_REWARDS_RESPONSE                 = 0x00BE, // 5.4.1 17538
-    SMSG_RESEARCH_COMPLETE                            = 0xBF3,  // 5.0.5 16048
+    SMSG_RESEARCH_COMPLETE                            = 0x042D, // 5.4.1 17538
     SMSG_RESEARCH_SETUP_HISTORY                       = 0x14A5, // 5.4.1 17538
     SMSG_RESET_COMPRESSION_CONTEXT                    = 0x627,  // 5.0.5 16048
     SMSG_RESET_FAILED_NOTIFY                          = 0x0007, // 5.4.1 17538
@@ -1363,6 +1363,7 @@ enum Opcodes
     SMSG_SUMMON_REQUEST                               = 0x05A4, // 5.4.1 17538
     SMSG_SUPERCEDED_SPELL                             = 0x008D, // 5.4.1 17538
     SMSG_SUPPRESS_NPC_GREETINGS                       = 0xA2A,  // 5.0.5 16048
+    SMSG_SURVEY_CAST                                  = 0x0415, // 5.4.1 17538
     SMSG_SUSPEND_COMMS                                = 0x662,  // 5.0.5 16048
     SMSG_SUSPEND_TOKEN_RESPONSE                       = 0xB4F,  // 5.0.5 16048
     SMSG_TALENTS_INVOLUNTARILY_RESET                  = 0x9E1,  // 5.0.5 16048

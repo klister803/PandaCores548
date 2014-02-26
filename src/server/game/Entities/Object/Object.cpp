@@ -1385,7 +1385,7 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
 
 void Object::SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value)
 {
-    ASSERT(tab < m_dynamicTab.size() || index < 32);
+    ASSERT(tab < m_dynamicTab.size() && index < 32);
 
     if (m_dynamicTab[tab][index] != value)
     {

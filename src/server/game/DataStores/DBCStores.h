@@ -28,33 +28,10 @@
 typedef std::list<uint32> SimpleFactionsList;
 SimpleFactionsList const* GetFactionTeamList(uint32 faction);
 
-struct MaxCoordinat
-{
-    int32   minX;
-    int32   minY;
-    int32   maxX;
-    int32   maxY;
-};
 
-struct PolygonVector
-{
-    float x;
-    float y;
-};
-
-MaxCoordinat const* GetQuestPoints(uint32 id);
-UNORDERED_MAP<uint16, std::list<uint16> > GetResearchProjectsList();
 std::list<uint16> const* GetCriteriaTreeList(uint16 parent);
 std::list<uint16> const* GetModifierTreeList(uint16 parent);
 uint16 GetsAchievementEntryByTreeList(uint16 criteriaTree);
-UNORDERED_MAP<uint16, std::list<uint16> > GetDigestZonesList();
-std::vector<PolygonVector> const* GetPolygonQuestPOIPoints(uint32 SpellID);
-std::list<uint32> GetItemSpecsList(uint32 ItemID);
-
-typedef std::list<uint32> ProjectRaseList;
-typedef UNORDERED_MAP<uint32, ProjectRaseList> ProjectRaseMap;
-static ProjectRaseMap sRaseProjectMap;
-ProjectRaseList const* GetProjectRaseList(uint32 RaceID);
 
 char const* GetPetName(uint32 petfamily, uint32 dbclang);
 SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint8 difficulty);
@@ -202,6 +179,8 @@ extern DBCStorage <RandomPropertiesPointsEntry>  sRandomPropertiesPointsStore;
 extern DBCStorage <ResearchBranchEntry>          sResearchBranchStore;
 extern DBCStorage <ResearchProjectEntry>         sResearchProjectStore;
 extern DBCStorage <ResearchSiteEntry>            sResearchSiteStore;
+extern std::set<ResearchProjectEntry const*>     sResearchProjectSet;
+extern ResearchSiteDataMap                       sResearchSiteDataMap;
 extern DBCStorage <QuestPOIBlobEntry>            sQuestPOIBlobStore;
 extern DBCStorage <QuestPOIPointEntry>           sQuestPOIPointStore;
 extern DBCStorage <ScalingStatDistributionEntry> sScalingStatDistributionStore;

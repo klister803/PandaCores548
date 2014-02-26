@@ -2521,16 +2521,9 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if(m_spellInfo->ResearchProject)
-    {
-        if(Player* player = m_caster->ToPlayer())
-        {
-            if(!player->EventSolveProject(m_spellInfo))
-                return;
-        }
-        else
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && sSpellMgr->IsAbilityOfSkillType(m_spellInfo, SKILL_ARCHAEOLOGY))
+        if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
-    }
 
     DoCreateItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
     ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
@@ -2556,6 +2549,10 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
 
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
+
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && sSpellMgr->IsAbilityOfSkillType(m_spellInfo, SKILL_ARCHAEOLOGY))
+        if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
+            return;
 
     Player* player = unitTarget->ToPlayer();
 
@@ -3615,6 +3612,13 @@ void Spell::EffectLearnSkill(SpellEffIndex effIndex)
     uint32 skillid = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
     uint16 skillval = unitTarget->ToPlayer()->GetPureSkillValue(skillid);
     unitTarget->ToPlayer()->SetSkill(skillid, m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValue(), skillval?skillval:1, damage*75);
+
+    // Archaeology
+    if (skillid == SKILL_ARCHAEOLOGY && sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+    {
+        ((Player*)unitTarget)->GenerateResearchSites();
+        ((Player*)unitTarget)->GenerateResearchProjects();
+    }
 }
 
 void Spell::EffectPlayMovie(SpellEffIndex effIndex)
@@ -5786,6 +5790,9 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
 
 void Spell::EffectSurvey(SpellEffIndex effIndex)
 {
+    if (!sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+        return;
+
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
@@ -5793,14 +5800,24 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
     if (!player)
         return;
 
-    int32 duration = 0;
-    float x, y, z, o;
-
-    uint32 go_id = m_caster->ToPlayer()->GetSurveyBotEntry(x, y, z, o, duration);
-    if(!duration)
-        duration = 10000;
-
     uint8 slot = 4;
+    uint32 go_id;
+
+    float x, y, z, o;
+    x = m_caster->GetPositionX();
+    y = m_caster->GetPositionY();
+    z = m_caster->GetPositionZ();
+    o = m_caster->GetOrientation();
+
+    int32 duration;
+    if (player->OnSurvey(go_id, x, y, z, o))
+        duration = 10000;
+    else
+        duration = 60000;
+
+    if (!go_id)
+        return;
+
     uint64 guid = m_caster->m_ObjectSlot[slot];
     if (guid != 0)
     {
@@ -5820,13 +5837,6 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
 
     GameObject* pGameObj = new GameObject;
 
-    // If dest location if present
-    if (m_targets.HasDst())
-        destTarget->GetPosition(x, y, z);
-    // Summon in random point all other units if location present
-    else
-        m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
-
     Map* map = m_caster->GetMap();
     if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map,
         m_caster->GetPhaseMask(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
@@ -5835,8 +5845,6 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
         return;
     }
 
-    if(!duration)
-        duration = m_spellInfo->GetDuration();
     pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
     m_caster->AddGameObject(pGameObj);

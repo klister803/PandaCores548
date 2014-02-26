@@ -764,6 +764,8 @@ class SpellMgr
 
         bool IsTalent(uint32 spellId) { return mTalentSpellInfo.find(spellId) != mTalentSpellInfo.end() ?  true :  false; }
 
+        bool IsAbilityOfSkillType(SpellInfo const* spellInfo, uint32 skillType) const;
+
     // Modifiers
     public:
 
