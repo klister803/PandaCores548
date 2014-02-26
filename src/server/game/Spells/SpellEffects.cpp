@@ -5810,13 +5810,17 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
     o = m_caster->GetOrientation();
 
     int32 duration;
-    if (player->OnSurvey(go_id, x, y, z, o))
+    if (!player->OnSurvey(go_id, x, y, z, o))
         duration = 10000;
     else
         duration = 60000;
 
     if (!go_id)
+    {
+        sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::EffectSurvey: no go id for x: %f y: %f z: %f map: %u",
+            m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetMapId());
         return;
+    }
 
     uint64 guid = m_caster->m_ObjectSlot[slot];
     if (guid != 0)
@@ -5844,6 +5848,8 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
         delete pGameObj;
         return;
     }
+
+    pGameObj->AddPlayerInPersonnalVisibilityList(player->GetGUID());
 
     pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
