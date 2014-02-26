@@ -4725,15 +4725,3 @@ SpellPowerEntry const* SpellMgr::GetSpellPowerEntryByIdAndPower(uint32 id, Power
     return spell->spellPower;
 }
 
-bool SpellMgr::IsAbilityOfSkillType(SpellInfo const* spellInfo, uint32 skillType) const
-{
-    SkillLineAbilityMapBounds bounds = sSpellMgr->GetSkillLineAbilityMapBounds(spellInfo->Id);
-
-    for (SkillLineAbilityMap::const_iterator _spell_idx = bounds.first; _spell_idx != bounds.second; ++_spell_idx)
-        if (SkillLineAbilityEntry const* pAbility = _spell_idx->second)
-            if (pAbility->skillId == skillType)
-                return true;
-
-    return false;
-}
-

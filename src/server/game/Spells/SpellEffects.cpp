@@ -2521,7 +2521,7 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && sSpellMgr->IsAbilityOfSkillType(m_spellInfo, SKILL_ARCHAEOLOGY))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -2550,7 +2550,7 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && sSpellMgr->IsAbilityOfSkillType(m_spellInfo, SKILL_ARCHAEOLOGY))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -3614,10 +3614,10 @@ void Spell::EffectLearnSkill(SpellEffIndex effIndex)
     unitTarget->ToPlayer()->SetSkill(skillid, m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValue(), skillval?skillval:1, damage*75);
 
     // Archaeology
-    if (skillid == SKILL_ARCHAEOLOGY && sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+    if (skillid == SKILL_ARCHAEOLOGY && !skillval && sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
     {
-        ((Player*)unitTarget)->GenerateResearchSites();
-        ((Player*)unitTarget)->GenerateResearchProjects();
+        unitTarget->ToPlayer()->GenerateResearchSites();
+        unitTarget->ToPlayer()->GenerateResearchProjects();
     }
 }
 
