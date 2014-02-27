@@ -1534,3 +1534,19 @@ void WorldSession::HandleRolePollBegin(WorldPacket & recvData)
 
     group->BroadcastPacket(&data, false);
 }
+
+void WorldSession::HandleClearRaidMarkerOpcode(WorldPacket& recv_data)
+{
+    int8 id;
+    recv_data >> id;
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_CLEAR_RAID_MARKER from %s (%u) id: %i",
+        GetPlayerName(), GetAccountId(), id);
+
+    Group* group = _player->GetGroup();
+    if (!group)
+        return;
+
+    if (group->IsAssistant(_player->GetGUID()) || group->IsLeader(_player->GetGUID()))
+        group->SetRaidMarker(id, _player, 0);
+}

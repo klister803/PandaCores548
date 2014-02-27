@@ -175,7 +175,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectReputation,                               //103 SPELL_EFFECT_REPUTATION
     &Spell::EffectSummonObject,                             //104 SPELL_EFFECT_SUMMON_OBJECT_SLOT
     &Spell::EffectSurvey,                                   //105 SPELL_EFFECT_SURVEY
-    &Spell::EffectNULL,                                     //106 SPELL_EFFECT_SUMMON_RAID_MARKER
+    &Spell::EffectSummonRaidMarker,                         //106 SPELL_EFFECT_SUMMON_RAID_MARKER
     &Spell::EffectNULL,                                     //107 SPELL_EFFECT_LOOT_CORPSE
     &Spell::EffectDispelMechanic,                           //108 SPELL_EFFECT_DISPEL_MECHANIC
     &Spell::EffectSummonDeadPet,                            //109 SPELL_EFFECT_SUMMON_DEAD_PET
@@ -7678,4 +7678,39 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
     ExecuteLogEffectGeneric(effIndex, target->GetGUID());
     target->SetResurrectRequestData(m_caster, health, mana, resurrectAura);
     SendResurrectRequest(target);
+}
+
+void Spell::EffectSummonRaidMarker(SpellEffIndex effIndex)
+{
+    Unit* caster = GetOriginalCaster();
+    // FIXME: in case wild GO will used wrong affective caster (target in fact) as dynobject owner
+    if (!caster)
+        caster = m_caster;
+
+    if (caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Player* pCaster = caster->ToPlayer();
+
+    Group* group = pCaster->GetGroup();
+    if (!group)
+        return;
+
+    if (!group->IsAssistant(pCaster->GetObjectGuid()) && !group->IsLeader(pCaster->GetObjectGuid()))
+        return;
+
+    uint8 slot = damage;
+
+    //float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(caster, this);
+    float radius = 16.0f;
+    int32 duration = m_spellInfo->GetDuration();
+    DynamicObject* dynObj = new DynamicObject(false);
+    if (!dynObj->CreateDynamicObject(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), pCaster, m_spellInfo->Id, *m_targets.GetDstPos(), radius, DYNAMIC_OBJECT_RAID_MARKER))
+    {
+        delete dynObj;
+        return;
+    }
+
+    dynObj->SetDuration(duration);
+    group->SetRaidMarker(slot, pCaster, dynObj->GetObjectGuid());
 }

@@ -1009,6 +1009,7 @@ class WorldSession
         void HandleChangeCurrencyFlags(WorldPacket& recvPacket);
         void HandleCemeteryListOpcode(WorldPacket& recvPacket);
         void HandlerCategoryCooldownOpocde(WorldPacket& recvPacket);
+        void HandleClearRaidMarkerOpcode(WorldPacket& recvPacket);
 
     private:
         void InitializeQueryCallbackParameters();

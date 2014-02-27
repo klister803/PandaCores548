@@ -2006,7 +2006,10 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
         if (!thisPlayer)
             return false;
 
-        if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()))
+        Group const* group = thisPlayer->GetGroup();
+
+        if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()) &&
+            (!group || !obj->IsGroupInPersonnalVisibilityList(group->GetGUID())))
             return false;
     }
 
@@ -2197,6 +2200,18 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
 bool WorldObject::IsPlayerInPersonnalVisibilityList(uint64 guid) const
 {
     if (!IS_PLAYER_GUID(guid))
+        return false;
+
+    for (std::list<uint64>::const_iterator itr = _visibilityPlayerList.begin(); itr != _visibilityPlayerList.end(); ++itr)
+        if ((*itr) == guid)
+            return true;
+
+    return false;
+}
+
+bool WorldObject::IsGroupInPersonnalVisibilityList(uint64 guid) const
+{
+    if (!IS_GROUP(guid))
         return false;
 
     for (std::list<uint64>::const_iterator itr = _visibilityPlayerList.begin(); itr != _visibilityPlayerList.end(); ++itr)

@@ -25000,6 +25000,28 @@ void Player::UpdateForQuestWorldObjects()
     udata.SendTo(this);
 }
 
+void Player::UpdateForRaidMarkers(Group* group)
+{
+    UpdateData udata(GetMapId());
+
+    for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)
+    {
+        if (DynamicObject* obj = GetMap()->GetDynamicObject(group->GetRaidMarker(i)))
+            if (group == GetGroup())
+            {
+                if (obj->GetMapId() == GetMapId())
+                    obj->BuildCreateUpdateBlockForPlayer(&udata, this);
+            }
+            else
+                obj->BuildOutOfRangeUpdateBlock(&udata);
+    }
+
+    if (!udata.HasData())
+        return;
+
+    udata.SendTo(this);
+}
+
 void Player::SummonIfPossible(bool agree)
 {
     if (!agree)

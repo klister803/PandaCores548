@@ -1238,7 +1238,7 @@ enum Opcodes
     SMSG_RAID_GROUP_ONLY                              = 0xDA4,  // 5.0.5 16048
     SMSG_RAID_INSTANCE_INFO                           = 0x05B5, // 5.4.1 17538
     SMSG_RAID_INSTANCE_MESSAGE                        = 0x11B6, // 5.4.1 17538
-    SMSG_RAID_MARKERS_CHANGED                         = 0xBAA,  // 5.0.5 16048
+    SMSG_RAID_MARKERS_CHANGED                         = 0x0506, // 5.4.1 17538
     SMSG_RAID_READY_CHECK_COMPLETED                   = 0x09AF, // 5.4.1 17538
     SMSG_RAID_READY_CHECK_RESPONSE                    = 0x14AE, // 5.4.1 17538
     SMSG_RAID_READY_CHECK_STARTED                     = 0x1427, // 5.4.1 17538 
