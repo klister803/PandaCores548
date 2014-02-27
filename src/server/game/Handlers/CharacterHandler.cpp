@@ -1208,11 +1208,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         SendNotification(LANG_GM_ON);
 
     // Send CUF profiles (new raid UI 4.2)
-    // 5.0.5 16048 packet dump
-    uint8 cufProfilesRawData[] = {0x00, 0x00, 0x10, 0x48, 0x0C, 0xBA, 0x80, 0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00, 0x50, 0x72, 0x69, 0x6E, 0x63, 0x69, 0x70, 0x61, 0x6C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x00};
-    data.Initialize(SMSG_LOAD_CUF_PROFILES);
-    for(int i = 0; i < 31; i++)
-        data << cufProfilesRawData[i];
+    data.Initialize(SMSG_LOAD_CUF_PROFILES, 3);
+    data.WriteBits(0, 19);
     SendPacket(&data);
 
     // Hackfix Remove Talent spell - Remove Glyph spell
