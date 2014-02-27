@@ -157,6 +157,8 @@ class boss_tsulong : public CreatureScript
                     me->setFaction(16);
                     me->SetDisplayId(NIGHT_ID);
                     me->SetReactState(REACT_AGGRESSIVE);
+                    if (!checkpower)
+                        checkpower = 1000;
                     DoZoneInCombat(me, 150.0f);
                     if (me->getVictim())
                         me->GetMotionMaster()->MoveChase(me->getVictim());
