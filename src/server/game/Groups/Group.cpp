@@ -3101,7 +3101,7 @@ void Group::SetRaidMarker(uint8 id, Player* who, uint64 targetGuid, bool update 
 void Group::SendRaidMarkerUpdate()
 {
     WorldPacket data(SMSG_RAID_MARKERS_CHANGED, 4 + 1 + 1 + 5 * (4 + 4 + 4 + 4));
-    data << uint8(isRaidGroup() ? 1 : 0);
+    data << uint8(0);
     uint32 mask = 0;
     uint8 count = 0;
     for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)
