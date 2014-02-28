@@ -401,17 +401,18 @@ public:
                 Player* player = source->ToPlayer();
                 if(!player)
                     return;
-                
-                    switch (spell->Id)
-                    {
-                        case 589: 
-                        case 172: 
-                        case 100:
-                        default:
-                            break;
-                    }
+
+                switch (spell->Id)
                 {
-                    player->KilledMonsterCredit(44175, 0);
+                    case 589: 
+                    case 172: 
+                    case 100:
+                    {
+                        player->KilledMonsterCredit(44175, 0);
+                        break;
+                    }
+                    default:
+                        break;
                 }
             }
         }
