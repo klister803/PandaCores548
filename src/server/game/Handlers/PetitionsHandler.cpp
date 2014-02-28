@@ -329,7 +329,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
         data.WriteGuidBytes<5>(ownerguid);
         data << uint32(0);
         data.WriteGuidBytes<6, 4>(ownerguid);
-        data << name;                                // guild name
+        data.WriteString(name);                      // guild name
         data.WriteGuidBytes<3>(ownerguid);
         data << uint32(GUILD_CHARTER_TYPE);          // unk number 4 in sniffs, type?
         data.WriteGuidBytes<2>(ownerguid);
