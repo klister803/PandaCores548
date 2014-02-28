@@ -7307,6 +7307,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 84654: // Bandit's Guile
+                {
+                    insightCount++;
+
+                    if (insightCount > 3)
+                    {
+                        if       (HasAura(84745)) AddAura(84746, this);
+                        else if  (HasAura(84746)) AddAura(84747, this);
+                        else if (!HasAura(84747)) AddAura(84745, this);
+                    }
+                    else
+                    {
+                        if      (Aura *  GreenBuff = GetAura(84745))  GreenBuff->RefreshDuration();
+                        else if (Aura * YellowBuff = GetAura(84746)) YellowBuff->RefreshDuration();
+                    }
+                    break;
+                }
                 case 51701: // Honor Among Thieves
                 {
                     if (Unit * owner = (Unit *)(triggeredByAura->GetBase()->GetOwner()))
@@ -16238,49 +16255,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && target && target->HasAura(84617, GetGUID()) && procSpell && procSpell->Id == 1752)
         if (roll_chance_i(20))
             ToPlayer()->AddComboPoints(target, 1);
-
-    // Bandit's Guile - 84654
-    // Your Sinister Strike and Revealing Strike abilities increase your damage dealt by up to 30%
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(84654) && procSpell && (procSpell->Id == 84617 || procSpell->Id == 1752))
-    {
-        insightCount++;
-
-        // it takes a total of 4 strikes to get a proc, or a level up
-        if (insightCount >= 4)
-        {
-            insightCount = 0;
-
-            // it takes 4 strikes to get Shallow insight
-            // than 4 strikes to get Moderate insight
-            // and than 4 strikes to get Deep Insight
-
-            // Shallow Insight
-            if (HasAura(84745))
-            {
-                RemoveAura(84745);
-                CastSpell(this, 84746, true); // Moderate Insight
-            }
-            else if (HasAura(84746))
-            {
-                RemoveAura(84746);
-                CastSpell(this, 84747, true); // Deep Insight
-            }
-            // the cycle will begin
-            else if (!HasAura(84747))
-                CastSpell(this, 84745, true); // Shallow Insight
-        }
-        else
-        {
-            // Each strike refreshes the duration of shallow insight or Moderate insight
-            // but you can't refresh Deep Insight without starting from shallow insight.
-            // Shallow Insight
-            if (Aura* shallowInsight = GetAura(84745))
-                shallowInsight->RefreshDuration();
-            // Moderate Insight
-            else if (Aura* moderateInsight = GetAura(84746))
-                moderateInsight->RefreshDuration();
-        }
-    }
 
     // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
