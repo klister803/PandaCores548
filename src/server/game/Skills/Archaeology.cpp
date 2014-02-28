@@ -411,7 +411,7 @@ void Player::GenerateResearchProjects()
 
     for (ProjectsByBranch::const_iterator itr = tempProjects.begin(); itr != tempProjects.end(); ++itr)
     {
-        ResearchProjectSet::iterator itr2;
+        ResearchProjectSet::const_iterator itr2;
 
         if (tempRareProjects[itr->first].size() > 0 && roll_chance_f(rare_chance))
         {
