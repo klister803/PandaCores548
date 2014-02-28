@@ -245,7 +245,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
         uint32 lowGuid = fields2[0].GetUInt32();
         ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
 
-        data.WriteGuidMask<6, 3, 0, 4, 7, 5, 1, 2>(plSignGuid);
+        data.WriteGuidBytes<6, 3, 0, 4, 7, 5, 1, 2>(plSignGuid);
         data << uint32(0);
     }
 
@@ -254,7 +254,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
     data.WriteGuidBytes<0>(playerGUID);
     data.WriteGuidBytes<6>(petitionguid);
 
-    data << uint32(0);
+    data << uint32(petitionGuidLow);               // CGPetitionInfo__m_petition
 
     data.WriteGuidBytes<5, 1>(playerGUID);
     data.WriteGuidBytes<7>(petitionguid);
