@@ -401,7 +401,7 @@ public:
                 Player* player = source->ToPlayer();
                 if(!player)
                     return;
-                if (spell->Id == 589 || spell->Id == 172)
+                if (spell->Id == 589 || spell->Id == 172 || spell->Id == 100)
                 {
                     player->KilledMonsterCredit(44175, 0);
                 }
