@@ -628,10 +628,10 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_LIST_BIDDER_ITEMS");
 
     ObjectGuid auctioneerGUID;
-    uint32 listfrom;                                        // page of auctions
+    uint32 page;                                            // page of auctions
     uint32 outbiddedCount;                                  // count of outbidded auctions
 
-    recvData >> listfrom;                                   // not used in fact (this list not have page control in client)
+    recvData >> page;                                       // not used in fact (this list not have page control in client)
     recvData.ReadGuidMask<6, 2, 1, 0, 3, 4>(auctioneerGUID);
     outbiddedCount = recvData.ReadBits(7);
     recvData.ReadGuidMask<7, 5>(auctioneerGUID);
