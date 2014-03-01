@@ -39,12 +39,24 @@ WMORoot::WMORoot(std::string &filename)
     memset(bbcorn2, 0, sizeof(bbcorn2));
 }
 
-extern HANDLE WorldMpq;
+extern HANDLE WorldMpq[];
 
 bool WMORoot::open()
 {
-    MPQFile f(WorldMpq, filename.c_str());
-    if(f.isEof ())
+    MPQFile* f = NULL;
+    for (int i = 0; i < WORLD_MPQ_COUNT; ++i)
+    {
+        f = new MPQFile(WorldMpq[i], filename.c_str());
+        if( f->isEof ())
+        {
+            delete f;
+            f = NULL;
+        }
+        else
+            break;
+    }
+
+    if (!f)
     {
         printf("No such file.\n");
         return false;
@@ -53,30 +65,30 @@ bool WMORoot::open()
     uint32 size;
     char fourcc[5];
 
-    while (!f.isEof())
+    while (!f->isEof())
     {
-        f.read(fourcc,4);
-        f.read(&size, 4);
+        f->read(fourcc,4);
+        f->read(&size, 4);
 
         flipcc(fourcc);
         fourcc[4] = 0;
 
-        size_t nextpos = f.getPos() + size;
+        size_t nextpos = f->getPos() + size;
 
         if (!strcmp(fourcc,"MOHD")) // header
         {
-            f.read(&nTextures, 4);
-            f.read(&nGroups, 4);
-            f.read(&nP, 4);
-            f.read(&nLights, 4);
-            f.read(&nModels, 4);
-            f.read(&nDoodads, 4);
-            f.read(&nDoodadSets, 4);
-            f.read(&col, 4);
-            f.read(&RootWMOID, 4);
-            f.read(bbcorn1, 12);
-            f.read(bbcorn2, 12);
-            f.read(&liquidType, 4);
+            f->read(&nTextures, 4);
+            f->read(&nGroups, 4);
+            f->read(&nP, 4);
+            f->read(&nLights, 4);
+            f->read(&nModels, 4);
+            f->read(&nDoodads, 4);
+            f->read(&nDoodadSets, 4);
+            f->read(&col, 4);
+            f->read(&RootWMOID, 4);
+            f->read(bbcorn1, 12);
+            f->read(bbcorn2, 12);
+            f->read(&liquidType, 4);
             break;
         }
         /*
@@ -120,9 +132,11 @@ bool WMORoot::open()
         {
         }
         */
-        f.seek((int)nextpos);
+        f->seek((int)nextpos);
     }
-    f.close ();
+    f->close();
+
+    delete f;
     return true;
 }
 
@@ -153,43 +167,56 @@ WMOGroup::WMOGroup(const std::string &filename) :
 
 bool WMOGroup::open()
 {
-    MPQFile f(WorldMpq, filename.c_str());
-    if(f.isEof ())
+    MPQFile* f = NULL;
+    for (int i = 0; i < WORLD_MPQ_COUNT; ++i)
+    {
+        f = new MPQFile(WorldMpq[i], filename.c_str());
+        if( f->isEof ())
+        {
+            delete f;
+            f = NULL;
+        }
+        else
+            break;
+    }
+
+    if (!f)
     {
         printf("No such file.\n");
         return false;
     }
+
     uint32 size;
     char fourcc[5];
-    while (!f.isEof())
+    while (!f->isEof())
     {
-        f.read(fourcc,4);
-        f.read(&size, 4);
+        f->read(fourcc,4);
+        f->read(&size, 4);
         flipcc(fourcc);
         if (!strcmp(fourcc,"MOGP"))//Fix sizeoff = Data size.
         {
             size = 68;
         }
         fourcc[4] = 0;
-        size_t nextpos = f.getPos() + size;
+        size_t nextpos = f->getPos() + size;
         LiquEx_size = 0;
         liquflags = 0;
 
         if (!strcmp(fourcc,"MOGP"))//header
         {
-            f.read(&groupName, 4);
-            f.read(&descGroupName, 4);
-            f.read(&mogpFlags, 4);
-            f.read(bbcorn1, 12);
-            f.read(bbcorn2, 12);
-            f.read(&moprIdx, 2);
-            f.read(&moprNItems, 2);
-            f.read(&nBatchA, 2);
-            f.read(&nBatchB, 2);
-            f.read(&nBatchC, 4);
-            f.read(&fogIdx, 4);
-            f.read(&liquidType, 4);
-            f.read(&groupWMOID,4);
+            f->read(&groupName, 4);
+            f->read(&descGroupName, 4);
+            f->read(&mogpFlags, 4);
+            f->read(bbcorn1, 12);
+            f->read(bbcorn2, 12);
+            f->read(&moprIdx, 2);
+            f->read(&moprNItems, 2);
+            f->read(&nBatchA, 2);
+            f->read(&nBatchB, 2);
+            f->read(&nBatchC, 4);
+            f->read(&fogIdx, 4);
+            f->read(&liquidType, 4);
+            f->read(&groupWMOID,4);
 
         }
         else if (!strcmp(fourcc,"MOPY"))
@@ -197,17 +224,17 @@ bool WMOGroup::open()
             MOPY = new char[size];
             mopy_size = size;
             nTriangles = (int)size / 2;
-            f.read(MOPY, size);
+            f->read(MOPY, size);
         }
         else if (!strcmp(fourcc,"MOVI"))
         {
             MOVI = new uint16[size/2];
-            f.read(MOVI, size);
+            f->read(MOVI, size);
         }
         else if (!strcmp(fourcc,"MOVT"))
         {
             MOVT = new float[size/4];
-            f.read(MOVT, size);
+            f->read(MOVT, size);
             nVertices = (int)size / 12;
         }
         else if (!strcmp(fourcc,"MONR"))
@@ -220,19 +247,19 @@ bool WMOGroup::open()
         {
             MOBA = new uint16[size/2];
             moba_size = size/2;
-            f.read(MOBA, size);
+            f->read(MOBA, size);
         }
         else if (!strcmp(fourcc,"MLIQ"))
         {
             liquflags |= 1;
             hlq = new WMOLiquidHeader;
-            f.read(hlq, 0x1E);
+            f->read(hlq, 0x1E);
             LiquEx_size = sizeof(WMOLiquidVert) * hlq->xverts * hlq->yverts;
             LiquEx = new WMOLiquidVert[hlq->xverts * hlq->yverts];
-            f.read(LiquEx, LiquEx_size);
+            f->read(LiquEx, LiquEx_size);
             int nLiquBytes = hlq->xtiles * hlq->ytiles;
             LiquBytes = new char[nLiquBytes];
-            f.read(LiquBytes, nLiquBytes);
+            f->read(LiquBytes, nLiquBytes);
 
             /* std::ofstream llog("Buildings/liquid.log", ios_base::out | ios_base::app);
             llog << filename;
@@ -241,9 +268,10 @@ bool WMOGroup::open()
             llog << "\nx-/yvert: " << hlq->xverts << "/" << hlq->yverts << " size: " << size << " expected size: " << 30 + hlq->xverts*hlq->yverts*8 + hlq->xtiles*hlq->ytiles << std::endl;
             llog.close(); */
         }
-        f.seek((int)nextpos);
+        f->seek((int)nextpos);
     }
-    f.close();
+    f->close();
+    delete f;
     return true;
 }
 

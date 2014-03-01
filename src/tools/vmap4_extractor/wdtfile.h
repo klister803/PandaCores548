@@ -21,7 +21,8 @@ public:
     ADTFile* GetMap(int x, int z);
 
 private:
-    MPQFile WDT;
+
+    std::string originalName;
     string filename;
 };
 

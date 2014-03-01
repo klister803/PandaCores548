@@ -75,16 +75,29 @@ char* GetExtension(char* FileName)
     return NULL;
 }
 
-extern HANDLE WorldMpq;
+extern HANDLE WorldMpq[];
 
-ADTFile::ADTFile(char* filename): ADT(WorldMpq, filename)
+ADTFile::ADTFile(char* filename)
 {
     Adtfilename.append(filename);
 }
 
 bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
 {
-    if(ADT.isEof ())
+    MPQFile* ADT = NULL;
+    for (int i = 0; i < WORLD_MPQ_COUNT; ++i)
+    {
+        ADT = new MPQFile(WorldMpq[i], Adtfilename.c_str());
+        if (ADT->isEof ())
+        {
+            delete ADT;
+            ADT = NULL;
+        }
+        else
+            break;
+    }
+
+    if (!ADT)
         return false;
 
     uint32 size;
@@ -113,15 +126,15 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
         return false;
     }
 
-    while (!ADT.isEof())
+    while (!ADT->isEof())
     {
         char fourcc[5];
-        ADT.read(&fourcc,4);
-        ADT.read(&size, 4);
+        ADT->read(&fourcc,4);
+        ADT->read(&size, 4);
         flipcc(fourcc);
         fourcc[4] = 0;
 
-        size_t nextpos = ADT.getPos() + size;
+        size_t nextpos = ADT->getPos() + size;
 
         if (!strcmp(fourcc,"MCIN"))
         {
@@ -134,7 +147,7 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
             if (size)
             {
                 char *buf = new char[size];
-                ADT.read(buf, size);
+                ADT->read(buf, size);
                 char *p=buf;
                 int t=0;
                 ModelInstansName = new string[size];
@@ -159,7 +172,7 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
             if (size)
             {
                 char* buf = new char[size];
-                ADT.read(buf, size);
+                ADT->read(buf, size);
                 char* p=buf;
                 int q = 0;
                 WmoInstansName = new string[size];
@@ -183,8 +196,8 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 for (int i=0; i<nMDX; ++i)
                 {
                     uint32 id;
-                    ADT.read(&id, 4);
-                    ModelInstance inst(ADT,ModelInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
+                    ADT->read(&id, 4);
+                    ModelInstance inst(*ADT,ModelInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
                 }
                 delete[] ModelInstansName;
             }
@@ -197,21 +210,21 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 for (int i=0; i<nWMO; ++i)
                 {
                     uint32 id;
-                    ADT.read(&id, 4);
-                    WMOInstance inst(ADT,WmoInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
+                    ADT->read(&id, 4);
+                    WMOInstance inst(*ADT ,WmoInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
                 }
                 delete[] WmoInstansName;
             }
         }
         //======================
-        ADT.seek(nextpos);
+        ADT->seek(nextpos);
     }
-    ADT.close();
+    ADT->close();
+    delete ADT;
     fclose(dirfile);
     return true;
 }
 
 ADTFile::~ADTFile()
 {
-    ADT.close();
 }

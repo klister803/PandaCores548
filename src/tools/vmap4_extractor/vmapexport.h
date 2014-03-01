@@ -21,6 +21,8 @@
 
 #include <string>
 
+#define WORLD_MPQ_COUNT 6
+
 enum ModelFlags
 {
     MOD_M2 = 1,
