@@ -82,22 +82,23 @@ void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action
     WorldPacket data(SMSG_AUCTION_COMMAND_RESULT);
     data << uint32(auction ? auction->Id : 0);
     data << uint32(action);
+    data << uint32(0);                                    // in sniffs big integer value
     data << uint32(errorCode);
-    data << uint32(0);
 
-    bool h_bid = data.ReadBit();
-    data.ReadBit();
+    data.WriteBit(0);                                     // bit_1, related to auction error or action
+    data.WriteBit(0);                                     // bit_2, related to auction error or action
 
     data.WriteGuidMask<7, 0, 1, 6, 3, 4, 5, 2>(auction->bidder);
-    data.ReadBit();
+    data.WriteBit(0);                                     // bit_3, related to auction error or action
     data.WriteGuidBytes<2, 7, 3, 1, 5, 0, 6, 4>(auction->bidder);
 
-    if (h_bid)
+    /*if (bit_2)
     {
         data << uint64(auction->bid);
         data << uint64(auction->bid ? auction->GetAuctionOutBid() : 0);
-    }
+    }*/
 
+    // OLD CODE - need for comparing builds
     /*switch (errorCode)
     {
         case ERR_AUCTION_OK:
