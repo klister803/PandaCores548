@@ -63,7 +63,7 @@ struct ItemSparseEntry
     uint32     Quality;                                      // 1
     uint32     Flags;                                        // 2
     uint32     Flags2;                                       // 3
-    //uint32     Unk520_1;
+    uint32     Flags3;
     float      Unk430_1;
     float      Unk430_2;
     uint32     BuyCount;
