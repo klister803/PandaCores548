@@ -481,6 +481,7 @@ bool Group::AddMember(Player* player)
         // quest related GO state dependent from raid membership
         if (isRaidGroup())
             player->UpdateForQuestWorldObjects();
+        player->UpdateForRaidMarkers(this);
 
         {
             // Broadcast new player group member fields to rest of the group
@@ -557,6 +558,8 @@ bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOV
                 // quest related GO state dependent from raid membership
                 player->UpdateForQuestWorldObjects();
             }
+
+            player->UpdateForRaidMarkers(this);
 
             if (method == GROUP_REMOVEMETHOD_KICK)
             {
@@ -729,6 +732,9 @@ void Group::Disband(bool hideDestroy /* = false */)
         player = ObjectAccessor::FindPlayer(citr->guid);
         if (!player)
             continue;
+
+        // remove all raid markers
+        SetRaidMarker(RAID_MARKER_COUNT, player, 0, false);
 
         //we cannot call _removeMember because it would invalidate member iterator
         //if we are removing player from battleground raid
@@ -3072,4 +3078,85 @@ uint32 Group::GetAverageMMR(BracketType bracket) const
     matchMakerRating /= playerDivider;
 
     return matchMakerRating;
+}
+
+void Group::SetRaidMarker(uint8 id, Player* who, uint64 targetGuid, bool update /*=true*/)
+{
+    if (!who)
+        return;
+
+    if (id >= RAID_MARKER_COUNT)
+    {
+        // remove all markers
+        for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)
+            m_raidMarkers[i] = 0;
+    }
+    else
+        m_raidMarkers[id] = targetGuid;
+
+    if (update)
+        SendRaidMarkerUpdate();
+}
+
+void Group::SendRaidMarkerUpdate()
+{
+    WorldPacket data(SMSG_RAID_MARKERS_CHANGED, 4 + 1 + 1 + 5 * (4 + 4 + 4 + 4));
+    data << uint8(0);
+    uint32 mask = 0;
+    uint8 count = 0;
+    for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)
+        if (m_raidMarkers[i])
+        {
+            mask |= 1 << i;
+            ++count;
+        }
+    data << uint32(mask);
+
+    data.WriteBits(count, 3);
+    for (uint8 i = 0; i < count; ++i)
+        data.WriteBits(0, 8);   // guid
+
+    std::vector<uint32> pos(count);
+    for (uint8 i = 0; i < count; ++i)
+    {
+        pos[i] = data.wpos();
+        data << uint32(0);      // map id
+        data << float(0.0f);    // x
+        data << float(0.0f);    // y
+        data << float(0.0f);    // z
+    }
+
+    for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
+    {
+        Player* player = itr->getSource();
+        if (!player)
+            continue;
+
+        uint32 mapId = player->GetMapId();
+        for (uint8 i = 0; i < count; ++i)
+            data.put<uint32>(pos[i], mapId);
+        player->SendDirectMessage(&data);
+    }
+}
+
+void Group::ClearRaidMarker(uint64 guid)
+{
+    for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)
+    {
+        if (m_raidMarkers[i] == guid)
+        {
+            m_raidMarkers[i] = 0;
+            SendRaidMarkerUpdate();
+            break;
+        }
+    }
+}
+
+bool Group::HasRaidMarker(uint64 guid) const
+{
+    for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)
+        if (m_raidMarkers[i] == guid)
+            return true;
+
+    return false;
 }

@@ -350,6 +350,24 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_TOTAL                         = 163
 };
 
+enum ArchaeologyBranches
+{
+    ARCHAEOLOGY_BRANCH_NONE         = 0,
+    ARCHAEOLOGY_BRANCH_DWARF        = 1,
+    ARCHAEOLOGY_BRANCH_DRAENEI      = 2,
+    ARCHAEOLOGY_BRANCH_FOSSIL       = 3,
+    ARCHAEOLOGY_BRANCH_NIGHT_ELF    = 4,
+    ARCHAEOLOGY_BRANCH_NERUBIAN     = 5,
+    ARCHAEOLOGY_BRANCH_ORC          = 6,
+    ARCHAEOLOGY_BRANCH_TOLVIR       = 7,
+    ARCHAEOLOGY_BRANCH_TROLL        = 8,
+    ARCHAEOLOGY_BRANCH_VRYKUL       = 27,
+    ARCHAEOLOGY_BRANCH_MANTID       = 29,
+    ARCHAEOLOGY_BRANCH_PANDAREN     = 229,
+    ARCHAEOLOGY_BRANCH_MOGU         = 231,
+    ARCHAEOLOGY_BRANCH_UNUSED       = 315,
+};
+
 enum AreaFlags
 {
     AREA_FLAG_SNOW             = 0x00000001,                // snow (only Dun Morogh, Naxxramas, Razorfen Downs and Winterspring)
@@ -626,7 +644,8 @@ enum CurrencyTypes
     CURRENCY_TYPE_ARCHAEOLOGY_MOGU          = 677, // ARCHAEOLOGY MoP
     CURRENCY_TYPE_CONQUEST_META_RANDOM_BG   = 692, //
     CURRENCY_TYPE_ELDER_CHARM_GOOD_FORTUNE  = 697, // LFR roll chance MoP
-    CURRENCY_TYPE_ZEN_JEWEL                 = 698  // Jewelcrafting token MoP NYI
+    CURRENCY_TYPE_ZEN_JEWEL                 = 698, // Jewelcrafting token MoP NYI
+    CURRENCY_TYPE_ARCHAEOLOGY_MANTID        = 754,
 };
 
 #define CURRENCY_PRECISION 100.0f

@@ -30,16 +30,30 @@ char * wdtGetPlainName(char * FileName)
     return FileName;
 }
 
-extern HANDLE WorldMpq;
+extern HANDLE WorldMpq[];
 
-WDTFile::WDTFile(char* file_name, char* file_name1):WDT(WorldMpq, file_name)
+WDTFile::WDTFile(char* file_name, char* file_name1)
 {
+    originalName = file_name;
     filename.append(file_name1,strlen(file_name1));
 }
 
 bool WDTFile::init(char *map_id, unsigned int mapID)
 {
-    if (WDT.isEof())
+    MPQFile* WDT = NULL;
+    for (int i = 0; i < WORLD_MPQ_COUNT; ++i)
+    {
+        WDT = new MPQFile(WorldMpq[i], originalName.c_str());
+        if (WDT->isEof ())
+        {
+            delete WDT;
+            WDT = NULL;
+        }
+        else
+            break;
+    }
+
+    if (!WDT)
     {
         //printf("Can't find WDT file.\n");
         return false;
@@ -57,15 +71,15 @@ bool WDTFile::init(char *map_id, unsigned int mapID)
         return false;
     }
 
-    while (!WDT.isEof())
+    while (!WDT->isEof())
     {
-        WDT.read(fourcc,4);
-        WDT.read(&size, 4);
+        WDT->read(fourcc,4);
+        WDT->read(&size, 4);
 
         flipcc(fourcc);
         fourcc[4] = 0;
 
-        size_t nextpos = WDT.getPos() + size;
+        size_t nextpos = WDT->getPos() + size;
 
         if (!strcmp(fourcc,"MAIN"))
         {
@@ -76,7 +90,7 @@ bool WDTFile::init(char *map_id, unsigned int mapID)
             if (size)
             {
                 char *buf = new char[size];
-                WDT.read(buf, size);
+                WDT->read(buf, size);
                 char *p=buf;
                 int q = 0;
                 gWmoInstansName = new string[size];
@@ -100,24 +114,24 @@ bool WDTFile::init(char *map_id, unsigned int mapID)
                 for (int i = 0; i < gnWMO; ++i)
                 {
                     int id;
-                    WDT.read(&id, 4);
-                    WMOInstance inst(WDT,gWmoInstansName[id].c_str(), mapID, 65, 65, dirfile);
+                    WDT->read(&id, 4);
+                    WMOInstance inst(*WDT,gWmoInstansName[id].c_str(), mapID, 65, 65, dirfile);
                 }
 
                 delete[] gWmoInstansName;
             }
         }
-        WDT.seek((int)nextpos);
+        WDT->seek((int)nextpos);
     }
 
-    WDT.close();
+    WDT->close();
+    delete WDT;
     fclose(dirfile);
     return true;
 }
 
 WDTFile::~WDTFile(void)
 {
-    WDT.close();
 }
 
 ADTFile* WDTFile::GetMap(int x, int z)

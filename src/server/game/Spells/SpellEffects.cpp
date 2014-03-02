@@ -175,7 +175,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectReputation,                               //103 SPELL_EFFECT_REPUTATION
     &Spell::EffectSummonObject,                             //104 SPELL_EFFECT_SUMMON_OBJECT_SLOT
     &Spell::EffectSurvey,                                   //105 SPELL_EFFECT_SURVEY
-    &Spell::EffectNULL,                                     //106 SPELL_EFFECT_SUMMON_RAID_MARKER
+    &Spell::EffectSummonRaidMarker,                         //106 SPELL_EFFECT_SUMMON_RAID_MARKER
     &Spell::EffectNULL,                                     //107 SPELL_EFFECT_LOOT_CORPSE
     &Spell::EffectDispelMechanic,                           //108 SPELL_EFFECT_DISPEL_MECHANIC
     &Spell::EffectSummonDeadPet,                            //109 SPELL_EFFECT_SUMMON_DEAD_PET
@@ -2521,16 +2521,9 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if(m_spellInfo->ResearchProject)
-    {
-        if(Player* player = m_caster->ToPlayer())
-        {
-            if(!player->EventSolveProject(m_spellInfo))
-                return;
-        }
-        else
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
+        if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
-    }
 
     DoCreateItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
     ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
@@ -2556,6 +2549,10 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
 
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
+
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
+        if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
+            return;
 
     Player* player = unitTarget->ToPlayer();
 
@@ -3615,6 +3612,13 @@ void Spell::EffectLearnSkill(SpellEffIndex effIndex)
     uint32 skillid = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
     uint16 skillval = unitTarget->ToPlayer()->GetPureSkillValue(skillid);
     unitTarget->ToPlayer()->SetSkill(skillid, m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValue(), skillval?skillval:1, damage*75);
+
+    // Archaeology
+    if (skillid == SKILL_ARCHAEOLOGY && !skillval && sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+    {
+        unitTarget->ToPlayer()->GenerateResearchSites();
+        unitTarget->ToPlayer()->GenerateResearchProjects();
+    }
 }
 
 void Spell::EffectPlayMovie(SpellEffIndex effIndex)
@@ -5786,6 +5790,9 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
 
 void Spell::EffectSurvey(SpellEffIndex effIndex)
 {
+    if (!sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+        return;
+
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
@@ -5793,14 +5800,28 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
     if (!player)
         return;
 
-    int32 duration = 0;
-    float x, y, z, o;
-
-    uint32 go_id = m_caster->ToPlayer()->GetSurveyBotEntry(x, y, z, o, duration);
-    if(!duration)
-        duration = 10000;
-
     uint8 slot = 4;
+    uint32 go_id;
+
+    float x, y, z, o;
+    x = m_caster->GetPositionX();
+    y = m_caster->GetPositionY();
+    z = m_caster->GetPositionZ();
+    o = m_caster->GetOrientation();
+
+    int32 duration;
+    if (!player->OnSurvey(go_id, x, y, z, o))
+        duration = 10000;
+    else
+        duration = 60000;
+
+    if (!go_id)
+    {
+        sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::EffectSurvey: no go id for x: %f y: %f z: %f map: %u",
+            m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetMapId());
+        return;
+    }
+
     uint64 guid = m_caster->m_ObjectSlot[slot];
     if (guid != 0)
     {
@@ -5820,13 +5841,6 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
 
     GameObject* pGameObj = new GameObject;
 
-    // If dest location if present
-    if (m_targets.HasDst())
-        destTarget->GetPosition(x, y, z);
-    // Summon in random point all other units if location present
-    else
-        m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
-
     Map* map = m_caster->GetMap();
     if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map,
         m_caster->GetPhaseMask(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
@@ -5835,8 +5849,8 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
         return;
     }
 
-    if(!duration)
-        duration = m_spellInfo->GetDuration();
+    pGameObj->AddPlayerInPersonnalVisibilityList(player->GetGUID());
+
     pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
     m_caster->AddGameObject(pGameObj);
@@ -7664,4 +7678,39 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
     ExecuteLogEffectGeneric(effIndex, target->GetGUID());
     target->SetResurrectRequestData(m_caster, health, mana, resurrectAura);
     SendResurrectRequest(target);
+}
+
+void Spell::EffectSummonRaidMarker(SpellEffIndex effIndex)
+{
+    Unit* caster = GetOriginalCaster();
+    // FIXME: in case wild GO will used wrong affective caster (target in fact) as dynobject owner
+    if (!caster)
+        caster = m_caster;
+
+    if (caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Player* pCaster = caster->ToPlayer();
+
+    Group* group = pCaster->GetGroup();
+    if (!group)
+        return;
+
+    if (!group->IsAssistant(pCaster->GetObjectGuid()) && !group->IsLeader(pCaster->GetObjectGuid()))
+        return;
+
+    uint8 slot = damage;
+
+    //float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(caster, this);
+    float radius = 16.0f;
+    int32 duration = m_spellInfo->GetDuration();
+    DynamicObject* dynObj = new DynamicObject(false);
+    if (!dynObj->CreateDynamicObject(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), pCaster, m_spellInfo->Id, *m_targets.GetDstPos(), radius, DYNAMIC_OBJECT_RAID_MARKER))
+    {
+        delete dynObj;
+        return;
+    }
+
+    dynObj->SetDuration(duration);
+    group->SetRaidMarker(slot, pCaster, dynObj->GetObjectGuid());
 }

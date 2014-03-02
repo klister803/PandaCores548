@@ -20,7 +20,7 @@
 
 const char Itemfmt[]="niiiiiii";
 const char ItemCurrencyCostfmt[]="xn";
-const char ItemSparsefmt[]="niiixffiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiifiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiisssssiiiiiiiiiiiiiiiiiiiiiifiiifii";
+const char ItemSparsefmt[]="niiiiffiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiifiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiisssssiiiiiiiiiiiiiiiiiiiiiifiiifii";
 const char ItemExtendedCostEntryfmt[]="nxxiiiiiiiiiiiixiiiiiiiiiixxixx";
 const char BattlePetSpeciesEntryfmt[]="nixixxixx";
 const char QuestPackageItemfmt[]="iiiix";

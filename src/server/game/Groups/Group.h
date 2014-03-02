@@ -45,6 +45,7 @@ struct MapEntry;
 #define MAXRAIDSIZE 40
 #define MAX_RAID_SUBGROUPS MAXRAIDSIZE/MAXGROUPSIZE
 #define TARGETICONCOUNT 8
+#define RAID_MARKER_COUNT 5
 
 enum RollVote
 {
@@ -295,6 +296,12 @@ class Group
         void OfflineReadyCheck();
         bool leaderInstanceCheckFail();
 
+        uint64 GetRaidMarker(uint8 id) const { return m_raidMarkers[id]; }
+        bool HasRaidMarker(uint64 guid) const;
+        void SetRaidMarker(uint8 id, Player* who, uint64 targetGuid, bool update = true);
+        void SendRaidMarkerUpdate();
+        void ClearRaidMarker(uint64 guid);
+
         /*********************************************************/
         /***                   LOOT SYSTEM                     ***/
         /*********************************************************/
@@ -359,6 +366,7 @@ class Group
         Battleground*       m_bgGroup;
         Battlefield*        m_bfGroup;
         uint64              m_targetIcons[TARGETICONCOUNT];
+        uint64              m_raidMarkers[RAID_MARKER_COUNT];
         LootMethod          m_lootMethod;
         ItemQualities       m_lootThreshold;
         uint64              m_looterGuid;

@@ -696,12 +696,12 @@ enum Opcodes
     SMSG_ATTACKSTART                                  = 0x012F, // 5.4.1 17538
     SMSG_ATTACKSTOP                                   = 0xD3C,  // 5.4.1 17538
     SMSG_ATTACKSWING_ERROR                            = 0x05BF, // 5.4.1 17538
-    SMSG_AUCTION_BIDDER_LIST_RESULT                   = 0x113A, // 5.4.1 17538
+    SMSG_AUCTION_BIDDER_LIST_RESULT                   = 0x0992, // 5.4.1 17538
     SMSG_AUCTION_BIDDER_NOTIFICATION                  = 0x092E, // 5.4.1 17538
     SMSG_AUCTION_COMMAND_RESULT                       = 0x0C9D, // 5.4.1 17538
-    SMSG_AUCTION_LIST_PENDING_SALES                   = 0x05B9, // 5.4.1 17538
-    SMSG_AUCTION_LIST_RESULT                          = 0x0992, // 5.4.1 17538
-    SMSG_AUCTION_OWNER_LIST_RESULT                    = 0x1800, // 5.4.1 17538
+    SMSG_AUCTION_LIST_PENDING_SALES                   = 0x1800, // 5.4.1 17538
+    SMSG_AUCTION_LIST_RESULT                          = 0x113A, // 5.4.1 17538
+    SMSG_AUCTION_OWNER_LIST_RESULT                    = 0x05B9, // 5.4.1 17538
     SMSG_AUCTION_OWNER_NOTIFICATION                   = 0x0CA6, // 5.4.1 17538
     SMSG_AUCTION_REMOVED_NOTIFICATION                 = 0x882,  // 5.0.5 16048
     SMSG_AURACASTLOG                                  = 0x000,  // Not found in 4.3.4
@@ -1061,7 +1061,7 @@ enum Opcodes
     SMSG_LF_GUILD_POST_UPDATED                        = 0xE5A,  // 5.0.5 16048
     SMSG_LF_GUILD_RECRUIT_LIST_UPDATED                = 0xB1D,  // 5.0.5 16048
     SMSG_LIST_INVENTORY                               = 0x08BD, // 5.4.1 17538
-    SMSG_LOAD_CUF_PROFILES                            = 0xFC9,  // 5.0.5 16048
+    SMSG_LOAD_CUF_PROFILES                            = 0x0C9F, // 5.4.1 17538
     SMSG_LF_GUILD_SEARCH_RESULT                       = 0,      // Not found in TC
     SMSG_LOGIN_SETTIMESPEED                           = 0x0D17, // 5.4.1 17538
     SMSG_LOGIN_VERIFY_WORLD                           = 0x0C24, // 5.4.1 17538
@@ -1238,7 +1238,7 @@ enum Opcodes
     SMSG_RAID_GROUP_ONLY                              = 0xDA4,  // 5.0.5 16048
     SMSG_RAID_INSTANCE_INFO                           = 0x05B5, // 5.4.1 17538
     SMSG_RAID_INSTANCE_MESSAGE                        = 0x11B6, // 5.4.1 17538
-    SMSG_RAID_MARKERS_CHANGED                         = 0xBAA,  // 5.0.5 16048
+    SMSG_RAID_MARKERS_CHANGED                         = 0x0506, // 5.4.1 17538
     SMSG_RAID_READY_CHECK_COMPLETED                   = 0x09AF, // 5.4.1 17538
     SMSG_RAID_READY_CHECK_RESPONSE                    = 0x14AE, // 5.4.1 17538
     SMSG_RAID_READY_CHECK_STARTED                     = 0x1427, // 5.4.1 17538 
@@ -1261,7 +1261,7 @@ enum Opcodes
     SMSG_REPORT_PVP_AFK_RESULT                        = 0x897,  // 5.0.5 16048
     SMSG_REQUEST_CEMETERY_LIST_RESPONSE               = 0x040D, // 5.4.1 17538
     SMSG_REQUEST_PVP_REWARDS_RESPONSE                 = 0x00BE, // 5.4.1 17538
-    SMSG_RESEARCH_COMPLETE                            = 0xBF3,  // 5.0.5 16048
+    SMSG_RESEARCH_COMPLETE                            = 0x042D, // 5.4.1 17538
     SMSG_RESEARCH_SETUP_HISTORY                       = 0x14A5, // 5.4.1 17538
     SMSG_RESET_COMPRESSION_CONTEXT                    = 0x627,  // 5.0.5 16048
     SMSG_RESET_FAILED_NOTIFY                          = 0x0007, // 5.4.1 17538
@@ -1363,6 +1363,7 @@ enum Opcodes
     SMSG_SUMMON_REQUEST                               = 0x05A4, // 5.4.1 17538
     SMSG_SUPERCEDED_SPELL                             = 0x008D, // 5.4.1 17538
     SMSG_SUPPRESS_NPC_GREETINGS                       = 0xA2A,  // 5.0.5 16048
+    SMSG_SURVEY_CAST                                  = 0x0415, // 5.4.1 17538
     SMSG_SUSPEND_COMMS                                = 0x662,  // 5.0.5 16048
     SMSG_SUSPEND_TOKEN_RESPONSE                       = 0xB4F,  // 5.0.5 16048
     SMSG_TALENTS_INVOLUNTARILY_RESET                  = 0x9E1,  // 5.0.5 16048

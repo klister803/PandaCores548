@@ -1334,6 +1334,10 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_ANNOUNCE_MUTE] = ConfigMgr::GetBoolDefault("AnnounceMute", false);
     m_bool_configs[CONFIG_SPELL_FORBIDDEN] = ConfigMgr::GetBoolDefault("SpellForbidden", false);
 
+    // Archaeology
+    m_bool_configs[CONFIG_ARCHAEOLOGY_ENABLED] = ConfigMgr::GetBoolDefault("Archaeology.Enabled", true);
+    m_float_configs[CONFIG_ARCHAEOLOGY_RARE_BASE_CHANCE] = ConfigMgr::GetFloatDefault("Archaeology.RareBaseChance", 10.0f);
+    m_float_configs[CONFIG_ARCHAEOLOGY_RARE_MAXLEVEL_CHANCE] = ConfigMgr::GetFloatDefault("Archaeology.RareMaxLevelChance", 10.0f);
 
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
@@ -1947,6 +1951,12 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_GENERAL, "Loading hotfix info...");
     sObjectMgr->LoadHotfixData();
+
+    sLog->outInfo(LOG_FILTER_GENERAL, "Loading research site to zone mapping data...");
+    sObjectMgr->LoadResearchSiteToZoneData();
+
+    sLog->outInfo(LOG_FILTER_GENERAL, "Loading archaeology digsite positions...");
+    sObjectMgr->LoadDigSitePositions();
 
     sLog->outInfo(LOG_FILTER_GENERAL, "Loading realm name...");
 

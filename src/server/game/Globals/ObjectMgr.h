@@ -933,6 +933,9 @@ class ObjectMgr
         void LoadPhaseDefinitions();
         void LoadSpellPhaseInfo();
 
+        void LoadResearchSiteToZoneData();
+        void LoadDigSitePositions();
+
         PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
         SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }
 

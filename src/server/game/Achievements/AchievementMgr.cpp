@@ -3253,6 +3253,37 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
              if (!unit || unit->GetHealthPct() >= reqValue)
                  return false;
              break;
+         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RARITY: // 65
+         {
+             if (!miscValue1)
+                 return false;
+
+             ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
+             if (!rp)
+                 return false;
+
+             if (rp->rare != reqValue)
+                 return false;
+
+             if (referencePlayer->IsCompletedProject(rp->ID, false))
+                 return false;
+
+             break;
+         }
+         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE: // 66
+         {
+             if (!miscValue1)
+                return false;
+
+             ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
+             if (!rp)
+                 return false;
+
+             if (rp->branchId != reqValue)
+                 return false;
+
+             break;
+         }
          case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY: // 68
              if (!unit || !unit->GetMap() || unit->GetMap()->GetSpawnMode() != reqValue)
                  return false;

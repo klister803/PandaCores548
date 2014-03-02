@@ -4724,3 +4724,4 @@ SpellPowerEntry const* SpellMgr::GetSpellPowerEntryByIdAndPower(uint32 id, Power
     SpellInfo const* spell = sSpellMgr->GetSpellInfo(id);
     return spell->spellPower;
 }
+

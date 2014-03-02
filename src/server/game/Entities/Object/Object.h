@@ -324,7 +324,7 @@ class Object
 
         uint32 GetDynamicUInt32Value(uint32 tab, uint16 index) const
         {
-            ASSERT(tab < m_dynamicTab.size() || index < 32);
+            ASSERT(tab < m_dynamicTab.size() && index < 32);
             return m_dynamicTab[tab][index];
         }
 
@@ -985,9 +985,10 @@ class WorldObject : public Object, public WorldLocation
         void GetMustBeVisibleForPlayersList(std::list<uint64/* guid*/>& playerList) { playerList = _visibilityPlayerList; }
 
         bool IsPlayerInPersonnalVisibilityList(uint64 guid) const;
-        void AddPlayerInPersonnalVisibilityList(uint64 guid) { if (IS_PLAYER_GUID(guid)) _visibilityPlayerList.push_back(guid); }
+        bool IsGroupInPersonnalVisibilityList(uint64 guid) const;
+        void AddPlayerInPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.push_back(guid); }
         void AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerList);
-        void RemovePlayerFromPersonnalVisibilityList(uint64 guid) { if (IS_PLAYER_GUID(guid)) _visibilityPlayerList.remove(guid); }
+        void RemovePlayerFromPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.remove(guid); }
 
     protected:
         std::string m_name;

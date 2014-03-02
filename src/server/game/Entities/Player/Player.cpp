@@ -18700,6 +18700,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
 
+    _LoadArchaeology(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADARCHAELOGY));
+    _LoadArchaeologyFinds(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS));
+
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
 
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
@@ -18777,7 +18780,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadSpellCooldowns(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS));
     _LoadHonor();
-    GenerateResearchDigSites();
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
@@ -19541,10 +19543,12 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
 {
     uint16 slot = 0;
 
-    ////                                                       0      1       2        3        4           5          6         7           8           9           10
-    //QueryResult* result = CharacterDatabase.PQuery("SELECT quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3,
-    //                                                    11           12
-    //                                                itemcount4, playercount FROM character_queststatus WHERE guid = '%u'", GetGUIDLow());
+    ////                                                       0      1       2        3        4           5          6         7           8           9         10        11         12         13
+    //QueryResult* result = CharacterDatabase.PQuery("SELECT quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, mobcount5, mobcount6, mobcount7, mobcount8, mobcount9, mobcount10,
+    //                                                14          15          16           17         18          19          20          21          22          23
+    //                                                itemcount1, itemcount2, itemcount3, itemcount4, itemcount5, itemcount6, itemcount7, itemcount8, itemcount9, itemcount10,
+    //                                                24
+    //                                                playercount FROM character_queststatus WHERE guid = '%u'", GetGUIDLow());
 
     if (result)
     {
@@ -19586,15 +19590,11 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
                 else
                     quest_time = 0;
 
-                questStatusData.CreatureOrGOCount[0] = fields[4].GetUInt16();
-                questStatusData.CreatureOrGOCount[1] = fields[5].GetUInt16();
-                questStatusData.CreatureOrGOCount[2] = fields[6].GetUInt16();
-                questStatusData.CreatureOrGOCount[3] = fields[7].GetUInt16();
-                questStatusData.ItemCount[0] = fields[8].GetUInt16();
-                questStatusData.ItemCount[1] = fields[9].GetUInt16();
-                questStatusData.ItemCount[2] = fields[10].GetUInt16();
-                questStatusData.ItemCount[3] = fields[11].GetUInt16();
-                questStatusData.PlayerCount = fields[12].GetUInt16();
+                for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+                    questStatusData.CreatureOrGOCount[i] = fields[4 + i].GetUInt16();
+                for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+                    questStatusData.ItemCount[i] = fields[14 + i].GetUInt16();
+                questStatusData.PlayerCount = fields[24].GetUInt16();
 
                 // add to quest log
                 if (slot < MAX_QUEST_LOG_SIZE && questStatusData.Status != QUEST_STATUS_NONE)
@@ -20573,7 +20573,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveGlyphs(trans);
     _SaveInstanceTimeRestrictions(trans);
     _SaveCurrency(trans);
-    _SaveArchaelogy(trans);
+    _SaveArchaeology(trans);
     _SaveHonor();
 
     // check if stats should only be saved on logout
@@ -20976,12 +20976,12 @@ void Player::_SaveQuestStatus(SQLTransaction& trans)
                 stmt->setUInt32(index++, statusItr->first);
                 stmt->setUInt8(index++, uint8(statusItr->second.Status));
                 stmt->setBool(index++, statusItr->second.Explored);
-                stmt->setUInt32(index++, uint32(statusItr->second.Timer / IN_MILLISECONDS+ sWorld->GetGameTime()));
+                stmt->setUInt32(index++, uint32(statusItr->second.Timer / IN_MILLISECONDS + sWorld->GetGameTime()));
 
-                for (uint8 i = 0; i < 4; i++)
+                for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
                     stmt->setUInt16(index++, statusItr->second.CreatureOrGOCount[i]);
 
-                for (uint8 i = 0; i < 4; i++)
+                for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
                     stmt->setUInt16(index++, statusItr->second.ItemCount[i]);
 
                 stmt->setUInt16(index, statusItr->second.PlayerCount);
@@ -24383,7 +24383,6 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     ResetTimeSync();
     SendTimeSync();
-    GenerateResearchDigSites();
 
     CastSpell(this, 836, true);                             // LOGINEFFECT
 
@@ -24433,6 +24432,9 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     SendDeathRuneUpdate();
     GetSession()->SendStablePet(0);
+
+    if (GetSkillValue(SKILL_ARCHAEOLOGY) && sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+        ShowResearchSites();
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()
@@ -24994,6 +24996,28 @@ void Player::UpdateForQuestWorldObjects()
             }
         }
     }
+
+    udata.SendTo(this);
+}
+
+void Player::UpdateForRaidMarkers(Group* group)
+{
+    UpdateData udata(GetMapId());
+
+    for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)
+    {
+        if (DynamicObject* obj = GetMap()->GetDynamicObject(group->GetRaidMarker(i)))
+            if (group == GetGroup())
+            {
+                if (obj->GetMapId() == GetMapId())
+                    obj->BuildCreateUpdateBlockForPlayer(&udata, this);
+            }
+            else
+                obj->BuildOutOfRangeUpdateBlock(&udata);
+    }
+
+    if (!udata.HasData())
+        return;
 
     udata.SendTo(this);
 }
@@ -28532,717 +28556,6 @@ void Player::_SaveHonor()
     }
 }
 
-void Player::_LoadArchaelogy(PreparedQueryResult result)
-{
-    //         0   1           2          4            5
-    // "SELECT pointId, count, active, resetTime FROM character_archaelogy WHERE guid = '%u'"
-
-    for (uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
-        SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i, 0);
-
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            uint32 pointId = fields[0].GetUInt32();
-            uint32 count   = fields[1].GetUInt32();
-            bool active    = fields[2].GetUInt32();
-            time_t resetTime = fields[3].GetUInt32();
-
-            ResearchSiteEntry const* entry = sResearchSiteStore.LookupEntry(pointId);
-            if (!entry || (resetTime < time(NULL) && resetTime != 0))
-            {
-                CharacterDatabase.PExecute("DELETE FROM character_archaelogy WHERE pointId = '%u' and guid = '%u'", pointId, GetGUIDLow());
-                continue;
-            }
-
-            PlayerArchaelogy arch;
-
-            arch.pointId = pointId;
-            if(count > 6)
-            {
-                count = 0;
-                active = false;
-                resetTime = time(NULL);
-            }
-            arch.count = count;
-            arch.active = active;
-            arch.resetTime = resetTime;
-
-            m_archaelogies[pointId] = arch;
-        }
-        while (result->NextRow());
-    }
-    if(QueryResult resultpr = CharacterDatabase.PQuery("SELECT projectId, RaceID FROM character_archproject WHERE guid = '%u'", GetGUIDLow()))
-    {
-        do
-        {
-            Field* fields = resultpr->Fetch();
-
-            uint32 projectId = fields[0].GetUInt32();
-            uint32 RaceID   = fields[1].GetUInt32();
-
-            ResearchProjectEntry const* entry = sResearchProjectStore.LookupEntry(projectId);
-            if (!entry)
-            {
-                CharacterDatabase.PExecute("DELETE FROM character_archproject WHERE projectId = '%u' and guid = '%u'", projectId, GetGUIDLow());
-                continue;
-            }
-
-            PlayerArchProject arch;
-
-            arch.projectId = projectId;
-            arch.RaceID = RaceID;
-
-            m_archprojects[RaceID] = arch;
-        }
-        while (resultpr->NextRow());
-    }
-    if(QueryResult resultpr = CharacterDatabase.PQuery("SELECT projectId, count, TimeCreated FROM character_archprojecthistory WHERE guid = '%u'", GetGUIDLow()))
-    {
-        do
-        {
-            Field* fields = resultpr->Fetch();
-
-            uint32 projectId = fields[0].GetUInt32();
-            uint32 count = fields[1].GetUInt32();
-            time_t TimeCreated = fields[2].GetUInt32();
-
-            ResearchProjectEntry const* entry = sResearchProjectStore.LookupEntry(projectId);
-            if (!entry)
-                continue;
-
-            PlayerArchProjectHistory arch;
-            arch.projectId = projectId;
-            arch.count = count;
-            arch.TimeCreated = TimeCreated;
-
-            m_archprojecthistories[projectId] = arch;
-        }
-        while (resultpr->NextRow());
-    }
-}
-
-void Player::_SaveArchaelogy(SQLTransaction& trans)
-{
-    PreparedStatement* stmt = NULL;
-    for (PlayerArchaelogyMap::const_iterator itr = m_archaelogies.begin(); itr != m_archaelogies.end(); ++itr)
-    {
-        ResearchSiteEntry const* entry = sResearchSiteStore.LookupEntry(itr->first);
-        if (!entry) // should never happen
-            continue;
-        if(itr->second.resetTime != 0 && itr->second.resetTime < time(NULL))
-            continue;
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_PLAYER_ARCHAELOGY);
-        stmt->setUInt32(0, GetGUIDLow());
-        stmt->setUInt32(1, itr->first);
-        stmt->setUInt32(2, itr->second.count);
-        stmt->setUInt32(3, itr->second.active);
-        stmt->setUInt32(4, itr->second.resetTime);
-        trans->Append(stmt);
-    }
-    for (PlayerArchProjectMap::const_iterator itr = m_archprojects.begin(); itr != m_archprojects.end(); ++itr)
-    {
-        ResearchProjectEntry const* entry = sResearchProjectStore.LookupEntry(itr->second.projectId);
-        if (!entry) // should never happen
-            continue;
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_PLAYER_ARCHPROJECT);
-        stmt->setUInt32(0, GetGUIDLow());
-        stmt->setUInt32(1, itr->second.projectId);
-        stmt->setUInt32(2, itr->second.RaceID);
-        trans->Append(stmt);
-    }
-    for (PlayerArchProjectHistoryMap::const_iterator itr = m_archprojecthistories.begin(); itr != m_archprojecthistories.end(); ++itr)
-    {
-        ResearchProjectEntry const* entry = sResearchProjectStore.LookupEntry(itr->first);
-        if (!entry) // should never happen
-            continue;
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_PLAYER_ARCHPROJECTHISTORY);
-        stmt->setUInt32(0, GetGUIDLow());
-        stmt->setUInt32(1, itr->second.projectId);
-        stmt->setUInt32(2, itr->second.count);
-        stmt->setUInt32(3, itr->second.TimeCreated);
-        trans->Append(stmt);
-    }
-}
-
-void Player::GenerateResearchDigSites(uint32 max)
-{
-    uint32 skill_now = GetSkillValue( SKILL_ARCHAEOLOGY );
-    if( skill_now == 0 )
-        return;
-
-    uint32 _mapId = GetMapId();
-    if((_mapId != 0 && _mapId != 1&& _mapId != 530 && _mapId != 571 && _mapId != 870) || (_mapId == 530 && skill_now < 275) || (_mapId == 571 && skill_now < 350) || (_mapId == 870 && skill_now < 525))
-        return;
-
-    if(m_digsite.pointCount[_mapId] == 0)
-    {
-        m_notactivedigestzones = GetDigestZonesList();
-        m_notactiveresearchprojects = GetResearchProjectsList();
-
-        for (PlayerArchaelogyMap::iterator itr = m_archaelogies.begin(); itr != m_archaelogies.end(); ++itr)
-        {
-            if(itr->second.resetTime > time(NULL))
-                continue;
-            if( m_digsite.pointCount[_mapId] >= MAX_RESEARCH_SITES / 2 )
-                break;
-            ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(itr->first);
-            if(!rs || rs->MapID != _mapId)
-                continue;
-
-            //check if we have this site atm
-            uint32 sRSid = rs->ID;
-            uint32 free_spot = 0;
-            for(uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
-            {
-                uint32 site_now = GetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i);
-                if (site_now == sRSid || site_now == 0)
-                {
-                    free_spot = i;
-                    break;
-                }
-            }
-
-            SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid);
-
-            AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
-            DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
-
-            m_digsite.pointCount[_mapId]++;
-            if( m_digsite.pointCount[_mapId] >= MAX_RESEARCH_SITES / 2 )
-                break;    //pointless to continue
-        }
-    }
-
-    if (m_digsite.pointCount[_mapId] < MAX_RESEARCH_SITES / 2)
-    {
-        std::list<uint16> templist = m_notactivedigestzones[_mapId];
-        while (max > 0)
-        {
-            uint32 sRSid = 0;
-            if(!templist.empty())
-            {
-                uint32 index = urand(0, templist.size() - 1);
-                std::list<uint16>::iterator selectiter = templist.begin();
-                std::advance(selectiter,index);
-                sRSid = *selectiter;
-                templist.erase(selectiter);
-            }
-            else
-                break;
-
-            ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(sRSid);
-
-            //check if we have this site atm
-            sRSid = rs->ID;
-            uint32 free_spot = 0;
-            bool needContinue = false;
-            for(uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
-            {
-                uint32 site_now = GetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i);
-                if( site_now == sRSid)
-                {
-                    needContinue = true;
-                    break;
-                }
-                if (site_now == 0)
-                {
-                    free_spot = i;
-                    break;
-                }
-            }
-
-            if (needContinue)
-                continue;
-
-            SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, free_spot, sRSid);
-
-            AddDigestOrProject(rs->MapID, sRSid, m_activedigestzones);
-            DelDigestOrProject(rs->MapID, sRSid, m_notactivedigestzones);
-
-            PlayerArchaelogyMap::iterator itr = m_archaelogies.find(sRSid);
-            if (m_archaelogies.empty() || itr == m_archaelogies.end())
-            {
-                PlayerArchaelogy arch;
-                arch.pointId = sRSid;
-                arch.count = 3;
-                arch.active = true;
-                arch.resetTime = 0;
-                m_archaelogies[sRSid] = arch;
-            }
-
-            max--;
-            m_digsite.pointCount[_mapId]++;
-            if( m_digsite.pointCount[_mapId] >= MAX_RESEARCH_SITES / 2 )
-                break;    //pointless to continue
-        }
-    }
-    GenerateResearchProjects(8);
-}
-
-//each research branch can have 1 active project, we should pick rare projects rarely and crap projects more frecvently
-void Player::GenerateResearchProjects(uint32 max, uint32 race)
-{
-    uint32 maxcount = 0;
-    uint32 skill_now = GetSkillValue( SKILL_ARCHAEOLOGY );
-    if( skill_now == 0 )
-        return;
-
-    uint32 _mapId = GetMapId();
-    if((_mapId != 0 && _mapId != 1 && _mapId != 530 && _mapId != 571&& _mapId != 870) || (_mapId == 530 && skill_now < 275) || (_mapId == 571 && skill_now < 350) || (_mapId == 870 && skill_now < 525))
-        return;
-
-    if(skill_now < 300)
-        maxcount = 4;
-    else if(skill_now < 350)
-        maxcount = 6;
-    else if(skill_now < 450)
-        maxcount = 8;
-    else
-        maxcount = 9;
-
-    uint32 levelskillforrace[240];
-    levelskillforrace[1] = 1;
-    levelskillforrace[2] = 300;
-    levelskillforrace[3] = 1;
-    levelskillforrace[4] = 1;
-    levelskillforrace[5] = 350;
-    levelskillforrace[6] = 300;
-    levelskillforrace[7] = 450;
-    levelskillforrace[8] = 1;
-    levelskillforrace[27] = 350;
-    levelskillforrace[229] = 525;
-    levelskillforrace[231] = 525;
-
-    if(m_digsite.countProject == 0 && !m_archprojects.empty())
-    for (PlayerArchProjectMap::iterator itr = m_archprojects.begin(); itr != m_archprojects.end(); ++itr)
-    {
-        ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry( itr->second.projectId );
-
-        //check if we have this site atm
-        bool have_site = false;
-        uint32 sRSid = rs->ID;
-        uint32 free_spot = 0xFFFF;
-        uint32 projects_found = 0;
-        for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
-        {
-            uint32 project_now_1 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + sites ) & 0xFFFF;
-            uint32 project_now_2 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + sites ) >> 16;
-            if( project_now_1 == sRSid || project_now_2 == sRSid )
-            {
-                have_site = true;
-                break;
-            }
-            if( project_now_1 == 0 && free_spot == 0xFFFF )
-                free_spot = sites * 2;
-            else if( project_now_2 == 0 && free_spot == 0xFFFF )
-                free_spot = sites * 2 +1;
-            if( project_now_1 != 0 )
-                projects_found++;
-            if( project_now_2 != 0 )
-                projects_found++;
-        }
-
-        //we only add, do not replace existing ones
-        if( free_spot == 0xFFFF )
-            break;    ///there is no chance to add more projects to us
-
-        //assign the site to us
-        uint32 project_now_1 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + free_spot / 2 ) & 0xFFFF;
-        uint32 project_now_2 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + free_spot / 2 ) >> 16;
-        uint32 new_value;
-        if( free_spot % 2 == 1 )
-            new_value = ( sRSid << 16 ) | ( project_now_1 );
-        else
-            new_value = ( project_now_2 << 16 ) | ( sRSid);
-        SetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + free_spot / 2, new_value );
-
-        AddDigestOrProject(rs->RaceID, sRSid, m_activeresearchprojects);
-        DelDigestOrProject(rs->RaceID, sRSid, m_notactiveresearchprojects);
-
-        m_digsite.countProject++;
-    }
-
-    if(race != 0)
-    {
-        if(!m_activeresearchprojects[race].empty())
-            return;
-
-        std::list<uint16> templist = m_notactiveresearchprojects[race];
-        while (max > 0)
-        {
-            uint32 sRSid = 0;
-            bool lastcheck = false;
-            if(templist.empty())
-            {
-                uint32 index = urand(0, m_notactiveresearchprojects[race].size() - 1);
-                std::list<uint16>::iterator selectiter = m_notactiveresearchprojects[race].begin();
-                std::advance(selectiter,index);
-                sRSid = *selectiter;
-                lastcheck = true;
-            }
-            else
-            {
-                uint32 index = urand(0, templist.size() - 1);
-                std::list<uint16>::iterator selectiter = templist.begin();
-                std::advance(selectiter, index);
-                sRSid = *selectiter;
-                templist.erase(selectiter);
-            }
-            ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry(sRSid);
-
-            //let's not pick impossible projects
-            if(levelskillforrace[race] > skill_now && !lastcheck)
-                continue;
-            if(levelskillforrace[race] == 1 && rs->RequiredCurrencyAmount > 75 && rs->RequiredCurrencyAmount > skill_now && !lastcheck)    //[25,150]
-                continue;
-
-            //check if we have this site atm
-            bool have_site = false;
-            sRSid = rs->ID;
-            uint32 free_spot = 0xFFFF;
-            uint32 projects_found = 0;
-            for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
-            {
-                uint32 project_now_1 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + sites ) & 0xFFFF;
-                uint32 project_now_2 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + sites ) >> 16;
-                if( project_now_1 == sRSid || project_now_2 == sRSid )
-                {
-                    have_site = true;
-                    break;
-                }
-                if( project_now_1 == 0 && free_spot == 0xFFFF )
-                    free_spot = sites * 2;
-                else if( project_now_2 == 0 && free_spot == 0xFFFF )
-                    free_spot = sites * 2 +1;
-                if( project_now_1 != 0 )
-                    projects_found++;
-                if( project_now_2 != 0 )
-                    projects_found++;
-            }
-
-            //we only add, do not replace existing ones
-            if( free_spot == 0xFFFF )
-                break;    ///there is no chance to add more projects to us
-
-            //while continuesly logged in, let's not generate same crap ? Same crap gets it's chance reduced
-            uint32 countH = GetProjectHistoryCount(rs->ID);
-
-            uint32 basechance = 0;
-            if(countH > 1)
-            {
-                basechance = 50 + (countH * 10);
-                if(basechance > 95)
-                    basechance = 95;
-            }
-            if(rs->RequiredCurrencyAmount > 75)
-                basechance = 95;
-
-            //if we are low on sites we have a high chance to add it
-            if(roll_chance_i(basechance) && !lastcheck)
-                continue;
-            //assign the site to us
-            uint32 project_now_1 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + free_spot / 2 ) & 0xFFFF;
-            uint32 project_now_2 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + free_spot / 2 ) >> 16;
-            uint32 new_value;
-            if( free_spot % 2 == 1 )
-                new_value = ( sRSid << 16 ) | ( project_now_1 );
-            else
-                new_value = ( project_now_2 << 16 ) | ( sRSid );
-            SetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + free_spot / 2, new_value );
-
-            AddDigestOrProject(rs->RaceID, sRSid, m_activeresearchprojects);
-            DelDigestOrProject(rs->RaceID, sRSid, m_notactiveresearchprojects);
-
-            PlayerArchProjectMap::iterator itr = m_archprojects.find(race);
-            if (m_archprojects.empty() || itr == m_archprojects.end())
-            {
-                PlayerArchProject arch;
-                arch.projectId = sRSid;
-                arch.RaceID = race;
-                m_archprojects[race] = arch;
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                _SaveArchaelogy(trans);
-                CharacterDatabase.CommitTransaction(trans);
-            }
-
-            max--;
-            m_digsite.countProject++;
-            if( m_digsite.countProject >= maxcount )
-                break;    //pointless to continue
-        }
-    }
-}
-
-bool Player::EventSolveProject(SpellInfo const* spell)
-{
-    uint32 projectId = spell->ResearchProject;
-    ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry(projectId);
-    if(!rs || ExistProject(rs->RaceID) != projectId)
-        return false;
-
-    uint32 at_pos = 0xFFFF;
-    for(uint32 sites = 0; sites < MAX_RESEARCH_SITES; sites++)
-    {
-        uint32 project_now_1 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + sites ) & 0xFFFF;
-        uint32 project_now_2 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + sites ) >> 16;
-        if(projectId == project_now_1)
-        {
-            at_pos = sites * 2;
-            break;
-        }
-        if(projectId == project_now_2)
-        {
-            at_pos = sites * 2 +1;
-            break;
-        }
-    }
-    //they tricked us
-    if( at_pos == 0xFFFF )
-        return false;
-
-    //eat up the currency ammt
-
-    //need it as a 3rd check :(
-    ResearchBranchEntry const* rbe = sResearchBranchStore.LookupEntry( rs->RaceID );
-    if(rbe)
-    {
-        uint32 curcount = GetCurrency(rbe->CurrencyID);
-        if(curcount < rs->RequiredCurrencyAmount)
-        {
-            if(!rs->RequiredItemCount || !rbe->ItemID)
-                return false;
-            uint32 notfound = rs->RequiredCurrencyAmount - curcount;
-            uint32 forremove = rs->RequiredCurrencyAmount;
-            uint32 itemcount = rs->RequiredItemCount;
-            if(notfound > (rs->RequiredItemCount * 12))
-                return false;
-            if(notfound <= 36 && notfound > 24 && rs->RequiredItemCount == 3)
-            {
-                forremove -= 36;
-                itemcount = 3;
-            }
-            else if(notfound <= 24 && notfound > 12 && rs->RequiredItemCount >= 2)
-            {
-                forremove -= 24;
-                itemcount = 2;
-            }
-            else if(notfound <= 12 && notfound > 0 && rs->RequiredItemCount >= 1)
-            {
-                forremove -= 12;
-                itemcount = 1;
-            }
-            else
-                return false;
-
-            if(GetItemCount(rbe->ItemID, false) < itemcount)
-                return false;
-
-            DestroyItemCount(rbe->ItemID, itemcount, true);
-            ModifyCurrency(rbe->CurrencyID, -(int32)(forremove));
-        }
-        else
-            ModifyCurrency(rbe->CurrencyID, -(int32)rs->RequiredCurrencyAmount);
-    }
-
-    //assign the site to us
-    uint32 project_now_1 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + at_pos / 2 ) & 0xFFFF;
-    uint32 project_now_2 = GetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + at_pos / 2 ) >> 16;
-    uint32 new_value;
-    if( at_pos % 2 == 1 )
-        new_value = ( 0 << 16 ) | ( project_now_1 );
-    else
-        new_value = ( project_now_2 << 16 ) | ( 0 );
-    SetUInt32Value( PLAYER_FIELD_RESEARCHING_1 + at_pos / 2, new_value );
-
-    PlayerArchProjectMap::iterator itrdel = m_archprojects.find(rs->RaceID);
-        if(itrdel != m_archprojects.end())
-            m_archprojects.erase(itrdel);
-
-    CharacterDatabase.PExecute("DELETE FROM character_archproject WHERE projectId = '%u' and guid = '%u'", projectId, GetGUIDLow());
-    AddDigestOrProject(rs->RaceID, projectId, m_notactiveresearchprojects);
-    DelDigestOrProject(rs->RaceID, projectId, m_activeresearchprojects);
-
-    PlayerArchProjectHistoryMap::iterator itr = m_archprojecthistories.find(projectId);
-    if (m_archprojecthistories.empty() || itr == m_archprojecthistories.end())
-    {
-        PlayerArchProjectHistory arch;
-        arch.projectId = projectId;
-        arch.count = 1;
-        arch.TimeCreated = time(NULL);
-        m_archprojecthistories[projectId] = arch;
-    }
-    else
-        AddProjecthistoryCount(projectId);
-
-    if(rs->RequiredCurrencyAmount > 75)
-        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, 1, 1);
-    else
-        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, 1, 0);
-
-    //maybe add a random new one
-    m_digsite.countProject--;
-    GenerateResearchProjects(1, rs->RaceID);
-    //awars some achievements
-    //there is a spell learned by blizz to us : 92806 - Survey Mastery, no idea what it does atm :( It has ranks 
-    return true;
-}
-
-//depending on the distance from our designated crapdump we will swap the Survey entry
-uint32 Player::GetSurveyBotEntry(float &x,float &y,float &z,float &orientation, int32 &duration)
-{
-#define ARCHAEOLOGY_DIG_SITE_RADIUS                    40
-#define ARCHAEOLOGY_DIG_SITE_FAR_DIST                  50
-#define ARCHAEOLOGY_DIG_SITE_MED_DIST                  25
-#define ARCHAEOLOGY_DIG_SITE_CLOSE_DIST                5
-#define ARCHAEOLOGY_DIG_SITE_FAR_SURVEYBOT             206590
-#define ARCHAEOLOGY_DIG_SITE_MEDIUM_SURVEYBOT          206589
-#define ARCHAEOLOGY_DIG_SITE_CLOSE_SURVEYBOT           204272
-
-    if( m_digsite.x == 0.0f || m_digsite.y == 0.0f || !m_digsite.currentDigest)
-    {
-        if(!m_digsite.currentDigest)
-            m_digsite.currentDigest = GetResearchId();
-        if(!m_digsite.currentDigest)
-            return 0;
-
-        if(!GenereteInDigestXY(m_digsite))
-        {
-            //generate a new digsite location. it's just like fishing = hope we guess it right
-            m_digsite.x = GetPositionX() - irand(-ARCHAEOLOGY_DIG_SITE_RADIUS, ARCHAEOLOGY_DIG_SITE_RADIUS);
-            m_digsite.y = GetPositionY() - irand(-ARCHAEOLOGY_DIG_SITE_RADIUS, ARCHAEOLOGY_DIG_SITE_RADIUS);
-            m_digsite.z = GetPositionZ();
-        }
-
-        //hardcoded stuff ROCKS ! not
-        if(!m_digsite.loot_GO_entry)
-        {
-            if( GetMapId() == 530) //outland fragements
-            {
-                uint32 currency_rewards_go_entry[]={207187,207188};
-                uint32 race_entry[]={6,2};
-                uint32 picked_id = urand(0,1);
-                m_digsite.loot_GO_entry = currency_rewards_go_entry[ picked_id ];
-                m_digsite.race = race_entry[picked_id];
-            }
-            else if( GetMapId() == 571 ) //northrend fragements
-            {
-                uint32 currency_rewards_go_entry[]={203078,207189};
-                uint32 race_entry[]={5,27};
-                uint32 picked_id = urand(0,1);
-                m_digsite.loot_GO_entry = currency_rewards_go_entry[ picked_id ];
-                m_digsite.race = race_entry[picked_id];
-            }
-            else if( GetMapId() == 870 ) //Panderen fragements
-            {
-                uint32 currency_rewards_go_entry[]={211163,211174};
-                uint32 race_entry[]={229,231};
-                uint32 picked_id = urand(0,1);
-                m_digsite.loot_GO_entry = currency_rewards_go_entry[ picked_id ];
-                m_digsite.race = race_entry[picked_id];
-            }
-            else if( GetMapId() == 0 ) //Eastern Kingdom
-            {
-                uint32 currency_rewards_go_entry[]={204282,202655};
-                uint32 race_entry[]={1,8};
-                uint32 picked_id = urand(0,1);
-                m_digsite.loot_GO_entry = currency_rewards_go_entry[ picked_id ];
-                m_digsite.race = race_entry[picked_id];
-            }
-            else if( GetMapId() == 1 ) //Kalimdor
-            {
-                uint32 zone, area;
-                GetZoneAndAreaId(zone, area);
-                if(area == 5034 || zone == 5034)
-                {
-                    m_digsite.loot_GO_entry = 207190;
-                    m_digsite.race = 7;
-                }
-                else
-                {
-                    uint32 currency_rewards_go_entry[]={206836,203071};
-                    uint32 race_entry[]={3,4};
-                    uint32 picked_id = urand(0,1);
-                    m_digsite.loot_GO_entry = currency_rewards_go_entry[ picked_id ];
-                    m_digsite.race = race_entry[picked_id];
-                }
-            }
-            else
-            {
-                uint32 currency_rewards_go_entry[]={203071,207188,204282,206836,203078,207187,207190,202655,207189};
-                uint32 race_entry[]={4,2,1,3,5,6,7,8,27,229,231};
-                uint32 picked_id = urand(0,8);
-                m_digsite.loot_GO_entry = currency_rewards_go_entry[ picked_id ];
-                m_digsite.race = race_entry[picked_id];
-            }
-        }
-    }
-
-    float dist_now = GetDistance2d(m_digsite.x, m_digsite.y);
-
-    //let the survey bot face our target
-    orientation = GetAngle(m_digsite.x, m_digsite.y);
-
-    //if we are far then we spawn survey bots. Else we spawn the reward coffer
-    if( dist_now > ARCHAEOLOGY_DIG_SITE_FAR_DIST )
-    {
-         orientation += frand(-0.5f, 0.5f);
-        return ARCHAEOLOGY_DIG_SITE_FAR_SURVEYBOT;
-    }
-    if( dist_now > ARCHAEOLOGY_DIG_SITE_MED_DIST )
-    {
-        orientation += frand(-0.25f, 0.25f);
-        return ARCHAEOLOGY_DIG_SITE_MEDIUM_SURVEYBOT;
-    }
-    if( dist_now > ARCHAEOLOGY_DIG_SITE_CLOSE_DIST )
-        return ARCHAEOLOGY_DIG_SITE_CLOSE_SURVEYBOT;
-
-    x = m_digsite.x;
-    y = m_digsite.y;
-    z = m_digsite.z;
-    m_digsite.x = m_digsite.y = 0.0f;
-    duration = 3*60*1000;        //enough time to loot it
-
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, m_digsite.race, 1);
-    uint32 idGo = m_digsite.loot_GO_entry;
-    GenerateResearchProjects(1, m_digsite.race);
-    LootResearchChest();
-
-    return idGo;    //this is the NE entry. We would need to pregenerate the
-}
-
-//hackfix until currency loot tables are added / used
-void Player::LootResearchChest()
-{
-    if (roll_chance_i(10))
-        return;
-
-    uint32 _mapId = GetMapId();
-    if(_mapId != 0 && _mapId != 1 && _mapId != 530 && _mapId != 571 && _mapId != 870)
-        return;
-
-    if(!m_digsite.currentDigest)
-        return;
-
-    uint32 count = GetResearchPointCount(m_digsite.currentDigest);
-    if(count != 0)
-        count--;
-    SetResearchPointCount(m_digsite.currentDigest, count);
-    //force to generate a new dig location on next survey
-    if(count <= 0)
-    {
-        m_digsite.x = m_digsite.y = 0.0f;
-        m_digsite.loot_GO_entry = 0;
-        m_digsite.race = 0;
-        m_digsite.currentDigest = 0;
-        m_digsite.pointCount[_mapId]--;
-        GenerateResearchDigSites(1);
-    }
-}
-
 void Player::SendCemeteryList(bool onMap)
 {
     ByteBuffer buf(16);
@@ -29318,3 +28631,4 @@ Bracket* Player::getBracket(BracketType slot) const
         return NULL;
     return itr->second;
 }
+

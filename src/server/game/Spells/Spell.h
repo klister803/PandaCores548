@@ -69,6 +69,37 @@ struct SpellDestination
     Position _transportOffset;
 };
 
+enum WeightType
+{
+    WEIGHT_KEYSTONE = 0,
+    WEIGHT_FRAGMENT = 3,
+};
+
+struct ArchaeologyWeight
+{
+    uint8 type;
+    union
+    {
+        struct
+        {
+            uint32 currencyId;
+            uint32 currencyCount;
+        } fragment;
+        struct
+        {
+            uint32 itemId;
+            uint32 itemCount;
+        } keystone;
+        struct
+        {
+            uint32 id;
+            uint32 count;
+        } raw;
+    };
+};
+
+typedef std::vector<ArchaeologyWeight> ArchaeologyWeights;
+
 class SpellCastTargets
 {
     friend class Spell;
@@ -155,6 +186,8 @@ class SpellCastTargets
         float GetSpeedXY() const { return m_speed * std::cos(m_elevation); }
         float GetSpeedZ() const { return m_speed * std::sin(m_elevation); }
 
+        ArchaeologyWeights const& GetWeights() { return m_weights; }
+
         void Update(Unit* caster);
         void OutDebug() const;
 
@@ -175,6 +208,8 @@ class SpellCastTargets
 
         float m_elevation, m_speed;
         std::string m_strTarget;
+
+        ArchaeologyWeights m_weights;
 };
 
 struct SpellValue
@@ -353,6 +388,7 @@ class Spell
         int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
         int32 CalculateMonkSpellDamage(Unit* caster, float coeff, float APmultiplier, int32 base);
         void EffectResurrectWithAura(SpellEffIndex effIndex);
+        void EffectSummonRaidMarker(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;
 

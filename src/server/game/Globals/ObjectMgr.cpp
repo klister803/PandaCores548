@@ -2306,6 +2306,7 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.Quality = sparse->Quality;
         itemTemplate.Flags = sparse->Flags;
         itemTemplate.Flags2 = sparse->Flags2;
+        itemTemplate.Flags3 = sparse->Flags3;
         itemTemplate.Unk430_1 = sparse->Unk430_1;
         itemTemplate.Unk430_2 = sparse->Unk430_2;
         itemTemplate.BuyCount = std::max(sparse->BuyCount, 1u);
@@ -2398,43 +2399,43 @@ void ObjectMgr::LoadItemTemplates()
     }
 
     // Load missing items from item_template AND overwrite data from Item-sparse.db2 (item_template is supposed to contain Item-sparse.adb data)
-    //                                                  0      1      2                3             4       5          6        7      8           9         10        11        12        13
-    QueryResult result = WorldDatabase.Query("SELECT entry, Class, SubClass, SoundOverrideSubClass, Name, DisplayId, Quality, Flags, FlagsExtra, Unk430_1, Unk430_2, BuyCount, BuyPrice, SellPrice, "
-    //                                        14             15              16             17         18             19             20                 21
+    //                                               0      1      2         3                      4     5          6        7      8       9       10        11        12        13        14
+    QueryResult result = WorldDatabase.Query("SELECT entry, Class, SubClass, SoundOverrideSubClass, Name, DisplayId, Quality, Flags, Flags2, Flags3, Unk430_1, Unk430_2, BuyCount, BuyPrice, SellPrice, "
+    //                                        15             16              17             18         19             20             21                 22
                                              "InventoryType, AllowableClass, AllowableRace, ItemLevel, RequiredLevel, RequiredSkill, RequiredSkillRank, RequiredSpell, "
-    //                                        22                 23                24                         25                      26        27         28
+    //                                        23                 24                25                         26                      27        28         29
                                              "RequiredHonorRank, RequiredCityRank, RequiredReputationFaction, RequiredReputationRank, MaxCount, Stackable, ContainerSlots, "
-    //                                        29          30           31           32           33          34           35           36
+    //                                        30          31           32           33           34          35           36           37
                                              "stat_type1, stat_value1, stat_unk1_1, stat_unk2_1, stat_type2, stat_value2, stat_unk1_2, stat_unk2_2, "
-    //                                        37          38           39           40           41          42           43           44
+    //                                        38          39           40           41           42          43           44           45
                                              "stat_type3, stat_value3, stat_unk1_3, stat_unk2_3, stat_type4, stat_value4, stat_unk1_4, stat_unk2_4, "
-    //                                        45          46           47           48           49          50           51           52
+    //                                        46          47           48           49           50          51           52           53
                                              "stat_type5, stat_value5, stat_unk1_5, stat_unk2_5, stat_type6, stat_value6, stat_unk1_6, stat_unk2_6, "
-    //                                        53          54           55           56           57          58           59           60
+    //                                        54          55           56           57           58          59           60           61
                                              "stat_type7, stat_value7, stat_unk1_7, stat_unk2_7, stat_type8, stat_value8, stat_unk1_8, stat_unk2_8, "
-    //                                        61          62           63           64           65           66            67            68
+    //                                        62          63           64           65           66           67            68            69
                                              "stat_type9, stat_value9, stat_unk1_9, stat_unk2_9, stat_type10, stat_value10, stat_unk1_10, stat_unk2_10, "
-    //                                        69                       70          71     72
+    //                                        70                       71          72     73
                                              "ScalingStatDistribution, DamageType, Delay, RangedModRange, "
-    //                                        73         74              75              76               77               78
+    //                                        74         75              76              77               78               79
                                              "spellid_1, spelltrigger_1, spellcharges_1, spellcooldown_1, spellcategory_1, spellcategorycooldown_1, "
-    //                                        79         80              81              82               83               84
+    //                                        80         81              82              83               84               85
                                              "spellid_2, spelltrigger_2, spellcharges_2, spellcooldown_2, spellcategory_2, spellcategorycooldown_2, "
-    //                                        85         86              87              88               89               90
+    //                                        86         87              88              89               90               91
                                              "spellid_3, spelltrigger_3, spellcharges_3, spellcooldown_3, spellcategory_3, spellcategorycooldown_3, "
-    //                                        91         92              93              94               95               96
+    //                                        92         93              94              95               96               97
                                              "spellid_4, spelltrigger_4, spellcharges_4, spellcooldown_4, spellcategory_4, spellcategorycooldown_4, "
-    //                                        97         98              99              100              101              102
+    //                                        98         99              100             101              102              103
                                              "spellid_5, spelltrigger_5, spellcharges_5, spellcooldown_5, spellcategory_5, spellcategorycooldown_5, "
-    //                                        103      104          105       106         107           108         109     110
+    //                                        104      105          106       107         108           109         110     111
                                              "Bonding, Description, PageText, LanguageID, PageMaterial, StartQuest, LockID, Material, "
-    //                                        111     112             113           114      115   116  117        118
+    //                                        112     113             114           115      116   117  118        119
                                              "Sheath, RandomProperty, RandomSuffix, ItemSet, Area, Map, BagFamily, TotemCategory, "
-    //                                        119            120              121            122              123            124              125
+    //                                        120            121              122            123              124            125              126
                                              "SocketColor_1, SocketContent_1, SocketColor_2, SocketContent_2, SocketColor_3, SocketContent_3, SocketBonus, "
-    //                                        126            127                  128       129                130        131
+    //                                        127            128                  129       130                131        132
                                              "GemProperties, ArmorDamageModifier, Duration, ItemLimitCategory, HolidayId, StatScalingFactor, "
-    //                                        132                     133
+    //                                        133                     134
                                              "CurrencySubstitutionId, CurrencySubstitutionCount "
                                              "FROM item_template");
 
@@ -2462,100 +2463,101 @@ void ObjectMgr::LoadItemTemplates()
             itemTemplate.Quality                   = uint32(fields[6].GetUInt8());
             itemTemplate.Flags                     = uint32(fields[7].GetInt64());
             itemTemplate.Flags2                    = fields[8].GetUInt32();
-            itemTemplate.Unk430_1                  = fields[9].GetFloat();
-            itemTemplate.Unk430_2                  = fields[10].GetFloat();
-            itemTemplate.BuyCount                  = uint32(fields[11].GetUInt8());
-            itemTemplate.BuyPrice                  = int32(fields[12].GetInt64());
-            itemTemplate.SellPrice                 = fields[13].GetUInt32();
+            itemTemplate.Flags3                    = fields[9].GetUInt32();
+            itemTemplate.Unk430_1                  = fields[10].GetFloat();
+            itemTemplate.Unk430_2                  = fields[11].GetFloat();
+            itemTemplate.BuyCount                  = uint32(fields[12].GetUInt8());
+            itemTemplate.BuyPrice                  = int32(fields[13].GetInt64());
+            itemTemplate.SellPrice                 = fields[14].GetUInt32();
 
-            itemTemplate.InventoryType             = uint32(fields[14].GetUInt8());
-            itemTemplate.AllowableClass            = fields[15].GetInt32();
-            itemTemplate.AllowableRace             = fields[16].GetInt32();
-            itemTemplate.ItemLevel                 = uint32(fields[17].GetUInt16());
-            itemTemplate.RequiredLevel             = uint32(fields[18].GetUInt8());
-            itemTemplate.RequiredSkill             = uint32(fields[19].GetUInt16());
-            itemTemplate.RequiredSkillRank         = uint32(fields[20].GetUInt16());
-            itemTemplate.RequiredSpell             = fields[21].GetUInt32();
-            itemTemplate.RequiredHonorRank         = fields[22].GetUInt32();
-            itemTemplate.RequiredCityRank          = fields[23].GetUInt32();
-            itemTemplate.RequiredReputationFaction = uint32(fields[24].GetUInt16());
-            itemTemplate.RequiredReputationRank    = uint32(fields[25].GetUInt16());
-            itemTemplate.MaxCount                  = fields[26].GetInt32();
-            itemTemplate.Stackable                 = fields[27].GetInt32();
-            itemTemplate.ContainerSlots            = uint32(fields[28].GetUInt8());
+            itemTemplate.InventoryType             = uint32(fields[15].GetUInt8());
+            itemTemplate.AllowableClass            = fields[16].GetInt32();
+            itemTemplate.AllowableRace             = fields[17].GetInt32();
+            itemTemplate.ItemLevel                 = uint32(fields[18].GetUInt16());
+            itemTemplate.RequiredLevel             = uint32(fields[19].GetUInt8());
+            itemTemplate.RequiredSkill             = uint32(fields[20].GetUInt16());
+            itemTemplate.RequiredSkillRank         = uint32(fields[21].GetUInt16());
+            itemTemplate.RequiredSpell             = fields[22].GetUInt32();
+            itemTemplate.RequiredHonorRank         = fields[23].GetUInt32();
+            itemTemplate.RequiredCityRank          = fields[24].GetUInt32();
+            itemTemplate.RequiredReputationFaction = uint32(fields[25].GetUInt16());
+            itemTemplate.RequiredReputationRank    = uint32(fields[26].GetUInt16());
+            itemTemplate.MaxCount                  = fields[27].GetInt32();
+            itemTemplate.Stackable                 = fields[28].GetInt32();
+            itemTemplate.ContainerSlots            = uint32(fields[29].GetUInt8());
             for (uint32 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
             {
-                itemTemplate.ItemStat[i].ItemStatType  = uint32(fields[29 + i * 4 + 0].GetUInt8());
-                itemTemplate.ItemStat[i].ItemStatValue = int32(fields[29 + i * 4 + 1].GetInt16());
-                itemTemplate.ItemStat[i].ItemStatUnk1  = fields[29 + i * 4 + 2].GetInt32();
-                itemTemplate.ItemStat[i].ItemStatUnk2  = fields[29 + i * 4 + 3].GetInt32();
+                itemTemplate.ItemStat[i].ItemStatType  = uint32(fields[30 + i * 4 + 0].GetUInt8());
+                itemTemplate.ItemStat[i].ItemStatValue = int32(fields[30 + i * 4 + 1].GetInt16());
+                itemTemplate.ItemStat[i].ItemStatUnk1  = fields[30 + i * 4 + 2].GetInt32();
+                itemTemplate.ItemStat[i].ItemStatUnk2  = fields[30 + i * 4 + 3].GetInt32();
             }
 
-            itemTemplate.ScalingStatDistribution = uint32(fields[69].GetUInt16());
+            itemTemplate.ScalingStatDistribution = uint32(fields[70].GetUInt16());
 
             // cache item damage
             FillItemDamageFields(&itemTemplate.DamageMin, &itemTemplate.DamageMax, &itemTemplate.DPS, itemTemplate.ItemLevel,
                                  itemTemplate.Class, itemTemplate.SubClass, itemTemplate.Quality, fields[71].GetUInt16(),
                                  fields[131].GetFloat(), itemTemplate.InventoryType, itemTemplate.Flags2);
 
-            itemTemplate.DamageType                = fields[70].GetUInt8();
+            itemTemplate.DamageType                = fields[71].GetUInt8();
             itemTemplate.Armor                     = FillItemArmor(itemTemplate.ItemLevel, itemTemplate.Class,
                                                                    itemTemplate.SubClass, itemTemplate.Quality,
                                                                    itemTemplate.InventoryType);
 
-            itemTemplate.Delay                     = fields[71].GetUInt16();
-            itemTemplate.RangedModRange            = fields[72].GetFloat();
+            itemTemplate.Delay                     = fields[72].GetUInt16();
+            itemTemplate.RangedModRange            = fields[73].GetFloat();
             for (uint32 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
             {
-                itemTemplate.Spells[i].SpellId               = fields[73 + 6 * i + 0].GetInt32();
-                itemTemplate.Spells[i].SpellTrigger          = uint32(fields[73 + 6 * i + 1].GetUInt8());
-                itemTemplate.Spells[i].SpellCharges          = int32(fields[73 + 6 * i + 2].GetInt16());
-                itemTemplate.Spells[i].SpellCooldown         = fields[73 + 6 * i + 3].GetInt32();
-                itemTemplate.Spells[i].SpellCategory         = uint32(fields[73 + 6 * i + 4].GetUInt16());
-                itemTemplate.Spells[i].SpellCategoryCooldown = fields[73 + 6 * i + 5].GetInt32();
+                itemTemplate.Spells[i].SpellId               = fields[74 + 6 * i + 0].GetInt32();
+                itemTemplate.Spells[i].SpellTrigger          = uint32(fields[74 + 6 * i + 1].GetUInt8());
+                itemTemplate.Spells[i].SpellCharges          = int32(fields[74 + 6 * i + 2].GetInt16());
+                itemTemplate.Spells[i].SpellCooldown         = fields[74 + 6 * i + 3].GetInt32();
+                itemTemplate.Spells[i].SpellCategory         = uint32(fields[74 + 6 * i + 4].GetUInt16());
+                itemTemplate.Spells[i].SpellCategoryCooldown = fields[74 + 6 * i + 5].GetInt32();
 
-             // Add spell into the store for correct handling
-            if (itemTemplate.Spells[i].SpellCategory > 0)
-                sSpellCategoryStore[itemTemplate.Spells[i].SpellCategory].insert(itemTemplate.Spells[i].SpellId);
+                // Add spell into the store for correct handling
+                if (itemTemplate.Spells[i].SpellCategory > 0)
+                    sSpellCategoryStore[itemTemplate.Spells[i].SpellCategory].insert(itemTemplate.Spells[i].SpellId);
             }
 
             itemTemplate.SpellPPMRate   = 0.0f;
-            itemTemplate.Bonding        = uint32(fields[103].GetUInt8());
-            itemTemplate.Description    = fields[104].GetString();
-            itemTemplate.PageText       = fields[105].GetUInt32();
-            itemTemplate.LanguageID     = uint32(fields[106].GetUInt8());
-            itemTemplate.PageMaterial   = uint32(fields[107].GetUInt8());
-            itemTemplate.StartQuest     = fields[108].GetUInt32();
-            itemTemplate.LockID         = fields[109].GetUInt32();
-            itemTemplate.Material       = int32(fields[110].GetInt8());
-            itemTemplate.Sheath         = uint32(fields[111].GetUInt8());
-            itemTemplate.RandomProperty = fields[112].GetUInt32();
-            itemTemplate.RandomSuffix   = fields[113].GetInt32();
-            itemTemplate.ItemSet        = fields[114].GetUInt32();
+            itemTemplate.Bonding        = uint32(fields[104].GetUInt8());
+            itemTemplate.Description    = fields[105].GetString();
+            itemTemplate.PageText       = fields[106].GetUInt32();
+            itemTemplate.LanguageID     = uint32(fields[107].GetUInt8());
+            itemTemplate.PageMaterial   = uint32(fields[108].GetUInt8());
+            itemTemplate.StartQuest     = fields[109].GetUInt32();
+            itemTemplate.LockID         = fields[110].GetUInt32();
+            itemTemplate.Material       = int32(fields[111].GetInt8());
+            itemTemplate.Sheath         = uint32(fields[112].GetUInt8());
+            itemTemplate.RandomProperty = fields[113].GetUInt32();
+            itemTemplate.RandomSuffix   = fields[114].GetInt32();
+            itemTemplate.ItemSet        = fields[115].GetUInt32();
             itemTemplate.MaxDurability  = FillMaxDurability(itemTemplate.Class, itemTemplate.SubClass,
                 itemTemplate.InventoryType, itemTemplate.Quality, itemTemplate.ItemLevel);
 
-            itemTemplate.Area           = fields[115].GetUInt32();
-            itemTemplate.Map            = uint32(fields[116].GetUInt16());
-            itemTemplate.BagFamily      = fields[117].GetUInt32();
-            itemTemplate.TotemCategory  = fields[118].GetUInt32();
+            itemTemplate.Area           = fields[116].GetUInt32();
+            itemTemplate.Map            = uint32(fields[117].GetUInt16());
+            itemTemplate.BagFamily      = fields[118].GetUInt32();
+            itemTemplate.TotemCategory  = fields[119].GetUInt32();
             for (uint32 i = 0; i < MAX_ITEM_PROTO_SOCKETS; ++i)
             {
-                itemTemplate.Socket[i].Color   = uint32(fields[119 + i*2].GetUInt8());
-                itemTemplate.Socket[i].Content = fields[119 + i * 2 + 1].GetUInt32();
+                itemTemplate.Socket[i].Color   = uint32(fields[120 + i*2].GetUInt8());
+                itemTemplate.Socket[i].Content = fields[120 + i * 2 + 1].GetUInt32();
             }
 
-            itemTemplate.socketBonus         = fields[125].GetUInt32();
-            itemTemplate.GemProperties       = fields[126].GetUInt32();
+            itemTemplate.socketBonus         = fields[126].GetUInt32();
+            itemTemplate.GemProperties       = fields[127].GetUInt32();
             FillDisenchantFields(&itemTemplate.DisenchantID, &itemTemplate.RequiredDisenchantSkill, itemTemplate);
 
-            itemTemplate.ArmorDamageModifier       = fields[127].GetFloat();
-            itemTemplate.Duration                  = fields[128].GetUInt32();
-            itemTemplate.ItemLimitCategory         = uint32(fields[129].GetInt16());
-            itemTemplate.HolidayId                 = fields[130].GetUInt32();
-            itemTemplate.StatScalingFactor         = fields[131].GetFloat();
-            itemTemplate.CurrencySubstitutionId    = fields[132].GetInt32();
-            itemTemplate.CurrencySubstitutionCount = fields[133].GetInt32();
+            itemTemplate.ArmorDamageModifier       = fields[128].GetFloat();
+            itemTemplate.Duration                  = fields[129].GetUInt32();
+            itemTemplate.ItemLimitCategory         = uint32(fields[130].GetInt16());
+            itemTemplate.HolidayId                 = fields[131].GetUInt32();
+            itemTemplate.StatScalingFactor         = fields[132].GetFloat();
+            itemTemplate.CurrencySubstitutionId    = fields[133].GetInt32();
+            itemTemplate.CurrencySubstitutionCount = fields[134].GetInt32();
             itemTemplate.ScriptId                  = 0;
             itemTemplate.FoodType                  = 0;
             itemTemplate.MinMoneyLoot              = 0;
@@ -4276,16 +4278,16 @@ void ObjectMgr::LoadQuestLocales()
     _questLocaleStore.clear();                                // need for reload case
 
     QueryResult result = WorldDatabase.Query("SELECT entry, "
-        "Title_loc1, Details_loc1, Objectives_loc1, OfferRewardText_loc1, RequestItemsText_loc1, EndText_loc1, CompletedText_loc1, ObjectiveText1_loc1, ObjectiveText2_loc1, ObjectiveText3_loc1, ObjectiveText4_loc1, QuestGiverTextWindow_loc1, QuestGiverTargetName_loc1, QuestTurnTextWindow_loc1, QuestTurnTargetName_loc1,"
-        "Title_loc2, Details_loc2, Objectives_loc2, OfferRewardText_loc2, RequestItemsText_loc2, EndText_loc2, CompletedText_loc2, ObjectiveText1_loc2, ObjectiveText2_loc2, ObjectiveText3_loc2, ObjectiveText4_loc2, QuestGiverTextWindow_loc2, QuestGiverTargetName_loc2, QuestTurnTextWindow_loc2, QuestTurnTargetName_loc2,"
-        "Title_loc3, Details_loc3, Objectives_loc3, OfferRewardText_loc3, RequestItemsText_loc3, EndText_loc3, CompletedText_loc3, ObjectiveText1_loc3, ObjectiveText2_loc3, ObjectiveText3_loc3, ObjectiveText4_loc3, QuestGiverTextWindow_loc3, QuestGiverTargetName_loc3, QuestTurnTextWindow_loc3, QuestTurnTargetName_loc3,"
-        "Title_loc4, Details_loc4, Objectives_loc4, OfferRewardText_loc4, RequestItemsText_loc4, EndText_loc4, CompletedText_loc4, ObjectiveText1_loc4, ObjectiveText2_loc4, ObjectiveText3_loc4, ObjectiveText4_loc4, QuestGiverTextWindow_loc4, QuestGiverTargetName_loc4, QuestTurnTextWindow_loc4, QuestTurnTargetName_loc4,"
-        "Title_loc5, Details_loc5, Objectives_loc5, OfferRewardText_loc5, RequestItemsText_loc5, EndText_loc5, CompletedText_loc5, ObjectiveText1_loc5, ObjectiveText2_loc5, ObjectiveText3_loc5, ObjectiveText4_loc5, QuestGiverTextWindow_loc5, QuestGiverTargetName_loc5, QuestTurnTextWindow_loc5, QuestTurnTargetName_loc5,"
-        "Title_loc6, Details_loc6, Objectives_loc6, OfferRewardText_loc6, RequestItemsText_loc6, EndText_loc6, CompletedText_loc6, ObjectiveText1_loc6, ObjectiveText2_loc6, ObjectiveText3_loc6, ObjectiveText4_loc6, QuestGiverTextWindow_loc6, QuestGiverTargetName_loc6, QuestTurnTextWindow_loc6, QuestTurnTargetName_loc6,"
-        "Title_loc7, Details_loc7, Objectives_loc7, OfferRewardText_loc7, RequestItemsText_loc7, EndText_loc7, CompletedText_loc7, ObjectiveText1_loc7, ObjectiveText2_loc7, ObjectiveText3_loc7, ObjectiveText4_loc7, QuestGiverTextWindow_loc7, QuestGiverTargetName_loc7, QuestTurnTextWindow_loc7, QuestTurnTargetName_loc7,"
-        "Title_loc8, Details_loc8, Objectives_loc8, OfferRewardText_loc8, RequestItemsText_loc8, EndText_loc8, CompletedText_loc8, ObjectiveText1_loc8, ObjectiveText2_loc8, ObjectiveText3_loc8, ObjectiveText4_loc8, QuestGiverTextWindow_loc8, QuestGiverTargetName_loc8, QuestTurnTextWindow_loc8, QuestTurnTargetName_loc8,"
-        "Title_loc9, Details_loc9, Objectives_loc9, OfferRewardText_loc9, RequestItemsText_loc9, EndText_loc9, CompletedText_loc9, ObjectiveText1_loc9, ObjectiveText2_loc9, ObjectiveText3_loc9, ObjectiveText4_loc9, QuestGiverTextWindow_loc9, QuestGiverTargetName_loc9, QuestTurnTextWindow_loc9, QuestTurnTargetName_loc9,"
-        "Title_loc10, Details_loc10, Objectives_loc10, OfferRewardText_loc10, RequestItemsText_loc10, EndText_loc10, CompletedText_loc10, ObjectiveText1_loc10, ObjectiveText2_loc10, ObjectiveText3_loc10, ObjectiveText4_loc10, QuestGiverTextWindow_loc10, QuestGiverTargetName_loc10, QuestTurnTextWindow_loc10, QuestTurnTargetName_loc10"
+        "Title_loc1, Details_loc1, Objectives_loc1, OfferRewardText_loc1, RequestItemsText_loc1, EndText_loc1, CompletedText_loc1, ObjectiveText1_loc1, ObjectiveText2_loc1, ObjectiveText3_loc1, ObjectiveText4_loc1, ObjectiveText5_loc1, ObjectiveText6_loc1, ObjectiveText7_loc1, ObjectiveText8_loc1, ObjectiveText9_loc1, ObjectiveText10_loc1, QuestGiverTextWindow_loc1, QuestGiverTargetName_loc1, QuestTurnTextWindow_loc1, QuestTurnTargetName_loc1,"
+        "Title_loc2, Details_loc2, Objectives_loc2, OfferRewardText_loc2, RequestItemsText_loc2, EndText_loc2, CompletedText_loc2, ObjectiveText1_loc2, ObjectiveText2_loc2, ObjectiveText3_loc2, ObjectiveText4_loc2, ObjectiveText5_loc2, ObjectiveText6_loc2, ObjectiveText7_loc2, ObjectiveText8_loc2, ObjectiveText9_loc2, ObjectiveText10_loc2, QuestGiverTextWindow_loc2, QuestGiverTargetName_loc2, QuestTurnTextWindow_loc2, QuestTurnTargetName_loc2,"
+        "Title_loc3, Details_loc3, Objectives_loc3, OfferRewardText_loc3, RequestItemsText_loc3, EndText_loc3, CompletedText_loc3, ObjectiveText1_loc3, ObjectiveText2_loc3, ObjectiveText3_loc3, ObjectiveText4_loc3, ObjectiveText5_loc3, ObjectiveText6_loc3, ObjectiveText7_loc3, ObjectiveText8_loc3, ObjectiveText9_loc3, ObjectiveText10_loc3, QuestGiverTextWindow_loc3, QuestGiverTargetName_loc3, QuestTurnTextWindow_loc3, QuestTurnTargetName_loc3,"
+        "Title_loc4, Details_loc4, Objectives_loc4, OfferRewardText_loc4, RequestItemsText_loc4, EndText_loc4, CompletedText_loc4, ObjectiveText1_loc4, ObjectiveText2_loc4, ObjectiveText3_loc4, ObjectiveText4_loc4, ObjectiveText5_loc4, ObjectiveText6_loc4, ObjectiveText7_loc4, ObjectiveText8_loc4, ObjectiveText9_loc4, ObjectiveText10_loc4, QuestGiverTextWindow_loc4, QuestGiverTargetName_loc4, QuestTurnTextWindow_loc4, QuestTurnTargetName_loc4,"
+        "Title_loc5, Details_loc5, Objectives_loc5, OfferRewardText_loc5, RequestItemsText_loc5, EndText_loc5, CompletedText_loc5, ObjectiveText1_loc5, ObjectiveText2_loc5, ObjectiveText3_loc5, ObjectiveText4_loc5, ObjectiveText5_loc5, ObjectiveText6_loc5, ObjectiveText7_loc5, ObjectiveText8_loc5, ObjectiveText9_loc5, ObjectiveText10_loc5, QuestGiverTextWindow_loc5, QuestGiverTargetName_loc5, QuestTurnTextWindow_loc5, QuestTurnTargetName_loc5,"
+        "Title_loc6, Details_loc6, Objectives_loc6, OfferRewardText_loc6, RequestItemsText_loc6, EndText_loc6, CompletedText_loc6, ObjectiveText1_loc6, ObjectiveText2_loc6, ObjectiveText3_loc6, ObjectiveText4_loc6, ObjectiveText5_loc6, ObjectiveText6_loc6, ObjectiveText7_loc6, ObjectiveText8_loc6, ObjectiveText9_loc6, ObjectiveText10_loc6, QuestGiverTextWindow_loc6, QuestGiverTargetName_loc6, QuestTurnTextWindow_loc6, QuestTurnTargetName_loc6,"
+        "Title_loc7, Details_loc7, Objectives_loc7, OfferRewardText_loc7, RequestItemsText_loc7, EndText_loc7, CompletedText_loc7, ObjectiveText1_loc7, ObjectiveText2_loc7, ObjectiveText3_loc7, ObjectiveText4_loc7, ObjectiveText5_loc7, ObjectiveText6_loc7, ObjectiveText7_loc7, ObjectiveText8_loc7, ObjectiveText9_loc7, ObjectiveText10_loc7, QuestGiverTextWindow_loc7, QuestGiverTargetName_loc7, QuestTurnTextWindow_loc7, QuestTurnTargetName_loc7,"
+        "Title_loc8, Details_loc8, Objectives_loc8, OfferRewardText_loc8, RequestItemsText_loc8, EndText_loc8, CompletedText_loc8, ObjectiveText1_loc8, ObjectiveText2_loc8, ObjectiveText3_loc8, ObjectiveText4_loc8, ObjectiveText5_loc8, ObjectiveText6_loc8, ObjectiveText7_loc8, ObjectiveText8_loc8, ObjectiveText9_loc8, ObjectiveText10_loc8, QuestGiverTextWindow_loc8, QuestGiverTargetName_loc8, QuestTurnTextWindow_loc8, QuestTurnTargetName_loc8,"
+        "Title_loc9, Details_loc9, Objectives_loc9, OfferRewardText_loc9, RequestItemsText_loc9, EndText_loc9, CompletedText_loc9, ObjectiveText1_loc9, ObjectiveText2_loc9, ObjectiveText3_loc9, ObjectiveText4_loc9, ObjectiveText5_loc9, ObjectiveText6_loc9, ObjectiveText7_loc9, ObjectiveText8_loc9, ObjectiveText9_loc9, ObjectiveText10_loc9, QuestGiverTextWindow_loc9, QuestGiverTargetName_loc9, QuestTurnTextWindow_loc9, QuestTurnTargetName_loc9,"
+        "Title_loc10, Details_loc10, Objectives_loc10, OfferRewardText_loc10, RequestItemsText_loc10, EndText_loc10, CompletedText_loc10, ObjectiveText1_loc10, ObjectiveText2_loc10, ObjectiveText3_loc10, ObjectiveText4_loc10, ObjectiveText5_loc10, ObjectiveText6_loc10, ObjectiveText7_loc10, ObjectiveText8_loc1, ObjectiveText9_loc10, ObjectiveText10_loc10, QuestGiverTextWindow_loc10, QuestGiverTargetName_loc10, QuestTurnTextWindow_loc10, QuestTurnTargetName_loc10"
         " FROM locales_quest");
 
     if (!result)
@@ -4303,21 +4305,21 @@ void ObjectMgr::LoadQuestLocales()
         {
             LocaleConstant locale = (LocaleConstant) i;
 
-            AddLocaleString(fields[1 + 15 * (i - 1)].GetString(), locale, data.Title);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 1].GetString(), locale, data.Details);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 2].GetString(), locale, data.Objectives);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 3].GetString(), locale, data.OfferRewardText);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 4].GetString(), locale, data.RequestItemsText);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 5].GetString(), locale, data.EndText);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 6].GetString(), locale, data.CompletedText);
+            AddLocaleString(fields[1 + 21 * (i - 1)].GetString(), locale, data.Title);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 1].GetString(), locale, data.Details);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 2].GetString(), locale, data.Objectives);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 3].GetString(), locale, data.OfferRewardText);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 4].GetString(), locale, data.RequestItemsText);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 5].GetString(), locale, data.EndText);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 6].GetString(), locale, data.CompletedText);
 
-            for (uint8 k = 0; k < 4; ++k)
-                AddLocaleString(fields[1 + 15 * (i - 1) + 7 + k].GetString(), locale, data.ObjectiveText[k]);
+            for (uint8 k = 0; k < QUEST_OBJECTIVES_COUNT; ++k)
+                AddLocaleString(fields[1 + 21 * (i - 1) + 7 + k].GetString(), locale, data.ObjectiveText[k]);
 
-            AddLocaleString(fields[1 + 15 * (i - 1) + 11].GetString(), locale, data.QuestGiverTextWindow);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 12].GetString(), locale, data.QuestGiverTargetName);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 13].GetString(), locale, data.QuestTurnTextWindow);
-            AddLocaleString(fields[1 + 15 * (i - 1) + 14].GetString(), locale, data.QuestTurnTargetName);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 17].GetString(), locale, data.QuestGiverTextWindow);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 18].GetString(), locale, data.QuestGiverTargetName);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 19].GetString(), locale, data.QuestTurnTextWindow);
+            AddLocaleString(fields[1 + 21 * (i - 1) + 20].GetString(), locale, data.QuestTurnTargetName);
         }
     } while (result->NextRow());
 
@@ -9072,4 +9074,123 @@ void ObjectMgr::RestructGameObjectGUID(uint32 nbLigneToRestruct)
     WorldDatabase.CommitTransaction(worldTrans);
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "%u lignes ont ete restructuree.", nbLigneToRestruct);
+}
+
+void ObjectMgr::LoadResearchSiteToZoneData()
+{
+    QueryResult result = WorldDatabase.Query("SELECT site_id, zone_id, branch_id FROM archaeology_zones");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 archaeology zones. DB table `archaeology_zones` is empty.");
+        return;
+    }
+
+    uint32 counter = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 site_id = fields[0].GetUInt32();
+        uint32 zone_id = fields[1].GetUInt32();
+        uint32 branch_id = fields[2].GetUInt32();
+
+        ResearchSiteDataMap::iterator itr = sResearchSiteDataMap.find(site_id);
+        if (itr == sResearchSiteDataMap.end())
+        {
+            sLog->outError(LOG_FILTER_SQL, "DB table `archaeology_zones` has data for nonexistant site id %u", site_id);
+            continue;
+        }
+
+        ResearchSiteData& data = itr->second;
+        data.zone = zone_id;
+        data.branch_id = branch_id;
+
+        for (uint32 i = 0; i < sAreaStore.GetNumRows(); ++i)
+        {
+            AreaTableEntry const* area = sAreaStore.LookupEntry(i);
+            if (!area)
+                continue;
+
+            if (area->zone == zone_id)
+            {
+                data.level = area->area_level;
+                break;
+            }
+        }
+
+        ++counter;
+    }
+    while (result->NextRow());
+
+    // recheck all research sites
+    for (ResearchSiteDataMap::const_iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
+    {
+        if (itr->second.zone == 0 || itr->second.level == 0xFF || itr->second.branch_id == 0)
+            sLog->outError(LOG_FILTER_SQL, "DB table `archaeology_zones` has not full or does not have data for site id %u: "
+            "zone %u level %u branch_id %u",
+            itr->second.entry->areaName, itr->second.zone, itr->second.level, itr->second.branch_id);
+    }
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u archaeology zones.", counter);
+}
+
+void ObjectMgr::LoadDigSitePositions()
+{
+    QueryResult result = WorldDatabase.Query("SELECT map, x, y FROM archaeology_digsites");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 dig site positions. DB table `archaeology_digsites` is empty.");
+        return;
+    }
+
+    uint32 counter = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 map = fields[0].GetUInt32();
+        float x = fields[1].GetFloat();
+        float y = fields[2].GetFloat();
+
+        bool added = false;
+        for (ResearchSiteDataMap::iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
+        {
+            ResearchSiteData& data = itr->second;
+
+            if (data.entry->MapID != map)
+                continue;
+
+            ResearchPOIPoint p;
+            p.x = int32(x);
+            p.y = int32(y);
+
+            if (Player::IsPointInZone(p, data.points))
+            {
+                data.digSites.push_back(DigSitePosition(x, y));
+                added = true;
+            }
+        }
+
+        if (!added)
+        {
+            sLog->outError(LOG_FILTER_SQL, "DB table `archaeology_digsites` has data for point x:%f y:%f at map %u that does not belong to any digsite!",
+                x, y, map);
+            continue;
+        }
+
+        ++counter;
+    }
+    while (result->NextRow());
+
+    for (ResearchSiteDataMap::iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
+    {
+        ResearchSiteData& data = itr->second;
+
+        if (data.digSites.size() < MAX_DIGSITE_FINDS)
+            sLog->outError(LOG_FILTER_SQL, "Archaeology research site %u has less that %u dig site positions!", data.entry->ID, MAX_DIGSITE_FINDS);
+    }
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u dig site positions.", counter);
 }

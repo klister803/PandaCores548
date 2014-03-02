@@ -187,8 +187,6 @@ struct PlayerArchProjectHistory
     time_t TimeCreated;
 };
 
-typedef UNORDERED_MAP<uint32, MaxCoordinat> QuestPOIPointMap;
-
 typedef UNORDERED_MAP<uint32, PlayerTalent*> PlayerTalentMap;
 typedef UNORDERED_MAP<uint32, PlayerSpell*> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
@@ -564,7 +562,7 @@ enum QuestSlotOffsets
     QUEST_ID_OFFSET     = 0,
     QUEST_STATE_OFFSET  = 1,
     QUEST_COUNTS_OFFSET = 2,
-    QUEST_TIME_OFFSET   = 4
+    QUEST_TIME_OFFSET   = 8 // ???
 };
 
 #define MAX_QUEST_OFFSET 15
@@ -879,6 +877,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
     //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 37, //id on TC.
     PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 38,
+    PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 39,
     MAX_PLAYER_LOGIN_QUERY
 };
 
@@ -1231,6 +1230,41 @@ private:
 
 typedef UNORDERED_MAP<uint8, Bracket*> BracketList;
 
+struct DigSite
+{
+    uint8 count;
+    uint16 site_id;
+    uint32 find_id;
+    float loot_x;
+    float loot_y;
+
+    void clear()
+    {
+        site_id = find_id = 0;
+        loot_x = loot_y = 0.0f;
+        count = 0;
+    }
+
+    bool empty() { return site_id == 0; }
+};
+
+struct CompletedProject
+{
+    CompletedProject() : entry(NULL), count(1), date(time(NULL)) { }
+    CompletedProject(ResearchProjectEntry const* _entry) : entry(_entry), count(1), date(time(NULL)) { }
+
+    ResearchProjectEntry const* entry;
+    uint32 count;
+    uint32 date;
+};
+
+typedef std::set<uint32> ResearchSiteSet;
+typedef std::list<CompletedProject> CompletedProjectList;
+typedef std::set<uint32> ResearchProjectSet;
+
+#define MAX_RESEARCH_SITES 20
+#define MAX_DIGSITE_FINDS 6
+
 class Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
@@ -1487,185 +1521,47 @@ class Player : public Unit, public GridObject<Player>
 
         void ModifyCurrency(uint32 id, int32 count, bool printLog = true, bool ignoreMultipliers = false, bool modifyWeek = true, bool modifySeason = true);
 
-        // Archaelogy
-        void GenerateResearchDigSites(uint32 max = 4);
-        void GenerateResearchProjects(uint32 max, uint32 race = 0);
-        uint32 GetSurveyBotEntry(float &x,float &y,float &z,float &orientation, int32 &duration);
-        void LootResearchChest();
-        bool EventSolveProject(SpellInfo const* spell);
-        uint32 GetResearchPointCount(uint32 id)
+        /*********************************************************/
+        /***                 ARCHAEOLOGY SYSTEM                ***/
+        /*********************************************************/
+
+        void _SaveArchaeology(SQLTransaction& trans);
+        void _LoadArchaeology(PreparedQueryResult result);
+        void _LoadArchaeologyFinds(PreparedQueryResult result);
+        bool HasResearchSite(uint32 id) const
         {
-            PlayerArchaelogyMap::const_iterator itr = m_archaelogies.find(id);
-            return itr != m_archaelogies.end() ? itr->second.count : 0;
+            return _researchSites.find(id) != _researchSites.end();
         }
-        uint32 GetResearchId()
-        {
-            float x = GetPositionX();
-            float y = GetPositionY();
 
-            for (PlayerArchaelogyMap::iterator itr = m_archaelogies.begin(); itr != m_archaelogies.end(); ++itr)
-            {
-                if(itr->second.resetTime !=0 && itr->second.resetTime < time(NULL))
-                    m_archaelogies.erase(itr);
-                else
-                {
-                    ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(itr->first);
-                    //std::vector<PolygonVector> const*  PolygonVector = GetPolygonQuestPOIPoints(rs->ItemID);
-                    //sLog->outDebug(LOG_FILTER_NETWORKIO, "GetResearchId itr->first %u, HasPointInDigest %u", itr->first, HasPointInDigest(PolygonVector, x, y));
-                    if(MaxCoordinat const* itrpoint = GetQuestPoints(rs->ItemID))
-                    {
-                        if(x > itrpoint->minX && x < itrpoint->maxX && y > itrpoint->minY && y < itrpoint->maxY)
-                            return itr->first;
-                    }
-                }
-            }
+        bool HasResearchProjectOfBranch(uint32 id) const;
+        bool HasResearchProject(uint32 id) const;
+        void ReplaceResearchProject(uint32 oldId, uint32 newId);
 
-            return NULL;
-        }
-        bool GenereteInDigestXY(DigSiteInfo &m_digsite)
-        {
-            float x = GetPositionX();
-            float y = GetPositionY();
+        static float GetRareArtifactChance(uint32 skill_value);
 
-            for(uint32 i = 0; i < 12; i++)
-            {
-                ResearchSiteEntry const* rs = sResearchSiteStore.LookupEntry(m_digsite.currentDigest);
-                std::vector<PolygonVector> const*  PolygonVector = GetPolygonQuestPOIPoints(rs->ItemID);
-                MaxCoordinat const* itrpoint = GetQuestPoints(rs->ItemID);
+        void ShowResearchSites();
+        void GenerateResearchSites();
+        void GenerateResearchSiteInMap(uint32 mapId);
+        void GenerateResearchProjects();
+        bool SolveResearchProject(uint32 spellId, SpellCastTargets& targets);
+        void UseResearchSite(uint32 id);
+        static bool IsPointInZone(ResearchPOIPoint &test, ResearchPOIPointVector &polygon);
+        uint16 GetResearchSiteID();
+        bool OnSurvey(uint32& entry, float& x, float& y, float& z, float &orientation);
+        bool CanResearchWithLevel(uint32 site_id);
+        uint8 CanResearchWithSkillLevel(uint32 site_id);
+        bool GenerateDigSiteLoot(uint16 zoneid, DigSite &site);
+        uint32 AddCompletedProject(ResearchProjectEntry const* entry);
+        bool IsCompletedProject(uint32 id, bool onlyRare);
+        void SendCompletedProjects();
+        void SendSurveyCast(uint32 count, uint32 max, uint32 fieldId, bool completed);
 
-                if(PolygonVector && itrpoint)
-                {
-                    float x = frand(itrpoint->minX, itrpoint->maxX);
-                    float y = frand(itrpoint->minY, itrpoint->maxY);
-                    float z = GetPositionZ();
-                    /*Position pos;
-                    pos.m_positionX = x;
-                    pos.m_positionY = y;
-                    pos.m_positionZ = z;
-                    GetFirstCollisionPosition(pos, 10.0f, 180.0f);
-                    x = pos.m_positionX;
-                    y = pos.m_positionY;
-                    z = pos.m_positionZ;*/
-                    if(HasPointInDigest(PolygonVector, x, y))
-                    {
-                        m_digsite.x = x;
-                        m_digsite.y = y;
-                        m_digsite.z = z;
-                        return true;
-                    }
-                }
-            }
+        DigSite _digSites[MAX_RESEARCH_SITES];
+        ResearchSiteSet _researchSites;
+        CompletedProjectList _completedProjects;
+        bool _archaeologyChanged;
 
-            return false;
-        }
-        uint32 GetProjectHistoryCount(uint32 id)
-        {
-            PlayerArchProjectHistoryMap::const_iterator itr = m_archprojecthistories.find(id);
-            return itr != m_archprojecthistories.end() ? itr->second.count : 0;
-        }
-        uint32 ExistProject(uint32 id)
-        {
-            PlayerArchProjectMap::const_iterator itr = m_archprojects.find(id);
-                if(itr != m_archprojects.end())
-                    return itr->second.projectId;
-
-            return NULL;
-        }
-        void SetResearchPointCount(uint32 id, uint32 count)
-        {
-            PlayerArchaelogyMap::iterator itr = m_archaelogies.find(id);
-            if (itr == m_archaelogies.end())
-                return;
-
-            itr->second.count = count;
-            if(count <= 0)
-            {
-                m_archaelogies.erase(itr);
-                for (uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
-                    if (GetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, i ) == id)
-                    {
-                        SetDynamicUInt32Value( PLAYER_DYNAMIC_RESEARCH_SITES, i, 0);
-                        break;
-                    }
-
-                CharacterDatabase.PExecute("DELETE FROM character_archaelogy WHERE pointId = '%u' and guid = '%u'", id, GetGUIDLow());
-                AddDigestOrProject(GetMapId(), id, m_notactivedigestzones);
-                DelDigestOrProject(GetMapId(), id, m_activedigestzones);
-            }
-        }
-        void AddProjecthistoryCount(uint32 id)
-        {
-            PlayerArchProjectHistoryMap::iterator itr = m_archprojecthistories.find(id);
-            if(itr != m_archprojecthistories.end())
-                itr->second.count = itr->second.count + 1;
-        }
-        void AddDigestOrProject(uint32 indexId, uint32 pointId, UNORDERED_MAP<uint16, std::list<uint16> > & _addfor)
-        {
-            _addfor[indexId].push_back(pointId);
-        }
-        void DelDigestOrProject(uint32 indexId, uint32 pointId, UNORDERED_MAP<uint16, std::list<uint16> > & _delfor)
-        {
-            std::list<uint16> &list = _delfor[indexId];
-            if (list.empty())
-                return;
-
-            for (std::list<uint16>::iterator itr = list.begin(); itr != list.end(); ++itr)
-            {
-                if(pointId == *itr)
-                {
-                    list.erase(itr);
-                    break;
-                }
-            }
-        }
-        PlayerArchProjectHistoryMap& getProjectHistoryMap() { return m_archprojecthistories; }
-        bool HasPointInDigest(std::vector<PolygonVector> const* polygon, float x, float y)
-        {
-            static const int q_patt[2][2]= { {0,1}, {3,2} };
-
-            if (polygon->size() < 3) return false;
-
-            std::vector<PolygonVector>::const_iterator end = polygon->end();
-            PolygonVector pred_pt = polygon->back();
-            pred_pt.x -= x;
-            pred_pt.y -= y;
-
-            int pred_q = q_patt[pred_pt.y < 0][pred_pt.x < 0];
-
-            int w = 0;
-
-            for(std::vector<PolygonVector>::const_iterator iter = polygon->begin(); iter != end; ++iter)
-            {
-                PolygonVector cur_pt = *iter;
-
-                cur_pt.x -= x;
-                cur_pt.y -= y;
-
-                int q = q_patt[cur_pt.y < 0][cur_pt.x < 0];
-
-                switch (q - pred_q)
-                {
-                    case -3:
-                        ++w;
-                        break;
-                    case 3:
-                        --w;
-                        break;
-                    case -2:
-                        if(pred_pt.x * cur_pt.y >= pred_pt.y * cur_pt.x)
-                            ++w;
-                        break;
-                    case 2:
-                        if(!(pred_pt.x * cur_pt.y >= pred_pt.y * cur_pt.x))
-                            --w;
-                        break;
-                }
-                pred_pt = cur_pt;
-                pred_q = q;
-            }
-
-            return w!=0;
-        }
+        // END
 
         void ApplyEquipCooldown(Item* pItem);
         void QuickEquipItem(uint16 pos, Item* pItem);
@@ -1819,21 +1715,29 @@ class Player : public Unit, public GridObject<Player>
         uint16 FindQuestSlot(uint32 quest_id) const;
         uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }
         uint32 GetQuestSlotState(uint16 slot)   const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_STATE_OFFSET); }
-        uint16 GetQuestSlotCounter(uint16 slot, uint8 counter) const { return (uint16)(GetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET) >> (counter * 16)); }
+        uint16 GetQuestSlotCounter(uint16 slot, uint8 counter) const
+        {
+            uint8 index = counter / 4;
+            uint8 offs = counter % 4;
+            return (uint16)(GetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET + index * 2) >> (offs * 16));
+        }
         uint32 GetQuestSlotTime(uint16 slot)    const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_TIME_OFFSET); }
         void SetQuestSlot(uint16 slot, uint32 quest_id, uint32 timer = 0)
         {
             SetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_ID_OFFSET, quest_id);
             SetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_STATE_OFFSET, 0);
-            SetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET, 0);
+            for (uint8 i = 0; i < 3; ++i)
+                SetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET + i * 2, 0);
             SetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_TIME_OFFSET, timer);
         }
         void SetQuestSlotCounter(uint16 slot, uint8 counter, uint16 count)
         {
-            uint64 val = GetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET);
-            val &= ~((uint64)0xFFFF << (counter * 16));
-            val |= ((uint64)count << (counter * 16));
-            SetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET, val);
+            uint8 index = counter / 4;
+            uint8 offs = counter % 4;
+            uint64 val = GetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET + index * 2);
+            val &= ~((uint64)0xFFFF << (offs * 16));
+            val |= ((uint64)count << (offs * 16));
+            SetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET + index * 2, val);
         }
         void SetQuestSlotState(uint16 slot, uint32 state) { SetFlag(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_STATE_OFFSET, state); }
         void RemoveQuestSlotState(uint16 slot, uint32 state) { RemoveFlag(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_STATE_OFFSET, state); }
@@ -1865,6 +1769,7 @@ class Player : public Unit, public GridObject<Player>
         bool HasQuestForItem(uint32 itemid) const;
         bool HasQuestForGO(int32 GOId) const;
         void UpdateForQuestWorldObjects();
+        void UpdateForRaidMarkers(Group* group);
         bool CanShareQuest(uint32 quest_id) const;
 
         void SendQuestComplete(Quest const* quest);
@@ -3218,13 +3123,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_currentBuybackSlot;
 
         PlayerCurrenciesMap _currencyStorage;
-        PlayerArchaelogyMap m_archaelogies;
-        PlayerArchProjectMap m_archprojects;
-        PlayerArchProjectHistoryMap m_archprojecthistories;
-        UNORDERED_MAP<uint16, std::list<uint16> > m_activedigestzones;
-        UNORDERED_MAP<uint16, std::list<uint16> > m_notactivedigestzones;
-        UNORDERED_MAP<uint16, std::list<uint16> > m_activeresearchprojects;
-        UNORDERED_MAP<uint16, std::list<uint16> > m_notactiveresearchprojects;
 
         VoidStorageItem* _voidStorageItems[VOID_STORAGE_MAX_SLOT];
 

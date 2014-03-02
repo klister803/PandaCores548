@@ -1665,8 +1665,8 @@ struct RandomPropertiesPointsEntry
 struct ResearchBranchEntry
 {
     uint32    ID;                                           // 0 ID
-    char* Race;                                         // 1 Archeaology Race (Fossil, Troll, Nerubian)
-    //char* AlwaysDwarf;                                // 2 unk. Always Dwarf.
+    char* Race;                                             // 1 Archeaology Race (Fossil, Troll, Nerubian)
+    //char* AlwaysDwarf;                                    // 2 unk. Always Dwarf.
     uint32    CurrencyID;                                   // 3 CurrencyID
     //                                                      // 4 Icon Path
     uint32    ItemID;                                       // 5 ItemID
@@ -1675,23 +1675,45 @@ struct ResearchBranchEntry
 struct ResearchProjectEntry
 {
     uint32    ID;                                           // 0 ID
-    char* Name;                                         // 1 Name of item.
-    char* Description;                                  // 2 Item description
-    //char* TestStrings;                                // 3 unk. Only for test archaeology.
-    uint32    RaceID;                                       // 4 RaceID from ResearchBranch
+    char*     Name;                                         // 1 Name of item.
+    char*     Description;                                  // 2 Item description
+    uint32    rare;                                         // 3
+    uint32    branchId;                                     // 4
     uint32    SpellID;                                      // 5 SpellID - Reward
-    uint32    RequiredItemCount;                            // 6 Item from ResearchBranch
+    uint32    Complexity;                                   // 6 Item from ResearchBranch
     //                                                      // 7 Icon Path
     uint32    RequiredCurrencyAmount;                       // 8 Required currency amount for create (should be * 100)
+
+    bool IsVaid() const
+    {
+        return branchId != ARCHAEOLOGY_BRANCH_UNUSED &&
+            branchId != ARCHAEOLOGY_BRANCH_NONE;
+    }
 };
 
 struct ResearchSiteEntry
 {
     uint32    ID;                                           // 0 ID
     uint32    MapID;                                        // 1 MapID
-    uint32    ItemID;                                       // 2 ItemID
-    char* Name;                                         // 3 Research site name
-    //uint32 unk;                                           // 4 unk. Always 177.
+    uint32    POIid;                                        // 2
+    char*     areaName;                                     // 3 Research site name
+    //uint32  flags;                                        // 4 Always 177.
+
+    bool IsValid() const
+    {
+        return ID != 140 && // template
+            ID != 142 &&    // template
+            ID != 161 &&    // template
+            ID != 471 &&    // vashj'ir
+            ID != 473 &&    // vashj'ir
+            ID != 475 &&    // vashj'ir
+            ID != 949 &&    // template
+            ID != 951 &&    // template
+            ID != 1023 &&   // not on wowhead
+            ID != 1049 &&   // not on wowhead
+            ID != 1051 &&   // not on wowhead
+            ID != 1284;     // not on wowhead
+    }
 };
 
 struct QuestPOIBlobEntry
@@ -1704,10 +1726,10 @@ struct QuestPOIBlobEntry
 
 struct QuestPOIPointEntry
 {
-    uint32    ID;                                           // 0 ID
-    int32     x;                                            // 1 x
-    int32     y;                                            // 2 y
-    uint32    SpellID;                                      // 4 SpellID.
+    //uint32    ID;                                           // 0
+    int32     x;                                            // 1
+    int32     y;                                            // 2
+    uint32    POIId;                                        // 4
 };
 
 struct ScalingStatDistributionEntry
@@ -2594,5 +2616,43 @@ typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 typedef uint8 TaxiMask[TaxiMaskSize];
 
 float GetCurrencyPrecision(uint32 currencyId);
+
+// artifact point
+struct ResearchPOIPoint
+{
+    ResearchPOIPoint() : x(0), y(0) { }
+    ResearchPOIPoint(int32 _x, int32 _y) : x(_x), y(_y) { }
+
+    int32 x;
+    int32 y;
+};
+
+struct DigSitePosition
+{
+    DigSitePosition() : x(0.0f), y(0.0f) { }
+    DigSitePosition(float _x, float _y) : x(_x), y(_y) { }
+
+    float x;
+    float y;
+};
+
+typedef std::vector<ResearchPOIPoint> ResearchPOIPointVector;
+typedef std::vector<DigSitePosition> DigSitePositionVector;
+
+struct ResearchSiteData
+{
+    ResearchSiteData() : zone(0), level(0xFF), branch_id(0) { }
+
+    ResearchSiteEntry const* entry;
+    uint16 zone;
+    uint8 level;
+    uint8 branch_id;
+
+    ResearchPOIPointVector points;
+    DigSitePositionVector digSites;
+};
+
+typedef std::map<uint32 /*site_id*/, ResearchSiteData> ResearchSiteDataMap;
+ResearchSiteEntry const* GetResearchSiteEntryById(uint32 id);
 
 #endif

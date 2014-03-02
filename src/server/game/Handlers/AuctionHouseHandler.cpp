@@ -82,22 +82,23 @@ void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action
     WorldPacket data(SMSG_AUCTION_COMMAND_RESULT);
     data << uint32(auction ? auction->Id : 0);
     data << uint32(action);
+    data << uint32(0);                                    // in sniffs big integer value
     data << uint32(errorCode);
-    data << uint32(0);
 
-    bool h_bid = data.ReadBit();
-    data.ReadBit();
+    data.WriteBit(0);                                     // bit_1, related to auction error or action
+    data.WriteBit(0);                                     // bit_2, related to auction error or action
 
     data.WriteGuidMask<7, 0, 1, 6, 3, 4, 5, 2>(auction->bidder);
-    data.ReadBit();
+    data.WriteBit(0);                                     // bit_3, related to auction error or action
     data.WriteGuidBytes<2, 7, 3, 1, 5, 0, 6, 4>(auction->bidder);
 
-    if (h_bid)
+    /*if (bit_2)
     {
         data << uint64(auction->bid);
         data << uint64(auction->bid ? auction->GetAuctionOutBid() : 0);
-    }
+    }*/
 
+    // OLD CODE - need for comparing builds
     /*switch (errorCode)
     {
         case ERR_AUCTION_OK:
@@ -163,8 +164,8 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
     uint64 bid, buyout;
     uint32 itemsCount, etime;
 
-    recvData >> bid;
     recvData >> buyout;
+    recvData >> bid;
     recvData >> etime;
 
     if (!bid || !etime)
@@ -174,7 +175,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
     itemsCount = recvData.ReadBits(5);
 
     ObjectGuid itemGUIDs[MAX_AUCTION_ITEMS]; // 160 slot = 4x 36 slot bag + backpack 16 slot
-    uint32 count[MAX_AUCTION_ITEMS];
+    uint32 stackCount[MAX_AUCTION_ITEMS];
 
     if (itemsCount > MAX_AUCTION_ITEMS)
     {
@@ -191,10 +192,10 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
     for (uint32 i = 0; i < itemsCount; ++i)
     {
         recvData.ReadGuidBytes<0, 5, 6, 3, 1, 7>(itemGUIDs[i]);
-        recvData >> count[i];
+        recvData >> stackCount[i];
         recvData.ReadGuidBytes<2, 4>(itemGUIDs[i]);
 
-        if (!itemGUIDs[i] || !count[i] || count[i] > 1000 )
+        if (!itemGUIDs[i] || !stackCount[i] || stackCount[i] > 1000 )
             return;
     }
     
@@ -245,7 +246,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
 
         if (sAuctionMgr->GetAItem(item->GetGUIDLow()) || !item->CanBeTraded() || item->IsNotEmptyBag() ||
             item->GetTemplate()->Flags & ITEM_PROTO_FLAG_CONJURED || item->GetUInt32Value(ITEM_FIELD_DURATION) ||
-            item->GetCount() < count[i] || _player->GetItemCount(item->GetEntry(), false) < count[i])
+            item->GetCount() < stackCount[i] || _player->GetItemCount(item->GetEntry(), false) < stackCount[i])
         {
             SendAuctionCommandResult(NULL, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
             return;
@@ -258,7 +259,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
         }
 
         items[i] = item;
-        finalCount += count[i];
+        finalCount += stackCount[i];
     }
 
     if (!finalCount)
@@ -305,7 +306,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
         ASSERT(sObjectMgr->GetCreatureData(AH->auctioneer)); // Tentative de vendre un item a un pnj qui n'existe pas, mieux vaut crash ici sinon l'item en question risque de disparaitre tout simplement
 
         // Required stack size of auction matches to current item stack size, just move item to auctionhouse
-        if (itemsCount == 1 && item->GetCount() == count[i])
+        if (itemsCount == 1 && item->GetCount() == stackCount[i])
         {
             if (GetSecurity() > SEC_PLAYER && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
             {
@@ -380,7 +381,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 Item* item2 = items[j];
 
                 // Item stack count equals required count, ready to delete item - cloned item will be used for auction
-                if (item2->GetCount() == count[j])
+                if (item2->GetCount() == stackCount[j])
                 {
                     _player->MoveItemFromInventory(item2->GetBagSlot(), item2->GetSlot(), true);
 
@@ -391,9 +392,9 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 }
                 else // Item stack count is bigger than required count, update item stack count and save to database - cloned item will be used for auction
                 {
-                    item2->SetCount(item2->GetCount() - count[j]);
+                    item2->SetCount(item2->GetCount() - stackCount[j]);
                     item2->SetState(ITEM_CHANGED, _player);
-                    _player->ItemRemovedQuestCheck(item2->GetEntry(), count[j]);
+                    _player->ItemRemovedQuestCheck(item2->GetEntry(), stackCount[j]);
                     item2->SendUpdateToPlayer(_player);
 
                     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -628,10 +629,10 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_LIST_BIDDER_ITEMS");
 
     ObjectGuid auctioneerGUID;
-    uint32 listfrom;                                        // page of auctions
+    uint32 page;                                            // page of auctions
     uint32 outbiddedCount;                                  // count of outbidded auctions
 
-    recvData >> listfrom;                                   // not used in fact (this list not have page control in client)
+    recvData >> page;                                       // not used in fact (this list not have page control in client)
     recvData.ReadGuidMask<6, 2, 1, 0, 3, 4>(auctioneerGUID);
     outbiddedCount = recvData.ReadBits(7);
     recvData.ReadGuidMask<7, 5>(auctioneerGUID);
@@ -672,7 +673,7 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
     uint32 count = 0;
     uint32 totalcount = 0;
 
-    for (uint32 i = 0; i < outbiddedCount; i++)
+    for (uint32 i = 0; i < outbiddedCount; ++i)
     {
         AuctionEntry* auction = auctionHouse->GetAuction(outbiddedAuctionIds[i]);
 
@@ -685,7 +686,7 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
 
     data.put<uint32>(0, count);                           // add count to placeholder
     data << totalcount;                                   // CGAuctionHouse__m_numTotalBid
-    data << uint32(5000);                                 // CGAuctionHouse__m_desiredDelayTime
+    data << uint32(300);                                  // CGAuctionHouse__m_desiredDelayTime
     SendPacket(&data);
 }
 
@@ -735,29 +736,28 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
 
     ObjectGuid guid;
     std::string searchedname;
-    uint8 levelmin, levelmax, usable;
-    uint32 listfrom, auctionSlotID, auctionMainCategory, auctionSubCategory, quality;
+    uint8 levelmin, levelmax, canUse, auctionId;
+    uint32 page, classIndex, subClassIndex, invTypeIndex, quality;
 
-    recvData >> listfrom;
-    recvData >> levelmax;
-    recvData >> auctionSlotID;
+    recvData >> page;
+    recvData >> auctionId;
+    recvData >> subClassIndex;
     recvData >> levelmin;
-    recvData >> auctionMainCategory;
-    recvData >> auctionSubCategory;
-    recvData >> usable;
     recvData >> quality;
+    recvData >> classIndex;
+    recvData >> levelmax;
+    recvData >> invTypeIndex;
     uint32 strLen;
     recvData >> strLen;
-    searchedname = recvData.ReadString(strLen);
-    recvData.ReadGuidMask<4, 0, 1, 5, 3, 6>(guid);
-    uint32 strLen1 = recvData.ReadBits(8);
-    recvData.ReadGuidMask<2>(guid);
-    recvData.ReadBit();
-    recvData.ReadGuidMask<7>(guid);
-    recvData.ReadBit();
-    recvData.ReadGuidBytes<0, 7, 3, 1, 4>(guid);
     std::string unkStr1 = recvData.ReadString(strLen);
-    sLog->outError(LOG_FILTER_GENERAL, "Unk Str - %s, Unk Str 1 - %s", searchedname.c_str(), unkStr1.c_str());
+    recvData.ReadGuidMask<4, 0, 1, 5, 3, 6>(guid);
+    uint32 searchedname_length = recvData.ReadBits(8);
+    recvData.ReadGuidMask<2>(guid);
+    bool unk = recvData.ReadBit();
+    recvData.ReadGuidMask<7>(guid);
+    canUse = recvData.ReadBit();
+    recvData.ReadGuidBytes<0, 7, 3, 1, 4>(guid);
+    searchedname = recvData.ReadString(searchedname_length);
     recvData.ReadGuidBytes<5, 6, 2>(guid);
 
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
@@ -789,13 +789,13 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recvData)
     wstrToLower(wsearchedname);
 
     auctionHouse->BuildListAuctionItems(data, _player,
-        wsearchedname, listfrom, levelmin, levelmax, usable,
-        auctionSlotID, auctionMainCategory, auctionSubCategory, quality,
+        wsearchedname, page, levelmin, levelmax, canUse,
+        invTypeIndex, classIndex, subClassIndex, quality,
         count, totalcount);
 
     data.put<uint32>(0, count);
-    data << uint32(totalcount);
-    data << uint32(300);                                  //unk 2.3.0
+    data << totalcount;                                   // CGAuctionHouse__m_numTotalBid
+    data << uint32(300);                                  // CGAuctionHouse__m_desiredDelayTime
     SendPacket(&data);
 }
 

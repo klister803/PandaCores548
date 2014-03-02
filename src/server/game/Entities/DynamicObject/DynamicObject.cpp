@@ -26,6 +26,7 @@
 #include "CellImpl.h"
 #include "GridNotifiersImpl.h"
 #include "ScriptMgr.h"
+#include "GroupMgr.h"
 
 DynamicObject::DynamicObject(bool isWorldObject) : WorldObject(isWorldObject),
     _aura(NULL), _removedAura(NULL), _caster(NULL), _duration(0), _isViewpoint(false)
@@ -92,7 +93,16 @@ bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spe
 
     SetEntry(spellId);
     SetObjectScale(1.0f);
-    SetUInt64Value(DYNAMICOBJECT_CASTER, caster->GetGUID());
+    if (type == DYNAMIC_OBJECT_RAID_MARKER)
+    {
+        ASSERT(caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetGroup()
+            && "DYNAMIC_OBJECT_RAID_MARKER must only be created by players that are in group.");
+        SetUInt64Value(DYNAMICOBJECT_CASTER, caster->ToPlayer()->GetGroup()->GetGUID());
+
+        AddPlayerInPersonnalVisibilityList(GetCasterGUID());
+    }
+    else
+        SetUInt64Value(DYNAMICOBJECT_CASTER, caster->GetGUID());
 
     // The lower word of DYNAMICOBJECT_BYTES must be 0x0001. This value means that the visual radius will be overriden
     // by client for most of the "ground patch" visual effect spells and a few "skyfall" ones like Hurricane.
@@ -100,12 +110,11 @@ bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spe
     // precompensation is necessary (eg radius *= 2) for many spells. Anyway, blizz sends 0x0001 for all the spells
     // I saw sniffed...
 
-    // Blizz set visual spell Id in 3 first byte of DYNAMICOBJECT_BYTES after 5.X
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (spellInfo)
     {
         uint32 visual = spellInfo->SpellVisual[0] ? spellInfo->SpellVisual[0] : spellInfo->SpellVisual[1];
-        SetUInt32Value(DYNAMICOBJECT_BYTES, 0x10000000 | visual);
+        SetUInt32Value(DYNAMICOBJECT_BYTES, (type << 28) | visual);
     }
 
     SetUInt32Value(DYNAMICOBJECT_SPELLID, spellId);
@@ -124,8 +133,8 @@ bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spe
 void DynamicObject::Update(uint32 p_time)
 {
     // caster has to be always available and in the same map
-    ASSERT(_caster);
-    ASSERT(_caster->GetMap() == GetMap());
+    ASSERT(GetType() == DYNAMIC_OBJECT_RAID_MARKER || _caster);
+    ASSERT(GetType() == DYNAMIC_OBJECT_RAID_MARKER || _caster->GetMap() == GetMap());
 
     bool expired = false;
 
@@ -144,10 +153,25 @@ void DynamicObject::Update(uint32 p_time)
             _duration -= p_time;
         else
             expired = true;
+
+        if (GetType() == DYNAMIC_OBJECT_RAID_MARKER)
+        {
+            Group* group = sGroupMgr->GetGroupByGUID(GetCasterGUID());
+            if (!group || !group->HasRaidMarker(GetObjectGuid()))
+                expired = true;
+        }
     }
 
     if (expired)
+    {
+        if (GetType() == DYNAMIC_OBJECT_RAID_MARKER)
+        {
+            if (Group* group = sGroupMgr->GetGroupByGUID(GetCasterGUID()))
+                group->ClearRaidMarker(GetGUID());
+        }
+
         Remove();
+    }
     else
         sScriptMgr->OnDynamicObjectUpdate(this, p_time);
 }
@@ -218,6 +242,9 @@ void DynamicObject::RemoveCasterViewpoint()
 
 void DynamicObject::BindToCaster()
 {
+    if (GetType() == DYNAMIC_OBJECT_RAID_MARKER)
+        return;
+
     ASSERT(!_caster);
     _caster = ObjectAccessor::GetUnit(*this, GetCasterGUID());
     ASSERT(_caster);
@@ -227,6 +254,9 @@ void DynamicObject::BindToCaster()
 
 void DynamicObject::UnbindFromCaster()
 {
+    if (GetType() == DYNAMIC_OBJECT_RAID_MARKER)
+        return;
+
     ASSERT(_caster);
     _caster->_UnregisterDynObject(this);
     _caster = NULL;

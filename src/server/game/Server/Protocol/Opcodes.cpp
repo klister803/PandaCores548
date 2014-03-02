@@ -179,7 +179,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_CHAT_FILTERED,                           STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_CHAT_IGNORED,                            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleChatIgnoredOpcode         );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_CLEAR_CHANNEL_WATCH,                     STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_CLEAR_RAID_MARKER,                       STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_CLEAR_RAID_MARKER,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleClearRaidMarkerOpcode     );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_CLEAR_TRADE_ITEM,                        STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleClearTradeItemOpcode      );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_COMPLAIN,                                STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleComplainOpcode            );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_COMPLETE_CINEMATIC,                      STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleCompleteCinematic         );
@@ -434,7 +434,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RAID_INFO,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestRaidInfoOpcode     );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RATED_INFO,                      STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestRatedInfo          );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RATED_BG_STATS,                  STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestRatedBgStats       );
-    DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RESEARCH_HISTORY,                STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestReaserchHistory    );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_RESEARCH_HISTORY,                STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleRequestResearchHistory    );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_VEHICLE_EXIT,                    STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleRequestVehicleExit        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_VEHICLE_NEXT_SEAT,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleChangeSeatsOnControlledVehicle);
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_REQUEST_VEHICLE_PREV_SEAT,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleChangeSeatsOnControlledVehicle);
@@ -615,12 +615,12 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_ATTACKSTART,                             STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_ATTACKSTOP,                              STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_ATTACKSWING_ERROR,                        STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_BIDDER_LIST_RESULT,              STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_BIDDER_LIST_RESULT,              STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_BIDDER_NOTIFICATION,             STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_COMMAND_RESULT,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_LIST_PENDING_SALES,              STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_LIST_RESULT,                     STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_OWNER_LIST_RESULT,               STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_COMMAND_RESULT,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_LIST_PENDING_SALES,              STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_LIST_RESULT,                     STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_OWNER_LIST_RESULT,               STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_OWNER_NOTIFICATION,              STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AUCTION_REMOVED_NOTIFICATION,            STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_AURA_POINTS_DEPLETED,                    STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
@@ -953,7 +953,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_LF_GUILD_POST_UPDATED,                   STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_LF_GUILD_RECRUIT_LIST_UPDATED,           STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_LIST_INVENTORY,                          STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_LOAD_CUF_PROFILES,                       STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_LOAD_CUF_PROFILES,                       STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_LOGIN_SETTIMESPEED,                      STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_LOGIN_VERIFY_WORLD,                      STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_LOGOUT_CANCEL_ACK,                       STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
@@ -1123,7 +1123,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_RAID_GROUP_ONLY,                         STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RAID_INSTANCE_INFO,                      STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RAID_INSTANCE_MESSAGE,                   STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_RAID_MARKERS_CHANGED,                    STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_RAID_MARKERS_CHANGED,                    STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RAID_READY_CHECK_RESPONSE,               STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RAID_READY_CHECK_STARTED,                STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RAID_READY_CHECK_COMPLETED,              STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
@@ -1145,7 +1145,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_REPORT_PVP_AFK_RESULT,                   STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_REQUEST_CEMETERY_LIST_RESPONSE,          STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_REQUEST_PVP_REWARDS_RESPONSE,            STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESEARCH_COMPLETE,                       STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESEARCH_COMPLETE,                       STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESEARCH_SETUP_HISTORY,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESET_COMPRESSION_CONTEXT,               STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_RESET_FAILED_NOTIFY,                     STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
@@ -1241,6 +1241,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SUMMON_REQUEST,                          STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SUPERCEDED_SPELL,                        STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_SUPPRESS_NPC_GREETINGS,                  STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_SURVEY_CAST,                             STATUS_NEVER, PROCESS_INPLACE,          &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_SUSPEND_COMMS,                           STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_SUSPEND_TOKEN_RESPONSE,                  STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_TALENTS_INVOLUNTARILY_RESET,             STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );

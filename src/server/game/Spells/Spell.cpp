@@ -6661,6 +6661,17 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 break;
             }
+            case SPELL_EFFECT_SUMMON_RAID_MARKER:
+            {
+                Player* player = m_caster->ToPlayer();
+                if (!player)
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
+                Group* group = player->GetGroup();
+                if (!group)
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                break;
+            }
             default:
                 break;
         }

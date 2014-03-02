@@ -450,9 +450,9 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     buff << uint32(proto->Quality);
     buff << uint32(proto->Flags);
     buff << uint32(proto->Flags2);
+    buff << uint32(proto->Flags3);
     buff << float(proto->Unk430_1);
     buff << float(proto->Unk430_2);
-    buff << uint32(0); // unk 5.0.5
     buff << uint32(proto->BuyCount);
     buff << int32(proto->BuyPrice);
     buff << uint32(proto->SellPrice);

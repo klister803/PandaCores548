@@ -86,8 +86,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_AURAS_EFFECTS, "SELECT slot, effect, baseamount, amount FROM character_aura_effect WHERE guid = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_SPELL, "SELECT spell, active, disabled FROM character_spell WHERE guid = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_ACCOUNT_MOUNTS, "SELECT spell, active FROM account_mounts WHERE account = ?", CONNECTION_ASYNC)
-    PREPARE_STATEMENT(CHAR_SEL_CHARACTER_QUESTSTATUS, "SELECT quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, "
-    "itemcount1, itemcount2, itemcount3, itemcount4, playercount FROM character_queststatus WHERE guid = ? AND status <> 0", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_SEL_CHARACTER_QUESTSTATUS, "SELECT quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, mobcount5, mobcount6, mobcount7, mobcount8, mobcount9, mobcount10,"
+    "itemcount1, itemcount2, itemcount3, itemcount4, itemcount5, itemcount6, itemcount7, itemcount8, itemcount9, itemcount10, playercount FROM character_queststatus WHERE guid = ? AND status <> 0", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_DAILYQUESTSTATUS, "SELECT quest, time FROM character_queststatus_daily WHERE guid = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_WEEKLYQUESTSTATUS, "SELECT quest FROM character_queststatus_weekly WHERE guid = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_SEASONALQUESTSTATUS, "SELECT quest, event FROM character_queststatus_seasonal WHERE guid = ?", CONNECTION_ASYNC)
@@ -270,14 +270,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SAVE_GUILD_NEWS, "INSERT INTO guild_news_log (guild, id, eventType, playerGuid, data, flags, date) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 
     // Archaelogy
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHAELOGY, "SELECT pointId, count, active, resetTime FROM character_archaelogy WHERE guid = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_UPD_PLAYER_ARCHAELOGY, "UPDATE character_archaelogy SET active = ? WHERE guid = ? AND pointId = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHAELOGY, "REPLACE INTO character_archaelogy (guid, pointId, count, active, resetTime) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHPROJECT, "SELECT projectId, RaceID FROM character_archproject WHERE guid = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHPROJECT, "REPLACE INTO character_archproject (guid, projectId, RaceID) VALUES (?, ?, ?)", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHPROJECTHISTORY, "SELECT projectId, count, TimeCreated FROM character_archprojecthistory WHERE guid = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_UPD_PLAYER_ARCHPROJECTHISTORY, "UPDATE character_archprojecthistory SET count = count + 1 WHERE guid = ? AND projectId = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHPROJECTHISTORY, "REPLACE INTO character_archprojecthistory (guid, projectId, count, TimeCreated) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHAELOGY, "SELECT sites, counts, projects FROM character_archaeology WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_ARCHAEOLOGY_FINDS, "SELECT id, count, UNIX_TIMESTAMP(date) FROM character_archaeology_finds WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHAEOLOGY, "REPLACE INTO character_archaeology (guid, sites, counts, projects) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_REP_PLAYER_ARCHAEOLOGY_FINDS, "REPLACE INTO character_archaeology_finds (guid, id, count, date) VALUES (?, ?, ?, FROM_UNIXTIME(?))", CONNECTION_ASYNC);
 
     // Chat channel handling
     PREPARE_STATEMENT(CHAR_SEL_CHANNEL, "SELECT announce, ownership, password, bannedList FROM channels WHERE name = ? AND team = ?", CONNECTION_SYNCH)
@@ -588,7 +584,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_DEL_CHAR_INVENTORY_BY_ITEM, "DELETE FROM character_inventory WHERE item = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_DEL_CHAR_INVENTORY_BY_BAG_SLOT, "DELETE FROM character_inventory WHERE bag = ? AND slot = ? AND guid = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_UPD_MAIL, "UPDATE mail SET has_items = ?, expire_time = ?, deliver_time = ?, money = ?, cod = ?, checked = ? WHERE id = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_REP_CHAR_QUESTSTATUS, "REPLACE INTO character_queststatus (guid, quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, itemcount4, playercount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_REP_CHAR_QUESTSTATUS, "REPLACE INTO character_queststatus (guid, quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, mobcount5, mobcount6, mobcount7, mobcount8, mobcount9, mobcount10,"
+        "itemcount1, itemcount2, itemcount3, itemcount4, itemcount5, itemcount6, itemcount7, itemcount8, itemcount9, itemcount10, playercount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_DEL_CHAR_QUESTSTATUS_BY_QUEST, "DELETE FROM character_queststatus WHERE guid = ? AND quest = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_INS_CHAR_QUESTSTATUS, "INSERT IGNORE INTO character_queststatus_rewarded (guid, quest) VALUES (?, ?)", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_DEL_CHAR_QUESTSTATUS_REWARDED_BY_QUEST, "DELETE FROM character_queststatus_rewarded WHERE guid = ? AND quest = ?", CONNECTION_ASYNC);

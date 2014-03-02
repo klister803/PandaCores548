@@ -221,6 +221,10 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt32(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADARCHAELOGY, stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PLAYER_ARCHAEOLOGY_FINDS);
+    stmt->setUInt32(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS, stmt);
+
     return res;
 }
 
@@ -1204,11 +1208,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         SendNotification(LANG_GM_ON);
 
     // Send CUF profiles (new raid UI 4.2)
-    // 5.0.5 16048 packet dump
-    uint8 cufProfilesRawData[] = {0x00, 0x00, 0x10, 0x48, 0x0C, 0xBA, 0x80, 0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00, 0x50, 0x72, 0x69, 0x6E, 0x63, 0x69, 0x70, 0x61, 0x6C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x00};
-    data.Initialize(SMSG_LOAD_CUF_PROFILES);
-    for(int i = 0; i < 31; i++)
-        data << cufProfilesRawData[i];
+    data.Initialize(SMSG_LOAD_CUF_PROFILES, 3);
+    data.WriteBits(0, 19);
     SendPacket(&data);
 
     // Hackfix Remove Talent spell - Remove Glyph spell
@@ -2572,27 +2573,3 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-//! 5.4.1
-void WorldSession::HandleRequestReaserchHistory(WorldPacket &recv_data)
-{
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_RESEARCH_SETUP_HISTORY");
-
-    if(!_player)
-        return;
-
-    PlayerArchProjectHistoryMap history = _player->getProjectHistoryMap();
-    uint8 count = history.size();
-    if(count <= 0 || history.empty())
-        return;
-
-    WorldPacket data(SMSG_RESEARCH_SETUP_HISTORY);
-    data.WriteBits(count, 20); // count
-
-    for (PlayerArchProjectHistoryMap::const_iterator itr = history.begin(); itr != history.end(); ++itr)
-    {
-        data << uint32(itr->second.projectId); //Project Id
-        data << uint32(itr->second.TimeCreated);   //Time create
-        data << uint32(itr->second.count);   //Count
-    }
-    SendPacket(&data);
-}

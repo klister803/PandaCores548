@@ -21,6 +21,7 @@
 
 #include "Common.h"
 #include "SharedDefines.h"
+#include "DBCEnums.h"
 
 enum ItemModType
 {
@@ -542,10 +543,20 @@ enum ItemSubclassGlyph
 
 enum ItemSubclassBattlePet
 {
-    ITEM_SUBCLASS_BATTLE_PET                    = 0
+    ITEM_SUBCLASS_BATTLE_PET_HUMANOID             = 0,
+    ITEM_SUBCLASS_BATTLE_PET_DRAGONKIN            = 1,
+    ITEM_SUBCLASS_BATTLE_PET_FLYING               = 2,
+    ITEM_SUBCLASS_BATTLE_PET_UNDEAD               = 3,
+    ITEM_SUBCLASS_BATTLE_PET_CRITTER              = 4,
+    ITEM_SUBCLASS_BATTLE_PET_MAGIC                = 5,
+    ITEM_SUBCLASS_BATTLE_PET_ELEMENTAL            = 6,
+    ITEM_SUBCLASS_BATTLE_PET_BEAST                = 7,
+    ITEM_SUBCLASS_BATTLE_PET_AQUATIC              = 8,
+    ITEM_SUBCLASS_BATTLE_PET_MECHANICAL           = 9
+
 };
 
-#define MAX_ITEM_SUBCLASS_BATTLE_PET              1
+#define MAX_ITEM_SUBCLASS_BATTLE_PET              10
 
 const uint32 MaxItemSubclassValues[MAX_ITEM_CLASS] =
 {
@@ -626,6 +637,7 @@ struct ItemTemplate
     uint32 Quality;
     uint32 Flags;
     uint32 Flags2;
+    uint32 Flags3;
     float Unk430_1;
     float Unk430_2;
     uint32 BuyCount;
@@ -756,6 +768,8 @@ struct ItemTemplate
                SubClass == ITEM_SUBCLASS_WEAPON_GUN ||
                SubClass == ITEM_SUBCLASS_WEAPON_CROSSBOW;
     }
+
+    uint32 GetCurrencySubstitutionId() const;
 };
 
 // Benchmarked: Faster than std::map (insert/find)

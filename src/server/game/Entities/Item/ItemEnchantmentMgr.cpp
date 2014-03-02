@@ -125,7 +125,7 @@ uint32 GetItemEnchantMod(int32 entry, uint32 type)
     return 0;
 }
 
-uint32 GenerateEnchSuffixFactor(uint32 item_id)
+uint32 GenerateEnchSuffixFactor(uint32 item_id, uint32 level)
 {
     ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(item_id);
 
@@ -134,28 +134,22 @@ uint32 GenerateEnchSuffixFactor(uint32 item_id)
     if (!itemProto->RandomSuffix)
         return 0;
 
-    RandomPropertiesPointsEntry const* randomProperty = sRandomPropertiesPointsStore.LookupEntry(itemProto->ItemLevel);
+    RandomPropertiesPointsEntry const* randomProperty = sRandomPropertiesPointsStore.LookupEntry(level ? level : itemProto->ItemLevel);
     if (!randomProperty)
         return 0;
 
     uint32 suffixFactor;
     switch (itemProto->InventoryType)
     {
-        // Items of that type don`t have points
-        case INVTYPE_NON_EQUIP:
-        case INVTYPE_BAG:
-        case INVTYPE_TABARD:
-        case INVTYPE_AMMO:
-        case INVTYPE_QUIVER:
-        case INVTYPE_RELIC:
-            return 0;
-            // Select point coefficient
+        // Select point coefficient
         case INVTYPE_HEAD:
         case INVTYPE_BODY:
         case INVTYPE_CHEST:
         case INVTYPE_LEGS:
+        case INVTYPE_RANGED:
         case INVTYPE_2HWEAPON:
         case INVTYPE_ROBE:
+        case INVTYPE_THROWN:
             suffixFactor = 0;
             break;
         case INVTYPE_SHOULDERS:
@@ -178,9 +172,13 @@ uint32 GenerateEnchSuffixFactor(uint32 item_id)
         case INVTYPE_WEAPONOFFHAND:
             suffixFactor = 3;
             break;
-        case INVTYPE_RANGED:
-        case INVTYPE_THROWN:
         case INVTYPE_RANGEDRIGHT:
+            if (itemProto->SubClass == ITEM_SUBCLASS_WEAPON_WAND)
+                suffixFactor = 3;
+            else
+                suffixFactor = 0;
+            break;
+        case INVTYPE_RELIC:
             suffixFactor = 4;
             break;
         default:

@@ -80,7 +80,6 @@ uint32 CONF_TargetBuild = 17538;              // 5.4.1 17538
 // List MPQ for extract maps from
 char const* CONF_mpq_list[] =
 {
-    "world.MPQ",
     "misc.MPQ",
     "expansion1.MPQ",
     "expansion2.MPQ",
@@ -1172,6 +1171,8 @@ void ExtractDB2Files(int l, bool basicLocale)
 bool LoadLocaleMPQFile(int locale)
 {
     TCHAR buff[512];
+
+    // base locale
     memset(buff, 0, sizeof(buff));
     _stprintf(buff, _T("%s/Data/%s/locale-%s.MPQ"), input_path, LocalesT[locale], LocalesT[locale]);
     if (!SFileOpenArchive(buff, 0, MPQ_OPEN_READ_ONLY, &LocaleMpq))
@@ -1180,19 +1181,21 @@ bool LoadLocaleMPQFile(int locale)
             _tprintf(_T("Cannot open archive %s\n"), buff);
         return false;
     }
+    else
+        _tprintf(_T("Loaded %s\n"), buff);
 
+    // patch locale
     char const* prefix = NULL;
     for (int i = 0; Builds[i] && Builds[i] <= CONF_TargetBuild; ++i)
     {
         // Do not attempt to read older MPQ patch archives past this build, they were merged with base
         // and trying to read them together with new base will not end well
         if (CONF_TargetBuild >= NEW_BASE_SET_BUILD && Builds[i] < NEW_BASE_SET_BUILD)
-           continue;
+            continue;
 
         memset(buff, 0, sizeof(buff));
         prefix = "";
         _stprintf(buff, _T("%s/Data/%s/wow-update-%s-%u.MPQ"), input_path, LocalesT[locale], LocalesT[locale], Builds[i]);
-
 
         if (!SFileOpenPatchArchive(LocaleMpq, buff, prefix, 0))
         {
@@ -1204,6 +1207,7 @@ bool LoadLocaleMPQFile(int locale)
             _tprintf(_T("Loaded %s\n"), buff);
     }
 
+    // base
     for (int i = 0; i < sizeof(CONF_mpq_dbc_list) / sizeof(char*); i++)
     {
         memset(buff, 0, sizeof(buff));
@@ -1221,7 +1225,7 @@ bool LoadLocaleMPQFile(int locale)
             _tprintf(_T("Loaded %s\n"), buff);
     }
 
-
+    // base patch
     for (int i = 0; Builds[i] && Builds[i] <= CONF_TargetBuild; ++i)
     {
         // Do not attempt to read older MPQ patch archives past this build, they were merged with base

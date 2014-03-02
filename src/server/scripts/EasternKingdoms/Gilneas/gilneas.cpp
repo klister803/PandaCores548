@@ -401,9 +401,18 @@ public:
                 Player* player = source->ToPlayer();
                 if(!player)
                     return;
-                if (spell->Id == 589 || spell->Id == 172)
+
+                switch (spell->Id)
                 {
-                    player->KilledMonsterCredit(44175, 0);
+                    case 589: 
+                    case 172: 
+                    case 100:
+                    {
+                        player->KilledMonsterCredit(44175, 0);
+                        break;
+                    }
+                    default:
+                        break;
                 }
             }
         }

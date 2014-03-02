@@ -1092,7 +1092,8 @@ bool Aura::CanBeSentToClient() const
     || HasEffectType(SPELL_AURA_WORGEN_ALTERED_FORM)
     || HasEffectType(SPELL_AURA_MOD_CHARGES)
     || HasEffectType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS)
-    || HasEffectType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2);
+    || HasEffectType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2)
+    || HasEffectType(SPELL_AURA_MOD_SPELL_VISUAL);
 }
 
 void Aura::UnregisterSingleTarget()

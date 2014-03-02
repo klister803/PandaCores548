@@ -30,6 +30,7 @@ enum DynamicObjectType
     DYNAMIC_OBJECT_PORTAL           = 0x0,      // unused
     DYNAMIC_OBJECT_AREA_SPELL       = 0x1,
     DYNAMIC_OBJECT_FARSIGHT_FOCUS   = 0x2,
+    DYNAMIC_OBJECT_RAID_MARKER      = 0x3,
 };
 
 class DynamicObject : public WorldObject, public GridObject<DynamicObject>
@@ -57,6 +58,7 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
         uint32 GetSpellId() const {  return GetUInt32Value(DYNAMICOBJECT_SPELLID); }
         uint64 GetCasterGUID() const { return GetUInt64Value(DYNAMICOBJECT_CASTER); }
         float GetRadius() const { return GetFloatValue(DYNAMICOBJECT_RADIUS); }
+        DynamicObjectType GetType() const { return DynamicObjectType(GetByteValue(DYNAMICOBJECT_BYTES, 3) >> 4); }
 
         void Say(int32 textId, uint32 language, uint64 targetGuid) { MonsterSay(textId, language, targetGuid); }
         void Yell(int32 textId, uint32 language, uint64 targetGuid) { MonsterYell(textId, language, targetGuid); }

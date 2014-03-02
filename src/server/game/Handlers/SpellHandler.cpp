@@ -522,6 +522,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     bool hasSpeed = !recvPacket.ReadBit();
     recvPacket.ReadBit();   // item target guid marker
     uint8 archeologyCount = recvPacket.ReadBits(2);
+    targets.m_weights.resize(archeologyCount);
     bool hasMovement = recvPacket.ReadBit();
     recvPacket.ReadBit();   // target guid marker
     bool hasCastFlags = !recvPacket.ReadBit();
@@ -529,7 +530,8 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     bool hasElevation = !recvPacket.ReadBit();
     for (uint8 i = 0; i < archeologyCount; ++i)
-        recvPacket.ReadBits(2);
+        targets.m_weights[i].type = recvPacket.ReadBits(2);
+
     if (stringTargetLen)
         stringTargetLen = recvPacket.ReadBits(7);
 
@@ -602,8 +604,21 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     for (uint8 i = 0; i < archeologyCount; ++i)
     {
-        recvPacket.read_skip<uint32>();             // currency id
-        recvPacket.read_skip<uint32>();             // currency amt
+        switch (targets.m_weights[i].type)
+        {
+            case WEIGHT_KEYSTONE:
+                recvPacket >> targets.m_weights[i].keystone.itemId;
+                recvPacket >> targets.m_weights[i].keystone.itemCount;
+                break;
+            case WEIGHT_FRAGMENT:
+                recvPacket >> targets.m_weights[i].fragment.currencyId;
+                recvPacket >> targets.m_weights[i].fragment.currencyCount;
+                break;
+            default:
+                recvPacket >> targets.m_weights[i].raw.id;
+                recvPacket >> targets.m_weights[i].raw.count;
+                break;
+        }
     }
 
     recvPacket.ReadGuidBytes<4, 3, 5, 6, 0, 7, 2, 1>(itemTargetGuid);
@@ -755,7 +770,8 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     if (mover->GetTypeId() == TYPEID_PLAYER)
     {
         // not have spell in spellbook or spell passive and not casted by client
-        if ((!mover->ToPlayer()->HasActiveSpell(spellId) || spellInfo->IsPassive()) && !spellInfo->ResearchProject && spellId != 101054 && !spellInfo->HasEffect(SPELL_EFFECT_OPEN_LOCK))
+        if ((!mover->ToPlayer()->HasActiveSpell(spellId) || spellInfo->IsPassive()) && !spellInfo->ResearchProject && spellId != 101054 && !spellInfo->HasEffect(SPELL_EFFECT_OPEN_LOCK) &&
+            !(spellInfo->AttributesEx8 & SPELL_ATTR8_RAID_MARKER))
         {
             if(spellId == 101603)
             {
