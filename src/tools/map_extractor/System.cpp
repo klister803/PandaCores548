@@ -576,7 +576,7 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
             }
             // Get custom height
             adt_MCVT *v = cell->getMCVT();
-            //if (!v)
+            if (!v)
                 continue;
             // get V9 height map
             for (int y=0; y <= ADT_CELL_SIZE; y++)
