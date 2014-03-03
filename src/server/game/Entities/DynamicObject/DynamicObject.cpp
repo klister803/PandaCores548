@@ -27,6 +27,7 @@
 #include "GridNotifiersImpl.h"
 #include "ScriptMgr.h"
 #include "GroupMgr.h"
+#include "UpdateFieldFlags.h"
 
 DynamicObject::DynamicObject(bool isWorldObject) : WorldObject(isWorldObject),
     _aura(NULL), _removedAura(NULL), _caster(NULL), _duration(0), _isViewpoint(false)
@@ -37,6 +38,8 @@ DynamicObject::DynamicObject(bool isWorldObject) : WorldObject(isWorldObject),
     m_updateFlag = UPDATEFLAG_STATIONARY_POSITION;
 
     m_valuesCount = DYNAMICOBJECT_END;
+
+    _fieldNotifyFlags = UF_FLAG_DYNAMIC;
 }
 
 DynamicObject::~DynamicObject()

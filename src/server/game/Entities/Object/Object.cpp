@@ -70,19 +70,11 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
     return NUM_CLIENT_OBJECT_TYPES;                         // unknown
 }
 
-Object::Object() : m_PackGUID(sizeof(uint64)+1)
+Object::Object() : m_PackGUID(sizeof(uint64)+1), 
+    m_objectTypeId(TYPEID_OBJECT), m_objectType(TYPEMASK_OBJECT), m_uint32Values(NULL),
+    _changedFields(NULL), m_valuesCount(0), _fieldNotifyFlags(UF_FLAG_NONE), m_inWorld(false),
+    m_objectUpdated(false)
 {
-    m_objectTypeId      = TYPEID_OBJECT;
-    m_objectType        = TYPEMASK_OBJECT;
-
-    m_uint32Values      = NULL;
-    _changedFields      = NULL;
-    m_valuesCount       = 0;
-    _fieldNotifyFlags   = UF_FLAG_DYNAMIC;
-
-    m_inWorld           = false;
-    m_objectUpdated     = false;
-
     m_PackGUID.appendPackGUID(0);
 }
 
@@ -1024,7 +1016,7 @@ bool Object::IsUpdateFieldVisible(uint32 flags, bool isSelf, bool isOwner, bool 
     if (flags == UF_FLAG_NONE)
         return false;
 
-    if (flags & UF_FLAG_PUBLIC)
+    if (flags & (UF_FLAG_PUBLIC | UF_FLAG_DYNAMIC))
         return true;
 
     if (flags & UF_FLAG_PRIVATE && isSelf)
@@ -1077,7 +1069,7 @@ void Object::_SetCreateBits(UpdateMask* updateMask, Player* target) const
         valCount = PLAYER_END_NOT_SELF;
 
     for (uint16 index = 0; index < valCount; ++index, ++value)
-        if (_fieldNotifyFlags & flags[index] || (flags[index] & UF_FLAG_SPECIAL_INFO && hasSpecialInfo) || (*value && IsUpdateFieldVisible(flags[index], isSelf, isOwner, isItemOwner, isPartyMember)))
+        if (_fieldNotifyFlags & flags[index] || (flags[index] & UF_FLAG_DYNAMIC) ||(flags[index] & UF_FLAG_SPECIAL_INFO && hasSpecialInfo) || (*value && IsUpdateFieldVisible(flags[index], isSelf, isOwner, isItemOwner, isPartyMember)))
             updateMask->SetBit(index);
 }
 
