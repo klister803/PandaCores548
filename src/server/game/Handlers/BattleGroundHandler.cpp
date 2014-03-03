@@ -365,9 +365,13 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     recvData.ReadGuidMask<5, 0, 4, 2, 6, 1, 3, 7>(guid);
     recvData.ReadGuidBytes<2, 5, 4, 6, 3, 0, 7, 1>(guid);
 
+	WorldPacket data;
     if (!_player || !_player->InBattlegroundQueue())
     {
         sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BattlegroundHandler: Invalid CMSG_BATTLEFIELD_PORT received from player (Name: %s, GUID: %u), he is not in bg_queue.", _player->GetName(), _player->GetGUIDLow());
+		// in some cases client send port comand without be queued (on Retail too)
+        sBattlegroundMgr->BuildStatusFailedPacket(&data, NULL, _player, queueSlot, ERR_LEAVE_QUEUE);
+        SendPacket(&data);
         return;
     }
 
@@ -458,7 +462,6 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
         }
     }
 
-    WorldPacket data;
     switch (action)
     {
         case 1:                                         // port to battleground
@@ -511,9 +514,9 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
                 if (Bracket* bracket = _player->getBracket(bType))
                     bracket->FinishGame(false, ginfo.OpponentsMatchmakerRating);          
             }
-            //send bg command result to show nice message
-            sBattlegroundMgr->BuildStatusFailedPacket(&data, bg, _player, queueSlot, ERR_LEAVE_QUEUE);
-            SendPacket(&data);
+
+			sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, _player, queueSlot, STATUS_NONE, 0, _player->GetBattlegroundQueueJoinTime(bgTypeId), 0, 0);
+			SendPacket(&data);
 
             _player->RemoveBattlegroundQueueId(bgQueueTypeId);  // must be called this way, because if you move this call to queue->removeplayer, it causes bugs
             bgQueue.RemovePlayer(_player->GetGUID(), true);
@@ -727,7 +730,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
 
 void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_BATTLEMASTER_JOIN_ARENA");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_BATTLEMASTER_JOIN_RATED");
 
     JoinBracket(BRACKET_TYPE_RATED_BG);
 }

@@ -228,12 +228,12 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
 
             *data << uint32(bg->GetClientInstanceID()); // Client Instance ID
             *data << uint8(0);
-            *data << uint32(Time2);             //Time of the join
+            *data << uint32(Time1);             //Time of the join
             data->WriteGuidBytes<3>(guidBytes1);
             data->WriteGuidBytes<1>(guidBytes2);
             data->WriteGuidBytes<2>(guidBytes1);
             *data << uint32((bg->isArena() || bg->IsRBG()) ? arenatype : 1);
-            *data << uint32(Time1);                     // Estimated Wait Time
+            *data << uint32(Time2);                     // Estimated Wait Time
             data->WriteGuidBytes<7>(guidBytes2);
             data->WriteGuidBytes<4>(guidBytes1);
             data->WriteGuidBytes<0>(guidBytes2);
