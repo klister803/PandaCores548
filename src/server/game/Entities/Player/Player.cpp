@@ -5249,17 +5249,9 @@ Mail* Player::GetMail(uint32 id)
 
 void Player::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) const
 {
-    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
-    {
-        if (m_items[i] == NULL)
-            continue;
-
-        m_items[i]->BuildCreateUpdateBlockForPlayer(data, target);
-    }
-
     if (target == this)
     {
-        for (uint8 i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
+        for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_BAG_END; ++i)
         {
             if (m_items[i] == NULL)
                 continue;
@@ -5275,17 +5267,9 @@ void Player::DestroyForPlayer(Player* target, bool onDeath) const
 {
     Unit::DestroyForPlayer(target, onDeath);
 
-    for (uint8 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
-    {
-        if (m_items[i] == NULL)
-            continue;
-
-        m_items[i]->DestroyForPlayer(target);
-    }
-
     if (target == this)
     {
-        for (uint8 i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
+        for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_BAG_END; ++i)
         {
             if (m_items[i] == NULL)
                 continue;
