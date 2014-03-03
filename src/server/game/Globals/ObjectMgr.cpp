@@ -2124,7 +2124,7 @@ void FillItemDamageFields(float* minDamage, float* maxDamage, float* dps, uint32
     *maxDamage = floor(float(avgDamage * (statScalingFactor * 0.5f + 1.0f) + 0.5f));
 }
 
-uint32 FillItemArmor(uint32 itemlevel, uint32 itemClass, uint32 itemSubclass, uint32 quality, uint32 inventoryType)
+uint32 GetItemArmor(uint32 itemlevel, uint32 itemClass, uint32 itemSubclass, uint32 quality, uint32 inventoryType)
 {
     if (quality > ITEM_QUALITY_ARTIFACT)
         return 0;
@@ -2343,7 +2343,7 @@ void ObjectMgr::LoadItemTemplates()
                              sparse->InventoryType, sparse->Flags2);
 
         itemTemplate.DamageType = sparse->DamageType;
-        itemTemplate.Armor = FillItemArmor(sparse->ItemLevel, db2Data->Class, db2Data->SubClass, sparse->Quality, sparse->InventoryType);
+        itemTemplate.Armor = GetItemArmor(sparse->ItemLevel, db2Data->Class, db2Data->SubClass, sparse->Quality, sparse->InventoryType);
         itemTemplate.Delay = sparse->Delay;
         itemTemplate.RangedModRange = sparse->RangedModRange;
         for (uint32 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
@@ -2490,7 +2490,7 @@ void ObjectMgr::LoadItemTemplates()
                 itemTemplate.ItemStat[i].ItemStatType  = uint32(fields[30 + i * 4 + 0].GetUInt8());
                 itemTemplate.ItemStat[i].ItemStatValue = int32(fields[30 + i * 4 + 1].GetInt16());
                 itemTemplate.ItemStat[i].ItemStatUnk1  = fields[30 + i * 4 + 2].GetInt32();
-                itemTemplate.ItemStat[i].ItemStatUnk2  = fields[30 + i * 4 + 3].GetInt32();
+                itemTemplate.ItemStat[i].ItemStatUnk2  = fields[30 + i * 4 + 3].GetFloat();
             }
 
             itemTemplate.ScalingStatDistribution = uint32(fields[70].GetUInt16());
@@ -2501,9 +2501,9 @@ void ObjectMgr::LoadItemTemplates()
                                  fields[131].GetFloat(), itemTemplate.InventoryType, itemTemplate.Flags2);
 
             itemTemplate.DamageType                = fields[71].GetUInt8();
-            itemTemplate.Armor                     = FillItemArmor(itemTemplate.ItemLevel, itemTemplate.Class,
-                                                                   itemTemplate.SubClass, itemTemplate.Quality,
-                                                                   itemTemplate.InventoryType);
+            itemTemplate.Armor                     = GetItemArmor(itemTemplate.ItemLevel, itemTemplate.Class,
+                                                                  itemTemplate.SubClass, itemTemplate.Quality,
+                                                                  itemTemplate.InventoryType);
 
             itemTemplate.Delay                     = fields[72].GetUInt16();
             itemTemplate.RangedModRange            = fields[73].GetFloat();

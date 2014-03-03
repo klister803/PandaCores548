@@ -125,13 +125,9 @@ uint32 GetItemEnchantMod(int32 entry, uint32 type)
     return 0;
 }
 
-uint32 GenerateEnchSuffixFactor(uint32 item_id, uint32 level)
+uint32 GenerateEnchSuffixFactor(ItemTemplate const* itemProto, uint32 level)
 {
-    ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(item_id);
-
     if (!itemProto)
-        return 0;
-    if (!itemProto->RandomSuffix)
         return 0;
 
     RandomPropertiesPointsEntry const* randomProperty = sRandomPropertiesPointsStore.LookupEntry(level ? level : itemProto->ItemLevel);

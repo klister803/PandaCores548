@@ -2483,7 +2483,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
         // create the new item and store it
         Item* pItem = player->StoreNewItem(dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid));
 
-        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pItem->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
+        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
             if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
                 guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_CRAFTED, time(NULL), player->GetGUID(), 0, pProto->ItemId);
 
@@ -7537,8 +7537,19 @@ int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultip
     // Main Hand
     if (mainItem && coeff > 0)
     {
-        minDamage += mainItem->GetTemplate()->DamageMin;
-        maxDamage += mainItem->GetTemplate()->DamageMax;
+        ItemTemplate const* proto = mainItem->GetTemplate();
+        if (mainItem->GetLevel() != proto->ItemLevel)
+        {
+            float DPS;
+            FillItemDamageFields(&minDamage, &maxDamage, &DPS, mainItem->GetLevel(),
+                                 proto->Class, proto->SubClass, proto->Quality, proto->Delay, proto->StatScalingFactor,
+                                 proto->InventoryType, proto->Flags2);
+        }
+        else
+        {
+            minDamage = mainItem->GetTemplate()->DamageMin;
+            maxDamage = mainItem->GetTemplate()->DamageMax;
+        }
 
         minDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
         maxDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
@@ -7547,8 +7558,21 @@ int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultip
     // Off Hand
     if (offItem && coeff > 0)
     {
-        minDamage += offItem->GetTemplate()->DamageMin / 2;
-        maxDamage += offItem->GetTemplate()->DamageMax / 2;
+        ItemTemplate const* proto = offItem->GetTemplate();
+        if (offItem->GetLevel() != proto->ItemLevel)
+        {
+            float DPS;
+            FillItemDamageFields(&minDamage, &maxDamage, &DPS, offItem->GetLevel(),
+                                 proto->Class, proto->SubClass, proto->Quality, proto->Delay, proto->StatScalingFactor,
+                                 proto->InventoryType, proto->Flags2);
+            minDamage /= 2;
+            maxDamage /= 2;
+        }
+        else
+        {
+            minDamage = offItem->GetTemplate()->DamageMin / 2;
+            maxDamage = offItem->GetTemplate()->DamageMax / 2;
+        }
 
         minDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
         maxDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;

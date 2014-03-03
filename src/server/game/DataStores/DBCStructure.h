@@ -1292,6 +1292,12 @@ struct ItemPriceBaseEntry
     float WeaponFactor;                                     // 4        Price factor for weapons
 };
 
+struct GtItemSocketCostPerLevelEntry
+{
+    //uint32 id;                                            // 1
+    float cost;                                             // 2
+};
+
 struct ItemReforgeEntry
 {
     uint32 Id;
