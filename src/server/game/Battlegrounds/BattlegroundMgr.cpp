@@ -1240,7 +1240,6 @@ BracketType BattlegroundMgr::BracketByJoinType(uint8 joinType)
             break;
     }
 
-    ASSERT(false);
     return BRACKET_TYPE_MAX;
 }
 
