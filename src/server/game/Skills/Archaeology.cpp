@@ -754,7 +754,7 @@ void Player::SendCompletedProjects()
 void WorldSession::HandleRequestResearchHistory(WorldPacket& recv_data)
 {
     // null opcode
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "World: received CMSG_REQUEST_RESEARCH_HISTORY from %s (account %u)", GetPlayerName(), GetAccountId());
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "World: received CMSG_REQUEST_RESEARCH_HISTORY from %s (account %u)", GetPlayerName().c_str(), GetAccountId());
 
     _player->SendCompletedProjects();
 }
