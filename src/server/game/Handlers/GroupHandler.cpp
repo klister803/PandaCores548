@@ -1541,7 +1541,7 @@ void WorldSession::HandleClearRaidMarkerOpcode(WorldPacket& recv_data)
     recv_data >> id;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_CLEAR_RAID_MARKER from %s (%u) id: %i",
-        GetPlayerName(), GetAccountId(), id);
+        GetPlayerName().c_str(), GetAccountId(), id);
 
     Group* group = _player->GetGroup();
     if (!group)
