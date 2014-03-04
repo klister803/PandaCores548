@@ -14962,6 +14962,9 @@ float Unit::ApplyEffectModifiers(SpellInfo const* spellProto, uint8 effect_index
             case 3:
                 modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT4, value);
                 break;
+            case 4:
+                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT5, value);
+                break;
         }
     }
     return value;
