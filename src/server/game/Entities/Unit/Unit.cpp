@@ -5888,7 +5888,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     }
                     triggered_spell_id = abs(itr->spell_trigger);
 
-                    if(damage >= triggerAmount)
+                    if (int32(damage) >= triggerAmount)
                     {
                         _caster->CastSpell(target, triggered_spell_id, true);
                         triggeredByAura->GetBase()->Remove(AURA_REMOVE_BY_DEFAULT);
@@ -11863,7 +11863,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 {
     //! Mobs can't crit with spells. Player Totems can
     //! Fire Elemental (from totem) can too - but this part is a hack and needs more research
-    if (IS_CREATURE_GUID(GetGUID()) && !(isTotem() && IS_PLAYER_GUID(GetOwnerGUID())) && GetEntry() != 15438)
+    if (((ToCreature() && ToCreature()->GetMap()->IsDungeon()) || IS_CREATURE_GUID(GetGUID())) && !(isTotem() && IS_PLAYER_GUID(GetOwnerGUID())) && GetEntry() != 15438)
         return false;
 
     // not critting spell
