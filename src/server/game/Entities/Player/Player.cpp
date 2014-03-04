@@ -2950,7 +2950,7 @@ void Player::Regenerate(Powers power)
             addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * ((power != POWER_ENERGY) ? m_regenTimerCount : m_regenTimer) / (5 * IN_MILLISECONDS);
     }
 
-    if (addvalue < 0.0f)
+    if (addvalue <= 0.0f)
     {
         if (curValue == 0)
             return;
