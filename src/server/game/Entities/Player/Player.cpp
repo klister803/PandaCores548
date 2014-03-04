@@ -3182,7 +3182,7 @@ bool Player::CanInteractWithQuestGiver(Object* questGiver)
     return false;
 }
 
-Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
+Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask, uint32 npcflagmask2)
 {
     // unit checks
     if (!guid)
@@ -3209,6 +3209,8 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
 
     // appropriate npc type
     if (npcflagmask && !creature->HasFlag(UNIT_NPC_FLAGS, npcflagmask))
+        return NULL;
+    if (npcflagmask2 && !creature->HasFlag(UNIT_NPC_FLAGS2, npcflagmask2))
         return NULL;
 
     // not allow interaction under control, but allow with own pets
@@ -6160,10 +6162,10 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
         {
             ItemTemplate const* ditemProto = item->GetTemplate();
 
-            DurabilityCostsEntry const* dcost = sDurabilityCostsStore.LookupEntry(item->ItemLevel);
+            DurabilityCostsEntry const* dcost = sDurabilityCostsStore.LookupEntry(item->GetLevel());
             if (!dcost)
             {
-                sLog->outError(LOG_FILTER_PLAYER_ITEMS, "RepairDurability: Wrong item lvl %u", item->ItemLevel);
+                sLog->outError(LOG_FILTER_PLAYER_ITEMS, "RepairDurability: Wrong item lvl %u", item->GetLevel());
                 return TotalCost;
             }
 
@@ -8918,7 +8920,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
         else
         {
             statType = proto->ItemStat[i].ItemStatType;
-            val = proto->ItemStat[i].ItemStatValue;
+            val = m_items[slot]->GetLeveledStatValue(i);
         }
 
         if (val == 0)
@@ -9093,7 +9095,10 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
             ApplySpellPowerBonus(spellbonus, apply);
 
     // If set ScalingStatValue armor get it or use item armor
-    uint32 armor = proto->Armor;
+    uint32 armor = m_items[slot]->GetLevel() != proto->ItemLevel ?
+        GetItemArmor(m_items[slot]->GetLevel(), proto->Class, proto->SubClass, proto->Quality, proto->InventoryType) :
+        proto->Armor;
+
     if (ssv && proto->Class == ITEM_CLASS_ARMOR)
         armor = ssv->GetArmor(proto->InventoryType, proto->SubClass - 1);
 
@@ -9155,6 +9160,13 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
 
     float minDamage = proto->DamageMin;
     float maxDamage = proto->DamageMax;
+    if (m_items[slot]->GetLevel() != proto->ItemLevel)
+    {
+        float DPS;
+        FillItemDamageFields(&minDamage, &maxDamage, &DPS, m_items[slot]->GetLevel(),
+                             proto->Class, proto->SubClass, proto->Quality, proto->Delay, proto->StatScalingFactor,
+                             proto->InventoryType, proto->Flags2);
+    }
 
     // If set dpsMod in ScalingStatValue use it for min (70% from average), max (130% from average) damage
     int32 extraDPS = 0;
@@ -27746,7 +27758,7 @@ float Player::GetAverageItemLevel()
             continue;
 
         if (m_items[i] && m_items[i]->GetTemplate())
-            sum += m_items[i]->GetTemplate()->GetItemLevelIncludingQuality(m_items[i]->ItemLevel);
+            sum += m_items[i]->GetTemplate()->GetItemLevelIncludingQuality(m_items[i]->GetLevel());
 
         ++count;
     }

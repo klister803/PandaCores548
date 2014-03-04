@@ -602,7 +602,7 @@ struct _ItemStat
     uint32  ItemStatType;
     int32   ItemStatValue;
     int32   ItemStatUnk1;
-    int32   ItemStatUnk2;
+    float   ItemStatUnk2;
 };
 
 struct _Spell

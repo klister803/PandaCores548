@@ -33,11 +33,12 @@ DB2Storage <BattlePetSpeciesEntry> sBattlePetSpeciesStore(BattlePetSpeciesEntryf
 DB2Storage <QuestPackageItem> sQuestPackageItemStore(QuestPackageItemfmt);
 DB2Storage <SpellReagentsEntry> sSpellReagentsStore(SpellReagentsEntryfmt);
 DB2Storage <ItemUpgradeEntry> sItemUpgradeStore(ItemUpgradeEntryfmt);
-DB2Storage <RuleSetItemUpgrade> sRuleSetItemUpgradeStore(RuleSetItemUpgradefmt);
+DB2Storage <RuleSetItemUpgradeEntry> sRuleSetItemUpgradeEntryStore(RuleSetItemUpgradeEntryfmt);
 
 typedef std::list<std::string> StoreProblemList1;
 static std::map<uint32, std::list<uint32> > sPackageItemList;
-static std::map<uint32, std::list<uint32> > sRuleSetItemList;
+
+ItemUpgradeDataMap sItemUpgradeDataMap;
 BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 
 uint32 DB2FilesCount = 0;
@@ -119,12 +120,44 @@ void LoadDB2Stores(const std::string& dataPath)
 
     LoadDB2(bad_db2_files, sSpellReagentsStore,     db2Path,"SpellReagents.db2");
     LoadDB2(bad_db2_files, sItemUpgradeStore,       db2Path,"ItemUpgrade.db2");
-    LoadDB2(bad_db2_files, sRuleSetItemUpgradeStore,db2Path,"RulesetItemUpgrade.db2");
+    LoadDB2(bad_db2_files, sRuleSetItemUpgradeEntryStore,db2Path,"RuleSetItemUpgrade.db2");
 
-    for (uint32 i = 0; i < sRuleSetItemUpgradeStore.GetNumRows(); ++i)
+    for (uint32 i = 0; i < sRuleSetItemUpgradeEntryStore.GetNumRows(); ++i)
     {
-        if (RuleSetItemUpgrade const* rsiu = sRuleSetItemUpgradeStore.LookupEntry(i))
-            sRuleSetItemList[rsiu->itemEntry].push_back(i);
+        RuleSetItemUpgradeEntry const* rsiu = sRuleSetItemUpgradeEntryStore.LookupEntry(i);
+        if (!rsiu)
+            continue;
+
+        ItemUpgradeDataMap::iterator itr = sItemUpgradeDataMap.find(rsiu->itemEntry);
+        if (itr != sItemUpgradeDataMap.end())
+            continue;
+
+        ItemUpgradeData& data = sItemUpgradeDataMap[rsiu->itemEntry];
+
+        uint32 offs = 0;
+        uint32 prevUpd = 0;
+        for (uint32 j = 0; j < sItemUpgradeStore.GetNumRows(); ++j)
+        {
+            ItemUpgradeEntry const* ue = sItemUpgradeStore.LookupEntry(j);
+            if (!ue)
+                continue;
+
+            if (!prevUpd)
+            {
+                if (ue->id == rsiu->startUpgrade)
+                {
+                    prevUpd = ue->id;
+                    data.upgrade[offs++] = ue;
+                    j = 0;
+                }
+            }
+            else if (ue->prevUpgradeId == prevUpd)
+            {
+                prevUpd = ue->id;
+                data.upgrade[offs++] = ue;
+                j = 0;
+            }
+        }
     }
 
     if (false)
@@ -200,9 +233,13 @@ std::list<uint32> GetPackageItemList(uint32 packageEntry)
     return sPackageItemList[packageEntry];
 }
 
-std::list<uint32> GetRuleSetItemList(uint32 itemEntry)
+ItemUpgradeData const* GetItemUpgradeData(uint32 itemEntry)
 {
-    return sRuleSetItemList[itemEntry];
+    ItemUpgradeDataMap::iterator itr = sItemUpgradeDataMap.find(itemEntry);
+    if (itr == sItemUpgradeDataMap.end())
+        return NULL;
+
+    return &itr->second;
 }
 
 SpellReagentMap sSpellReagentMap;
