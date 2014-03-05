@@ -134,10 +134,14 @@ enum SpellModOp
     SPELLMOD_CRIT_DAMAGE_BONUS_2    = 29, //one not used spell
     SPELLMOD_SPELL_COST_REFUND_ON_FAIL = 30,
     SPELLMOD_STACKAMOUNT            = 31,
-    SPELLMOD_EFFECT4                = 32
+    SPELLMOD_EFFECT4                = 32,
+    SPELLMOD_EFFECT5                = 33,
+    SPELLMOD_UNK34                  = 34,
+    SPELLMOD_UNK35                  = 35,
+    SPELLMOD_JUMP_DISTANCE          = 36,
 };
 
-#define MAX_SPELLMOD 36
+#define MAX_SPELLMOD 37
 
 enum SpellValueMod
 {
