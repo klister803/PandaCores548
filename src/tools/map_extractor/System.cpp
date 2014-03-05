@@ -454,13 +454,13 @@ uint8 liquid_flags[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
 bool  liquid_show[ADT_GRID_SIZE][ADT_GRID_SIZE];
 float liquid_height[ADT_GRID_SIZE+1][ADT_GRID_SIZE+1];
 
-bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/, uint32 build)
+bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/, uint32 build, HANDLE hTMP)
 {
     ADT_file adt;
 
     //printf("ConvertADT %s\n", filename);
 
-    if (!adt.loadFile(WorldMpq, filename))
+    if (!adt.loadFile(hTMP, filename))
         return false;
 
     memset(liquid_show, 0, sizeof(liquid_show));
@@ -576,8 +576,9 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
             }
             // Get custom height
             adt_MCVT *v = cell->getMCVT();
-            if (!v)
+            if (!v || cell->offsMCVT > cell->GetSize())
                 continue;
+            //printf("ConvertADT %u - %u\n", cell->GetSize(), cell->offsMCVT);
             // get V9 height map
             for (int y=0; y <= ADT_CELL_SIZE; y++)
             {
@@ -585,8 +586,9 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
                 for (int x=0; x <= ADT_CELL_SIZE; x++)
                 {
                     int cx = j*ADT_CELL_SIZE + x;
+                    int cxx = y*(ADT_CELL_SIZE*2+1)+x;
                     //printf("ConvertADT %f\t", y*(ADT_CELL_SIZE*2+1)+x);
-                    V9[cy][cx]+=v->height_map[y*(ADT_CELL_SIZE*2+1)+x]; //on this crashed extractor
+                    V9[cy][cx]+=v->height_map[cxx]; //on this crashed extractor
                 }
             }
             // get V8 height map
@@ -1012,7 +1014,6 @@ void ExtractMapsFromMpq(uint32 build)
     char mpq_filename[1024];
     char output_filename[1024];
     char mpq_map_name[1024];
-
     printf("Extracting maps...\n");
 
     uint32 map_count = ReadMapDBC();
@@ -1024,14 +1025,51 @@ void ExtractMapsFromMpq(uint32 build)
     path += "/maps/";
     CreateDir(path);
 
+    HANDLE hTMP = NULL;
+    HANDLE checked = NULL;
+    char filename[1024];
+
+
     printf("Convert map files\n");
     for (uint32 z = 0; z < map_count; ++z)
     {
-        printf("Extract %s (%d/%u)                  \n", map_ids[z].name, z+1, map_count);
+        //if (map_ids[z].id != 1134) continue;
+        printf("Extract %s:%u (%d/%u)                  \n", map_ids[z].name, map_ids[z].id, z+1, map_count);
         // Loadup map grid data
         sprintf(mpq_map_name, "World\\Maps\\%s\\%s.wdt", map_ids[z].name, map_ids[z].name);
         WDT_file wdt;
+        checked = NULL;
+
         if (!wdt.loadFile(WorldMpq, mpq_map_name, false))
+        {
+            for (int i = 0; Builds[i] && Builds[i] <= CONF_TargetBuild; ++i)
+            {
+                if (CONF_TargetBuild >= NEW_BASE_SET_BUILD && Builds[i] < NEW_BASE_SET_BUILD)
+                    continue;
+
+                memset(filename, 0, sizeof(filename));
+                _stprintf(filename, _T("%s/Data/wow-update-base-%u.MPQ"), input_path, Builds[i]);
+ 
+                hTMP = NULL;
+                if (!SFileOpenArchive(filename, 0, MPQ_OPEN_READ_ONLY, &hTMP))
+                    continue;
+
+                SFILE_FIND_DATA sf2;
+                HANDLE hFind = SFileFindFirstFile(hTMP, mpq_map_name, &sf2, NULL);
+
+                if (!wdt.loadFile(hTMP, mpq_map_name, false))
+                {
+                    SFileCloseArchive(hTMP);
+                    continue;
+                }
+                checked = hTMP;
+                printf("File %s fined only on custom patch: %s", map_ids[z].name, filename);
+                break;
+            }
+        }else
+            checked = WorldMpq;
+
+        if (!checked)
             continue;
 
         for (uint32 y = 0; y < WDT_MAP_SIZE; ++y)
@@ -1043,7 +1081,7 @@ void ExtractMapsFromMpq(uint32 build)
 
                 sprintf(mpq_filename, "World\\Maps\\%s\\%s_%u_%u.adt", map_ids[z].name, map_ids[z].name, x, y);
                 sprintf(output_filename, "%s/maps/%04u%02u%02u.map", output_path, map_ids[z].id, y, x);
-                ConvertADT(mpq_filename, output_filename, y, x, build);
+                ConvertADT(mpq_filename, output_filename, y, x, build, checked);
             }
 
             // draw progress bar
@@ -1260,8 +1298,7 @@ void LoadCommonMPQFiles(uint32 build)
     _tprintf(_T("Loading common MPQ files\n"));
     if (!SFileOpenArchive(filename, 0, MPQ_OPEN_READ_ONLY, &WorldMpq))
     {
-        if (GetLastError() != ERROR_PATH_NOT_FOUND)
-            _tprintf(_T("Cannot open archive %s\n"), filename);
+        _tprintf(_T("Cannot open archive %s\n"), filename);
         return;
     }
 

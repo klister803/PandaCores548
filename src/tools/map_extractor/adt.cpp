@@ -122,6 +122,9 @@ bool adt_MCNK::prepareLoadedData()
     if (fcc != 'MCNK')
         return false;
 
+    if (offsMCVT && offsMCVT > size)
+        return false;
+
     // Check height map
     if (offsMCVT && !getMCVT()->prepareLoadedData())
         return false;

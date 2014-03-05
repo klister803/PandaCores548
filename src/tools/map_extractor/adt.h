@@ -114,7 +114,7 @@ public:
     bool   prepareLoadedData();
     adt_MCVT *getMCVT()
     {
-        if (offsMCVT)
+        if (offsMCVT )
             return (adt_MCVT *)((uint8 *)this + offsMCVT);
         return 0;
     }
@@ -124,6 +124,7 @@ public:
             return (adt_MCLQ *)((uint8 *)this + offsMCLQ);
         return 0;
     }
+    uint32 GetSize() { return size; }
 };
 
 //
