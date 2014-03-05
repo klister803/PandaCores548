@@ -214,7 +214,7 @@ class boss_tsulong : public CreatureScript
 
             void JustDied(Unit* killer)
             {
-                me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             }
             
             void UpdateAI(const uint32 diff)
