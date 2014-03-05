@@ -24,13 +24,21 @@ enum BattlegroundTTPObjectTypes
 {
     BG_TTP_OBJECT_DOOR_1         = 0,
     BG_TTP_OBJECT_DOOR_2         = 1,
-    BG_TTP_OBJECT_MAX            = 2
+    BG_TTP_OBJECT_BUFF_1         = 2,
+    BG_TTP_OBJECT_BUFF_2         = 3,
+    BG_TTP_OBJECT_PORT_1         = 4,
+    BG_TTP_OBJECT_PORT_2         = 5,
+    BG_TTP_OBJECT_MAX            = 6
 };
 
 enum BattlegroundTTPObjects
 {
-    BG_TTP_OBJECT_TYPE_DOOR_1    = 184664,
-    BG_TTP_OBJECT_TYPE_DOOR_2    = 184663
+    BG_TTP_OBJECT_TYPE_BUFF_1     = 184664,
+    BG_TTP_OBJECT_TYPE_BUFF_2     = 184663,
+    BG_TTP_OBJECT_TYPE_DOOR_1     = 210866,     //HACK. ToDo: finde correct entry and positions
+    BG_TTP_OBJECT_TYPE_DOOR_2     = 210866,     //HACK.
+    BG_TTP_OBJECT_TYPE_PORTAL     = 181621
+
 };
 
 class BattlegroundTTPScore : public BattlegroundScore
