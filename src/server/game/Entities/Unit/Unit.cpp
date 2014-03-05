@@ -7555,6 +7555,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 84654: // Bandit's Guile
+                {
+                    insightCount++;
+
+                    if (insightCount > 3)
+                    {
+                        if       (HasAura(84745)) AddAura(84746, this);
+                        else if  (HasAura(84746)) AddAura(84747, this);
+                        else if (!HasAura(84747)) AddAura(84745, this);
+                    }
+                    else
+                    {
+                        if      (Aura *  GreenBuff = GetAura(84745))  GreenBuff->RefreshDuration();
+                        else if (Aura * YellowBuff = GetAura(84746)) YellowBuff->RefreshDuration();
+                    }
+                    break;
+                }
                 case 51701: // Honor Among Thieves
                 {
                     if (Unit * owner = (Unit *)(triggeredByAura->GetBase()->GetOwner()))
@@ -12142,7 +12159,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 {
     //! Mobs can't crit with spells. Player Totems can
     //! Fire Elemental (from totem) can too - but this part is a hack and needs more research
-    if (IS_CREATURE_GUID(GetGUID()) && !(isTotem() && IS_PLAYER_GUID(GetOwnerGUID())) && GetEntry() != 15438)
+    if (((ToCreature() && ToCreature()->GetMap()->IsDungeon()) || IS_CREATURE_GUID(GetGUID())) && !(isTotem() && IS_PLAYER_GUID(GetOwnerGUID())) && GetEntry() != 15438)
         return false;
 
     // not critting spell
@@ -13787,6 +13804,17 @@ void Unit::ClearInCombat()
         ToPlayer()->UpdatePotionCooldown();
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        switch (getClass())
+        {
+            case CLASS_MONK:    ToPlayer()->ResetRegenTimerCount(POWER_CHI);        break;
+            case CLASS_PALADIN: ToPlayer()->ResetRegenTimerCount(POWER_HOLY_POWER); break;
+            default:
+                break;
+        }
+    }
 }
 
 bool Unit::isTargetableForAttack(bool checkFakeDeath) const
@@ -15677,33 +15705,29 @@ void Unit::SetPower(Powers power, int32 val)
         data.WriteGuidBytes<7, 4, 5, 6, 3>(guid);
         SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
     }
-
-    // Custom MoP Script
-    // Pursuit of Justice - 26023
-    if (Player* _player = ToPlayer())
+    
+    if (Player* player = ToPlayer())
     {
-        if (_player->HasAura(26023))
+        player->ResetRegenTimerCount(power);
+
+        if (player->HasAura(26023)) // Pursuit of Justice - 26023 Custom MoP Script
         {
-            Aura* aura = _player->GetAura(26023);
+            Aura* aura = player->GetAura(26023);
             if (aura)
             {
-                int32 holyPower = _player->GetPower(POWER_HOLY_POWER) >= 3 ? 3 : _player->GetPower(POWER_HOLY_POWER);
+                int32 holyPower = player->GetPower(POWER_HOLY_POWER) >= 3 ? 3 : player->GetPower(POWER_HOLY_POWER);
                 int32 AddValue = 5 * holyPower;
 
                 aura->GetEffect(0)->ChangeAmount(15 + AddValue);
 
-                Aura* aura2 = _player->AddAura(114695, _player);
+                Aura* aura2 = player->AddAura(114695, player);
                 if (aura2)
                     aura2->GetEffect(0)->ChangeAmount(AddValue);
             }
         }
-        else if (_player->HasAura(114695))
-            _player->RemoveAura(114695);
-    }
+        else if (player->HasAura(114695))
+            player->RemoveAura(114695);
 
-    // group update
-    if (Player* player = ToPlayer())
-    {
         if (player->GetGroup())
             player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
     }
@@ -16395,49 +16419,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (roll_chance_i(20))
             ToPlayer()->AddComboPoints(target, 1);
 
-    // Bandit's Guile - 84654
-    // Your Sinister Strike and Revealing Strike abilities increase your damage dealt by up to 30%
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(84654) && procSpell && (procSpell->Id == 84617 || procSpell->Id == 1752))
-    {
-        insightCount++;
-
-        // it takes a total of 4 strikes to get a proc, or a level up
-        if (insightCount >= 4)
-        {
-            insightCount = 0;
-
-            // it takes 4 strikes to get Shallow insight
-            // than 4 strikes to get Moderate insight
-            // and than 4 strikes to get Deep Insight
-
-            // Shallow Insight
-            if (HasAura(84745))
-            {
-                RemoveAura(84745);
-                CastSpell(this, 84746, true); // Moderate Insight
-            }
-            else if (HasAura(84746))
-            {
-                RemoveAura(84746);
-                CastSpell(this, 84747, true); // Deep Insight
-            }
-            // the cycle will begin
-            else if (!HasAura(84747))
-                CastSpell(this, 84745, true); // Shallow Insight
-        }
-        else
-        {
-            // Each strike refreshes the duration of shallow insight or Moderate insight
-            // but you can't refresh Deep Insight without starting from shallow insight.
-            // Shallow Insight
-            if (Aura* shallowInsight = GetAura(84745))
-                shallowInsight->RefreshDuration();
-            // Moderate Insight
-            else if (Aura* moderateInsight = GetAura(84746))
-                moderateInsight->RefreshDuration();
-        }
-    }
-
     // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
         if (Aura* aura = GetAura(53257))
@@ -16489,7 +16470,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             continue;
         ProcTriggeredData triggerData(itr->second->GetBase());
         // Defensive procs are active on absorbs (so absorption effects are not a hindrance)
-        bool active = damage || (procExtra & PROC_EX_BLOCK && isVictim);
+        bool active = damage || (procExtra & PROC_EX_BLOCK && isVictim) || (procExtra & PROC_EX_ABSORB && !isVictim);
         if (isVictim)
             procExtra &= ~PROC_EX_INTERNAL_REQ_FAMILY;
 

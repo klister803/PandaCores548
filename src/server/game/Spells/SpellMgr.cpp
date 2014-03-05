@@ -182,7 +182,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             if (spellproto->SpellFamilyFlags[0] & 0x100000)
                 return DIMINISHING_LIMITONLY;
             // Turn Evil
-            else if ((spellproto->SpellFamilyFlags[1] & 0x804000) && spellproto->SpellIconID == 309)
+            else if (spellproto->Id == 10326)
                 return DIMINISHING_FEAR;
             break;
         }
@@ -332,6 +332,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
         case DIMINISHING_CONTROLLED_STUN:
         case DIMINISHING_CONTROLLED_ROOT:
         case DIMINISHING_CYCLONE:
+        case DIMINISHING_DISARM:
         case DIMINISHING_DISORIENT:
         case DIMINISHING_ENTRAPMENT:
         case DIMINISHING_FEAR:
@@ -3339,6 +3340,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 126462: // Thermal Anvil
+                    spellInfo->Effects[1].MiscValue = 0;
+                    break;
                 case 1943:  // Rupture
                 case 2818:  // Deadly Poison
                 case 703:   // Garrote
@@ -4330,6 +4334,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 122789: //SunBeam trigger aura
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
+                    break;
+                case 122855: //Sun Breath
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENTRY;
+                    spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENTRY;
+                    spellInfo->Effects[1].Effect = 0;
                     break;
                 //Lei Shi
                 case 123121: //Spray

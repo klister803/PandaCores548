@@ -1049,6 +1049,10 @@ SpellInfo::~SpellInfo()
 
 SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) const
 {
+    // custom spell effects (needed for rewrite targets, etc..)
+    if (Id == 122855) //Sun Breath (Tsulong)
+        return Effects[effect];
+
     if(difficulty)
     {
         SpellEffectInfoMap::const_iterator itr = EffectsMap.find(MAKE_PAIR16(effect, difficulty));

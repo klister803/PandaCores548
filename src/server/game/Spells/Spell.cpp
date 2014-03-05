@@ -6096,6 +6096,39 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 switch (m_spellInfo->Id)
                 {
+                    case 115080:
+                    {
+                        if (Unit * target = m_targets.GetUnitTarget())
+                        {
+                            if (Creature * unit = target->ToCreature())
+                                if (unit->IsDungeonBoss())
+                                    return SPELL_FAILED_BAD_TARGETS;
+
+                            if (m_caster->HasAura(124490))
+                            {
+                                if (Player * plr = target->ToPlayer())
+                                    if (plr->GetHealthPct() > 10)
+                                        return SPELL_FAILED_BAD_TARGETS;
+
+                                if (Unit * owner = target->GetOwner())
+                                    if (owner->GetTypeId() == TYPEID_PLAYER && target->GetHealthPct() > 10)
+                                        return SPELL_FAILED_BAD_TARGETS;
+                            }
+                            else
+                            {
+                                if (target->GetTypeId() == TYPEID_PLAYER)
+                                    return SPELL_FAILED_BAD_TARGETS;
+
+                                if (Unit * owner = target->GetOwner())
+                                    if (owner->GetTypeId() == TYPEID_PLAYER)
+                                        return SPELL_FAILED_BAD_TARGETS;
+
+                                if (target->GetHealth() > m_caster->GetMaxHealth())
+                                    return SPELL_FAILED_BAD_TARGETS;
+                            }
+                        }
+                        break;
+                    }
                     case 86121:  // Soul Swap
                     {
                         if (Unit* target = m_targets.GetUnitTarget())
@@ -6865,8 +6898,6 @@ SpellCastResult Spell::CheckCasterAuras() const
     else if (unitflag & UNIT_FLAG_SILENCED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
         prevented_reason = SPELL_FAILED_SILENCED;
     else if (unitflag & UNIT_FLAG_PACIFIED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY)
-        prevented_reason = SPELL_FAILED_PACIFIED;
-    else if (m_spellInfo->Id == 1850) // THIS ... IS ... HACKYYYY !
         prevented_reason = SPELL_FAILED_PACIFIED;
 
     // Attr must make flag drop spell totally immune from all effects

@@ -39,6 +39,7 @@ enum eEnums
     NPC_ADA                 = 3849,
     NPC_ARCHMAGE_ARUGAL     = 4275,
     NPC_ARUGAL_VOIDWALKER   = 4627,
+    NPC_BARON_ASHBURY       = 46962, //Update in Cataclysm
 
     GO_COURTYARD_DOOR       = 18895,                        //door to open when talking to NPC's
     GO_SORCERER_DOOR        = 18972,                        //door to open when Fenrus the Devourer
@@ -106,6 +107,15 @@ public:
                 case NPC_ASH: uiAshGUID = creature->GetGUID(); break;
                 case NPC_ADA: uiAdaGUID = creature->GetGUID(); break;
                 case NPC_ARCHMAGE_ARUGAL: uiArchmageArugalGUID = creature->GetGUID(); break;
+            }
+        }
+
+        void OnUnitDeath(Unit* who)
+        {
+            if (who->ToCreature())
+            {
+                if (who->GetEntry() == NPC_BARON_ASHBURY)
+                    HandleGameObject(DoorCourtyardGUID, true);
             }
         }
 
