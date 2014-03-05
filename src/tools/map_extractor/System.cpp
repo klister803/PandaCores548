@@ -1025,11 +1025,6 @@ void ExtractMapsFromMpq(uint32 build)
     path += "/maps/";
     CreateDir(path);
 
-    HANDLE hTMP = NULL;
-    HANDLE checked = NULL;
-    char filename[1024];
-
-
     printf("Convert map files\n");
     for (uint32 z = 0; z < map_count; ++z)
     {
@@ -1038,38 +1033,8 @@ void ExtractMapsFromMpq(uint32 build)
         // Loadup map grid data
         sprintf(mpq_map_name, "World\\Maps\\%s\\%s.wdt", map_ids[z].name, map_ids[z].name);
         WDT_file wdt;
-        checked = NULL;
 
-        if (!wdt.loadFile(WorldMpq, mpq_map_name, false))
-        {
-            for (int i = 0; Builds[i] && Builds[i] <= CONF_TargetBuild; ++i)
-            {
-                if (CONF_TargetBuild >= NEW_BASE_SET_BUILD && Builds[i] < NEW_BASE_SET_BUILD)
-                    continue;
-
-                memset(filename, 0, sizeof(filename));
-                _stprintf(filename, _T("%s/Data/wow-update-base-%u.MPQ"), input_path, Builds[i]);
- 
-                hTMP = NULL;
-                if (!SFileOpenArchive(filename, 0, MPQ_OPEN_READ_ONLY, &hTMP))
-                    continue;
-
-                SFILE_FIND_DATA sf2;
-                HANDLE hFind = SFileFindFirstFile(hTMP, mpq_map_name, &sf2, NULL);
-
-                if (!wdt.loadFile(hTMP, mpq_map_name, false))
-                {
-                    SFileCloseArchive(hTMP);
-                    continue;
-                }
-                checked = hTMP;
-                printf("File %s fined only on custom patch: %s", map_ids[z].name, filename);
-                break;
-            }
-        }else
-            checked = WorldMpq;
-
-        if (!checked)
+        if (!wdt.loadFile(WorldMpq, mpq_map_name, true))
             continue;
 
         for (uint32 y = 0; y < WDT_MAP_SIZE; ++y)
@@ -1081,7 +1046,7 @@ void ExtractMapsFromMpq(uint32 build)
 
                 sprintf(mpq_filename, "World\\Maps\\%s\\%s_%u_%u.adt", map_ids[z].name, map_ids[z].name, x, y);
                 sprintf(output_filename, "%s/maps/%04u%02u%02u.map", output_path, map_ids[z].id, y, x);
-                ConvertADT(mpq_filename, output_filename, y, x, build, checked);
+                ConvertADT(mpq_filename, output_filename, y, x, build, WorldMpq);
             }
 
             // draw progress bar
@@ -1328,7 +1293,7 @@ void LoadCommonMPQFiles(uint32 build)
         memset(filename, 0, sizeof(filename));
         _stprintf(filename, _T("%s/Data/wow-update-base-%u.MPQ"), input_path, Builds[i]);
  
-        if (!SFileOpenPatchArchive(WorldMpq, filename, "base", 0))
+        if (!SFileOpenPatchArchive(WorldMpq, filename, NULL, 0))
         {
             if (GetLastError() != ERROR_PATH_NOT_FOUND)
                 _tprintf(_T("Cannot open patch archive %s\n"), filename);
