@@ -536,6 +536,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                 break;
             case BATTLEGROUND_NA:
             case BATTLEGROUND_TV:
+            case BATTLEGROUND_TTP:
             case BATTLEGROUND_BE:
             case BATTLEGROUND_AA:
             case BATTLEGROUND_RL:
@@ -839,9 +840,9 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         case BATTLEGROUND_NA:
             bg = new BattlegroundNA(*(BattlegroundNA*)bg_template);
             break;
-        //case BATTLEGROUND_TTP:
-        //    bg = new BattlegroundTTP(*(BattlegroundTTP*)bg_template);
-        //    break;
+        case BATTLEGROUND_TTP:
+            bg = new BattlegroundTTP(*(BattlegroundTTP*)bg_template);
+            break;
         case BATTLEGROUND_TV:
             bg = new BattlegroundTV(*(BattlegroundTV*)bg_template);
             break;
@@ -944,7 +945,7 @@ uint32 BattlegroundMgr::CreateBattleground(CreateBattlegroundData& data)
         case BATTLEGROUND_WS: bg = new BattlegroundWS; break;
         case BATTLEGROUND_AB: bg = new BattlegroundAB; break;
         case BATTLEGROUND_NA: bg = new BattlegroundNA; break;
-        //case BATTLEGROUND_TTP: bg = new BattlegroundTTP; break;
+        case BATTLEGROUND_TTP: bg = new BattlegroundTTP; break;
         case BATTLEGROUND_TV: bg = new BattlegroundTV; break;
         case BATTLEGROUND_BE: bg = new BattlegroundBE; break;
         case BATTLEGROUND_AA: bg = new BattlegroundAA; break;
@@ -1218,7 +1219,7 @@ bool BattlegroundMgr::IsArenaType(BattlegroundTypeId bgTypeId)
         bgTypeId == BATTLEGROUND_DS ||
         bgTypeId == BATTLEGROUND_RV ||
         bgTypeId == BATTLEGROUND_RL ||
-        //bgTypeId == BATTLEGROUND_TTP ||
+        bgTypeId == BATTLEGROUND_TTP ||
         bgTypeId == BATTLEGROUND_TV);
 }
 
@@ -1298,7 +1299,7 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
         case BATTLEGROUND_BE:
         case BATTLEGROUND_DS:
         case BATTLEGROUND_RV:
-        //case BATTLEGROUND_TTP:
+        case BATTLEGROUND_TTP:
         case BATTLEGROUND_TV:
             switch (arenaType)
             {
