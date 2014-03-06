@@ -465,7 +465,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //406 SPELL_AURA_406
     &AuraEffect::HandleModFear,                                   //407 SPELL_AURA_MOD_FEAR_2
     &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_PROC_SPELL_CHARGE
-    &AuraEffect::HandleNULL,                                      //409 SPELL_AURA_MOD_FALL_SPEED
+    &AuraEffect::HandleAuraGlide,                                 //409 SPELL_AURA_GLIDE
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
     &AuraEffect::HandleNoImmediateEffect,                         //411 SPELL_AURA_MOD_CHARGES implemented in Spell::cast
     &AuraEffect::HandleModPowerRegen,                             //412 SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN
@@ -3427,6 +3427,28 @@ void AuraEffect::HandleAuraFeatherFall(AuraApplication const* aurApp, uint8 mode
     // start fall from current height
     if (!apply && target->GetTypeId() == TYPEID_PLAYER)
         target->ToPlayer()->SetFallInformation(0, target->GetPositionZ());
+}
+
+void AuraEffect::HandleAuraGlide(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    if (!apply)
+    {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (target->HasAuraType(GetAuraType()))
+            return;
+    }
+
+    if (apply)
+        target->AddExtraUnitMovementFlag(MOVEMENTFLAG2_0x1000);
+    else
+        target->RemoveExtraUnitMovementFlag(MOVEMENTFLAG2_0x1000);
+
+    target->SendMoveflag2_0x1000_Update(apply);
 }
 
 void AuraEffect::HandleAuraHover(AuraApplication const* aurApp, uint8 mode, bool apply) const

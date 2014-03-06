@@ -781,6 +781,7 @@ enum MovementFlags2
     MOVEMENTFLAG2_INTERPOLATED_MOVEMENT         = 0x00000200,
     MOVEMENTFLAG2_INTERPOLATED_TURNING          = 0x00000400,
     MOVEMENTFLAG2_INTERPOLATED_PITCHING         = 0x00000800,
+    MOVEMENTFLAG2_0x1000                        = 0x00001000,
 };
 
 enum UnitTypeMask
@@ -2344,6 +2345,8 @@ class Unit : public WorldObject
 
         void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
         void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
+
+        void SendMoveflag2_0x1000_Update(bool on);
 
     protected:
         explicit Unit (bool isWorldObject);

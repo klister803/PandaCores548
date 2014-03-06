@@ -248,6 +248,7 @@ class AuraEffect
         void HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraWaterWalk(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraFeatherFall(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraGlide(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraHover(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleWaterBreathing(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleForceMoveForward(AuraApplication const* aurApp, uint8 mode, bool apply) const;

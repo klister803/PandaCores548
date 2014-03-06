@@ -67,6 +67,10 @@ public:
     bool  prepareLoadedData();
 };
 
+enum MCNK_Flags
+{
+    FLAG_HIGHRES_HOLES = 0x10000,
+};
 //
 // Adt file cell chunk
 //
@@ -83,7 +87,7 @@ public:
     uint32 iy;
     uint32 nLayers;
     uint32 nDoodadRefs;
-    uint32 offsMCVT;        // height map
+    uint32 offsMCVT;        // height map +28
     uint32 offsMCNR;        // Normal vectors for each vertex
     uint32 offsMCLY;        // Texture layer definitions
     uint32 offsMCRF;        // A list of indices into the parent file's MDDF chunk
@@ -93,7 +97,7 @@ public:
     uint32 sizeMCSH;
     uint32 areaid;
     uint32 nMapObjRefs;
-    uint32 holes;
+    uint32 holes;           // +68
     uint16 s[2];
     uint32 data1;
     uint32 data2;
@@ -111,11 +115,15 @@ public:
     uint32 props;
     uint32 effectId;
 
-    bool   prepareLoadedData();
+    bool hasHighResHoles() const { return (flags & FLAG_HIGHRES_HOLES) != 0; }
+    //uint32 getoffsMCVT() const { return hasHighResHoles() ? sizeof(*this) : offsMCVT; }
+    uint32 getoffsMCVT() const { return sizeof(*this); }
+
+    bool prepareLoadedData();
     adt_MCVT *getMCVT()
     {
-        if (offsMCVT )
-            return (adt_MCVT *)((uint8 *)this + offsMCVT);
+        if (getoffsMCVT() )
+            return (adt_MCVT *)((uint8 *)this + getoffsMCVT());
         return 0;
     }
     adt_MCLQ *getMCLQ()
@@ -124,7 +132,6 @@ public:
             return (adt_MCLQ *)((uint8 *)this + offsMCLQ);
         return 0;
     }
-    uint32 GetSize() { return size; }
 };
 
 //
