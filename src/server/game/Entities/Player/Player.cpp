@@ -10298,7 +10298,6 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Sending SMSG_INIT_WORLD_STATES to Map: %u, Zone: %u", mapid, zoneid);
 
-
     WorldPacket data(SMSG_INIT_WORLD_STATES, (4+4+4+2+(NumberOfFields*8)));
     data << uint32(zoneid);                                 // zone id
     data << uint32(areaid);                                 // area id, new 2.1.0
@@ -10853,7 +10852,7 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
     }
 
     uint16 length = (data.wpos() - countPos) / 8;
-    data.PutBits<uint32>(0, length, 21);
+    data.PutBits<uint32>(bpos, length, 21);
 
     GetSession()->SendPacket(&data);
     SendBGWeekendWorldStates();
