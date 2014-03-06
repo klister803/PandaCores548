@@ -6233,8 +6233,8 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
     float ratio = 0.1f;
     float speedxy = float(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue) * ratio;
     float speedz = float(damage) * ratio;
-    if (speedxy < 0.1f && speedz < 0.1f)
-        return;
+    /*if (fabs(speedxy < 0.1f) && speedz < 0.1f)
+        return;*/
 
     float x, y;
     if (m_spellInfo->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_KNOCK_BACK_DEST)
