@@ -1435,6 +1435,9 @@ enum Opcodes
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x05AC, // 5.4.1 17538
     SMSG_XP_GAIN_ABORTED                              = 0xB76,  // 5.0.5 16048
     SMSG_ZONE_UNDER_ATTACK                            = 0x148D, // 5.4.1 17538
+
+    SMSG_SET_MOVEFLAG2_0x1000                         = 0x0386, // 5.4.1 17538
+    SMSG_UNSET_MOVEFLAG2_0x1000                       = 0x07A4, // 5.4.1 17538
 };
 
 /// Player state

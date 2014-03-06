@@ -466,7 +466,7 @@ enum AuraType
     SPELL_AURA_406                                          = 406,  // allow jump in air?
     SPELL_AURA_MOD_FEAR_2                                   = 407,
     SPELL_AURA_PROC_SPELL_CHARGE                            = 408,
-    SPELL_AURA_MOD_FALL_SPEED                               = 409,
+    SPELL_AURA_GLIDE                                        = 409,
     SPELL_AURA_410                                          = 410,  // Glyph of Stampede
     SPELL_AURA_MOD_CHARGES                                  = 411,  // SPELL_AURA_MOD_CHARGES
     SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN                = 412,
