@@ -79,6 +79,8 @@ void WorldSession::SendAuctionHello(uint64 guid, Creature* unit)
 //call this method when player bids, creates, or deletes auction
 void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action, uint32 errorCode, uint32 bidError)
 {
+    ObjectGuid binderGUID = auction ? auction->bidder : 0;
+
     WorldPacket data(SMSG_AUCTION_COMMAND_RESULT);
     data << uint32(auction ? auction->Id : 0);
     data << uint32(action);
@@ -88,9 +90,9 @@ void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action
     data.WriteBit(0);                                     // bit_1, related to auction error or action
     data.WriteBit(0);                                     // bit_2, related to auction error or action
 
-    data.WriteGuidMask<7, 0, 1, 6, 3, 4, 5, 2>(auction->bidder);
+    data.WriteGuidMask<7, 0, 1, 6, 3, 4, 5, 2>(binderGUID);
     data.WriteBit(0);                                     // bit_3, related to auction error or action
-    data.WriteGuidBytes<2, 7, 3, 1, 5, 0, 6, 4>(auction->bidder);
+    data.WriteGuidBytes<2, 7, 3, 1, 5, 0, 6, 4>(binderGUID);
 
     /*if (bit_2)
     {
