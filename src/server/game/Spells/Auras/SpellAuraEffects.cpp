@@ -665,7 +665,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     {
                         case 11426: // Ice Barrier
                         {
-                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 4.401f;
+                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.3f;
                             break;
                         }
                         default:
