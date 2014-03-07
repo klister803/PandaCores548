@@ -7104,6 +7104,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 111397: // Blood Horror
+                {
+                    triggered_spell_id = 137143;
+                    break;
+                }
                 // Glyph of Shadowflame
                 case 63310:
                 {

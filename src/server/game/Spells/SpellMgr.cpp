@@ -4423,6 +4423,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] = 0;
                     spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
                     break;
+                case 111397: // Blood Horror
                 case 115191:
                     spellInfo->AuraInterruptFlags = 0;
                     break;

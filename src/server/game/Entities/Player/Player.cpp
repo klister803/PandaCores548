@@ -3606,6 +3606,15 @@ void Player::GiveLevel(uint8 level)
         SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
     SetPower(POWER_FOCUS, 0);
 
+    if (level == 90)
+    {
+        if (AuraEffect * eff = GetAuraEffect(115043, EFFECT_0, GetGUID())) // Player Damage Reduction
+        {
+            eff->SetCanBeRecalculated(true);
+            eff->RecalculateAmount();
+        }
+    }
+
     // update level to hunter/summon pet
     if (Pet* pet = GetPet())
         pet->SynchronizeLevelWithOwner();
