@@ -2015,8 +2015,12 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (distanceCheck)
     {
         bool corpseCheck = false;
+        bool onArena = false;   //on arena we have always see all
+
         if (Player const* thisPlayer = ToPlayer())
         {
+            onArena = thisPlayer->InArena();
+
             if (thisPlayer->isDead() && thisPlayer->GetHealth() > 0 && // Cheap way to check for ghost state
                 !(obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & GHOST_VISIBILITY_GHOST))
             {
@@ -2036,8 +2040,8 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
         if (!viewpoint)
             viewpoint = this;
-
-        if (!corpseCheck && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
+        
+        if (!corpseCheck && !onArena && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
             return false;
     }
 

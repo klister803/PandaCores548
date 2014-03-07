@@ -2726,6 +2726,7 @@ class Player : public Unit, public GridObject<Player>
         ClientGUIDs m_clientGUIDs;
 
         bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
+        void AddClient(WorldObject *u) { m_clientGUIDs.insert(u->GetGUID()); } 
 
         bool IsNeverVisible() const;
 

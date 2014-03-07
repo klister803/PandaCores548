@@ -515,6 +515,20 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     sBattlegroundMgr->BuildBattlegroundStatusPacket(&status, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(BATTLEGROUND_AA), GetElapsedTime(), GetJoinType());
                     player->GetSession()->SendPacket(&status);
 
+                    // After getting status plr should get updates for all players in any way
+                    // Remove preparation send plr updates, but on some cases it not work
+                    for (BattlegroundPlayerMap::const_iterator itr2 = GetPlayers().begin(); itr2 != GetPlayers().end(); ++itr2)
+                    {
+                        if (itr2->first == itr->first)
+                            continue;
+                        if (Player* _player = ObjectAccessor::FindPlayer(itr2->first))
+                        {
+                            _player->SendUpdateToPlayer(player);
+                            _player->SendInitialVisiblePackets(player);
+                            player->AddClient(_player);
+                        }
+                    }
+
                     player->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                     player->ResetAllPowers();
 
