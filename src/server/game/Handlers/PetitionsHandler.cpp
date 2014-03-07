@@ -254,7 +254,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
     data.WriteGuidBytes<0>(playerGUID);
     data.WriteGuidBytes<6>(petitionguid);
 
-    data << uint32(petitionGuidLow);               // CGPetitionInfo__m_petition
+    data << uint32(petitionGuidLow);               // CGPetitionInfo__m_petitionID
 
     data.WriteGuidBytes<5, 1>(playerGUID);
     data.WriteGuidBytes<7>(petitionguid);
@@ -409,10 +409,10 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
     CharacterDatabase.Execute(stmt);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Petition (GUID: %u) renamed to '%s'", GUID_LOPART(petitionGuid), newName.c_str());
-    WorldPacket data(MSG_PETITION_RENAME, (8+newName.size()+1));
+    /*WorldPacket data(MSG_PETITION_RENAME, (8+newName.size()+1));
     data << uint64(petitionGuid);
     data << newName;
-    SendPacket(&data);
+    SendPacket(&data);*/
 }
 
 void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
@@ -568,13 +568,13 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
     Field* fields = result->Fetch();
     ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
 
-    Player* owner = ObjectAccessor::FindPlayer(ownerguid);
+    /*Player* owner = ObjectAccessor::FindPlayer(ownerguid);
     if (owner)                                               // petition owner online
     {
         WorldPacket data(MSG_PETITION_DECLINE, 8);
         data << uint64(_player->GetGUID());
         owner->GetSession()->SendPacket(&data);
-    }
+    }*/
 }
 
 void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
@@ -693,7 +693,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
     data.WriteGuidBytes<0>(playerGUID);
     data.WriteGuidBytes<6>(petitionguid);
 
-    data << uint32(0);
+    data << uint32(GUID_LOPART(petitionguid));        // CGPetitionInfo__m_petitionID
 
     data.WriteGuidBytes<5, 1>(playerGUID);
     data.WriteGuidBytes<7>(petitionguid);
