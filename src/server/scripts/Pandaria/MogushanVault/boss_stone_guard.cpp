@@ -90,6 +90,8 @@ class boss_stone_guard_controler : public CreatureScript
             boss_stone_guard_controlerAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
+                if (me->isAlive() && pInstance)
+                    ResetStoneGuards();
             }
 
             InstanceScript* pInstance;
@@ -116,6 +118,34 @@ class boss_stone_guard_controler : public CreatureScript
                     pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_JADE_PETRIFICATION_BAR);
                     pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_COBALT_PETRIFICATION_BAR);
                     pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_COBALT_PETRIFICATION_BAR);
+                }
+            }
+
+            void ResetStoneGuards()
+            {
+                for (uint8 n = 0; n < 4; n++)
+                {
+                    if (Creature* guardian = me->GetCreature(*me, pInstance->GetData64(guardiansEntry[n])))
+                    {
+                        if (!guardian->isAlive())
+                            guardian->Respawn(true);
+                    }
+                }
+
+                if (!me->GetMap()->Is25ManRaid())
+                {
+                    uint8 randomdespawn = urand(0, 3);
+                    for (uint8 n = 0; n < 4; n++)
+                    {
+                        if (n == randomdespawn)
+                        {
+                            if (Creature* guardian = me->GetCreature(*me, pInstance->GetData64(guardiansEntry[n])))
+                            {
+                                guardian->DespawnOrUnsummon();
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -161,6 +191,7 @@ class boss_stone_guard_controler : public CreatureScript
                             }
                             pInstance->SetBossState(DATA_STONE_GUARD, DONE);
                             fightInProgress = false;
+                            me->Kill(me, true);
                         }
                         break;
                     }

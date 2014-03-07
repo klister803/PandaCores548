@@ -129,16 +129,13 @@ public:
                 if (Creature* boss = instance->GetCreature(GetData64(n)))
                 {
                     if (!boss->isAlive())
-                        SetDoorState(n, false);
+                        SetDoorState(n);
                 }
             }
         }
         
-        void SetDoorState(uint8 bossId, bool state)
+        void SetDoorState(uint8 bossId)
         {
-            if (state)
-                return;
-
             switch (bossId)
             {
             case DATA_TSULONG:

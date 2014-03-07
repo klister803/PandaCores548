@@ -5,6 +5,17 @@
 #include "VMapFactory.h"
 #include "mogu_shan_vault.h"
 
+const DoorData doorData[] =
+{
+    {GOB_STONE_GUARD_DOOR_EXIT,    DATA_STONE_GUARD,   DOOR_TYPE_PASSAGE, 0},
+    {GOB_FENG_DOOR_EXIT,           DATA_FENG,          DOOR_TYPE_PASSAGE, 0},
+    {GOB_GARAJAL_EXIT,             DATA_GARAJAL,       DOOR_TYPE_PASSAGE, 0},
+    {GOB_SPIRIT_KINGS_EXIT,        DATA_SPIRIT_KINGS,  DOOR_TYPE_PASSAGE, 0},
+    {GOB_ELEGON_DOOR_ENTRANCE,     DATA_SPIRIT_KINGS,  DOOR_TYPE_PASSAGE, 0},
+    {GOB_WILL_OF_EMPEROR_ENTRANCE, DATA_ELEGON,        DOOR_TYPE_PASSAGE, 0},
+    {0,                            0,                  DOOR_TYPE_PASSAGE, 0}
+};
+
 class instance_mogu_shan_vault : public InstanceMapScript
 {
 public:
@@ -19,8 +30,6 @@ public:
     struct instance_mogu_shan_vault_InstanceMapScript : public InstanceScript
     {
         instance_mogu_shan_vault_InstanceMapScript(Map* map) : InstanceScript(map) {}
-
-        int8   randomDespawnStoneGuardian;
 
         //GameObject
         uint64 stoneexitdoorGuid;
@@ -57,7 +66,7 @@ public:
         void Initialize()
         {
             SetBossNumber(DATA_MAX_BOSS_DATA);
-            randomDespawnStoneGuardian      = urand(1,4);
+            LoadDoorData(doorData);
 
             //GameObject
             stoneexitdoorGuid               = 0;
@@ -89,7 +98,7 @@ public:
             fengdoorGUIDs.clear();
             kingsdoorGUIDs.clear();
         }
-
+        
         void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
@@ -102,20 +111,6 @@ public:
                 case NPC_AMETHYST:
                 case NPC_COBALT:
                     stoneGuardGUIDs.push_back(creature->GetGUID());
-
-                    if (GetBossState(DATA_STONE_GUARD) != DONE)
-                    {
-                        creature->Respawn(true);
-
-                        if (!creature->GetMap()->Is25ManRaid())
-                        {
-                            if (--randomDespawnStoneGuardian == 0)
-                            {
-                                creature->DespawnOrUnsummon();
-                                randomDespawnStoneGuardian = -1;
-                            }
-                        }
-                    }
                     break;
                 case NPC_FENG:
                     fengGuid = creature->GetGUID();
@@ -157,6 +152,7 @@ public:
                     stoneentrdoorGuid = go->GetGUID();
                     break;
                 case GOB_STONE_GUARD_DOOR_EXIT:
+                    AddDoor(go, true);
                     stoneexitdoorGuid = go->GetGUID();
                     break;
                 case GOB_FENG_DOOR_FENCE:
@@ -175,21 +171,25 @@ public:
                     cancelGobGuid = go->GetGUID();
                     break;
                 case GOB_FENG_DOOR_EXIT:
+                    AddDoor(go, true);
                     fengexitdoorGuid = go->GetGUID();
                     break;
                 case GOB_GARAJAL_FENCE:
                     garajaldoorGUIDs.push_back(go->GetGUID());
                     break;
                 case GOB_GARAJAL_EXIT:
+                    AddDoor(go, true);
                     garajalexitdoorGuid = go->GetGUID();
                     break;
                 case GOB_SPIRIT_KINGS_WIND_WALL:
                     kingsdoorGUIDs.push_back(go->GetGUID());
                     break;
                 case GOB_SPIRIT_KINGS_EXIT:
+                    AddDoor(go, true);
                     spiritexitdoorGuid = go->GetGUID();
                     break;
                 case GOB_ELEGON_DOOR_ENTRANCE:
+                    AddDoor(go, true);
                     elegonentdoorGuid = go->GetGUID();
                     break;
                 case GOB_ELEGON_CELESTIAL_DOOR:
@@ -199,11 +199,12 @@ public:
                     elegonplatformGuid = go->GetGUID();
                     break;
                 case GOB_WILL_OF_EMPEROR_ENTRANCE:
+                    AddDoor(go, true);
                     imperatorentdoorGuid = go->GetGUID();
                     break;
             }
         }
-
+        
         bool SetBossState(uint32 id, EncounterState state)
         {
             if (!InstanceScript::SetBossState(id, state))

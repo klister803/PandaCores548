@@ -259,8 +259,8 @@ class boss_spirit_kings_controler : public CreatureScript
                                 me->Kill(king, true);
                         }
                     }
-                    me->DespawnOrUnsummon();
                     pInstance->SetBossState(DATA_SPIRIT_KINGS, DONE);
+                    me->Kill(me, true);
                     break;
                 }
             }
