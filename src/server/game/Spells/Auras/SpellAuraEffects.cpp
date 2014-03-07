@@ -711,6 +711,26 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.807f;
             }
             break;
+        case SPELL_AURA_MOD_RESILIENCE_PCT:
+        {
+            if (!caster)
+                break;
+
+            switch (GetId())
+            {
+                case 115043: // Player Damage Reduction
+                {
+                    if (caster->getLevel() == 90)
+                    {
+                        amount = -7200;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_DUMMY:
             if (!caster)
                 break;
