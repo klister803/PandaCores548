@@ -328,7 +328,26 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     data->WriteBit(0);                              // byte0
     data->WriteBit(flags & UPDATEFLAG_HAS_TARGET);
 
-    data->WriteBits(0, 22);                         // transport animation frames
+    std::vector<uint32> transportFrames;
+    if (GameObject const* go = ToGameObject())
+    {
+        if (go->HasManualAnim())
+        {
+            GameObjectTemplate const* goInfo = go->GetGOInfo();
+            if (goInfo->type == GAMEOBJECT_TYPE_TRANSPORT)
+            {
+                if (goInfo->transport.startFrame)
+                    transportFrames.push_back(goInfo->transport.startFrame);
+                if (goInfo->transport.nextFrame1)
+                    transportFrames.push_back(goInfo->transport.nextFrame1);
+                //if (goInfo->transport.nextFrame2)
+                //    transportFrames.push_back(goInfo->transport.nextFrame2);
+                //if (goInfo->transport.nextFrame3)
+                //    transportFrames.push_back(goInfo->transport.nextFrame3);
+            }
+        }
+    }
+    data->WriteBits(transportFrames.size(), 22);   // transport animation frames                   
 
     data->WriteBit(0);                              // byte414
     data->WriteBit(0);                              // byte3
@@ -427,6 +446,9 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     }
 
     data->FlushBits();
+
+    for (int i = 0; i < transportFrames.size(); ++i)
+        *data << uint32(transportFrames[i]);
 
     if (flags & UPDATEFLAG_LIVING)
     {
@@ -848,6 +870,13 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                             flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE;
 
                     *data << flags;
+                }
+                else if (index == GAMEOBJECT_BYTES_1)
+                {
+                    if (((GameObject*)this)->GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT)
+                        *data << uint32(m_uint32Values[index] | GO_STATE_TRANSPORT_SPEC);
+                    else
+                        *data << uint32(m_uint32Values[index]);
                 }
                 else
                     *data << m_uint32Values[index];                // other cases

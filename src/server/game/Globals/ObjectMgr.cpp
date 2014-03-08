@@ -6414,6 +6414,53 @@ void ObjectMgr::LoadGameObjectTemplate()
                     CheckGOLinkedTrapId(&got, got.goober.linkedTrapId, 12);
                 break;
             }
+            case GAMEOBJECT_TYPE_TRANSPORT:                 // 11
+            {
+                TransportAnimationsByEntry::const_iterator itr = sTransportAnimationsByEntry.find(got.entry);
+                if (itr == sTransportAnimationsByEntry.end())
+                {
+                    sLog->outError(LOG_FILTER_SQL, "Gameobject (Entry: %u GoType: %u) is transport by does not have entries in TransportAnimation.dbc! Gameobject is obsolete.",
+                        got.entry, got.type);
+                    break;
+                }
+
+                if (uint32 frame = got.transport.startFrame)
+                {
+                    if (itr->second.find(frame) == itr->second.end())
+                    {
+                        sLog->outError(LOG_FILTER_SQL, "Gameobject (Entry: %u GoType: %u) has data0=%u but this frame is not in TransportAnimation.dbc!",
+                            got.entry, got.type, frame);
+                    }
+                }
+
+                if (uint32 frame = got.transport.nextFrame1)
+                {
+                    if (itr->second.find(frame) == itr->second.end())
+                    {
+                        sLog->outError(LOG_FILTER_SQL, "Gameobject (Entry: %u GoType: %u) has data6=%u but this frame is not in TransportAnimation.dbc!",
+                            got.entry, got.type, frame);
+                    }
+                }
+
+                if (uint32 frame = got.transport.nextFrame2)
+                {
+                    if (itr->second.find(frame) == itr->second.end())
+                    {
+                        sLog->outError(LOG_FILTER_SQL, "Gameobject (Entry: %u GoType: %u) has data8=%u but this frame is not in TransportAnimation.dbc!",
+                            got.entry, got.type, frame);
+                    }
+                }
+
+                if (uint32 frame = got.transport.nextFrame3)
+                {
+                    if (itr->second.find(frame) == itr->second.end())
+                    {
+                        sLog->outError(LOG_FILTER_SQL, "Gameobject (Entry: %u GoType: %u) has data10=%u but this frame is not in TransportAnimation.dbc!",
+                            got.entry, got.type, frame);
+                    }
+                }
+                break;
+            }
             case GAMEOBJECT_TYPE_AREADAMAGE:                //12
             {
                 if (got.areadamage.lockId)
