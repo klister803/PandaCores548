@@ -409,10 +409,15 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
     CharacterDatabase.Execute(stmt);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Petition (GUID: %u) renamed to '%s'", GUID_LOPART(petitionGuid), newName.c_str());
-    /*WorldPacket data(MSG_PETITION_RENAME, (8+newName.size()+1));
-    data << uint64(petitionGuid);
-    data << newName;
-    SendPacket(&data);*/
+
+    WorldPacket data(SMSG_PETITION_RENAME, (8+newName.size()+1));
+    data.WriteGuidMask<1, 0>(petitionGuid);
+    data.WriteBits(newName.size(), 7);
+    data.WriteGuidMask<3, 5, 2, 6, 4, 7>(petitionGuid);
+    data.WriteGuidBytes<6, 7>(petitionGuid);
+    data.WriteString(newName);
+    data.WriteGuidBytes<2, 4, 1, 0, 3, 5>(petitionGuid);
+    SendPacket(&data);
 }
 
 void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)

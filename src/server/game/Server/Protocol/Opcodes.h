@@ -602,6 +602,7 @@ enum Opcodes
     CMSG_CORPSE_QUERY                                 = 0x0D4C, // 5.4.1 17538
     CMSG_RAID_TARGET_UPDATE                           = 0x15E4, // 5.4.1 17538
     CMSG_GET_WEB_TICKET                               = 0x11C5, // 5.4.1 17538
+    CMSG_BATTLE_PET_166F                              = 0x166F, // 5.4.1 17538
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
@@ -652,7 +653,8 @@ enum Opcodes
     MSG_MOVE_WATER_WALK                               = 0,      // Client patched
     MSG_NOTIFY_PARTY_SQUELCH                          = 0,      // 0x4D06 in 4.3.4 @todo : Find me and BACON !
     MSG_PETITION_DECLINE                              = 0x0B7C, // 5.4.1 17538
-    MSG_PETITION_RENAME                               = 0x004C, // 5.4.1 17538
+    CMSG_PETITION_RENAME                              = 0x004C, // 5.4.1 17538
+    SMSG_PETITION_RENAME                              = 0x10A4, // 5.4.1 17538
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x1D33, // 5.4.1 17538
     CMSG_QUEST_PUSH_RESULT                            = 0x06C4, // 5.4.1 17538
     SMSG_QUEST_PUSH_RESULT                            = 0x027D, // 5.4.1 17538
@@ -718,7 +720,7 @@ enum Opcodes
     SMSG_BATTLE_PET_CHAT_RESTRICTED                   = 0xB68,  // 5.0.5 16048
     SMSG_BATTLE_PET_DELETED                           = 0xF49,  // 5.0.5 16048
     SMSG_BATTLE_PET_ERROR                             = 0xBA0,  // 5.0.5 16048
-    SMSG_BATTLE_PET_FINALIZE_LOCATION                 = 0xB81,  // 5.0.5 16048
+    SMSG_BATTLE_PET_FINALIZE_LOCATION                 = 0x0C04, // 5.4.1 17538
     SMSG_BATTLE_PET_FINAL_ROUND                       = 0xFA9,  // 5.0.5 16048
     SMSG_BATTLE_PET_FIRST_ROUND                       = 0xF31,  // 5.0.5 16048
     SMSG_BATTLE_PET_FULL_UPDATE                       = 0xB08,  // 5.0.5 16048
