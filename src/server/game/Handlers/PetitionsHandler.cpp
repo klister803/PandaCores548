@@ -511,13 +511,15 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
     // close at signer side
     SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_OK);
 
-    // update signs count on charter
-    if (Item* item = _player->GetItemByGuid(petitionGuid))
-        item->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, signs);
-
-    // update for owner if online
     if (Player* owner = ObjectAccessor::FindPlayer(ownerGuid))
+    {
+        // update signs count on charter
+        if (Item* item = owner->GetItemByGuid(petitionGuid))
+            item->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, signs);
+
+        // update sign result for owner
         owner->GetSession()->SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_OK);
+    }
 }
 
 void WorldSession::SendPetitionSignResult(uint64 playerGuid, uint64 petitionGuid, uint8 result)
