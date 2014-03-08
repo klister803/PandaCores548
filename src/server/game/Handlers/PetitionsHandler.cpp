@@ -409,10 +409,15 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
     CharacterDatabase.Execute(stmt);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Petition (GUID: %u) renamed to '%s'", GUID_LOPART(petitionGuid), newName.c_str());
-    /*WorldPacket data(MSG_PETITION_RENAME, (8+newName.size()+1));
-    data << uint64(petitionGuid);
-    data << newName;
-    SendPacket(&data);*/
+
+    WorldPacket data(SMSG_PETITION_RENAME, (8+newName.size()+1));
+    data.WriteGuidMask<1, 0>(petitionGuid);
+    data.WriteBits(newName.size(), 7);
+    data.WriteGuidMask<3, 5, 2, 6, 4, 7>(petitionGuid);
+    data.WriteGuidBytes<6, 7>(petitionGuid);
+    data.WriteString(newName);
+    data.WriteGuidBytes<2, 4, 1, 0, 3, 5>(petitionGuid);
+    SendPacket(&data);
 }
 
 void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
@@ -506,13 +511,15 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
     // close at signer side
     SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_OK);
 
-    // update signs count on charter
-    if (Item* item = _player->GetItemByGuid(petitionGuid))
-        item->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, signs);
-
-    // update for owner if online
     if (Player* owner = ObjectAccessor::FindPlayer(ownerGuid))
+    {
+        // update signs count on charter
+        if (Item* item = owner->GetItemByGuid(petitionGuid))
+            item->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, signs);
+
+        // update sign result for owner
         owner->GetSession()->SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_OK);
+    }
 }
 
 void WorldSession::SendPetitionSignResult(uint64 playerGuid, uint64 petitionGuid, uint8 result)
@@ -647,7 +654,24 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 
     // result == NULL also correct charter without signs
     if (result)
+    {
         signs = uint8(result->GetRowCount());
+
+        // check already signed petition
+        for (uint8 i = 0; i < signs; i++)
+        {
+            Field* fields1 = result->Fetch();
+            uint32 lowGuid = fields1[0].GetUInt32();
+            ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
+
+            if (player->GetObjectGuid() == plSignGuid)
+            {
+                // TODO : find and send correctly data structure, this response are not worked...research in future 
+                //SendPetitionSignResult(player->GetGUID(), petitionguid, PETITION_SIGN_ALREADY_SIGNED);
+                return;
+            }
+        }
+    }
 
     ObjectGuid playerGUID = _player->GetGUID();
 
