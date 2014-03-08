@@ -652,7 +652,24 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 
     // result == NULL also correct charter without signs
     if (result)
+    {
         signs = uint8(result->GetRowCount());
+
+        // check already signed petition
+        for (uint8 i = 0; i < signs; i++)
+        {
+            Field* fields1 = result->Fetch();
+            uint32 lowGuid = fields1[0].GetUInt32();
+            ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
+
+            if (player->GetObjectGuid() == plSignGuid)
+            {
+                // TODO : find and send correctly data structure, this response are not worked...research in future 
+                //SendPetitionSignResult(player->GetGUID(), petitionguid, PETITION_SIGN_ALREADY_SIGNED);
+                return;
+            }
+        }
+    }
 
     ObjectGuid playerGUID = _player->GetGUID();
 
