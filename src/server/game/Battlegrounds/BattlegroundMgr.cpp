@@ -192,12 +192,12 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
 
             data->WriteGuidMask<2, 0, 3, 6, 1, 5, 4, 7>(guidBytes1);
             data->WriteGuidBytes<7, 3, 2, 6, 4>(guidBytes1);
-            *data << uint32(Time1);                                                                      // Join Time
+            *data << uint32(Time1);                                                                      // Join Time. Posible status.
             data->WriteGuidBytes<5>(guidBytes1);
             *data << uint32(QueueSlot);                                                                  // Queue slot
             data->WriteGuidBytes<1>(guidBytes1);
             if (bg)
-                *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);                         // unk, always 1
+                *data << uint32((bg->isArena() || bg->IsRBG()) ? arenatype : 1);                         // unk, always 1
             else
                 *data << uint32(1);
             data->WriteGuidBytes<0>(guidBytes1);
@@ -232,14 +232,14 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->WriteGuidBytes<3>(guidBytes1);
             data->WriteGuidBytes<1>(guidBytes2);
             data->WriteGuidBytes<2>(guidBytes1);
-            *data << uint32((bg->isArena() || bg->IsRBG()) ? arenatype : 1);
+            *data << uint32((bg->isArena() || bg->IsRBG()) ? arenatype : 1);    //should be max 
             *data << uint32(Time2);                     // Estimated Wait Time
             data->WriteGuidBytes<7>(guidBytes2);
             data->WriteGuidBytes<4>(guidBytes1);
             data->WriteGuidBytes<0>(guidBytes2);
             data->WriteGuidBytes<6>(guidBytes1);
             *data << uint32(GetMSTimeDiffToNow(Time2));
-            *data << uint8(bg->GetMinLevel()); //BG Min level
+            *data << uint8(bg->GetMinLevel()); //BG Min level. ToDo: for arena basic template has always 10 min.lvl.
             *data << uint32(QueueSlot);
             *data << uint8(0);
             data->WriteGuidBytes<1>(guidBytes1);
@@ -267,23 +267,23 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->FlushBits();
 
             *data << uint8(0);
-            *data << uint32(Time2);                     // Time until closed
+            *data << uint32(Time1);                     // Time until closed
             data->WriteGuidBytes<6>(guidBytes2);
             *data << uint8(bg->GetMinLevel());
             data->WriteGuidBytes<3>(guidBytes1);
-            *data << uint8(0);
+            *data << uint8(0);                          // bool. hide exit on sub invite.
             data->WriteGuidBytes< 6, 4>(guidBytes1);
             data->WriteGuidBytes<0, 1, 2, 3>(guidBytes2);
             data->WriteGuidBytes<7>(guidBytes1);
             *data << uint32(bg->GetClientInstanceID());
             //if (byte44)
-            //    p.ReadByte("byte44");
+            //   p.ReadByte("byte44");
             *data << uint32(QueueSlot);
             data->WriteGuidBytes<7>(guidBytes2);
             *data << uint32(bg->GetMapId());
             *data << uint32((bg->isArena() || bg->IsRBG()) ? arenatype : 1);
             data->WriteGuidBytes<0, 2>(guidBytes1);
-            *data << uint32(Time1);
+            *data << uint32(Time2);
             data->WriteGuidBytes<5>(guidBytes1);
             data->WriteGuidBytes<4, 5>(guidBytes2);
             data->WriteGuidBytes<1>(guidBytes1);
@@ -295,7 +295,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             //! 5.4.1
             data->Initialize(SMSG_BATTLEFIELD_STATUS_ACTIVE, 49);
 
-            data->WriteBit(0);
+            data->WriteBit(bg->isRated());
             data->WriteGuidMask<5, 2>(guidBytes1);
             data->WriteGuidMask<0, 7>(guidBytes2);
             data->WriteGuidMask<7, 6>(guidBytes1);
@@ -316,7 +316,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->WriteGuidBytes<5>(guidBytes2);
             data->WriteGuidBytes<6>(guidBytes1);
             data->WriteGuidBytes<3>(guidBytes2);
-            *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);
+            *data << uint32((bg->isArena() || bg->IsRBG()) ? arenatype : 1);
             *data << uint32(bg->GetMapId());            // Map Id
             data->WriteGuidBytes<3>(guidBytes1);
             *data << uint32(bg->GetClientInstanceID()); // Client Instance ID
@@ -612,7 +612,7 @@ void BattlegroundMgr::BuildStatusFailedPacket(WorldPacket* data, Battleground* b
     data->Initialize(SMSG_BATTLEFIELD_STATUS_FAILED);
 
     *data << uint32(QueueSlot);                                                              // Queue slot
-    *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);                         // Unk, always 1 
+    *data << uint32((bg->isArena() || bg->IsRBG()) ? bg->GetJoinType() : 1);                 // Unk, always 1 
     *data << uint32(player->GetBattlegroundQueueJoinTime(bg->GetTypeID()));                  // Join Time RANDOM
     *data << uint32(result);
 
@@ -778,11 +778,15 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
     bool isRandom = false;
 
     if (bg_template->isArena())
+    {
+        isRandom = true;
         selectionWeights = &m_ArenaSelectionWeights;
+    }
     else if (bgTypeId == BATTLEGROUND_RB)
     {
-        selectionWeights = &m_BGSelectionWeights;
         isRandom = true;
+        selectionWeights = &m_BGSelectionWeights;
+        
     }
     else if (bgTypeId == BATTLEGROUND_RATED_10_VS_10)
     {

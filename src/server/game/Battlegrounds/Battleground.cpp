@@ -1147,10 +1147,9 @@ void Battleground::AddPlayer(Player* player)
     // BG Status packet
     BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(m_TypeID, GetJoinType());
     uint32 queueSlot = player->GetBattlegroundQueueIndex(bgQueueTypeId);
-    if (isArena())
-        sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(BATTLEGROUND_AA), GetElapsedTime(), GetJoinType());
-    else
-        sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(m_TypeID), GetElapsedTime(), GetJoinType());
+    // if is BATTLEGROUND_AA or BATTLEGROUND_RB or BATTLEGROUND_RATED_10_VS_10 m_TypeID == right data
+    sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(m_TypeID), GetElapsedTime(), GetJoinType());
+
     player->GetSession()->SendPacket(&data);
 
     player->Dismount();
