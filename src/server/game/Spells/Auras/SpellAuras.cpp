@@ -1534,6 +1534,26 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         break;
                 }
                 break;
+            case SPELLFAMILY_MONK:
+            {
+                if (!caster)
+                    break;
+
+                switch (m_spellInfo->Id)
+                {
+                    case 126060: // Desperate Measures
+                    {
+                        if (Player * monk = caster->ToPlayer())
+                        {
+                            monk->RemoveSpellCooldown(115072, true);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_ROGUE:
                 // Sprint (skip non player casted spells by category)
                 if (GetSpellInfo()->SpellFamilyFlags[0] & 0x40 && GetSpellInfo()->Category == 44)
