@@ -3342,6 +3342,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 108942: // Phantasm
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DISABLE_PROC;
+                    break;
                 case 126462: // Thermal Anvil
                     spellInfo->Effects[1].MiscValue = 0;
                     break;
