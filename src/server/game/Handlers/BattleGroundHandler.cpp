@@ -366,7 +366,6 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
     recvData.ReadGuidBytes<2, 5, 4, 6, 3, 0, 7, 1>(guid);
 
 	WorldPacket data;
-    WorldPacket data2;
 
     if (queueSlot > PLAYER_MAX_BATTLEGROUND_QUEUES)
     {
@@ -507,8 +506,8 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
             sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, _player, queueSlot, STATUS_NONE,  0, 0, ginfo.JoinType);
             SendPacket(&data);
     
-            sBattlegroundMgr->BuildStatusFailedPacket(&data2, bg, _player, queueSlot, ERR_LEAVE_QUEUE);
-            SendPacket(&data2);
+            sBattlegroundMgr->BuildStatusFailedPacket(&data, bg, _player, queueSlot, ERR_LEAVE_QUEUE);
+            SendPacket(&data);
 
             _player->RemoveBattlegroundQueueId(bgQueueTypeId);  // must be called this way, because if you move this call to queue->removeplayer, it causes bugs
             bgQueue.RemovePlayer(_player->GetGUID(), true);
