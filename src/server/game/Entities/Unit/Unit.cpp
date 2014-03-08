@@ -6165,6 +6165,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 134732: // Battle Fatigue
+                {
+                    if (Unit * owner = victim->GetOwner())
+                        victim = owner;
+
+                    if (victim->IsFriendlyTo(this) || victim->IsInPartyWith(this) || victim->GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    break;
+                }
                 // Concentration, Majordomo Staghelm
                 case 98229:
                     SetPower(POWER_ALTERNATE_POWER, 0);
