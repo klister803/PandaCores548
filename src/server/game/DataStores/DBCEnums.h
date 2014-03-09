@@ -595,7 +595,7 @@ enum VehicleSeatFlags
     VEHICLE_SEAT_FLAG_HAS_START_WARITING_FOR_VEH_TRANSITION_ANIM_EXIT   = 0x10000000,
     VEHICLE_SEAT_FLAG_CAN_CAST                                          = 0x20000000,           // Lua_UnitHasVehicleUI
     VEHICLE_SEAT_FLAG_UNK2                                              = 0x40000000,           // checked in conjunction with 0x800 in CastSpell2
-    VEHICLE_SEAT_FLAG_ALLOWS_INTERACTION                                = 0x80000000
+    VEHICLE_SEAT_FLAG_DISALLOWS_INTERACTION                             = 0x80000000
 };
 
 enum VehicleSeatFlagsB
