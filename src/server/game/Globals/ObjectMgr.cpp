@@ -9184,13 +9184,27 @@ void ObjectMgr::LoadDigSitePositions()
     }
     while (result->NextRow());
 
+    std::set<uint32> toRemove;
     for (ResearchSiteDataMap::iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
     {
         ResearchSiteData& data = itr->second;
 
-        if (data.digSites.size() < MAX_DIGSITE_FINDS)
-            sLog->outError(LOG_FILTER_SQL, "Archaeology research site %u has less that %u dig site positions!", data.entry->ID, MAX_DIGSITE_FINDS);
+        uint32 siteCount = data.digSites.size();
+        if (siteCount < MAX_DIGSITE_FINDS)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Archaeology research site %u has less that %u dig site positions! (%u)", data.entry->ID, MAX_DIGSITE_FINDS, siteCount);
+            if (!siteCount)
+                toRemove.insert(itr->first);
+            else
+            {
+                while (data.digSites.size() < MAX_DIGSITE_FINDS)
+                    data.digSites.push_back(data.digSites[urand(0, data.digSites.size() - 1)]);
+            }
+        }
     }
+
+    for (std::set<uint32>::const_iterator itr = toRemove.begin(); itr != toRemove.end(); ++itr)
+        sResearchSiteDataMap.erase(*itr);
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u dig site positions.", counter);
 }
