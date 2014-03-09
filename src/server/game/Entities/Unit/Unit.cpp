@@ -6971,13 +6971,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         CastSpell(this, 126084, true);  // cast second charge visual
                     break;
                 }
-                // Temporal Shield
-                case 115610:
-                {
-                    triggered_spell_id = 115611;
-                    basepoints0 = (damage + GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_HEAL)) / 3;
-                    break;
-                }
             }
             break;
         }
@@ -8874,7 +8867,7 @@ bool Unit::HandleObsModEnergyAuraProc(Unit* victim, uint32 /*damage*/, AuraEffec
         ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, time(NULL) + cooldown);
     return true;
 }
-bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
 {
     SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
     //uint32 effIndex = triggeredByAura->GetEffIndex();
@@ -8887,12 +8880,24 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 /*damage*/, Aura
     Unit* target = victim;
     int32 basepoints0 = 0;
 
-    /*
     switch (dummySpell->SpellFamilyName)
     {
-
+        case SPELLFAMILY_MAGE:
+        {
+            switch (dummySpell->Id)
+            {
+                case 115610: // Temporal Shield
+                {
+                    triggered_spell_id = 115611;
+                    basepoints0 = (damage + GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_HEAL)) / 3;
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
     }
-    */
 
     // processed charge only counting case
     if (!triggered_spell_id)
