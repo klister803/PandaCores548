@@ -66,6 +66,45 @@ bool BattlegroundSA::SetupBattleground()
     return ResetObjs();
 }
 
+void BattlegroundSA::GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
+{
+    BattlegroundTeamId idx = GetTeamIndexByTeamId(TeamID);
+    if (idx == Attackers)
+    {
+        if (!ShipsStarted)
+        {
+            switch(urand(0, 1))
+            {
+                case 0: 
+                    X = 2682.936f;
+                    Y = -830.368f;
+                    Z = 15.0f;
+                    O = 2.895f;
+                    break;
+                case 1:
+                default:
+                    X = 2577.003f;
+                    Y = 980.261f;
+                    Z = 15.0f;
+                    O = 0.807f;
+                    break;
+            }
+        }else
+        {
+            X = 1600.381f;
+            Y = -106.263f;
+            Z = 8.8745f;
+            O = 3.78f;
+        }
+    }else
+    {
+        X = 1209.7f;
+        Y = -65.16f;
+        Z = 70.1f;
+        O = 0.0f;
+    }
+}
+
 bool BattlegroundSA::ResetObjs()
 {
     for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
@@ -446,25 +485,9 @@ void BattlegroundSA::AddPlayer(Player* player)
     if (!ShipsStarted)
     {
         if (player->GetTeamId() == Attackers)
-        {
             player->CastSpell(player, 12438, true);//Without this player falls before boat loads...
-
-            if (urand(0, 1))
-                player->TeleportTo(607, 2682.936f, -830.368f, 50.0f, 2.895f, 0);
-            else
-                player->TeleportTo(607, 2577.003f, 980.261f, 50.0f, 0.807f, 0);
-
-        }
-        else
-            player->TeleportTo(607, 1209.7f, -65.16f, 70.1f, 0.0f, 0);
     }
-    else
-    {
-        if (player->GetTeamId() == Attackers)
-            player->TeleportTo(607, 1600.381f, -106.263f, 8.8745f, 3.78f, 0);
-        else
-            player->TeleportTo(607, 1209.7f, -65.16f, 70.1f, 0.0f, 0);
-    }
+
     SendTransportInit(player);
 }
 

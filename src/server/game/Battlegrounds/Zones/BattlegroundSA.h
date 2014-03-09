@@ -463,6 +463,8 @@ class BattlegroundSA : public Battleground
         virtual void EventPlayerClickedOnFlag(Player* Source, GameObject* target_obj);
         /// Called when a player use a gamobject (relic)
         virtual void EventPlayerUsedGO(Player* Source, GameObject* object);
+        /// Called when a player tp to bg
+        virtual void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const;
         /// Return gate id, relative to bg data, according to gameobject id
         uint32 getGateIdFromDamagedOrDestroyEventId(uint32 id)
         {
