@@ -2355,12 +2355,16 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     SetUnitMovementFlags(0);
     DisableSpline();
 
-    if (m_transport)
+    //hack for Stand of Acient for teleportation to the ships.
+    if (m_transport || mapid == 607)
     {
         if (!(options & TELE_TO_NOT_LEAVE_TRANSPORT))
         {
-            m_transport->RemovePassenger(this);
-            m_transport = NULL;
+            if (m_transport)
+            {
+                m_transport->RemovePassenger(this);
+                m_transport = NULL;
+            }
             m_movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
             m_movementInfo.t_time = 0;
             m_movementInfo.t_seat = -1;

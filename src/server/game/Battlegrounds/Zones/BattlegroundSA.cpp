@@ -121,8 +121,8 @@ bool BattlegroundSA::ResetObjs()
     }
 
     // MAD props for Kiper for discovering those values - 4 hours of his work.
-    GetBGObject(BG_SA_BOAT_ONE)->UpdateRotationFields(1.0f, 0.0002f);
-    GetBGObject(BG_SA_BOAT_TWO)->UpdateRotationFields(1.0f, 0.00001f);
+    GetBGObject(BG_SA_BOAT_ONE)->UpdateRotationFields(1.0f, -0.00000004371139f);
+    GetBGObject(BG_SA_BOAT_TWO)->UpdateRotationFields(1.0f, -0.00000004371139f);
     SpawnBGObject(BG_SA_BOAT_ONE, RESPAWN_IMMEDIATELY);
     SpawnBGObject(BG_SA_BOAT_TWO, RESPAWN_IMMEDIATELY);
 
@@ -264,8 +264,8 @@ void BattlegroundSA::StartShips()
     if (ShipsStarted)
         return;
 
-    DoorOpen(BG_SA_BOAT_ONE);
-    DoorOpen(BG_SA_BOAT_TWO);
+    GetBGObject(BG_SA_BOAT_ONE)->SetGoState(GO_STATE_READY);
+    GetBGObject(BG_SA_BOAT_ONE)->SetGoState(GO_STATE_READY);
 
     for (int i = BG_SA_BOAT_ONE; i <= BG_SA_BOAT_TWO; i++)
     {

@@ -1534,6 +1534,12 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     data.animprogress   = 100;
     data.go_state       = 1;
 */
+    if (go->IsTransport())
+    {
+        go->SetGoState(GO_STATE_ACTIVE);
+        go->SetManualAnim(true);
+    }
+
     // Add to world, so it can be later looked up from HashMapHolder
     if (!map->AddToMap(go))
     {
