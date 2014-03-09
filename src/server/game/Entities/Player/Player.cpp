@@ -24382,6 +24382,11 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetBattlePetMgr().BuildBattlePetJournal(&data);
     GetSession()->SendPacket(&data);
 
+    data.Initialize(SMSG_WORLD_STATE_TIMER_START, 3);
+    data.WriteBits(0, 21);
+    data.FlushBits();
+    GetSession()->SendPacket(&data);
+
     SendDeathRuneUpdate();
     GetSession()->SendStablePet(0);
 
