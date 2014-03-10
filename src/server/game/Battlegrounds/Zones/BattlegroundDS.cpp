@@ -187,6 +187,8 @@ void BattlegroundDS::HandleAreaTrigger(Player* Source, uint32 Trigger)
     {
         case 5347:
         case 5348:
+        case 8534:
+        case 8533:
             // Remove effects of Demonic Circle Summon
             if (Source->HasAura(48018))
                 Source->RemoveAurasDueToSpell(48018);

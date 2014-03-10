@@ -10322,22 +10322,22 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
     data.FlushBits();
     size_t countPos = data.wpos();
 
-    data << uint32(0x0) << uint32(0x8d8);                   // 1
-    data << uint32(0x0) << uint32(0x8d7);                   // 2
-    data << uint32(0x0) << uint32(0x8d6);                   // 3
-    data << uint32(0x0) << uint32(0x8d5);                   // 4
-    data << uint32(0x0) << uint32(0x8d4);                   // 5
-    data << uint32(0x0) << uint32(0x8d3);                   // 6
+    FillInitialWorldState(data, 0x8d8, 0x0);                   // 1
+    FillInitialWorldState(data, 0x8d7, 0x0);                   // 2
+    FillInitialWorldState(data, 0x8d6, 0x0);                   // 3
+    FillInitialWorldState(data, 0x8d5, 0x0);                   // 4
+    FillInitialWorldState(data, 0x8d4, 0x0);                   // 5
+    FillInitialWorldState(data, 0x8d3, 0x0);                   // 6
                                                             // 7 1 - Arena season in progress, 0 - end of season
-    data << uint32(sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS)) << uint32(0xC77);
+    FillInitialWorldState(data, 0xC77, sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
                                                             // 8 Arena season id
-    data << uint32(sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID)) << uint32(0xF3D);
+    FillInitialWorldState(data, 0xF3D, sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID));
 
     if (mapid == 530)                                       // Outland
     {
-        data << uint32(0x0) << uint32(0x9bf);               // 7
-        data << uint32(0xF) << uint32(0x9bd);               // 8
-        data << uint32(0xF) << uint32(0x9bb);               // 9
+        FillInitialWorldState(data, 0x9bf, 0x0);               // 7
+        FillInitialWorldState(data, 0x9bd, 0xF);               // 8
+        FillInitialWorldState(data, 0x9bb, 0xF);               // 9
     }
 
     // insert <field> <value>
@@ -10360,96 +10360,96 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
             else
             {
                 // states are always shown
-                data << uint32(0x0) << uint32(2313); // 7 ally silityst gathered
-                data << uint32(0x0) << uint32(2314); // 8 horde silityst gathered
-                data << uint32(0x0) << uint32(2317); // 9 max silithyst
+                FillInitialWorldState(data, 2313, 0x0); // 7 ally silityst gathered
+                FillInitialWorldState(data, 2314, 0x0); // 8 horde silityst gathered
+                FillInitialWorldState(data, 2317, 0x0); // 9 max silithyst
             }
             // dunno about these... aq opening event maybe?
-            data << uint32(0x0) << uint32(2322); // 10 sandworm N
-            data << uint32(0x0) << uint32(2323); // 11 sandworm S
-            data << uint32(0x0) << uint32(2324); // 12 sandworm SW
-            data << uint32(0x0) << uint32(2325); // 13 sandworm E
+            FillInitialWorldState(data, 2322, 0x0); // 10 sandworm N
+            FillInitialWorldState(data, 2323, 0x0); // 11 sandworm S
+            FillInitialWorldState(data, 2324, 0x0); // 12 sandworm SW
+            FillInitialWorldState(data, 2325, 0x0); // 13 sandworm E
             break;
         case 2597:                                          // Alterac Valley
             if (bg && bg->GetTypeID(true) == BATTLEGROUND_AV)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x1) << uint32(0x7ae);           // 7 snowfall n
-                data << uint32(0x1) << uint32(0x532);           // 8 frostwolfhut hc
-                data << uint32(0x0) << uint32(0x531);           // 9 frostwolfhut ac
-                data << uint32(0x0) << uint32(0x52e);           // 10 stormpike firstaid a_a
-                data << uint32(0x0) << uint32(0x571);           // 11 east frostwolf tower horde assaulted -unused
-                data << uint32(0x0) << uint32(0x570);           // 12 west frostwolf tower horde assaulted - unused
-                data << uint32(0x1) << uint32(0x567);           // 13 frostwolfe c
-                data << uint32(0x1) << uint32(0x566);           // 14 frostwolfw c
-                data << uint32(0x1) << uint32(0x550);           // 15 irondeep (N) ally
-                data << uint32(0x0) << uint32(0x544);           // 16 ice grave a_a
-                data << uint32(0x0) << uint32(0x536);           // 17 stormpike grave h_c
-                data << uint32(0x1) << uint32(0x535);           // 18 stormpike grave a_c
-                data << uint32(0x0) << uint32(0x518);           // 19 stoneheart grave a_a
-                data << uint32(0x0) << uint32(0x517);           // 20 stoneheart grave h_a
-                data << uint32(0x0) << uint32(0x574);           // 21 1396 unk
-                data << uint32(0x0) << uint32(0x573);           // 22 iceblood tower horde assaulted -unused
-                data << uint32(0x0) << uint32(0x572);           // 23 towerpoint horde assaulted - unused
-                data << uint32(0x0) << uint32(0x56f);           // 24 1391 unk
-                data << uint32(0x0) << uint32(0x56e);           // 25 iceblood a
-                data << uint32(0x0) << uint32(0x56d);           // 26 towerp a
-                data << uint32(0x0) << uint32(0x56c);           // 27 frostwolfe a
-                data << uint32(0x0) << uint32(0x56b);           // 28 froswolfw a
-                data << uint32(0x1) << uint32(0x56a);           // 29 1386 unk
-                data << uint32(0x1) << uint32(0x569);           // 30 iceblood c
-                data << uint32(0x1) << uint32(0x568);           // 31 towerp c
-                data << uint32(0x0) << uint32(0x565);           // 32 stoneh tower a
-                data << uint32(0x0) << uint32(0x564);           // 33 icewing tower a
-                data << uint32(0x0) << uint32(0x563);           // 34 dunn a
-                data << uint32(0x0) << uint32(0x562);           // 35 duns a
-                data << uint32(0x0) << uint32(0x561);           // 36 stoneheart bunker alliance assaulted - unused
-                data << uint32(0x0) << uint32(0x560);           // 37 icewing bunker alliance assaulted - unused
-                data << uint32(0x0) << uint32(0x55f);           // 38 dunbaldar south alliance assaulted - unused
-                data << uint32(0x0) << uint32(0x55e);           // 39 dunbaldar north alliance assaulted - unused
-                data << uint32(0x0) << uint32(0x55d);           // 40 stone tower d
-                data << uint32(0x0) << uint32(0x3c6);           // 41 966 unk
-                data << uint32(0x0) << uint32(0x3c4);           // 42 964 unk
-                data << uint32(0x0) << uint32(0x3c2);           // 43 962 unk
-                data << uint32(0x1) << uint32(0x516);           // 44 stoneheart grave a_c
-                data << uint32(0x0) << uint32(0x515);           // 45 stonheart grave h_c
-                data << uint32(0x0) << uint32(0x3b6);           // 46 950 unk
-                data << uint32(0x0) << uint32(0x55c);           // 47 icewing tower d
-                data << uint32(0x0) << uint32(0x55b);           // 48 dunn d
-                data << uint32(0x0) << uint32(0x55a);           // 49 duns d
-                data << uint32(0x0) << uint32(0x559);           // 50 1369 unk
-                data << uint32(0x0) << uint32(0x558);           // 51 iceblood d
-                data << uint32(0x0) << uint32(0x557);           // 52 towerp d
-                data << uint32(0x0) << uint32(0x556);           // 53 frostwolfe d
-                data << uint32(0x0) << uint32(0x555);           // 54 frostwolfw d
-                data << uint32(0x1) << uint32(0x554);           // 55 stoneh tower c
-                data << uint32(0x1) << uint32(0x553);           // 56 icewing tower c
-                data << uint32(0x1) << uint32(0x552);           // 57 dunn c
-                data << uint32(0x1) << uint32(0x551);           // 58 duns c
-                data << uint32(0x0) << uint32(0x54f);           // 59 irondeep (N) horde
-                data << uint32(0x0) << uint32(0x54e);           // 60 irondeep (N) ally
-                data << uint32(0x1) << uint32(0x54d);           // 61 mine (S) neutral
-                data << uint32(0x0) << uint32(0x54c);           // 62 mine (S) horde
-                data << uint32(0x0) << uint32(0x54b);           // 63 mine (S) ally
-                data << uint32(0x0) << uint32(0x545);           // 64 iceblood h_a
-                data << uint32(0x1) << uint32(0x543);           // 65 iceblod h_c
-                data << uint32(0x0) << uint32(0x542);           // 66 iceblood a_c
-                data << uint32(0x0) << uint32(0x540);           // 67 snowfall h_a
-                data << uint32(0x0) << uint32(0x53f);           // 68 snowfall a_a
-                data << uint32(0x0) << uint32(0x53e);           // 69 snowfall h_c
-                data << uint32(0x0) << uint32(0x53d);           // 70 snowfall a_c
-                data << uint32(0x0) << uint32(0x53c);           // 71 frostwolf g h_a
-                data << uint32(0x0) << uint32(0x53b);           // 72 frostwolf g a_a
-                data << uint32(0x1) << uint32(0x53a);           // 73 frostwolf g h_c
-                data << uint32(0x0) << uint32(0x539);           // 74 frostwolf g a_c
-                data << uint32(0x0) << uint32(0x538);           // 75 stormpike grave h_a
-                data << uint32(0x0) << uint32(0x537);           // 76 stormpike grave a_a
-                data << uint32(0x0) << uint32(0x534);           // 77 frostwolf hut h_a
-                data << uint32(0x0) << uint32(0x533);           // 78 frostwolf hut a_a
-                data << uint32(0x0) << uint32(0x530);           // 79 stormpike first aid h_a
-                data << uint32(0x0) << uint32(0x52f);           // 80 stormpike first aid h_c
-                data << uint32(0x1) << uint32(0x52d);           // 81 stormpike first aid a_c
+                FillInitialWorldState(data, 0x7ae, 0x1);           // 7 snowfall n
+                FillInitialWorldState(data, 0x532, 0x1);           // 8 frostwolfhut hc
+                FillInitialWorldState(data, 0x531, 0x0);           // 9 frostwolfhut ac
+                FillInitialWorldState(data, 0x52e, 0x0);           // 10 stormpike firstaid a_a
+                FillInitialWorldState(data, 0x571, 0x0);           // 11 east frostwolf tower horde assaulted -unused
+                FillInitialWorldState(data, 0x570, 0x0);           // 12 west frostwolf tower horde assaulted - unused
+                FillInitialWorldState(data, 0x567, 0x1);           // 13 frostwolfe c
+                FillInitialWorldState(data, 0x566, 0x1);           // 14 frostwolfw c
+                FillInitialWorldState(data, 0x550, 0x1);           // 15 irondeep (N) ally
+                FillInitialWorldState(data, 0x544, 0x0);           // 16 ice grave a_a
+                FillInitialWorldState(data, 0x536, 0x0);           // 17 stormpike grave h_c
+                FillInitialWorldState(data, 0x535, 0x1);           // 18 stormpike grave a_c
+                FillInitialWorldState(data, 0x518, 0x0);           // 19 stoneheart grave a_a
+                FillInitialWorldState(data, 0x517, 0x0);           // 20 stoneheart grave h_a
+                FillInitialWorldState(data, 0x574, 0x0);           // 21 1396 unk
+                FillInitialWorldState(data, 0x573, 0x0);           // 22 iceblood tower horde assaulted -unused
+                FillInitialWorldState(data, 0x572, 0x0);           // 23 towerpoint horde assaulted - unused
+                FillInitialWorldState(data, 0x56f, 0x0);           // 24 1391 unk
+                FillInitialWorldState(data, 0x56e, 0x0);           // 25 iceblood a
+                FillInitialWorldState(data, 0x56d, 0x0);           // 26 towerp a
+                FillInitialWorldState(data, 0x56c, 0x0);           // 27 frostwolfe a
+                FillInitialWorldState(data, 0x56b, 0x0);           // 28 froswolfw a
+                FillInitialWorldState(data, 0x56a, 0x1);           // 29 1386 unk
+                FillInitialWorldState(data, 0x569, 0x1);           // 30 iceblood c
+                FillInitialWorldState(data, 0x568, 0x1);           // 31 towerp c
+                FillInitialWorldState(data, 0x565, 0x0);           // 32 stoneh tower a
+                FillInitialWorldState(data, 0x564, 0x0);           // 33 icewing tower a
+                FillInitialWorldState(data, 0x563, 0x0);           // 34 dunn a
+                FillInitialWorldState(data, 0x562, 0x0);           // 35 duns a
+                FillInitialWorldState(data, 0x561, 0x0);           // 36 stoneheart bunker alliance assaulted - unused
+                FillInitialWorldState(data, 0x560, 0x0);           // 37 icewing bunker alliance assaulted - unused
+                FillInitialWorldState(data, 0x55f, 0x0);           // 38 dunbaldar south alliance assaulted - unused
+                FillInitialWorldState(data, 0x55e, 0x0);           // 39 dunbaldar north alliance assaulted - unused
+                FillInitialWorldState(data, 0x55d, 0x0);           // 40 stone tower d
+                FillInitialWorldState(data, 0x3c6, 0x0);           // 41 966 unk
+                FillInitialWorldState(data, 0x3c4, 0x0);           // 42 964 unk
+                FillInitialWorldState(data, 0x3c2, 0x0);           // 43 962 unk
+                FillInitialWorldState(data, 0x516, 0x1);           // 44 stoneheart grave a_c
+                FillInitialWorldState(data, 0x515, 0x0);           // 45 stonheart grave h_c
+                FillInitialWorldState(data, 0x3b6, 0x0);           // 46 950 unk
+                FillInitialWorldState(data, 0x55c, 0x0);           // 47 icewing tower d
+                FillInitialWorldState(data, 0x55b, 0x0);           // 48 dunn d
+                FillInitialWorldState(data, 0x55a, 0x0);           // 49 duns d
+                FillInitialWorldState(data, 0x559, 0x0);           // 50 1369 unk
+                FillInitialWorldState(data, 0x558, 0x0);           // 51 iceblood d
+                FillInitialWorldState(data, 0x557, 0x0);           // 52 towerp d
+                FillInitialWorldState(data, 0x556, 0x0);           // 53 frostwolfe d
+                FillInitialWorldState(data, 0x555, 0x0);           // 54 frostwolfw d
+                FillInitialWorldState(data, 0x554, 0x1);           // 55 stoneh tower c
+                FillInitialWorldState(data, 0x553, 0x1);           // 56 icewing tower c
+                FillInitialWorldState(data, 0x552, 0x1);           // 57 dunn c
+                FillInitialWorldState(data, 0x551, 0x1);           // 58 duns c
+                FillInitialWorldState(data, 0x54f, 0x0);           // 59 irondeep (N) horde
+                FillInitialWorldState(data, 0x54e, 0x0);           // 60 irondeep (N) ally
+                FillInitialWorldState(data, 0x54d, 0x1);           // 61 mine (S) neutral
+                FillInitialWorldState(data, 0x54c, 0x0);           // 62 mine (S) horde
+                FillInitialWorldState(data, 0x54b, 0x0);           // 63 mine (S) ally
+                FillInitialWorldState(data, 0x545, 0x0);           // 64 iceblood h_a
+                FillInitialWorldState(data, 0x543, 0x1);           // 65 iceblod h_c
+                FillInitialWorldState(data, 0x542, 0x0);           // 66 iceblood a_c
+                FillInitialWorldState(data, 0x540, 0x0);           // 67 snowfall h_a
+                FillInitialWorldState(data, 0x53f, 0x0);           // 68 snowfall a_a
+                FillInitialWorldState(data, 0x53e, 0x0);           // 69 snowfall h_c
+                FillInitialWorldState(data, 0x53d, 0x0);           // 70 snowfall a_c
+                FillInitialWorldState(data, 0x53c, 0x0);           // 71 frostwolf g h_a
+                FillInitialWorldState(data, 0x53b, 0x0);           // 72 frostwolf g a_a
+                FillInitialWorldState(data, 0x53a, 0x1);           // 73 frostwolf g h_c
+                FillInitialWorldState(data, 0x539, 0x0);           // 74 frostwolf g a_c
+                FillInitialWorldState(data, 0x538, 0x0);           // 75 stormpike grave h_a
+                FillInitialWorldState(data, 0x537, 0x0);           // 76 stormpike grave a_a
+                FillInitialWorldState(data, 0x534, 0x0);           // 77 frostwolf hut h_a
+                FillInitialWorldState(data, 0x533, 0x0);           // 78 frostwolf hut a_a
+                FillInitialWorldState(data, 0x530, 0x0);           // 79 stormpike first aid h_a
+                FillInitialWorldState(data, 0x52f, 0x0);           // 80 stormpike first aid h_c
+                FillInitialWorldState(data, 0x52d, 0x1);           // 81 stormpike first aid a_c
             }
             break;
         case 3277:                                          // Warsong Gulch
@@ -10457,14 +10457,14 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0x62d);       // 7 1581 alliance flag captures
-                data << uint32(0x0) << uint32(0x62e);       // 8 1582 horde flag captures
-                data << uint32(0x0) << uint32(0x609);       // 9 1545 unk, set to 1 on alliance flag pickup...
-                data << uint32(0x0) << uint32(0x60a);       // 10 1546 unk, set to 1 on horde flag pickup, after drop it's -1
-                data << uint32(0x2) << uint32(0x60b);       // 11 1547 unk
-                data << uint32(0x3) << uint32(0x641);       // 12 1601 unk (max flag captures?)
-                data << uint32(0x1) << uint32(0x922);       // 13 2338 horde (0 - hide, 1 - flag ok, 2 - flag picked up (flashing), 3 - flag picked up (not flashing)
-                data << uint32(0x1) << uint32(0x923);       // 14 2339 alliance (0 - hide, 1 - flag ok, 2 - flag picked up (flashing), 3 - flag picked up (not flashing)
+                FillInitialWorldState(data, 0x62d, 0x0);       // 7 1581 alliance flag captures
+                FillInitialWorldState(data, 0x62e, 0x0);       // 8 1582 horde flag captures
+                FillInitialWorldState(data, 0x609, 0x0);       // 9 1545 unk, set to 1 on alliance flag pickup...
+                FillInitialWorldState(data, 0x60a, 0x0);       // 10 1546 unk, set to 1 on horde flag pickup, after drop it's -1
+                FillInitialWorldState(data, 0x60b, 0x2);       // 11 1547 unk
+                FillInitialWorldState(data, 0x641, 0x3);       // 12 1601 unk (max flag captures?)
+                FillInitialWorldState(data, 0x922, 0x1);       // 13 2338 horde (0 - hide, 1 - flag ok, 2 - flag picked up (flashing), 3 - flag picked up (not flashing)
+                FillInitialWorldState(data, 0x923, 0x1);       // 14 2339 alliance (0 - hide, 1 - flag ok, 2 - flag picked up (flashing), 3 - flag picked up (not flashing)
             }
             break;
         case 3358:                                          // Arathi Basin
@@ -10472,38 +10472,38 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0x6e7);       // 7 1767 stables alliance
-                data << uint32(0x0) << uint32(0x6e8);       // 8 1768 stables horde
-                data << uint32(0x0) << uint32(0x6e9);       // 9 1769 unk, ST?
-                data << uint32(0x0) << uint32(0x6ea);       // 10 1770 stables (show/hide)
-                data << uint32(0x0) << uint32(0x6ec);       // 11 1772 farm (0 - horde controlled, 1 - alliance controlled)
-                data << uint32(0x0) << uint32(0x6ed);       // 12 1773 farm (show/hide)
-                data << uint32(0x0) << uint32(0x6ee);       // 13 1774 farm color
-                data << uint32(0x0) << uint32(0x6ef);       // 14 1775 gold mine color, may be FM?
-                data << uint32(0x0) << uint32(0x6f0);       // 15 1776 alliance resources
-                data << uint32(0x0) << uint32(0x6f1);       // 16 1777 horde resources
-                data << uint32(0x0) << uint32(0x6f2);       // 17 1778 horde bases
-                data << uint32(0x0) << uint32(0x6f3);       // 18 1779 alliance bases
-                data << uint32(0x7d0) << uint32(0x6f4);     // 19 1780 max resources (2000)
-                data << uint32(0x0) << uint32(0x6f6);       // 20 1782 blacksmith color
-                data << uint32(0x0) << uint32(0x6f7);       // 21 1783 blacksmith (show/hide)
-                data << uint32(0x0) << uint32(0x6f8);       // 22 1784 unk, bs?
-                data << uint32(0x0) << uint32(0x6f9);       // 23 1785 unk, bs?
-                data << uint32(0x0) << uint32(0x6fb);       // 24 1787 gold mine (0 - horde contr, 1 - alliance contr)
-                data << uint32(0x0) << uint32(0x6fc);       // 25 1788 gold mine (0 - conflict, 1 - horde)
-                data << uint32(0x0) << uint32(0x6fd);       // 26 1789 gold mine (1 - show/0 - hide)
-                data << uint32(0x0) << uint32(0x6fe);       // 27 1790 gold mine color
-                data << uint32(0x0) << uint32(0x700);       // 28 1792 gold mine color, wtf?, may be LM?
-                data << uint32(0x0) << uint32(0x701);       // 29 1793 lumber mill color (0 - conflict, 1 - horde contr)
-                data << uint32(0x0) << uint32(0x702);       // 30 1794 lumber mill (show/hide)
-                data << uint32(0x0) << uint32(0x703);       // 31 1795 lumber mill color color
-                data << uint32(0x1) << uint32(0x732);       // 32 1842 stables (1 - uncontrolled)
-                data << uint32(0x1) << uint32(0x733);       // 33 1843 gold mine (1 - uncontrolled)
-                data << uint32(0x1) << uint32(0x734);       // 34 1844 lumber mill (1 - uncontrolled)
-                data << uint32(0x1) << uint32(0x735);       // 35 1845 farm (1 - uncontrolled)
-                data << uint32(0x1) << uint32(0x736);       // 36 1846 blacksmith (1 - uncontrolled)
-                data << uint32(0x2) << uint32(0x745);       // 37 1861 unk
-                data << uint32(0x708) << uint32(0x7a3);     // 38 1955 warning limit (1800)
+                FillInitialWorldState(data, 0x6e7, 0x0);       // 7 1767 stables alliance
+                FillInitialWorldState(data, 0x6e8, 0x0);       // 8 1768 stables horde
+                FillInitialWorldState(data, 0x6e9, 0x0);       // 9 1769 unk, ST?
+                FillInitialWorldState(data, 0x6ea, 0x0);       // 10 1770 stables (show/hide)
+                FillInitialWorldState(data, 0x6ec, 0x0);       // 11 1772 farm (0 - horde controlled, 1 - alliance controlled)
+                FillInitialWorldState(data, 0x6ed, 0x0);       // 12 1773 farm (show/hide)
+                FillInitialWorldState(data, 0x6ee, 0x0);       // 13 1774 farm color
+                FillInitialWorldState(data, 0x6ef, 0x0);       // 14 1775 gold mine color, may be FM?
+                FillInitialWorldState(data, 0x6f0, 0x0);       // 15 1776 alliance resources
+                FillInitialWorldState(data, 0x6f1, 0x0);       // 16 1777 horde resources
+                FillInitialWorldState(data, 0x6f2, 0x0);       // 17 1778 horde bases
+                FillInitialWorldState(data, 0x6f3, 0x0);       // 18 1779 alliance bases
+                FillInitialWorldState(data, 0x6f4, 0x7d0);     // 19 1780 max resources (2000)
+                FillInitialWorldState(data, 0x6f6, 0x0);       // 20 1782 blacksmith color
+                FillInitialWorldState(data, 0x6f7, 0x0);       // 21 1783 blacksmith (show/hide)
+                FillInitialWorldState(data, 0x6f8, 0x0);       // 22 1784 unk, bs?
+                FillInitialWorldState(data, 0x6f9, 0x0);       // 23 1785 unk, bs?
+                FillInitialWorldState(data, 0x6fb, 0x0);       // 24 1787 gold mine (0 - horde contr, 1 - alliance contr)
+                FillInitialWorldState(data, 0x6fc, 0x0);       // 25 1788 gold mine (0 - conflict, 1 - horde)
+                FillInitialWorldState(data, 0x6fd, 0x0);       // 26 1789 gold mine (1 - show/0 - hide)
+                FillInitialWorldState(data, 0x6fe, 0x0);       // 27 1790 gold mine color
+                FillInitialWorldState(data, 0x700, 0x0);       // 28 1792 gold mine color, wtf?, may be LM?
+                FillInitialWorldState(data, 0x701, 0x0);       // 29 1793 lumber mill color (0 - conflict, 1 - horde contr)
+                FillInitialWorldState(data, 0x702, 0x0);       // 30 1794 lumber mill (show/hide)
+                FillInitialWorldState(data, 0x703, 0x0);       // 31 1795 lumber mill color color
+                FillInitialWorldState(data, 0x732, 0x1);       // 32 1842 stables (1 - uncontrolled)
+                FillInitialWorldState(data, 0x733, 0x1);       // 33 1843 gold mine (1 - uncontrolled)
+                FillInitialWorldState(data, 0x734, 0x1);       // 34 1844 lumber mill (1 - uncontrolled)
+                FillInitialWorldState(data, 0x735, 0x1);       // 35 1845 farm (1 - uncontrolled)
+                FillInitialWorldState(data, 0x736, 0x1);       // 36 1846 blacksmith (1 - uncontrolled)
+                FillInitialWorldState(data, 0x745, 0x2);       // 37 1861 unk
+                FillInitialWorldState(data, 0x7a3, 0x708);     // 38 1955 warning limit (1800)
             }
             break;
         case 3820:                                          // Eye of the Storm
@@ -10511,38 +10511,38 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0xac1);       // 7  2753 Horde Bases
-                data << uint32(0x0) << uint32(0xac0);       // 8  2752 Alliance Bases
-                data << uint32(0x0) << uint32(0xab6);       // 9  2742 Mage Tower - Horde conflict
-                data << uint32(0x0) << uint32(0xab5);       // 10 2741 Mage Tower - Alliance conflict
-                data << uint32(0x0) << uint32(0xab4);       // 11 2740 Fel Reaver - Horde conflict
-                data << uint32(0x0) << uint32(0xab3);       // 12 2739 Fel Reaver - Alliance conflict
-                data << uint32(0x0) << uint32(0xab2);       // 13 2738 Draenei - Alliance conflict
-                data << uint32(0x0) << uint32(0xab1);       // 14 2737 Draenei - Horde conflict
-                data << uint32(0x0) << uint32(0xab0);       // 15 2736 unk // 0 at start
-                data << uint32(0x0) << uint32(0xaaf);       // 16 2735 unk // 0 at start
-                data << uint32(0x0) << uint32(0xaad);       // 17 2733 Draenei - Horde control
-                data << uint32(0x0) << uint32(0xaac);       // 18 2732 Draenei - Alliance control
-                data << uint32(0x1) << uint32(0xaab);       // 19 2731 Draenei uncontrolled (1 - yes, 0 - no)
-                data << uint32(0x0) << uint32(0xaaa);       // 20 2730 Mage Tower - Alliance control
-                data << uint32(0x0) << uint32(0xaa9);       // 21 2729 Mage Tower - Horde control
-                data << uint32(0x1) << uint32(0xaa8);       // 22 2728 Mage Tower uncontrolled (1 - yes, 0 - no)
-                data << uint32(0x0) << uint32(0xaa7);       // 23 2727 Fel Reaver - Horde control
-                data << uint32(0x0) << uint32(0xaa6);       // 24 2726 Fel Reaver - Alliance control
-                data << uint32(0x1) << uint32(0xaa5);       // 25 2725 Fel Reaver uncontrolled (1 - yes, 0 - no)
-                data << uint32(0x0) << uint32(0xaa4);       // 26 2724 Boold Elf - Horde control
-                data << uint32(0x0) << uint32(0xaa3);       // 27 2723 Boold Elf - Alliance control
-                data << uint32(0x1) << uint32(0xaa2);       // 28 2722 Boold Elf uncontrolled (1 - yes, 0 - no)
-                data << uint32(0x1) << uint32(0xac5);       // 29 2757 Flag (1 - show, 0 - hide) - doesn't work exactly this way!
-                data << uint32(0x1) << uint32(0xad2);       // 30 2770 Horde top-stats (1 - show, 0 - hide) // 02 -> horde picked up the flag
-                data << uint32(0x1) << uint32(0xad1);       // 31 2769 Alliance top-stats (1 - show, 0 - hide) // 02 -> alliance picked up the flag
-                data << uint32(0x0) << uint32(0xabe);       // 32 2750 Horde resources
-                data << uint32(0x0) << uint32(0xabd);       // 33 2749 Alliance resources
-                data << uint32(0x8e) << uint32(0xa05);      // 34 2565 unk, constant?
-                data << uint32(0x0) << uint32(0xaa0);       // 35 2720 Capturing progress-bar (100 -> empty (only grey), 0 -> blue|red (no grey), default 0)
-                data << uint32(0x0) << uint32(0xa9f);       // 36 2719 Capturing progress-bar (0 - left, 100 - right)
-                data << uint32(0x0) << uint32(0xa9e);       // 37 2718 Capturing progress-bar (1 - show, 0 - hide)
-                data << uint32(0x17b) << uint32(0xc0d);     // 38 3085 unk
+                FillInitialWorldState(data, 0xac1, 0x0);       // 7  2753 Horde Bases
+                FillInitialWorldState(data, 0xac0, 0x0);       // 8  2752 Alliance Bases
+                FillInitialWorldState(data, 0xab6, 0x0);       // 9  2742 Mage Tower - Horde conflict
+                FillInitialWorldState(data, 0xab5, 0x0);       // 10 2741 Mage Tower - Alliance conflict
+                FillInitialWorldState(data, 0xab4, 0x0);       // 11 2740 Fel Reaver - Horde conflict
+                FillInitialWorldState(data, 0xab3, 0x0);       // 12 2739 Fel Reaver - Alliance conflict
+                FillInitialWorldState(data, 0xab2, 0x0);       // 13 2738 Draenei - Alliance conflict
+                FillInitialWorldState(data, 0xab1, 0x0);       // 14 2737 Draenei - Horde conflict
+                FillInitialWorldState(data, 0xab0, 0x0);       // 15 2736 unk // 0 at start
+                FillInitialWorldState(data, 0xaaf, 0x0);       // 16 2735 unk // 0 at start
+                FillInitialWorldState(data, 0xaad, 0x0);       // 17 2733 Draenei - Horde control
+                FillInitialWorldState(data, 0xaac, 0x0);       // 18 2732 Draenei - Alliance control
+                FillInitialWorldState(data, 0xaab, 0x1);       // 19 2731 Draenei uncontrolled (1 - yes, 0 - no)
+                FillInitialWorldState(data, 0xaaa, 0x0);       // 20 2730 Mage Tower - Alliance control
+                FillInitialWorldState(data, 0xaa9, 0x0);       // 21 2729 Mage Tower - Horde control
+                FillInitialWorldState(data, 0xaa8, 0x1);       // 22 2728 Mage Tower uncontrolled (1 - yes, 0 - no)
+                FillInitialWorldState(data, 0xaa7, 0x0);       // 23 2727 Fel Reaver - Horde control
+                FillInitialWorldState(data, 0xaa6, 0x0);       // 24 2726 Fel Reaver - Alliance control
+                FillInitialWorldState(data, 0xaa5, 0x1);       // 25 2725 Fel Reaver uncontrolled (1 - yes, 0 - no)
+                FillInitialWorldState(data, 0xaa4, 0x0);       // 26 2724 Boold Elf - Horde control
+                FillInitialWorldState(data, 0xaa3, 0x0);       // 27 2723 Boold Elf - Alliance control
+                FillInitialWorldState(data, 0xaa2, 0x1);       // 28 2722 Boold Elf uncontrolled (1 - yes, 0 - no)
+                FillInitialWorldState(data, 0xac5, 0x1);       // 29 2757 Flag (1 - show, 0 - hide) - doesn't work exactly this way!
+                FillInitialWorldState(data, 0xad2, 0x1);       // 30 2770 Horde top-stats (1 - show, 0 - hide) // 02 -> horde picked up the flag
+                FillInitialWorldState(data, 0xad1, 0x1);       // 31 2769 Alliance top-stats (1 - show, 0 - hide) // 02 -> alliance picked up the flag
+                FillInitialWorldState(data, 0xabe, 0x0);       // 32 2750 Horde resources
+                FillInitialWorldState(data, 0xabd, 0x0);       // 33 2749 Alliance resources
+                FillInitialWorldState(data, 0xa05, 0x8e);      // 34 2565 unk, constant?
+                FillInitialWorldState(data, 0xaa0, 0x0);       // 35 2720 Capturing progress-bar (100 -> empty (only grey), 0 -> blue|red (no grey), default 0)
+                FillInitialWorldState(data, 0xa9f, 0x0);       // 36 2719 Capturing progress-bar (0 - left, 100 - right)
+                FillInitialWorldState(data, 0xa9e, 0x0);       // 37 2718 Capturing progress-bar (1 - show, 0 - hide)
+                FillInitialWorldState(data, 0xc0d, 0x17b);     // 38 3085 unk
                 // and some more ... unknown
             }
             break;
@@ -10553,22 +10553,22 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 pvp->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x1) << uint32(0x9ba);           // 10 // add ally tower main gui icon       // maybe should be sent only on login?
-                data << uint32(0x1) << uint32(0x9b9);           // 11 // add horde tower main gui icon      // maybe should be sent only on login?
-                data << uint32(0x0) << uint32(0x9b5);           // 12 // show neutral broken hill icon      // 2485
-                data << uint32(0x1) << uint32(0x9b4);           // 13 // show icon above broken hill        // 2484
-                data << uint32(0x0) << uint32(0x9b3);           // 14 // show ally broken hill icon         // 2483
-                data << uint32(0x0) << uint32(0x9b2);           // 15 // show neutral overlook icon         // 2482
-                data << uint32(0x1) << uint32(0x9b1);           // 16 // show the overlook arrow            // 2481
-                data << uint32(0x0) << uint32(0x9b0);           // 17 // show ally overlook icon            // 2480
-                data << uint32(0x0) << uint32(0x9ae);           // 18 // horde pvp objectives captured      // 2478
-                data << uint32(0x0) << uint32(0x9ac);           // 19 // ally pvp objectives captured       // 2476
-                data << uint32(100) << uint32(2475);   //: ally / horde slider grey area                              // show only in direct vicinity!
-                data << uint32(50)  << uint32(2474);   //: ally / horde slider percentage, 100 for ally, 0 for horde  // show only in direct vicinity!
-                data << uint32(0)   << uint32(2473);   //: ally / horde slider display                                // show only in direct vicinity!
-                data << uint32(0x0) << uint32(0x9a8);           // 20 // show the neutral stadium icon      // 2472
-                data << uint32(0x0) << uint32(0x9a7);           // 21 // show the ally stadium icon         // 2471
-                data << uint32(0x1) << uint32(0x9a6);           // 22 // show the horde stadium icon        // 2470
+                FillInitialWorldState(data, 0x9ba, 0x1);           // 10 // add ally tower main gui icon       // maybe should be sent only on login?
+                FillInitialWorldState(data, 0x9b9, 0x1);           // 11 // add horde tower main gui icon      // maybe should be sent only on login?
+                FillInitialWorldState(data, 0x9b5, 0x0);           // 12 // show neutral broken hill icon      // 2485
+                FillInitialWorldState(data, 0x9b4, 0x1);           // 13 // show icon above broken hill        // 2484
+                FillInitialWorldState(data, 0x9b3, 0x0);           // 14 // show ally broken hill icon         // 2483
+                FillInitialWorldState(data, 0x9b2, 0x0);           // 15 // show neutral overlook icon         // 2482
+                FillInitialWorldState(data, 0x9b1, 0x1);           // 16 // show the overlook arrow            // 2481
+                FillInitialWorldState(data, 0x9b0, 0x0);           // 17 // show ally overlook icon            // 2480
+                FillInitialWorldState(data, 0x9ae, 0x0);           // 18 // horde pvp objectives captured      // 2478
+                FillInitialWorldState(data, 0x9ac, 0x0);           // 19 // ally pvp objectives captured       // 2476
+                FillInitialWorldState(data, 2475, 100); //: ally / horde slider grey area                              // show only in direct vicinity!
+                FillInitialWorldState(data, 2474, 50);  //: ally / horde slider percentage, 100 for ally, 0 for horde  // show only in direct vicinity!
+                FillInitialWorldState(data, 2473, 0);   //: ally / horde slider display                                // show only in direct vicinity!
+                FillInitialWorldState(data, 0x9a8, 0x0);           // 20 // show the neutral stadium icon      // 2472
+                FillInitialWorldState(data, 0x9a7, 0x0);           // 21 // show the ally stadium icon         // 2471
+                FillInitialWorldState(data, 0x9a6, 0x1);           // 22 // show the horde stadium icon        // 2470
             }
             break;
         case 3518:                                          // Nagrand
@@ -10576,40 +10576,40 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 pvp->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(2503);    // 10
-                data << uint32(0x0) << uint32(2502);    // 11
-                data << uint32(0x0) << uint32(2493);    // 12
-                data << uint32(0x0) << uint32(2491);    // 13
+                FillInitialWorldState(data, 2503, 0x0);    // 10
+                FillInitialWorldState(data, 2502, 0x0);    // 11
+                FillInitialWorldState(data, 2493, 0x0);    // 12
+                FillInitialWorldState(data, 2491, 0x0);    // 13
 
-                data << uint32(0x0) << uint32(2495);    // 14
-                data << uint32(0x0) << uint32(2494);    // 15
-                data << uint32(0x0) << uint32(2497);    // 16
+                FillInitialWorldState(data, 2495, 0x0);    // 14
+                FillInitialWorldState(data, 2494, 0x0);    // 15
+                FillInitialWorldState(data, 2497, 0x0);    // 16
 
-                data << uint32(0x0) << uint32(2762);    // 17
-                data << uint32(0x0) << uint32(2662);    // 18
-                data << uint32(0x0) << uint32(2663);    // 19
-                data << uint32(0x0) << uint32(2664);    // 20
+                FillInitialWorldState(data, 2762, 0x0);    // 17
+                FillInitialWorldState(data, 2662, 0x0);    // 18
+                FillInitialWorldState(data, 2663, 0x0);    // 19
+                FillInitialWorldState(data, 2664, 0x0);    // 20
 
-                data << uint32(0x0) << uint32(2760);    // 21
-                data << uint32(0x0) << uint32(2670);    // 22
-                data << uint32(0x0) << uint32(2668);    // 23
-                data << uint32(0x0) << uint32(2669);    // 24
+                FillInitialWorldState(data, 2760, 0x0);    // 21
+                FillInitialWorldState(data, 2670, 0x0);    // 22
+                FillInitialWorldState(data, 2668, 0x0);    // 23
+                FillInitialWorldState(data, 2669, 0x0);    // 24
 
-                data << uint32(0x0) << uint32(2761);    // 25
-                data << uint32(0x0) << uint32(2667);    // 26
-                data << uint32(0x0) << uint32(2665);    // 27
-                data << uint32(0x0) << uint32(2666);    // 28
+                FillInitialWorldState(data, 2761, 0x0);    // 25
+                FillInitialWorldState(data, 2667, 0x0);    // 26
+                FillInitialWorldState(data, 2665, 0x0);    // 27
+                FillInitialWorldState(data, 2666, 0x0);    // 28
 
-                data << uint32(0x0) << uint32(2763);    // 29
-                data << uint32(0x0) << uint32(2659);    // 30
-                data << uint32(0x0) << uint32(2660);    // 31
-                data << uint32(0x0) << uint32(2661);    // 32
+                FillInitialWorldState(data, 2763, 0x0);    // 29
+                FillInitialWorldState(data, 2659, 0x0);    // 30
+                FillInitialWorldState(data, 2660, 0x0);    // 31
+                FillInitialWorldState(data, 2661, 0x0);    // 32
 
-                data << uint32(0x0) << uint32(2671);    // 33
-                data << uint32(0x0) << uint32(2676);    // 34
-                data << uint32(0x0) << uint32(2677);    // 35
-                data << uint32(0x0) << uint32(2672);    // 36
-                data << uint32(0x0) << uint32(2673);    // 37
+                FillInitialWorldState(data, 2671, 0x0);    // 33
+                FillInitialWorldState(data, 2676, 0x0);    // 34
+                FillInitialWorldState(data, 2677, 0x0);    // 35
+                FillInitialWorldState(data, 2672, 0x0);    // 36
+                FillInitialWorldState(data, 2673, 0x0);    // 37
             }
             break;
         case 3519:                                          // Terokkar Forest
@@ -10617,33 +10617,33 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 pvp->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0xa41);           // 10 // 2625 capture bar pos
-                data << uint32(0x14) << uint32(0xa40);          // 11 // 2624 capture bar neutral
-                data << uint32(0x0) << uint32(0xa3f);           // 12 // 2623 show capture bar
-                data << uint32(0x0) << uint32(0xa3e);           // 13 // 2622 horde towers controlled
-                data << uint32(0x5) << uint32(0xa3d);           // 14 // 2621 ally towers controlled
-                data << uint32(0x0) << uint32(0xa3c);           // 15 // 2620 show towers controlled
-                data << uint32(0x0) << uint32(0xa88);           // 16 // 2696 SE Neu
-                data << uint32(0x0) << uint32(0xa87);           // 17 // SE Horde
-                data << uint32(0x0) << uint32(0xa86);           // 18 // SE Ally
-                data << uint32(0x0) << uint32(0xa85);           // 19 //S Neu
-                data << uint32(0x0) << uint32(0xa84);           // 20 S Horde
-                data << uint32(0x0) << uint32(0xa83);           // 21 S Ally
-                data << uint32(0x0) << uint32(0xa82);           // 22 NE Neu
-                data << uint32(0x0) << uint32(0xa81);           // 23 NE Horde
-                data << uint32(0x0) << uint32(0xa80);           // 24 NE Ally
-                data << uint32(0x0) << uint32(0xa7e);           // 25 // 2686 N Neu
-                data << uint32(0x0) << uint32(0xa7d);           // 26 N Horde
-                data << uint32(0x0) << uint32(0xa7c);           // 27 N Ally
-                data << uint32(0x0) << uint32(0xa7b);           // 28 NW Ally
-                data << uint32(0x0) << uint32(0xa7a);           // 29 NW Horde
-                data << uint32(0x0) << uint32(0xa79);           // 30 NW Neutral
-                data << uint32(0x5) << uint32(0x9d0);           // 31 // 2512 locked time remaining seconds first digit
-                data << uint32(0x0) << uint32(0x9ce);           // 32 // 2510 locked time remaining seconds second digit
-                data << uint32(0x0) << uint32(0x9cd);           // 33 // 2509 locked time remaining minutes
-                data << uint32(0x0) << uint32(0x9cc);           // 34 // 2508 neutral locked time show
-                data << uint32(0x0) << uint32(0xad0);           // 35 // 2768 horde locked time show
-                data << uint32(0x1) << uint32(0xacf);           // 36 // 2767 ally locked time show
+                FillInitialWorldState(data, 0xa41, 0x0);           // 10 // 2625 capture bar pos
+                FillInitialWorldState(data, 0xa40, 0x14);          // 11 // 2624 capture bar neutral
+                FillInitialWorldState(data, 0xa3f, 0x0);           // 12 // 2623 show capture bar
+                FillInitialWorldState(data, 0xa3e, 0x0);           // 13 // 2622 horde towers controlled
+                FillInitialWorldState(data, 0xa3d, 0x5);           // 14 // 2621 ally towers controlled
+                FillInitialWorldState(data, 0xa3c, 0x0);           // 15 // 2620 show towers controlled
+                FillInitialWorldState(data, 0xa88, 0x0);           // 16 // 2696 SE Neu
+                FillInitialWorldState(data, 0xa87, 0x0);           // 17 // SE Horde
+                FillInitialWorldState(data, 0xa86, 0x0);           // 18 // SE Ally
+                FillInitialWorldState(data, 0xa85, 0x0);           // 19 //S Neu
+                FillInitialWorldState(data, 0xa84, 0x0);           // 20 S Horde
+                FillInitialWorldState(data, 0xa83, 0x0);           // 21 S Ally
+                FillInitialWorldState(data, 0xa82, 0x0);           // 22 NE Neu
+                FillInitialWorldState(data, 0xa81, 0x0);           // 23 NE Horde
+                FillInitialWorldState(data, 0xa80, 0x0);           // 24 NE Ally
+                FillInitialWorldState(data, 0xa7e, 0x0);           // 25 // 2686 N Neu
+                FillInitialWorldState(data, 0xa7d, 0x0);           // 26 N Horde
+                FillInitialWorldState(data, 0xa7c, 0x0);           // 27 N Ally
+                FillInitialWorldState(data, 0xa7b, 0x0);           // 28 NW Ally
+                FillInitialWorldState(data, 0xa7a, 0x0);           // 29 NW Horde
+                FillInitialWorldState(data, 0xa79, 0x0);           // 30 NW Neutral
+                FillInitialWorldState(data, 0x9d0, 0x5);           // 31 // 2512 locked time remaining seconds first digit
+                FillInitialWorldState(data, 0x9ce, 0x0);           // 32 // 2510 locked time remaining seconds second digit
+                FillInitialWorldState(data, 0x9cd, 0x0);           // 33 // 2509 locked time remaining minutes
+                FillInitialWorldState(data, 0x9cc, 0x0);           // 34 // 2508 neutral locked time show
+                FillInitialWorldState(data, 0xad0, 0x0);           // 35 // 2768 horde locked time show
+                FillInitialWorldState(data, 0xacf, 0x1);           // 36 // 2767 ally locked time show
             }
             break;
         case 3521:                                          // Zangarmarsh
@@ -10651,32 +10651,32 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 pvp->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0x9e1);           // 10 //2529
-                data << uint32(0x0) << uint32(0x9e0);           // 11
-                data << uint32(0x0) << uint32(0x9df);           // 12
-                data << uint32(0x1) << uint32(0xa5d);           // 13 //2653
-                data << uint32(0x0) << uint32(0xa5c);           // 14 //2652 east beacon neutral
-                data << uint32(0x1) << uint32(0xa5b);           // 15 horde
-                data << uint32(0x0) << uint32(0xa5a);           // 16 ally
-                data << uint32(0x1) << uint32(0xa59);           // 17 // 2649 Twin spire graveyard horde  12???
-                data << uint32(0x0) << uint32(0xa58);           // 18 ally     14 ???
-                data << uint32(0x0) << uint32(0xa57);           // 19 neutral  7???
-                data << uint32(0x0) << uint32(0xa56);           // 20 // 2646 west beacon neutral
-                data << uint32(0x1) << uint32(0xa55);           // 21 horde
-                data << uint32(0x0) << uint32(0xa54);           // 22 ally
-                data << uint32(0x0) << uint32(0x9e7);           // 23 // 2535
-                data << uint32(0x0) << uint32(0x9e6);           // 24
-                data << uint32(0x0) << uint32(0x9e5);           // 25
-                data << uint32(0x0) << uint32(0xa00);           // 26 // 2560
-                data << uint32(0x1) << uint32(0x9ff);           // 27
-                data << uint32(0x0) << uint32(0x9fe);           // 28
-                data << uint32(0x0) << uint32(0x9fd);           // 29
-                data << uint32(0x1) << uint32(0x9fc);           // 30
-                data << uint32(0x0) << uint32(0x9fb);           // 31
-                data << uint32(0x0) << uint32(0xa62);           // 32 // 2658
-                data << uint32(0x1) << uint32(0xa61);           // 33
-                data << uint32(0x1) << uint32(0xa60);           // 34
-                data << uint32(0x0) << uint32(0xa5f);           // 35
+                FillInitialWorldState(data, 0x9e1, 0x0);           // 10 //2529
+                FillInitialWorldState(data, 0x9e0, 0x0);           // 11
+                FillInitialWorldState(data, 0x9df, 0x0);           // 12
+                FillInitialWorldState(data, 0xa5d, 0x1);           // 13 //2653
+                FillInitialWorldState(data, 0xa5c, 0x0);           // 14 //2652 east beacon neutral
+                FillInitialWorldState(data, 0xa5b, 0x1);           // 15 horde
+                FillInitialWorldState(data, 0xa5a, 0x0);           // 16 ally
+                FillInitialWorldState(data, 0xa59, 0x1);           // 17 // 2649 Twin spire graveyard horde  12???
+                FillInitialWorldState(data, 0xa58, 0x0);           // 18 ally     14 ???
+                FillInitialWorldState(data, 0xa57, 0x0);           // 19 neutral  7???
+                FillInitialWorldState(data, 0xa56, 0x0);           // 20 // 2646 west beacon neutral
+                FillInitialWorldState(data, 0xa55, 0x1);           // 21 horde
+                FillInitialWorldState(data, 0xa54, 0x0);           // 22 ally
+                FillInitialWorldState(data, 0x9e7, 0x0);           // 23 // 2535
+                FillInitialWorldState(data, 0x9e6, 0x0);           // 24
+                FillInitialWorldState(data, 0x9e5, 0x0);           // 25
+                FillInitialWorldState(data, 0xa00, 0x0);           // 26 // 2560
+                FillInitialWorldState(data, 0x9ff, 0x1);           // 27
+                FillInitialWorldState(data, 0x9fe, 0x0);           // 28
+                FillInitialWorldState(data, 0x9fd, 0x0);           // 29
+                FillInitialWorldState(data, 0x9fc, 0x1);           // 30
+                FillInitialWorldState(data, 0x9fb, 0x0);           // 31
+                FillInitialWorldState(data, 0xa62, 0x0);           // 32 // 2658
+                FillInitialWorldState(data, 0xa61, 0x1);           // 33
+                FillInitialWorldState(data, 0xa60, 0x1);           // 34
+                FillInitialWorldState(data, 0xa5f, 0x0);           // 35
             }
             break;
         case 3698:                                          // Nagrand Arena
@@ -10684,9 +10684,9 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0xa0f);           // 7
-                data << uint32(0x0) << uint32(0xa10);           // 8
-                data << uint32(0x0) << uint32(0xa11);           // 9 show
+                FillInitialWorldState(data, 0xa0f, 0x0);           // 7
+                FillInitialWorldState(data, 0xa10, 0x0);           // 8
+                FillInitialWorldState(data, 0xa11, 0x0);           // 9 show
             }
             break;
         case 3702:                                          // Blade's Edge Arena
@@ -10694,9 +10694,9 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0x9f0);           // 7 gold
-                data << uint32(0x0) << uint32(0x9f1);           // 8 green
-                data << uint32(0x0) << uint32(0x9f3);           // 9 show
+                FillInitialWorldState(data, 0x9f0, 0x0);           // 7 gold
+                FillInitialWorldState(data, 0x9f1, 0x0);           // 8 green
+                FillInitialWorldState(data, 0x9f3, 0x0);           // 9 show
             }
             break;
         case 3968:                                          // Ruins of Lordaeron
@@ -10704,9 +10704,9 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0xbb8);           // 7 gold
-                data << uint32(0x0) << uint32(0xbb9);           // 8 green
-                data << uint32(0x0) << uint32(0xbba);           // 9 show
+                FillInitialWorldState(data, 0xbb8, 0x0);           // 7 gold
+                FillInitialWorldState(data, 0xbb9, 0x0);           // 8 green
+                FillInitialWorldState(data, 0xbba, 0x0);           // 9 show
             }
             break;
         case 4378:                                          // Dalaran Sewers
@@ -10714,9 +10714,9 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(3601);           // 7 gold
-                data << uint32(0x0) << uint32(3600);           // 8 green
-                data << uint32(0x0) << uint32(3610);           // 9 show
+                FillInitialWorldState(data, 3601, 0x0);           // 7 gold
+                FillInitialWorldState(data, 3600, 0x0);           // 8 green
+                FillInitialWorldState(data, 3610, 0x0);           // 9 show
             }
             break;
         case 4384:                                          // Strand of the Ancients
@@ -10725,32 +10725,32 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
             else
             {
                 // 1-3 A defend, 4-6 H defend, 7-9 unk defend, 1 - ok, 2 - half destroyed, 3 - destroyed
-                data << uint32(0x0) << uint32(0xf09);       // 7  3849 Gate of Temple
-                data << uint32(0x0) << uint32(0xe36);       // 8  3638 Gate of Yellow Moon
-                data << uint32(0x0) << uint32(0xe27);       // 9  3623 Gate of Green Emerald
-                data << uint32(0x0) << uint32(0xe24);       // 10 3620 Gate of Blue Sapphire
-                data << uint32(0x0) << uint32(0xe21);       // 11 3617 Gate of Red Sun
-                data << uint32(0x0) << uint32(0xe1e);       // 12 3614 Gate of Purple Ametyst
+                FillInitialWorldState(data, 0xf09, 0x0);       // 7  3849 Gate of Temple
+                FillInitialWorldState(data, 0xe36, 0x0);       // 8  3638 Gate of Yellow Moon
+                FillInitialWorldState(data, 0xe27, 0x0);       // 9  3623 Gate of Green Emerald
+                FillInitialWorldState(data, 0xe24, 0x0);       // 10 3620 Gate of Blue Sapphire
+                FillInitialWorldState(data, 0xe21, 0x0);       // 11 3617 Gate of Red Sun
+                FillInitialWorldState(data, 0xe1e, 0x0);       // 12 3614 Gate of Purple Ametyst
 
-                data << uint32(0x0) << uint32(0xdf3);       // 13 3571 bonus timer (1 - on, 0 - off)
-                data << uint32(0x0) << uint32(0xded);       // 14 3565 Horde Attacker
-                data << uint32(0x0) << uint32(0xdec);       // 15 3564 Alliance Attacker
+                FillInitialWorldState(data, 0xdf3, 0x0);       // 13 3571 bonus timer (1 - on, 0 - off)
+                FillInitialWorldState(data, 0xded, 0x0);       // 14 3565 Horde Attacker
+                FillInitialWorldState(data, 0xdec, 0x0);       // 15 3564 Alliance Attacker
                 // End Round (timer), better explain this by example, eg. ends in 19:59 -> A:BC
-                data << uint32(0x0) << uint32(0xde9);       // 16 3561 C
-                data << uint32(0x0) << uint32(0xde8);       // 17 3560 B
-                data << uint32(0x0) << uint32(0xde7);       // 18 3559 A
-                data << uint32(0x0) << uint32(0xe35);       // 19 3637 East g - Horde control
-                data << uint32(0x0) << uint32(0xe34);       // 20 3636 West g - Horde control
-                data << uint32(0x0) << uint32(0xe33);       // 21 3635 South g - Horde control
-                data << uint32(0x0) << uint32(0xe32);       // 22 3634 East g - Alliance control
-                data << uint32(0x0) << uint32(0xe31);       // 23 3633 West g - Alliance control
-                data << uint32(0x0) << uint32(0xe30);       // 24 3632 South g - Alliance control
-                data << uint32(0x0) << uint32(0xe2f);       // 25 3631 Chamber of Ancients - Horde control
-                data << uint32(0x0) << uint32(0xe2e);       // 26 3630 Chamber of Ancients - Alliance control
-                data << uint32(0x0) << uint32(0xe2d);       // 27 3629 Beach1 - Horde control
-                data << uint32(0x0) << uint32(0xe2c);       // 28 3628 Beach2 - Horde control
-                data << uint32(0x0) << uint32(0xe2b);       // 29 3627 Beach1 - Alliance control
-                data << uint32(0x0) << uint32(0xe2a);       // 30 3626 Beach2 - Alliance control
+                FillInitialWorldState(data, 0xde9, 0x0);       // 16 3561 C
+                FillInitialWorldState(data, 0xde8, 0x0);       // 17 3560 B
+                FillInitialWorldState(data, 0xde7, 0x0);       // 18 3559 A
+                FillInitialWorldState(data, 0xe35, 0x0);       // 19 3637 East g - Horde control
+                FillInitialWorldState(data, 0xe34, 0x0);       // 20 3636 West g - Horde control
+                FillInitialWorldState(data, 0xe33, 0x0);       // 21 3635 South g - Horde control
+                FillInitialWorldState(data, 0xe32, 0x0);       // 22 3634 East g - Alliance control
+                FillInitialWorldState(data, 0xe31, 0x0);       // 23 3633 West g - Alliance control
+                FillInitialWorldState(data, 0xe30, 0x0);       // 24 3632 South g - Alliance control
+                FillInitialWorldState(data, 0xe2f, 0x0);       // 25 3631 Chamber of Ancients - Horde control
+                FillInitialWorldState(data, 0xe2e, 0x0);       // 26 3630 Chamber of Ancients - Alliance control
+                FillInitialWorldState(data, 0xe2d, 0x0);       // 27 3629 Beach1 - Horde control
+                FillInitialWorldState(data, 0xe2c, 0x0);       // 28 3628 Beach2 - Horde control
+                FillInitialWorldState(data, 0xe2b, 0x0);       // 29 3627 Beach1 - Alliance control
+                FillInitialWorldState(data, 0xe2a, 0x0);       // 30 3626 Beach2 - Alliance control
                 // and many unks...
             }
             break;
@@ -10759,9 +10759,9 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0xe10);           // 7 gold
-                data << uint32(0x0) << uint32(0xe11);           // 8 green
-                data << uint32(0x0) << uint32(0xe1a);           // 9 show
+                FillInitialWorldState(data, 0xe10, 0x0);           // 7 gold
+                FillInitialWorldState(data, 0xe11, 0x0);           // 8 green
+                FillInitialWorldState(data, 0xe1a, 0x0);           // 9 show
             }
             break;
         case 4710:
@@ -10769,25 +10769,25 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(1) << uint32(4221); // 7 BG_IC_ALLIANCE_RENFORT_SET
-                data << uint32(1) << uint32(4222); // 8 BG_IC_HORDE_RENFORT_SET
-                data << uint32(300) << uint32(4226); // 9 BG_IC_ALLIANCE_RENFORT
-                data << uint32(300) << uint32(4227); // 10 BG_IC_HORDE_RENFORT
-                data << uint32(1) << uint32(4322); // 11 BG_IC_GATE_FRONT_H_WS_OPEN
-                data << uint32(1) << uint32(4321); // 12 BG_IC_GATE_WEST_H_WS_OPEN
-                data << uint32(1) << uint32(4320); // 13 BG_IC_GATE_EAST_H_WS_OPEN
-                data << uint32(1) << uint32(4323); // 14 BG_IC_GATE_FRONT_A_WS_OPEN
-                data << uint32(1) << uint32(4324); // 15 BG_IC_GATE_WEST_A_WS_OPEN
-                data << uint32(1) << uint32(4325); // 16 BG_IC_GATE_EAST_A_WS_OPEN
-                data << uint32(1) << uint32(4317); // 17 unknown
+                FillInitialWorldState(data, 4221, 1); // 7 BG_IC_ALLIANCE_RENFORT_SET
+                FillInitialWorldState(data, 4222, 1); // 8 BG_IC_HORDE_RENFORT_SET
+                FillInitialWorldState(data, 4226, 300); // 9 BG_IC_ALLIANCE_RENFORT
+                FillInitialWorldState(data, 4227, 300); // 10 BG_IC_HORDE_RENFORT
+                FillInitialWorldState(data, 4322, 1); // 11 BG_IC_GATE_FRONT_H_WS_OPEN
+                FillInitialWorldState(data, 4321, 1); // 12 BG_IC_GATE_WEST_H_WS_OPEN
+                FillInitialWorldState(data, 4320, 1); // 13 BG_IC_GATE_EAST_H_WS_OPEN
+                FillInitialWorldState(data, 4323, 1); // 14 BG_IC_GATE_FRONT_A_WS_OPEN
+                FillInitialWorldState(data, 4324, 1); // 15 BG_IC_GATE_WEST_A_WS_OPEN
+                FillInitialWorldState(data, 4325, 1); // 16 BG_IC_GATE_EAST_A_WS_OPEN
+                FillInitialWorldState(data, 4317, 1); // 17 unknown
 
-                data << uint32(1) << uint32(4301); // 18 BG_IC_DOCKS_UNCONTROLLED
-                data << uint32(1) << uint32(4296); // 19 BG_IC_HANGAR_UNCONTROLLED
-                data << uint32(1) << uint32(4306); // 20 BG_IC_QUARRY_UNCONTROLLED
-                data << uint32(1) << uint32(4311); // 21 BG_IC_REFINERY_UNCONTROLLED
-                data << uint32(1) << uint32(4294); // 22 BG_IC_WORKSHOP_UNCONTROLLED
-                data << uint32(1) << uint32(4243); // 23 unknown
-                data << uint32(1) << uint32(4345); // 24 unknown
+                FillInitialWorldState(data, 4301, 1); // 18 BG_IC_DOCKS_UNCONTROLLED
+                FillInitialWorldState(data, 4296, 1); // 19 BG_IC_HANGAR_UNCONTROLLED
+                FillInitialWorldState(data, 4306, 1); // 20 BG_IC_QUARRY_UNCONTROLLED
+                FillInitialWorldState(data, 4311, 1); // 21 BG_IC_REFINERY_UNCONTROLLED
+                FillInitialWorldState(data, 4294, 1); // 22 BG_IC_WORKSHOP_UNCONTROLLED
+                FillInitialWorldState(data, 4243, 1); // 23 unknown
+                FillInitialWorldState(data, 4345, 1); // 24 unknown
             }
             break;
         // Icecrown Citadel
@@ -10796,11 +10796,11 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 instance->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0) << uint32(4903);              // 9  WORLDSTATE_SHOW_TIMER (Blood Quickening weekly)
-                data << uint32(30) << uint32(4904);             // 10 WORLDSTATE_EXECUTION_TIME
-                data << uint32(0) << uint32(4940);              // 11 WORLDSTATE_SHOW_ATTEMPTS
-                data << uint32(50) << uint32(4941);             // 12 WORLDSTATE_ATTEMPTS_REMAINING
-                data << uint32(50) << uint32(4942);             // 13 WORLDSTATE_ATTEMPTS_MAX
+                FillInitialWorldState(data, 4903, 0);              // 9  WORLDSTATE_SHOW_TIMER (Blood Quickening weekly)
+                FillInitialWorldState(data, 4904, 30);             // 10 WORLDSTATE_EXECUTION_TIME
+                FillInitialWorldState(data, 4940, 0);              // 11 WORLDSTATE_SHOW_ATTEMPTS
+                FillInitialWorldState(data, 4941, 50);             // 12 WORLDSTATE_ATTEMPTS_REMAINING
+                FillInitialWorldState(data, 4942, 50);             // 13 WORLDSTATE_ATTEMPTS_MAX
             }
             break;
         // The Culling of Stratholme
@@ -10809,11 +10809,11 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 instance->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0) << uint32(3479);              // 9  WORLDSTATE_SHOW_CRATES
-                data << uint32(0) << uint32(3480);              // 10 WORLDSTATE_CRATES_REVEALED
-                data << uint32(0) << uint32(3504);              // 11 WORLDSTATE_WAVE_COUNT
-                data << uint32(25) << uint32(3931);             // 12 WORLDSTATE_TIME_GUARDIAN
-                data << uint32(0) << uint32(3932);              // 13 WORLDSTATE_TIME_GUARDIAN_SHOW
+                FillInitialWorldState(data, 3479, 0);              // 9  WORLDSTATE_SHOW_CRATES
+                FillInitialWorldState(data, 3480, 0);              // 10 WORLDSTATE_CRATES_REVEALED
+                FillInitialWorldState(data, 3504, 0);              // 11 WORLDSTATE_WAVE_COUNT
+                FillInitialWorldState(data, 3931, 25);             // 12 WORLDSTATE_TIME_GUARDIAN
+                FillInitialWorldState(data, 3932, 0);              // 13 WORLDSTATE_TIME_GUARDIAN_SHOW
             }
             break;
         // Ulduar
@@ -10822,8 +10822,8 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 instance->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0) << uint32(4132);              // 9  WORLDSTATE_SHOW_CRATES
-                data << uint32(0) << uint32(4131);              // 10 WORLDSTATE_CRATES_REVEALED
+                FillInitialWorldState(data, 4132, 0);              // 9  WORLDSTATE_SHOW_CRATES
+                FillInitialWorldState(data, 4131, 0);              // 10 WORLDSTATE_CRATES_REVEALED
             }
             break;
         // Twin Peaks
@@ -10832,14 +10832,14 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             else
             {
-                data << uint32(0x0) << uint32(0x62d);       //  7 1581 alliance flag captures
-                data << uint32(0x0) << uint32(0x62e);       //  8 1582 horde flag captures
-                data << uint32(0x0) << uint32(0x609);       //  9 1545 unk
-                data << uint32(0x0) << uint32(0x60a);       // 10 1546 unk
-                data << uint32(0x2) << uint32(0x60b);       // 11 1547 unk
-                data << uint32(0x3) << uint32(0x641);       // 12 1601 unk
-                data << uint32(0x1) << uint32(0x922);       // 13 2338 horde (0 - hide, 1 - flag ok, 2 - flag picked up (flashing), 3 - flag picked up (not flashing)
-                data << uint32(0x1) << uint32(0x923);       // 14 2339 alliance (0 - hide, 1 - flag ok, 2 - flag picked up (flashing), 3 - flag picked up (not flashing)
+                FillInitialWorldState(data, 0x62d, 0x0);       //  7 1581 alliance flag captures
+                FillInitialWorldState(data, 0x62e, 0x0);       //  8 1582 horde flag captures
+                FillInitialWorldState(data, 0x609, 0x0);       //  9 1545 unk
+                FillInitialWorldState(data, 0x60a, 0x0);       // 10 1546 unk
+                FillInitialWorldState(data, 0x60b, 0x2);       // 11 1547 unk
+                FillInitialWorldState(data, 0x641, 0x3);       // 12 1601 unk
+                FillInitialWorldState(data, 0x922, 0x1);       // 13 2338 horde (0 - hide, 1 - flag ok, 2 - flag picked up (flashing), 3 - flag picked up (not flashing)
+                FillInitialWorldState(data, 0x923, 0x1);       // 14 2339 alliance (0 - hide, 1 - flag ok, 2 - flag picked up (flashing), 3 - flag picked up (not flashing)
             }
             break;
         // Battle for Gilneas
@@ -10848,8 +10848,8 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             break;
         case 5833:
-            data << uint32(0x1) << uint32(0x1958);
-            data << uint32(0x4) << uint32(0x1959);
+            FillInitialWorldState(data, 0x1958, 0x1);
+            FillInitialWorldState(data, 0x1959, 0x4);
             break;
         // Arena TolVir
         case 6296:
@@ -10857,10 +10857,10 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 bg->FillInitialWorldStates(data);
             break;
         default:
-            data << uint32(0x0) << uint32(0x914);           // 7
-            data << uint32(0x0) << uint32(0x913);           // 8
-            data << uint32(0x0) << uint32(0x912);           // 9
-            data << uint32(0x0) << uint32(0x915);           // 10
+            FillInitialWorldState(data, 0x914, 0x0);           // 7
+            FillInitialWorldState(data, 0x913, 0x0);           // 8
+            FillInitialWorldState(data, 0x912, 0x0);           // 9
+            FillInitialWorldState(data, 0x915, 0x0);           // 10
             break;
     }
 
