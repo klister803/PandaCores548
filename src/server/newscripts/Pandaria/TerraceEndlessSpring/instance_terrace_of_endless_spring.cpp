@@ -31,6 +31,9 @@ public:
         uint64 tsulongGuid;
         uint64 leishiGuid;
         uint64 shaGuid;
+
+        //special timer for load door state
+        uint32 door_state_timer;
         
         void Initialize()
         {
@@ -47,6 +50,8 @@ public:
             tsulongGuid   = 0;
             leishiGuid    = 0;
             shaGuid       = 0;
+
+            door_state_timer = 5000;
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -99,8 +104,56 @@ public:
             case GO_LEI_SHI_EX_DOOR:
                 leishiexdoorGuids.push_back(go->GetGUID());
                 break;
-            }          
+            } 
         }
+
+        //SpecialLoadGOStateSystem (SLGSS)
+        void Update(uint32 diff)
+        {
+            if (door_state_timer)
+            {
+                if (door_state_timer <= diff) 
+                { //Call after initialize + special time(once)
+                    door_state_timer = 0;
+                    CheckBosses();
+                }
+                else
+                    door_state_timer -= diff;
+            }
+        }
+
+        void CheckBosses()
+        {
+            for (uint8 n = DATA_TSULONG; n <= DATA_LEI_SHI; n++)
+            {
+                if (Creature* boss = instance->GetCreature(GetData64(n)))
+                {
+                    if (!boss->isAlive())
+                        SetDoorState(n);
+                }
+            }
+        }
+        
+        void SetDoorState(uint8 bossId)
+        {
+            switch (bossId)
+            {
+            case DATA_TSULONG:
+                for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
+                    HandleGameObject(*guid, true);
+                break;
+            case DATA_LEI_SHI:
+                for (std::vector<uint64>::const_iterator guid = leishientdoorGuids.begin(); guid != leishientdoorGuids.end(); guid++)
+                    HandleGameObject(*guid, true);
+                
+                for (std::vector<uint64>::const_iterator guid = leishiexdoorGuids.begin(); guid != leishiexdoorGuids.end(); guid++)
+                    HandleGameObject(*guid, true);
+                break;
+            default:
+                break;
+            }
+        }
+        //
 
         bool SetBossState(uint32 id, EncounterState state)
         {
@@ -184,8 +237,10 @@ public:
                 return asaniGuid;
             //
             case NPC_TSULONG:
+            case DATA_TSULONG:
                 return tsulongGuid;
             case NPC_LEI_SHI:
+            case DATA_LEI_SHI:
                 return leishiGuid;
             case NPC_SHA_OF_FEAR:
                 return shaGuid;

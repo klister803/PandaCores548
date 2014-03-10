@@ -16,10 +16,10 @@ enum eData
     DATA_STONE_GUARD                = 0,
     DATA_FENG                       = 1,
     DATA_GARAJAL                    = 2,
-    DATA_SPIRIT_KINGS               = 4,
-    DATA_ELEGON                     = 5,
-    DATA_WILL_OF_EMPEROR            = 6,
-    DATA_MAX_BOSS_DATA              = 7
+    DATA_SPIRIT_KINGS               = 3,
+    DATA_ELEGON                     = 4,
+    DATA_WILL_OF_EMPEROR            = 5,
+    DATA_MAX_BOSS_DATA              = 6
 };
 
 enum eActions
