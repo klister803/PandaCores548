@@ -8867,7 +8867,7 @@ bool Unit::HandleObsModEnergyAuraProc(Unit* victim, uint32 /*damage*/, AuraEffec
         ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, time(NULL) + cooldown);
     return true;
 }
-bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 procEx, uint32 cooldown)
 {
     SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
     //uint32 effIndex = triggeredByAura->GetEffIndex();
@@ -8888,6 +8888,9 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffe
             {
                 case 115610: // Temporal Shield
                 {
+                    if (procEx & PROC_EX_INTERNAL_HOT)
+                        return false;
+
                     triggered_spell_id = 115611;
                     basepoints0 = (damage + GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_HEAL)) / 3;
                     break;
