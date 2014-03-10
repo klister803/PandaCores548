@@ -5592,15 +5592,13 @@ SpellCastResult Spell::CheckCast(bool strict)
                                 if (unit->IsDungeonBoss())
                                     return SPELL_FAILED_BAD_TARGETS;
 
+                            if (target->GetHealth() > m_caster->GetMaxHealth())
+                                return SPELL_FAILED_BAD_TARGETS;
+
                             if (m_caster->HasAura(124490))
                             {
-                                if (Player * plr = target->ToPlayer())
-                                    if (plr->GetHealthPct() > 10)
-                                        return SPELL_FAILED_BAD_TARGETS;
-
-                                if (Unit * owner = target->GetOwner())
-                                    if (owner->GetTypeId() == TYPEID_PLAYER && target->GetHealthPct() > 10)
-                                        return SPELL_FAILED_BAD_TARGETS;
+                                if (target->GetHealthPct() > 10)
+                                    return SPELL_FAILED_BAD_TARGETS;
                             }
                             else
                             {
@@ -5610,9 +5608,6 @@ SpellCastResult Spell::CheckCast(bool strict)
                                 if (Unit * owner = target->GetOwner())
                                     if (owner->GetTypeId() == TYPEID_PLAYER)
                                         return SPELL_FAILED_BAD_TARGETS;
-
-                                if (target->GetHealth() > m_caster->GetMaxHealth())
-                                    return SPELL_FAILED_BAD_TARGETS;
                             }
                         }
                         break;
