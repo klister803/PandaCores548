@@ -80,9 +80,6 @@ enum BG_SA_Timers
 
 enum BG_SA_WorldStates
 {
-    BG_SA_TIMER_MINS                = 3559,
-    BG_SA_TIMER_SEC_TENS            = 3560,
-    BG_SA_TIMER_SEC_DECS            = 3561,
     BG_SA_ALLY_ATTACKS              = 4352,
     BG_SA_HORDE_ATTACKS             = 4353,
     BG_SA_PURPLE_GATEWS             = 3614,
@@ -103,8 +100,21 @@ enum BG_SA_WorldStates
     BG_SA_RIGHT_GY_HORDE            = 3632,
     BG_SA_LEFT_GY_HORDE             = 3633,
     BG_SA_CENTER_GY_HORDE           = 3634,
-    BG_SA_BONUS_TIMER               = 0xdf3,
-    BG_SA_ENABLE_TIMER              = 3564,
+    BG_SA_BONUS_TIMER               = 3571,
+    BG_SA_ENABLE_TIMER              = 3564, //3565 second round timer?
+    BG_SA_TIMER                     = 3557, //cur time? 1386402226 | 1386402896
+    //3547 val 100 | if alliance 3552
+    //3548 val 200 | if alliance 3551
+    //3568 val 600
+    //3549 val. 0.1.2
+    //3550 val 0
+    //----
+    //3547 val 300
+    //5332 - 1386411356
+    //5333 - 1386403256
+    //5344 - val1
+    //5684 - 0
+
 };
 
 enum npc
@@ -572,8 +582,7 @@ class BattlegroundSA : public Battleground
          * -Delete gameobject in front of door (lighting object, with different colours for each door)
          */
         void DestroyGate(Player* player, GameObject* go);
-        /// Update timer worldstate
-        void SendTime();
+
         /**
          * \brief Called when a graveyard is capture
          * -Update spiritguide

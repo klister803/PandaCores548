@@ -211,7 +211,7 @@ bool BattlegroundDS::HandlePlayerUnderMap(Player* player)
 
 void BattlegroundDS::FillInitialWorldStates(WorldPacket &data)
 {
-    data << uint32(3610) << uint32(1);                                              // 9 show
+    FillInitialWorldState(data, 3610, 1);
     UpdateArenaWorldState();
 }
 

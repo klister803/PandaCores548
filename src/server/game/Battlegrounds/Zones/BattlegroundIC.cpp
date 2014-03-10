@@ -344,19 +344,19 @@ void BattlegroundIC::UpdatePlayerScore(Player* Source, uint32 type, uint32 value
 
 void BattlegroundIC::FillInitialWorldStates(WorldPacket& data)
 {
-    data << uint32(BG_IC_ALLIANCE_RENFORT_SET) << uint32(1);
-    data << uint32(BG_IC_HORDE_RENFORT_SET) << uint32(1);
-    data << uint32(BG_IC_ALLIANCE_RENFORT) << uint32(factionReinforcements[TEAM_ALLIANCE]);
-    data << uint32(BG_IC_HORDE_RENFORT) << uint32(factionReinforcements[TEAM_HORDE]);
+    FillInitialWorldState(data, BG_IC_ALLIANCE_RENFORT_SET, 1);
+    FillInitialWorldState(data, BG_IC_HORDE_RENFORT_SET, 1);
+    FillInitialWorldState(data, BG_IC_ALLIANCE_RENFORT, factionReinforcements[TEAM_ALLIANCE]);
+    FillInitialWorldState(data, BG_IC_HORDE_RENFORT, factionReinforcements[TEAM_HORDE]);
 
     for (uint8 i = 0; i < MAX_FORTRESS_GATES_SPAWNS; i++)
     {
         uint32 uws = GetWorldStateFromGateEntry(BG_IC_ObjSpawnlocs[i].entry, (GateStatus[GetGateIDFromEntry(BG_IC_ObjSpawnlocs[i].entry)] == BG_IC_GATE_DESTROYED ? true : false));
-        data << uint32(uws) << uint32(1);
+        FillInitialWorldState(data, uws, 1);
     }
 
     for (uint8 i = 0; i < MAX_NODE_TYPES; i++)
-        data << uint32(nodePoint[i].worldStates[nodePoint[i].nodeState]) << uint32(1);
+        FillInitialWorldState(data, nodePoint[i].worldStates[nodePoint[i].nodeState], 1);
 }
 
 bool BattlegroundIC::SetupBattleground()

@@ -120,7 +120,7 @@ void BattlegroundTTP::HandleAreaTrigger(Player* Source, uint32 Trigger)
 
 void BattlegroundTTP::FillInitialWorldStates(WorldPacket &data)
 {
-    data << uint32(0xa11) << uint32(1);           // 9
+    FillInitialWorldState(data, 0xa11, 1);
     UpdateArenaWorldState();
 }
 

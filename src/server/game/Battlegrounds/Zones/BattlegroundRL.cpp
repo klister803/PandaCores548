@@ -124,7 +124,7 @@ void BattlegroundRL::HandleAreaTrigger(Player* Source, uint32 Trigger)
 
 void BattlegroundRL::FillInitialWorldStates(WorldPacket &data)
 {
-    data << uint32(0xbba) << uint32(1);           // 9
+    FillInitialWorldState(data, 0xbba, 1);
     UpdateArenaWorldState();
 }
 
