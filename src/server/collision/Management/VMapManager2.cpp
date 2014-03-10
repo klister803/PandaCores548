@@ -261,7 +261,9 @@ namespace VMAP
                 delete worldmodel;
                 return NULL;
             }
+            #ifdef TRINITY_DEBUG
             sLog->outDebug(LOG_FILTER_MAPS, "VMapManager2: loading file '%s%s'", basepath.c_str(), filename.c_str());
+            #endif
             model = iLoadedModelFiles.insert(std::pair<std::string, ManagedModel>(filename, ManagedModel())).first;
             model->second.setModel(worldmodel);
         }
@@ -277,12 +279,16 @@ namespace VMAP
         ModelFileMap::iterator model = iLoadedModelFiles.find(filename);
         if (model == iLoadedModelFiles.end())
         {
+            #ifdef TRINITY_DEBUG
             sLog->outError(LOG_FILTER_GENERAL, "VMapManager2: trying to unload non-loaded file '%s'", filename.c_str());
+            #endif
             return;
         }
         if (model->second.decRefCount() == 0)
         {
+            #ifdef TRINITY_DEBUG
             sLog->outDebug(LOG_FILTER_MAPS, "VMapManager2: unloading file '%s'", filename.c_str());
+            #endif
             delete model->second.getModel();
             iLoadedModelFiles.erase(model);
         }

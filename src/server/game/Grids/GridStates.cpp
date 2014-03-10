@@ -37,7 +37,9 @@ void ActiveState::Update(Map &m, NGridType &grid, GridInfo & info, const uint32 
             TypeContainerVisitor<ObjectGridStoper, GridTypeMapContainer> visitor(worker);
             grid.VisitAllGrids(visitor);
             grid.SetGridState(GRID_STATE_IDLE);
+            #ifdef TRINITY_DEBUG
             sLog->outDebug(LOG_FILTER_MAPS, "Grid[%u, %u] on map %u moved to IDLE state", grid.getX(), grid.getY(), m.GetId());
+            #endif
         }
         else
         {
@@ -50,7 +52,9 @@ void IdleState::Update(Map &m, NGridType &grid, GridInfo &, const uint32) const
 {
     m.ResetGridExpiry(grid);
     grid.SetGridState(GRID_STATE_REMOVAL);
+    #ifdef TRINITY_DEBUG
     sLog->outDebug(LOG_FILTER_MAPS, "Grid[%u, %u] on map %u moved to REMOVAL state", grid.getX(), grid.getY(), m.GetId());
+    #endif
 }
 
 void RemovalState::Update(Map &m, NGridType &grid, GridInfo &info, const uint32 t_diff) const
@@ -62,7 +66,9 @@ void RemovalState::Update(Map &m, NGridType &grid, GridInfo &info, const uint32 
         {
             if (!m.UnloadGrid(grid, false))
             {
+                #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Grid[%u, %u] for map %u differed unloading due to players or active objects nearby", grid.getX(), grid.getY(), m.GetId());
+                #endif
                 m.ResetGridExpiry(grid);
             }
         }
