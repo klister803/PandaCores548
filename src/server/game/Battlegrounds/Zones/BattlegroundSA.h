@@ -143,8 +143,8 @@ enum BG_SA_NPCs
 
 enum BG_SA_Boat
 {
-    BG_SA_BOAT_ONE_A    = 193182,
-    BG_SA_BOAT_TWO_H    = 193183,
+    BG_SA_BOAT_ONE_A    = 208000,   //from snif
+    BG_SA_BOAT_TWO_H    = 208001,   //from snif
     BG_SA_BOAT_ONE_H    = 193184,
     BG_SA_BOAT_TWO_A    = 193185,
 };
@@ -542,6 +542,7 @@ class BattlegroundSA : public Battleground
         /// Id of attacker team
         TeamId Attackers;
 
+        void SendBasicWorldStateUpdate(Player* player);
     private:
 
         /**
