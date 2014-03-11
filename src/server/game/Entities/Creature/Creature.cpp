@@ -1215,8 +1215,14 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
         else
             level = cinfo->minlevel;
     }
-    SetLevel(level);
 
+    if (BattlegroundMap* map = GetMap()->ToBgMap())
+    {
+        if (map->GetBG())
+            level = map->GetBG()->GetMaxLevel();
+    }
+
+    SetLevel(level);
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cinfo->unit_class);
 
     // health
