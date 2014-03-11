@@ -68,7 +68,7 @@ void BattlePetMgr::GetBattlePetList(PetBattleDataList &battlePetList) const
         if (!creature)
             continue;
 
-        battlePetList.push_back(PetBattleData(it->second, creature->Modelid1, 10, 5, 100, 100, 4, 0));
+        battlePetList.push_back(PetBattleData(it->second, 12, creature->Modelid1, 10, 5, 100, 100, 4, 50));
     }
 }
 
@@ -132,7 +132,8 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
         *data << uint32(pet->m_power);                          // power
         data->WriteGuidBytes<2>(guid);
         *data << uint32(pet->m_speciesEntry->CreatureEntry);    // Creature ID
-        *data << uint16(15);                                    // level
+        *data << uint16(pet->m_level);                          // level
+        //*data->WriteString("");                               // custom name
         *data << uint32(pet->m_health);                         // health
         *data << uint16(pet->m_experience);                     // xp
         if (pet->m_quality)
@@ -140,7 +141,7 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
         data->WriteGuidBytes<3, 7, 0, 5>(guid);
     }
 
-    *data << uint16(0);         // unk
+    *data << uint16(1);         // unk
 }
 
 void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)

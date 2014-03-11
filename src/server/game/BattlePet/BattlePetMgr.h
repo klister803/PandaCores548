@@ -31,9 +31,9 @@
 
 struct PetBattleData
 {
-    PetBattleData(BattlePetSpeciesEntry const* speciesEntry, uint32 display, uint32 power, uint32 speed, uint32 health, uint32 maxHealth, uint32 quality, uint32 experience) :
+    PetBattleData(BattlePetSpeciesEntry const* speciesEntry, uint32 level, uint32 display, uint32 power, uint32 speed, uint32 health, uint32 maxHealth, uint32 quality, uint32 experience) :
         m_displayID(display), m_power(power), m_speed(speed), m_maxHealth(maxHealth),
-        m_health(health), m_quality(quality), m_experience(experience), m_speciesEntry(speciesEntry) {}
+        m_health(health), m_quality(quality), m_experience(experience), m_speciesEntry(speciesEntry), m_level(level) {}
 
     uint32 m_displayID;
     uint32 m_power;
@@ -42,6 +42,7 @@ struct PetBattleData
     uint32 m_maxHealth;
     uint32 m_quality;
     uint32 m_experience;
+    uint32 m_level;
 
     BattlePetSpeciesEntry const* m_speciesEntry;
 };
