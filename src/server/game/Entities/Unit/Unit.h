@@ -701,7 +701,7 @@ enum NPCFlags
     UNIT_NPC_FLAG_REFORGER              = 0x08000000,       // 27 reforging
     UNIT_NPC_FLAG_TRANSMOGRIFIER        = 0x10000000,       // 28 transmogrification
     UNIT_NPC_FLAG_VAULTKEEPER           = 0x20000000,       // 29 void storage
-    UNIT_NPC_FLAG_BATTLEPET             = 0x40000000,       // 30 Battle pet
+    UNIT_NPC_FLAG_WILD_BATTLE_PET       = 0x40000000,       // 30 wild battle pet
     UNIT_NPC_FLAG_UNK_31                = 0x80000000,       // 31 cause client to send 0x077E opcode on rightclick
 };
 
@@ -1608,6 +1608,7 @@ class Unit : public WorldObject
         bool isTabardDesigner()const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TABARDDESIGNER); }
         bool isAuctioner()    const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_AUCTIONEER); }
         bool isArmorer()      const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_REPAIR); }
+        bool isWildBattlePet()      const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_WILD_BATTLE_PET); }
         bool isServiceProvider() const
         {
             return HasFlag(UNIT_NPC_FLAGS,
