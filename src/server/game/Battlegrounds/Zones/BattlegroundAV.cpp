@@ -1075,8 +1075,8 @@ void BattlegroundAV::FillInitialWorldStates(WorldPacket& data)
         for (uint8 j =1; j <= 3; j+=2)
         {//j=1=assaulted j=3=controled
             stateok = (m_Nodes[i].State == j);
-            data << uint32(BG_AV_NodeWorldStates[i][GetWorldStateType(j, ALLIANCE)]) << uint32((m_Nodes[i].Owner == ALLIANCE && stateok)?1:0);
-            data << uint32(BG_AV_NodeWorldStates[i][GetWorldStateType(j, HORDE)]) << uint32((m_Nodes[i].Owner == HORDE && stateok)?1:0);
+            FillInitialWorldState(data, BG_AV_NodeWorldStates[i][GetWorldStateType(j, ALLIANCE)], (m_Nodes[i].Owner == ALLIANCE && stateok) ? 1 : 0);
+            FillInitialWorldState(data, BG_AV_NodeWorldStates[i][GetWorldStateType(j, HORDE)], (m_Nodes[i].Owner == HORDE && stateok) ?1 : 0);
         }
     }
 
@@ -1085,21 +1085,21 @@ void BattlegroundAV::FillInitialWorldStates(WorldPacket& data)
         for (uint8 j =1; j <= 3; j+=2)
         {//j=1=assaulted j=3=controled //i dont have j=2=destroyed cause destroyed is the same like enemy-team controll
             stateok = (m_Nodes[i].State == j || (m_Nodes[i].State == POINT_DESTROYED && j == 3));
-            data << uint32(BG_AV_NodeWorldStates[i][GetWorldStateType(j, ALLIANCE)]) << uint32((m_Nodes[i].Owner == ALLIANCE && stateok)?1:0);
-            data << uint32(BG_AV_NodeWorldStates[i][GetWorldStateType(j, HORDE)]) << uint32((m_Nodes[i].Owner == HORDE && stateok)?1:0);
+            FillInitialWorldState(data, BG_AV_NodeWorldStates[i][GetWorldStateType(j, ALLIANCE)], (m_Nodes[i].Owner == ALLIANCE && stateok) ? 1 : 0);
+            FillInitialWorldState(data, BG_AV_NodeWorldStates[i][GetWorldStateType(j, HORDE)], (m_Nodes[i].Owner == HORDE && stateok) ? 1 : 0);
         }
     if (m_Nodes[BG_AV_NODES_SNOWFALL_GRAVE].Owner == AV_NEUTRAL_TEAM) //cause neutral teams aren't handled generic
-        data << uint32(AV_SNOWFALL_N) << uint32(1);
-    data << uint32(AV_Alliance_Score)  << uint32(m_Team_Scores[0]);
-    data << uint32(AV_Horde_Score) << uint32(m_Team_Scores[1]);
+        FillInitialWorldState(data, AV_SNOWFALL_N, 1);
+    FillInitialWorldState(data, AV_Alliance_Score, m_Team_Scores[0]);
+    FillInitialWorldState(data, AV_Horde_Score, m_Team_Scores[1]);
     if (GetStatus() == STATUS_IN_PROGRESS){ //only if game started the teamscores are displayed
-        data << uint32(AV_SHOW_A_SCORE) << uint32(1);
-        data << uint32(AV_SHOW_H_SCORE) << uint32(1);
+        FillInitialWorldState(data, AV_SHOW_A_SCORE, 1);
+        FillInitialWorldState(data, AV_SHOW_H_SCORE, 1);
     }
     else
     {
-        data << uint32(AV_SHOW_A_SCORE) << uint32(0);
-        data << uint32(AV_SHOW_H_SCORE) << uint32(0);
+        FillInitialWorldState(data, AV_SHOW_A_SCORE, 0);
+        FillInitialWorldState(data, AV_SHOW_H_SCORE, 0);
     }
     SendMineWorldStates(AV_NORTH_MINE);
     SendMineWorldStates(AV_SOUTH_MINE);

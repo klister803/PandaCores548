@@ -602,7 +602,7 @@ struct _ItemStat
     uint32  ItemStatType;
     int32   ItemStatValue;
     int32   ItemStatUnk1;
-    int32   ItemStatUnk2;
+    float   ItemStatUnk2;
 };
 
 struct _Spell
@@ -637,6 +637,7 @@ struct ItemTemplate
     uint32 Quality;
     uint32 Flags;
     uint32 Flags2;
+    uint32 Flags3;
     float Unk430_1;
     float Unk430_2;
     uint32 BuyCount;

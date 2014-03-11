@@ -106,13 +106,13 @@ inline bool IsGuidHaveEnPart(uint64 guid)
         case HIGHGUID_CORPSE:
         case HIGHGUID_GROUP:
         case HIGHGUID_GUILD:
+        case HIGHGUID_MO_TRANSPORT:
             return false;
         case HIGHGUID_GAMEOBJECT:
         case HIGHGUID_TRANSPORT:
         case HIGHGUID_UNIT:
         case HIGHGUID_PET:
         case HIGHGUID_VEHICLE:
-        case HIGHGUID_MO_TRANSPORT:
         default:
             return true;
     }

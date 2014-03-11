@@ -515,6 +515,20 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     sBattlegroundMgr->BuildBattlegroundStatusPacket(&status, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(BATTLEGROUND_AA), GetElapsedTime(), GetJoinType());
                     player->GetSession()->SendPacket(&status);
 
+                    // After getting status plr should get updates for all players in any way
+                    // Remove preparation send plr updates, but on some cases it not work
+                    for (BattlegroundPlayerMap::const_iterator itr2 = GetPlayers().begin(); itr2 != GetPlayers().end(); ++itr2)
+                    {
+                        if (itr2->first == itr->first)
+                            continue;
+                        if (Player* _player = ObjectAccessor::FindPlayer(itr2->first))
+                        {
+                            _player->SendUpdateToPlayer(player);
+                            _player->SendInitialVisiblePackets(player);
+                            player->AddClient(_player);
+                        }
+                    }
+
                     player->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                     player->ResetAllPowers();
 
@@ -1133,10 +1147,9 @@ void Battleground::AddPlayer(Player* player)
     // BG Status packet
     BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(m_TypeID, GetJoinType());
     uint32 queueSlot = player->GetBattlegroundQueueIndex(bgQueueTypeId);
-    if (isArena())
-        sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(BATTLEGROUND_AA), GetElapsedTime(), GetJoinType());
-    else
-        sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(m_TypeID), GetElapsedTime(), GetJoinType());
+    // if is BATTLEGROUND_AA or BATTLEGROUND_RB or BATTLEGROUND_RATED_10_VS_10 m_TypeID == right data
+    sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, queueSlot, STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(m_TypeID), GetElapsedTime(), GetJoinType());
+
     player->GetSession()->SendPacket(&data);
 
     player->Dismount();
@@ -1521,6 +1534,12 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     data.animprogress   = 100;
     data.go_state       = 1;
 */
+    if (go->IsTransport())
+    {
+        go->SetGoState(GO_STATE_ACTIVE);
+        go->SetManualAnim(true);
+    }
+
     // Add to world, so it can be later looked up from HashMapHolder
     if (!map->AddToMap(go))
     {

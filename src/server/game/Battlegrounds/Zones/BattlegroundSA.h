@@ -80,9 +80,6 @@ enum BG_SA_Timers
 
 enum BG_SA_WorldStates
 {
-    BG_SA_TIMER_MINS                = 3559,
-    BG_SA_TIMER_SEC_TENS            = 3560,
-    BG_SA_TIMER_SEC_DECS            = 3561,
     BG_SA_ALLY_ATTACKS              = 4352,
     BG_SA_HORDE_ATTACKS             = 4353,
     BG_SA_PURPLE_GATEWS             = 3614,
@@ -103,8 +100,21 @@ enum BG_SA_WorldStates
     BG_SA_RIGHT_GY_HORDE            = 3632,
     BG_SA_LEFT_GY_HORDE             = 3633,
     BG_SA_CENTER_GY_HORDE           = 3634,
-    BG_SA_BONUS_TIMER               = 0xdf3,
-    BG_SA_ENABLE_TIMER              = 3564,
+    BG_SA_BONUS_TIMER               = 3571,
+    BG_SA_ENABLE_TIMER              = 3564, //3565 second round timer?
+    BG_SA_TIMER                     = 3557, //cur time? 1386402226 | 1386402896
+    //3547 val 100 | if alliance 3552
+    //3548 val 200 | if alliance 3551
+    //3568 val 600
+    //3549 val. 0.1.2
+    //3550 val 0
+    //----
+    //3547 val 300
+    //5332 - 1386411356
+    //5333 - 1386403256
+    //5344 - val1
+    //5684 - 0
+
 };
 
 enum npc
@@ -143,8 +153,8 @@ enum BG_SA_NPCs
 
 enum BG_SA_Boat
 {
-    BG_SA_BOAT_ONE_A    = 193182,
-    BG_SA_BOAT_TWO_H    = 193183,
+    BG_SA_BOAT_ONE_A    = 208000,   //from snif
+    BG_SA_BOAT_TWO_H    = 208001,   //from snif
     BG_SA_BOAT_ONE_H    = 193184,
     BG_SA_BOAT_TWO_A    = 193185,
 };
@@ -463,6 +473,8 @@ class BattlegroundSA : public Battleground
         virtual void EventPlayerClickedOnFlag(Player* Source, GameObject* target_obj);
         /// Called when a player use a gamobject (relic)
         virtual void EventPlayerUsedGO(Player* Source, GameObject* object);
+        /// Called when a player tp to bg
+        virtual void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const;
         /// Return gate id, relative to bg data, according to gameobject id
         uint32 getGateIdFromDamagedOrDestroyEventId(uint32 id)
         {
@@ -540,6 +552,7 @@ class BattlegroundSA : public Battleground
         /// Id of attacker team
         TeamId Attackers;
 
+        void SendBasicWorldStateUpdate(Player* player);
     private:
 
         /**
@@ -569,8 +582,7 @@ class BattlegroundSA : public Battleground
          * -Delete gameobject in front of door (lighting object, with different colours for each door)
          */
         void DestroyGate(Player* player, GameObject* go);
-        /// Update timer worldstate
-        void SendTime();
+
         /**
          * \brief Called when a graveyard is capture
          * -Update spiritguide

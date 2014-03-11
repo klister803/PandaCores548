@@ -63,7 +63,7 @@ struct ItemSparseEntry
     uint32     Quality;                                      // 1
     uint32     Flags;                                        // 2
     uint32     Flags2;                                       // 3
-    //uint32     Unk520_1;
+    uint32     Flags3;
     float      Unk430_1;
     float      Unk430_2;
     uint32     BuyCount;
@@ -87,7 +87,7 @@ struct ItemSparseEntry
     int32      ItemStatType[MAX_ITEM_PROTO_STATS];           // 21 - 30
     int32      ItemStatValue[MAX_ITEM_PROTO_STATS];          // 31 - 40
     int32      ItemStatUnk1[MAX_ITEM_PROTO_STATS];           // 41 - 50
-    int32      ItemStatUnk2[MAX_ITEM_PROTO_STATS];           // 51 - 60
+    float      ItemStatUnk2[MAX_ITEM_PROTO_STATS];           // 51 - 60
     uint32     ScalingStatDistribution;                      // 61
     uint32     DamageType;                                   // 62
     uint32     Delay;                                        // 63
@@ -223,20 +223,32 @@ struct SpellReagent
 
 struct ItemUpgradeEntry
 {
-    uint32 id;                  // 0 rules id from RuleSetItemUpgrade startUpgrade
+    uint32 id;                  // 0 rules id from RuleSetItemUpgradeEntry startUpgrade
     uint32 itemUpgradePathId;   // 1 extended-cost entry id
     uint32 levelBonus;          // 2 total level bonus related to non-upgraded item
-    uint32 prevUpgradeId;       // 3 
+    uint32 prevUpgradeId;       // 3
     uint32 currencyReqId;       // 4 currency Id
     uint32 currencyReqAmt;      // 5 currency count
 };
 
-struct RuleSetItemUpgrade
+struct RuleSetItemUpgradeEntry
 {
     uint32 id;                  // 0 m_ID
     uint32 levelUpd;            // 1 level upgrade
     uint32 startUpgrade;        // 2 start update rules for ItemUpgradeEntry
     uint32 itemEntry;           // 3 Item ID
+};
+
+#define MAX_ITEM_UPDGRADES 3
+
+struct ItemUpgradeData
+{
+    ItemUpgradeData()
+    {
+        memset(upgrade, 0, sizeof(upgrade));
+    }
+
+    ItemUpgradeEntry const* upgrade[MAX_ITEM_UPDGRADES];
 };
 
 typedef UNORDERED_MAP<uint32, SpellReagent> SpellReagentMap;

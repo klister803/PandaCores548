@@ -931,7 +931,7 @@ public:
     static bool HandleDebugSetVehicleIdCommand(ChatHandler* handler, char const* args)
     {
         Unit* target = handler->getSelectedUnit();
-        if (!target || target->IsVehicle())
+        if (!target || target->GetTypeId() != TYPEID_UNIT || !target->IsVehicle())
             return false;
 
         if (!args)
@@ -941,9 +941,27 @@ public:
         if (!i)
             return false;
 
-        uint32 id = (uint32)atoi(i);
-        //target->SetVehicleId(id);
-        handler->PSendSysMessage("Vehicle id set to %u", id);
+        uint32 vehicle_id = (uint32)atoi(i);
+        VehicleEntry const * entry = sVehicleStore.LookupEntry(vehicle_id);
+        if (!entry)
+        {
+            handler->PSendSysMessage("No such vehicle id");
+            return false;
+        }
+
+        if (target->GetVehicleKit())
+            target->RemoveVehicleKit();
+
+        if (!target->CreateVehicleKit(entry->m_ID, target->GetEntry()))
+        {
+            handler->PSendSysMessage("Can't create vehicle kit id %u.", vehicle_id);
+            return false;
+        }
+
+        if (target->GetVehicleKit())
+            target->GetVehicleKit()->Reset();
+
+        handler->PSendSysMessage("Vehicle id set to %u", vehicle_id);
         return true;
     }
 
@@ -1597,7 +1615,7 @@ public:
 
     static bool HandleDebugLoadZ(ChatHandler* handler, char const* args)
     {
-		for (GameObjectDataContainer::iterator itr = sObjectMgr->_gameObjectDataStore.begin(); itr != sObjectMgr->_gameObjectDataStore.end(); ++itr)
+        for (GameObjectDataContainer::iterator itr = sObjectMgr->_gameObjectDataStore.begin(); itr != sObjectMgr->_gameObjectDataStore.end(); ++itr)
         {
             GameObjectData data = itr->second;
 

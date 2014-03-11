@@ -70,19 +70,11 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
     return NUM_CLIENT_OBJECT_TYPES;                         // unknown
 }
 
-Object::Object() : m_PackGUID(sizeof(uint64)+1)
+Object::Object() : m_PackGUID(sizeof(uint64)+1), 
+    m_objectTypeId(TYPEID_OBJECT), m_objectType(TYPEMASK_OBJECT), m_uint32Values(NULL),
+    _changedFields(NULL), m_valuesCount(0), _fieldNotifyFlags(UF_FLAG_NONE), m_inWorld(false),
+    m_objectUpdated(false)
 {
-    m_objectTypeId      = TYPEID_OBJECT;
-    m_objectType        = TYPEMASK_OBJECT;
-
-    m_uint32Values      = NULL;
-    _changedFields      = NULL;
-    m_valuesCount       = 0;
-    _fieldNotifyFlags   = UF_FLAG_DYNAMIC;
-
-    m_inWorld           = false;
-    m_objectUpdated     = false;
-
     m_PackGUID.appendPackGUID(0);
 }
 
@@ -336,7 +328,26 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     data->WriteBit(0);                              // byte0
     data->WriteBit(flags & UPDATEFLAG_HAS_TARGET);
 
-    data->WriteBits(0, 22);                         // transport animation frames
+    std::vector<uint32> transportFrames;
+    if (GameObject const* go = ToGameObject())
+    {
+        if (go->HasManualAnim())
+        {
+            GameObjectTemplate const* goInfo = go->GetGOInfo();
+            if (goInfo->type == GAMEOBJECT_TYPE_TRANSPORT)
+            {
+                if (goInfo->transport.startFrame)
+                    transportFrames.push_back(goInfo->transport.startFrame);
+                if (goInfo->transport.nextFrame1)
+                    transportFrames.push_back(goInfo->transport.nextFrame1);
+                //if (goInfo->transport.nextFrame2)
+                //    transportFrames.push_back(goInfo->transport.nextFrame2);
+                //if (goInfo->transport.nextFrame3)
+                //    transportFrames.push_back(goInfo->transport.nextFrame3);
+            }
+        }
+    }
+    data->WriteBits(transportFrames.size(), 22);   // transport animation frames                   
 
     data->WriteBit(0);                              // byte414
     data->WriteBit(0);                              // byte3
@@ -435,6 +446,9 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     }
 
     data->FlushBits();
+
+    for (int i = 0; i < transportFrames.size(); ++i)
+        *data << uint32(transportFrames[i]);
 
     if (flags & UPDATEFLAG_LIVING)
     {
@@ -857,6 +871,13 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
 
                     *data << flags;
                 }
+                else if (index == GAMEOBJECT_BYTES_1)
+                {
+                    if (((GameObject*)this)->GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT)
+                        *data << uint32(m_uint32Values[index] | GO_STATE_TRANSPORT_SPEC);
+                    else
+                        *data << uint32(m_uint32Values[index]);
+                }
                 else
                     *data << m_uint32Values[index];                // other cases
             }
@@ -1024,7 +1045,7 @@ bool Object::IsUpdateFieldVisible(uint32 flags, bool isSelf, bool isOwner, bool 
     if (flags == UF_FLAG_NONE)
         return false;
 
-    if (flags & UF_FLAG_PUBLIC)
+    if (flags & (UF_FLAG_PUBLIC | UF_FLAG_DYNAMIC))
         return true;
 
     if (flags & UF_FLAG_PRIVATE && isSelf)
@@ -1056,7 +1077,7 @@ void Object::_SetUpdateBits(UpdateMask* updateMask, Player* target) const
         valCount = PLAYER_END_NOT_SELF;
 
     for (uint16 index = 0; index < valCount; ++index, ++indexes)
-        if (this == target || _fieldNotifyFlags & flags[index] || (flags[index] & UF_FLAG_SPECIAL_INFO && hasSpecialInfo) || (*indexes && IsUpdateFieldVisible(flags[index], isSelf, isOwner, isItemOwner, isPartyMember)))
+        if (_fieldNotifyFlags & flags[index] || (flags[index] & UF_FLAG_SPECIAL_INFO && hasSpecialInfo) || (*indexes && IsUpdateFieldVisible(flags[index], isSelf, isOwner, isItemOwner, isPartyMember)))
             updateMask->SetBit(index);
 }
 
@@ -1077,7 +1098,7 @@ void Object::_SetCreateBits(UpdateMask* updateMask, Player* target) const
         valCount = PLAYER_END_NOT_SELF;
 
     for (uint16 index = 0; index < valCount; ++index, ++value)
-        if (_fieldNotifyFlags & flags[index] || (flags[index] & UF_FLAG_SPECIAL_INFO && hasSpecialInfo) || (*value && IsUpdateFieldVisible(flags[index], isSelf, isOwner, isItemOwner, isPartyMember)))
+        if (_fieldNotifyFlags & flags[index] || (flags[index] & UF_FLAG_DYNAMIC) ||(flags[index] & UF_FLAG_SPECIAL_INFO && hasSpecialInfo) || (*value && IsUpdateFieldVisible(flags[index], isSelf, isOwner, isItemOwner, isPartyMember)))
             updateMask->SetBit(index);
 }
 
@@ -2023,8 +2044,12 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (distanceCheck)
     {
         bool corpseCheck = false;
+        bool onArena = false;   //on arena we have always see all
+
         if (Player const* thisPlayer = ToPlayer())
         {
+            onArena = thisPlayer->InArena();
+
             if (thisPlayer->isDead() && thisPlayer->GetHealth() > 0 && // Cheap way to check for ghost state
                 !(obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & GHOST_VISIBILITY_GHOST))
             {
@@ -2044,8 +2069,8 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
         if (!viewpoint)
             viewpoint = this;
-
-        if (!corpseCheck && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
+        
+        if (!corpseCheck && !onArena && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
             return false;
     }
 

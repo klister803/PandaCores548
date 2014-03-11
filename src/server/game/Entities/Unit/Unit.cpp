@@ -285,6 +285,10 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_VisibilityUpdScheduled = false;
     m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
     m_SoulSwapTarget = NULL;
+
+    m_damage_counter_timer = 1 * IN_MILLISECONDS;
+    for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
+        m_damage_counters[i].push_front(0);
 }
 
 ////////////////////////////////////////////////////////////
@@ -345,6 +349,20 @@ void Unit::Update(uint32 p_time)
 
     if (!IsInWorld())
         return;
+
+    if (m_damage_counter_timer <= p_time)
+    {
+        for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
+        {
+            m_damage_counters[i].push_front(0);
+            while (m_damage_counters[i].size() > MAX_DAMAGE_LOG_SECS)
+                m_damage_counters[i].pop_back();
+        }
+
+        m_damage_counter_timer = 1 * IN_MILLISECONDS;
+    }
+    else
+        m_damage_counter_timer -= p_time;
 
     _UpdateSpells(p_time);
 
@@ -887,6 +905,12 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (IsControlledByPlayer())
             victim->ToCreature()->LowerPlayerDamageReq(health < damage ?  health : damage);
+    }
+
+    if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
+    {
+        m_damage_counters[DAMAGE_DONE_COUNTER][0] += health >= damage ? damage : health;
+        victim->m_damage_counters[DAMAGE_TAKEN_COUNTER][0] += health >= damage ? damage : health;
     }
 
     if (health <= damage)
@@ -6165,6 +6189,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 134732: // Battle Fatigue
+                {
+                    if (Unit * owner = victim->GetOwner())
+                        victim = owner;
+
+                    if (victim->IsFriendlyTo(this) || victim->IsInPartyWith(this) || victim->GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    break;
+                }
                 // Concentration, Majordomo Staghelm
                 case 98229:
                     SetPower(POWER_ALTERNATE_POWER, 0);
@@ -6961,13 +6995,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         CastSpell(this, 126084, true);  // cast second charge visual
                     break;
                 }
-                // Temporal Shield
-                case 115610:
-                {
-                    triggered_spell_id = 115611;
-                    basepoints0 = (damage + GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_HEAL)) / 3;
-                    break;
-                }
             }
             break;
         }
@@ -7104,6 +7131,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 111397: // Blood Horror
+                {
+                    triggered_spell_id = 137143;
+                    break;
+                }
                 // Glyph of Shadowflame
                 case 63310:
                 {
@@ -7555,6 +7587,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 84654: // Bandit's Guile
+                {
+                    insightCount++;
+
+                    if (insightCount > 3)
+                    {
+                        if       (HasAura(84745)) AddAura(84746, this);
+                        else if  (HasAura(84746)) AddAura(84747, this);
+                        else if (!HasAura(84747)) AddAura(84745, this);
+                    }
+                    else
+                    {
+                        if      (Aura *  GreenBuff = GetAura(84745))  GreenBuff->RefreshDuration();
+                        else if (Aura * YellowBuff = GetAura(84746)) YellowBuff->RefreshDuration();
+                    }
+                    break;
+                }
                 case 51701: // Honor Among Thieves
                 {
                     if (Unit * owner = (Unit *)(triggeredByAura->GetBase()->GetOwner()))
@@ -8842,7 +8891,7 @@ bool Unit::HandleObsModEnergyAuraProc(Unit* victim, uint32 /*damage*/, AuraEffec
         ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, time(NULL) + cooldown);
     return true;
 }
-bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 procEx, uint32 cooldown)
 {
     SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
     //uint32 effIndex = triggeredByAura->GetEffIndex();
@@ -8855,12 +8904,27 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 /*damage*/, Aura
     Unit* target = victim;
     int32 basepoints0 = 0;
 
-    /*
     switch (dummySpell->SpellFamilyName)
     {
+        case SPELLFAMILY_MAGE:
+        {
+            switch (dummySpell->Id)
+            {
+                case 115610: // Temporal Shield
+                {
+                    if (procEx & PROC_EX_INTERNAL_HOT)
+                        return false;
 
+                    triggered_spell_id = 115611;
+                    basepoints0 = (damage + GetRemainingPeriodicAmount(GetGUID(), triggered_spell_id, SPELL_AURA_PERIODIC_HEAL)) / 3;
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
     }
-    */
 
     // processed charge only counting case
     if (!triggered_spell_id)
@@ -11297,6 +11361,9 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
         /** World of Warcraft Armory **/
     }
 
+    if (gain)
+        m_damage_counters[HEALING_DONE_COUNTER][0] += gain;
+
     return gain;
 }
 
@@ -12142,7 +12209,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 {
     //! Mobs can't crit with spells. Player Totems can
     //! Fire Elemental (from totem) can too - but this part is a hack and needs more research
-    if (IS_CREATURE_GUID(GetGUID()) && !(isTotem() && IS_PLAYER_GUID(GetOwnerGUID())) && GetEntry() != 15438)
+    if (((ToCreature() && ToCreature()->GetMap()->IsDungeon()) || IS_CREATURE_GUID(GetGUID())) && !(isTotem() && IS_PLAYER_GUID(GetOwnerGUID())) && GetEntry() != 15438)
         return false;
 
     // not critting spell
@@ -13787,6 +13854,17 @@ void Unit::ClearInCombat()
         ToPlayer()->UpdatePotionCooldown();
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        switch (getClass())
+        {
+            case CLASS_MONK:    ToPlayer()->ResetRegenTimerCount(POWER_CHI);        break;
+            case CLASS_PALADIN: ToPlayer()->ResetRegenTimerCount(POWER_HOLY_POWER); break;
+            default:
+                break;
+        }
+    }
 }
 
 bool Unit::isTargetableForAttack(bool checkFakeDeath) const
@@ -14962,6 +15040,9 @@ float Unit::ApplyEffectModifiers(SpellInfo const* spellProto, uint8 effect_index
             case 3:
                 modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT4, value);
                 break;
+            case 4:
+                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_EFFECT5, value);
+                break;
         }
     }
     return value;
@@ -15674,33 +15755,29 @@ void Unit::SetPower(Powers power, int32 val)
         data.WriteGuidBytes<7, 4, 5, 6, 3>(guid);
         SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
     }
-
-    // Custom MoP Script
-    // Pursuit of Justice - 26023
-    if (Player* _player = ToPlayer())
+    
+    if (Player* player = ToPlayer())
     {
-        if (_player->HasAura(26023))
+        player->ResetRegenTimerCount(power);
+
+        if (player->HasAura(26023)) // Pursuit of Justice - 26023 Custom MoP Script
         {
-            Aura* aura = _player->GetAura(26023);
+            Aura* aura = player->GetAura(26023);
             if (aura)
             {
-                int32 holyPower = _player->GetPower(POWER_HOLY_POWER) >= 3 ? 3 : _player->GetPower(POWER_HOLY_POWER);
+                int32 holyPower = player->GetPower(POWER_HOLY_POWER) >= 3 ? 3 : player->GetPower(POWER_HOLY_POWER);
                 int32 AddValue = 5 * holyPower;
 
                 aura->GetEffect(0)->ChangeAmount(15 + AddValue);
 
-                Aura* aura2 = _player->AddAura(114695, _player);
+                Aura* aura2 = player->AddAura(114695, player);
                 if (aura2)
                     aura2->GetEffect(0)->ChangeAmount(AddValue);
             }
         }
-        else if (_player->HasAura(114695))
-            _player->RemoveAura(114695);
-    }
+        else if (player->HasAura(114695))
+            player->RemoveAura(114695);
 
-    // group update
-    if (Player* player = ToPlayer())
-    {
         if (player->GetGroup())
             player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
     }
@@ -16392,49 +16469,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (roll_chance_i(20))
             ToPlayer()->AddComboPoints(target, 1);
 
-    // Bandit's Guile - 84654
-    // Your Sinister Strike and Revealing Strike abilities increase your damage dealt by up to 30%
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(84654) && procSpell && (procSpell->Id == 84617 || procSpell->Id == 1752))
-    {
-        insightCount++;
-
-        // it takes a total of 4 strikes to get a proc, or a level up
-        if (insightCount >= 4)
-        {
-            insightCount = 0;
-
-            // it takes 4 strikes to get Shallow insight
-            // than 4 strikes to get Moderate insight
-            // and than 4 strikes to get Deep Insight
-
-            // Shallow Insight
-            if (HasAura(84745))
-            {
-                RemoveAura(84745);
-                CastSpell(this, 84746, true); // Moderate Insight
-            }
-            else if (HasAura(84746))
-            {
-                RemoveAura(84746);
-                CastSpell(this, 84747, true); // Deep Insight
-            }
-            // the cycle will begin
-            else if (!HasAura(84747))
-                CastSpell(this, 84745, true); // Shallow Insight
-        }
-        else
-        {
-            // Each strike refreshes the duration of shallow insight or Moderate insight
-            // but you can't refresh Deep Insight without starting from shallow insight.
-            // Shallow Insight
-            if (Aura* shallowInsight = GetAura(84745))
-                shallowInsight->RefreshDuration();
-            // Moderate Insight
-            else if (Aura* moderateInsight = GetAura(84746))
-                moderateInsight->RefreshDuration();
-        }
-    }
-
     // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
         if (Aura* aura = GetAura(53257))
@@ -16486,7 +16520,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             continue;
         ProcTriggeredData triggerData(itr->second->GetBase());
         // Defensive procs are active on absorbs (so absorption effects are not a hindrance)
-        bool active = damage || (procExtra & PROC_EX_BLOCK && isVictim);
+        bool active = damage || (procExtra & PROC_EX_BLOCK && isVictim) || (procExtra & PROC_EX_ABSORB && !isVictim);
         if (isVictim)
             procExtra &= ~PROC_EX_INTERNAL_REQ_FAMILY;
 
@@ -20811,62 +20845,9 @@ bool Unit::IsSplineEnabled() const
     return movespline->Initialized();
 }
 
-/* In the next functions, we keep 1 minute of last damage */
-uint32 Unit::GetHealingDoneInPastSecs(uint32 secs)
-{
-    uint32 heal = 0;
-
-    for (HealDoneList::iterator itr = m_healDone.begin(); itr != m_healDone.end(); itr++)
-    {
-        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
-            heal += (*itr)->s_heal;
-    }
-
-    return heal;
-};
-
-uint32 Unit::GetHealingTakenInPastSecs(uint32 secs)
-{
-    uint32 heal = 0;
-
-    for (HealTakenList::iterator itr = m_healTaken.begin(); itr != m_healTaken.end(); itr++)
-    {
-        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
-            heal += (*itr)->s_heal;
-    }
-
-    return heal;
-};
-
-uint32 Unit::GetDamageDoneInPastSecs(uint32 secs)
-{
-    uint32 damage = 0;
-
-    for (DmgDoneList::iterator itr = m_dmgDone.begin(); itr != m_dmgDone.end(); itr++)
-    {
-        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
-            damage += (*itr)->s_damage;
-    }
-
-    return damage;
-};
-
-uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
-{
-    uint32 damage = 0;
-
-    for (DmgTakenList::iterator itr = m_dmgTaken.begin(); itr != m_dmgTaken.end(); itr++)
-    {
-        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
-            damage += (*itr)->s_damage;
-    }
-
-    return damage;
-}
-
 void Unit::WriteMovementUpdate(WorldPacket &data) const
 {
-    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo, (Unit *)this);
+    WorldSession::WriteMovementInfo(data, const_cast<MovementInfo*>(&m_movementInfo), const_cast<Unit*>(this));
 }
 
 void Unit::RemoveSoulSwapDOT(Unit* target)
@@ -21250,5 +21231,43 @@ void Unit::SendDispelLog(uint64 unitTargetGuid, uint32 spellId, std::list<uint32
     data.WriteGuidBytes<5>(casterGuid);
 
     SendMessageToSet(&data, true);
+}
+
+void Unit::SendMoveflag2_0x1000_Update(bool on)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    ObjectGuid guid = GetObjectGuid();
+    if (on)
+    {
+        WorldPacket data(SMSG_SET_MOVEFLAG2_0x1000, 8 + 1 + 4);
+        data << uint32(0);
+        data.WriteGuidMask<5, 1, 3, 0, 2, 6, 7, 4>(guid);
+        data.WriteGuidBytes<3, 1, 2, 7, 6, 0, 5, 4>(guid);
+        ToPlayer()->SendDirectMessage(&data);
+    }
+    else
+    {
+        WorldPacket data(SMSG_UNSET_MOVEFLAG2_0x1000, 8 + 1 + 4);
+        data.WriteGuidMask<5, 0, 3, 4, 7, 1, 2, 6>(guid);
+        data.WriteGuidBytes<7>(guid);
+        data << uint32(0);
+        data.WriteGuidBytes<3, 4, 2, 0, 1, 5, 6>(guid);
+        ToPlayer()->SendDirectMessage(&data);
+    }
+}
+
+uint32 Unit::GetDamageCounterInPastSecs(uint32 secs, int type)
+{
+    if (type >= MAX_DAMAGE_COUNTERS)
+        return 0;
+
+    uint32 damage = 0;
+
+    for (uint32 i = 0; i < secs && i < m_damage_counters[type].size(); ++i)
+        damage += m_damage_counters[type][i];
+
+    return damage;
 }
 

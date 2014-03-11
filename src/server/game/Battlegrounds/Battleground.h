@@ -492,7 +492,7 @@ class Battleground
         BattlegroundMap* FindBgMap() const { return m_Map; }
 
         void SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O);
-        void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
+        virtual void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
         {
             BattlegroundTeamId idx = GetTeamIndexByTeamId(TeamID);
             X = m_TeamStartLocX[idx];
@@ -770,25 +770,22 @@ class Battleground
 };
 
 // helper functions for world state list fill
-inline void FillInitialWorldState(ByteBuffer& data, uint32& count, uint32 state, uint32 value)
+inline void FillInitialWorldState(ByteBuffer& data, uint32 state, uint32 value)
 {
-    data << uint32(state);
     data << uint32(value);
-    ++count;
+    data << uint32(state);
 }
 
-inline void FillInitialWorldState(ByteBuffer& data, uint32& count, uint32 state, int32 value)
+inline void FillInitialWorldState(ByteBuffer& data, uint32 state, int32 value)
 {
-    data << uint32(state);
     data << int32(value);
-    ++count;
+    data << uint32(state);
 }
 
-inline void FillInitialWorldState(ByteBuffer& data, uint32& count, uint32 state, bool value)
+inline void FillInitialWorldState(ByteBuffer& data, uint32 state, bool value)
 {
-    data << uint32(state);
     data << uint32(value?1:0);
-    ++count;
+    data << uint32(state);
 }
 
 struct WorldStatePair
@@ -797,13 +794,12 @@ struct WorldStatePair
     uint32 value;
 };
 
-inline void FillInitialWorldState(ByteBuffer& data, uint32& count, WorldStatePair const* array)
+inline void FillInitialWorldState(ByteBuffer& data, WorldStatePair const* array)
 {
     for(WorldStatePair const* itr = array; itr->state; ++itr)
     {
-        data << uint32(itr->state);
         data << uint32(itr->value);
-        ++count;
+        data << uint32(itr->state);
     }
 }
 #endif

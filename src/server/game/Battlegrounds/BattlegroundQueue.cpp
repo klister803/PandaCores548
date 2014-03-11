@@ -342,7 +342,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
 
     // if invited to bg, and should decrease invited count, then do it
     if (decreaseInvitedCount && group->IsInvitedToBGInstanceGUID)
-        if (Battleground* bg = sBattlegroundMgr->GetBattleground(group->IsInvitedToBGInstanceGUID, group->BgTypeId == BATTLEGROUND_AA ? BATTLEGROUND_TYPE_NONE : group->BgTypeId))
+        if (Battleground* bg = sBattlegroundMgr->GetBattleground(group->IsInvitedToBGInstanceGUID, (group->BgTypeId == BATTLEGROUND_AA || group->BgTypeId == BATTLEGROUND_RATED_10_VS_10) ? BATTLEGROUND_TYPE_NONE : group->BgTypeId))
             bg->DecreaseInvitedCount(group->Team);
 
     // remove player queue info
@@ -386,7 +386,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
             plr2->RemoveBattlegroundQueueId(bgQueueTypeId); // must be called this way, because if you move this call to
                                                             // queue->removeplayer, it causes bugs
             WorldPacket data;
-            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, plr2, queueSlot, STATUS_NONE, plr2->GetBattlegroundQueueJoinTime(group->BgTypeId), 0, 0);
+            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, plr2, queueSlot, STATUS_NONE, 0, 0, group->JoinType);
             plr2->GetSession()->SendPacket(&data);
         }
         // then actually delete, this may delete the group as well!
@@ -452,7 +452,7 @@ bool BattlegroundQueue::InviteGroupToBG(GroupQueueInfo* ginfo, Battleground* bg,
             player->SetInviteForBattlegroundQueueType(bgQueueTypeId, ginfo->IsInvitedToBGInstanceGUID);
 
             // create remind invite events
-            BGQueueInviteEvent* inviteEvent = new BGQueueInviteEvent(player->GetGUID(), ginfo->IsInvitedToBGInstanceGUID, bgTypeId, ginfo->JoinType, ginfo->RemoveInviteTime);
+            BGQueueInviteEvent* inviteEvent = new BGQueueInviteEvent(player->GetGUID(), ginfo->IsInvitedToBGInstanceGUID, bgTypeId, ginfo->RemoveInviteTime);
             m_events.AddEvent(inviteEvent, m_events.CalculateTime(INVITATION_REMIND_TIME));
             // create automatic remove events
             BGQueueRemoveEvent* removeEvent = new BGQueueRemoveEvent(player->GetGUID(), ginfo->IsInvitedToBGInstanceGUID, bgTypeId, bgQueueTypeId, ginfo->RemoveInviteTime);
@@ -1013,7 +1013,7 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
         {
             WorldPacket data;
             //we must send remaining time in queue
-            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, player, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME - INVITATION_REMIND_TIME, player->GetBattlegroundQueueJoinTime(m_BgTypeId), m_JoinType);
+            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, player, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME - INVITATION_REMIND_TIME, player->GetBattlegroundQueueJoinTime(m_BgTypeId), 0);
             player->GetSession()->SendPacket(&data);
         }
     }

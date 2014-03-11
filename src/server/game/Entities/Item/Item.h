@@ -297,6 +297,8 @@ class Item : public Object
         uint32 GetEnchantmentId(EnchantmentSlot slot)       const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_ID_OFFSET);}
         uint32 GetEnchantmentDuration(EnchantmentSlot slot) const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_DURATION_OFFSET);}
         uint32 GetEnchantmentCharges(EnchantmentSlot slot)  const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_CHARGES_OFFSET);}
+        uint32 GetLevel() const { return ItemLevel; }
+        void SetLevel(uint32 level) { ItemLevel = level; }
 
         std::string const& GetText() const { return m_text; }
         void SetText(std::string const& text) { m_text = text; }
@@ -330,6 +332,7 @@ class Item : public Object
         bool IsVellum() const { return GetTemplate()->IsVellum(); }
         bool IsConjuredConsumable() const { return GetTemplate()->IsConjuredConsumable(); }
         bool IsRangedWeapon() const { return GetTemplate()->IsRangedWeapon(); }
+        uint32 GetLeveledStatValue(uint8 statIndex) const;
 
         // Item Refund system
         void SetNotRefundable(Player* owner, bool changestate = true, SQLTransaction* trans = NULL);
@@ -375,12 +378,11 @@ class Item : public Object
         void SetTransmogrification(uint32 value);
         uint32 GetTransmogrification() const;
         void UpdateDynamicValues();
-        void SetUpgradeItem(uint32 value);
-        uint32 GetUpgradeItem() const;
+        void SetUpgradeId(uint32 value);
+        uint32 GetUpgradeId() const;
 
         uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
         void AppendDynamicInfo(ByteBuffer& buff) const;
-        uint32 ItemLevel;
 
     private:
         std::string m_text;
@@ -394,5 +396,6 @@ class Item : public Object
         uint32 m_paidMoney;
         uint32 m_paidExtendedCost;
         AllowedLooterSet allowedGUIDs;
+        uint32 ItemLevel;
 };
 #endif

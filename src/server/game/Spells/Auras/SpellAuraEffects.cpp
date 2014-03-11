@@ -465,7 +465,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //406 SPELL_AURA_406
     &AuraEffect::HandleModFear,                                   //407 SPELL_AURA_MOD_FEAR_2
     &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_PROC_SPELL_CHARGE
-    &AuraEffect::HandleNULL,                                      //409 SPELL_AURA_MOD_FALL_SPEED
+    &AuraEffect::HandleAuraGlide,                                 //409 SPELL_AURA_GLIDE
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
     &AuraEffect::HandleNoImmediateEffect,                         //411 SPELL_AURA_MOD_CHARGES implemented in Spell::cast
     &AuraEffect::HandleModPowerRegen,                             //412 SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN
@@ -475,7 +475,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //416 SPELL_AURA_416
     &AuraEffect::HandleNULL,                                      //417 SPELL_AURA_417
     &AuraEffect::HandleNULL,                                      //418 SPELL_AURA_418
-    &AuraEffect::HandleNULL,                                      //419 SPELL_AURA_419
+    &AuraEffect::HandleAuraModAddEnergyPercent,                   //419 SPELL_AURA_419
     &AuraEffect::HandleNULL,                                      //420 SPELL_AURA_420
     &AuraEffect::HandleNULL,                                      //421 SPELL_AURA_421
     &AuraEffect::HandleNULL,                                      //422 SPELL_AURA_422
@@ -665,7 +665,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     {
                         case 11426: // Ice Barrier
                         {
-                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 4.401f;
+                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.3f;
                             break;
                         }
                         default:
@@ -711,6 +711,26 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.807f;
             }
             break;
+        case SPELL_AURA_MOD_RESILIENCE_PCT:
+        {
+            if (!caster)
+                break;
+
+            switch (GetId())
+            {
+                case 115043: // Player Damage Reduction
+                {
+                    if (caster->getLevel() == 90)
+                    {
+                        amount = -7200;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_DUMMY:
             if (!caster)
                 break;
@@ -1494,6 +1514,7 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
         case SPELLMOD_EFFECT2:
         case SPELLMOD_EFFECT3:
         case SPELLMOD_EFFECT4:
+        case SPELLMOD_EFFECT5:
         {
             uint64 guid = target->GetGUID();
             Unit::AuraApplicationMap & auras = target->GetAppliedAuras();
@@ -1530,6 +1551,11 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
                     else if (GetMiscValue() == SPELLMOD_EFFECT4)
                     {
                        if (AuraEffect* aurEff = aura->GetEffect(3))
+                            aurEff->RecalculateAmount();
+                    }
+                    else if (GetMiscValue() == SPELLMOD_EFFECT5)
+                    {
+                       if (AuraEffect* aurEff = aura->GetEffect(4))
                             aurEff->RecalculateAmount();
                     }
                 }
@@ -3423,6 +3449,28 @@ void AuraEffect::HandleAuraFeatherFall(AuraApplication const* aurApp, uint8 mode
         target->ToPlayer()->SetFallInformation(0, target->GetPositionZ());
 }
 
+void AuraEffect::HandleAuraGlide(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    if (!apply)
+    {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (target->HasAuraType(GetAuraType()))
+            return;
+    }
+
+    if (apply)
+        target->AddExtraUnitMovementFlag(MOVEMENTFLAG2_0x1000);
+    else
+        target->RemoveExtraUnitMovementFlag(MOVEMENTFLAG2_0x1000);
+
+    target->SendMoveflag2_0x1000_Update(apply);
+}
+
 void AuraEffect::HandleAuraHover(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
     if (!(mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK))
@@ -4766,6 +4814,30 @@ void AuraEffect::HandleAuraModIncreaseEnergyPercent(AuraApplication const* aurAp
     // inside effect handlers is not a good idea
     //if (int32(powerType) != GetMiscValue())
     //    return;
+
+    UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
+    float amount = float(GetAmount());
+
+    if (apply)
+    {
+        target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
+        target->ModifyPowerPct(powerType, amount, apply);
+    }
+    else
+    {
+        target->ModifyPowerPct(powerType, amount, apply);
+        target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
+    }
+}
+
+void AuraEffect::HandleAuraModAddEnergyPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    Powers powerType = Powers(GetMiscValue());
 
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
     float amount = float(GetAmount());
@@ -6460,7 +6532,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                     int32 basepoints0 = 0;
 
                     // taken damage
-                    int32 takendamage = GetCaster()->ToPlayer()->GetDamageTakenInPastSecs(3);
+                    int32 takendamage = GetCaster()->GetDamageCounterInPastSecs(3, DAMAGE_TAKEN_COUNTER);
 
                     // player will loase 5% if has taken damage
                     int32 curr_amount = GetBase()->GetEffect(EFFECT_0)->GetAmount();

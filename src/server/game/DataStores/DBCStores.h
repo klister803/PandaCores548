@@ -124,6 +124,7 @@ extern DBCStorage <GtChanceToMeleeCritBaseEntry> sGtChanceToMeleeCritBaseStore;
 extern DBCStorage <GtChanceToMeleeCritEntry>     sGtChanceToMeleeCritStore;
 extern DBCStorage <GtChanceToSpellCritBaseEntry> sGtChanceToSpellCritBaseStore;
 extern DBCStorage <GtChanceToSpellCritEntry>     sGtChanceToSpellCritStore;
+extern DBCStorage <GtItemSocketCostPerLevelEntry> sGtItemSocketCostPerLevelStore;
 extern DBCStorage <GtOCTClassCombatRatingScalarEntry> sGtOCTClassCombatRatingScalarStore;
 //extern DBCStorage <GtOCTRegenMPEntry>            sGtOCTRegenMPStore; -- not used currently
 extern DBCStorage <gtOCTHpPerStaminaEntry>       sGtOCTHpPerStaminaStore;
@@ -233,6 +234,8 @@ extern TaxiMask                                  sDeathKnightTaxiNodesMask;
 extern TaxiPathSetBySource                       sTaxiPathSetBySource;
 extern TaxiPathNodesByPath                       sTaxiPathNodesByPath;
 extern DBCStorage <TotemCategoryEntry>           sTotemCategoryStore;
+extern TransportAnimationsByEntry                sTransportAnimationsByEntry;
+extern DBCStorage <TransportAnimationEntry>      sTransportAnimationStore;
 extern DBCStorage <VehicleEntry>                 sVehicleStore;
 extern DBCStorage <VehicleSeatEntry>             sVehicleSeatStore;
 extern DBCStorage <WMOAreaTableEntry>            sWMOAreaTableStore;

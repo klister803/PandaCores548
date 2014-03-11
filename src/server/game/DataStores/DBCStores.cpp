@@ -112,6 +112,7 @@ DBCStorage <GtChanceToMeleeCritBaseEntry> sGtChanceToMeleeCritBaseStore(GtChance
 DBCStorage <GtChanceToMeleeCritEntry>     sGtChanceToMeleeCritStore(GtChanceToMeleeCritfmt);
 DBCStorage <GtChanceToSpellCritBaseEntry> sGtChanceToSpellCritBaseStore(GtChanceToSpellCritBasefmt);
 DBCStorage <GtChanceToSpellCritEntry>     sGtChanceToSpellCritStore(GtChanceToSpellCritfmt);
+DBCStorage <GtItemSocketCostPerLevelEntry> sGtItemSocketCostPerLevelStore(GtItemSocketCostPerLevelfmt);
 DBCStorage <GtOCTClassCombatRatingScalarEntry> sGtOCTClassCombatRatingScalarStore(GtOCTClassCombatRatingScalarfmt);
 DBCStorage <GtOCTRegenHPEntry>            sGtOCTRegenHPStore(GtOCTRegenHPfmt);
 //DBCStorage <GtOCTRegenMPEntry>            sGtOCTRegenMPStore(GtOCTRegenMPfmt);  -- not used currently
@@ -252,6 +253,9 @@ static DBCStorage <TaxiPathNodeEntry> sTaxiPathNodeStore(TaxiPathNodeEntryfmt);
 
 DBCStorage <TeamContributionPointsEntry> sTeamContributionPointsStore(TeamContributionPointsfmt);
 DBCStorage <TotemCategoryEntry> sTotemCategoryStore(TotemCategoryEntryfmt);
+
+TransportAnimationsByEntry sTransportAnimationsByEntry;
+DBCStorage <TransportAnimationEntry> sTransportAnimationStore(TransportAnimationEntryfmt);
 DBCStorage <VehicleEntry> sVehicleStore(VehicleEntryfmt);
 DBCStorage <VehicleSeatEntry> sVehicleSeatStore(VehicleSeatEntryfmt);
 DBCStorage <WMOAreaTableEntry> sWMOAreaTableStore(WMOAreaTableEntryfmt);
@@ -443,6 +447,7 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtChanceToMeleeCritStore,    dbcPath, "gtChanceToMeleeCrit.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtChanceToSpellCritBaseStore, dbcPath, "gtChanceToSpellCritBase.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtChanceToSpellCritStore,    dbcPath, "gtChanceToSpellCrit.dbc");//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sGtItemSocketCostPerLevelStore,dbcPath,"gtItemSocketCostPerLevel.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtOCTClassCombatRatingScalarStore,    dbcPath, "gtOCTClassCombatRatingScalar.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtOCTHpPerStaminaStore,      dbcPath, "gtOCTHpPerStamina.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sGtRegenMPPerSptStore,        dbcPath, "gtRegenMPPerSpt.dbc");//14545
@@ -695,7 +700,7 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sTaxiPathNodeStore,           dbcPath, "TaxiPathNode.dbc");//14545
     // Calculate path nodes count
     std::vector<uint32> pathLength;
-    pathLength.resize(pathCount);                           // 0 and some other indexes not used
+    pathLength.resize(pathCount, 0);                        // 0 and some other indexes not used
     for (uint32 i = 1; i < sTaxiPathNodeStore.GetNumRows(); ++i)
         if (TaxiPathNodeEntry const* entry = sTaxiPathNodeStore.LookupEntry(i))
         {
@@ -773,6 +778,12 @@ void LoadDBCStores(const std::string& dataPath)
 
     //LoadDBC(availableDbcLocales, bad_dbc_files, sTeamContributionPointsStore, dbcPath, "TeamContributionPoints.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sTotemCategoryStore,          dbcPath, "TotemCategory.dbc");//14545
+
+    LoadDBC(availableDbcLocales, bad_dbc_files, sTransportAnimationStore,     dbcPath, "TransportAnimation.dbc");//17538
+    for (uint32 i = 0; i < sTransportAnimationStore.GetNumRows(); ++i)
+        if (TransportAnimationEntry const* entry = sTransportAnimationStore.LookupEntry(i))
+            sTransportAnimationsByEntry[entry->transportEntry][entry->timeFrame] = entry;
+
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sVehicleStore,                dbcPath, "Vehicle.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sVehicleSeatStore,            dbcPath, "VehicleSeat.dbc");//14545

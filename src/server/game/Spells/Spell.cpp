@@ -1392,6 +1392,8 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
     float objSize = m_caster->GetObjectSize();
     if (targetType.GetTarget() == TARGET_DEST_CASTER_SUMMON)
         dist = PET_FOLLOW_DIST;
+    else if (targetType.GetTarget() == TARGET_UNK_125)
+        dist = m_spellInfo->GetMaxRange();
     else
         dist = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster);
 
@@ -1408,6 +1410,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         case TARGET_DEST_CASTER_BACK_RIGHT:
         case TARGET_DEST_CASTER_BACK_LEFT:
         case TARGET_DEST_CASTER_FRONT_LEFT:
+        case TARGET_UNK_125:
             m_caster->GetFirstCollisionPosition(pos, dist, angle);
             break;
         default:
@@ -4284,7 +4287,7 @@ void Spell::SendSpellStart()
     bool hasRuneStateAfter = castFlags & CAST_FLAG_RUNE_LIST;
     bool hasCastImmunities = false;
     bool hasCastSchoolImmunities = false;
-    bool byte180 = false;
+    uint8 byte180 = 0;
     bool hasPowerUnit = false/*castFlags & CAST_FLAG_POWER_LEFT_SELF*/;
     bool hasPredictedType = false;
     bool hasDelayMoment = false;
@@ -4298,6 +4301,7 @@ void Spell::SendSpellStart()
     uint32 powerCount = 0;
     uint32 missCount2 = 0;
     uint32 extraTargetsCount = 0;
+    std::vector<ObjectGuid> extraTargetGuids(extraTargetsCount);
 
     uint32 targetMask = m_targets.GetTargetMask();
     if (targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_MINIPET))
@@ -4336,9 +4340,8 @@ void Spell::SendSpellStart()
     data.WriteBit(!hasDelayMoment);                             // !has delay moment
     data.WriteBit(!hasRuneStateBefore);                         // has rune state before
 
-    std::vector<ObjectGuid> unkGuids3(extraTargetsCount);
     for (uint32 i = 0; i < extraTargetsCount; ++i)
-        data.WriteGuidMask<3, 1, 7, 6, 2, 4, 5, 0>(unkGuids3[i]);
+        data.WriteGuidMask<3, 1, 7, 6, 2, 4, 5, 0>(extraTargetGuids[i]);
 
     data.WriteBit(!hasAmmoInventoryType);                       // !byte170
     data.WriteGuidMask<2>(itemCasterGuid);
@@ -4348,7 +4351,7 @@ void Spell::SendSpellStart()
     {
         uint32 hitResult = 0;
         data.WriteBits(hitResult, 4);                           // unk bits
-        if (hitResult == 11)
+        if (hitResult == SPELL_MISS_REFLECT)
             data.WriteBits(0, 4);                               // Reflect result
     }
 
@@ -4419,13 +4422,12 @@ void Spell::SendSpellStart()
 
     for (uint32 i = 0; i < extraTargetsCount; ++i)
     {
-        Unit* unkUnit3 = ObjectAccessor::FindUnit(unkGuids3[i]);
-        data.WriteGuidBytes<5, 2>(unkGuids3[i]);
-        data << float(unkUnit3 ? unkUnit3->GetPositionY() : 0.0f);
-        data << float(unkUnit3 ? unkUnit3->GetPositionX() : 0.0f);
-        data.WriteGuidBytes<7>(unkGuids3[i]);
-        data << float(unkUnit3 ? unkUnit3->GetPositionZ() : 0.0f);
-        data.WriteGuidBytes<3, 1, 6, 4, 0>(unkGuids3[i]);    
+        data.WriteGuidBytes<5, 2>(extraTargetGuids[i]);
+        data << float(0.0f);    // dst Y
+        data << float(0.0f);    // dst X
+        data.WriteGuidBytes<7>(extraTargetGuids[i]);
+        data << float(0.0f);    // dst Z
+        data.WriteGuidBytes<3, 1, 6, 4, 0>(extraTargetGuids[i]);
     }
 
     if (hasAmmoInventoryType)
@@ -4525,7 +4527,7 @@ void Spell::SendSpellStart()
         data << uint32(0);
 
     if (byte180)
-        data << uint8(0);
+        data << uint8(byte180);
 
     if (hasCastImmunities)
         data << uint32(0);
@@ -4582,12 +4584,14 @@ void Spell::SendSpellGo()
     ObjectGuid itemTargetGuid;
 
     uint32 extraTargetsCount = 0;
+    std::vector<ObjectGuid> extraTargetGuids(extraTargetsCount);
+
     uint32 powerCount = 0;
 
     bool hasPowerUnit = false/*castFlags & CAST_FLAG_POWER_LEFT_SELF*/;
     bool hasPredictedHeal = castFlags & CAST_FLAG_HEAL_PREDICTION;
     bool hasAmmoDisplayId = false;
-    bool byte180 = false;
+    uint8 byte180 = 0;
     bool hasCastSchoolImmunities = false;
     bool hasPredictedType = false;
     bool hasRuneStateBefore = castFlags & CAST_FLAG_RUNE_LIST;
@@ -4641,9 +4645,8 @@ void Spell::SendSpellGo()
     data.WriteBit(!guid1A0);                                    // "Guid 1A0 marker"
     data.WriteGuidMask<0>(casterGuid);
 
-    std::vector<ObjectGuid> Guids2(extraTargetsCount);
     for (uint32 i = 0; i < extraTargetsCount; ++i)
-        data.WriteGuidMask<4, 1, 5, 2, 0, 3, 6, 7>(Guids2[i]);
+        data.WriteGuidMask<4, 1, 5, 2, 0, 3, 6, 7>(extraTargetGuids[i]);
 
     data.WriteBit(!hasAmmoDisplayId);                            // !dword16C
     data.WriteGuidMask<0, 1, 4, 6, 5, 3, 2, 7>(guid1A0);
@@ -4783,14 +4786,12 @@ void Spell::SendSpellGo()
 
     for (uint32 i = 0; i < extraTargetsCount; ++i) // TARGET_FLAG_EXTRA_TARGETS
     {
-        Unit* second = ObjectAccessor::FindUnit(Guids2[i]);
-
-        data.WriteGuidBytes<6, 7, 2, 5, 0>(Guids2[i]);
-        data << float(second ? second->GetPositionY() : 0.0f);
-        data.WriteGuidBytes<4, 1>(Guids2[i]);
-        data << float(second ? second->GetPositionZ() : 0.0f);
-        data.WriteGuidBytes<3>(Guids2[i]);
-        data << float(second ? second->GetPositionX() : 0.0f);
+        data.WriteGuidBytes<6, 7, 2, 5, 0>(extraTargetGuids[i]);
+        data << float(0.0f);        // dst Y
+        data.WriteGuidBytes<4, 1>(extraTargetGuids[i]);
+        data << float(0.0f);        // dst Z
+        data.WriteGuidBytes<3>(extraTargetGuids[i]);
+        data << float(0.0f);        // dst X
     }
 
     if (m_targets.HasSrc())
@@ -4847,7 +4848,7 @@ void Spell::SendSpellGo()
         data << uint8(m_runesState);                        // runes state before
 
     if (byte180)
-        data << uint8(0);
+        data << uint8(byte180);
 
     // misses
     counter = 0;
@@ -4859,7 +4860,7 @@ void Spell::SendSpellGo()
             ++counter;
         }
     }
-    data << uint32(0);
+    data << uint32(0);  // dword28
     data.WriteGuidBytes<2>(itemCasterGuid);
     data.WriteGuidBytes<4>(casterGuid);
     if (hasVisualChain)
@@ -6096,6 +6097,34 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 switch (m_spellInfo->Id)
                 {
+                    case 115080:
+                    {
+                        if (Unit * target = m_targets.GetUnitTarget())
+                        {
+                            if (Creature * unit = target->ToCreature())
+                                if (unit->IsDungeonBoss())
+                                    return SPELL_FAILED_BAD_TARGETS;
+
+                            if (target->GetHealth() > m_caster->GetMaxHealth())
+                                return SPELL_FAILED_BAD_TARGETS;
+
+                            if (m_caster->HasAura(124490))
+                            {
+                                if (target->GetHealthPct() > 10)
+                                    return SPELL_FAILED_BAD_TARGETS;
+                            }
+                            else
+                            {
+                                if (target->GetTypeId() == TYPEID_PLAYER)
+                                    return SPELL_FAILED_BAD_TARGETS;
+
+                                if (Unit * owner = target->GetOwner())
+                                    if (owner->GetTypeId() == TYPEID_PLAYER)
+                                        return SPELL_FAILED_BAD_TARGETS;
+                            }
+                        }
+                        break;
+                    }
                     case 86121:  // Soul Swap
                     {
                         if (Unit* target = m_targets.GetUnitTarget())
@@ -6865,8 +6894,6 @@ SpellCastResult Spell::CheckCasterAuras() const
     else if (unitflag & UNIT_FLAG_SILENCED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
         prevented_reason = SPELL_FAILED_SILENCED;
     else if (unitflag & UNIT_FLAG_PACIFIED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY)
-        prevented_reason = SPELL_FAILED_PACIFIED;
-    else if (m_spellInfo->Id == 1850) // THIS ... IS ... HACKYYYY !
         prevented_reason = SPELL_FAILED_PACIFIED;
 
     // Attr must make flag drop spell totally immune from all effects

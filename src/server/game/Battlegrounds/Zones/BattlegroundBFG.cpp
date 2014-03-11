@@ -277,12 +277,12 @@ void BattlegroundBFG::FillInitialWorldStates(WorldPacket& data)
 
     // Node icons
     for (uint8 node = 0; node < GILNEAS_BG_DYNAMIC_NODES_COUNT; ++node)
-        data << uint32(GILNEAS_BG_OP_NODEICONS[node]) << uint32((_Nodes[node] == 0)?1:0);
+        FillInitialWorldState(data, GILNEAS_BG_OP_NODEICONS[node], (_Nodes[node] == 0) ? 1 : 0);
 
     // Node occupied states
     for (uint8 node = 0; node < GILNEAS_BG_DYNAMIC_NODES_COUNT; ++node)
         for (uint8 i = 1; i < GILNEAS_BG_DYNAMIC_NODES_COUNT; ++i)
-            data << uint32(GILNEAS_BG_OP_NODESTATES[node] + plusArray[i]) << uint32((_Nodes[node] == i)?1:0);
+            FillInitialWorldState(data, GILNEAS_BG_OP_NODESTATES[node] + plusArray[i], (_Nodes[node] == i) ? 1 : 0);
 
     // How many bases each team owns
     uint8 ally = 0, horde = 0;
@@ -292,13 +292,13 @@ void BattlegroundBFG::FillInitialWorldStates(WorldPacket& data)
         else if (_Nodes[node] == GILNEAS_BG_NODE_STATUS_HORDE_OCCUPIED)
             ++horde;
 
-    data << uint32(GILNEAS_BG_OP_OCCUPIED_BASES_ALLY)  << uint32(ally);
-    data << uint32(GILNEAS_BG_OP_OCCUPIED_BASES_HORDE) << uint32(horde);
+    FillInitialWorldState(data, GILNEAS_BG_OP_OCCUPIED_BASES_ALLY, ally);
+    FillInitialWorldState(data, GILNEAS_BG_OP_OCCUPIED_BASES_HORDE, horde);
 
     // Team scores
-    data << uint32(GILNEAS_BG_OP_RESOURCES_ALLY)     << uint32(m_TeamScores[TEAM_ALLIANCE]);
-    data << uint32(GILNEAS_BG_OP_RESOURCES_HORDE)    << uint32(m_TeamScores[TEAM_HORDE]);
-    data << uint32(GILNEAS_BG_OP_RESOURCES_MAX)      << uint32(GILNEAS_BG_MAX_TEAM_SCORE);
+    FillInitialWorldState(data, GILNEAS_BG_OP_RESOURCES_ALLY, m_TeamScores[TEAM_ALLIANCE]);
+    FillInitialWorldState(data, GILNEAS_BG_OP_RESOURCES_HORDE, m_TeamScores[TEAM_HORDE]);
+    FillInitialWorldState(data, GILNEAS_BG_OP_RESOURCES_MAX, GILNEAS_BG_MAX_TEAM_SCORE);
 }
 
 void BattlegroundBFG::_SendNodeUpdate(uint8 node)

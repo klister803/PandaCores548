@@ -1675,7 +1675,7 @@ class spell_monk_chi_torpedo : public SpellScriptLoader
 
                         for (std::list<Unit*>::const_iterator itr = tempUnitMap.begin(); itr != tempUnitMap.end(); ++itr)
                         {
-                            if (!(*itr)->isInFront(_player, M_PI / 3) && (*itr)->GetGUID() != _player->GetGUID())
+                            if (!(_player)->isInFront((*itr), M_PI / 3) && (*itr)->GetGUID() != _player->GetGUID())
                                 continue;
 
                             uint32 spell = _player->IsValidAttackTarget(*itr) ? SPELL_MONK_CHI_TORPEDO_DAMAGE : SPELL_MONK_CHI_TORPEDO_HEAL;
@@ -2255,55 +2255,6 @@ class spell_monk_paralysis : public SpellScriptLoader
         }
 };
 
-// Touch of Death - 115080
-class spell_monk_touch_of_death : public SpellScriptLoader
-{
-    public:
-        spell_monk_touch_of_death() : SpellScriptLoader("spell_monk_touch_of_death") { }
-
-        class spell_monk_touch_of_death_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_touch_of_death_SpellScript);
-
-            SpellCastResult CheckCast()
-            {
-                if (GetCaster() && GetExplTargetUnit())
-                {
-                    if (GetCaster()->HasAura(124490))
-                    {
-                        if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsDungeonBoss())
-                            return SPELL_FAILED_BAD_TARGETS;
-                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && (GetExplTargetUnit()->GetHealth() > GetCaster()->GetHealth()))
-                            return SPELL_FAILED_BAD_TARGETS;
-                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_PLAYER && (GetExplTargetUnit()->GetHealthPct() > 10.0f))
-                            return SPELL_FAILED_BAD_TARGETS;
-                    }
-                    else
-                    {
-                        if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsDungeonBoss())
-                            return SPELL_FAILED_BAD_TARGETS;
-                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_PLAYER)
-                            return SPELL_FAILED_BAD_TARGETS;
-                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && (GetExplTargetUnit()->GetHealth() > GetCaster()->GetHealth()))
-                            return SPELL_FAILED_BAD_TARGETS;
-                    }
-                    return SPELL_CAST_OK;
-                }
-                return SPELL_FAILED_NO_VALID_TARGETS;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_monk_touch_of_death_SpellScript::CheckCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_touch_of_death_SpellScript();
-        }
-};
-
 // Fortifying brew - 115203
 class spell_monk_fortifying_brew : public SpellScriptLoader
 {
@@ -2506,7 +2457,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_blackout_kick();
     new spell_monk_legacy_of_the_emperor();
     new spell_monk_fortifying_brew();
-    new spell_monk_touch_of_death();
     new spell_monk_paralysis();
     new spell_monk_provoke();
     new spell_monk_roll();

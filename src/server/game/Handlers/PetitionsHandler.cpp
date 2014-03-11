@@ -245,7 +245,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
         uint32 lowGuid = fields2[0].GetUInt32();
         ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
 
-        data.WriteGuidMask<6, 3, 0, 4, 7, 5, 1, 2>(plSignGuid);
+        data.WriteGuidBytes<6, 3, 0, 4, 7, 5, 1, 2>(plSignGuid);
         data << uint32(0);
     }
 
@@ -254,7 +254,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
     data.WriteGuidBytes<0>(playerGUID);
     data.WriteGuidBytes<6>(petitionguid);
 
-    data << uint32(0);
+    data << uint32(petitionGuidLow);               // CGPetitionInfo__m_petitionID
 
     data.WriteGuidBytes<5, 1>(playerGUID);
     data.WriteGuidBytes<7>(petitionguid);
@@ -329,7 +329,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
         data.WriteGuidBytes<5>(ownerguid);
         data << uint32(0);
         data.WriteGuidBytes<6, 4>(ownerguid);
-        data << name;                                // guild name
+        data.WriteString(name);                      // guild name
         data.WriteGuidBytes<3>(ownerguid);
         data << uint32(GUILD_CHARTER_TYPE);          // unk number 4 in sniffs, type?
         data.WriteGuidBytes<2>(ownerguid);
@@ -409,9 +409,14 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
     CharacterDatabase.Execute(stmt);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Petition (GUID: %u) renamed to '%s'", GUID_LOPART(petitionGuid), newName.c_str());
-    WorldPacket data(MSG_PETITION_RENAME, (8+newName.size()+1));
-    data << uint64(petitionGuid);
-    data << newName;
+
+    WorldPacket data(SMSG_PETITION_RENAME, (8+newName.size()+1));
+    data.WriteGuidMask<1, 0>(petitionGuid);
+    data.WriteBits(newName.size(), 7);
+    data.WriteGuidMask<3, 5, 2, 6, 4, 7>(petitionGuid);
+    data.WriteGuidBytes<6, 7>(petitionGuid);
+    data.WriteString(newName);
+    data.WriteGuidBytes<2, 4, 1, 0, 3, 5>(petitionGuid);
     SendPacket(&data);
 }
 
@@ -506,13 +511,15 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
     // close at signer side
     SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_OK);
 
-    // update signs count on charter
-    if (Item* item = _player->GetItemByGuid(petitionGuid))
-        item->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, signs);
-
-    // update for owner if online
     if (Player* owner = ObjectAccessor::FindPlayer(ownerGuid))
+    {
+        // update signs count on charter
+        if (Item* item = owner->GetItemByGuid(petitionGuid))
+            item->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, signs);
+
+        // update sign result for owner
         owner->GetSession()->SendPetitionSignResult(_player->GetGUID(), petitionGuid, PETITION_SIGN_OK);
+    }
 }
 
 void WorldSession::SendPetitionSignResult(uint64 playerGuid, uint64 petitionGuid, uint8 result)
@@ -568,13 +575,13 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
     Field* fields = result->Fetch();
     ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
 
-    Player* owner = ObjectAccessor::FindPlayer(ownerguid);
+    /*Player* owner = ObjectAccessor::FindPlayer(ownerguid);
     if (owner)                                               // petition owner online
     {
         WorldPacket data(MSG_PETITION_DECLINE, 8);
         data << uint64(_player->GetGUID());
         owner->GetSession()->SendPacket(&data);
-    }
+    }*/
 }
 
 void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
@@ -647,7 +654,24 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 
     // result == NULL also correct charter without signs
     if (result)
+    {
         signs = uint8(result->GetRowCount());
+
+        // check already signed petition
+        for (uint8 i = 0; i < signs; i++)
+        {
+            Field* fields1 = result->Fetch();
+            uint32 lowGuid = fields1[0].GetUInt32();
+            ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
+
+            if (player->GetObjectGuid() == plSignGuid)
+            {
+                // TODO : find and send correctly data structure, this response are not worked...research in future 
+                //SendPetitionSignResult(player->GetGUID(), petitionguid, PETITION_SIGN_ALREADY_SIGNED);
+                return;
+            }
+        }
+    }
 
     ObjectGuid playerGUID = _player->GetGUID();
 
@@ -693,7 +717,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
     data.WriteGuidBytes<0>(playerGUID);
     data.WriteGuidBytes<6>(petitionguid);
 
-    data << uint32(0);
+    data << uint32(GUID_LOPART(petitionguid));        // CGPetitionInfo__m_petitionID
 
     data.WriteGuidBytes<5, 1>(playerGUID);
     data.WriteGuidBytes<7>(petitionguid);

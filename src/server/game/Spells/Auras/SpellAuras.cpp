@@ -1534,6 +1534,26 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         break;
                 }
                 break;
+            case SPELLFAMILY_MONK:
+            {
+                if (!caster)
+                    break;
+
+                switch (m_spellInfo->Id)
+                {
+                    case 126060: // Desperate Measures
+                    {
+                        if (Player * monk = caster->ToPlayer())
+                        {
+                            monk->RemoveSpellCooldown(115072, true);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_ROGUE:
                 // Sprint (skip non player casted spells by category)
                 if (GetSpellInfo()->SpellFamilyFlags[0] & 0x40 && GetSpellInfo()->Category == 44)
@@ -1699,6 +1719,22 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 84745: //  GreenBuff
+                case 84746: // YellowBuff
+                case 84747: //    RedBuff
+                {
+                    if (apply)
+                    {
+                        switch (m_spellInfo->Id)
+                        {
+                            case 84745: caster->insightCount  = 0; break;
+                            case 84746: caster->RemoveAura(84745); break;
+                            case 84747: caster->RemoveAura(84746); break;
+                        }
+                    }
+                    else caster->insightCount = 0;
+                    break;
+                }
                 case 50720: // Vigilance
                     if (apply)
                         target->CastSpell(caster, 59665, true, 0, NULL, caster->GetGUID());

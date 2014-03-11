@@ -331,7 +331,7 @@ SpellImplicitTargetInfo::StaticData  SpellImplicitTargetInfo::_data[TOTAL_SPELL_
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 122
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 123
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 124
-    {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 125
+    {TARGET_OBJECT_TYPE_DEST, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_DEFAULT, TARGET_CHECK_DEFAULT,  TARGET_DIR_FRONT},       // 125
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 126
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 127
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 128
@@ -978,6 +978,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     AttributesEx9 = _misc ? _misc->AttributesEx9 : 0;
     AttributesEx10 = _misc ? _misc->AttributesEx10 : 0;
     AttributesEx11 = _misc ? _misc->AttributesEx11 : 0;
+    AttributesEx12 = _misc ? _misc->AttributesEx12 : 0;
 
     uint32 castingTimeIndex = _misc ? _misc->CastingTimeIndex : 0;
     uint32 durationIndex = _misc ? _misc->DurationIndex : 0;
@@ -1048,6 +1049,10 @@ SpellInfo::~SpellInfo()
 
 SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) const
 {
+    // custom spell effects (needed for rewrite targets, etc..)
+    if (Id == 122855) //Sun Breath (Tsulong)
+        return Effects[effect];
+
     if(difficulty)
     {
         SpellEffectInfoMap::const_iterator itr = EffectsMap.find(MAKE_PAIR16(effect, difficulty));

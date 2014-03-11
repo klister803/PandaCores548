@@ -70,6 +70,10 @@ int GetRatingMod(int ownRating, int opponentRating, bool won /*, float confidenc
     else
         mod = 24.0f * (won_mod - chance);
 
+	// in any way should be decrase
+	if (!won && mod == 0.0f && ownRating > 0)
+		return -1.0f;
+
     return (int)ceil(mod);
 
 }

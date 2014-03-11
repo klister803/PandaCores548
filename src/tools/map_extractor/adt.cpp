@@ -123,7 +123,7 @@ bool adt_MCNK::prepareLoadedData()
         return false;
 
     // Check height map
-    if (offsMCVT && !getMCVT()->prepareLoadedData())
+    if (getoffsMCVT() && !getMCVT()->prepareLoadedData())
         return false;
     // Check liquid data
     if (offsMCLQ && !getMCLQ()->prepareLoadedData())
@@ -135,10 +135,16 @@ bool adt_MCNK::prepareLoadedData()
 bool adt_MCVT::prepareLoadedData()
 {
     if (fcc != 'MCVT')
+    {
+        printf("MCVT header check failed\n");
         return false;
+    }
 
     if (size != sizeof(adt_MCVT)-8)
+    {
+        printf("MCVT size check failed\n");
         return false;
+    }
 
     return true;
 }

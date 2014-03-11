@@ -1292,6 +1292,12 @@ struct ItemPriceBaseEntry
     float WeaponFactor;                                     // 4        Price factor for weapons
 };
 
+struct GtItemSocketCostPerLevelEntry
+{
+    //uint32 id;                                            // 1
+    float cost;                                             // 2
+};
+
 struct ItemReforgeEntry
 {
     uint32 Id;
@@ -2331,44 +2337,53 @@ struct TotemCategoryEntry
     uint32    categoryMask;                                 // 3        m_totemCategoryMask (compatibility mask for same type: different for totems, compatible from high to low for rods)
 };
 
+struct TransportAnimationEntry
+{
+    //uint32    id;                                         // 0
+    uint32    transportEntry;                               // 1
+    uint32    timeFrame;                                    // 2
+    //float     xOffs;                                      // 3
+    //float     yOffs;                                      // 4
+    //float     zOffs;                                      // 5
+    //uint32    unk;                                        // 6
+};
+ 
 #define MAX_VEHICLE_SEATS 8
 
 struct VehicleEntry
 {
     uint32  m_ID;                                           // 0
     uint32  m_flags;                                        // 1
-    //uint32                                                // unk 5.0.5
-    float   m_turnSpeed;                                    // 2
-    float   m_pitchSpeed;                                   // 3
-    float   m_pitchMin;                                     // 4
-    float   m_pitchMax;                                     // 5
-    uint32  m_seatID[MAX_VEHICLE_SEATS];                    // 6-13
-    float   m_mouseLookOffsetPitch;                         // 14
-    float   m_cameraFadeDistScalarMin;                      // 15
-    float   m_cameraFadeDistScalarMax;                      // 16
-    float   m_cameraPitchOffset;                            // 17
-    //int     m_powerType[3];                               //       removed in 3.1
-    //int     m_powerToken[3];                              //       removed in 3.1
-    float   m_facingLimitRight;                             // 18
-    float   m_facingLimitLeft;                              // 19
-    float   m_msslTrgtTurnLingering;                        // 20
-    float   m_msslTrgtPitchLingering;                       // 21
-    float   m_msslTrgtMouseLingering;                       // 22
-    float   m_msslTrgtEndOpacity;                           // 23
-    float   m_msslTrgtArcSpeed;                             // 24
-    float   m_msslTrgtArcRepeat;                            // 25
-    float   m_msslTrgtArcWidth;                             // 26
-    float   m_msslTrgtImpactRadius[2];                      // 27-28
-    char* m_msslTrgtArcTexture;                         // 29
-    char* m_msslTrgtImpactTexture;                      // 30
-    char* m_msslTrgtImpactModel[2];                     // 31-32
-    float   m_cameraYawOffset;                              // 33
-    uint32  m_uiLocomotionType;                             // 34
-    float   m_msslTrgtImpactTexRadius;                      // 35
-    uint32  m_uiSeatIndicatorType;                          // 36
-    uint32  m_powerType;                                    // 37, new in 3.1
-                                                            // 38, new in 3.1
-                                                            // 39, new in 3.1
+    //uint32                                                // 2 unk 5.0.5
+    float   m_turnSpeed;                                    // 3
+    float   m_pitchSpeed;                                   // 4
+    float   m_pitchMin;                                     // 5
+    float   m_pitchMax;                                     // 6
+    uint32  m_seatID[MAX_VEHICLE_SEATS];                    // 7-14
+    float   m_mouseLookOffsetPitch;                         // 15
+    float   m_cameraFadeDistScalarMin;                      // 16
+    float   m_cameraFadeDistScalarMax;                      // 17
+    float   m_cameraPitchOffset;                            // 18
+    float   m_facingLimitRight;                             // 19
+    float   m_facingLimitLeft;                              // 20
+    float   m_msslTrgtTurnLingering;                        // 21
+    float   m_msslTrgtPitchLingering;                       // 22
+    float   m_msslTrgtMouseLingering;                       // 23
+    float   m_msslTrgtEndOpacity;                           // 24
+    float   m_msslTrgtArcSpeed;                             // 25
+    float   m_msslTrgtArcRepeat;                            // 26
+    float   m_msslTrgtArcWidth;                             // 27
+    float   m_msslTrgtImpactRadius[2];                      // 28-29
+    char* m_msslTrgtArcTexture;                             // 30
+    char* m_msslTrgtImpactTexture;                          // 31
+    char* m_msslTrgtImpactModel[2];                         // 32-33
+    float   m_cameraYawOffset;                              // 34
+    uint32  m_uiLocomotionType;                             // 35
+    float   m_msslTrgtImpactTexRadius;                      // 36
+    uint32  m_uiSeatIndicatorType;                          // 37
+    uint32  m_powerType;                                    // 38
+                                                            // 39
+                                                            // 40
 };
 
 struct VehicleSeatEntry
@@ -2417,9 +2432,8 @@ struct VehicleSeatEntry
     uint32  m_vehicleAbilityDisplay;                        // 41
     uint32  m_enterUISoundID;                               // 42
     uint32  m_exitUISoundID;                                // 43
-    int32   m_uiSkin;                                       // 44
-    uint32  m_flagsB;                                       // 45
-                                                            // 46-57 added in 3.1, floats mostly
+    uint32  m_flagsB;                                       // 44
+                                                            // 45-65  floats mostly
 
     bool CanEnterOrExit() const { return m_flags & VEHICLE_SEAT_FLAG_CAN_ENTER_OR_EXIT; }
     bool CanSwitchFromSeat() const { return m_flags & VEHICLE_SEAT_FLAG_CAN_SWITCH; }
@@ -2612,7 +2626,10 @@ struct TaxiPathNodePtr
 typedef Path<TaxiPathNodePtr, TaxiPathNodeEntry const> TaxiPathNodeList;
 typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 
-#define TaxiMaskSize 142
+typedef UNORDERED_MAP<uint32 /*frame*/, TransportAnimationEntry const*> TransportAnimationEntryMap;
+typedef UNORDERED_MAP<uint32, TransportAnimationEntryMap> TransportAnimationsByEntry;
+
+#define TaxiMaskSize 162
 typedef uint8 TaxiMask[TaxiMaskSize];
 
 float GetCurrencyPrecision(uint32 currencyId);

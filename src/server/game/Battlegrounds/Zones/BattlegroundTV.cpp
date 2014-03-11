@@ -121,7 +121,7 @@ void BattlegroundTV::HandleAreaTrigger(Player* Source, uint32 Trigger)
 
 void BattlegroundTV::FillInitialWorldStates(WorldPacket &data)
 {
-    data << uint32(6643) << uint32(1);           // 9
+    FillInitialWorldState(data, 6643, 1);
     UpdateArenaWorldState();
 }
 

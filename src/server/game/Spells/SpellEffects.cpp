@@ -1333,23 +1333,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     break;
             }
             break;
-        case SPELLFAMILY_WARLOCK:
-        {
-            switch (m_spellInfo->Id)
-            {
-                case 111397: // Blood Horror
-                {
-                    float HealthCost = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[0].BasePoints);
-                    float gethp = m_caster->GetHealth() - HealthCost;
-                    m_caster->CastSpell(unitTarget, 118699, true);
-                    m_caster->SetHealth(gethp > 1 ? gethp: 1);
-                    break;
-                }
-                default:
-                    break;
-            }
-            break;
-        }
         case SPELLFAMILY_DEATHKNIGHT:
             // Death Coil
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_COIL)
@@ -1369,10 +1352,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             // Death Strike
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
             {
-                if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageTakenInPastSecs(5) / 100))
+                if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100))
                     bp = m_caster->CountPctFromMaxHealth(7);
                 else
-                    bp = (20 * m_caster->GetDamageTakenInPastSecs(5) / 100);
+                    bp = (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100);
 
                 // Item - Death Knight T14 Blood 4P bonus
                 if (m_caster->HasAura(123080))
@@ -2483,7 +2466,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
         // create the new item and store it
         Item* pItem = player->StoreNewItem(dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid));
 
-        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pItem->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
+        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
             if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
                 guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_CRAFTED, time(NULL), player->GetGUID(), 0, pProto->ItemId);
 
@@ -6233,8 +6216,8 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
     float ratio = 0.1f;
     float speedxy = float(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue) * ratio;
     float speedz = float(damage) * ratio;
-    if (speedxy < 0.1f && speedz < 0.1f)
-        return;
+    /*if (fabs(speedxy < 0.1f) && speedz < 0.1f)
+        return;*/
 
     float x, y;
     if (m_spellInfo->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_KNOCK_BACK_DEST)
@@ -7537,8 +7520,19 @@ int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultip
     // Main Hand
     if (mainItem && coeff > 0)
     {
-        minDamage += mainItem->GetTemplate()->DamageMin;
-        maxDamage += mainItem->GetTemplate()->DamageMax;
+        ItemTemplate const* proto = mainItem->GetTemplate();
+        if (mainItem->GetLevel() != proto->ItemLevel)
+        {
+            float DPS;
+            FillItemDamageFields(&minDamage, &maxDamage, &DPS, mainItem->GetLevel(),
+                                 proto->Class, proto->SubClass, proto->Quality, proto->Delay, proto->StatScalingFactor,
+                                 proto->InventoryType, proto->Flags2);
+        }
+        else
+        {
+            minDamage = mainItem->GetTemplate()->DamageMin;
+            maxDamage = mainItem->GetTemplate()->DamageMax;
+        }
 
         minDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
         maxDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
@@ -7547,8 +7541,21 @@ int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultip
     // Off Hand
     if (offItem && coeff > 0)
     {
-        minDamage += offItem->GetTemplate()->DamageMin / 2;
-        maxDamage += offItem->GetTemplate()->DamageMax / 2;
+        ItemTemplate const* proto = offItem->GetTemplate();
+        if (offItem->GetLevel() != proto->ItemLevel)
+        {
+            float DPS;
+            FillItemDamageFields(&minDamage, &maxDamage, &DPS, offItem->GetLevel(),
+                                 proto->Class, proto->SubClass, proto->Quality, proto->Delay, proto->StatScalingFactor,
+                                 proto->InventoryType, proto->Flags2);
+            minDamage /= 2;
+            maxDamage /= 2;
+        }
+        else
+        {
+            minDamage = offItem->GetTemplate()->DamageMin / 2;
+            maxDamage = offItem->GetTemplate()->DamageMax / 2;
+        }
 
         minDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
         maxDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;

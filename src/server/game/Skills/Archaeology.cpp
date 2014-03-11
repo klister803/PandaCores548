@@ -411,7 +411,7 @@ void Player::GenerateResearchProjects()
 
     for (ProjectsByBranch::const_iterator itr = tempProjects.begin(); itr != tempProjects.end(); ++itr)
     {
-        ResearchProjectSet::iterator itr2;
+        ResearchProjectSet::const_iterator itr2;
 
         if (tempRareProjects[itr->first].size() > 0 && roll_chance_f(rare_chance))
         {
@@ -754,7 +754,7 @@ void Player::SendCompletedProjects()
 void WorldSession::HandleRequestResearchHistory(WorldPacket& recv_data)
 {
     // null opcode
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "World: received CMSG_REQUEST_RESEARCH_HISTORY from %s (account %u)", GetPlayerName(), GetAccountId());
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "World: received CMSG_REQUEST_RESEARCH_HISTORY from %s (account %u)", GetPlayerName().c_str(), GetAccountId());
 
     _player->SendCompletedProjects();
 }

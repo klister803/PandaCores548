@@ -808,42 +808,41 @@ WorldSafeLocsEntry const* BattlegroundWS::GetClosestGraveYard(Player* player)
 
 void BattlegroundWS::FillInitialWorldStates(WorldPacket& data)
 {
-    data << uint32(BG_WS_FLAG_CAPTURES_ALLIANCE) << uint32(GetTeamScore(ALLIANCE));
-    data << uint32(BG_WS_FLAG_CAPTURES_HORDE) << uint32(GetTeamScore(HORDE));
+    FillInitialWorldState(data, BG_WS_FLAG_CAPTURES_ALLIANCE, GetTeamScore(ALLIANCE));
+    FillInitialWorldState(data, BG_WS_FLAG_CAPTURES_HORDE, GetTeamScore(HORDE));
 
     if (_flagState[BG_TEAM_ALLIANCE] == BG_WS_FLAG_STATE_ON_GROUND)
-        data << uint32(BG_WS_FLAG_UNK_ALLIANCE) << uint32(-1);
+        FillInitialWorldState(data, BG_WS_FLAG_UNK_ALLIANCE, -1);
     else if (_flagState[BG_TEAM_ALLIANCE] == BG_WS_FLAG_STATE_ON_PLAYER)
-        data << uint32(BG_WS_FLAG_UNK_ALLIANCE) << uint32(1);
+        FillInitialWorldState(data, BG_WS_FLAG_UNK_ALLIANCE, 1);
     else
-        data << uint32(BG_WS_FLAG_UNK_ALLIANCE) << uint32(0);
+        FillInitialWorldState(data, BG_WS_FLAG_UNK_ALLIANCE, 0);
 
     if (_flagState[BG_TEAM_HORDE] == BG_WS_FLAG_STATE_ON_GROUND)
-        data << uint32(BG_WS_FLAG_UNK_HORDE) << uint32(-1);
+        FillInitialWorldState(data, BG_WS_FLAG_UNK_HORDE, -1);
     else if (_flagState[BG_TEAM_HORDE] == BG_WS_FLAG_STATE_ON_PLAYER)
-        data << uint32(BG_WS_FLAG_UNK_HORDE) << uint32(1);
+        FillInitialWorldState(data, BG_WS_FLAG_UNK_HORDE, 1);
     else
-        data << uint32(BG_WS_FLAG_UNK_HORDE) << uint32(0);
+        FillInitialWorldState(data, BG_WS_FLAG_UNK_HORDE, 0);
 
-    data << uint32(BG_WS_FLAG_CAPTURES_MAX) << uint32(BG_WS_MAX_TEAM_SCORE);
+    FillInitialWorldState(data, BG_WS_FLAG_CAPTURES_MAX, BG_WS_MAX_TEAM_SCORE);
 
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
-        data << uint32(BG_WS_STATE_TIMER_ACTIVE) << uint32(1);
-        data << uint32(BG_WS_STATE_TIMER) << uint32(25-_minutesElapsed);
+        FillInitialWorldState(data, BG_WS_STATE_TIMER_ACTIVE, 1);
+        FillInitialWorldState(data, BG_WS_STATE_TIMER, 25-_minutesElapsed);
     }
     else
-        data << uint32(BG_WS_STATE_TIMER_ACTIVE) << uint32(0);
+        FillInitialWorldState(data, BG_WS_STATE_TIMER_ACTIVE, 0);
 
     if (_flagState[BG_TEAM_HORDE] == BG_WS_FLAG_STATE_ON_PLAYER)
-        data << uint32(BG_WS_FLAG_STATE_ALLIANCE) << uint32(2);
+        FillInitialWorldState(data, BG_WS_FLAG_STATE_ALLIANCE, 2);
     else
-        data << uint32(BG_WS_FLAG_STATE_ALLIANCE) << uint32(1);
+        FillInitialWorldState(data, BG_WS_FLAG_STATE_ALLIANCE, 1);
 
     if (_flagState[BG_TEAM_ALLIANCE] == BG_WS_FLAG_STATE_ON_PLAYER)
-        data << uint32(BG_WS_FLAG_STATE_HORDE) << uint32(2);
+        FillInitialWorldState(data, BG_WS_FLAG_STATE_HORDE, 2);
     else
-        data << uint32(BG_WS_FLAG_STATE_HORDE) << uint32(1);
-
+        FillInitialWorldState(data, BG_WS_FLAG_STATE_HORDE, 1);
 }
 

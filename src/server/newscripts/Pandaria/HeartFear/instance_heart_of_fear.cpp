@@ -5,6 +5,18 @@
 #include "VMapFactory.h"
 #include "heart_of_fear.h"
 
+const DoorData doorData[] =
+{
+    {GO_VIZIER_EX_DOOR,   DATA_VIZIER_ZORLOK, DOOR_TYPE_PASSAGE, 0},
+    {GO_TAYAK_EX_DOOR,    DATA_LORD_TAYAK,    DOOR_TYPE_PASSAGE, 0},
+    {GO_GARALON_ENT_DOOR, DATA_LORD_TAYAK,    DOOR_TYPE_PASSAGE, 0},
+    {GO_GARALON_EX_DOOR,  DATA_GARALON,       DOOR_TYPE_PASSAGE, 0},
+    {GO_MELJARAK_EX_DOOR, DATA_MELJARAK,      DOOR_TYPE_PASSAGE, 0},
+    {GO_UNSOK_EN_DOOR,    DATA_MELJARAK,      DOOR_TYPE_PASSAGE, 0},
+    {GO_UNSOK_EX_DOOR,    DATA_UNSOK,         DOOR_TYPE_PASSAGE, 0},
+    {0,                   0,                  DOOR_TYPE_PASSAGE, 0}
+};
+
 class instance_heart_of_fear : public InstanceMapScript
 {
 public:
@@ -52,6 +64,7 @@ public:
         void Initialize()
         {
             SetBossNumber(7);
+            LoadDoorData(doorData);
 
             //GameObject
             vizierentdoorGuid   = 0;
@@ -160,27 +173,34 @@ public:
                 vizierarenadoorGuids.push_back(go->GetGUID());
                 break;
             case GO_VIZIER_EX_DOOR:
+                AddDoor(go, true);
                 vizierexdoorGuid = go->GetGUID();
                 break;
             case GO_TAYAK_EX_DOOR:
+                AddDoor(go, true);
                 tayakexdoorGuid = go->GetGUID();
                 break;
             case GO_GARALON_ENT_DOOR:
+                AddDoor(go, true);
                 garalonentdoorGuid = go->GetGUID();
                 break;
             case GO_GARALON_COMBAT_DOOR:
                 garaloncdoorGuids.push_back(go->GetGUID());
                 break;
             case GO_GARALON_EX_DOOR:
+                AddDoor(go, true);
                 garalonexdoorGuids.push_back(go->GetGUID());
                 break;
             case GO_MELJARAK_EX_DOOR:
+                AddDoor(go, true);
                 meljarakexdoorGuid = go->GetGUID();
                 break;
             case GO_UNSOK_EN_DOOR:
+                AddDoor(go, true);
                 unsokendoorGuid = go->GetGUID();
                 break;
             case GO_UNSOK_EX_DOOR:
+                AddDoor(go, true);
                 unsokexdoorGuid = go->GetGUID();
                 break;
             case GO_EMPRESS_COCOON:

@@ -128,7 +128,6 @@ public:
 */
 private:
     //size_t mcnk_offsets[256], mcnk_sizes[256];
-    MPQFile ADT;
     //mcell Mcell;
     string Adtfilename;
 };

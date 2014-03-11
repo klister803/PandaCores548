@@ -602,6 +602,7 @@ enum Opcodes
     CMSG_CORPSE_QUERY                                 = 0x0D4C, // 5.4.1 17538
     CMSG_RAID_TARGET_UPDATE                           = 0x15E4, // 5.4.1 17538
     CMSG_GET_WEB_TICKET                               = 0x11C5, // 5.4.1 17538
+    CMSG_BATTLE_PET_166F                              = 0x166F, // 5.4.1 17538
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
@@ -652,7 +653,8 @@ enum Opcodes
     MSG_MOVE_WATER_WALK                               = 0,      // Client patched
     MSG_NOTIFY_PARTY_SQUELCH                          = 0,      // 0x4D06 in 4.3.4 @todo : Find me and BACON !
     MSG_PETITION_DECLINE                              = 0x0B7C, // 5.4.1 17538
-    MSG_PETITION_RENAME                               = 0x004C, // 5.4.1 17538
+    CMSG_PETITION_RENAME                              = 0x004C, // 5.4.1 17538
+    SMSG_PETITION_RENAME                              = 0x10A4, // 5.4.1 17538
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x1D33, // 5.4.1 17538
     CMSG_QUEST_PUSH_RESULT                            = 0x06C4, // 5.4.1 17538
     SMSG_QUEST_PUSH_RESULT                            = 0x027D, // 5.4.1 17538
@@ -696,11 +698,11 @@ enum Opcodes
     SMSG_ATTACKSTART                                  = 0x012F, // 5.4.1 17538
     SMSG_ATTACKSTOP                                   = 0xD3C,  // 5.4.1 17538
     SMSG_ATTACKSWING_ERROR                            = 0x05BF, // 5.4.1 17538
-    SMSG_AUCTION_BIDDER_LIST_RESULT                   = 0x113A, // 5.4.1 17538
+    SMSG_AUCTION_BIDDER_LIST_RESULT                   = 0x0992, // 5.4.1 17538
     SMSG_AUCTION_BIDDER_NOTIFICATION                  = 0x092E, // 5.4.1 17538
     SMSG_AUCTION_COMMAND_RESULT                       = 0x0C9D, // 5.4.1 17538
     SMSG_AUCTION_LIST_PENDING_SALES                   = 0x1800, // 5.4.1 17538
-    SMSG_AUCTION_LIST_RESULT                          = 0x0992, // 5.4.1 17538
+    SMSG_AUCTION_LIST_RESULT                          = 0x113A, // 5.4.1 17538
     SMSG_AUCTION_OWNER_LIST_RESULT                    = 0x05B9, // 5.4.1 17538
     SMSG_AUCTION_OWNER_NOTIFICATION                   = 0x0CA6, // 5.4.1 17538
     SMSG_AUCTION_REMOVED_NOTIFICATION                 = 0x882,  // 5.0.5 16048
@@ -718,7 +720,7 @@ enum Opcodes
     SMSG_BATTLE_PET_CHAT_RESTRICTED                   = 0xB68,  // 5.0.5 16048
     SMSG_BATTLE_PET_DELETED                           = 0xF49,  // 5.0.5 16048
     SMSG_BATTLE_PET_ERROR                             = 0xBA0,  // 5.0.5 16048
-    SMSG_BATTLE_PET_FINALIZE_LOCATION                 = 0xB81,  // 5.0.5 16048
+    SMSG_BATTLE_PET_FINALIZE_LOCATION                 = 0x0C04, // 5.4.1 17538
     SMSG_BATTLE_PET_FINAL_ROUND                       = 0xFA9,  // 5.0.5 16048
     SMSG_BATTLE_PET_FIRST_ROUND                       = 0xF31,  // 5.0.5 16048
     SMSG_BATTLE_PET_FULL_UPDATE                       = 0xB08,  // 5.0.5 16048
@@ -753,7 +755,7 @@ enum Opcodes
     SMSG_BATTLEFIELD_STATUS_QUEUED                    = 0x0D0F, // 5.4.1 17538
     SMSG_BATTLEFIELD_STATUS_NEEDCONFIRMATION          = 0x003E, // 5.4.1 17538
     SMSG_BATTLEFIELD_STATUS_ACTIVE                    = 0x082F, // 5.4.1 17538
-    SMSG_BATTLEFIELD_STATUS_WAITFORGROUPS             = 0xADA,  // 5.0.5 16048
+    SMSG_BATTLEFIELD_STATUS_WAITFORGROUPS             = 0x1124, // 5.4.1 17538
     SMSG_BATTLEFIELD_STATUS_FAILED                    = 0x09B4, // 5.4.1 17538
     SMSG_BATTLEGROUND_INFO_THROTTLED                  = 0x1127, // 5.4.1 17538
     SMSG_BATTLEGROUND_PLAYER_JOINED                   = 0x1414, // 5.4.1 17538
@@ -1432,9 +1434,13 @@ enum Opcodes
     SMSG_WHO                                          = 0x053C, // 5.4.1 17538
     SMSG_WHOIS                                        = 0x943,  // 5.0.5 16048
     SMSG_WORLD_SERVER_INFO                            = 0x0427, // 5.4.1 17538
+    SMSG_WORLD_STATE_TIMER_START                      = 0x011F, // 5.4.1 17538
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x05AC, // 5.4.1 17538
     SMSG_XP_GAIN_ABORTED                              = 0xB76,  // 5.0.5 16048
     SMSG_ZONE_UNDER_ATTACK                            = 0x148D, // 5.4.1 17538
+
+    SMSG_SET_MOVEFLAG2_0x1000                         = 0x0386, // 5.4.1 17538
+    SMSG_UNSET_MOVEFLAG2_0x1000                       = 0x07A4, // 5.4.1 17538
 };
 
 /// Player state

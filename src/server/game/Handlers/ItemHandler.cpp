@@ -450,9 +450,9 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     buff << uint32(proto->Quality);
     buff << uint32(proto->Flags);
     buff << uint32(proto->Flags2);
+    buff << uint32(proto->Flags3);
     buff << float(proto->Unk430_1);
     buff << float(proto->Unk430_2);
-    buff << uint32(0); // unk 5.0.5
     buff << uint32(proto->BuyCount);
     buff << int32(proto->BuyPrice);
     buff << uint32(proto->SellPrice);
@@ -482,7 +482,7 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
         buff << int32(proto->ItemStat[x].ItemStatUnk1);
 
     for (uint32 x = 0; x < MAX_ITEM_PROTO_STATS; ++x)
-        buff << int32(proto->ItemStat[x].ItemStatUnk2);
+        buff << float(proto->ItemStat[x].ItemStatUnk2);
 
     buff << uint32(proto->ScalingStatDistribution);
     buff << uint32(proto->DamageType);
@@ -2115,14 +2115,14 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleUpgradeItem(WorldPacket& recvData)
 {
-    uint32 unk1, unk2, updateEntry;
+    uint32 unk1, unk2, upgradeId;
     ObjectGuid itemGuid, npcGuid;
 
     Player* player = GetPlayer();
 
-    recvData >> updateEntry >> unk1 >> unk2;
+    recvData >> upgradeId >> unk1 >> unk2;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_TRANSMOGRIFY_ITEMS updateEntry %u, unk1 %u, unk2 %u", updateEntry, unk1, unk2);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_UPGRADE_ITEM upgradeId %u, unk1 %u, unk2 %u", upgradeId, unk1, unk2);
 
     recvData.ReadGuidMask<4, 3>(itemGuid);
     recvData.ReadGuidMask<4, 6, 7, 3>(npcGuid);
@@ -2145,15 +2145,75 @@ void WorldSession::HandleUpgradeItem(WorldPacket& recvData)
     recvData.ReadGuidBytes<1, 6>(itemGuid);
     recvData.ReadGuidBytes<0, 4>(npcGuid);
 
-    // if (!player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG2_UPGRADE_MASTER))
-    // {
-        // sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleTransmogrifyItems - Unit (GUID: %u) not found or player can't interact with it.", GUID_LOPART(npcGuid));
-        // return;
-    // }
-
-    if(Item* item = player->GetItemByGuid(itemGuid))
+    if (!player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_NONE, UNIT_NPC_FLAG2_UPGRADE_MASTER))
     {
-        item->SetUpgradeItem(updateEntry);
-        item->SetState(ITEM_CHANGED, player);
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItem - Unit (GUID: %u) not found or player can't interact with it.", GUID_LOPART(npcGuid));
+        return;
     }
+
+    Item* item = player->GetItemByGuid(itemGuid);
+    if (!item)
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItem - Can't find item (GUID: %u).", GUID_LOPART(itemGuid));
+        return;
+    }
+
+    ItemUpgradeData const* upgradeData = GetItemUpgradeData(item->GetEntry());
+    if (!upgradeData)
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItem - Can't find item (GUID: %u).", GUID_LOPART(itemGuid));
+        return;
+    }
+
+    ItemUpgradeEntry const* newUpgrade = NULL;
+    for (uint32 i = 0; i < MAX_ITEM_UPDGRADES; ++i)
+    {
+        ItemUpgradeEntry const* upgradeEntry = upgradeData->upgrade[i];
+        if (!upgradeEntry)
+            continue;
+
+        if (upgradeEntry->id == upgradeId)
+        {
+            newUpgrade = upgradeEntry;
+            break;
+        }
+    }
+
+    if (!newUpgrade)
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItem - Can't find upgrade id %u for item %u (GUID: %u).",
+            upgradeId, item->GetEntry(), GUID_LOPART(itemGuid));
+        return;
+    }
+
+    if (item->GetUpgradeId() != newUpgrade->prevUpgradeId)
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItem - Previous item upgrade id mismatch: %u should be %u. Item id %u (GUID: %u).",
+            item->GetUpgradeId(), newUpgrade->prevUpgradeId, item->GetEntry(), GUID_LOPART(itemGuid));
+        return;
+    }
+
+
+    if (uint32 reqCur = newUpgrade->currencyReqId)
+    {
+        if (!player->HasCurrency(reqCur, newUpgrade->currencyReqAmt))
+        {
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItem - insufficient currency: upgrade id %u Item id %u (GUID: %u).",
+                upgradeId, item->GetEntry(), GUID_LOPART(itemGuid));
+            player->SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
+            return;
+        }
+
+        player->ModifyCurrency(reqCur, -int32(newUpgrade->currencyReqAmt));
+    }
+
+    if (item->IsEquipped())
+        player->_ApplyItemMods(item, item->GetSlot(), false);
+
+    item->SetUpgradeId(upgradeId);
+    item->SetLevel(item->GetTemplate()->ItemLevel + newUpgrade->levelBonus);
+    item->SetState(ITEM_CHANGED, player);
+
+    if (item->IsEquipped())
+        player->_ApplyItemMods(item, item->GetSlot(), true);
 }

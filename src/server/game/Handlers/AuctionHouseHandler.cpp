@@ -79,25 +79,28 @@ void WorldSession::SendAuctionHello(uint64 guid, Creature* unit)
 //call this method when player bids, creates, or deletes auction
 void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action, uint32 errorCode, uint32 bidError)
 {
+    ObjectGuid binderGUID = auction ? auction->bidder : 0;
+
     WorldPacket data(SMSG_AUCTION_COMMAND_RESULT);
     data << uint32(auction ? auction->Id : 0);
     data << uint32(action);
+    data << uint32(0);                                    // in sniffs big integer value
     data << uint32(errorCode);
-    data << uint32(0);
 
-    bool h_bid = data.ReadBit();
-    data.ReadBit();
+    data.WriteBit(0);                                     // bit_1, related to auction error or action
+    data.WriteBit(0);                                     // bit_2, related to auction error or action
 
-    data.WriteGuidMask<7, 0, 1, 6, 3, 4, 5, 2>(auction->bidder);
-    data.ReadBit();
-    data.WriteGuidBytes<2, 7, 3, 1, 5, 0, 6, 4>(auction->bidder);
+    data.WriteGuidMask<7, 0, 1, 6, 3, 4, 5, 2>(binderGUID);
+    data.WriteBit(0);                                     // bit_3, related to auction error or action
+    data.WriteGuidBytes<2, 7, 3, 1, 5, 0, 6, 4>(binderGUID);
 
-    if (h_bid)
+    /*if (bit_2)
     {
         data << uint64(auction->bid);
         data << uint64(auction->bid ? auction->GetAuctionOutBid() : 0);
-    }
+    }*/
 
+    // OLD CODE - need for comparing builds
     /*switch (errorCode)
     {
         case ERR_AUCTION_OK:
@@ -628,10 +631,10 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_AUCTION_LIST_BIDDER_ITEMS");
 
     ObjectGuid auctioneerGUID;
-    uint32 listfrom;                                        // page of auctions
+    uint32 page;                                            // page of auctions
     uint32 outbiddedCount;                                  // count of outbidded auctions
 
-    recvData >> listfrom;                                   // not used in fact (this list not have page control in client)
+    recvData >> page;                                       // not used in fact (this list not have page control in client)
     recvData.ReadGuidMask<6, 2, 1, 0, 3, 4>(auctioneerGUID);
     outbiddedCount = recvData.ReadBits(7);
     recvData.ReadGuidMask<7, 5>(auctioneerGUID);

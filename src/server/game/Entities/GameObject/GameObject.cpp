@@ -34,7 +34,8 @@
 #include "DynamicTree.h"
 #include "SpellAuraEffects.h"
 
-GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new GameObjectValue), m_AI(NULL)
+GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new GameObjectValue), m_AI(NULL), 
+    m_manual_anim(false)
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
@@ -188,9 +189,9 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMa
         return false;
     }
 
-    Object::_Create(guidlow, goinfo->entry, HIGHGUID_GAMEOBJECT);
-
     m_goInfo = goinfo;
+
+    Object::_Create(guidlow, IsTransport() ? 0 : goinfo->entry, IsTransport() ? HIGHGUID_MO_TRANSPORT : HIGHGUID_GAMEOBJECT);
 
     if (goinfo->type >= MAX_GAMEOBJECT_TYPE)
     {
@@ -230,7 +231,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMa
             SetUInt32Value(GAMEOBJECT_PARENTROTATION, m_goInfo->building.destructibleData);
             break;
         case GAMEOBJECT_TYPE_TRANSPORT:
-            SetUInt32Value(GAMEOBJECT_LEVEL, goinfo->transport.pause);
+            SetUInt32Value(GAMEOBJECT_LEVEL, getMSTime());
             if (goinfo->transport.startOpen)
                 SetGoState(GO_STATE_ACTIVE);
             SetGoAnimProgress(animprogress);
@@ -860,7 +861,7 @@ bool GameObject::IsDynTransport() const
     if (!gInfo)
         return false;
 
-    return gInfo->type == GAMEOBJECT_TYPE_MO_TRANSPORT || (gInfo->type == GAMEOBJECT_TYPE_TRANSPORT && !gInfo->transport.pause);
+    return gInfo->type == GAMEOBJECT_TYPE_MO_TRANSPORT || (gInfo->type == GAMEOBJECT_TYPE_TRANSPORT && !gInfo->transport.startFrame);
 }
 
 bool GameObject::IsDestructibleBuilding() const
@@ -2081,7 +2082,11 @@ void GameObject::SetLootState(LootState state, Unit* unit)
 
 void GameObject::SetGoState(GOState state)
 {
+    GOState oldState = GetGoState();
     SetByteValue(GAMEOBJECT_BYTES_1, 0, state);
+    if (oldState != state && HasManualAnim())
+        SetUInt32Value(GAMEOBJECT_LEVEL, getMSTime() + CalculateAnimDuration(oldState, state));
+
     sScriptMgr->OnGameObjectStateChanged(this, state);
     if (m_model)
     {
@@ -2186,4 +2191,23 @@ bool GameObject::IsLootAllowedFor(Player const* player) const
         return false;                                           // if go doesnt have group bound it means it was solo killed by someone else
 
     return true;
+}
+
+uint32 GameObject::CalculateAnimDuration(GOState oldState, GOState newState) const
+{
+    if (oldState == newState || oldState >= MAX_GO_STATE || newState >= MAX_GO_STATE)
+        return 0;
+
+    TransportAnimationsByEntry::const_iterator itr = sTransportAnimationsByEntry.find(GetEntry());
+    if (itr == sTransportAnimationsByEntry.end())
+        return 0;
+
+    uint32 frameByState[MAX_GO_STATE] = { 0, m_goInfo->transport.startFrame, m_goInfo->transport.nextFrame1 };
+    if (oldState == GO_STATE_ACTIVE)
+        return frameByState[newState];
+
+    if (newState == GO_STATE_ACTIVE)
+        return frameByState[oldState];
+
+    return uint32(std::abs(int32(frameByState[oldState]) - int32(frameByState[newState])));
 }

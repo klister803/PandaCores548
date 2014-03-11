@@ -1126,7 +1126,7 @@ public:
 
         int32 amount = (uint32)atoi(args);
 
-        target->ModifyCurrency(CURRENCY_TYPE_HONOR_POINTS, amount, true, true);
+        target->ModifyCurrency(CURRENCY_TYPE_HONOR_POINTS, amount, true, true, false, false);
 
         handler->PSendSysMessage(LANG_COMMAND_MODIFY_HONOR, handler->GetNameLink(target).c_str(), target->GetCurrency(CURRENCY_TYPE_HONOR_POINTS));
 
@@ -1431,7 +1431,7 @@ public:
         if (!amount)
             return false;
 
-        target->ModifyCurrency(currencyId, amount, true, true);
+        target->ModifyCurrency(currencyId, amount, true, true, false, false);
 
         return true;
     }

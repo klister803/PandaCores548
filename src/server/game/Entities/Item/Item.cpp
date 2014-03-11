@@ -290,6 +290,15 @@ bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
 
     SetUInt32Value(ITEM_FIELD_DURATION, itemProto->Duration);
     SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, 0);
+
+    ItemLevel = itemProto->ItemLevel;
+    if (ItemUpgradeData const* upgradeData = GetItemUpgradeData(itemid))
+        if (ItemUpgradeEntry const* upgradeEntry = upgradeData->upgrade[0])
+        {
+            SetUpgradeId(upgradeEntry->id);
+            ItemLevel += upgradeEntry->levelBonus;
+        }
+
     return true;
 }
 
@@ -360,7 +369,7 @@ void Item::SaveToDB(SQLTransaction& trans)
             stmt->setInt16 (++index, GetItemRandomPropertyId());
             stmt->setUInt32(++index, GetReforge());
             stmt->setUInt32(++index, GetTransmogrification());
-            stmt->setUInt32(++index, GetUpgradeItem());
+            stmt->setUInt32(++index, GetUpgradeId());
             stmt->setUInt16(++index, GetUInt32Value(ITEM_FIELD_DURABILITY));
             stmt->setUInt32(++index, GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME));
             //stmt->setString(++index, m_text);
@@ -467,25 +476,22 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
 
     ItemLevel = proto->ItemLevel;
     uint32 upgradeId = fields[10].GetUInt32();
-    std::list<uint32> tempUpgradeList = GetRuleSetItemList(entry);
-    for (std::list<uint32>::const_iterator itr = tempUpgradeList.begin(); itr != tempUpgradeList.end(); ++itr)
-        if (RuleSetItemUpgrade const* rsiu = sRuleSetItemUpgradeStore.LookupEntry((*itr)))
+    if (ItemUpgradeData const* upgradeData = GetItemUpgradeData(entry))
+    {
+        for (uint32 i = 0; i < MAX_ITEM_UPDGRADES; ++i)
         {
-            if(upgradeId == 0 || upgradeId == rsiu->startUpgrade)
+            ItemUpgradeEntry const* upgradeEntry = upgradeData->upgrade[i];
+            if (!upgradeEntry)
+                continue;
+
+            if (upgradeEntry->id == upgradeId || !upgradeId && !upgradeEntry->prevUpgradeId)
             {
-                SetUpgradeItem(rsiu->startUpgrade);
-                break;
-            }
-            else if(upgradeId == (rsiu->startUpgrade + rsiu->levelUpd))
-            {
-                if (ItemUpgradeEntry const* iue = sItemUpgradeStore.LookupEntry(upgradeId))
-                {
-                    ItemLevel += iue->levelBonus;
-                    SetUpgradeItem(upgradeId);
-                }
+                ItemLevel += upgradeEntry->levelBonus;
+                SetUpgradeId(upgradeEntry->id);
                 break;
             }
         }
+    }
 
     SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[7].GetInt16());
     // recalculate suffix factor
@@ -678,7 +684,8 @@ void Item::SetItemRandomProperties(int32 randomPropId)
 
 void Item::UpdateItemSuffixFactor()
 {
-    uint32 suffixFactor = GenerateEnchSuffixFactor(GetEntry());
+    ItemTemplate const* proto = GetTemplate();
+    uint32 suffixFactor = proto && proto->RandomSuffix ? GenerateEnchSuffixFactor(GetTemplate()) : 0;
     if (GetItemSuffixFactor() == suffixFactor)
         return;
     SetUInt32Value(ITEM_FIELD_PROPERTY_SEED, suffixFactor);
@@ -1073,6 +1080,7 @@ Item* Item::CloneItem(uint32 count, Player const* player) const
     newItem->SetUInt32Value(ITEM_FIELD_GIFTCREATOR,  GetUInt32Value(ITEM_FIELD_GIFTCREATOR));
     newItem->SetUInt32Value(ITEM_FIELD_FLAGS,        GetUInt32Value(ITEM_FIELD_FLAGS));
     newItem->SetUInt32Value(ITEM_FIELD_DURATION,     GetUInt32Value(ITEM_FIELD_DURATION));
+    newItem->SetLevel(ItemLevel);
     // player CAN be NULL in which case we must not update random properties because that accesses player's item update queue
     if (player)
         newItem->SetItemRandomProperties(GetItemRandomPropertyId());
@@ -1495,7 +1503,7 @@ int32 Item::GetReforgableStat(ItemModType statType) const
     ItemTemplate const* proto = GetTemplate();
     for (uint32 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
         if (proto->ItemStat[i].ItemStatType == statType)
-            return proto->ItemStat[i].ItemStatValue;
+            return GetLeveledStatValue(i);
 
     int32 randomPropId = GetItemRandomPropertyId();
     if (!randomPropId)
@@ -1557,14 +1565,14 @@ uint32 Item::GetTransmogrification() const
     return m_dynamicModInfo[ITEM_DYN_MOD_TRANSMOGRIFICATION];
 }
 
-void Item::SetUpgradeItem(uint32 value)
+void Item::SetUpgradeId(uint32 value)
 {
     m_dynamicModInfo[ITEM_DYN_MOD_UPGRADE_ID] = value;
 
     UpdateDynamicValues();
 }
 
-uint32 Item::GetUpgradeItem() const
+uint32 Item::GetUpgradeId() const
 {
     return m_dynamicModInfo[ITEM_DYN_MOD_UPGRADE_ID];
 }
@@ -1627,4 +1635,23 @@ uint32 ItemTemplate::GetCurrencySubstitutionId() const
     }
 
     return 0;
+}
+
+uint32 Item::GetLeveledStatValue(uint8 statIndex) const
+{
+    ItemTemplate const* proto = GetTemplate();
+    uint32 level = GetLevel();
+
+    if (level == proto->ItemLevel)
+        return proto->ItemStat[statIndex].ItemStatValue;
+
+    GtItemSocketCostPerLevelEntry const* sockCost = sGtItemSocketCostPerLevelStore.LookupEntry(level);
+    if (!sockCost)
+        return proto->ItemStat[statIndex].ItemStatValue;
+
+
+    float newStat = floorf(proto->ItemStat[statIndex].ItemStatUnk1 * GenerateEnchSuffixFactor(proto, GetLevel()) * 0.0001f
+        - proto->ItemStat[statIndex].ItemStatUnk2 * sockCost->cost + 0.5f);
+
+    return std::max(0.0f, newStat);
 }

@@ -134,10 +134,14 @@ enum SpellModOp
     SPELLMOD_CRIT_DAMAGE_BONUS_2    = 29, //one not used spell
     SPELLMOD_SPELL_COST_REFUND_ON_FAIL = 30,
     SPELLMOD_STACKAMOUNT            = 31,
-    SPELLMOD_EFFECT4                = 32
+    SPELLMOD_EFFECT4                = 32,
+    SPELLMOD_EFFECT5                = 33,
+    SPELLMOD_UNK34                  = 34,
+    SPELLMOD_UNK35                  = 35,
+    SPELLMOD_JUMP_DISTANCE          = 36,
 };
 
-#define MAX_SPELLMOD 36
+#define MAX_SPELLMOD 37
 
 enum SpellValueMod
 {
@@ -777,6 +781,7 @@ enum MovementFlags2
     MOVEMENTFLAG2_INTERPOLATED_MOVEMENT         = 0x00000200,
     MOVEMENTFLAG2_INTERPOLATED_TURNING          = 0x00000400,
     MOVEMENTFLAG2_INTERPOLATED_PITCHING         = 0x00000800,
+    MOVEMENTFLAG2_0x1000                        = 0x00001000,
 };
 
 enum UnitTypeMask
@@ -1283,6 +1288,16 @@ enum Stagger
 
 struct SpellProcEventEntry;                                 // used only privately
 
+#define MAX_DAMAGE_LOG_SECS 120
+
+enum
+{
+    DAMAGE_DONE_COUNTER     = 0,
+    DAMAGE_TAKEN_COUNTER    = 1,
+    HEALING_DONE_COUNTER    = 2,
+    MAX_DAMAGE_COUNTERS     = 3,
+};
+
 class Unit : public WorldObject
 {
     public:
@@ -1340,7 +1355,7 @@ class Unit : public WorldObject
         uint32 m_extraAttacks;
         bool m_canDualWield;
         int32 countCrit;
-        int32 insightCount;
+        uint8 insightCount;
 
         void _addAttacker(Unit* pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {
@@ -2326,6 +2341,10 @@ class Unit : public WorldObject
         void FocusTarget(Spell const* focusSpell, uint64 target);
         void ReleaseFocus(Spell const* focusSpell);
 
+        std::deque<uint32> m_damage_counters[MAX_DAMAGE_COUNTERS];
+        int32 m_damage_counter_timer;
+        uint32 GetDamageCounterInPastSecs(uint32 secs, int type);
+
         uint32 GetHealingDoneInPastSecs(uint32 secs);
         uint32 GetHealingTakenInPastSecs(uint32 secs);
         uint32 GetDamageDoneInPastSecs(uint32 secs);
@@ -2340,6 +2359,8 @@ class Unit : public WorldObject
 
         void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
         void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
+
+        void SendMoveflag2_0x1000_Update(bool on);
 
     protected:
         explicit Unit (bool isWorldObject);
@@ -2387,15 +2408,6 @@ class Unit : public WorldObject
         AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;
         AuraIdList _SoulSwapDOTList;
-
-        typedef std::list<HealDone*> HealDoneList;
-        typedef std::list<HealTaken*> HealTakenList;
-        typedef std::list<DamageDone*> DmgDoneList;
-        typedef std::list<DamageTaken*> DmgTakenList;
-        HealDoneList m_healDone;
-        HealTakenList m_healTaken;
-        DmgDoneList m_dmgDone;
-        DmgTakenList m_dmgTaken;
 
         float m_auraModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_END];
         float m_weaponDamage[MAX_ATTACK][2];

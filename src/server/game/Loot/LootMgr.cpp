@@ -395,7 +395,7 @@ LootItem::LootItem(LootStoreItem const& li, Loot* loot)
 
             count = uint32(count * mult + 0.5f);
         }
-        randomSuffix = GenerateEnchSuffixFactor(itemid);
+        randomSuffix = proto && proto->RandomSuffix ? GenerateEnchSuffixFactor(proto) : 0;
         randomPropertyId = Item::GenerateItemRandomPropertyId(itemid);
     }
 }
