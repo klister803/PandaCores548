@@ -980,6 +980,9 @@ class WorldSession
         // Upgrade item
         void HandleUpgradeItem(WorldPacket& recvData);
 
+        // Battle Pets
+        void HandleBattlePetOpcode166F(WorldPacket& recvData);
+
         // Miscellaneous
         void HandleSpellClick(WorldPacket& recvData);
         void HandleMirrorImageDataRequest(WorldPacket& recvData);

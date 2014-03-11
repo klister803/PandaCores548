@@ -166,3 +166,52 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
     else
         _player->CastSpell(_player, spellId, true);
 }
+
+void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
+{
+    float playerX, playerY, playerZ, playerOrient;
+    float unkX[2];
+    float unkY[2];
+    float unkZ[2];
+    uint32 unkCounter;
+
+    recvData >> playerX;
+    recvData >> playerZ;
+    recvData >> playerY;
+
+    for (int i = 0; i < 2; i++)
+    {
+        recvData >> unkY[i];
+        recvData >> unkZ[i];
+        recvData >> unkX[i];
+    }
+
+    bool facing = recvData.ReadBit();
+    bool uunk = recvData.ReadBit();
+
+    if (!uunk)
+        recvData >> unkCounter;
+
+    if (!facing)
+        recvData >> playerOrient;
+
+    WorldPacket data(SMSG_BATTLE_PET_FINALIZE_LOCATION);
+
+    data << playerY;
+
+    for (int i = 0; i < 2; i++)
+    {
+        recvData << unkY[i];
+        recvData << unkX[i];
+        recvData << unkZ[i];
+    }
+
+    data << playerX;
+    data << playerZ;
+
+    data.WriteBit(0);
+    data.WriteBit(0);
+
+    data << _player->GetOrientation();
+    data << uint32(21);
+}
