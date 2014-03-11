@@ -475,7 +475,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //416 SPELL_AURA_416
     &AuraEffect::HandleNULL,                                      //417 SPELL_AURA_417
     &AuraEffect::HandleNULL,                                      //418 SPELL_AURA_418
-    &AuraEffect::HandleNULL,                                      //419 SPELL_AURA_419
+    &AuraEffect::HandleAuraModAddEnergyPercent,                   //419 SPELL_AURA_419
     &AuraEffect::HandleNULL,                                      //420 SPELL_AURA_420
     &AuraEffect::HandleNULL,                                      //421 SPELL_AURA_421
     &AuraEffect::HandleNULL,                                      //422 SPELL_AURA_422
@@ -4814,6 +4814,30 @@ void AuraEffect::HandleAuraModIncreaseEnergyPercent(AuraApplication const* aurAp
     // inside effect handlers is not a good idea
     //if (int32(powerType) != GetMiscValue())
     //    return;
+
+    UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
+    float amount = float(GetAmount());
+
+    if (apply)
+    {
+        target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
+        target->ModifyPowerPct(powerType, amount, apply);
+    }
+    else
+    {
+        target->ModifyPowerPct(powerType, amount, apply);
+        target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
+    }
+}
+
+void AuraEffect::HandleAuraModAddEnergyPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    Powers powerType = Powers(GetMiscValue());
 
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
     float amount = float(GetAmount());
