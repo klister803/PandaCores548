@@ -285,6 +285,10 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_VisibilityUpdScheduled = false;
     m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
     m_SoulSwapTarget = NULL;
+
+    m_damage_counter_timer = 1 * IN_MILLISECONDS;
+    for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
+        m_damage_counters[i].push_front(0);
 }
 
 ////////////////////////////////////////////////////////////
@@ -345,6 +349,20 @@ void Unit::Update(uint32 p_time)
 
     if (!IsInWorld())
         return;
+
+    if (m_damage_counter_timer <= p_time)
+    {
+        for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
+        {
+            m_damage_counters[i].push_front(0);
+            while (m_damage_counters[i].size() > MAX_DAMAGE_LOG_SECS)
+                m_damage_counters[i].pop_back();
+        }
+
+        m_damage_counter_timer = 1 * IN_MILLISECONDS;
+    }
+    else
+        m_damage_counter_timer -= p_time;
 
     _UpdateSpells(p_time);
 
@@ -887,6 +905,12 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (IsControlledByPlayer())
             victim->ToCreature()->LowerPlayerDamageReq(health < damage ?  health : damage);
+    }
+
+    if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
+    {
+        m_damage_counters[DAMAGE_DONE_COUNTER][0] += health >= damage ? damage : health;
+        victim->m_damage_counters[DAMAGE_TAKEN_COUNTER][0] += health >= damage ? damage : health;
     }
 
     if (health <= damage)
@@ -11337,6 +11361,9 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
         /** World of Warcraft Armory **/
     }
 
+    if (gain)
+        m_damage_counters[HEALING_DONE_COUNTER][0] += gain;
+
     return gain;
 }
 
@@ -20818,62 +20845,9 @@ bool Unit::IsSplineEnabled() const
     return movespline->Initialized();
 }
 
-/* In the next functions, we keep 1 minute of last damage */
-uint32 Unit::GetHealingDoneInPastSecs(uint32 secs)
-{
-    uint32 heal = 0;
-
-    for (HealDoneList::iterator itr = m_healDone.begin(); itr != m_healDone.end(); itr++)
-    {
-        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
-            heal += (*itr)->s_heal;
-    }
-
-    return heal;
-};
-
-uint32 Unit::GetHealingTakenInPastSecs(uint32 secs)
-{
-    uint32 heal = 0;
-
-    for (HealTakenList::iterator itr = m_healTaken.begin(); itr != m_healTaken.end(); itr++)
-    {
-        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
-            heal += (*itr)->s_heal;
-    }
-
-    return heal;
-};
-
-uint32 Unit::GetDamageDoneInPastSecs(uint32 secs)
-{
-    uint32 damage = 0;
-
-    for (DmgDoneList::iterator itr = m_dmgDone.begin(); itr != m_dmgDone.end(); itr++)
-    {
-        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
-            damage += (*itr)->s_damage;
-    }
-
-    return damage;
-};
-
-uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
-{
-    uint32 damage = 0;
-
-    for (DmgTakenList::iterator itr = m_dmgTaken.begin(); itr != m_dmgTaken.end(); itr++)
-    {
-        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
-            damage += (*itr)->s_damage;
-    }
-
-    return damage;
-}
-
 void Unit::WriteMovementUpdate(WorldPacket &data) const
 {
-    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo, (Unit *)this);
+    WorldSession::WriteMovementInfo(data, const_cast<MovementInfo*>(&m_movementInfo), const_cast<Unit*>(this));
 }
 
 void Unit::RemoveSoulSwapDOT(Unit* target)
@@ -21282,5 +21256,18 @@ void Unit::SendMoveflag2_0x1000_Update(bool on)
         data.WriteGuidBytes<3, 4, 2, 0, 1, 5, 6>(guid);
         ToPlayer()->SendDirectMessage(&data);
     }
+}
+
+uint32 Unit::GetDamageCounterInPastSecs(uint32 secs, int type)
+{
+    if (type >= MAX_DAMAGE_COUNTERS)
+        return 0;
+
+    uint32 damage = 0;
+
+    for (uint32 i = 0; i < secs && i < m_damage_counters[type].size(); ++i)
+        damage += m_damage_counters[type][i];
+
+    return damage;
 }
 

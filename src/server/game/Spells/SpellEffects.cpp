@@ -1352,10 +1352,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             // Death Strike
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
             {
-                if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageTakenInPastSecs(5) / 100))
+                if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100))
                     bp = m_caster->CountPctFromMaxHealth(7);
                 else
-                    bp = (20 * m_caster->GetDamageTakenInPastSecs(5) / 100);
+                    bp = (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100);
 
                 // Item - Death Knight T14 Blood 4P bonus
                 if (m_caster->HasAura(123080))

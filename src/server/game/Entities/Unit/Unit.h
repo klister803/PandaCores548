@@ -1288,6 +1288,16 @@ enum Stagger
 
 struct SpellProcEventEntry;                                 // used only privately
 
+#define MAX_DAMAGE_LOG_SECS 120
+
+enum
+{
+    DAMAGE_DONE_COUNTER     = 0,
+    DAMAGE_TAKEN_COUNTER    = 1,
+    HEALING_DONE_COUNTER    = 2,
+    MAX_DAMAGE_COUNTERS     = 3,
+};
+
 class Unit : public WorldObject
 {
     public:
@@ -2331,6 +2341,10 @@ class Unit : public WorldObject
         void FocusTarget(Spell const* focusSpell, uint64 target);
         void ReleaseFocus(Spell const* focusSpell);
 
+        std::deque<uint32> m_damage_counters[MAX_DAMAGE_COUNTERS];
+        int32 m_damage_counter_timer;
+        uint32 GetDamageCounterInPastSecs(uint32 secs, int type);
+
         uint32 GetHealingDoneInPastSecs(uint32 secs);
         uint32 GetHealingTakenInPastSecs(uint32 secs);
         uint32 GetDamageDoneInPastSecs(uint32 secs);
@@ -2394,15 +2408,6 @@ class Unit : public WorldObject
         AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;
         AuraIdList _SoulSwapDOTList;
-
-        typedef std::list<HealDone*> HealDoneList;
-        typedef std::list<HealTaken*> HealTakenList;
-        typedef std::list<DamageDone*> DmgDoneList;
-        typedef std::list<DamageTaken*> DmgTakenList;
-        HealDoneList m_healDone;
-        HealTakenList m_healTaken;
-        DmgDoneList m_dmgDone;
-        DmgTakenList m_dmgTaken;
 
         float m_auraModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_END];
         float m_weaponDamage[MAX_ATTACK][2];

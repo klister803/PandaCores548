@@ -6532,7 +6532,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                     int32 basepoints0 = 0;
 
                     // taken damage
-                    int32 takendamage = GetCaster()->ToPlayer()->GetDamageTakenInPastSecs(3);
+                    int32 takendamage = GetCaster()->GetDamageCounterInPastSecs(3, DAMAGE_TAKEN_COUNTER);
 
                     // player will loase 5% if has taken damage
                     int32 curr_amount = GetBase()->GetEffect(EFFECT_0)->GetAmount();
