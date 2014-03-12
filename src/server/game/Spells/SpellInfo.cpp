@@ -2095,8 +2095,8 @@ AuraStateType SpellInfo::GetAuraState() const
     if (SpellFamilyName == SPELLFAMILY_ROGUE && SpellFamilyFlags[0] & 0x10000)
         return AURA_STATE_DEADLY_POISON;
 
-    // Enrage aura state
-    if (Dispel == DISPEL_ENRAGE)
+    // Enrage aura state (excluding Vengeance buff)
+    if (Dispel == DISPEL_ENRAGE && Id != 132365)
         return AURA_STATE_ENRAGE;
 
     // Bleeding aura state

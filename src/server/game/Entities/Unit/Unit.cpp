@@ -7046,6 +7046,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     RemoveAura(dummySpell->Id);
                     return false;
                 }
+                // Vengeance (Protection)
+                case 93098:
+                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
 
             // Retaliation
@@ -7549,6 +7552,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     CastCustomSpell(70691, SPELLVALUE_BASE_POINT0, damage, victim, true);
                     return true;
                 }
+                // Vengeance (Guardian)
+                case 84840:
+                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
             // Living Seed
             if (dummySpell->SpellIconID == 2860)
@@ -7829,6 +7835,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         basepoints0 = maxAmt;
                     break;
                 }
+                // Vengeance (Protection)
+                case 84839:
+                    return HandleVengeanceProc(victim, damage, triggerAmount);
                 // Ancient Crusader (player)
                 case 86701:
                 {
@@ -8618,6 +8627,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 target = this;
                 break;
             }
+            // Vengeance (Blood)
+            if (dummySpell->Id == 93099)
+                return HandleVengeanceProc(victim, damage, triggerAmount);
             break;
         }
         case SPELLFAMILY_POTION:
@@ -8749,6 +8761,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
                     break;
                 }
+                // Vengeance (Brewmaster)
+                case 120267:
+                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
             break;
         }
@@ -8763,57 +8778,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             return false;
         triggered_spell_id = 35079; // 4 sec buff on self
         target = this;
-    }
-
-    // Vengeance tank mastery
-    switch (dummySpell->Id)
-    {
-        case 84839:
-        case 84840:
-        case 93098:
-        case 93099:
-        case 120267:
-        {
-            if (!victim || victim->GetTypeId() == TYPEID_PLAYER)
-                return false;
-
-            if (victim->GetOwner() && victim->GetOwner()->GetTypeId() == TYPEID_PLAYER)
-                return false;
-
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if (!isInCombat())
-                return false;
-
-            int32 aviableBasepoints = 0;
-            int32 max_amount = 0;
-
-            triggered_spell_id = 76691;
-
-            if (Aura* vengeance = GetAura(triggered_spell_id, GetGUID()))
-            {
-                aviableBasepoints += vengeance->GetEffect(EFFECT_0)->GetAmount();
-                max_amount += vengeance->GetEffect(EFFECT_2)->GetAmount();
-            }
-
-            // The first melee attack taken by the tank generates Vengeance equal to 33% of the damage taken by that attack.
-           if (!aviableBasepoints && (procFlag & (PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK)))
-                triggerAmount = 33;
-
-            int32 cap = (GetCreateHealth() + GetStat(STAT_STAMINA) * 14) / 10;
-            basepoints0 = int32(damage * triggerAmount / 100);
-            basepoints0 += aviableBasepoints;
-            basepoints0 = std::min(cap, basepoints0);
-
-            // calculate max amount player's had durind the fight
-            int32 basepoints1 = std::max(basepoints0, max_amount);
-
-            CastCustomSpell(this, triggered_spell_id, &basepoints0, &basepoints0, &basepoints1, true, castItem, triggeredByAura, originalCaster);
-            return true;
-        }
-        default:
-            break;
     }
 
     // if not handled by custom case, get triggered spell from dummySpell proto
@@ -21269,5 +21233,38 @@ uint32 Unit::GetDamageCounterInPastSecs(uint32 secs, int type)
         damage += m_damage_counters[type][i];
 
     return damage;
+}
+
+bool Unit::HandleVengeanceProc(Unit* pVictim, int32 damage, int32 triggerAmount)
+{
+    // do not proc from player damage
+    if (!pVictim || pVictim->GetCharmerOrOwnerPlayerOrPlayerItself())
+        return false;
+
+    if (int32 basebp = damage)
+    {
+        int32 bp = 0;
+        uint32 triggered_spell_id = 132365;
+        // stack with old buff
+        if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
+        {
+            basebp = int32(basebp * triggerAmount / 100);
+            if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
+                bp += oldEff->GetAmount() * oldAura->GetDuration() / oldAura->GetMaxDuration();
+        }
+        else
+            basebp = int32(basebp * 33 / 100);
+
+        bp += basebp;
+
+        // capped at max health
+        int32 maxVal = int32(GetMaxHealth());
+        if (bp > maxVal)
+            bp = maxVal;
+
+        CastCustomSpell(this, triggered_spell_id, &bp, &bp, NULL, true);
+    }
+
+    return true;
 }
 
