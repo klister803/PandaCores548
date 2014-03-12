@@ -3238,7 +3238,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 }
                 default:
                 {
-                    if (properties->Flags & 512)
+                    if (properties->Flags & 512 || properties->Id == 2921)
                     {
                         SummonGuardian(effIndex, entry, properties, numSummons);
                         break;
