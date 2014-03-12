@@ -351,7 +351,7 @@ class boss_spirit_kings : public CreatureScript
                 {
                     case NPC_QIANG:
                         //events.ScheduleEvent(EVENT_FLANKING_MOGU,       30000);
-                        events.ScheduleEvent(EVENT_MASSIVE_ATTACK,      3500);
+                        events.ScheduleEvent(EVENT_MASSIVE_ATTACK,      urand(3500, 5000));
                         events.ScheduleEvent(EVENT_ANNIHILATE,          urand(15000, 20000));
                         break;
                     case NPC_SUBETAI:
@@ -461,12 +461,12 @@ class boss_spirit_kings : public CreatureScript
                             if (Creature* controler = GetControler())
                                 DoCast(me, SPELL_FLANKING_ORDERS);
                                 //controler->AI()->DoAction(ACTION_FLANKING_MOGU);
-                            events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
+                            //events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
                             break;
                         case EVENT_MASSIVE_ATTACK:
                             if (me->getVictim())
                                 DoCast(me->getVictim(), SPELL_MASSIVE_ATTACKS);
-                            events.ScheduleEvent(EVENT_MASSIVE_ATTACK, 3500);
+                            events.ScheduleEvent(EVENT_MASSIVE_ATTACK, urand(3500, 5000));
                             break;
                         case EVENT_ANNIHILATE:
                             if (me->getVictim())
@@ -484,7 +484,7 @@ class boss_spirit_kings : public CreatureScript
                             events.ScheduleEvent(EVENT_VOLLEY_1, urand(15000, 20000));
                             break;
                         case EVENT_RAIN_OF_ARROWS:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f , true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 30.0f , true))
                                 DoCast(target, SPELL_RAIN_OF_ARROWS);
                             events.ScheduleEvent(EVENT_RAIN_OF_ARROWS, 45000);
                             break;
@@ -558,16 +558,16 @@ class mob_pinning_arrow : public CreatureScript
                 playerGuid = guid;
 
                 if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
-                {
-                    me->EnterVehicle(player);
                     me->AddAura(118141, me); // Pinnig arrow visual
-                }
             }
 
             void JustDied(Unit* attacker)
             {
                 if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
-                    player->RemoveAurasDueToSpell(118135); // DOT
+                {
+                    player->RemoveAurasDueToSpell(118135); //Aura(stun)
+                    me->DespawnOrUnsummon();
+                }
             }
         };
 
@@ -661,40 +661,6 @@ class mob_undying_shadow : public CreatureScript
         }
 };
 
-class spell_massive_attacks : public SpellScriptLoader
-{
-    public:
-        spell_massive_attacks() : SpellScriptLoader("spell_massive_attacks") { }
-
-        class spell_massive_attacks_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_massive_attacks_SpellScript);
-
-            uint8 targetsCount;
-
-            void CheckTargets(std::list<WorldObject*>& targets)
-            {
-                targetsCount = targets.size();
-            }
-
-            void RecalculateDamage(SpellEffIndex /*effIndex*/)
-            {
-                SetHitDamage(GetHitDamage() / targetsCount);
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_massive_attacks_SpellScript::CheckTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_54);
-                OnEffectHitTarget += SpellEffectFn(spell_massive_attacks_SpellScript::RecalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_massive_attacks_SpellScript();
-        }
-};
-
 class spell_volley : public SpellScriptLoader
 {
     public:
@@ -761,9 +727,11 @@ class spell_pinned_down : public SpellScriptLoader
 
             void HandleAfterHit()
             {
-                if (Unit* target = GetHitUnit())
-                    if (Creature* pinningArrow = target->SummonCreature(NPC_PINNING_ARROW, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN))
-                        pinningArrow->AI()->SetGUID(target->GetGUID());
+                if (GetHitUnit())
+                {
+                    if (Creature* pinningArrow = GetHitUnit()->SummonCreature(NPC_PINNING_ARROW, GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetHitUnit()->GetPositionZ()))
+                        pinningArrow->AI()->SetGUID(GetHitUnit()->GetGUID());
+                }
             }
 
             void Register()
@@ -887,7 +855,6 @@ void AddSC_boss_spirit_kings()
     new boss_spirit_kings();
     new mob_pinning_arrow();
     new mob_undying_shadow();
-    new spell_massive_attacks();
     new spell_volley();
     new spell_pinned_down();
     new spell_maddening_shout();
