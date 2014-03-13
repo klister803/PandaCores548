@@ -52,6 +52,7 @@ struct Position;
 class Battleground;
 class MapInstanced;
 class InstanceMap;
+class BattlegroundMap;
 namespace Trinity { struct ObjectUpdater; }
 
 struct ScriptAction
@@ -373,6 +374,8 @@ class Map : public GridRefManager<NGridType>
         bool IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
         bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
         bool IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
+        BattlegroundMap* ToBgMap() { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap*>(this); else return NULL; }
+
         bool GetEntrancePos(int32 &mapid, float &x, float &y)
         {
             if (!i_mapEntry)

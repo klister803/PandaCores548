@@ -4578,6 +4578,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 65203:  // Throw Oil
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
+                case 66795: // Gather Lumber
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_MASTER;
+                    break;
                 case 110310: // Arena. Dumpening
                     spellInfo->StackAmount = 100;   //miss in dbc aura option
                     //! Part from Battleground - Dampening(74411)

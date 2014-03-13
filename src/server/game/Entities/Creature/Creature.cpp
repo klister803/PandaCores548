@@ -1216,6 +1216,12 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
             level = cinfo->minlevel;
     }
 
+    if (BattlegroundMap* map = GetMap()->ToBgMap())
+    {
+        if (map->GetBG())
+            level = map->GetBG()->GetMaxLevel();
+    }
+
     SetLevel(level);
 
     // for wild battle pets
