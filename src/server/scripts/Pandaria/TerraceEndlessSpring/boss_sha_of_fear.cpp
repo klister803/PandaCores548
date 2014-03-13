@@ -49,6 +49,8 @@ Position const dspos[2] =
     {-981.31f,  -2782.95f, 38.2682f},
 };
 
+float const minpullpos = -2847.0258f;
+
 bool CheckLeiShi(InstanceScript* instance, Creature* caller)
 {
     if (instance && caller)
@@ -83,6 +85,7 @@ class boss_sha_of_fear : public CreatureScript
             }
 
             InstanceScript* instance;
+            uint32 checkvictim;
 
             void Reset()
             {
@@ -90,6 +93,13 @@ class boss_sha_of_fear : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
+                checkvictim = 0;
+            }
+
+            void JustReachedHome()
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_DEFENSIVE);
             }
 
             void RegeneratePower(Powers power, int32 &value)
@@ -102,9 +112,26 @@ class boss_sha_of_fear : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                if (instance)
+                {
+                    if (!CheckPullPlayerPos(who))
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
+                }
                 _EnterCombat();
+                checkvictim = 1500;
                 events.ScheduleEvent(EVENT_DREAD_SPAWN, urand(20000, 30000));
                 events.ScheduleEvent(EVENT_SKULL,       urand(10000, 15000));
+            }
+
+            bool CheckPullPlayerPos(Unit* who)
+            {
+                if (!who->ToPlayer() || who->GetPositionY() < minpullpos)
+                    return false;
+
+                return true;
             }
 
             void JustDied(Unit* /*killer*/)
@@ -116,6 +143,28 @@ class boss_sha_of_fear : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
+
+                if (checkvictim && instance)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim())
+                        {
+                            if (!CheckPullPlayerPos(me->getVictim()))
+                            {
+                                me->AttackStop();
+                                me->SetReactState(REACT_PASSIVE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                EnterEvadeMode();
+                                checkvictim = 0;
+                            }
+                            else
+                                checkvictim = 1500;
+                        }
+                    }
+                    else
+                        checkvictim -= diff;
+                }
 
                 events.Update(diff);
 

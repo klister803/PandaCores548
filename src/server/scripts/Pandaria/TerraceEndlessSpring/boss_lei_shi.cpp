@@ -39,6 +39,9 @@ Position const sumprpos[3] =
     {-1017.72f, -2885.31f, 19.6366f},
 };
 
+float const minpullpos = -2978.5349f;
+float const maxpullpos = -2851.7839f;
+
 bool CheckTsulong(InstanceScript* instance, Creature* caller)
 {
     if (instance && caller)
@@ -73,6 +76,7 @@ class boss_lei_shi : public CreatureScript
             }
 
             InstanceScript* instance;
+            uint32 checkvictim;
             uint8 health;
 
             void Reset()
@@ -80,11 +84,35 @@ class boss_lei_shi : public CreatureScript
                 _Reset();
                 health = 0;
                 me->SetReactState(REACT_DEFENSIVE);
+                checkvictim = 0;
             }
 
+            void JustReachedHome()
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_DEFENSIVE);
+            }
+            
             void EnterCombat(Unit* who)
             {
-                _EnterCombat();
+                if (instance)
+                {
+                    if (!CheckPullPlayerPos(who))
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
+                }
+              _EnterCombat();
+              checkvictim = 1500;
+            }
+
+            bool CheckPullPlayerPos(Unit* who)
+            {
+                if (!who->ToPlayer() || who->GetPositionY() < minpullpos || who->GetPositionY() > maxpullpos)
+                    return false;
+
+                return true;
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -137,6 +165,28 @@ class boss_lei_shi : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
+
+                if (checkvictim && instance)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim())
+                        {
+                            if (!CheckPullPlayerPos(me->getVictim()))
+                            {
+                                me->AttackStop();
+                                me->SetReactState(REACT_PASSIVE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                EnterEvadeMode();
+                                checkvictim = 0;
+                            }
+                            else
+                                checkvictim = 1500;
+                        }
+                    }
+                    else
+                        checkvictim -= diff;
+                }
 
                 DoSpellAttackIfReady(SPELL_SPRAY);
             }
