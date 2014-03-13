@@ -4844,11 +4844,9 @@ void AuraEffect::HandleAuraModAddEnergyPercent(AuraApplication const* aurApp, ui
     if (apply)
     {
         target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
-        target->ModifyPowerPct(powerType, amount, apply);
     }
     else
     {
-        target->ModifyPowerPct(powerType, amount, apply);
         target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
     }
 }
