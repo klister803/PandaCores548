@@ -3198,16 +3198,27 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     if (!summon || !summon->isTotem())
                         return;
 
-                    // Mana Tide Totem || 
-                    if (m_spellInfo->Id == 16190 || m_spellInfo->Id == 108280)
+                    
+                    switch (m_spellInfo->Id)
                     {
-                        uint32 perc = 10;
-                        if(m_caster->HasAura(63298))
-                            perc = 15;
+                        case 16190:  // Mana Tide Totem
+                        case 108280: // Healing Tide Totem
+                        case 108270: // Stone Bulwark Totem
+                        {
+                            uint32 perc = 10;
+                            if(m_caster->HasAura(63298))
+                                perc = 15;
 
-                        damage = m_caster->CountPctFromMaxHealth(perc);
-                    } else if(m_caster->HasAura(63298))
-                        damage += m_caster->CountPctFromMaxHealth(5);
+                            damage = m_caster->CountPctFromMaxHealth(perc);
+                            break;
+                        }
+                        default:
+                        {
+                            if(m_caster->HasAura(63298))
+                                damage += m_caster->CountPctFromMaxHealth(5);
+                            break;
+                        }
+                    }
 
                     if (damage)                                            // if not spell info, DB values used
                     {
