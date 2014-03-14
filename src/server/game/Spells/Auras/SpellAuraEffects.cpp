@@ -6937,15 +6937,9 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) 
             {
                 if (Unit * shaman = caster->GetOwner())
                 {
-                    if (GetTickNumber() != 1)
-                        caster->CastSpell(shaman, triggeredSpellInfo, true);
-                    else
-                    {
-                        int32 SPD    = shaman->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
-                        int32 amount = SPD * 0.875f * 4;
-                        caster->CastCustomSpell(shaman, triggerSpellId, &amount, NULL, NULL, true);
-                    }
-                    
+                    int32 SPD    = shaman->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                    int32 amount = SPD * 0.875f * (GetTickNumber() != 1 ? 1: 4);
+                    caster->CastCustomSpell(shaman, triggerSpellId, &amount, NULL, NULL, true);
                 }
                 return;
             }
