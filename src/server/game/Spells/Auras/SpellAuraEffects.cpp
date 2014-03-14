@@ -6933,6 +6933,22 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) 
         // Spell exist but require custom code
         switch (auraId)
         {
+            case 114889: // Stone Bulwark Totem
+            {
+                if (Unit * shaman = caster->GetOwner())
+                {
+                    if (GetTickNumber() != 1)
+                        caster->CastSpell(shaman, triggeredSpellInfo, true);
+                    else
+                    {
+                        int32 SPD    = shaman->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                        int32 amount = SPD * 0.875f * 4;
+                        caster->CastCustomSpell(shaman, triggerSpellId, &amount, NULL, NULL, true);
+                    }
+                    
+                }
+                return;
+            }
             // Pursuing Spikes (Anub'arak)
             case 65920:
             case 65922:
