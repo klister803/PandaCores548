@@ -4285,7 +4285,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     }
 
     bool normalized = false;
-    float weaponDamagePercentMod = 1.0f;
+    float weaponDamagePercentMod = 0.0f;
     for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
     {
         switch (m_spellInfo->Effects[j].Effect)
@@ -4299,7 +4299,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 normalized = true;
                 break;
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                ApplyPct(weaponDamagePercentMod, CalculateDamage(j, unitTarget));
+                weaponDamagePercentMod += CalculateDamage(j, unitTarget) / 100.0f;
                 break;
             default:
                 break;                                      // not weapon damage effect, just skip
@@ -4329,6 +4329,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     }
 
     int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, true);
+    bool  calculateWPD = true;
 
     // Sequence is important
     for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
@@ -4343,7 +4344,13 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 weaponDamage += fixed_bonus;
                 break;
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                weaponDamage = int32(weaponDamage* weaponDamagePercentMod);
+            {
+                if (calculateWPD)
+                {
+                    weaponDamage = int32(weaponDamage* weaponDamagePercentMod);
+                    calculateWPD = false;
+                }
+            }
             default:
                 break;                                      // not weapon damage effect, just skip
         }
