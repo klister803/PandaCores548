@@ -403,11 +403,20 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 
     if (_me->GetTypeId() == TYPEID_UNIT
         && unit->GetTypeId() == TYPEID_PLAYER
-        && seat->first == 0 && seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
+        && seat->first == 0)
     {
-        if (!_me->SetCharmedBy(unit, CHARM_TYPE_VEHICLE))
+        if (seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL 
+            && !_me->SetCharmedBy(unit, CHARM_TYPE_VEHICLE))
+        {
             return false;
             //ASSERT(false);
+        }else if (seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_UNK2)
+        {
+            unit->Dismount();
+            unit->ToPlayer()->SetClientControl(_me, 1);
+            unit->ToPlayer()->SetMover(_me);
+            unit->ToPlayer()->SetViewpoint(_me, true);
+        }
     }
 
     if (_me->IsInWorld())
@@ -464,8 +473,17 @@ void Vehicle::RemovePassenger(Unit* unit)
 
     unit->ClearUnitState(UNIT_STATE_ONVEHICLE);
 
-    if (_me->GetTypeId() == TYPEID_UNIT && unit->GetTypeId() == TYPEID_PLAYER && seat->first == 0 && seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
-        _me->RemoveCharmedBy(unit);
+    if (_me->GetTypeId() == TYPEID_UNIT && unit->GetTypeId() == TYPEID_PLAYER && seat->first == 0)
+    {
+        if (seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
+            _me->RemoveCharmedBy(unit);
+        else if (seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_UNK2)
+        {
+            unit->ToPlayer()->SetClientControl(unit, 1);
+            unit->ToPlayer()->SetViewpoint(_me, false);
+            unit->ToPlayer()->SetClientControl(_me, 0);
+        }
+    }
 
     if (_me->IsInWorld())
     {
