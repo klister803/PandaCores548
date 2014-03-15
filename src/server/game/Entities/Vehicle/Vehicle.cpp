@@ -401,11 +401,9 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
             break;
     }
 
-    if (_me->GetTypeId() == TYPEID_UNIT
-        && unit->GetTypeId() == TYPEID_PLAYER
-        && seat->first == 0)
+    if (_me->GetTypeId() == TYPEID_UNIT && unit->GetTypeId() == TYPEID_PLAYER)
     {
-        if (seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL 
+        if (seat->first == 0 && seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL 
             && !_me->SetCharmedBy(unit, CHARM_TYPE_VEHICLE))
         {
             return false;
@@ -473,9 +471,9 @@ void Vehicle::RemovePassenger(Unit* unit)
 
     unit->ClearUnitState(UNIT_STATE_ONVEHICLE);
 
-    if (_me->GetTypeId() == TYPEID_UNIT && unit->GetTypeId() == TYPEID_PLAYER && seat->first == 0)
+    if (_me->GetTypeId() == TYPEID_UNIT && unit->GetTypeId() == TYPEID_PLAYER)
     {
-        if (seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
+        if (seat->first == 0 && seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
             _me->RemoveCharmedBy(unit);
         else if (seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_UNK2)
         {
