@@ -17196,7 +17196,6 @@ void Unit::StopMoving()
     Movement::MoveSplineInit(*this).Stop();
 }
 
-//! ToDo: Do something with HB
 void Unit::SendMovementFlagUpdate(bool self /* = false */)
 {
     if (GetTypeId() == TYPEID_PLAYER)
