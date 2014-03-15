@@ -688,6 +688,7 @@ enum Opcodes
     SMSG_AREA_TRIGGER_RESET                           = 0xB9B,  // 5.0.5 16048
     SMSG_ARENA_ERROR                                  = 0x0896, // 5.4.1 17538
     SMSG_ARENA_OPPONENT_UPDATE                        = 0x081F, // 5.4.1 17538
+    SMSG_ARENA_OPPONENT_SPECIALIZATIONS               = 0x08AE, // 5.4.1 17538
     SMSG_ARENA_TEAM_CHANGE_FAILED_QUEUED              = 0x9C2,  // 5.0.5 16048
     SMSG_ARENA_TEAM_COMMAND_RESULT                    = 0,      // 5.4.1 17538 obsolete
     SMSG_ARENA_TEAM_EVENT                             = 0,      // 5.4.1 17538 obsolete
