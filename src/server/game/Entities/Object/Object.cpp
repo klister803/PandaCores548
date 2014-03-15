@@ -2452,12 +2452,6 @@ void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const*
     Trinity::BuildChatPacket(*data, c);
 }
 
-void Unit::BuildHeartBeatMsg(WorldPacket* data) const
-{
-    data->Initialize(SMSG_PLAYER_MOVE);
-    WriteMovementUpdate(*data);
-}
-
 void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
 {
     if (IsInWorld())

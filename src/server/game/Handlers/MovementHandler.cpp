@@ -733,10 +733,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         }
         plrMover->m_temp_transport = NULL;
         ++(plrMover->m_anti_AlarmCount);
-        WorldPacket data;
+        WorldPacket data(SMSG_PLAYER_MOVE);
         plrMover->SetUnitMovementFlags(0);
         //plrMover->SendTeleportPacket();
-        plrMover->BuildHeartBeatMsg(&data);
+        plrMover->WriteMovementUpdate(data);
         plrMover->SendMessageToSet(&data, true);
         plrMover->SendMovementSetCanFly(true);
         plrMover->SendMovementSetCanFly(false);
