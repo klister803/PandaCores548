@@ -314,6 +314,11 @@ bool Vehicle::CheckCustomCanEnter()
             return true;
         case 46185: // Sanitron
             return true;
+        case 25460: //Amazing Flying Carpet. VehID 317
+            return true;
+        case 33513: //368
+        case 33386: //360
+            return true;
     }
 
     return false;
