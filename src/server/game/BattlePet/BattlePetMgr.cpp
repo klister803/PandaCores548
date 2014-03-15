@@ -303,9 +303,9 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
         data1.WriteBits(0, 21);
     }
 
-    data1.WriteBit(1);
-    data1.WriteBit(1);
-    data1.WriteBit(1);
+    data1.WriteBit(0);
+    data1.WriteBit(0);
+    data1.WriteBit(0);
 
     if (_player->m_SummonSlot[SUMMON_SLOT_MINIPET])
     {
@@ -314,7 +314,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             guid = oldSummon->GetObjectGuid();
     }
 
-    ObjectGuid guid2 = guid;
+    ObjectGuid guid2 = _player->GetSelectedUnit()->GetObjectGuid();
     ObjectGuid guid3 = 0;
     ObjectGuid ownerGuid = _player->GetObjectGuid();
     ObjectGuid guid4 = 0;
@@ -333,7 +333,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
         else
             data1.WriteGuidMask<5, 7, 4>(guid4);
 
-        data1.WriteBit(1);
+        data1.WriteBit(0);
 
         if (i == 0)
             data1.WriteGuidMask<0>(guid);
@@ -353,13 +353,13 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             if (i == 0)
             {
                 data1.WriteGuidMask<3, 4, 0>(ownerGuid);
-                data1.WriteBit(1);
+                data1.WriteBit(0);
                 data1.WriteGuidMask<6>(ownerGuid);
                 data1.WriteBits(6, 21);  // state count?
                 data1.WriteBits(1, 20);
                 data1.WriteGuidMask<5>(ownerGuid);
 
-                data1.WriteBit(1);
+                data1.WriteBit(0);
                 data1.WriteGuidMask<2, 1, 7>(ownerGuid);
                 data1.WriteBit(1);
                 data1.WriteBits(0, 7);
@@ -372,13 +372,13 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             else
             {
                 data1.WriteGuidMask<3, 4, 0>(guid3);
-                data1.WriteBit(1);
+                data1.WriteBit(0);
                 data1.WriteGuidMask<6>(guid3);
                 data1.WriteBits(5, 21);   // state count?
                 data1.WriteBits(1, 20);
                 data1.WriteGuidMask<5>(guid3);
 
-                data1.WriteBit(1);
+                data1.WriteBit(0);
                 data1.WriteGuidMask<2, 1, 7>(guid3);
                 data1.WriteBit(1);
                 data1.WriteBits(0, 7);
@@ -400,14 +400,14 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
     }
 
     data1.WriteBit(1);
-    data1.WriteBit(1);
+    data1.WriteBit(0);
     data1.WriteBit(1);
 
     data1.WriteGuidMask<6, 0, 1, 4, 2, 5, 3, 7>(guid2);
 
+    data1.WriteBit(0);
     data1.WriteBit(1);
-    data1.WriteBit(1);
-    data1.WriteBit(1);
+    data1.WriteBit(0);
 
     for (uint8 i = 0; i < 2; ++i)
     {
@@ -417,6 +417,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             if (i == 0)
             {
                 // 1 ability (for 1)
+                data1 << uint8(0);
                 data1 << uint16(0);
                 data1 << uint8(0);  // slot index
                 data1 << uint16(0);
@@ -425,6 +426,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             else
             {
                 // 1 ability (for 1)
+                data1 << uint8(0);
                 data1 << uint16(0);
                 data1 << uint8(0);  // slot index
                 data1 << uint16(0);
@@ -543,6 +545,8 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1 << uint32(300);
             else
                 data1 << uint32(500);
+
+            data1 << uint8(0); // pet slot index?
         }
 
         data1 << uint32(427);
@@ -550,13 +554,17 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             data1.WriteGuidBytes<2, 5>(guid);
         else
             data1.WriteGuidBytes<2, 5>(guid4);
-        //data1 << uint32(2);
+        
+        data1 << uint32(2);
+
         if (i == 0)
             data1.WriteGuidBytes<4, 0, 7, 6>(guid);
         else
             data1.WriteGuidBytes<4, 0, 7, 6>(guid4);
+
         data1 << uint8(6);
         data1 << uint8(0);
+
         if (i == 0)
             data1.WriteGuidBytes<1, 3>(guid);
         else
@@ -565,7 +573,11 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 
     data1.WriteGuidBytes<6, 2, 1, 3, 0, 4, 7, 5>(guid2);
 
+    data1 << uint16(30);
+    data1 << uint16(30);
+    data1 << uint8(1);
     data1 << uint32(0);
+    data1 << uint8(10);
 
     SendPacket(&data1);
 }
