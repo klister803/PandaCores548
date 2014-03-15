@@ -170,9 +170,9 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
 void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 {
     float playerX, playerY, playerZ, playerOrient;
-    float unkX[2];
-    float unkY[2];
-    float unkZ[2];
+    float petAllyX, petEnemyX;
+    float petAllyY, petEnemyY;
+    float petAllyZ, petEnemyZ;
     uint32 unkCounter;
 
     recvData >> playerX;
@@ -181,9 +181,18 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 
     for (int i = 0; i < 2; ++i)
     {
-        recvData >> unkY[i];
-        recvData >> unkZ[i];
-        recvData >> unkX[i];
+        if (i == 0)
+        {
+            recvData >> petAllyY;
+            recvData >> petAllyZ;
+            recvData >> petAllyX;
+        }
+        else
+        {
+            recvData >> petEnemyY;
+            recvData >> petEnemyZ;
+            recvData >> petEnemyX;
+        }
     }
 
     bool facing = recvData.ReadBit();
@@ -201,9 +210,18 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 
     for (int i = 0; i < 2; ++i)
     {
-        recvData << unkY[i];
-        recvData << unkX[i];
-        recvData << unkZ[i];
+        if (i == 0)
+        {
+            data << petAllyY;
+            data << petAllyX;
+            data << petAllyZ;
+        }
+        else
+        {
+            data << petEnemyY;
+            data << petEnemyX;
+            data << petEnemyZ;
+        }
     }
 
     data << playerX;
@@ -402,7 +420,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1 << uint16(0);
                 data1 << uint8(0);  // slot index
                 data1 << uint16(0);
-                data1 << uint32(111);
+                data1 << uint32(111); // ability ID
             }
             else
             {
@@ -410,11 +428,11 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1 << uint16(0);
                 data1 << uint8(0);  // slot index
                 data1 << uint16(0);
-                data1 << uint32(595);
+                data1 << uint32(595); // ability ID
             }
 
-            data1 << uint16(0);
-            data1 << uint32(151);
+            data1 << uint16(22);  // experience
+            data1 << uint32(151); // current/total HP
 
             if (i == 0)
                 data1.WriteGuidBytes<1>(ownerGuid);
@@ -452,16 +470,16 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             }
 
             data1 << uint32(0);
-            data1 << uint32(0);
+            data1 << uint32(200); // speed
 
             // aura handle test
             // 239 - flying creature passive
             if (i == 0)
             {
-                data1 << uint32(-1);
+                data1 << uint32(-1); // duration?
                 data1 << uint32(0);
                 data1 << uint8(0);
-                data1 << uint32(239);
+                data1 << uint32(239); // auraID = spellID
             }
 
             if (i == 0)
@@ -469,30 +487,32 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             else
                 data1.WriteGuidBytes<4>(guid3);
 
-            data1.WriteString("");
-            data1 << uint16(1);
+            // Custom Name
+            //data1.WriteString("");
+            // Quality
+            data1 << uint16(3);
 
             if (i == 0)
                 data1.WriteGuidBytes<0>(ownerGuid);
             else
                 data1.WriteGuidBytes<0>(guid3);
 
-            // speed? attack power?
+            // current/Total HP?
             if (i == 0)
-                data1 << uint32(980);
+                data1 << uint32(151);
             else
-                data1 << uint32(99);
+                data1 << uint32(151);
 
             if (i == 0)
                 data1.WriteGuidBytes<3>(ownerGuid);
             else
                 data1.WriteGuidBytes<3>(guid3);
 
-            // health?
+            // Species ID
             if (i == 0)
-                data1 << uint32(2548);
+                data1 << uint32(292);
             else
-                data1 << uint32(4329);
+                data1 << uint32(293);
 
             data1 << uint32(0);
 
@@ -507,7 +527,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             else
                 data1 << uint32(1924);
 
-            // Level?
+            // Level
             if (i == 0)
                 data1 << uint16(12);
             else
@@ -518,7 +538,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             else
                 data1.WriteGuidBytes<7, 5>(guid3);
 
-            // attack power? speed?
+            // Attack Power
             if (i == 0)
                 data1 << uint32(300);
             else
@@ -530,7 +550,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             data1.WriteGuidBytes<2, 5>(guid);
         else
             data1.WriteGuidBytes<2, 5>(guid4);
-        data1 << uint32(2);
+        //data1 << uint32(2);
         if (i == 0)
             data1.WriteGuidBytes<4, 0, 7, 6>(guid);
         else
