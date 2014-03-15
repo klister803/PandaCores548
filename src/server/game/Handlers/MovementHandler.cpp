@@ -291,7 +291,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 forvehunit = 1;
 
     // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
-    if (plrMover && plrMover->IsBeingTeleported())
+    if (plrMover && plrMover->IsBeingTeleported() || mover->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
     {
         recvPacket.rfinish();                     // prevent warnings spam
         return;
