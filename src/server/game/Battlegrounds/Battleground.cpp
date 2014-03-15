@@ -1238,8 +1238,8 @@ void Battleground::AddPlayer(Player* player)
                 dataBuffer.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(opponent->GetObjectGuid());
 
                 op3.Initialize(SMSG_ARENA_OPPONENT_UPDATE, 8);
-                op1.WriteGuidMask<5, 4, 7, 0, 6, 1, 2, 3>(opponent->GetObjectGuid());
-                op1.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(opponent->GetObjectGuid());
+                op3.WriteGuidMask<5, 4, 7, 0, 6, 1, 2, 3>(opponent->GetObjectGuid());
+                op3.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(opponent->GetObjectGuid());
                 player->GetSession()->SendPacket(&op3);
             }
 
