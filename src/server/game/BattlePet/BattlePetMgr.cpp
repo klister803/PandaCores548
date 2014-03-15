@@ -217,7 +217,336 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
     SendPacket(&data);
 
     // send full update
+    /*WorldPacket data1(SMSG_BATTLE_PET_FULL_UPDATE);
+    ObjectGuid guid;
+    for (uint8 i = 0; i < 3; ++i)
+    {
+        data1.WriteBits(0, 21);
+        data1.WriteBits(0, 21);
+    }
+
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+
+    if (_player->m_SummonSlot[SUMMON_SLOT_MINIPET])
+    {
+        Creature* oldSummon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]);
+        if (oldSummon && oldSummon->isSummon() && oldSummon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID))
+            guid = oldSummon->GetObjectGuid();
+    }
+
+    ObjectGuid guid2 = guid;
+
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        data1.WriteGuidMask<2>(guid);
+        data1.WriteBit(1);
+        data1.WriteGuidMask<5, 7, 4>(guid);
+        data1.WriteBit(0);
+        data1.WriteGuidMask<0>(guid);
+        data1.WriteBits(0, 2);
+        data1.WriteGuidMask<1, 6>(guid);
+        data1.WriteBit(1);
+        data1.WriteGuidMask<3>(guid);
+    }
+
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+
+    data1.WriteGuidMask<6, 0, 1, 4, 2, 5, 3, 7>(guid2);
+
+    data1.WriteBit(1);
+    data1.WriteBit(0);
+    data1.WriteBit(0);
+
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        data1 << uint32(427);
+        data1.WriteGuidBytes<2, 5>(guid);
+        data1 << uint32(2);
+        data1.WriteGuidBytes<4, 0, 7, 6>(guid);
+        data1 << uint8(6);
+        data1.WriteGuidBytes<1, 3>(guid);
+    }
+
+    data1.WriteGuidBytes<6, 2, 1, 3, 0, 4, 7, 5>(guid2);
+
+    data1 << uint32(1);*/
+
+
+    // send full update
     WorldPacket data1(SMSG_BATTLE_PET_FULL_UPDATE);
+    ObjectGuid guid;
+    for (uint8 i = 0; i < 3; ++i)
+    {
+        data1.WriteBits(0, 21);
+        data1.WriteBits(0, 21);
+    }
+
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+
+    if (_player->m_SummonSlot[SUMMON_SLOT_MINIPET])
+    {
+        Creature* oldSummon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]);
+        if (oldSummon && oldSummon->isSummon() && oldSummon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID))
+            guid = oldSummon->GetObjectGuid();
+    }
+
+    ObjectGuid guid2 = guid;
+    ObjectGuid guid3 = 0;
+    ObjectGuid ownerGuid = _player->GetObjectGuid();
+    ObjectGuid guid4 = 0;
+
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        if (i == 0)
+            data1.WriteGuidMask<2>(guid);
+        else
+            data1.WriteGuidMask<2>(guid4);
+
+        data1.WriteBit(1);
+
+        if (i == 0)
+            data1.WriteGuidMask<5, 7, 4>(guid);
+        else
+            data1.WriteGuidMask<5, 7, 4>(guid4);
+
+        data1.WriteBit(1);
+
+        if (i == 0)
+            data1.WriteGuidMask<0>(guid);
+        else
+            data1.WriteGuidMask<0>(guid4);
+
+        data1.WriteBits(1, 2);                              // pet count
+
+        if (i == 0)
+            data1.WriteGuidMask<1>(guid);
+        else
+            data1.WriteGuidMask<1>(guid4);
+
+        for (uint8 j = 0; j < 1; ++j)
+        {
+            // TEST, i=0 - player, i=1 - wild pet
+            if (i == 0)
+            {
+                data1.WriteGuidMask<3, 4, 0>(ownerGuid);
+                data1.WriteBit(1);
+                data1.WriteGuidMask<6>(ownerGuid);
+                data1.WriteBits(6, 21);  // state count?
+                data1.WriteBits(1, 20);
+                data1.WriteGuidMask<5>(ownerGuid);
+
+                data1.WriteBit(1);
+                data1.WriteGuidMask<2, 1, 7>(ownerGuid);
+                data1.WriteBit(1);
+                data1.WriteBits(0, 7);
+                data1.WriteBits(1, 21);
+
+                data1.WriteBit(1);
+                data1.WriteBit(0);
+                data1.WriteBit(0);
+            }
+            else
+            {
+                data1.WriteGuidMask<3, 4, 0>(guid3);
+                data1.WriteBit(1);
+                data1.WriteGuidMask<6>(guid3);
+                data1.WriteBits(5, 21);   // state count?
+                data1.WriteBits(1, 20);
+                data1.WriteGuidMask<5>(guid3);
+
+                data1.WriteBit(1);
+                data1.WriteGuidMask<2, 1, 7>(guid3);
+                data1.WriteBit(1);
+                data1.WriteBits(0, 7);
+                data1.WriteBits(0, 21);
+            }
+        }
+
+        if (i == 0)
+            data1.WriteGuidMask<6>(guid);
+        else
+            data1.WriteGuidMask<6>(guid4);
+
+        data1.WriteBit(0);
+
+        if (i == 0)
+            data1.WriteGuidMask<3>(guid);
+        else
+            data1.WriteGuidMask<3>(guid4);
+    }
+
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+
+    data1.WriteGuidMask<6, 0, 1, 4, 2, 5, 3, 7>(guid2);
+
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+    data1.WriteBit(1);
+
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        for (uint8 j = 0; j < 1; ++j)
+        {
+            // TEST, i=0 - player, i=1 - wild pet
+            if (i == 0)
+            {
+                // 1 ability (for 1)
+                data1 << uint16(0);
+                data1 << uint8(0);  // slot index
+                data1 << uint16(0);
+                data1 << uint32(111);
+            }
+            else
+            {
+                // 1 ability (for 1)
+                data1 << uint16(0);
+                data1 << uint8(0);  // slot index
+                data1 << uint16(0);
+                data1 << uint32(595);
+            }
+
+            data1 << uint16(0);
+            data1 << uint32(151);
+
+            if (i == 0)
+                data1.WriteGuidBytes<1>(ownerGuid);
+            else
+                data1.WriteGuidBytes<1>(guid3);
+
+            //
+            if (i == 0)
+            {
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+            }
+            else
+            {
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+                data1 << uint32(0);
+            }
+
+            data1 << uint32(0);
+            data1 << uint32(0);
+
+            // aura handle test
+            // 239 - flying creature passive
+            if (i == 0)
+            {
+                data1 << uint32(-1);
+                data1 << uint32(0);
+                data1 << uint8(0);
+                data1 << uint32(239);
+            }
+
+            if (i == 0)
+                data1.WriteGuidBytes<4>(ownerGuid);
+            else
+                data1.WriteGuidBytes<4>(guid3);
+
+            data1.WriteString("");
+            data1 << uint16(1);
+
+            if (i == 0)
+                data1.WriteGuidBytes<0>(ownerGuid);
+            else
+                data1.WriteGuidBytes<0>(guid3);
+
+            // speed? attack power?
+            if (i == 0)
+                data1 << uint32(980);
+            else
+                data1 << uint32(99);
+
+            if (i == 0)
+                data1.WriteGuidBytes<3>(ownerGuid);
+            else
+                data1.WriteGuidBytes<3>(guid3);
+
+            // health?
+            if (i == 0)
+                data1 << uint32(2548);
+            else
+                data1 << uint32(4329);
+
+            data1 << uint32(0);
+
+            if (i == 0)
+                data1.WriteGuidBytes<2, 6>(ownerGuid);
+            else
+                data1.WriteGuidBytes<2, 6>(guid3);
+
+            // display ID?
+            if (i == 0)
+                data1 << uint32(36944);
+            else
+                data1 << uint32(1924);
+
+            // Level?
+            if (i == 0)
+                data1 << uint16(12);
+            else
+                data1 << uint16(15);
+
+            if (i == 0)
+                data1.WriteGuidBytes<7, 5>(ownerGuid);
+            else
+                data1.WriteGuidBytes<7, 5>(guid3);
+
+            // attack power? speed?
+            if (i == 0)
+                data1 << uint32(300);
+            else
+                data1 << uint32(500);
+        }
+
+        data1 << uint32(427);
+        if (i == 0)
+            data1.WriteGuidBytes<2, 5>(guid);
+        else
+            data1.WriteGuidBytes<2, 5>(guid4);
+        data1 << uint32(2);
+        if (i == 0)
+            data1.WriteGuidBytes<4, 0, 7, 6>(guid);
+        else
+            data1.WriteGuidBytes<4, 0, 7, 6>(guid4);
+        data1 << uint8(6);
+        data1 << uint8(0);
+        if (i == 0)
+            data1.WriteGuidBytes<1, 3>(guid);
+        else
+            data1.WriteGuidBytes<1, 3>(guid4);
+    }
+
+    data1.WriteGuidBytes<6, 2, 1, 3, 0, 4, 7, 5>(guid2);
+
+    data1 << uint32(0);
+
     SendPacket(&data1);
 }
 
@@ -228,6 +557,8 @@ void WorldSession::HandleBattlePetOpcode1ACF(WorldPacket& recvData)
     recvData.ReadBit();
     recvData.ReadGuidMask<5, 1>(guid);
     recvData.ReadGuidBytes<3, 5, 6, 7, 1, 0, 2, 4>(guid);
+
+    sLog->outError(LOG_FILTER_GENERAL, "GUID from packet 0x1ACF - %u", guid);
 
     WorldPacket data(SMSG_BATTLE_PET_FIRST_ROUND);
 
