@@ -620,13 +620,13 @@ void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
 
             buff << int32(itr->ObjectiveIndex);     // objective index
             buff << uint32(0);
-            buff << uint32(itr->Unk3);              // unknown
+            buff << uint32(itr->Unk4);              // unknown
             buff << uint32(itr->Id);                // POI index
             buff << uint32(itr->MapId);             // mapid
             buff << uint32(0);
             buff << uint32(itr->Unk2);              // floor
             buff << uint32(itr->points.size());     // POI points count
-            buff << uint32(itr->Unk4);              // unknown
+            buff << uint32(itr->Unk3);              // unknown
             buff << uint32(0);
         }
 
