@@ -643,5 +643,5 @@ void WorldSession::HandleBattlePetOpcode1ACF(WorldPacket& recvData)
     recvData.ReadGuidMask<5, 1>(guid);
     recvData.ReadGuidBytes<3, 5, 6, 7, 1, 0, 2, 4>(guid);
 
-    sLog->outError(LOG_FILTER_GENERAL, "GUID from packet 0x1ACF - %u", guid);
+    sLog->outError(LOG_FILTER_GENERAL, "GUID from packet 0x1ACF - %u", uint64(guid));
 }
