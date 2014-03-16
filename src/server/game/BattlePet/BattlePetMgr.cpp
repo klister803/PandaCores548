@@ -224,8 +224,8 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
         }
     }
 
-    data << playerX;
     data << playerZ;
+    data << playerX;
 
     data.WriteBit(0);
     data.WriteBit(0);
