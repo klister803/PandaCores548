@@ -580,6 +580,61 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
     SendPacket(&data1);
 }
 
+void WorldSession::HandleBattlePetReadyForBattle(WorldPacket& recvData)
+{
+    uint8 state;
+    recvData >> state;
+
+    if (!state)
+    {
+        WorldPacket data(SMSG_BATTLE_PET_FIRST_ROUND);
+        for (uint8 i = 0; i < 2; ++i)
+        {
+            data << uint16(0);
+            data << uint8(2);
+            data << uint8(0);
+        }
+
+        data << uint32(0);
+        data.WriteBits(0, 3);
+        data.WriteBit(0);
+        data.WriteBits(2, 22);
+
+        for (uint8 i = 0; i < 2; ++i)
+        {
+            data.WriteBit(0);
+            data.WriteBit(1);
+            data.WriteBit(1);
+            data.WriteBits(1, 25);
+
+            data.WriteBit(1);
+
+            // for bits25
+            data.WriteBit(0);
+            data.WriteBits(3, 3);
+            //
+
+            data.WriteBit(1);
+            data.WriteBit(1);
+            data.WriteBit(0);
+        }
+
+        data.WriteBits(0, 20);
+
+        // for
+        data << uint8(0); //0
+        data << uint8(0); //0 0
+        data << uint8(4); //0
+
+        data << uint8(3); //1
+        data << uint8(3); //1 0
+        data << uint8(4); //1
+        //
+        data << uint8(2);
+        SendPacket(&data);
+    }
+}
+
 void WorldSession::HandleBattlePetOpcode1ACF(WorldPacket& recvData)
 {
     ObjectGuid guid;
@@ -589,53 +644,4 @@ void WorldSession::HandleBattlePetOpcode1ACF(WorldPacket& recvData)
     recvData.ReadGuidBytes<3, 5, 6, 7, 1, 0, 2, 4>(guid);
 
     sLog->outError(LOG_FILTER_GENERAL, "GUID from packet 0x1ACF - %u", guid);
-
-    WorldPacket data(SMSG_BATTLE_PET_FIRST_ROUND);
-
-    for (uint8 i = 0; i < 2; ++i)
-    {
-        data << uint16(0);
-        data << uint8(2);
-        data << uint8(0);
-    }
-
-    data << uint32(0);
-    data.WriteBits(0, 3);
-    data.WriteBit(0);
-    data.WriteBits(2, 22);
-
-    for (uint8 i = 0; i < 2; ++i)
-    {
-        data.WriteBit(0);
-        data.WriteBit(1);
-        data.WriteBit(1);
-        data.WriteBits(1, 25);
-
-        data.WriteBit(1);
-
-        // for bits25
-        data.WriteBit(0);
-        data.WriteBits(3, 3);
-        //
-
-        data.WriteBit(1);
-        data.WriteBit(1);
-        data.WriteBit(0);
-    }
-
-    data.WriteBits(0, 20);
-
-    // for
-    data << uint8(0); //0
-    data << uint8(0); //0 0
-    data << uint8(4); //0
-
-    data << uint8(3); //1
-    data << uint8(3); //1 0
-    data << uint8(4); //1
-    //
-
-    data << uint8(2);
-
-    SendPacket(&data);
 }

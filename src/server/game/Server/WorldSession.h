@@ -983,6 +983,7 @@ class WorldSession
         // Battle Pets
         void HandleBattlePetOpcode166F(WorldPacket& recvData);
         void HandleBattlePetOpcode1ACF(WorldPacket& recvData);
+        void HandleBattlePetReadyForBattle(WorldPacket& recvData);
 
         // Miscellaneous
         void HandleSpellClick(WorldPacket& recvData);

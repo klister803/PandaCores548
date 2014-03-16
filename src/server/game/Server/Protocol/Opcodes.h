@@ -604,6 +604,7 @@ enum Opcodes
     CMSG_GET_WEB_TICKET                               = 0x11C5, // 5.4.1 17538
     CMSG_BATTLE_PET_166F                              = 0x166F, // 5.4.1 17538
     CMSG_BATTLE_PET_1ACF                              = 0x1ACF, // 5.4.1 17538
+    CMSG_BATTLE_PET_READY_FOR_BATTLE                  = 0x15CC, // 5.4.1 17538
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
