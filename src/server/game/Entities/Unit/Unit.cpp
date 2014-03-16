@@ -7134,6 +7134,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 108558: // Nightfall
+                {
+                    triggered_spell_id = 87388;
+                    break;
+                }
                 case 108869: // Decimation
                 {
                     if (target->GetHealthPct() < triggerAmount)
