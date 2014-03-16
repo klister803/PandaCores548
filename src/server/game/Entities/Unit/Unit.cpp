@@ -7134,6 +7134,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 108563: // Backlash
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(108563))
+                        return false;
+
+                    triggered_spell_id = 34936;
+                    ToPlayer()->AddSpellCooldown(108563, 0, time(NULL) + 8);
+                    break;
+                }
                 case 111397: // Blood Horror
                 {
                     triggered_spell_id = 137143;
@@ -9639,19 +9651,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             if (!(procEx & PROC_EX_CRITICAL_HIT))
                 return false;
-
-            break;
-        }
-        // Backlash
-        case 108563:
-        {
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if (ToPlayer()->HasSpellCooldown(108563))
-                return false;
-
-            ToPlayer()->AddSpellCooldown(108563, 0, time(NULL) + 8);
 
             break;
         }
