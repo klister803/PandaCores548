@@ -3198,16 +3198,27 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     if (!summon || !summon->isTotem())
                         return;
 
-                    // Mana Tide Totem || 
-                    if (m_spellInfo->Id == 16190 || m_spellInfo->Id == 108280)
+                    
+                    switch (m_spellInfo->Id)
                     {
-                        uint32 perc = 10;
-                        if(m_caster->HasAura(63298))
-                            perc = 15;
+                        case 16190:  // Mana Tide Totem
+                        case 108280: // Healing Tide Totem
+                        case 108270: // Stone Bulwark Totem
+                        {
+                            uint32 perc = 10;
+                            if(m_caster->HasAura(63298))
+                                perc = 15;
 
-                        damage = m_caster->CountPctFromMaxHealth(perc);
-                    } else if(m_caster->HasAura(63298))
-                        damage += m_caster->CountPctFromMaxHealth(5);
+                            damage = m_caster->CountPctFromMaxHealth(perc);
+                            break;
+                        }
+                        default:
+                        {
+                            if(m_caster->HasAura(63298))
+                                damage += m_caster->CountPctFromMaxHealth(5);
+                            break;
+                        }
+                    }
 
                     if (damage)                                            // if not spell info, DB values used
                     {
@@ -4274,7 +4285,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     }
 
     bool normalized = false;
-    float weaponDamagePercentMod = 1.0f;
+    float weaponDamagePercentMod = 0.0f;
     for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
     {
         switch (m_spellInfo->Effects[j].Effect)
@@ -4288,7 +4299,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 normalized = true;
                 break;
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                ApplyPct(weaponDamagePercentMod, CalculateDamage(j, unitTarget));
+                weaponDamagePercentMod += CalculateDamage(j, unitTarget) / 100.0f;
                 break;
             default:
                 break;                                      // not weapon damage effect, just skip
@@ -4318,6 +4329,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     }
 
     int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, true);
+    bool  calculateWPD = true;
 
     // Sequence is important
     for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
@@ -4332,7 +4344,13 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 weaponDamage += fixed_bonus;
                 break;
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                weaponDamage = int32(weaponDamage* weaponDamagePercentMod);
+            {
+                if (calculateWPD)
+                {
+                    weaponDamage = int32(weaponDamage* weaponDamagePercentMod);
+                    calculateWPD = false;
+                }
+            }
             default:
                 break;                                      // not weapon damage effect, just skip
         }

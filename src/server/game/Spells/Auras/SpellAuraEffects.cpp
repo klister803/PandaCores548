@@ -4844,11 +4844,9 @@ void AuraEffect::HandleAuraModAddEnergyPercent(AuraApplication const* aurApp, ui
     if (apply)
     {
         target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
-        target->ModifyPowerPct(powerType, amount, apply);
     }
     else
     {
-        target->ModifyPowerPct(powerType, amount, apply);
         target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
     }
 }
@@ -6935,6 +6933,16 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) 
         // Spell exist but require custom code
         switch (auraId)
         {
+            case 114889: // Stone Bulwark Totem
+            {
+                if (Unit * shaman = caster->GetOwner())
+                {
+                    int32 SPD    = shaman->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                    int32 amount = SPD * 0.875f * (GetTickNumber() != 1 ? 1: 4);
+                    caster->CastCustomSpell(shaman, triggerSpellId, &amount, NULL, NULL, true);
+                }
+                return;
+            }
             // Pursuing Spikes (Anub'arak)
             case 65920:
             case 65922:

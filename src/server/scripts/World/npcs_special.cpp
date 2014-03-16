@@ -438,9 +438,7 @@ class npc_dancing_flames : public CreatureScript
                 me->Relocate(x, y, z + 0.94f);
                 me->SetDisableGravity(true);
                 me->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
-                WorldPacket data;                       //send update position to client
-                me->BuildHeartBeatMsg(&data);
-                me->SendMessageToSet(&data, true);
+                me->SendMovementFlagUpdate(false);  //send update position to client
             }
 
             void UpdateAI(uint32 const diff)
@@ -467,9 +465,7 @@ class npc_dancing_flames : public CreatureScript
                     me->SetInFront(player);
                     Active = false;
 
-                    WorldPacket data;
-                    me->BuildHeartBeatMsg(&data);
-                    me->SendMessageToSet(&data, true);
+                    me->SendMovementFlagUpdate(false);
                     switch (emote)
                     {
                         case TEXT_EMOTE_KISS:
@@ -4164,80 +4160,6 @@ class npc_wild_imp : public CreatureScript
 };
 
 /*######
-## npc_stone_bulwark_totem
-######*/
-
-#define STONE_BULWARK_TOTEM_ABSORB      114889
-#define SPELL_SHA_STONE_BULWARK_ABSORB  114893
-
-class npc_stone_bulwark_totem : public CreatureScript
-{
-    public:
-        npc_stone_bulwark_totem() : CreatureScript("npc_stone_bulwark_totem") { }
-
-    struct npc_stone_bulwark_totemAI : public ScriptedAI
-    {
-        npc_stone_bulwark_totemAI(Creature* creature) : ScriptedAI(creature)
-        {
-            if (creature->isSummon())
-            {
-                if (Unit* Owner = creature->ToTempSummon()->GetSummoner())
-                {
-                    if (Player* _player = Owner->ToPlayer())
-                    {
-                        if(Aura* aura = creature->AddAura(SPELL_SHA_STONE_BULWARK_ABSORB, _player))
-                        {
-                            int32 spellPower = _player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
-                            int32 amount = int32(2.1f * spellPower);
-                            aura->GetEffect(0)->ChangeAmount(amount);
-                        }
-                    }
-                }
-            }
-            updateTimer = 5000;
-        }
-
-        uint32 updateTimer;
-
-        void UpdateAI(uint32 const diff)
-        {
-            if (updateTimer <= diff)
-            {
-                if (me->isSummon())
-                {
-                    if (Unit* Owner = me->ToTempSummon()->GetSummoner())
-                    {
-                        if(Owner->HasAura(SPELL_SHA_STONE_BULWARK_ABSORB))
-                        {
-                            updateTimer = 1000;
-                            return;
-                        }
-
-                        if (Player* _player = Owner->ToPlayer())
-                        {
-                            if(Aura* aura = me->AddAura(SPELL_SHA_STONE_BULWARK_ABSORB, _player))
-                            {
-                                int32 spellPower = _player->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
-                                int32 amount = int32(0.7f * spellPower);
-                                aura->GetEffect(0)->ChangeAmount(amount);
-                            }
-                        }
-                    }
-                }
-                updateTimer = 5000;
-            }
-            else
-                updateTimer -= diff;
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_stone_bulwark_totemAI(creature);
-    }
-};
-
-/*######
 ## npc_earthgrab_totem
 ######*/
 
@@ -5008,7 +4930,6 @@ void AddSC_npcs_special()
     new npc_murder_of_crows();
     new npc_dire_beast();
     new npc_wild_imp();
-    new npc_stone_bulwark_totem();
     new npc_earthgrab_totem();
     new npc_windwalk_totem();
     new npc_ring_of_frost();

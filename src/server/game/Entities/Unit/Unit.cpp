@@ -350,7 +350,7 @@ void Unit::Update(uint32 p_time)
     if (!IsInWorld())
         return;
 
-    if (m_damage_counter_timer <= p_time)
+    if (m_damage_counter_timer <= (int)p_time)
     {
         for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
         {
@@ -17198,9 +17198,17 @@ void Unit::StopMoving()
 
 void Unit::SendMovementFlagUpdate(bool self /* = false */)
 {
-    WorldPacket data;
-    BuildHeartBeatMsg(&data);
-    SendMessageToSet(&data, self);
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        WorldPacket data(SMSG_PLAYER_MOVE);
+        WriteMovementUpdate(data);
+        SendMessageToSet(&data, self);
+        return;
+    }
+    //creature will give update at next movement.
+    //if creature not moving we can send update movement by stop.
+    if (!isMoving())
+        Movement::MoveSplineInit(*this).Stop();
 }
 
 bool Unit::IsSitState() const

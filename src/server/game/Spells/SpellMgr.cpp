@@ -3889,9 +3889,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_2].Effect = 0;
                     spellInfo->Effects[EFFECT_2].TriggerSpell = 0;
                     break;
-                case 109259:// Powershot
+                case 109259: // Powershot
                     spellInfo->Effects[EFFECT_1].BasePoints = 60;
-                    spellInfo->Effects[EFFECT_2].BasePoints = 800;
                     break;
                 case 82926: // Fire ! (for Master Marksman)
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
