@@ -3342,6 +3342,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 5740: // Rain of Fire
+                    spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
+                    break;
                 case 108942: // Phantasm
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DISABLE_PROC;
                     break;
