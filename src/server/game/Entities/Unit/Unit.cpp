@@ -7819,6 +7819,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 76672: // Mastery : Hand of Light
+                {
+                    if (effIndex != EFFECT_0)
+                        return false;
+
+                    triggered_spell_id = 96172;
+                    basepoints0 = CalculatePct(damage, triggerAmount);
+
+                    if (Aura * aura = GetAura(84963))
+                    {
+                        if (AuraEffect * eff = aura->GetEffect(EFFECT_0))
+                        {
+                            basepoints0 += CalculatePct(basepoints0, eff->GetAmount());
+                        }
+                    }
+                    break;
+                }
                 case 76669: // Illuminated Healing
                 {
                     if (effIndex != EFFECT_0)
@@ -9361,20 +9378,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
             {
                 switch (auraSpellInfo->Id)
                 {
-                    case 76672: // Mastery : Hand of Light
-                    {
-                        trigger_spell_id = 96172;
-                        basepoints0 = CalculatePct(damage, triggerAmount);
-
-                        if (Aura * aura = GetAura(84963))
-                        {
-                            if (AuraEffect * eff = aura->GetEffect(EFFECT_0))
-                            {
-                                basepoints0 += CalculatePct(basepoints0, eff->GetAmount());
-                            }
-                        }
-                        break;
-                    }
                     // Healing Discount
                     case 37705:
                     {
