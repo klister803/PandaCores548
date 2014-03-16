@@ -16920,6 +16920,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_MOD_ROOT:
                     case SPELL_AURA_TRANSFORM:
                     {
+                        if (procExtra & PROC_EX_INTERNAL_HOT) // temporarily
+                            if (spellInfo->Id == 6770 || spellInfo->Id == 2094)
+                                return;
+
                         // chargeable mods are breaking on hit
                         if (useCharges)
                             takeCharges = true;
