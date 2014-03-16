@@ -633,37 +633,6 @@ class spell_warl_molten_core_dot : public SpellScriptLoader
         }
 };
 
-// Called by Shadow Bolt - 686 and Soul Fire - 6353
-// Decimate - 108869
-class spell_warl_decimate : public SpellScriptLoader
-{
-    public:
-        spell_warl_decimate() : SpellScriptLoader("spell_warl_decimate") { }
-
-        class spell_warl_decimate_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_decimate_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (target->GetHealthPct() < 25.0f)
-                            _player->CastSpell(_player, WARLOCK_MOLTEN_CORE, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_decimate_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_decimate_SpellScript();
-        }
-};
-
 // Called by Shadow Bolt - 686, Soul Fire - 6353 and Touch of Chaos - 103964
 // Demonic Call - 114925
 class spell_warl_demonic_call : public SpellScriptLoader
@@ -2290,7 +2259,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_archimondes_vengance();
     new spell_warl_archimondes_vengance_passive();
     new spell_warl_molten_core_dot();
-    new spell_warl_decimate();
     new spell_warl_demonic_call();
     new spell_warl_void_ray();
     new spell_warl_chaos_wave();

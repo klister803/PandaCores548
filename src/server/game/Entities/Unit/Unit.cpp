@@ -7134,6 +7134,14 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 108869: // Decimation
+                {
+                    if (target->GetHealthPct() < triggerAmount)
+                    {
+                        triggered_spell_id = 122355;
+                    }
+                    break;
+                }
                 case 108563: // Backlash
                 {
                     if (GetTypeId() != TYPEID_PLAYER)
