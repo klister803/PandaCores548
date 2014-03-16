@@ -296,7 +296,6 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 
     // send full update
     WorldPacket data1(SMSG_BATTLE_PET_FULL_UPDATE);
-    ObjectGuid guid;
     for (uint8 i = 0; i < 3; ++i)
     {
         data1.WriteBits(0, 21);
@@ -307,16 +306,15 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
     data1.WriteBit(0);
     data1.WriteBit(0);
 
-    if (_player->m_SummonSlot[SUMMON_SLOT_MINIPET])
-    {
-        Creature* oldSummon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]);
-        if (oldSummon && oldSummon->isSummon() && oldSummon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID))
-            guid = oldSummon->GetObjectGuid();
-    }
-
     ObjectGuid guid2 = _player->GetSelectedUnit()->GetObjectGuid();
     ObjectGuid guid3 = 0;
     ObjectGuid ownerGuid = _player->GetObjectGuid();
+    // important strange GUID...
+    // [0] Guid: Full: 0x1D3B6D0500000007 Type: 259 Low: 7
+    // = player GUID with inverse byte order! WTF???
+    // TEST
+    ObjectGuid guid = ((ownerGuid & 0x00000000000000FF) << 56) | ((ownerGuid & 0x000000000000FF00) << 40) | ((ownerGuid & 0x0000000000FF0000) << 24) | ((ownerGuid & 0x00000000FF000000) <<  8) |
+        ((ownerGuid & 0x000000FF00000000) >>  8) | ((ownerGuid & 0x0000FF0000000000) >> 24) | ((ownerGuid & 0x00FF000000000000) >> 40) | ((ownerGuid & 0xFF00000000000000) >> 56);
     ObjectGuid guid4 = 0;
 
     for (uint8 i = 0; i < 2; ++i)
@@ -347,8 +345,8 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
         else
             data1.WriteGuidMask<1>(guid4);
 
-        for (uint8 j = 0; j < 1; ++j)
-        {
+        //for (uint8 j = 0; j < 1; ++j)
+        //{
             // TEST, i=0 - player, i=1 - wild pet
             if (i == 0)
             {
@@ -384,7 +382,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1.WriteBits(0, 7);
                 data1.WriteBits(0, 21);
             }
-        }
+        //}
 
         if (i == 0)
             data1.WriteGuidMask<6>(guid);
@@ -479,7 +477,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             if (i == 0)
             {
                 data1 << uint32(-1); // duration?
-                data1 << uint32(0);
+                data1 << uint32(1);
                 data1 << uint8(0);
                 data1 << uint32(239); // auraID = spellID
             }
