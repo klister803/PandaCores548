@@ -7134,7 +7134,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
-                case 108370:
+                case 108370: // Soul Leech
                 {
                     if (Player * warlock = ToPlayer())
                     {
