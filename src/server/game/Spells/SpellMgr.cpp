@@ -3814,12 +3814,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
                     break;
-                case 172:   // Corruption
-                case 30108: // Unstable Affliction
-                    spellInfo->Effects[EFFECT_2].Effect = 0;
-                    spellInfo->Effects[EFFECT_2].ApplyAuraName = 0;
-                    spellInfo->Effects[EFFECT_2].BasePoints = 0;
-                    break;
                 case 64904: // Hymn of Hope
                     spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
                     break;
