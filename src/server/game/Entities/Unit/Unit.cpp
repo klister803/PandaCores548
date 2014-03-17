@@ -7134,6 +7134,26 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 108370:
+                {
+                    if (Player * warlock = ToPlayer())
+                    {
+                        triggered_spell_id = 108366;
+                        int32 hasabsorb = 0;
+
+                        if (Aura * aura = GetAura(triggered_spell_id))
+                            hasabsorb = aura->GetEffect(EFFECT_0)->GetAmount();
+
+                        if (warlock->GetSpecializationId(warlock->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
+                            triggerAmount *= 2;
+
+                        basepoints0 = CalculatePct(damage, triggerAmount) + hasabsorb;
+
+                        if (basepoints0 > GetMaxHealth())
+                            basepoints0 = GetMaxHealth();
+                    } 
+                    break;
+                }
                 case 108558: // Nightfall
                 {
                     triggered_spell_id = 87388;

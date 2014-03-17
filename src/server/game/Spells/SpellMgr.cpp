@@ -3342,6 +3342,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 108366: // Soul Leech
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                    break;
                 case 5740: // Rain of Fire
                     spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
                     break;
