@@ -44,6 +44,10 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 (1972001, 9, 5, 0, 0, 0, 100, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Evade'),
 (1972001, 9, 6, 0, 0, 0, 100, 0, 0, 0, 0, 0, 18, 128, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Set Unit Flag - Non Attack');
 
+delete from gossip_menu_option where menu_id = 8033;
+INSERT INTO `gossip_menu_option` (`menu_id`, `id`, `option_icon`, `option_text`, `option_id`, `npc_option_npcflag`, `action_menu_id`, `action_poi_id`, `box_coded`, `box_money`, `box_text`) VALUES 
+(8033, 0, 0, 'Ezekiel said that you might have a certain book...', 1, 1, 0, 0, 0, 0, NULL);
+
 delete from conditions where SourceGroup = 8033 and SourceTypeOrReferenceId = 15;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
 (15, 8033, 0, 0, 0, 9, 0, 10231, 0, 0, 0, 0, '', NULL);
