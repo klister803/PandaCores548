@@ -757,6 +757,20 @@ void AddSC_boss_protectors();
 void AddSC_boss_tsulong();
 void AddSC_boss_lei_shi();
 void AddSC_boss_sha_of_fear();
+void AddSC_instance_throne_of_thunder();            // Throne of Thunder
+void AddSC_boss_jinrokh();
+void AddSC_boss_horridon();
+void AddSC_boss_council_of_elders();
+void AddSC_boss_tortos();
+void AddSC_boss_megaera();
+void AddSC_boss_jikun();
+void AddSC_boss_durumu();
+void AddSC_boss_primordius();
+void AddSC_boss_dark_animus();
+void AddSC_boss_iron_qon();
+void AddSC_boss_twin_consorts();
+void AddSC_boss_lei_shen();
+void AddSC_boss_ra_den();
 void AddSC_instance_siege_of_orgrimmar();           // Siege of Orgrimmar 
 void AddSC_boss_immerseus();
 void AddSC_boss_fallen_protectors();
@@ -1575,6 +1589,20 @@ void AddPandarieScripts()
     AddSC_boss_tsulong();
     AddSC_boss_lei_shi();
     AddSC_boss_sha_of_fear();
+    AddSC_instance_throne_of_thunder();            // Throne of Thunder
+    AddSC_boss_jinrokh();
+    AddSC_boss_horridon();
+    AddSC_boss_council_of_elders();
+    AddSC_boss_tortos();
+    AddSC_boss_megaera();
+    AddSC_boss_jikun();
+    AddSC_boss_durumu();
+    AddSC_boss_primordius();
+    AddSC_boss_dark_animus();
+    AddSC_boss_iron_qon();
+    AddSC_boss_twin_consorts();
+    AddSC_boss_lei_shen();
+    AddSC_boss_ra_den();
     AddSC_instance_siege_of_orgrimmar();           // Siege of Orgrimmar 
     AddSC_boss_immerseus();
     AddSC_boss_fallen_protectors();

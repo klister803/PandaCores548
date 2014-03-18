@@ -157,6 +157,8 @@ bool SmartAI::LoadPath(uint32 entry)
         GetScript()->SetPathId(0);
         return false;
     }
+    //should be activ for correct move betwin grid while relocating plr for example
+    me->setActive(true);
     GetScript()->SetPathId(entry);
     return true;
 }

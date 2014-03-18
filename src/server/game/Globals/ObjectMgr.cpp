@@ -7258,7 +7258,7 @@ void ObjectMgr::LoadGameobjectInvolvedRelations()
 
 void ObjectMgr::LoadCreatureQuestRelations()
 {
-    LoadQuestRelationsHelper(_creatureQuestRelations, _goQuestStarter, "creature_questrelation", true, false);
+    LoadQuestRelationsHelper(_creatureQuestRelations, _creatureQuestStarter, "creature_questrelation", true, false);
 
     for (QuestRelations::iterator itr = _creatureQuestRelations.begin(); itr != _creatureQuestRelations.end(); ++itr)
     {
@@ -7272,7 +7272,7 @@ void ObjectMgr::LoadCreatureQuestRelations()
 
 void ObjectMgr::LoadCreatureInvolvedRelations()
 {
-    LoadQuestRelationsHelper(_creatureQuestInvolvedRelations, _goQuestStarter, "creature_involvedrelation", false, false);
+    LoadQuestRelationsHelper(_creatureQuestInvolvedRelations, _creatureQuestStarter, "creature_involvedrelation", false, false);
 
     for (QuestRelations::iterator itr = _creatureQuestInvolvedRelations.begin(); itr != _creatureQuestInvolvedRelations.end(); ++itr)
     {

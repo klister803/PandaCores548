@@ -82,6 +82,22 @@ set(scripts_STAT_SRCS
   Pandaria/TerraceEndlessSpring/boss_lei_shi.cpp
   Pandaria/TerraceEndlessSpring/boss_sha_of_fear.cpp
 
+  Pandaria/ThroneOfThunder/instance_throne_of_thunder.cpp
+  Pandaria/ThroneOfThunder/throne_of_thunder.h
+  Pandaria/ThroneOfThunder/boss_jinrokh.cpp
+  Pandaria/ThroneOfThunder/boss_horridon.cpp
+  Pandaria/ThroneOfThunder/boss_council_of_elders.cpp
+  Pandaria/ThroneOfThunder/boss_tortos.cpp
+  Pandaria/ThroneOfThunder/boss_megaera.cpp
+  Pandaria/ThroneOfThunder/boss_jikun.cpp
+  Pandaria/ThroneOfThunder/boss_durumu.cpp
+  Pandaria/ThroneOfThunder/boss_primordius.cpp
+  Pandaria/ThroneOfThunder/boss_dark_animus.cpp
+  Pandaria/ThroneOfThunder/boss_iron_qon.cpp
+  Pandaria/ThroneOfThunder/boss_twin_consorts.cpp
+  Pandaria/ThroneOfThunder/boss_lei_shen.cpp
+  Pandaria/ThroneOfThunder/boss_ra_den.cpp
+
   Pandaria/SiegeofOrgrimmar/instance_siege_of_orgrimmar.cpp
   Pandaria/SiegeofOrgrimmar/siege_of_orgrimmar.h
   Pandaria/SiegeofOrgrimmar/boss_immerseus.cpp

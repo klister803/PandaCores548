@@ -3342,6 +3342,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 108366: // Soul Leech
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                    break;
+                case 5740: // Rain of Fire
+                    spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
+                    break;
                 case 108942: // Phantasm
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DISABLE_PROC;
                     break;
@@ -3808,12 +3814,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
                     break;
-                case 172:   // Corruption
-                case 30108: // Unstable Affliction
-                    spellInfo->Effects[EFFECT_2].Effect = 0;
-                    spellInfo->Effects[EFFECT_2].ApplyAuraName = 0;
-                    spellInfo->Effects[EFFECT_2].BasePoints = 0;
-                    break;
                 case 64904: // Hymn of Hope
                     spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
                     break;
@@ -3889,9 +3889,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_2].Effect = 0;
                     spellInfo->Effects[EFFECT_2].TriggerSpell = 0;
                     break;
-                case 109259:// Powershot
+                case 109259: // Powershot
                     spellInfo->Effects[EFFECT_1].BasePoints = 60;
-                    spellInfo->Effects[EFFECT_2].BasePoints = 800;
                     break;
                 case 82926: // Fire ! (for Master Marksman)
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;

@@ -350,7 +350,7 @@ void Unit::Update(uint32 p_time)
     if (!IsInWorld())
         return;
 
-    if (m_damage_counter_timer <= p_time)
+    if (m_damage_counter_timer <= (int)p_time)
     {
         for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
         {
@@ -7046,6 +7046,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     RemoveAura(dummySpell->Id);
                     return false;
                 }
+                // Vengeance (Protection)
+                case 93098:
+                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
 
             // Retaliation
@@ -7131,6 +7134,51 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 108370: // Soul Leech
+                {
+                    if (Player * warlock = ToPlayer())
+                    {
+                        triggered_spell_id = 108366;
+                        int32 hasabsorb = 0;
+
+                        if (Aura * aura = GetAura(triggered_spell_id))
+                            hasabsorb = aura->GetEffect(EFFECT_0)->GetAmount();
+
+                        if (warlock->GetSpecializationId(warlock->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
+                            triggerAmount *= 2;
+
+                        basepoints0 = CalculatePct(damage, triggerAmount) + hasabsorb;
+
+                        if (basepoints0 > GetMaxHealth())
+                            basepoints0 = GetMaxHealth();
+                    } 
+                    break;
+                }
+                case 108558: // Nightfall
+                {
+                    triggered_spell_id = 87388;
+                    break;
+                }
+                case 108869: // Decimation
+                {
+                    if (target->GetHealthPct() < triggerAmount)
+                    {
+                        triggered_spell_id = 122355;
+                    }
+                    break;
+                }
+                case 108563: // Backlash
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(108563))
+                        return false;
+
+                    triggered_spell_id = 34936;
+                    ToPlayer()->AddSpellCooldown(108563, 0, time(NULL) + 8);
+                    break;
+                }
                 case 111397: // Blood Horror
                 {
                     triggered_spell_id = 137143;
@@ -7549,6 +7597,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     CastCustomSpell(70691, SPELLVALUE_BASE_POINT0, damage, victim, true);
                     return true;
                 }
+                // Vengeance (Guardian)
+                case 84840:
+                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
             // Living Seed
             if (dummySpell->SpellIconID == 2860)
@@ -7813,6 +7864,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 76672: // Mastery : Hand of Light
+                {
+                    if (effIndex != EFFECT_0)
+                        return false;
+
+                    triggered_spell_id = 96172;
+                    basepoints0 = CalculatePct(damage, triggerAmount);
+
+                    if (Aura * aura = GetAura(84963))
+                    {
+                        if (AuraEffect * eff = aura->GetEffect(EFFECT_0))
+                        {
+                            basepoints0 += CalculatePct(basepoints0, eff->GetAmount());
+                        }
+                    }
+                    break;
+                }
                 case 76669: // Illuminated Healing
                 {
                     if (effIndex != EFFECT_0)
@@ -7829,6 +7897,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         basepoints0 = maxAmt;
                     break;
                 }
+                // Vengeance (Protection)
+                case 84839:
+                    return HandleVengeanceProc(victim, damage, triggerAmount);
                 // Ancient Crusader (player)
                 case 86701:
                 {
@@ -8618,6 +8689,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 target = this;
                 break;
             }
+            // Vengeance (Blood)
+            if (dummySpell->Id == 93099)
+                return HandleVengeanceProc(victim, damage, triggerAmount);
             break;
         }
         case SPELLFAMILY_POTION:
@@ -8749,6 +8823,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
                     break;
                 }
+                // Vengeance (Brewmaster)
+                case 120267:
+                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
             break;
         }
@@ -8763,57 +8840,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             return false;
         triggered_spell_id = 35079; // 4 sec buff on self
         target = this;
-    }
-
-    // Vengeance tank mastery
-    switch (dummySpell->Id)
-    {
-        case 84839:
-        case 84840:
-        case 93098:
-        case 93099:
-        case 120267:
-        {
-            if (!victim || victim->GetTypeId() == TYPEID_PLAYER)
-                return false;
-
-            if (victim->GetOwner() && victim->GetOwner()->GetTypeId() == TYPEID_PLAYER)
-                return false;
-
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if (!isInCombat())
-                return false;
-
-            int32 aviableBasepoints = 0;
-            int32 max_amount = 0;
-
-            triggered_spell_id = 76691;
-
-            if (Aura* vengeance = GetAura(triggered_spell_id, GetGUID()))
-            {
-                aviableBasepoints += vengeance->GetEffect(EFFECT_0)->GetAmount();
-                max_amount += vengeance->GetEffect(EFFECT_2)->GetAmount();
-            }
-
-            // The first melee attack taken by the tank generates Vengeance equal to 33% of the damage taken by that attack.
-           if (!aviableBasepoints && (procFlag & (PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK)))
-                triggerAmount = 33;
-
-            int32 cap = (GetCreateHealth() + GetStat(STAT_STAMINA) * 14) / 10;
-            basepoints0 = int32(damage * triggerAmount / 100);
-            basepoints0 += aviableBasepoints;
-            basepoints0 = std::min(cap, basepoints0);
-
-            // calculate max amount player's had durind the fight
-            int32 basepoints1 = std::max(basepoints0, max_amount);
-
-            CastCustomSpell(this, triggered_spell_id, &basepoints0, &basepoints0, &basepoints1, true, castItem, triggeredByAura, originalCaster);
-            return true;
-        }
-        default:
-            break;
     }
 
     // if not handled by custom case, get triggered spell from dummySpell proto
@@ -9397,20 +9423,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
             {
                 switch (auraSpellInfo->Id)
                 {
-                    case 76672: // Mastery : Hand of Light
-                    {
-                        trigger_spell_id = 96172;
-                        basepoints0 = CalculatePct(damage, triggerAmount);
-
-                        if (Aura * aura = GetAura(84963))
-                        {
-                            if (AuraEffect * eff = aura->GetEffect(EFFECT_0))
-                            {
-                                basepoints0 += CalculatePct(basepoints0, eff->GetAmount());
-                            }
-                        }
-                        break;
-                    }
                     // Healing Discount
                     case 37705:
                     {
@@ -9672,19 +9684,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             if (!(procEx & PROC_EX_CRITICAL_HIT))
                 return false;
-
-            break;
-        }
-        // Backlash
-        case 108563:
-        {
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if (ToPlayer()->HasSpellCooldown(108563))
-                return false;
-
-            ToPlayer()->AddSpellCooldown(108563, 0, time(NULL) + 8);
 
             break;
         }
@@ -16941,6 +16940,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_MOD_ROOT:
                     case SPELL_AURA_TRANSFORM:
                     {
+                        if (procExtra & PROC_EX_INTERNAL_HOT) // temporarily
+                            if (spellInfo->Id == 6770 || spellInfo->Id == 2094)
+                                return;
+
                         // chargeable mods are breaking on hit
                         if (useCharges)
                             takeCharges = true;
@@ -17234,9 +17237,17 @@ void Unit::StopMoving()
 
 void Unit::SendMovementFlagUpdate(bool self /* = false */)
 {
-    WorldPacket data;
-    BuildHeartBeatMsg(&data);
-    SendMessageToSet(&data, self);
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        WorldPacket data(SMSG_PLAYER_MOVE);
+        WriteMovementUpdate(data);
+        SendMessageToSet(&data, self);
+        return;
+    }
+    //creature will give update at next movement.
+    //if creature not moving we can send update movement by stop.
+    if (!isMoving())
+        Movement::MoveSplineInit(*this).Stop();
 }
 
 bool Unit::IsSitState() const
@@ -21269,5 +21280,38 @@ uint32 Unit::GetDamageCounterInPastSecs(uint32 secs, int type)
         damage += m_damage_counters[type][i];
 
     return damage;
+}
+
+bool Unit::HandleVengeanceProc(Unit* pVictim, int32 damage, int32 triggerAmount)
+{
+    // do not proc from player damage
+    if (!pVictim || pVictim->GetCharmerOrOwnerPlayerOrPlayerItself())
+        return false;
+
+    if (int32 basebp = damage)
+    {
+        int32 bp = 0;
+        uint32 triggered_spell_id = 132365;
+        // stack with old buff
+        if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
+        {
+            basebp = int32(basebp * triggerAmount / 100);
+            if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
+                bp += oldEff->GetAmount() * oldAura->GetDuration() / oldAura->GetMaxDuration();
+        }
+        else
+            basebp = int32(basebp * 33 / 100);
+
+        bp += basebp;
+
+        // capped at max health
+        int32 maxVal = int32(GetMaxHealth());
+        if (bp > maxVal)
+            bp = maxVal;
+
+        CastCustomSpell(this, triggered_spell_id, &bp, &bp, NULL, true);
+    }
+
+    return true;
 }
 

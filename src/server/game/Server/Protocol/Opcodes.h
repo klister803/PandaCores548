@@ -603,6 +603,8 @@ enum Opcodes
     CMSG_RAID_TARGET_UPDATE                           = 0x15E4, // 5.4.1 17538
     CMSG_GET_WEB_TICKET                               = 0x11C5, // 5.4.1 17538
     CMSG_BATTLE_PET_166F                              = 0x166F, // 5.4.1 17538
+    CMSG_BATTLE_PET_1ACF                              = 0x1ACF, // 5.4.1 17538
+    CMSG_BATTLE_PET_READY_FOR_BATTLE                  = 0x15CC, // 5.4.1 17538
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
@@ -687,6 +689,7 @@ enum Opcodes
     SMSG_AREA_TRIGGER_RESET                           = 0xB9B,  // 5.0.5 16048
     SMSG_ARENA_ERROR                                  = 0x0896, // 5.4.1 17538
     SMSG_ARENA_OPPONENT_UPDATE                        = 0x081F, // 5.4.1 17538
+    SMSG_ARENA_OPPONENT_SPECIALIZATIONS               = 0x08AE, // 5.4.1 17538
     SMSG_ARENA_TEAM_CHANGE_FAILED_QUEUED              = 0x9C2,  // 5.0.5 16048
     SMSG_ARENA_TEAM_COMMAND_RESULT                    = 0,      // 5.4.1 17538 obsolete
     SMSG_ARENA_TEAM_EVENT                             = 0,      // 5.4.1 17538 obsolete
@@ -722,8 +725,8 @@ enum Opcodes
     SMSG_BATTLE_PET_ERROR                             = 0xBA0,  // 5.0.5 16048
     SMSG_BATTLE_PET_FINALIZE_LOCATION                 = 0x0C04, // 5.4.1 17538
     SMSG_BATTLE_PET_FINAL_ROUND                       = 0xFA9,  // 5.0.5 16048
-    SMSG_BATTLE_PET_FIRST_ROUND                       = 0xF31,  // 5.0.5 16048
-    SMSG_BATTLE_PET_FULL_UPDATE                       = 0xB08,  // 5.0.5 16048
+    SMSG_BATTLE_PET_FIRST_ROUND                       = 0x915,  // 5.4.1 17538
+    SMSG_BATTLE_PET_FULL_UPDATE                       = 0x002F, // 5.4.1 17538
     SMSG_BATTLE_PET_HEALED                            = 0xADC,  // 5.0.5 16048
     SMSG_BATTLE_PET_JOURNAL                           = 0x148C, // 5.4.1 17538
     SMSG_BATTLE_PET_JOURNAL_LOCK_ACQUIRED             = 0xE1E,  // 5.0.5 16048
@@ -738,7 +741,7 @@ enum Opcodes
     SMSG_BATTLE_PET_ROUND_RESULT                      = 0xB0A,  // 5.0.5 16048
     SMSG_BATTLE_PET_SLOT_UPDATE                       = 0xF16,  // 5.0.5 16048
     SMSG_BATTLE_PET_TRAP_LEVEL                        = 0xAE1,  // 5.0.5 16048
-    SMSG_BATTLE_PET_UPDATES                           = 0xF1E,  // 5.0.5 16048
+    SMSG_BATTLE_PET_UPDATES                           = 0x404,  // 5.4.1 17538
     SMSG_BATTLEFIELD_LIST                             = 0x09B7, // 5.4.1 17538
     SMSG_BATTLEFIELD_MGR_EJECTED                      = 0xA89,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_EJECT_PENDING                = 0xB36,  // 5.0.5 16048

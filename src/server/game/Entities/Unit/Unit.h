@@ -701,7 +701,7 @@ enum NPCFlags
     UNIT_NPC_FLAG_REFORGER              = 0x08000000,       // 27 reforging
     UNIT_NPC_FLAG_TRANSMOGRIFIER        = 0x10000000,       // 28 transmogrification
     UNIT_NPC_FLAG_VAULTKEEPER           = 0x20000000,       // 29 void storage
-    UNIT_NPC_FLAG_BATTLEPET             = 0x40000000,       // 30 Battle pet
+    UNIT_NPC_FLAG_WILD_BATTLE_PET       = 0x40000000,       // 30 wild battle pet
     UNIT_NPC_FLAG_UNK_31                = 0x80000000,       // 31 cause client to send 0x077E opcode on rightclick
 };
 
@@ -1618,6 +1618,7 @@ class Unit : public WorldObject
         bool isTabardDesigner()const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TABARDDESIGNER); }
         bool isAuctioner()    const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_AUCTIONEER); }
         bool isArmorer()      const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_REPAIR); }
+        bool isWildBattlePet()      const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_WILD_BATTLE_PET); }
         bool isServiceProvider() const
         {
             return HasFlag(UNIT_NPC_FLAGS,
@@ -1742,8 +1743,6 @@ class Unit : public WorldObject
         void SendThreatListUpdate();
 
         void SendClearTarget();
-
-        void BuildHeartBeatMsg(WorldPacket* data) const;
 
         bool isAlive() const { return (m_deathState == ALIVE); };
         bool isDying() const { return (m_deathState == JUST_DIED); };
@@ -2462,6 +2461,7 @@ class Unit : public WorldObject
         bool HandleCastWhileWalkingAuraProc(Unit* victim, uint32 damage, AuraEffect* triggredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleSpellModAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleIgnoreAurastateAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
+        bool HandleVengeanceProc(Unit* pVictim, int32 damage, int32 triggerAmount);
 
         void UpdateSplineMovement(uint32 t_diff);
         void UpdateSplinePosition();

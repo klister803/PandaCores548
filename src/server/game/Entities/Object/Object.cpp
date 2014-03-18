@@ -2452,12 +2452,6 @@ void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const*
     Trinity::BuildChatPacket(*data, c);
 }
 
-void Unit::BuildHeartBeatMsg(WorldPacket* data) const
-{
-    data->Initialize(SMSG_PLAYER_MOVE);
-    WriteMovementUpdate(*data);
-}
-
 void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
 {
     if (IsInWorld())
@@ -2564,26 +2558,28 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
             {
                 switch (properties->Type)
                 {
-                case SUMMON_TYPE_MINION:
-                case SUMMON_TYPE_GUARDIAN:
-                case SUMMON_TYPE_GUARDIAN2:
-                    mask = UNIT_MASK_GUARDIAN;
-                    break;
-                case SUMMON_TYPE_TOTEM:
-                    mask = UNIT_MASK_TOTEM;
-                    break;
-                case SUMMON_TYPE_VEHICLE:
-                case SUMMON_TYPE_VEHICLE2:
-                case SUMMON_TYPE_GATE:
-                    mask = UNIT_MASK_SUMMON;
-                    break;
-                case SUMMON_TYPE_MINIPET:
-                    mask = UNIT_MASK_MINION;
-                    break;
-                default:
-                    if (properties->Flags & 512) // Mirror Image, Summon Gargoyle
+                    case SUMMON_TYPE_MINION:
+                    case SUMMON_TYPE_GUARDIAN:
+                    case SUMMON_TYPE_GUARDIAN2:
                         mask = UNIT_MASK_GUARDIAN;
-                    break;
+                        break;
+                    case SUMMON_TYPE_TOTEM:
+                        mask = UNIT_MASK_TOTEM;
+                        break;
+                    case SUMMON_TYPE_VEHICLE:
+                    case SUMMON_TYPE_VEHICLE2:
+                    case SUMMON_TYPE_GATE:
+                        mask = UNIT_MASK_SUMMON;
+                        break;
+                    case SUMMON_TYPE_MINIPET:
+                        mask = UNIT_MASK_MINION;
+                        break;
+                    default:
+                    {
+                        if (properties->Flags & 512 || properties->Id == 2921) // Mirror Image, Summon Gargoyle
+                            mask = UNIT_MASK_GUARDIAN;
+                        break;
+                    }
                 }
                 break;
             }

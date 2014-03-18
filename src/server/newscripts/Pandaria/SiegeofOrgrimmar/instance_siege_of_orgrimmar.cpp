@@ -262,7 +262,7 @@ public:
         {
             std::istringstream loadStream(LoadBossState(data));
             uint32 buff;
-            for (uint32 i = 0; i < 7; ++i)
+            for (uint32 i = 0; i < 15; ++i)
                 loadStream >> buff;
         }
     };
