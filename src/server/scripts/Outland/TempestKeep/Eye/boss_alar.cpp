@@ -44,6 +44,9 @@ enum eSpells
 
     CREATURE_FLAME_PATCH_ALAR    = 20602, // Flame Patch - every 30 sec in phase 2
     SPELL_FLAME_PATCH            = 35380, //
+    
+    QUEST_RUSE_ASHTONGUE         = 10946, // On death - credit quest
+    SPELL_ASHTONGUE_RUSE         = 39527, // Ashtongue Ruse aura from quest
 };
 
 static float waypoint[6][3] =
@@ -150,6 +153,20 @@ class boss_alar : public CreatureScript
             {
                 if (instance)
                     instance->SetData(DATA_ALAREVENT, DONE);
+                    
+                Map* pMap = me->GetMap();
+                if (pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                    {
+                        if (Player* pPlayer = i->getSource())
+                        {
+                            if (pPlayer->isAlive() && pPlayer->HasAura(SPELL_ASHTONGUE_RUSE) && pPlayer->GetQuestStatus(QUEST_RUSE_ASHTONGUE) == QUEST_STATUS_INCOMPLETE )
+                                pPlayer->CompleteQuest(QUEST_RUSE_ASHTONGUE);
+                        }
+                    }
+                }
             }
 
             void JustSummoned(Creature* summon)
