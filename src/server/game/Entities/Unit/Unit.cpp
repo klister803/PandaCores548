@@ -9919,7 +9919,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         }
         case 76857:     // Mastery : Critical Block
         case 58410:     // Master Poisoner
-        case 79147:     // Sanguinary Vein
         case 113043:    // Omen of Clarity (new)
         case 122464:    // Dematerialize
             return false;

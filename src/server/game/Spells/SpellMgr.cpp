@@ -3342,6 +3342,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 124271: // Sanguinary Vein
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                    break;
                 case 108366: // Soul Leech
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     break;

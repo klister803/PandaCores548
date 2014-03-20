@@ -387,36 +387,6 @@ class spell_rog_nightstalker : public SpellScriptLoader
         }
 };
 
-// Called by Rupture - 1943, Garrote - 703 and Crimson Tempest - 121411
-// Sanguinary Vein - 79147
-class spell_rog_sanguinary_vein : public SpellScriptLoader
-{
-    public:
-        spell_rog_sanguinary_vein() : SpellScriptLoader("spell_rog_sanguinary_vein") { }
-
-        class spell_rog_sanguinary_vein_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_sanguinary_vein_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->CastSpell(target, ROGUE_SPELL_SANGUINARY_VEIN_DEBUFF, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_rog_sanguinary_vein_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_sanguinary_vein_SpellScript();
-        }
-};
-
 // Hemorrhage - 16511
 class spell_rog_hemorrhage : public SpellScriptLoader
 {
@@ -1181,7 +1151,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_combat_readiness();
     new spell_rog_nerve_strike();
     new spell_rog_nightstalker();
-    new spell_rog_sanguinary_vein();
     new spell_rog_hemorrhage();
     new spell_rog_venomous_wounds();
     new spell_rog_redirect();
