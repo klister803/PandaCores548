@@ -13266,6 +13266,13 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
                     AddPct(TakenTotalMod, (*i)->GetAmount());
         }
     }
+    else
+    {
+        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_343);
+        for (AuraEffectList::const_iterator i = mMeleeDamageFromCaster.begin(); i != mMeleeDamageFromCaster.end(); ++i)
+            if ((*i)->GetCasterGUID() == attacker->GetGUID())
+                AddPct(TakenTotalMod, (*i)->GetAmount());
+    }
 
     // .. taken pct: dummy auras
     AuraEffectList const& mDummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
