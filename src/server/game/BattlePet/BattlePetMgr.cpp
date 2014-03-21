@@ -442,31 +442,31 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             //
             if (i == 0)
             {
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
+                data1 << uint32(1600);
+                data1 << uint32(20);
+                data1 << uint32(1800);
+                data1 << uint32(18);
+                data1 << uint32(1700);
+                data1 << uint32(19);
+                data1 << uint32(5);
+                data1 << uint32(40);
+                data1 << uint32(1);
+                data1 << uint32(45);
+                data1 << uint32(50);
+                data1 << uint32(25);
             }
             else
             {
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
-                data1 << uint32(0);
+                data1 << uint32(1900);
+                data1 << uint32(19);
+                data1 << uint32(1700);
+                data1 << uint32(18);
+                data1 << uint32(1600);
+                data1 << uint32(20);
+                data1 << uint32(5);
+                data1 << uint32(40);
+                data1 << uint32(1);
+                data1 << uint32(42);
             }
 
             data1 << uint32(0);
@@ -548,6 +548,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
         }
 
         data1 << uint32(427);
+
         if (i == 0)
             data1.WriteGuidBytes<2, 5>(guid);
         else
@@ -631,6 +632,106 @@ void WorldSession::HandleBattlePetReadyForBattle(WorldPacket& recvData)
         data << uint8(4); //1
         //
         data << uint8(2);
+        /*for (uint8 i = 0; i < 2; ++i)
+        {
+            data << uint16(0);
+            data << uint8(2);
+            data << uint8(0);
+        }
+        data << uint32(0);
+        data.WriteBits(0, 3);
+        data.WriteBit(0);
+        data.WriteBits(4, 22);            // effect count
+        uint32 bit[4] = {1, 1, 0, 0};
+        uint32 bit1[4] = {1, 1, 1, 1};
+        uint32 bit2[4] = {0, 0, 1, 1};
+        uint32 bits25[4] = {1, 1, 1, 1};
+        uint32 bit3[4] = {0, 0, 1, 1};
+        //
+        uint32 bit4[4] = {0, 0, 1, 1};
+        uint32 bit5[4] = {0, 0, 1, 1};
+        uint32 bit6[4] = {0, 0, 1, 1};
+        for (uint8 i = 0; i < 4; ++i)
+        {
+            data.WriteBit(bit[i]);
+            data.WriteBit(bit1[i]);
+            data.WriteBit(bit2[i]);
+            data.WriteBits(bits25[i], 25);
+            data.WriteBit(bit3[i]);
+
+            for (uint8 j = 0; j < 1; ++j)
+            {
+                if (i == 0 || i == 1)
+                    data.WriteBit(0);
+                else
+                    data.WriteBit(1);
+
+                if (i == 0 || i == 1)
+                    data.WriteBits(6, 3);
+                else
+                    data.WriteBits(3, 3);
+
+                if (i == 0 || i == 1)
+                    data.WriteBit(0);
+            }
+
+            data.WriteBit(bit4[i]);
+            data.WriteBit(bit5[i]);
+            data.WriteBit(bit6[i]);
+        }
+
+        for (uint8 i = 0; i < 4; ++i)
+        {
+            if (!bit1[i])
+                data << uint16(0);
+
+            for (uint8 j = 0; j < 1; ++j)
+            {
+                if (i == 0)
+                    data << uint32(58);
+                else if (i == 1)
+                    data << uint32(30);
+
+                if (i == 0)
+                    data << uint8(0);
+                else if (i == 1)
+                    data << uint8(3);
+            }
+
+            if (!bit3[i])
+            {
+                if (i == 0)
+                    data << uint16(1);
+                else if (i == 1)
+                    data << uint16(2);
+            }
+
+            if (!bit2[i])
+                data << uint32(379);
+
+            if (!bit6[i])
+            {
+                if (i == 0)
+                    data << uint8(3);
+                else if (i == 1)
+                    data << uint8(0);
+            }
+
+            if (!bit5[i])
+                data << uint8(1);
+
+            if (!bit4[i])
+                data << uint32(4096);
+
+            if (!bit[i])
+            {
+                if (i == 2)
+                    data << uint8(13);
+                else if (i == 3)
+                    data << uint8(14);
+            }
+        }
+        data << uint8(2);*/
         SendPacket(&data);
     }
 }
@@ -644,4 +745,224 @@ void WorldSession::HandleBattlePetOpcode1ACF(WorldPacket& recvData)
     recvData.ReadGuidBytes<3, 5, 6, 7, 1, 0, 2, 4>(guid);
 
     sLog->outError(LOG_FILTER_GENERAL, "GUID from packet 0x1ACF - %u", guid);
+}
+
+void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
+{
+    bool bit = recvData.ReadBit();
+    bool bit1 = recvData.ReadBit();
+    bool bit2 = recvData.ReadBit();
+    bool bit3 = recvData.ReadBit();
+    bool bit4 = recvData.ReadBit();
+    bool bit5 = recvData.ReadBit();
+    bool bit6 = recvData.ReadBit();
+
+    uint32 abilityID;
+
+    if (!bit5)
+        recvData.read_skip<uint8>();
+    if (!bit6)
+        recvData.read_skip<uint32>();
+    if (!bit1)
+        recvData.read_skip<uint8>();
+    if (!bit)
+        recvData >> abilityID;
+    if (!bit2)
+        recvData.read_skip<uint8>();
+    if (!bit4)
+        recvData.read_skip<uint8>();
+
+    WorldPacket data(SMSG_BATTLE_PET_ROUND_RESULT);
+    data.WriteBit(0);
+    data.WriteBits(0, 20);
+    data.WriteBits(4, 22);
+    // 0
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBits(1, 25);
+    data.WriteBits(6, 3);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    // 1
+    /*data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBits(1, 25);
+    data.WriteBits(0, 3);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(0);
+    data.WriteBit(1);*/
+    // 2
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBits(1, 25);
+    data.WriteBits(6, 3);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    // 3
+    /*data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBits(1, 25);
+    data.WriteBits(4, 3);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);*/
+    // 4
+    data.WriteBit(1);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBits(1, 25);
+    data.WriteBits(3, 3);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    // 5
+    /*data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBits(1, 25);
+    data.WriteBits(0, 3);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);*/
+    // 6
+    data.WriteBit(1);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    data.WriteBits(1, 25);
+    data.WriteBits(3, 3);
+    data.WriteBit(1);
+    data.WriteBit(1);
+    // 7
+    /*data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);
+    data.WriteBits(1, 25);
+    data.WriteBits(1, 3);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(1);*/
+
+    data.WriteBits(0, 3);
+
+    // 0
+    data << uint16(1);      // opponent index
+    data << uint8(3);       // target ID (0,1,2 - 1 opponent | 3,4,5 - 1 opponent)
+    data << uint32(58);     // remaining health
+    data << uint16(4096);   // attack flags
+    data << uint8(0);       // attacker ID (0,1,2 - 1 opponent | 3,4,5 - 1 opponent)
+    data << uint8(1);
+    data << uint32(379);     // effect ID
+    // 1
+    /*uint16 val8 = 1;
+    uint8 val = 0;
+    uint8 val1 = 3;
+    uint8 val2 = 1;
+    uint8 val3 = 2;
+    uint32 val4 = 239;
+    uint32 val5 = 1;
+    uint32 val6 = -1;
+    uint32 val7 = 379;
+    data << uint16(val8);
+    data << uint8(val);
+    data << uint32(val4);
+    data << uint32(val5);
+    data << uint32(val6);
+    data << uint8(val1);
+    data << uint8(val2);
+    data << uint32(val7);
+    data << uint8(val3);*/
+    // 2
+    uint16 val = 2;      // opponent index
+    uint8 val1 = 0;      // target ID (0,1,2 - 1 opponent | 3,4,5 - 1 opponent)
+    uint32 val2 = 30;    // remaining health
+    uint16 val3 = 4096;  // attack flags
+    uint8 val4 = 3;      // attacker ID (0,1,2 - 1 opponent | 3,4,5 - 1 opponent)
+    uint8 val5 = 1;
+    uint32 val6 = 1987;  // effect ID
+    data << uint16(val);
+    data << uint8(val1);
+    data << uint32(val2);
+    data << uint16(val3);
+    data << uint8(val4);
+    data << uint8(val5);
+    data << uint32(val6);
+    // 3
+    /*data << uint16(1);
+    data << uint32(1);
+    data << uint32(1);
+    data << uint8(0);
+    data << uint8(3);
+    data << uint8(1);
+    data << uint32(1987);
+    data << uint8(6);*/
+    // 4
+    data << uint8(13);
+    // 5
+    /*data << uint8(4);
+    data << uint32(1);
+    data << uint32(239);
+    data << uint32(2);
+    data << uint32(-1);
+    data << uint8(4);
+    data << uint8(3);*/
+    // 6
+    data << uint8(14);
+    // 7
+    /*data << uint16(2);
+    data << uint8(0);
+    data << uint32(10); // speed (some value related to ...)
+    data << uint8(0);
+    data << uint8(1);
+    data << uint8(8);*/
+
+    // for 2
+    data << uint8(0);
+    data << uint16(0);
+    data << uint8(2);
+    // ---
+    data << uint8(0);
+    data << uint16(0);
+    data << uint8(2);
+    //
+
+    data << uint32(1);     // Round ID
+    data << uint8(2);
+
+    SendPacket(&data);
 }
