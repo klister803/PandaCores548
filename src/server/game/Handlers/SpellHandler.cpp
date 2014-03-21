@@ -50,7 +50,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     ObjectGuid targetGuid;
     ObjectGuid dstTransportGuid;
     ObjectGuid srcTransportGuid;
-    ObjectGuid guid38;
+    ObjectGuid guid38;                                      // posible item target
     uint32 glyphIndex;                                      // something to do with glyphs?
     uint32 spellId;                                         // casted spell id
 
@@ -267,6 +267,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     if (strTargetLen)
         targets.m_strTarget = recvPacket.ReadString(strTargetLen);
 
+    targets.m_itemTargetGUID = guid38;
     targets.m_objectTargetGUID = targetGuid;
     targets.Update(_player->m_mover);
 

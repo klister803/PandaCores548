@@ -431,7 +431,9 @@ class spell_monk_zen_flight_check : public SpellScriptLoader
 
             bool Load()
             {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+                if(GetCaster())
+                    return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+                return false;
             }
 
             void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)

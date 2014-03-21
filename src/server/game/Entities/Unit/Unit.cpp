@@ -1833,17 +1833,15 @@ uint32 Unit::CalcArmorReducedDamage(Unit* victim, const uint32 damage, SpellInfo
         armor = 0.0f;
 
     float levelModifier = getLevel();
-    if (levelModifier > 59)
-        levelModifier = levelModifier + (4.5f * (levelModifier - 59));
+    if ( levelModifier > 85 )
+ 		levelModifier = levelModifier + (4.5 * (levelModifier - 59)) + (20 * (levelModifier - 80)) + (22 * (levelModifier - 85));
+ 	else if ( levelModifier > 80 )
+ 		levelModifier = levelModifier + (4.5 * (levelModifier - 59)) + (20 * (levelModifier - 80));
+ 	else if ( levelModifier > 59 )
+ 		levelModifier = levelModifier + (4.5 * (levelModifier - 59));
 
-    float tmpvalue;
-    if (getLevel() < 90)
-    {
-        tmpvalue = 0.1f * armor / (8.5f * levelModifier + 40);
-        tmpvalue = tmpvalue / (1.0f + tmpvalue);
-    }
-    else
-        tmpvalue = armor / (armor + 46257.5);
+    float tmpvalue = 0.1f * armor / (8.5f * levelModifier + 40);
+    tmpvalue = tmpvalue / (1.0f + tmpvalue);
 
     if (tmpvalue < 0.0f)
         tmpvalue = 0.0f;
@@ -7134,6 +7132,51 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
             switch (dummySpell->Id)
             {
+                case 108370: // Soul Leech
+                {
+                    if (Player * warlock = ToPlayer())
+                    {
+                        triggered_spell_id = 108366;
+                        int32 hasabsorb = 0;
+
+                        if (Aura * aura = GetAura(triggered_spell_id))
+                            hasabsorb = aura->GetEffect(EFFECT_0)->GetAmount();
+
+                        if (warlock->GetSpecializationId(warlock->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
+                            triggerAmount *= 2;
+
+                        basepoints0 = CalculatePct(damage, triggerAmount) + hasabsorb;
+
+                        if (basepoints0 > GetMaxHealth())
+                            basepoints0 = GetMaxHealth();
+                    } 
+                    break;
+                }
+                case 108558: // Nightfall
+                {
+                    triggered_spell_id = 87388;
+                    break;
+                }
+                case 108869: // Decimation
+                {
+                    if (target->GetHealthPct() < triggerAmount)
+                    {
+                        triggered_spell_id = 122355;
+                    }
+                    break;
+                }
+                case 108563: // Backlash
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(108563))
+                        return false;
+
+                    triggered_spell_id = 34936;
+                    ToPlayer()->AddSpellCooldown(108563, 0, time(NULL) + 8);
+                    break;
+                }
                 case 111397: // Blood Horror
                 {
                     triggered_spell_id = 137143;
@@ -7819,6 +7862,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 76672: // Mastery : Hand of Light
+                {
+                    if (effIndex != EFFECT_0)
+                        return false;
+
+                    triggered_spell_id = 96172;
+                    basepoints0 = CalculatePct(damage, triggerAmount);
+
+                    if (Aura * aura = GetAura(84963))
+                    {
+                        if (AuraEffect * eff = aura->GetEffect(EFFECT_0))
+                        {
+                            basepoints0 += CalculatePct(basepoints0, eff->GetAmount());
+                        }
+                    }
+                    break;
+                }
                 case 76669: // Illuminated Healing
                 {
                     if (effIndex != EFFECT_0)
@@ -9361,20 +9421,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
             {
                 switch (auraSpellInfo->Id)
                 {
-                    case 76672: // Mastery : Hand of Light
-                    {
-                        trigger_spell_id = 96172;
-                        basepoints0 = CalculatePct(damage, triggerAmount);
-
-                        if (Aura * aura = GetAura(84963))
-                        {
-                            if (AuraEffect * eff = aura->GetEffect(EFFECT_0))
-                            {
-                                basepoints0 += CalculatePct(basepoints0, eff->GetAmount());
-                            }
-                        }
-                        break;
-                    }
                     // Healing Discount
                     case 37705:
                     {
@@ -9639,19 +9685,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             break;
         }
-        // Backlash
-        case 108563:
-        {
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if (ToPlayer()->HasSpellCooldown(108563))
-                return false;
-
-            ToPlayer()->AddSpellCooldown(108563, 0, time(NULL) + 8);
-
-            break;
-        }
         // Burden of Guilt
         case 110301:
         {
@@ -9886,7 +9919,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         }
         case 76857:     // Mastery : Critical Block
         case 58410:     // Master Poisoner
-        case 79147:     // Sanguinary Vein
         case 113043:    // Omen of Clarity (new)
         case 122464:    // Dematerialize
             return false;
@@ -13233,6 +13265,13 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
                 if (mechanicMask & uint32(1<<((*i)->GetMiscValue())))
                     AddPct(TakenTotalMod, (*i)->GetAmount());
         }
+    }
+    else
+    {
+        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_343);
+        for (AuraEffectList::const_iterator i = mMeleeDamageFromCaster.begin(); i != mMeleeDamageFromCaster.end(); ++i)
+            if ((*i)->GetCasterGUID() == attacker->GetGUID())
+                AddPct(TakenTotalMod, (*i)->GetAmount());
     }
 
     // .. taken pct: dummy auras
@@ -16905,6 +16944,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_MOD_ROOT:
                     case SPELL_AURA_TRANSFORM:
                     {
+                        if (procExtra & PROC_EX_INTERNAL_HOT) // temporarily
+                            if (spellInfo->Id == 6770 || spellInfo->Id == 2094)
+                                return;
+
                         // chargeable mods are breaking on hit
                         if (useCharges)
                             takeCharges = true;

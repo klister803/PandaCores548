@@ -1672,6 +1672,25 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             {
                 switch (GetId())
                 {
+                    case 703:    // Garrote
+                    case 1943:   // Rupture
+                    case 121411: // Crimson Tempest
+                    {
+                        if (!caster)
+                            break;
+
+                        if (caster->HasAura(79147)) // Sanguinary Vein
+                        {
+                            bool hasbleed = false;
+
+                            if      (target->HasAura(703,    m_casterGuid)) hasbleed = true;
+                            else if (target->HasAura(1943,   m_casterGuid)) hasbleed = true;
+                            else if (target->HasAura(121411, m_casterGuid)) hasbleed = true;
+
+                            if (!hasbleed) target->RemoveAura(124271, m_casterGuid);
+                        }
+                        break;
+                    }
                     case 11327: // Vanish
                     {
                         uint32 spellid = caster->HasAura(108208) ? 115191: 1784;

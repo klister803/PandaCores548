@@ -239,7 +239,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             break;
         case HUNTER_PET:
             SetSheath(SHEATH_STATE_MELEE);
-            SetClass(CLASS_WARRIOR);
+            SetClass(CLASS_HUNTER);
             SetGender(GENDER_NONE);
 
             SetByteFlag(UNIT_FIELD_BYTES_2, 2, fields[9].GetBool() ? UNIT_CAN_BE_ABANDONED : UNIT_CAN_BE_RENAMED | UNIT_CAN_BE_ABANDONED);

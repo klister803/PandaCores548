@@ -16323,7 +16323,7 @@ bool Player::CanRewardQuest(Quest const* quest, uint32 reward, bool msg, uint32 
         }
     }
 
-    if (quest->GetRewPackageItem() > 0)
+    if (quest->GetRewPackageItem() > 0 && packItemId != 0)
     {
         ItemPosCountVec dest;
         InventoryResult res = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, packItemId, 1);

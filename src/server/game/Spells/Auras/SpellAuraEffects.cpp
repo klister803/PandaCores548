@@ -6644,7 +6644,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 // Camouflage
                 case 80326:
                 {
-                    if ((caster->isMoving() && !caster->HasAura(119449)) || caster->HasAura(80325))
+                    if (!caster || (caster->isMoving() && !caster->HasAura(119449)) || caster->HasAura(80325))
                         return;
 
                     if (caster->HasAura(119449) || (caster->GetOwner() && caster->GetOwner()->HasAura(119449)))

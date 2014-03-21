@@ -3342,6 +3342,15 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 124271: // Sanguinary Vein
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                    break;
+                case 108366: // Soul Leech
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                    break;
+                case 5740: // Rain of Fire
+                    spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
+                    break;
                 case 108942: // Phantasm
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DISABLE_PROC;
                     break;
@@ -3807,12 +3816,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 102793:
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
-                    break;
-                case 172:   // Corruption
-                case 30108: // Unstable Affliction
-                    spellInfo->Effects[EFFECT_2].Effect = 0;
-                    spellInfo->Effects[EFFECT_2].ApplyAuraName = 0;
-                    spellInfo->Effects[EFFECT_2].BasePoints = 0;
                     break;
                 case 64904: // Hymn of Hope
                     spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
