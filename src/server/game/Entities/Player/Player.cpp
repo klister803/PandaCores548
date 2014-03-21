@@ -26947,8 +26947,8 @@ void Player::SendEquipmentSetList()
 
         ++count;                                            // client has limit but it's checked at loading a set
     }
-    data.PutBits<uint32>(0, count, 19);
     data.FlushBits();
+    data.PutBits<uint32>(0, count, 19);
 
     if (!dataBuf.empty())
         data.append(dataBuf);
