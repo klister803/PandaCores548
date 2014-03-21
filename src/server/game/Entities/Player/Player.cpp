@@ -26911,9 +26911,11 @@ void Player::BuildEnchantmentsInfoData(WorldPacket* data)
 void Player::SendEquipmentSetList()
 {
     uint32 count = 0;
-    ByteBuffer buf, dataBuf;
+    ByteBuffer dataBuf;
 
-    WorldPacket data(SMSG_EQUIPMENT_SET_LIST, 4);
+    ObjectGuid itemGuid = 0;
+    WorldPacket data(SMSG_EQUIPMENT_SET_LIST, 1000);
+    data.WriteBits(count, 19);
 
     for (EquipmentSets::const_iterator itr = m_EquipmentSets.begin(); itr != m_EquipmentSets.end(); ++itr)
     {
@@ -26921,19 +26923,20 @@ void Player::SendEquipmentSetList()
         if (set.state == EQUIPMENT_SET_DELETED)
             continue;
 
-        buf.WriteGuidMask<2, 0>(itr->second.Guid);
+        data.WriteGuidMask<2, 0>(set.Guid);
 
         for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        {
+            itemGuid = set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM);
             // ignored slots stored in IgnoreMask, client wants "1" as raw GUID, so no HIGHGUID_ITEM
-            buf.WriteGuidMask<2, 6, 3, 1, 4, 7, 5, 0>(set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM));
+            data.WriteGuidMask<2, 6, 3, 1, 4, 7, 5, 0>(itemGuid);
+            dataBuf.WriteGuidBytes<3, 5, 1, 2, 0, 7, 6, 4>(itemGuid);
+        }
 
-        buf.WriteBits(set.Name.size(), 8);
-        buf.WriteGuidMask<4, 1, 7, 3, 5>(itr->second.Guid);
-        buf.WriteBits(set.IconName.size(), 9);
-        buf.WriteGuidMask<6>(set.Guid);
-
-        for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
-            dataBuf.WriteGuidBytes<3, 5, 1, 2, 0, 7, 6, 4>(set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM));
+        data.WriteBits(set.Name.size(), 8);
+        data.WriteGuidMask<4, 1, 7, 3, 5>(set.Guid);
+        data.WriteBits(set.IconName.size(), 9);
+        data.WriteGuidMask<6>(set.Guid);
 
         dataBuf.WriteGuidBytes<6>(set.Guid);
         dataBuf << uint32(itr->first);
@@ -26944,14 +26947,9 @@ void Player::SendEquipmentSetList()
 
         ++count;                                            // client has limit but it's checked at loading a set
     }
-
-    data.WriteBits(count, 19);
+    data.PutBits<uint32>(0, count, 19);
     data.FlushBits();
-    if (!buf.empty())
-    {
-        buf.FlushBits();
-        data.append(buf);
-    }
+
     if (!dataBuf.empty())
         data.append(dataBuf);
 
