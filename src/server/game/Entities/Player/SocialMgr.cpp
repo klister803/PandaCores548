@@ -63,7 +63,13 @@ bool PlayerSocial::AddToSocialList(uint32 friendGuid, bool ignore)
 
     uint8 flag = SOCIAL_FLAG_FRIEND;
     if (ignore)
+    {
+        // remove mail from ignored
+        if (Player * player = sObjectMgr->GetPlayerByLowGUID(GetPlayerGUID()))
+            player->SafeRemoveMailFromIgnored(friendGuid);
+        // set ignored flag
         flag = SOCIAL_FLAG_IGNORED;
+    }
 
     PlayerSocialMap::const_iterator itr = m_playerSocialMap.find(friendGuid);
     if (itr != m_playerSocialMap.end())
@@ -103,7 +109,13 @@ void PlayerSocial::RemoveFromSocialList(uint32 friendGuid, bool ignore)
 
     uint8 flag = SOCIAL_FLAG_FRIEND;
     if (ignore)
+    {
+        // remove mail from ignored
+        if (Player * player = sObjectMgr->GetPlayerByLowGUID(GetPlayerGUID()))
+            player->SafeRemoveMailFromIgnored(friendGuid);
+        // set ignored flag
         flag = SOCIAL_FLAG_IGNORED;
+    }
 
     itr->second.Flags &= ~flag;
     if (itr->second.Flags == 0)

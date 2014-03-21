@@ -3969,6 +3969,17 @@ void Player::RemoveMail(uint32 id)
     }
 }
 
+void Player::SafeRemoveMailFromIgnored(uint32 ignoredPlayerGuid)
+{
+    for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
+    {
+        if ((*itr)->sender == ignoredPlayerGuid)
+            (*itr)->state = MAIL_STATE_DELETED;
+    }
+
+    m_mailsUpdated = true;
+}
+
 void Player::SendMailResult(uint32 mailId, MailResponseType mailAction, MailResponseResult mailError, uint32 equipError, uint32 item_guid, uint32 item_count)
 {
     WorldPacket data(SMSG_SEND_MAIL_RESULT);

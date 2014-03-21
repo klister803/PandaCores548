@@ -1887,6 +1887,7 @@ class Player : public Unit, public GridObject<Player>
         bool IsMailsLoaded() const { return m_mailsLoaded; }
 
         void RemoveMail(uint32 id);
+        void SafeRemoveMailFromIgnored(uint32 ignoredPlayerGuid);
 
         void AddMail(Mail* mail) { m_mail.push_front(mail);}// for call from WorldSession::SendMailTo
         uint32 GetMailSize() { return m_mail.size();}
