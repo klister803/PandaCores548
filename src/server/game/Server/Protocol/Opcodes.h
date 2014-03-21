@@ -791,9 +791,9 @@ enum Opcodes
     SMSG_CALENDAR_RAID_LOCKOUT_ADDED                  = 0xDC8,  // 5.0.5 16048
     SMSG_CALENDAR_RAID_LOCKOUT_REMOVED                = 0x839,  // 5.0.5 16048
     SMSG_CALENDAR_RAID_LOCKOUT_UPDATED                = 0x82F,  // 5.0.5 16048
-    SMSG_CALENDAR_SEND_CALENDAR                       = 0xD36,  // 5.0.5 16048
+    SMSG_CALENDAR_SEND_CALENDAR                       = 0x10B4, // 5.4.1 17538
     SMSG_CALENDAR_SEND_EVENT                          = 0xD90,  // 5.0.5 16048
-    SMSG_CALENDAR_SEND_NUM_PENDING                    = 0xC29,  // 5.0.5 16048
+    SMSG_CALENDAR_SEND_NUM_PENDING                    = 0x0405, // 5.4.1 17538
     SMSG_CALENDAR_UPDATE_INVITE_LIST                  = 0,      // Not found in 4.3.4
     SMSG_CAMERA_SHAKE                                 = 0x9AF,  // 5.0.5 16048
     SMSG_CANCEL_AUTO_REPEAT                           = 0x0C0C, // 5.4.1 17538
