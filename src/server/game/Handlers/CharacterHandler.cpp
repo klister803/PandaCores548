@@ -908,42 +908,6 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
 
     recvPacket >> mapID;
     recvPacket.ReadBit();
-
-    // Refresh spellmods for client
-    // This is Hackypig fix : find a better way
-    if (Player* _plr = GetPlayer())
-    {
-        Unit::AuraApplicationMap AuraList = _plr->GetAppliedAuras();
-        std::list<Aura*> auraModsList;
-        for (Unit::AuraApplicationMap::iterator iter = AuraList.begin(); iter != AuraList.end(); ++iter)
-        {
-            Aura* aura = iter->second->GetBase();
-            if (!aura)
-                continue;
-
-            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            {
-                if (AuraEffect* aurEff = aura->GetEffect(i))
-                {
-                    if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
-                    {
-                        auraModsList.push_back(aura);
-                        break;
-                    }
-                }
-            }
-        }
-
-        for (std::list<Aura*>::const_iterator itr = auraModsList.begin(); itr != auraModsList.end(); ++itr)
-            _plr->RemoveAura((*itr)->GetSpellInfo()->Id, _plr->GetGUID());
-
-        for (std::list<Aura*>::const_iterator itr = auraModsList.begin(); itr != auraModsList.end(); ++itr)
-        {
-            Aura* aura = (*itr);
-            Item* item = aura->GetCastItemGUID() ? _player->GetItemByGuid(aura->GetCastItemGUID()) : NULL;
-            _plr->CastSpell(_plr, (*itr)->GetSpellInfo()->Id, true, item);
-        }
-    }
 }
 
 void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
