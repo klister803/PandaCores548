@@ -1854,7 +1854,10 @@ void ObjectMgr::LoadGameobjects()
         data.spawnMask      = fields[17].GetUInt32();
 
         if (data.spawnMask & ~spawnMasks[data.mapid])
+        {
             sLog->outError(LOG_FILTER_SQL, "Table `gameobject` has gameobject (GUID: %u Entry: %u) that has wrong spawn mask %u including not supported difficulty modes for map (Id: %u), skip", guid, data.id, data.spawnMask, data.mapid);
+            WorldDatabase.PExecute("UPDATE gameobject SET spawnMask = %u WHERE guid = %u", spawnMasks[data.mapid], guid);
+        }
 
         data.phaseMask      = fields[18].GetUInt16();
         int16 gameEvent     = fields[19].GetInt8();
