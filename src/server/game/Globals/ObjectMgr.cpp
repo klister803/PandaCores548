@@ -1429,7 +1429,10 @@ void ObjectMgr::LoadCreatures()
         }
 
         if (data.spawnMask & ~spawnMasks[data.mapid])
+        {
             sLog->outError(LOG_FILTER_SQL, "Table `creature` have creature (GUID: %u) that have wrong spawn mask %u including not supported difficulty modes for map (Id: %u) spawnMasks[data.mapid]: %u.", guid, data.spawnMask, data.mapid, spawnMasks[data.mapid]);
+            WorldDatabase.PExecute("UPDATE creature SET spawnMask = %u WHERE guid = %u", spawnMasks[data.mapid], guid);
+        }
 
         // -1 no equipment, 0 use default
         if (data.equipmentId > 0)

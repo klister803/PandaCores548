@@ -139,6 +139,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
 
             void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
+                if(GetCaster())
                 if (Player* player = GetCaster()->ToPlayer())
                 {
                     // EFFECT_0 : Instakill
