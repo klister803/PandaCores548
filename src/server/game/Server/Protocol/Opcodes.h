@@ -872,6 +872,7 @@ enum Opcodes
     SMSG_DISMOUNTRESULT                               = 0xC02,  // 5.0.5 16048
     SMSG_DISPEL_FAILED                                = 0x10CD, // 5.4.1 17538
     SMSG_DISPLAY_GAME_ERROR                           = 0xA63,  // 5.0.5 16048
+    SMSG_DISPLAY_PROMOTION                            = 0x0C3C, // 5.4.1 17538
     SMSG_DONT_AUTO_PUSH_SPELLS_TO_ACTION_BAR          = 0xBD1,  // 5.0.5 16048
     SMSG_DROP_NEW_CONNECTION                          = 0x527,  // 5.0.5 16048
     SMSG_DUEL_COMPLETE                                = 0x00BD, // 5.4.1 17538

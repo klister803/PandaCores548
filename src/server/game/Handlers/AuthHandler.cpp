@@ -143,3 +143,10 @@ void WorldSession::SendBattlePay()
     data.FlushBits();
     SendPacket(&data);
 }
+
+void WorldSession::SendDisplayPromo(int32 promo)
+{
+    WorldPacket data(SMSG_DISPLAY_PROMOTION, 7);
+    data << promo;
+    SendPacket(&data);
+}
