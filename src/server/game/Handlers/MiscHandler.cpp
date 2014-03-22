@@ -1780,6 +1780,9 @@ void WorldSession::HandleRealmSplitOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_REALM_SPLIT");
 
+    // On retail before send realm_split always send time zone
+    SendTimeZoneInformation();
+
     uint32 unk;
     std::string split_date = "01/01/01";
     recvData >> unk;

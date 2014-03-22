@@ -70,14 +70,25 @@ void WorldSession::SendAuthResponse(uint8 code, bool hasAccountData, bool queued
         packet.WriteBit(1);
 
     packet.WriteBit(hasAccountData);
+    std::string realmName = sWorld->GetRealmName();
+    std::string trimmedName = sWorld->GetTrimmedRealmName();
     if (hasAccountData)
     {
+        uint8 count5 = 1;
         packet.WriteBit(0);
-        packet.WriteBits(0, 21);
+        packet.WriteBits(count5, 21);
         packet.WriteBits(0, 21);
         packet.WriteBits(MAX_PLAYABLE_RACES, 23);
         packet.WriteBit(0);
         packet.WriteBit(0);
+
+        for (uint8 i = 0; i < count5; ++i)
+        {
+            packet.WriteBits(realmName.size(), 8);
+            packet.WriteBit(1);
+            packet.WriteBits(trimmedName.size(), 8);
+        }
+
         packet.WriteBit(0);
         packet.WriteBits(MAX_CLASSES - 1, 23);
 
@@ -100,8 +111,15 @@ void WorldSession::SendAuthResponse(uint8 code, bool hasAccountData, bool queued
             packet << uint8(classExpansionInfo[i].expansion);
         }
 
-        packet << uint32(0);
-        packet << uint32(0);
+        for (uint8 i = 0; i < count5; ++i)
+        {
+            packet.WriteString(realmName);
+            packet.WriteString(trimmedName);
+            packet << uint32(realmID);
+        }
+
+        packet << uint32(0);    //2957796664... 3495927968
+        packet << uint32(0);    //69076... 43190
     }
 
     if (queued)
@@ -114,5 +132,14 @@ void WorldSession::SendClientCacheVersion(uint32 version)
 {
     WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
     data << uint32(version);
+    SendPacket(&data);
+}
+
+void WorldSession::SendBattlePay()
+{
+    WorldPacket data(SMSG_BATTLEPAY_PRODUCT_ITEM, 7);
+    data << uint32(0);
+    data.WriteBits(0, 19);
+    data.FlushBits();
     SendPacket(&data);
 }
