@@ -720,6 +720,7 @@ enum Opcodes
     SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,  // 5.0.5 16048
     SMSG_ARENA_SEASON_WORLDSTATE                      = 0x041F, // 5.4.1 17538
     SMSG_BARBER_SHOP_RESULT                           = 0x0126, // 5.4.1 17538
+    SMSG_BATTLEPAY_PRODUCT_ITEM                       = 0x0CAF, // 5.4.1 17538
     SMSG_BATTLE_PET_BATTLE_FINISHED                   = 0xBC8,  // 5.0.5 16048
     SMSG_BATTLE_PET_CHAT_RESTRICTED                   = 0xB68,  // 5.0.5 16048
     SMSG_BATTLE_PET_DELETED                           = 0xF49,  // 5.0.5 16048
@@ -871,6 +872,7 @@ enum Opcodes
     SMSG_DISMOUNTRESULT                               = 0xC02,  // 5.0.5 16048
     SMSG_DISPEL_FAILED                                = 0x10CD, // 5.4.1 17538
     SMSG_DISPLAY_GAME_ERROR                           = 0xA63,  // 5.0.5 16048
+    SMSG_DISPLAY_PROMOTION                            = 0x0C3C, // 5.4.1 17538
     SMSG_DONT_AUTO_PUSH_SPELLS_TO_ACTION_BAR          = 0xBD1,  // 5.0.5 16048
     SMSG_DROP_NEW_CONNECTION                          = 0x527,  // 5.0.5 16048
     SMSG_DUEL_COMPLETE                                = 0x00BD, // 5.4.1 17538

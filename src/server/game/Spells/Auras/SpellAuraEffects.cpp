@@ -7088,12 +7088,14 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         {
             case 43093: case 31956: case 38801:  // Grievous Wound
             case 35321: case 38363: case 39215:  // Gushing Wound
+            {
                 if (target->IsFullHealth())
                 {
                     target->RemoveAurasDueToSpell(GetSpellInfo()->Id);
                     return;
                 }
                 break;
+            }
             case 38772: // Grievous Wound
             {
                 uint32 percent = GetSpellInfo()->Effects[EFFECT_1].CalcValue(caster);
@@ -7113,6 +7115,26 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
     // ignore non positive values (can be result apply spellmods to aura damage
     uint32 damage = std::max(GetAmount(), 0);
+
+    switch (m_spellInfo->Id)
+    {
+        case 120699: // Lynx Rush
+        {
+            if (Unit * hunter = caster->GetOwner())
+            {
+                int32 amount = hunter->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.038f;
+                amount *= GetBase()->GetStackAmount();
+
+                if (Guardian * pet = caster->ToPet())
+                    amount += pet->GetBonusDamage();
+
+                damage += amount;
+            }
+            break;
+        }
+        default:
+            break;
+    }
 
     if (GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
     {
