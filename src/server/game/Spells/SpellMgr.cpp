@@ -3347,9 +3347,6 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 127230: // Visions of Insanity
-                    spellInfo->Effects[0].ScalingMultiplier = 0;
-                    break;
                 case 124271: // Sanguinary Vein
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                     break;
