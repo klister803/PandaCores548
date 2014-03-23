@@ -1493,12 +1493,14 @@ void SpellMgr::LoadSpellLearnSpells()
         if (!GetSpellInfo(spell_id))
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_learn_spell` does not exist", spell_id);
+            WorldDatabase.PExecute("DELETE FROM `spell_learn_spell` WHERE entry = %u", spell_id);
             continue;
         }
 
         if (!GetSpellInfo(node.spell))
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_learn_spell` learning not existed spell %u", spell_id, node.spell);
+            WorldDatabase.PExecute("DELETE FROM `spell_learn_spell` WHERE entry = %u", spell_id);
             continue;
         }
 
@@ -2311,12 +2313,14 @@ void SpellMgr::LoadSpellLinked()
         if (!spellInfo)
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_linked_spell` does not exist", abs(trigger));
+            WorldDatabase.PExecute("DELETE FROM `spell_linked_spell` WHERE spell_trigger = %u", abs(trigger));
             continue;
         }
         spellInfo = GetSpellInfo(abs(effect));
         if (!spellInfo)
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_linked_spell` does not exist", abs(effect));
+            WorldDatabase.PExecute("DELETE FROM `spell_linked_spell` WHERE spell_trigger = %u", abs(trigger));
             continue;
         }
 
@@ -2482,6 +2486,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         if (!spellInfo)
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_proc_check` does not exist", abs(entry));
+            WorldDatabase.PExecute("DELETE FROM `spell_proc_check` WHERE entry = %u", abs(entry));
             continue;
         }
 

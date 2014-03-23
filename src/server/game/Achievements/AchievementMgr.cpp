@@ -3652,6 +3652,7 @@ void AchievementGlobalMgr::LoadAchievementCriteriaData()
         if (!criteria)
         {
             sLog->outError(LOG_FILTER_SQL, "Table `achievement_criteria_data` has data for non-existing criteria (Entry: %u), ignore.", criteria_id);
+            WorldDatabase.PExecute("DELETE FROM `achievement_criteria_data` WHERE criteria_id = %u", criteria_id);
             continue;
         }
 
