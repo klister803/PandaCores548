@@ -2262,8 +2262,14 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
             case DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES:
             case DB2_REPLY_SCENE_SCRIPT:
             {
-                sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unhandled hotfix type: %u, entry %u", type, entry);
-                needBreak = true;
+                WorldPacket data(SMSG_DB_REPLY);
+                data << uint32(time(NULL)); // hotfix date
+                data << uint32(type);
+                data << uint32(0);          // size of next block
+                data << int32(entry * -1);     
+                SendPacket(&data);
+                //sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unhandled hotfix type: %u, entry %u", type, entry);
+                //needBreak = true;
                 break;
             }
             default:

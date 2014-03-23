@@ -124,8 +124,11 @@ enum CharacterCustomizeFlags
 {
     CHAR_CUSTOMIZE_FLAG_NONE            = 0x00000000,
     CHAR_CUSTOMIZE_FLAG_CUSTOMIZE       = 0x00000001,       // name, gender, etc...
+    CHAR_CUSTOMIZE_FLAG_2               = 0x00000002,
+    CHAR_CUSTOMIZE_FLAG_24              = 0x00008000,
     CHAR_CUSTOMIZE_FLAG_FACTION         = 0x00010000,       // name, gender, faction, etc...
-    CHAR_CUSTOMIZE_FLAG_RACE            = 0x00100000        // name, gender, race, etc...
+    CHAR_CUSTOMIZE_FLAG_RACE            = 0x00100000,       // name, gender, race, etc...
+    CHAR_CUSTOMIZE_FLAG_35              = 0x10000000,
 };
 
 // corpse reclaim times
@@ -2111,7 +2114,7 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
     Tokenizer equipment(fields[19].GetString(), ' ');
     uint8 slot = fields[21].GetUInt8();
 
-    uint32 charFlags = 0;
+    uint32 charFlags = CHARACTER_FLAG_UNK29 | CHARACTER_FLAG_UNK24 | CHARACTER_FLAG_UNK22;
     if (playerFlags & PLAYER_FLAGS_HIDE_HELM)
         charFlags |= CHARACTER_FLAG_HIDE_HELM;
 
@@ -2134,7 +2137,7 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
     }else
         charFlags |= CHARACTER_FLAG_DECLINED;
 
-    uint32 customizationFlag = 0;
+    uint32 customizationFlag = CHAR_CUSTOMIZE_FLAG_2 | CHAR_CUSTOMIZE_FLAG_24 | CHAR_CUSTOMIZE_FLAG_35;
     if (atLoginFlags & AT_LOGIN_CUSTOMIZE)
         customizationFlag = CHAR_CUSTOMIZE_FLAG_CUSTOMIZE;
     else if (atLoginFlags & AT_LOGIN_CHANGE_FACTION)
