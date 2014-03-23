@@ -7443,8 +7443,13 @@ void Player::SaveRecallPosition()
     m_recallO = GetOrientation();
 }
 
+//! WARN! We shouldn't send at login range based packet.
+//! For example SMSG_SPELLLOGEXECUTE
 void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 {
+    if (!IsInWorld())
+        return;
+
     if (self)
         GetSession()->SendPacket(data);
 
@@ -7454,6 +7459,9 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 
 void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only)
 {
+    if (!IsInWorld())
+        return;
+
     if (self)
         GetSession()->SendPacket(data);
 
@@ -7463,6 +7471,9 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
 
 void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 {
+    if (!IsInWorld())
+        return;
+
     if (skipped_rcvr != this)
         GetSession()->SendPacket(data);
 
