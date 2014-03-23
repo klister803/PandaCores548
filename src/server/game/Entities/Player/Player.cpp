@@ -24370,15 +24370,18 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     InstanceMap* inst = GetMap()->ToInstanceMap();
     uint32 loot_mask = inst ? inst->GetMaxPlayers() : 0;
+
     WorldPacket data(SMSG_WORLD_SERVER_INFO, 4 + 4 + 1 + 1);
     data << uint32(sWorld->GetNextWeeklyQuestsResetTime() -  WEEK);
     data << uint8(0);                                       // is on tournament realm
     data << uint32(GetMap()->GetDifficulty());
-    data.WriteBit(false);                                   // has trial money
+    data.WriteBit(loot_mask);                               // is ineligible for loot
     data.WriteBit(false);                                   // unk
     data.WriteBit(false);                                   // has trial level
-    data.WriteBit(loot_mask);                               // is ineligible for loot
-    data << uint32(loot_mask);
+    data.WriteBit(false);    
+    data.FlushBits();
+    if (loot_mask)
+        data << uint32(loot_mask);
     GetSession()->SendPacket(&data);
 
     // SMSG_TALENTS_INFO x 2 for pet (unspent points and talents in separate packets...)
