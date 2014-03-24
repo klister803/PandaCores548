@@ -2545,8 +2545,8 @@ void SpellMgr::LoadSpellTriggered()
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
         {
-            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_id` does not exist", abs(spell_id));
-            WorldDatabase.PExecute("DELETE FROM `spell_trigger` WHERE entry = %u", abs(spell_id));
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_trigger` does not exist", abs(spell_id));
+            WorldDatabase.PExecute("DELETE FROM `spell_trigger` WHERE spell_id = %u", abs(spell_id));
             continue;
         }
         spellInfo = GetSpellInfo(abs(spell_trigger));
@@ -2601,8 +2601,8 @@ void SpellMgr::LoadSpellTriggered()
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
         {
-            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_id` does not exist", abs(spell_id));
-            WorldDatabase.PExecute("DELETE FROM `spell_trigger_dummy` WHERE entry = %u", abs(spell_id));
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_trigger_dummy` does not exist", abs(spell_id));
+            WorldDatabase.PExecute("DELETE FROM `spell_trigger_dummy` WHERE spell_id = %u", abs(spell_id));
             continue;
         }
 
