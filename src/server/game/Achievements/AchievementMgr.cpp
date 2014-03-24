@@ -770,12 +770,12 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_ACHIEVEMENT);
         stmt->setUInt32(0, GetOwner()->GetId());
-        stmt->setUInt16(1, itr->first);
+        stmt->setUInt32(1, itr->first);
         trans->Append(stmt);
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GUILD_ACHIEVEMENT);
         stmt->setUInt32(0, GetOwner()->GetId());
-        stmt->setUInt16(1, itr->first);
+        stmt->setUInt32(1, itr->first);
         stmt->setUInt32(2, itr->second.date);
         for (std::set<uint64>::const_iterator gItr = itr->second.guids.begin(); gItr != itr->second.guids.end(); ++gItr)
             guidstr << GUID_LOPART(*gItr) << ',';
@@ -798,12 +798,12 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_ACHIEVEMENT_CRITERIA);
         stmt->setUInt32(0, GetOwner()->GetId());
-        stmt->setUInt16(1, itr->first);
+        stmt->setUInt32(1, itr->first);
         trans->Append(stmt);
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GUILD_ACHIEVEMENT_CRITERIA);
         stmt->setUInt32(0, GetOwner()->GetId());
-        stmt->setUInt16(1, itr->first);
+        stmt->setUInt32(1, itr->first);
         stmt->setUInt32(2, itr->second.counter);
         stmt->setUInt32(3, itr->second.date);
         stmt->setUInt32(4, GUID_LOPART(itr->second.CompletedGUID));
@@ -825,7 +825,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         {
             Field* fields = achievementAccountResult->Fetch();
             uint32 first_guid    = fields[0].GetUInt64();
-            uint32 achievementid = fields[1].GetUInt16();
+            uint32 achievementid = fields[1].GetUInt32();
 
             // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
             AchievementEntry const* achievement = sAchievementMgr->GetAchievement(achievementid);
@@ -856,7 +856,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         do
         {
             Field* fields = criteriaResult->Fetch();
-            uint32 id      = fields[0].GetUInt16();
+            uint32 id      = fields[0].GetUInt32();
             uint32 counter = fields[1].GetUInt32();
             time_t date    = time_t(fields[2].GetUInt32());
 
@@ -867,7 +867,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteriaTree %u data removed from table `character_achievement_progress`.", id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt16(0, uint16(id));
+                stmt->setUInt32(0, uint32(id));
                 CharacterDatabase.Execute(stmt);
 
                 continue;
@@ -880,7 +880,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt16(0, uint16(id));
+                stmt->setUInt32(0, uint32(id));
                 CharacterDatabase.Execute(stmt);
 
                 continue;
@@ -907,7 +907,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         do
         {
             Field* fields = achievementResult->Fetch();
-            uint32 achievementid = fields[0].GetUInt16();
+            uint32 achievementid = fields[0].GetUInt32();
 
             // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
             AchievementEntry const* achievement = sAchievementMgr->GetAchievement(achievementid);
@@ -935,7 +935,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         do
         {
             Field* fields = criteriaAccountResult->Fetch();
-            uint32 id      = fields[0].GetUInt16();
+            uint32 id      = fields[0].GetUInt32();
             uint32 counter = fields[1].GetUInt32();
             time_t date    = time_t(fields[2].GetUInt32());
 
@@ -946,7 +946,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt16(0, uint16(id));
+                stmt->setUInt32(0, uint32(id));
                 CharacterDatabase.Execute(stmt);
 
                 continue;
@@ -959,7 +959,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt16(0, uint16(id));
+                stmt->setUInt32(0, uint32(id));
                 CharacterDatabase.Execute(stmt);
 
                 continue;
@@ -997,7 +997,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
         do
         {
             Field* fields = achievementResult->Fetch();
-            uint32 achievementid = fields[0].GetUInt16();
+            uint32 achievementid = fields[0].GetUInt32();
 
             // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
             AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementid);
@@ -1022,7 +1022,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
         do
         {
             Field* fields = criteriaResult->Fetch();
-            uint32 id      = fields[0].GetUInt16();
+            uint32 id      = fields[0].GetUInt32();
             uint32 counter = fields[1].GetUInt32();
             time_t date    = time_t(fields[2].GetUInt32());
             uint64 guid    = fields[3].GetUInt32();
@@ -1034,7 +1034,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
                 sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt16(0, uint16(id));
+                stmt->setUInt32(0, uint32(id));
                 CharacterDatabase.Execute(stmt);
                 continue;
             }
@@ -1046,7 +1046,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
                 sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt16(0, uint16(id));
+                stmt->setUInt32(0, uint32(id));
                 CharacterDatabase.Execute(stmt);
                 continue;
             }
@@ -1771,8 +1771,8 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
         if(criteriaTree->criteria != 0 || criteriaTree->parent == 0)
             return false;
 
-        std::list<uint16> const* cTreeList = GetCriteriaTreeList(criteriaTree->ID);
-        for (std::list<uint16>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
+        std::list<uint32> const* cTreeList = GetCriteriaTreeList(criteriaTree->ID);
+        for (std::list<uint32>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
         {
             CriteriaTreeEntry const* cTree = sCriteriaTreeStore.LookupEntry(*itr);
             if(IsCompletedCriteria(cTree, achievement))
@@ -1959,7 +1959,7 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* entry)
     AchievementEntry const* refentry = sAchievementMgr->GetAchievement(achievementForTestId);
     uint32 criteriaTree = refentry ? refentry->criteriaTree : entry->criteriaTree;
 
-    std::list<uint16> const* cList = GetCriteriaTreeList(criteriaTree);
+    std::list<uint32> const* cList = GetCriteriaTreeList(criteriaTree);
     if (!cList)
         return false;
     uint32 count = 0;
@@ -1968,7 +1968,7 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* entry)
     // Oddly, the target count is NOT contained in the achievement, but in each individual criteria
     if (entry->flags & ACHIEVEMENT_FLAG_SUMM)
     {
-        for (std::list<uint16>::const_iterator itr = cList->begin(); itr != cList->end(); ++itr)
+        for (std::list<uint32>::const_iterator itr = cList->begin(); itr != cList->end(); ++itr)
         {
             CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr);
 
@@ -1987,7 +1987,7 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* entry)
 
     // Default case - need complete all or
     bool completed_all = true;
-    for (std::list<uint16>::const_iterator itr = cList->begin(); itr != cList->end(); ++itr)
+    for (std::list<uint32>::const_iterator itr = cList->begin(); itr != cList->end(); ++itr)
     {
         CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr);
 
@@ -2591,7 +2591,7 @@ void AchievementMgr<Guild>::SendAchievementInfo(Player* receiver, uint32 achieve
     AchievementEntry const* entry = sAchievementMgr->GetAchievement(achievementId);
     uint32 criteriaTree = entry ? entry->criteriaTree : 0;
 
-    std::list<uint16> const* cTree = GetCriteriaTreeList(criteriaTree);
+    std::list<uint32> const* cTree = GetCriteriaTreeList(criteriaTree);
     CriteriaProgressMap* progressMap = GetCriteriaProgressMap();
     if (!cTree || !progressMap)
     {
@@ -2608,7 +2608,7 @@ void AchievementMgr<Guild>::SendAchievementInfo(Player* receiver, uint32 achieve
     WorldPacket data(SMSG_GUILD_CRITERIA_DATA, 3 + cTree->size());
     data.WriteBits(numCriteria, 19);
 
-    for (std::list<uint16>::const_iterator itr = cTree->begin(); itr != cTree->end(); ++itr)
+    for (std::list<uint32>::const_iterator itr = cTree->begin(); itr != cTree->end(); ++itr)
     {
         CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr);
         CriteriaProgress* progress = GetCriteriaProgress(criteriaTree->ID);
@@ -3134,8 +3134,8 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
  template<class T>
  bool AchievementMgr<T>::AdditionalRequirementsSatisfied(AchievementCriteriaEntry const *criteria, uint64 miscValue1, uint64 /*miscValue2*/, Unit const* unit, Player* referencePlayer) const
  {
-    if(std::list<uint16> const* modifierList = GetModifierTreeList(criteria->ModifyTree))
-     for (std::list<uint16>::const_iterator itr = modifierList->begin(); itr != modifierList->end(); ++itr)
+    if(std::list<uint32> const* modifierList = GetModifierTreeList(criteria->ModifyTree))
+     for (std::list<uint32>::const_iterator itr = modifierList->begin(); itr != modifierList->end(); ++itr)
      {
          ModifierTreeEntry const* modifier = sModifierTreeStore.LookupEntry(*itr);
          int32 const reqType = modifier->additionalConditionType;
@@ -3550,8 +3550,8 @@ void AchievementGlobalMgr::LoadAchievementCriteriaList()
         if (!achievement)
             continue;
 
-        if(std::list<uint16> const* criteriaTreeList = GetCriteriaTreeList(achievement->criteriaTree))
-        for (std::list<uint16>::const_iterator itr = criteriaTreeList->begin(); itr != criteriaTreeList->end(); ++itr)
+        if(std::list<uint32> const* criteriaTreeList = GetCriteriaTreeList(achievement->criteriaTree))
+        for (std::list<uint32>::const_iterator itr = criteriaTreeList->begin(); itr != criteriaTreeList->end(); ++itr)
         {
             CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr);
             if(!criteriaTree)
@@ -3563,8 +3563,8 @@ void AchievementGlobalMgr::LoadAchievementCriteriaList()
                 if(criteriaTree->criteria != 0 || criteriaTree->parent == 0)
                     continue;
 
-                std::list<uint16> const* cTreeList = GetCriteriaTreeList(criteriaTree->ID);
-                for (std::list<uint16>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
+                std::list<uint32> const* cTreeList = GetCriteriaTreeList(criteriaTree->ID);
+                for (std::list<uint32>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
                 {
                     CriteriaTreeEntry const* cTree = sCriteriaTreeStore.LookupEntry(*itr);
                     if(!cTree)
@@ -3704,7 +3704,7 @@ void AchievementGlobalMgr::LoadCompletedAchievements()
     {
         Field* fields = result->Fetch();
 
-        uint16 achievementId = fields[0].GetUInt16();
+        uint32 achievementId = fields[0].GetUInt32();
         const AchievementEntry* achievement = sAchievementMgr->GetAchievement(achievementId);
         if (!achievement)
         {
@@ -3713,7 +3713,7 @@ void AchievementGlobalMgr::LoadCompletedAchievements()
 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEVMENT);
 
-            stmt->setUInt16(0, uint16(achievementId));
+            stmt->setUInt32(0, uint32(achievementId));
 
             CharacterDatabase.Execute(stmt);
 

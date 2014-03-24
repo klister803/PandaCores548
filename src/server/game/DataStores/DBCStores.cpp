@@ -47,9 +47,9 @@ struct WMOAreaTableTripple
     int32 adtId;
 };
 
-static UNORDERED_MAP<uint16, std::list<uint16> > sCriteriaTreeEntryList;
-static UNORDERED_MAP<uint16, std::list<uint16> > sModifierTreeEntryList;
-static UNORDERED_MAP<uint16, uint16 > sAchievementEntryParentList;
+static UNORDERED_MAP<uint32, std::list<uint32> > sCriteriaTreeEntryList;
+static UNORDERED_MAP<uint32, std::list<uint32> > sModifierTreeEntryList;
+static UNORDERED_MAP<uint32, uint32 > sAchievementEntryParentList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sItemSpecsList;
 
 typedef std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> WMOAreaInfoByTripple;
@@ -363,21 +363,21 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sCriteriaTreeStore,           dbcPath, "CriteriaTree.dbc");//16048
     LoadDBC(availableDbcLocales, bad_dbc_files, sModifierTreeStore,           dbcPath, "ModifierTree.dbc");//16048
 
-    for (uint16 i = 0; i < sAchievementStore.GetNumRows(); ++i)
+    for (uint32 i = 0; i < sAchievementStore.GetNumRows(); ++i)
     {
         if(AchievementEntry const* as = sAchievementStore.LookupEntry(i))
             if(as->criteriaTree > 0)
             sAchievementEntryParentList[as->criteriaTree] = i;
     }
 
-    for (uint16 i = 0; i < sCriteriaTreeStore.GetNumRows(); ++i)
+    for (uint32 i = 0; i < sCriteriaTreeStore.GetNumRows(); ++i)
     {
         if(CriteriaTreeEntry const* ct = sCriteriaTreeStore.LookupEntry(i))
             if(ct->parent > 0)
             sCriteriaTreeEntryList[ct->parent].push_back(i);
     }
 
-    for (uint16 i = 0; i < sModifierTreeStore.GetNumRows(); ++i)
+    for (uint32 i = 0; i < sModifierTreeStore.GetNumRows(); ++i)
     {
         if(ModifierTreeEntry const* mt = sModifierTreeStore.LookupEntry(i))
             if(mt->parent > 0)
@@ -848,25 +848,25 @@ std::list<uint32> GetItemSpecsList(uint32 ItemID)
     return sItemSpecsList[ItemID];
 }
 
-uint16 GetsAchievementEntryByTreeList(uint16 criteriaTree)
+uint32 GetsAchievementEntryByTreeList(uint32 criteriaTree)
 {
-    UNORDERED_MAP<uint16, uint16 >::const_iterator itr = sAchievementEntryParentList.find(criteriaTree);
+    UNORDERED_MAP<uint32, uint32 >::const_iterator itr = sAchievementEntryParentList.find(criteriaTree);
     if(itr != sAchievementEntryParentList.end())
         return itr->second;
     return 0;
 }
 
-std::list<uint16> const* GetCriteriaTreeList(uint16 parent)
+std::list<uint32> const* GetCriteriaTreeList(uint32 parent)
 {
-    UNORDERED_MAP<uint16, std::list<uint16> >::const_iterator itr = sCriteriaTreeEntryList.find(parent);
+    UNORDERED_MAP<uint32, std::list<uint32> >::const_iterator itr = sCriteriaTreeEntryList.find(parent);
     if(itr != sCriteriaTreeEntryList.end())
         return &itr->second;
     return NULL;
 }
 
-std::list<uint16> const* GetModifierTreeList(uint16 parent)
+std::list<uint32> const* GetModifierTreeList(uint32 parent)
 {
-    UNORDERED_MAP<uint16, std::list<uint16> >::const_iterator itr = sModifierTreeEntryList.find(parent);
+    UNORDERED_MAP<uint32, std::list<uint32> >::const_iterator itr = sModifierTreeEntryList.find(parent);
     if(itr != sModifierTreeEntryList.end())
         return &itr->second;
     return NULL;

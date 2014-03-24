@@ -1365,6 +1365,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             if (!spellInfo)
             {
                 sLog->outError(LOG_FILTER_SQL, "SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->SourceEntry);
+                WorldDatabase.PExecute("DELETE FROM `conditions` WHERE SourceEntry = %u", cond->SourceEntry);
                 return false;
             }
 
@@ -1425,6 +1426,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             if (!spellProto)
             {
                 sLog->outError(LOG_FILTER_SQL, "SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->SourceEntry);
+                WorldDatabase.PExecute("DELETE FROM `conditions` WHERE SourceEntry = %u", cond->SourceEntry);
                 return false;
             }
             break;
@@ -1453,6 +1455,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             if (!sSpellMgr->GetSpellInfo(cond->SourceEntry))
             {
                 sLog->outError(LOG_FILTER_SQL, "SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->SourceEntry);
+                WorldDatabase.PExecute("DELETE FROM `conditions` WHERE SourceEntry = %u", cond->SourceEntry);
                 return false;
             }
             break;
@@ -1466,6 +1469,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             if (!sSpellMgr->GetSpellInfo(cond->SourceEntry))
             {
                 sLog->outError(LOG_FILTER_SQL, "SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->SourceEntry);
+                WorldDatabase.PExecute("DELETE FROM `conditions` WHERE SourceEntry = %u", cond->SourceEntry);
                 return false;
             }
             break;

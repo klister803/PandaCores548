@@ -29,9 +29,9 @@ typedef std::list<uint32> SimpleFactionsList;
 SimpleFactionsList const* GetFactionTeamList(uint32 faction);
 
 
-std::list<uint16> const* GetCriteriaTreeList(uint16 parent);
-std::list<uint16> const* GetModifierTreeList(uint16 parent);
-uint16 GetsAchievementEntryByTreeList(uint16 criteriaTree);
+std::list<uint32> const* GetCriteriaTreeList(uint32 parent);
+std::list<uint32> const* GetModifierTreeList(uint32 parent);
+uint32 GetsAchievementEntryByTreeList(uint32 criteriaTree);
 
 char const* GetPetName(uint32 petfamily, uint32 dbclang);
 SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint8 difficulty);
