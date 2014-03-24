@@ -772,3 +772,16 @@ void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
     data << uint32(0);  //unk5
     SendPacket(&data);
 }
+
+//! This is const data used for calc some field for SMSG_PVP_RATED_STATS 
+void WorldSession::HandlePersonalRatedInfoRequest(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_PERSONAL_RATED_INFO_REQUEST");
+    WorldPacket data(SMSG_PERSONAL_RATED_INFO, 20);
+    data << uint32(3500);
+    data << float(1639.28f);
+    data << uint32(2000);
+    data << float(1511.26f);
+    data << float(0.00412f);
+    SendPacket(&data);
+}

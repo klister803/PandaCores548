@@ -851,6 +851,7 @@ class WorldSession
         void HandleResetInstancesOpcode(WorldPacket& recvData);
         void HandleHearthAndResurrect(WorldPacket& recvData);
         void HandleInstanceLockResponse(WorldPacket& recvPacket);
+        void HandlePersonalRatedInfoRequest(WorldPacket& recvPacket);
 
         // Battlefield
         void SendBfInvitePlayerToWar(uint64 guid,uint32 ZoneId,uint32 time);

@@ -392,6 +392,7 @@ enum Opcodes
     CMSG_PET_SET_ACTION                               = 0x0364, // 5.4.1 17538
     CMSG_PET_SPELL_AUTOCAST                           = 0x000,  // Deprecated in 5.0.5 16048
     CMSG_PET_STOP_ATTACK                              = 0x03DD, // 5.4.1 17538
+    CMSG_PERSONAL_RATED_INFO_REQUEST                  = 0x166E, // 5.4.1 17538
     CMSG_PING                                         = 0x11E6, // 5.4.1 17538
     CMSG_PLAYED_TIME                                  = 0x1A4D, // 5.4.1 17538
     CMSG_PLAYER_DIFFICULTY_CHANGE                     = 0x000,  // Not found in 4.3.4
@@ -1171,6 +1172,7 @@ enum Opcodes
     SMSG_PARTY_MEMBER_STATS_FULL                      = 0x0CB4, // 5.4.1 17538
     SMSG_PAUSE_MIRROR_TIMER                           = 0x8E9,  // 5.0.5 16048 
     SMSG_PERIODICAURALOG                              = 0x0449, // 5.4.1 17538
+    SMSG_PERSONAL_RATED_INFO                          = 0x08AF, // 5.4.1 17538
     SMSG_PETGODMODE                                   = 0x9E4,  // 5.0.5 16048
     SMSG_PETITION_ALREADY_SIGNED                      = 0xAA8,  // 5.0.5 16048
     SMSG_PETITION_QUERY_RESPONSE                      = 0x0DB4, // 5.4.1 17538
