@@ -856,18 +856,17 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         do
         {
             Field* fields = criteriaResult->Fetch();
-            uint32 id      = fields[0].GetUInt32();
-            uint32 counter = fields[1].GetUInt32();
-            time_t date    = time_t(fields[2].GetUInt32());
+            uint32 char_criteria_id      = fields[0].GetUInt32();
+            time_t date                   = time_t(fields[2].GetUInt32());
 
-            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(id);
+            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(char_criteria_id);
             if (!criteriaTree)
             {
                 // we will remove not existed criteriaTree for all characters
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteriaTree %u data removed from table `character_achievement_progress`.", id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteriaTree %u data removed from table `character_achievement_progress`.", char_criteria_id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt32(0, uint32(id));
+                stmt->setUInt32(0, char_criteria_id);
                 CharacterDatabase.Execute(stmt);
 
                 continue;
@@ -877,10 +876,10 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             if (!criteria)
             {
                 // we will remove not existed criteria for all characters
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", char_criteria_id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt32(0, uint32(id));
+                stmt->setUInt32(0, char_criteria_id);
                 CharacterDatabase.Execute(stmt);
 
                 continue;
@@ -894,8 +893,8 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             if (!progressMap)
                 continue;
             
-            CriteriaProgress& progress = (*progressMap)[id];
-            progress.counter = counter;
+            CriteriaProgress& progress = (*progressMap)[char_criteria_id];
+            progress.counter = fields[1].GetUInt32();
             progress.date    = date;
             progress.changed = false;
         }
@@ -935,18 +934,17 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         do
         {
             Field* fields = criteriaAccountResult->Fetch();
-            uint32 id      = fields[0].GetUInt32();
-            uint32 counter = fields[1].GetUInt32();
-            time_t date    = time_t(fields[2].GetUInt32());
+            uint32 acc_criteria_id      = fields[0].GetUInt32();
+            time_t date                 = time_t(fields[2].GetUInt32());
 
-            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(id);
+            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(acc_criteria_id);
             if (!criteriaTree)
             {
                 // we will remove not existed criteria for all characters
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", acc_criteria_id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt32(0, uint32(id));
+                stmt->setUInt32(0, acc_criteria_id);
                 CharacterDatabase.Execute(stmt);
 
                 continue;
@@ -956,10 +954,10 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             if (!criteria)
             {
                 // we will remove not existed criteria for all characters
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `character_achievement_progress`.", acc_criteria_id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt32(0, uint32(id));
+                stmt->setUInt32(0, acc_criteria_id);
                 CharacterDatabase.Execute(stmt);
 
                 continue;
@@ -974,14 +972,14 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 continue;
             
             // Achievement in both account & characters achievement_progress, problem
-            if (progressMap->find(id) != progressMap->end())
+            if (progressMap->find(acc_criteria_id) != progressMap->end())
             {
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Achievement '%u' in both account & characters achievement_progress", id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Achievement '%u' in both account & characters achievement_progress", acc_criteria_id);
                 continue;
             }
             
-            CriteriaProgress& progress = (*progressMap)[id];
-            progress.counter = counter;
+            CriteriaProgress& progress = (*progressMap)[acc_criteria_id];
+            progress.counter = fields[1].GetUInt32();
             progress.date    = date;
             progress.changed = false;
         }
@@ -1022,19 +1020,18 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
         do
         {
             Field* fields = criteriaResult->Fetch();
-            uint32 id      = fields[0].GetUInt32();
-            uint32 counter = fields[1].GetUInt32();
-            time_t date    = time_t(fields[2].GetUInt32());
-            uint64 guid    = fields[3].GetUInt32();
+            uint32 guild_criteria_id      = fields[0].GetUInt32();
+            time_t date                   = time_t(fields[2].GetUInt32());
+            uint64 guid                   = fields[3].GetUInt32();
 
-            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(id);
+            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(guild_criteria_id);
             if (!criteriaTree)
             {
                 // we will remove not existed criteria for all guilds
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", guild_criteria_id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt32(0, uint32(id));
+                stmt->setUInt32(0, guild_criteria_id);
                 CharacterDatabase.Execute(stmt);
                 continue;
             }
@@ -1043,10 +1040,10 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
             if (!criteria)
             {
                 // we will remove not existed criteria for all guilds
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", guild_criteria_id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt32(0, uint32(id));
+                stmt->setUInt32(0, guild_criteria_id);
                 CharacterDatabase.Execute(stmt);
                 continue;
             }
@@ -1059,8 +1056,8 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
             if (!progressMap)
                 continue;
             
-            CriteriaProgress& progress = (*progressMap)[id];
-            progress.counter = counter;
+            CriteriaProgress& progress = (*progressMap)[guild_criteria_id];
+            progress.counter = fields[1].GetUInt32();
             progress.date    = date;
             progress.CompletedGUID = MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
             progress.changed = false;
