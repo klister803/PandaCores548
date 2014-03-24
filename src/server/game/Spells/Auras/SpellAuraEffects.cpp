@@ -1121,8 +1121,41 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellInfo()->SpellFamilyFlags[2] & 0x00000008)
                 amount = GetBase()->GetUnitOwner()->GetShapeshiftForm() == FORM_CAT ? amount : 0;
             break;
-        case SPELL_AURA_ADD_PCT_MODIFIER:
-            break;
+        case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
+        case SPELL_AURA_MOD_HEALING_DONE_PERCENT:
+        {
+            if (!caster)
+                break;
+
+            switch (m_spellInfo->Id)
+            {
+                case 116740: // Tigereye Brew
+                {
+                    if (Aura * aura = caster->GetAura(125195))
+                    {
+                        uint8 stuck   = aura->GetStackAmount();
+                        uint8 residue = stuck;
+
+                        if (stuck >= 10)
+                            stuck = 10;
+
+                        residue -= stuck;
+
+                        if (residue != 0)
+                        {
+                            if (m_effIndex == EFFECT_1)
+                                aura->SetStackAmount(residue);
+                        }
+                        else caster->RemoveAura(125195);
+                        
+                        amount *= stuck;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
         case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
         {
             if (caster)
