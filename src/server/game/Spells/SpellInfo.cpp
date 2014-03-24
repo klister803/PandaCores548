@@ -459,7 +459,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
             if (target && _spellInfo->IsPositiveEffect(_effIndex) && (Effect == SPELL_EFFECT_APPLY_AURA) && _spellInfo->Id != 774) // Hack Fix Rejuvenation, doesn't use the target level for basepoints
                 level = target->getLevel();
 
-            if (GtSpellScalingEntry const* gtScaling = sGtSpellScalingStore.LookupEntry((_spellInfo->ScalingClass != -1 ? _spellInfo->ScalingClass - 1 : MAX_CLASSES - 1) * 100 + level - 1))
+            if (GtSpellScalingEntry const* gtScaling = sGtSpellScalingStore.LookupEntry(_spellInfo->ScalingClass != -1 ? (_spellInfo->ScalingClass - 1) * 100 + level - 1 : (MAX_CLASSES - 1) * 100 + level - 6))
             {
                 float multiplier = gtScaling->value;
                 if (_spellInfo->CastTimeMax > 0 && _spellInfo->CastTimeMaxLevel > level)

@@ -2981,6 +2981,7 @@ class Player : public Unit, public GridObject<Player>
         BattlePetMgr const& GetBattlePetMgr() const { return m_battlePetMgr; }
 
         Bracket* getBracket(BracketType slot) const;
+        void SendPvpRatedStats();
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;

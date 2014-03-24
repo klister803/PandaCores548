@@ -1025,8 +1025,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     //! 5.4.1
     // ToDo: add data from config
     data.Initialize(SMSG_ARENA_SEASON_WORLDSTATE, 4+4);
-    data << uint32(sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
     data << uint32(sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID));
+    data << uint32(sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID)-1);
     SendPacket(&data);
 
     //! 5.4.1

@@ -729,24 +729,7 @@ void WorldSession::HandleBattlemasterJoinRated(WorldPacket& recvData)
 void WorldSession::HandleRequestRatedInfo(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_RATED_INFO");
-
-    WorldPacket data(SMSG_PVP_RATED_STATS, 128);
-    for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
-    {
-        Bracket* bracket = _player->getBracket(i);
-        ASSERT(bracket);
-
-        data << uint32(bracket->getRating());
-        data << uint32(0);                                                       // not used
-        data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_GAMES));           // games season
-        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_WIN));               // wins_week   
-        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_GAMES));             // games week
-        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_BEST));              // weeklyBest
-        data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_WIN));             // Season Win
-        data << uint32(bracket->GetBracketInfo(BRACKET_BEST));                   // seasonBest
-    }
-
-    SendPacket(&data);
+    _player->SendPvpRatedStats();
 }
 
 void WorldSession::HandleRequestPvpOptions(WorldPacket& recvData)
