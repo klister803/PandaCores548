@@ -273,6 +273,8 @@ class WorldSession
 
         void SendAuthResponse(uint8 code, bool hasAccountData = true, bool queued = false, uint32 queuePos = 0);
         void SendClientCacheVersion(uint32 version);
+        void SendBattlePay();
+        void SendDisplayPromo(int32 promo);
 
         AccountTypes GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
@@ -345,7 +347,7 @@ class WorldSession
         // Account Data
         AccountData* GetAccountData(AccountDataType type) { return &m_accountData[type]; }
         void SetAccountData(AccountDataType type, time_t tm, std::string data);
-        void SendAccountDataTimes(uint32 mask);
+        void SendAccountDataTimes(uint32 mask, bool ready = false);
         void SendTimeZoneInformation();
         void LoadGlobalAccountData();
         void LoadAccountData(PreparedQueryResult result, uint32 mask);

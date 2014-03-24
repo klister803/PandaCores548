@@ -356,7 +356,7 @@ void WorldSession::SendItemeExtendedCostDb2Reply(uint32 entry)
         data << uint32(time(NULL)); // hotfix date
         data << uint32(DB2_REPLY_ITEM_EXTENDED_COST);
         data << uint32(0);          // size of next block
-        data << uint32(-1);         // entry
+        data << int32(entry * -1);     // entry
         return;
     }
 
@@ -405,7 +405,7 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
         data << uint32(time(NULL)); // hotfix date
         data << uint32(DB2_REPLY_ITEM);
         data << uint32(0);          // size of next block
-        data << uint32(-1);         // entry
+        data << int32(entry * -1);         // entry
         return;
     }
 
@@ -438,7 +438,7 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
         data << uint32(time(NULL)); // hotfix date
         data << uint32(DB2_REPLY_SPARSE);
         data << uint32(0);          // size of next block
-        data << uint32(-1);         // entry
+        data << int32(entry * -1);         // entry
         return;
     }
 
@@ -1033,7 +1033,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             if (vendorItem->ExtendedCost != 0)
             {
                 //Hack for donate
-                if(vendorItem->ExtendedCost > 4999)
+                if(vendorItem->ExtendedCost > 14999)
                 {
                     if(ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(vendorItem->ExtendedCost))
                         price = uint32(iece->RequiredItemCount[0] * 10000 * sWorld->getRate(RATE_DONATE));

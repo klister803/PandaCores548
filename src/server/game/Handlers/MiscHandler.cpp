@@ -1780,13 +1780,16 @@ void WorldSession::HandleRealmSplitOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_REALM_SPLIT");
 
+    // On retail before send realm_split always send time zone
+    SendTimeZoneInformation();
+
     uint32 unk;
     std::string split_date = "01/01/01";
     recvData >> unk;
 
     WorldPacket data(SMSG_REALM_SPLIT, 4+4+split_date.size()+1);
-    data << unk;
     data << uint32(0x00000000);                             // realm split state
+    data << unk;
     // split states:
     // 0x0 realm normal
     // 0x1 realm split
@@ -2093,7 +2096,7 @@ void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& /*recvData*/)
     // empty opcode
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_READY_FOR_ACCOUNT_DATA_TIMES");
 
-    SendAccountDataTimes(GLOBAL_CACHE_MASK);
+    SendAccountDataTimes(GLOBAL_CACHE_MASK, true);
 }
 
 void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps)

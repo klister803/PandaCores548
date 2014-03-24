@@ -124,8 +124,11 @@ enum CharacterCustomizeFlags
 {
     CHAR_CUSTOMIZE_FLAG_NONE            = 0x00000000,
     CHAR_CUSTOMIZE_FLAG_CUSTOMIZE       = 0x00000001,       // name, gender, etc...
+    CHAR_CUSTOMIZE_FLAG_2               = 0x00000002,
+    CHAR_CUSTOMIZE_FLAG_24              = 0x00008000,
     CHAR_CUSTOMIZE_FLAG_FACTION         = 0x00010000,       // name, gender, faction, etc...
-    CHAR_CUSTOMIZE_FLAG_RACE            = 0x00100000        // name, gender, race, etc...
+    CHAR_CUSTOMIZE_FLAG_RACE            = 0x00100000,       // name, gender, race, etc...
+    CHAR_CUSTOMIZE_FLAG_35              = 0x10000000,
 };
 
 // corpse reclaim times
@@ -2111,7 +2114,7 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
     Tokenizer equipment(fields[19].GetString(), ' ');
     uint8 slot = fields[21].GetUInt8();
 
-    uint32 charFlags = 0;
+    uint32 charFlags = CHARACTER_FLAG_UNK29 | CHARACTER_FLAG_UNK24 | CHARACTER_FLAG_UNK22;
     if (playerFlags & PLAYER_FLAGS_HIDE_HELM)
         charFlags |= CHARACTER_FLAG_HIDE_HELM;
 
@@ -2134,7 +2137,7 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
     }else
         charFlags |= CHARACTER_FLAG_DECLINED;
 
-    uint32 customizationFlag = 0;
+    uint32 customizationFlag = CHAR_CUSTOMIZE_FLAG_2 | CHAR_CUSTOMIZE_FLAG_24 | CHAR_CUSTOMIZE_FLAG_35;
     if (atLoginFlags & AT_LOGIN_CUSTOMIZE)
         customizationFlag = CHAR_CUSTOMIZE_FLAG_CUSTOMIZE;
     else if (atLoginFlags & AT_LOGIN_CHANGE_FACTION)
@@ -2510,8 +2513,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 // send transfer packets
                 //! 5.4.1
                 WorldPacket data(SMSG_TRANSFER_PENDING, 4 + 4 + 4);
-                data.WriteBit(0);       // customLoadScreenSpell
-                data.WriteBit(1);       // has transport
+                data.WriteBit(0);                       // customLoadScreenSpell
+                data.WriteBit(bool(m_transport));       // has transport
                 data.FlushBits();
                 data << uint32(mapid);
                 if (m_transport)
@@ -7440,8 +7443,13 @@ void Player::SaveRecallPosition()
     m_recallO = GetOrientation();
 }
 
+//! WARN! We shouldn't send at login range based packet.
+//! For example SMSG_SPELLLOGEXECUTE
 void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 {
+    if (!IsInWorld())
+        return;
+
     if (self)
         GetSession()->SendPacket(data);
 
@@ -7451,6 +7459,9 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 
 void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only)
 {
+    if (!IsInWorld())
+        return;
+
     if (self)
         GetSession()->SendPacket(data);
 
@@ -7460,6 +7471,9 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
 
 void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 {
+    if (!IsInWorld())
+        return;
+
     if (skipped_rcvr != this)
         GetSession()->SendPacket(data);
 
@@ -24235,15 +24249,18 @@ void Player::SetGroup(Group* group, int8 subgroup)
     UpdateObjectVisibility(false);
 }
 
+//! Before send self obj. update 
 void Player::SendInitialPacketsBeforeAddToMap()
 {
     /// Pass 'this' as argument because we're not stored in ObjectAccessor yet
     GetSocial()->SendSocialList(this);
 
     // guild bank list wtf?
+    WorldPacket data(SMSG_BATTLE_PET_JOURNAL_LOCK_DENIED);
+    GetSession()->SendPacket(&data);
 
     // Homebind
-    WorldPacket data(SMSG_BINDPOINTUPDATE, 20);
+    data.Initialize(SMSG_BINDPOINTUPDATE, 20);
     data << m_homebindZ;
     data << m_homebindY;
     data << uint32(m_homebindMapId);
@@ -24256,31 +24273,71 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_FLAT_SPELL_MODIFIER
     // SMSG_UPDATE_AURA_DURATION
 
-    data.Initialize(SMSG_WORLD_SERVER_INFO, 4 + 4 + 1 + 1);
-    data << uint32(sWorld->GetNextWeeklyQuestsResetTime() -  WEEK);
-    data << uint8(0);                                       // is on tournament realm
-    data << uint32(GetMap()->GetDifficulty());
-    data.WriteBit(false);                                   // has trial money
-    data.WriteBit(false);                                   // unk
-    data.WriteBit(false);                                   // has trial level
-    data.WriteBit(false);                                   // is ineligible for loot
-
+    data.Initialize(SMSG_SPELL_0x00E9);
     GetSession()->SendPacket(&data);
 
     SendTalentsInfoData(false);
-
-    SendKnownSpells();
 
     data.Initialize(SMSG_SEND_UNLEARN_SPELLS);
     data.WriteBits(0, 22);                                  // count, read uint32 spells id
     data.FlushBits();
     GetSession()->SendPacket(&data);
 
+    data.Initialize(SMSG_SPELL_0x00E9);
+    GetSession()->SendPacket(&data);
+
+    SendKnownSpells();
+
+    data.Initialize(SMSG_SPELL_HISTORY_0x05E8);
+    data.WriteBits(0, 19);
+    data.FlushBits();
+    GetSession()->SendPacket(&data);
+
+    data.Initialize(SMSG_SPELL_CHARGE_DATA);
+    data.WriteBits(0, 21);
+    data.FlushBits();
+    GetSession()->SendPacket(&data);
+
     SendInitialActionButtons();
+
+    data.Initialize(SMSG_CORPSE_RECLAIM_DELAY, 1);
+    data.WriteBit(1);
+    data.FlushBits();
+    GetSession()->SendPacket(&data);
+
+    //SMSG_ALL_ACHIEVEMENT_DATA first send
     m_reputationMgr.SendInitialReputations();
-    m_achievementMgr.SendAllAchievementData(this);
+    
+    ResetTimeSync();
+    SendTimeSync();
+
+    //SMSG_WEATHER done on UpdateZone
+    SendCurrencies();
+
+    data.Initialize(SMSG_CLIENT_VIGNETTE_DATA, 15);
+    data.WriteBits(0, 24);
+    data.WriteBits(0, 24);
+    data.WriteBit(0);
+    data.WriteBits(0, 20);
+    data.WriteBits(0, 20);
+    data.WriteBits(0, 24);
+    GetSession()->SendPacket(&data);
 
     SendEquipmentSetList();
+    m_achievementMgr.SendAllAchievementData(this);  //second send
+
+    data.Initialize(SMSG_SUSPEND_TOKEN_RESPONSE, 15);
+    data << uint32(0);
+    data.WriteBits(2, 2);
+    GetSession()->SendPacket(&data);
+
+    data.Initialize(SMSG_LOGIN_VERIFY_WORLD, 20);
+    data << GetPositionZ();
+    data << GetPositionY();
+    data << GetMapId();
+    data << GetOrientation();
+    data << GetPositionX();
+    GetSession()->SendPacket(&data);
 
     data.Initialize(SMSG_LOGIN_SETTIMESPEED, 4 + 4 + 4);
     data << uint32(0);
@@ -24288,53 +24345,20 @@ void Player::SendInitialPacketsBeforeAddToMap()
     data << float(0.01666667f);                             // game speed
     data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
     data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
-
     GetSession()->SendPacket(&data);
-
     GetReputationMgr().SendForceReactions();                // SMSG_SET_FORCED_REACTIONS
 
-    // SMSG_TALENTS_INFO x 2 for pet (unspent points and talents in separate packets...)
-    // SMSG_PET_GUIDS
     // SMSG_UPDATE_WORLD_STATE
-    // SMSG_POWER_UPDATE
+    // SMSG_SET_PHASE_SHIFT
+    // SMSG_UPDATE_CURRENCY_WEEK_LIMIT
+    // SMSG_WEEKLY_SPELL_USAGE
 
-    SendCurrencies();
-    SetMover(this);
+    // SMSG_0x010E
+    // SMSG_ACCOUNT_CRITERIA_UPDATE
+    SendPvpRatedStats();
 }
 
-void Player::SendCooldownAtLogin()
-{
-    ObjectGuid guid = GetGUID();
-    time_t curTime = time(NULL);
-    uint32 count = 0;
-
-    //! 5.4.1
-    WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
-    data.WriteGuidMask<4, 7, 6>(guid);
-    size_t count_pos = data.bitwpos();
-    data.WriteBits(1, 21);
-    data.WriteGuidMask<2, 3, 1, 0>(guid);
-    data.WriteBit(1);
-    data.WriteGuidMask<5>(guid);
-
-    data.FlushBits();
-   
-    data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
-
-    for (SpellCooldowns::const_iterator itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
-    {
-        if (itr->second.end <= curTime)
-            continue;
-
-        data << uint32(itr->first);
-        data << uint32(uint32(itr->second.end - curTime)*IN_MILLISECONDS);
-        ++count;
-    }
-    data.PutBits(count_pos, count, 21);
-
-    GetSession()->SendPacket(&data);
-}
-
+//! After send self obj. update 
 void Player::SendInitialPacketsAfterAddToMap()
 {
     UpdateVisibilityForPlayer();
@@ -24344,8 +24368,25 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetZoneAndAreaId(newzone, newarea);
     UpdateZone(newzone, newarea);                            // also call SendInitWorldStates();
 
-    ResetTimeSync();
-    SendTimeSync();
+    InstanceMap* inst = GetMap()->ToInstanceMap();
+    uint32 loot_mask = inst ? inst->GetMaxPlayers() : 0;
+
+    WorldPacket data(SMSG_WORLD_SERVER_INFO, 4 + 4 + 1 + 1);
+    data << uint32(sWorld->GetNextWeeklyQuestsResetTime() -  WEEK);
+    data << uint8(0);                                       // is on tournament realm
+    data << uint32(GetMap()->GetDifficulty());
+    data.WriteBit(loot_mask);                               // is ineligible for loot
+    data.WriteBit(false);                                   // unk
+    data.WriteBit(false);                                   // has trial level
+    data.WriteBit(false);    
+    data.FlushBits();
+    if (loot_mask)
+        data << uint32(loot_mask);
+    GetSession()->SendPacket(&data);
+
+    // SMSG_TALENTS_INFO x 2 for pet (unspent points and talents in separate packets...)
+    // SMSG_PET_GUIDS
+    // SMSG_POWER_UPDATE
 
     CastSpell(this, 836, true);                             // LOGINEFFECT
 
@@ -24389,7 +24430,6 @@ void Player::SendInitialPacketsAfterAddToMap()
     else if (GetRaidDifficulty() != GetStoredRaidDifficulty())
         SendRaidDifficulty();
 
-    WorldPacket data;
     GetBattlePetMgr().BuildBattlePetJournal(&data);
     GetSession()->SendPacket(&data);
 
@@ -24403,6 +24443,41 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     if (GetSkillValue(SKILL_ARCHAEOLOGY) && sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
         ShowResearchSites();
+
+    SetMover(this);
+}
+
+void Player::SendCooldownAtLogin()
+{
+    ObjectGuid guid = GetGUID();
+    time_t curTime = time(NULL);
+    uint32 count = 0;
+
+    //! 5.4.1
+    WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
+    data.WriteGuidMask<4, 7, 6>(guid);
+    size_t count_pos = data.bitwpos();
+    data.WriteBits(1, 21);
+    data.WriteGuidMask<2, 3, 1, 0>(guid);
+    data.WriteBit(1);
+    data.WriteGuidMask<5>(guid);
+
+    data.FlushBits();
+   
+    data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
+
+    for (SpellCooldowns::const_iterator itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
+    {
+        if (itr->second.end <= curTime)
+            continue;
+
+        data << uint32(itr->first);
+        data << uint32(uint32(itr->second.end - curTime)*IN_MILLISECONDS);
+        ++count;
+    }
+    data.PutBits(count_pos, count, 21);
+
+    GetSession()->SendPacket(&data);
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()
@@ -26911,9 +26986,11 @@ void Player::BuildEnchantmentsInfoData(WorldPacket* data)
 void Player::SendEquipmentSetList()
 {
     uint32 count = 0;
-    ByteBuffer buf, dataBuf;
+    ByteBuffer dataBuf;
 
-    WorldPacket data(SMSG_EQUIPMENT_SET_LIST, 4);
+    ObjectGuid itemGuid = 0;
+    WorldPacket data(SMSG_EQUIPMENT_SET_LIST, 1000);
+    data.WriteBits(count, 19);
 
     for (EquipmentSets::const_iterator itr = m_EquipmentSets.begin(); itr != m_EquipmentSets.end(); ++itr)
     {
@@ -26921,19 +26998,20 @@ void Player::SendEquipmentSetList()
         if (set.state == EQUIPMENT_SET_DELETED)
             continue;
 
-        buf.WriteGuidMask<2, 0>(itr->second.Guid);
+        data.WriteGuidMask<2, 0>(set.Guid);
 
         for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        {
+            itemGuid = set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM);
             // ignored slots stored in IgnoreMask, client wants "1" as raw GUID, so no HIGHGUID_ITEM
-            buf.WriteGuidMask<2, 6, 3, 1, 4, 7, 5, 0>(set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM));
+            data.WriteGuidMask<2, 6, 3, 1, 4, 7, 5, 0>(itemGuid);
+            dataBuf.WriteGuidBytes<3, 5, 1, 2, 0, 7, 6, 4>(itemGuid);
+        }
 
-        buf.WriteBits(set.Name.size(), 8);
-        buf.WriteGuidMask<4, 1, 7, 3, 5>(itr->second.Guid);
-        buf.WriteBits(set.IconName.size(), 9);
-        buf.WriteGuidMask<6>(set.Guid);
-
-        for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
-            dataBuf.WriteGuidBytes<3, 5, 1, 2, 0, 7, 6, 4>(set.IgnoreMask & (1 << i) ? 1 : MAKE_NEW_GUID(set.Items[i], 0, HIGHGUID_ITEM));
+        data.WriteBits(set.Name.size(), 8);
+        data.WriteGuidMask<4, 1, 7, 3, 5>(set.Guid);
+        data.WriteBits(set.IconName.size(), 9);
+        data.WriteGuidMask<6>(set.Guid);
 
         dataBuf.WriteGuidBytes<6>(set.Guid);
         dataBuf << uint32(itr->first);
@@ -26944,14 +27022,9 @@ void Player::SendEquipmentSetList()
 
         ++count;                                            // client has limit but it's checked at loading a set
     }
-
-    data.WriteBits(count, 19);
     data.FlushBits();
-    if (!buf.empty())
-    {
-        buf.FlushBits();
-        data.append(buf);
-    }
+    data.PutBits<uint32>(0, count, 19);
+
     if (!dataBuf.empty())
         data.append(dataBuf);
 
@@ -28619,3 +28692,23 @@ Bracket* Player::getBracket(BracketType slot) const
     return itr->second;
 }
 
+void Player::SendPvpRatedStats()
+{
+    WorldPacket data(SMSG_PVP_RATED_STATS, 128);
+    for (BracketType i = BRACKET_TYPE_ARENA_2; i < BRACKET_TYPE_MAX; ++i)
+    {
+        Bracket* bracket = getBracket(i);
+        ASSERT(bracket);
+
+        data << uint32(bracket->getRating());
+        data << uint32(0);                                                       // not used
+        data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_GAMES));           // games season
+        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_WIN));               // wins_week   
+        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_GAMES));             // games week
+        data << uint32(bracket->GetBracketInfo(BRACKET_WEEK_BEST));              // weeklyBest
+        data << uint32(bracket->GetBracketInfo(BRACKET_SEASON_WIN));             // Season Win
+        data << uint32(bracket->GetBracketInfo(BRACKET_BEST));                   // seasonBest
+    }
+
+    GetSession()->SendPacket(&data);
+}

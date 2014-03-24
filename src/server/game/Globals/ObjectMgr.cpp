@@ -1429,7 +1429,10 @@ void ObjectMgr::LoadCreatures()
         }
 
         if (data.spawnMask & ~spawnMasks[data.mapid])
+        {
             sLog->outError(LOG_FILTER_SQL, "Table `creature` have creature (GUID: %u) that have wrong spawn mask %u including not supported difficulty modes for map (Id: %u) spawnMasks[data.mapid]: %u.", guid, data.spawnMask, data.mapid, spawnMasks[data.mapid]);
+            WorldDatabase.PExecute("UPDATE creature SET spawnMask = %u WHERE guid = %u", spawnMasks[data.mapid], guid);
+        }
 
         // -1 no equipment, 0 use default
         if (data.equipmentId > 0)
@@ -1851,7 +1854,10 @@ void ObjectMgr::LoadGameobjects()
         data.spawnMask      = fields[17].GetUInt32();
 
         if (data.spawnMask & ~spawnMasks[data.mapid])
+        {
             sLog->outError(LOG_FILTER_SQL, "Table `gameobject` has gameobject (GUID: %u Entry: %u) that has wrong spawn mask %u including not supported difficulty modes for map (Id: %u), skip", guid, data.id, data.spawnMask, data.mapid);
+            WorldDatabase.PExecute("UPDATE gameobject SET spawnMask = %u WHERE guid = %u", spawnMasks[data.mapid], guid);
+        }
 
         data.phaseMask      = fields[18].GetUInt16();
         int16 gameEvent     = fields[19].GetInt8();
@@ -1866,12 +1872,6 @@ void ObjectMgr::LoadGameobjects()
         if (data.rotation3 < -1.0f || data.rotation3 > 1.0f)
         {
             sLog->outError(LOG_FILTER_SQL, "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotation3 (%f) value, skip", guid, data.id, data.rotation3);
-            continue;
-        }
-
-        if (!MapManager::IsValidMapCoord(data.mapid, data.posX, data.posY, data.posZ, data.orientation))
-        {
-            sLog->outError(LOG_FILTER_SQL, "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid coordinates, skip", guid, data.id);
             continue;
         }
 
