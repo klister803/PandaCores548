@@ -760,6 +760,26 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 amount = GetBase()->GetUnitOwner()->SpellHealingBonusTaken(caster, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
             }
             break;
+        case SPELL_AURA_BYPASS_ARMOR_FOR_CASTER:
+        {
+            if (!caster)
+                break;
+
+            switch (m_spellInfo->Id)
+            {
+                case 91021: // Find Weakness
+                {
+                    if (Unit * target = GetBase()->GetUnitOwner())
+                    {
+                        if (target->GetTypeId() == TYPEID_PLAYER)
+                            amount = 50;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
         case SPELL_AURA_417:
         {
             switch (GetId())
