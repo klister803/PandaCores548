@@ -3369,17 +3369,15 @@ void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& list, float ra
 
 void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
 {
-    mTimedActionList.clear();
-    mTimedActionList = sSmartScriptMgr->GetScript(entry, SMART_SCRIPT_TYPE_TIMED_ACTIONLIST);
-    if (mTimedActionList.empty())
+    SmartAIEventList val = sSmartScriptMgr->GetScript(entry, SMART_SCRIPT_TYPE_TIMED_ACTIONLIST);
+    if (val.empty())
         return;
+
+    mTimedActionList.push_back(*(val.begin()));
+
     for (SmartAIEventList::iterator i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
     {
-        if (i == mTimedActionList.begin())
-        {
-            i->enableTimed = true;//enable processing only for the first action
-        }
-        else i->enableTimed = false;
+        i->enableTimed = true;
 
         if (e.action.timedActionList.timerType == 1)
             i->event.type = SMART_EVENT_UPDATE_IC;
