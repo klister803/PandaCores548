@@ -6688,6 +6688,27 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 break;
             }
+            case SPELL_EFFECT_SUMMON_RAID_MARKER:
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 115176: // Zen Meditation
+                    case 1706:   // Levitate
+                        break;
+                    default:
+                    {
+                        Player* player = m_caster->ToPlayer();
+                        if (!player)
+                            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
+                        Group* group = player->GetGroup();
+                        if (!group)
+                            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                        break;
+                    }
+                }
+                break;
+            }
             default:
                 break;
         }
