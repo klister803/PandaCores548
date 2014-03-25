@@ -3398,6 +3398,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 115460: // Healing Sphere
                     spellInfo->PreventionType = 1;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_DEST_AREA_ENTRY;
                     break;
                 case 16213: // Purification
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] &= ~8192;
