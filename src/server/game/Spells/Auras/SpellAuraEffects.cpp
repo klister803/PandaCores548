@@ -767,6 +767,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
 
             switch (m_spellInfo->Id)
             {
+                case 86346: // Colossus Smash
                 case 91021: // Find Weakness
                 {
                     if (Unit * target = GetBase()->GetUnitOwner())
