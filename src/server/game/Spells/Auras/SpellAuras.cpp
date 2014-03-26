@@ -2783,6 +2783,9 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
                     {
                         for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                         {
+                            if ((*itr)->IsFullHealth())
+                                continue;
+
                             dynObjOwnerCaster->CastSpell(*itr, 115464, true); // Healing Sphere heal
                             GetDynobjOwner()->SetDuration(0);
                             return;
