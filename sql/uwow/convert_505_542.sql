@@ -66,3 +66,20 @@ ADD `upgradeId` MEDIUMINT(8) UNSIGNED DEFAULT '0' NOT NULL AFTER transmogrifyId;
 DROP TABLE `arena_team`;
 DROP TABLE `arena_team_member`;
 
+ALTER TABLE character_achievement_progress
+  CHANGE COLUMN guid guid int(11) unsigned NOT NULL,
+  CHANGE COLUMN criteria criteria int(11) unsigned NOT NULL,
+  CHANGE COLUMN counter counter int(11) unsigned NOT NULL,
+  CHANGE COLUMN date date bigint(11) unsigned NOT NULL default '0';
+ALTER TABLE account_achievement_progress
+  CHANGE COLUMN account account int(11) unsigned NOT NULL,
+  CHANGE COLUMN criteria criteria int(11) unsigned NOT NULL,
+  CHANGE COLUMN counter counter int(11) unsigned NOT NULL,
+  CHANGE COLUMN date date bigint(11) unsigned NOT NULL default '0';
+ALTER TABLE guild_achievement_progress
+  CHANGE COLUMN guildId guildId int(11) unsigned NOT NULL,
+  CHANGE COLUMN criteria criteria int(11) unsigned NOT NULL,
+  CHANGE COLUMN counter counter int(11) unsigned NOT NULL,
+  CHANGE COLUMN completedGuid completedGuid int(11) unsigned NOT NULL default '0',
+  CHANGE COLUMN date date bigint(11) unsigned NOT NULL default '0';
+

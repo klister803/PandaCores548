@@ -6332,7 +6332,7 @@ void ObjectMgr::LoadGameObjectTemplate()
             got.questItems[i] = fields[10 + i].GetUInt32();
 
         for (uint8 i = 0; i < MAX_GAMEOBJECT_DATA; ++i)
-            got.raw.data[i] = fields[16 + i].GetUInt32();
+            got.raw.data[i] = fields[16 + i].GetInt32();
 
         got.unkInt32 = fields[48].GetInt32();
         got.AIName = fields[49].GetString();
