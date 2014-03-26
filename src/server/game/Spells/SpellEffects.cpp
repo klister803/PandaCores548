@@ -1374,6 +1374,22 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
+        case 145640: // Chi Brew
+        {
+            uint32 spellid = 115867;
+            uint8  effect  = 0;
+
+            if      (m_caster->HasSpell(113656))  spellid = 125195;
+            else if (m_caster->HasSpell(121253)) {spellid = 128939; effect = 1;}
+
+            if (effect != effIndex)
+                break;
+
+            if (!m_caster->HasAura(spellid)) damage -= 1;
+
+            m_caster->SetAuraStack(spellid, m_caster, damage);
+            break;
+        }
         // Lunar Invitation
         case 26373:
             if(m_caster->ToPlayer())
