@@ -22,7 +22,9 @@
 enum eSpells
 {
     SPELL_FURIOUS_SWIPE     = 122735, //Cleave
-    SPELL_PHEROMONES        = 122835,
+    SPELL_PHEROMONES        = 123100, 
+    SPELL_PHEROMONES_B      = 122835,
+    SPELL_PHEROMONES_TRAIL  = 123106,
     SPELL_FURY              = 122754,
     SPELL_CRUSH             = 122774,
 };
@@ -106,7 +108,56 @@ class boss_garalon : public CreatureScript
         }
 };
 
+class npc_pheromones_trail : public CreatureScript
+{
+    public:
+        npc_pheromones_trail() : CreatureScript("npc_pheromones_trail") {}
+
+        struct npc_pheromones_trailAI : public ScriptedAI
+        {
+            npc_pheromones_trailAI(Creature* creature) : ScriptedAI(creature)
+            {
+                me->SetDisplayId(11686);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            }
+
+            uint32 unsummon;
+
+            void Reset()
+            {
+                me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.4f); //Base Scale - 0.4f.(this is currect scale = 1.0)
+                me->AddAura(SPELL_PHEROMONES_TRAIL, me);
+                unsummon = 30000;
+            }
+
+            void EnterEvadeMode(){}
+
+            void EnterCombat(Unit* who){}
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (unsummon)
+                {
+                    if (unsummon <= diff)
+                    {
+                        unsummon = 0;
+                        me->DespawnOrUnsummon();
+                    }
+                    else
+                        unsummon -= diff;
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_pheromones_trailAI(creature);
+        }
+};
+
 void AddSC_boss_garalon()
 {
     new boss_garalon();
+    new npc_pheromones_trail();
 }
