@@ -23,6 +23,8 @@
 #include "Debugging/Errors.h"
 #include "Log.h"
 #include "Utilities/ByteConverter.h"
+#include <ace/OS_NS_time.h>
+#include <time.h>
 
 #define BITS_1 uint8 _1
 #define BITS_2 BITS_1, uint8 _2
