@@ -24344,8 +24344,8 @@ void Player::SendInitialPacketsBeforeAddToMap()
     data << uint32(0);
     data << uint32(0);
     data << float(0.01666667f);                             // game speed
-    data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
-    data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
+    data.AppendPackedTime(sWorld->GetGameTime());
+    data.AppendPackedTime(sWorld->GetGameTime());
     GetSession()->SendPacket(&data);
     GetReputationMgr().SendForceReactions();                // SMSG_SET_FORCED_REACTIONS
 

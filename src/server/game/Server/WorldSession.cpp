@@ -825,7 +825,8 @@ void WorldSession::SendAccountDataTimes(uint32 mask, bool ready)
 // ToDo: add confing. Are we need it?
 void WorldSession::SendTimeZoneInformation()
 {
-    std::string zone = "Europe/Moscow";    //RTL: Europe/Paris
+    //Etc/UTC recomendation from skyfire
+    std::string zone = "Etc/UTC";    //RTL: Europe/Paris
     WorldPacket data(SMSG_SET_TIME_ZONE_INFORMATION, 30);
     data.WriteBits(zone.size(), 7);
     data.WriteBits(zone.size(), 7);
