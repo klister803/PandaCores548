@@ -255,7 +255,6 @@ public:
                 uint8 race = RACE_NONE;
                 uint8 playerClass = 0;
                 uint8 level = 1;
-                bool setrename = false;
 
                 QueryResult result = CharacterDatabase.PQuery("SELECT deleteInfos_Account, guid, deleteInfos_Name, gender, race, class, level FROM `%s_dub`.`characters` WHERE guid = '%u'", CharacterDatabase.GetDatabaseName(), action);
                 if (result)
@@ -272,12 +271,6 @@ public:
                         player->CLOSE_GOSSIP_MENU();
                         break;
                     }
-                    else
-                    {
-                        QueryResult result2 = CharacterDatabase.PQuery("SELECT name FROM characters WHERE name = '%s'", name.c_str());
-                        if(result2)
-                            setrename = true;
-                    }
                 }
                 else
                 {
@@ -285,8 +278,7 @@ public:
                     break;
                 }
 
-                if(setrename)
-                    CharacterDatabase.PExecute("UPDATE `%s_dub`.`characters` SET at_login = at_login | '1' WHERE AND guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
+                CharacterDatabase.PExecute("UPDATE `%s_dub`.`characters` SET at_login = at_login | '1' WHERE AND guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
 
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 trans->PAppend("UPDATE `%s_dub`.`characters` SET name = deleteInfos_Name, account = deleteInfos_Account, deleteDate = NULL, deleteInfos_Name = NULL, deleteInfos_Account = NULL WHERE deleteDate IS NOT NULL AND guid = '%u'",CharacterDatabase.GetDatabaseName(), action);

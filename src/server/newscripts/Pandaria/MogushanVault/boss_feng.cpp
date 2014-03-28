@@ -78,6 +78,11 @@ enum eSpells
     SPELL_ARCANE_SHOCK_INVERSION        = 132298
 };
 
+enum eSummon
+{
+    NPC_LIGHTNING_FISTS         = 60241,
+};
+
 enum eEvents
 {
     EVENT_DOT_ATTACK            = 1,
@@ -151,6 +156,7 @@ class boss_feng : public CreatureScript
             uint8 newphase;
             uint8 actualPhase;
             uint32 dotSpellId, checkvictim;
+            uint64 targetGuid;
 
             void Reset()
             {
@@ -162,6 +168,7 @@ class boss_feng : public CreatureScript
                 newphase = 0;
                 actualPhase = PHASE_NONE;
                 dotSpellId = 0;
+                targetGuid = 0;
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
 
@@ -345,6 +352,18 @@ class boss_feng : public CreatureScript
                 }
             }
 
+            void JustSummoned(Creature* sum)
+            {
+                if (sum->GetEntry() == NPC_LIGHTNING_FISTS)
+                {
+                    if (Unit* pl = me->GetPlayer(*me, targetGuid))
+                    {
+                        sum->AI()->SetGUID(targetGuid); 
+                        targetGuid = 0;
+                    }
+                }
+            }
+
             void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
@@ -387,13 +406,18 @@ class boss_feng : public CreatureScript
                         break;
                      case EVENT_RE_ATTACK:
                          if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                            me->GetMotionMaster()->MoveChase(target);
+                             me->GetMotionMaster()->MoveChase(target);
                          me->SetReactState(REACT_AGGRESSIVE);
-                        break;
+                         break;
                      // Fist Phase
                     case EVENT_LIGHTNING_FISTS:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
+                        {
+                            if (targetGuid)
+                                targetGuid = 0;
+                            targetGuid = target->GetGUID();
                             DoCast(target, SPELL_LIGHTNING_FISTS);
+                        }
                         events.ScheduleEvent(EVENT_LIGHTNING_FISTS, 20000);
                         break;
                     case EVENT_EPICENTER:
@@ -455,6 +479,7 @@ class mob_lightning_fist : public CreatureScript
             mob_lightning_fistAI(Creature* creature) : ScriptedAI(creature)
             {
                 InstanceScript* pInstance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
             }
 
             InstanceScript* pInstance;
@@ -463,13 +488,28 @@ class mob_lightning_fist : public CreatureScript
             
             void Reset()
             {
-                me->SetReactState(REACT_PASSIVE);
-                me->AddAura(SPELL_AURA_SEARCHER, me);
-                me->AddAura(SPELL_FIST_VISUAL, me);
-                float x = 0, y = 0;
-                GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
-                me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
                 unsummon = 6000;
+            }
+
+            void SetGUID(uint64 plguid, int32 type/* = 0 */)
+            {
+                if (plguid)
+                {
+                    if (Unit* target = me->GetPlayer(*me, plguid))
+                    {
+                        if (target->isAlive())
+                        {
+                            me->SetFacingToObject(target);
+                            me->AddAura(SPELL_AURA_SEARCHER, me);
+                            me->AddAura(SPELL_FIST_VISUAL, me);
+                            float x = 0, y = 0;
+                            GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
+                            me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
+                            return;
+                        }
+                    }
+                }
+                me->DespawnOrUnsummon();
             }
 
             void EnterCombat(Unit* who){}

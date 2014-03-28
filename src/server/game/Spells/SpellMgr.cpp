@@ -4295,6 +4295,17 @@ void SpellMgr::LoadSpellCustomAttr()
 
 
                 //Heart of Fear
+                //Garalon
+                case 122835: //Pheromones
+                    spellInfo->Effects[0].TriggerSpell = 0; 
+                    spellInfo->Effects[3].TriggerSpell = 0;
+                    break;
+                case 123120: //Pheromones trail tr ef
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(44); //0.5yard
+                    break;
+                //
                 //Lord Meljarak
                 case 122193: //Heal
                     spellInfo->TargetAuraSpell = 0;
