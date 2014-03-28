@@ -1374,6 +1374,19 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
+        case 115098: // Chi Wave (Main)
+        {
+            int32 bp = 1;
+            if (unitTarget->IsFriendlyTo(m_caster))
+            {
+                m_caster->CastCustomSpell(unitTarget, 132464, NULL, &bp, NULL, true, NULL, NULL, m_originalCasterGUID);
+            }
+            else
+            {
+                m_caster->CastCustomSpell(unitTarget, 132467, NULL, &bp, NULL, true, NULL, NULL, m_originalCasterGUID);
+            }
+            break;
+        }
         case 145640: // Chi Brew
         {
             uint32 spellid = 115867;

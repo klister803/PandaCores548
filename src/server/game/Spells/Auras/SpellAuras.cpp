@@ -1541,6 +1541,53 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                 switch (m_spellInfo->Id)
                 {
+                    case 132467: // Chi Wave Neg
+                    {
+                        int32 bp = aurApp->GetBase()->GetEffect(1)->GetAmount();
+                        if (bp == 7)
+                            break;
+
+                        std::list<Unit*> targetList;
+                        target->GetAttackableUnitListInRange(targetList, 25.0f);
+
+                        targetList.remove(target);
+
+                        if (!targetList.empty())
+                        {
+                            targetList.sort(Trinity::HealthPctOrderPred());
+                            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                            {
+                                if (!(*itr)->IsWithinLOSInMap(target) || !caster->IsFriendlyTo(*itr))
+                                    continue;
+
+                                bp ++;
+                                target->CastCustomSpell(*itr, 132464, NULL, &bp, NULL, true, NULL, NULL, m_casterGuid);
+                                break;
+                            }
+                        }
+                        break;
+
+                    }
+                    case 132464: // Chi Wave Pos
+                    {
+                        if (!caster)
+                            break;
+
+                        caster->CastSpell(target, 132463, true, NULL, NULL, m_casterGuid);
+                        int32 bp = aurApp->GetBase()->GetEffect(1)->GetAmount();
+
+                        if (bp == 7)
+                            break;
+
+                        Unit* nearby = target->GetNearbyVictim(target, 25.0f);
+
+                        if (nearby)
+                        {
+                            bp ++;
+                            target->CastCustomSpell(nearby, 132467, NULL, &bp, NULL, true, NULL, NULL, m_casterGuid);
+                        }
+                        break;
+                    }
                     case 126060: // Desperate Measures
                     {
                         if (Player * monk = caster->ToPlayer())
