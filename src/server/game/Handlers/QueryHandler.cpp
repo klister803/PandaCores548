@@ -30,6 +30,7 @@
 #include "NPCHandler.h"
 #include "Pet.h"
 #include "MapManager.h"
+#include "GossipDef.h"
 
 void WorldSession::SendNameQueryOpcode(uint64 guid)
 {
@@ -458,8 +459,6 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_NPC_TEXT_UPDATE");
 }
 
-#define DEFAULT_GREETINGS_GOSSIP      68
-
 void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
 {
     ByteBuffer buff;
@@ -470,8 +469,8 @@ void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
     uint32 localeEntry = entry;
     if (!pGossip)
     {
-        pGossip = sObjectMgr->GetGossipText(DEFAULT_GREETINGS_GOSSIP);
-        localeEntry = DEFAULT_GREETINGS_GOSSIP;
+        pGossip = sObjectMgr->GetGossipText(DEFAULT_GOSSIP_MESSAGE);
+        localeEntry = DEFAULT_GOSSIP_MESSAGE;
     }
 
     std::string Text_0, Text_1;
