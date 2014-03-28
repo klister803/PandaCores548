@@ -398,7 +398,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteBit(0);                          // byte8C
         data->WriteBit(0);                          // byte8D
         data->WriteGuidMask<2>(guid);
-        data->WriteBit(1);                          // !hasTimeStamp
+        data->WriteBit(0);                          // !hasTimeStamp
         data->WriteGuidMask<0>(guid);
         data->WriteBit(transGuid);                  // has transport data
 
@@ -502,8 +502,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         }
 
         data->WriteGuidBytes<5>(guid);
-        /*if (hasTimeStamp)
-            data << uint32(timeStamp);*/
+        *data << uint32(getMSTime());
         data->WriteGuidBytes<1>(guid);
         *data << self->GetSpeed(MOVE_SWIM_BACK);
         *data << self->GetSpeed(MOVE_FLIGHT_BACK);
