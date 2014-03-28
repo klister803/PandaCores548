@@ -465,15 +465,47 @@ void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
     ByteBuffer buff;
     WorldPacket data(SMSG_DB_REPLY);
 
+    bool ru = GetSessionDbLocaleIndex() == LOCALE_ruRU;
+
     GossipText const* pGossip = sObjectMgr->GetGossipText(entry);
 
     if (!pGossip)
         pGossip = sObjectMgr->GetGossipText(DEFAULT_GREETINGS_GOSSIP);
 
-    std::string text = "Greetings, $N";
+    std::string text = ru ? "Приветствую, $N." : "Greetings, $N.";
 
-    uint16 size1 = pGossip ? pGossip->Options[0].Text_0.length() : text.length();
-    uint16 size2 = pGossip ? pGossip->Options[0].Text_1.length() : text.length();
+    std::string Text_0[MAX_LOCALES], Text_1[MAX_LOCALES];
+    if(pGossip)
+    {
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
+        {
+            Text_0[i]=pGossip->Options[i].Text_0;
+            Text_1[i]=pGossip->Options[i].Text_1;
+        }
+        int loc_idx = GetSessionDbLocaleIndex();
+        if (loc_idx >= 0)
+        {
+            if (NpcTextLocale const* nl = sObjectMgr->GetNpcTextLocale(entry))
+            {
+                for (int i = 0; i < MAX_LOCALES; ++i)
+                {
+                    ObjectMgr::GetLocaleString(nl->Text_0[i], loc_idx, Text_0[i]);
+                    ObjectMgr::GetLocaleString(nl->Text_1[i], loc_idx, Text_1[i]);
+                }
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
+        {
+            Text_0[i]=text;
+            Text_1[i]=text;
+        }
+    }
+
+    uint16 size1 = Text_0[0].length();
+    uint16 size2 = Text_1[0].length();
 
     data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_BROADCAST_TEXT));
     data << uint32(DB2_REPLY_BROADCAST_TEXT);
@@ -482,10 +514,10 @@ void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
     buff << uint32(0);
     buff << uint16(size1);
     if (size1)
-        buff << std::string( pGossip ? pGossip->Options[0].Text_0 : text);
+        buff << std::string( Text_0[0]);
     buff << uint16(size2);
     if (size2)
-        buff << std::string(pGossip ? pGossip->Options[0].Text_1 : text);
+        buff << std::string(Text_1[0]);
     buff << uint32(0);
     buff << uint32(0);
     buff << uint32(0);
