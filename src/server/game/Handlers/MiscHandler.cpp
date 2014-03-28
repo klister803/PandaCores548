@@ -961,10 +961,12 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RESURRECT_RESPONSE");
 
-    uint64 guid;
-    uint8 status;
-    recvData >> guid;
+    ObjectGuid guid;
+    uint32 status;
+
     recvData >> status;
+    recvData.ReadGuidMask<7, 5, 3, 2, 6, 1, 4, 0>(guid);
+    recvData.ReadGuidBytes<5, 4, 3, 6, 1, 0, 2, 7>(guid);
 
     if (GetPlayer()->isAlive())
         return;
