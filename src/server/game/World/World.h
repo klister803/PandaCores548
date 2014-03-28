@@ -628,6 +628,7 @@ class World
         void SetClosed(bool val);
 
         void ProcessMailboxQueue();
+        void Transfer();
 
         /// Security level limitations
         AccountTypes GetPlayerSecurityLimit() const { return m_allowedSecurityLevel; }

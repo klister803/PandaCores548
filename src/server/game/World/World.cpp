@@ -80,6 +80,7 @@
 #include "CalendarMgr.h"
 #include "BattlefieldMgr.h"
 #include "BracketMgr.h"
+#include "PlayerDump.h"
 
 ACE_Atomic_Op<ACE_Thread_Mutex, bool> World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -2261,6 +2262,7 @@ void World::Update(uint32 diff)
     {
         m_timers[WUPDATE_MAILBOXQUEUE].Reset();
         ProcessMailboxQueue();
+        Transfer();
     }
 
     ///- Ping to keep MySQL connections alive
@@ -3443,4 +3445,115 @@ void World::AutoRestartServer()
 
     m_NextServerRestart = time_t(m_NextServerRestart + DAY*1);
     sWorld->setWorldState(WS_AUTO_SERVER_RESTART_TIME, uint64(m_NextServerRestart));
+}
+
+void World::Transfer()
+{
+    //state 0 waiting to dump on source server
+    //state 1 load dump char to dest server
+    //state 2 error to many char on acc
+    //state 3 dump char to waiting buy transfer
+    //state 4 waiting buy transfer
+    QueryResult toDump = LoginDatabase.PQuery("SELECT `id`, `account`, `perso_guid`, `to`, `state` FROM transferts WHERE `from` = %u AND state IN (0,3)", realmID);
+    QueryResult toLoad = LoginDatabase.PQuery("SELECT `id`, `account`, `perso_guid`, `from`, `dump`, `toacc`, `transferId` FROM transferts WHERE `to` = %u AND state = 1", realmID);
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "World::Transfer()");
+
+    if(toDump)
+    {
+        do
+        {
+            Field* field = toDump->Fetch();
+            uint32 transaction = field[0].GetUInt32();
+            uint32 account = field[1].GetUInt32();
+            uint32 guid = field[2].GetUInt32();
+            uint32 to = field[3].GetUInt32();
+            uint32 state = field[4].GetUInt32();
+
+            if (Player * pPlayer = sObjectMgr->GetPlayerByLowGUID(guid))
+            {
+                pPlayer->GetSession()->SendNotification("You must logout to transfer your char");
+                continue;
+            }
+
+            CharacterDatabase.PExecute("DELETE FROM `group_member` WHERE `memberGuid` = '%u'",  guid);
+            CharacterDatabase.PExecute("DELETE FROM `guild_member` WHERE `guid` = '%u'",        guid);
+
+            std::string dump;
+            DumpReturn dumpState = PlayerDumpWriter().WriteDump(guid, dump);
+
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "Transfer toDump guid %u, dump %u", guid, dumpState);
+
+            if (dumpState == DUMP_SUCCESS)
+            {
+                CharacterDatabase.PExecute("UPDATE `characters` SET `at_login` = '512', `deleteInfos_Name` = `name`, `deleteInfos_Account` = `account`, `deleteDate` ='" UI64FMTD "', `name` = '', `account` = 0, `transfer` = '%u' WHERE `guid` = '%u'", uint64(time(NULL)), to, guid);
+                PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_DUMP);
+                if(stmt)
+                {
+                    stmt->setString(0, dump);
+                    if(state == 3)
+                        stmt->setUInt32(1, 4);
+                    else
+                        stmt->setUInt32(1, 1);
+                    stmt->setUInt32(2, transaction);
+                    LoginDatabase.Execute(stmt);
+                }
+            }
+            else
+            {
+                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = %u WHERE `id` = '%u'", dumpState, transaction);
+                continue;
+            }
+        }
+        while(toDump->NextRow());
+    }
+
+    if(toLoad)
+    {
+        do
+        {
+            Field* field = toLoad->Fetch();
+            uint32 transaction = field[0].GetUInt32();
+            uint32 account = field[1].GetUInt32();
+            uint32 guid = field[2].GetUInt32();
+            uint32 from = field[3].GetUInt32();
+            std::string dump = field[4].GetString();
+            uint32 toacc = field[5].GetUInt32();
+            uint32 transferId = field[6].GetUInt32();
+            uint32 newguid = 0;
+            if(!toacc)
+                toacc = account;
+
+            DumpReturn dumpState = PlayerDumpReader().LoadDump(toacc, dump, "", newguid);
+
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "Transfer toLoad guid %u, dump %u", guid, dumpState);
+
+            if (dumpState == DUMP_SUCCESS)
+            {
+                LoginDatabase.PQuery("DELETE FROM `transferts` WHERE `id` = %u", transaction);
+                PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_ADD_TRANSFERTS_LOGS);
+                if(stmt)
+                {
+                    stmt->setUInt32(0, transaction);
+                    stmt->setUInt32(1, account);
+                    stmt->setUInt32(2, guid);
+                    stmt->setUInt32(3, from);
+                    stmt->setUInt32(4, realmID);
+                    stmt->setString(5, dump);
+                    stmt->setUInt32(6, toacc);
+                    stmt->setUInt32(7, newguid);
+                    stmt->setUInt32(8, transferId);
+                    LoginDatabase.Execute(stmt);
+                    if(transferId)
+                        LoginDatabase.PQuery("UPDATE `transfert_dump` SET `guid` = '%u' WHERE `id` = '%u'", newguid, transferId);
+                }
+            }
+            else
+            {
+                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = '%u', `nb_attempt` = `nb_attempt` + 1 WHERE `id` = '%u'", dumpState, transaction);
+                continue;
+            }
+        }
+        while (toLoad->NextRow());
+    }
 }

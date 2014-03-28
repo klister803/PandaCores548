@@ -26,14 +26,14 @@
 enum DumpTableType
 {
     DTT_CHARACTER,      //                                  // characters
+    DTT_DONA_TABLE,     // <- guids owner                   // character_donate
 
     DTT_CHAR_TABLE,     //                                  // character_achievement, character_achievement_progress,
                                                             // character_action, character_aura, character_homebind,
                                                             // character_queststatus, character_queststatus_rewarded, character_reputation,
-                                                            // character_spell, character_spell_cooldown, character_ticket, character_talent.
-                                                            // character_cuf_profiles, character_currency
-    DTT_VS_TABLE,       // Void Storage Table <- playerGuid
+                                                            // character_spell, character_spell_cooldown, character_ticket, character_talent
 
+    DTT_VS_TABLE,       // Void Storage Table <- playerGuid
     DTT_EQSET_TABLE,    // <- guid                          // character_equipmentsets
 
     DTT_INVENTORY,      //    -> item guids collection      // character_inventory
@@ -60,8 +60,7 @@ enum DumpReturn
     DUMP_TOO_MANY_CHARS,
     DUMP_UNEXPECTED_END,
     DUMP_FILE_BROKEN,
-    DUMP_CHARACTER_DELETED,
-    DUMP_SYSTEM_LOCKED
+    DUMP_CHARACTER_DELETED
 };
 
 class PlayerDump
@@ -77,10 +76,11 @@ class PlayerDumpWriter : public PlayerDump
 
         bool GetDump(uint32 guid, std::string& dump);
         DumpReturn WriteDump(const std::string& file, uint32 guid);
+        DumpReturn WriteDump(uint32 guid, std::string& dump);
     private:
         typedef std::set<uint32> GUIDs;
 
-        bool DumpTable(std::string& dump, uint32 guid, char const*tableFrom, char const*tableTo, DumpTableType type);
+        bool DumpTable(std::string& dump, uint32 guid, char const*tableFrom, char const*tableTo, DumpTableType type, char const*tableSelect);
         std::string GenerateWhereStr(char const* field, GUIDs const& guids, GUIDs::const_iterator& itr);
         std::string GenerateWhereStr(char const* field, uint32 guid);
 
@@ -94,11 +94,9 @@ class PlayerDumpReader : public PlayerDump
     public:
         PlayerDumpReader() {}
 
-        DumpReturn LoadDump(const std::string& file, uint32 account, std::string name, uint32 guid, bool onlyBoundedItems = false);
+        DumpReturn LoadDump(const std::string& file, uint32 account, std::string name, uint32 guid);
+        DumpReturn LoadDump(uint32 account, std::string& dump, std::string name, uint32& guid);
 };
-
-#define sInterRealmTransfertReader ACE_Singleton<PlayerDumpReader, ACE_Thread_Mutex>::instance()
-#define sInterRealmTransfertWriter ACE_Singleton<PlayerDumpWriter, ACE_Thread_Mutex>::instance()
 
 #endif
 
