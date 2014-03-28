@@ -663,6 +663,7 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
         }
     }
 
+    auctionHouse->BuildListBidderItems(data, _player, count, totalcount);
     data.put<uint32>(0, count);                           // add count to placeholder
     data << totalcount;                                   // CGAuctionHouse__m_numTotalBid
     data << uint32(300);                                  // CGAuctionHouse__m_desiredDelayTime
