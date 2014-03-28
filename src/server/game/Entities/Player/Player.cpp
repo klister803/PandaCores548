@@ -965,6 +965,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 
     m_Store = false;
+    realmTransferid = 0;
 }
 
 Player::~Player()

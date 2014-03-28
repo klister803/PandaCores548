@@ -3,6 +3,7 @@
 #include "ScriptedEscortAI.h"
 #include "Spell.h"
 #include "ObjectMgr.h"
+#include "PlayerDump.h"
 
 
 // Options
@@ -515,8 +516,130 @@ public:
     }
 };
 
+
+class char_transfer : public CreatureScript
+{
+public:
+    char_transfer() : CreatureScript("char_transfer"){}
+
+    bool OnGossipHello(Player* player, Creature* creature)
+    {
+        QueryResult result = LoginDatabase.PQuery("SELECT `to_realm`, `name` FROM realm_transfer WHERE from_realm = '%u';", realmID);
+        if (!result)
+        {
+            LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+            player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(20027, loc_idx), GOSSIP_SENDER_MAIN, 0);
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
+        }
+        else
+        {
+            LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+            player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(20031, loc_idx), GOSSIP_SENDER_MAIN, 0);
+            do
+            {
+                Field* fields = result->Fetch();
+                uint32 realm = fields[0].GetUInt32();
+                std::string name = fields[1].GetString();
+
+                player->ADD_GOSSIP_ITEM(0, name, GOSSIP_SENDER_MAIN, realm);
+            }while (result->NextRow());
+        }
+
+        player->SetTransferId(0);
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
+    {
+        if(!player || !creature || !player->getAttackers().empty())
+            return true;
+
+        player->PlayerTalkClass->ClearMenus();
+        ChatHandler chH = ChatHandler(player);
+
+        switch (sender)
+        {
+            case GOSSIP_SENDER_MAIN:
+            {
+                if(QueryResult check_wpe = LoginDatabase.PQuery("SELECT `name` FROM realm_transfer WHERE from_realm = '%u' AND to_realm = '%u';", realmID, action))
+                    player->SetTransferId(action);
+                else
+                    return true;
+
+                QueryResult result = CharacterDatabase.PQuery("SELECT guid, name FROM characters WHERE account = '%u' AND transfer = 0", player->GetSession()->GetAccountId());
+                if (!result)
+                {
+                    LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+                    player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(20027, loc_idx), GOSSIP_SENDER_MAIN, 0);
+                    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
+                }
+                else
+                {
+                    LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+                    player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(20028, loc_idx), GOSSIP_SENDER_MAIN, 0);
+                    do
+                    {
+                        Field* fields = result->Fetch();
+                        uint32 guid = fields[0].GetUInt32();
+                        std::string name = fields[1].GetString();
+
+                        player->ADD_GOSSIP_ITEM(0, name, GOSSIP_SENDER_INN_INFO, guid);
+                    }while (result->NextRow());
+                }
+                break;
+            }
+            case GOSSIP_SENDER_INN_INFO:
+            {
+                if(action > 0)
+                {
+                    QueryResult result = CharacterDatabase.PQuery("SELECT guid, name FROM characters WHERE guid = '%u' AND account = '%u' AND transfer = 0", action, player->GetSession()->GetAccountId());
+                    if(!result)
+                    {
+                        player->CLOSE_GOSSIP_MENU();
+                        return true;
+                    }
+
+                    Field* fields = result->Fetch();
+                    uint32 guid = fields[0].GetUInt32();
+                    std::string name = fields[1].GetString();
+                    uint32 account_id = player->GetSession()->GetAccountId();
+                    std::string dump;
+
+                    if(PlayerDumpWriter().WriteDump(uint32(guid), dump) != DUMP_SUCCESS)
+                    {
+                        chH.PSendSysMessage(LANG_COMMAND_EXPORT_FAILED);
+                        chH.SetSentErrorMessage(true);
+                        return false;
+                    }
+
+                    PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_DUMP);
+                    if(stmt)
+                    {
+                        stmt->setUInt32(0, account_id);
+                        stmt->setUInt32(1, guid);
+                        stmt->setUInt32(2, realmID);
+                        stmt->setUInt32(3, player->GetTransferId());
+                        stmt->setUInt32(4, 1);
+                        stmt->setString(5, dump);
+                        LoginDatabase.Execute(stmt);
+                    }
+                    CharacterDatabase.PQuery("UPDATE characters SET deleteInfos_Name = name, deleteInfos_Account = account, deleteDate = UNIX_TIMESTAMP(), name = '', account = 0, `transfer` = '%u' WHERE guid = %u", player->GetTransferId(), guid);
+
+                    if(player->GetGUIDLow() == guid)
+                        player->GetSession()->KickPlayer();
+                }
+                break;
+            }
+        }
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+        return true;
+    }
+};
+
 void AddSC_multi_vendor()
 {
     new multi_vendor();
     new item_back();
+    new char_transfer();
 }

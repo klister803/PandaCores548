@@ -2762,6 +2762,10 @@ class Player : public Unit, public GridObject<Player>
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
 
+        uint32 realmTransferid;
+        void SetTransferId(uint32 Id) { realmTransferid = Id; }
+        uint32 GetTransferId() { return realmTransferid; }
+
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
         /*********************************************************/
