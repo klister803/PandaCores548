@@ -17491,6 +17491,51 @@ Unit* Unit::SelectNearbyAlly(Unit* exclude, float dist) const
     return Trinity::Containers::SelectRandomContainerElement(targets);
 }
 
+Unit* Unit::GetNearbyVictim(Unit* exclude, float dist, bool IsInFront) const
+{
+    Unit* Nearby    = NULL;
+    float nearbydist = NULL;
+    std::list<Unit*> targetList;
+    GetAttackableUnitListInRange(targetList, dist);
+
+    if (exclude) targetList.remove(exclude);
+
+    if (!targetList.empty())
+    {
+        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+        {
+            if (!(*itr)->IsWithinLOSInMap(this) || IsFriendlyTo(*itr))
+                continue;
+
+            if (IsInFront)
+                if (!isInFront(*itr))
+                    continue;
+
+            Position pos;
+
+            if (Nearby)
+            {
+                (*itr)->GetPosition(&pos);
+                float dist2 = GetDistance(pos);
+
+                if (nearbydist > dist2)
+                {
+                    nearbydist = dist2;
+                    Nearby = (*itr);
+                }
+                else continue;
+            }
+            else
+            {
+                Nearby = (*itr);
+                Nearby->GetPosition(&pos);
+                nearbydist = GetDistance(pos);
+            }
+        }
+    }
+    return Nearby;
+}
+
 void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply)
 {
     float remainingTimePct = (float)m_attackTimer[att] / (GetAttackTime(att) * m_modAttackSpeedPct[att]);
