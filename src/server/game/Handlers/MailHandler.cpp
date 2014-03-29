@@ -671,6 +671,17 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 
     for (PlayerMails::iterator itr = player->GetMailBegin(); itr != player->GetMailEnd(); ++itr)
     {
+        // Only first 50 mails are displayed
+        if (mailsCount >= 50)
+        {
+            realCount += 1;
+            continue;
+        }
+
+        // skip deleted or not delivered (deliver delay not expired) mails
+        if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
+            continue;
+
         uint8 item_count = (*itr)->items.size();                 // max count is MAX_MAIL_ITEMS (12)
         bool normalMail = (*itr)->messageType == MAIL_NORMAL;
         bool otherMail = (*itr)->messageType != MAIL_NORMAL;
