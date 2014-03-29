@@ -118,11 +118,11 @@ void WorldSession::SendAuctionOwnerNotification(AuctionEntry* auction)
 {
     WorldPacket data(SMSG_AUCTION_OWNER_NOTIFICATION, 40);
     data.ReadBit();
-    data << uint64(auction->bid);
-    data << uint32(auction->Id);                           // unk
+    data << uint64(auction ? auction->bid : 0);
+    data << uint32(auction ? auction->Id : 0);                           // unk
     data << uint32(0);                                     // unk
     data << float(0);                                      // unk
-    data << uint32(auction->itemEntry);
+    data << uint32(auction ? auction->itemEntry : 0);
     data << uint32(0);                                     // unk
     SendPacket(&data);
 }
