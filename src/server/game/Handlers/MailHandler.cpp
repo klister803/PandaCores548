@@ -673,10 +673,7 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
     {
         // Only first 50 mails are displayed
         if (mailsCount >= 50)
-        {
-            realCount += 1;
             continue;
-        }
 
         // skip deleted or not delivered (deliver delay not expired) mails
         if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
