@@ -82,9 +82,9 @@ void WorldSession::SendAuctionCommandResult(AuctionEntry* auction, uint32 action
     ObjectGuid bidderGUID = auction ? auction->bidder : 0;
 
     WorldPacket data(SMSG_AUCTION_COMMAND_RESULT);
-    data << uint32(auction ? auction->Id : 0);
+    data << uint32(40);                                   // inventoryErrorCode???, if exists, default 40
     data << uint32(action);
-    data << uint32(0);                                    // in sniffs big integer value
+    data << uint32(auction ? auction->Id : 0);
     data << uint32(errorCode);
 
     data.WriteBit(1);                                     // bit_1, related to auction error or action
@@ -509,12 +509,12 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recvData)
         auction->bid = auction->buyout;
         GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_AUCTION_BID, auction->buyout);
 
+        SendAuctionCommandResult(auction, AUCTION_PLACE_BID, ERR_AUCTION_OK);
+
         //- Mails must be under transaction control too to prevent data loss
         sAuctionMgr->SendAuctionSalePendingMail(auction, trans);
         sAuctionMgr->SendAuctionSuccessfulMail(auction, trans);
         sAuctionMgr->SendAuctionWonMail(auction, trans);
-
-        SendAuctionCommandResult(auction, AUCTION_PLACE_BID, ERR_AUCTION_OK);
 
         auction->DeleteFromDB(trans);
 
