@@ -1827,7 +1827,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 case 11327:  // Vanish
                 case 115191: // Subterfuge (Stealth)
                 {
-                    if (caster->HasAura(108209)) // Shadow Focus
+                    if (caster && caster->HasAura(108209)) // Shadow Focus
                     {
                         if (apply)
                         {
@@ -1842,7 +1842,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         }
                     }
 
-                    if (caster->HasAura(31223)) // Master of subtlety
+                    if (caster && caster->HasAura(31223)) // Master of subtlety
                     {
                         if (apply)
                         {
