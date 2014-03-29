@@ -89,7 +89,8 @@ bool Player::OnSurvey(uint32& entry, float& x, float& y, float& z, float &orient
         if (GetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i) == site_id)
             break;
 
-    ASSERT(i < MAX_RESEARCH_SITES);
+    if(i > MAX_RESEARCH_SITES)
+        return false;
 
     DigSite &site = _digSites[i];
     if (site.site_id != site_id)
