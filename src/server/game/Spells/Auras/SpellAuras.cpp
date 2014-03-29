@@ -1719,6 +1719,17 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             {
                 switch (GetId())
                 {
+                    case 137619: // Marked for Death
+                    {
+                        if (!caster)
+                            break;
+
+                        if (Player* rogue = caster->ToPlayer())
+                        {
+                            rogue->RemoveSpellCooldown(137619, true);
+                        }
+                        break;
+                    }
                     case 703:    // Garrote
                     case 1943:   // Rupture
                     case 121411: // Crimson Tempest
