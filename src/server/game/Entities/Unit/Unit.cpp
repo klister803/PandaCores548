@@ -16568,7 +16568,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     continue;
 
                 if (!damage && procSpell && !procSpell->HasAura(SPELL_AURA_MOD_STUN) && !procSpell->HasAura(SPELL_AURA_MOD_CONFUSE) &&
-                    !procSpell->HasAura(SPELL_AURA_MOD_FEAR) && procSpell->Id != 12323)
+                    !procSpell->HasAura(SPELL_AURA_MOD_FEAR))
                     continue;
 
                 active = true;
