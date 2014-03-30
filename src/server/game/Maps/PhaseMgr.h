@@ -51,6 +51,7 @@ struct PhaseDefinition
     uint32 phasemask;
     uint32 phaseId;
     uint32 terrainswapmap;
+    uint32 wmAreaId;
     uint8 flags;
 
     bool IsOverwritingExistingPhases() const { return flags & PHASE_FLAG_OVERWRITE_EXISTING; }

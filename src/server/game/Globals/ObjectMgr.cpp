@@ -8807,8 +8807,8 @@ void ObjectMgr::LoadPhaseDefinitions()
 
     uint32 oldMSTime = getMSTime();
 
-    //                                                 0       1       2         3            4           5
-    QueryResult result = WorldDatabase.Query("SELECT zoneId, entry, phasemask, phaseId, terrainswapmap, flags FROM `phase_definitions` ORDER BY `entry` ASC");
+    //                                                 0       1       2         3            4           5       6
+    QueryResult result = WorldDatabase.Query("SELECT zoneId, entry, phasemask, phaseId, terrainswapmap, wmAreaId, flags FROM `phase_definitions` ORDER BY `entry` ASC");
 
     if (!result)
     {
@@ -8829,13 +8829,24 @@ void ObjectMgr::LoadPhaseDefinitions()
         pd.phasemask             = fields[2].GetUInt64();
         pd.phaseId               = fields[3].GetUInt8();
         pd.terrainswapmap        = fields[4].GetUInt16();
-        pd.flags                 = fields[5].GetUInt8();
+        pd.wmAreaId              = fields[5].GetUInt16();
+        pd.flags                 = fields[6].GetUInt8();
 
         // Checks
         if ((pd.flags & PHASE_FLAG_OVERWRITE_EXISTING) && (pd.flags & PHASE_FLAG_NEGATE_PHASE))
         {
             sLog->outError(LOG_FILTER_SQL, "Flags defined in phase_definitions in zoneId %d and entry %u does contain PHASE_FLAG_OVERWRITE_EXISTING and PHASE_FLAG_NEGATE_PHASE. Setting flags to PHASE_FLAG_OVERWRITE_EXISTING", pd.zoneId, pd.entry);
             pd.flags &= ~PHASE_FLAG_NEGATE_PHASE;
+        }
+
+        if (pd.terrainswapmap > 0)
+        {
+            const MapEntry* const map = sMapStore.LookupEntry(pd.terrainswapmap);
+            if (!map)
+            {
+                sLog->outError(LOG_FILTER_SQL, "DB table `phase_definitions` has not existen terrainswapmap %u", pd.terrainswapmap);
+                continue;
+            }
         }
 
         _PhaseDefinitionStore[pd.zoneId].push_back(pd);

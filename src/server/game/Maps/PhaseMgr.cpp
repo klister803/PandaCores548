@@ -97,7 +97,7 @@ void PhaseMgr::Recalculate()
                 if (phase->phasemask)
                     _UpdateFlags |= PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED;
 
-                if (phase->phaseId || phase->terrainswapmap)
+                if (phase->phaseId || phase->terrainswapmap || phase->wmAreaId)
                     _UpdateFlags |= PHASE_UPDATE_FLAG_CLIENTSIDE_CHANGED;
 
                 if (phase->IsLastDefinition())
@@ -250,6 +250,7 @@ void PhaseData::SendPhaseshiftToPlayer()
     // Client side update
     std::set<uint32> phaseIds;
     std::set<uint32> terrainswaps;
+    std::set<uint32> WorldMapAreaIds;
 
     for (PhaseInfoContainer::const_iterator itr = spellPhaseInfo.begin(); itr != spellPhaseInfo.end(); ++itr)
     {
@@ -268,9 +269,23 @@ void PhaseData::SendPhaseshiftToPlayer()
 
         if ((*itr)->terrainswapmap)
             terrainswaps.insert((*itr)->terrainswapmap);
+
+        if ((*itr)->wmAreaId)
+            WorldMapAreaIds.insert((*itr)->wmAreaId);
     }
 
-    player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps);
+    player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, WorldMapAreaIds);
+
+    uint32 zoneid, areaid;
+    player->GetZoneAndAreaId(zoneid, areaid);
+
+    WorldPacket data(SMSG_INIT_WORLD_STATES, (15));
+    data << uint32(zoneid);                                 // zone id
+    data << uint32(areaid);                                 // area id, new 2.1.0
+    data << uint32(player->GetMapId());                                  // mapid
+    data.WriteBits(0, 21);
+    data.FlushBits();
+    player->GetSession()->SendPacket(&data);
 }
 
 void PhaseData::AddPhaseDefinition(PhaseDefinition const* phaseDefinition)
