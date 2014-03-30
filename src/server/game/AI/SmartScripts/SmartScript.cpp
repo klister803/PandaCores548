@@ -3373,7 +3373,8 @@ void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
     if (val.empty())
         return;
 
-    mTimedActionList.push_back(*(val.begin()));
+    for (SmartAIEventList::iterator i = val.begin(); i != val.end(); ++i)
+         mTimedActionList.push_back(*i);
 
     for (SmartAIEventList::iterator i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
     {
