@@ -3066,11 +3066,18 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
                 ProcessEvent(e);
                 if (e.GetScriptType() == SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
                 {
-                    e.enableTimed = false;//disable event if it is in an ActionList and was processed once
+                    e.enableTimed = false; //disable event if it is in an ActionList and was processed once
+                    bool canChangeState = false;
                     for (SmartAIEventList::iterator i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
                     {
                         //find the first event which is not the current one and enable it
-                        if (i->event_id > e.event_id)
+                        if (&(*i) == &e)
+                        {
+                            canChangeState = true;
+                            continue;
+                        }
+
+                        if (canChangeState)
                         {
                             i->enableTimed = true;
                             break;
@@ -3374,17 +3381,16 @@ void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
         return;
 
     for (SmartAIEventList::iterator i = val.begin(); i != val.end(); ++i)
-         mTimedActionList.push_back(*i);
-
-    for (SmartAIEventList::iterator i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
     {
-        i->enableTimed = true;
+        i->enableTimed = (i == val.begin() && mTimedActionList.empty()) ? true : false;
 
         if (e.action.timedActionList.timerType == 1)
             i->event.type = SMART_EVENT_UPDATE_IC;
         else if (e.action.timedActionList.timerType > 1)
             i->event.type = SMART_EVENT_UPDATE;
         InitTimer((*i));
+        
+        mTimedActionList.push_back(*i);
     }
 }
 
