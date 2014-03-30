@@ -3071,13 +3071,7 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
                     for (SmartAIEventList::iterator i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
                     {
                         //find the first event which is not the current one and enable it
-                        if (&(*i) == &e)
-                        {
-                            canChangeState = true;
-                            continue;
-                        }
-
-                        if (canChangeState)
+                        if (e.entryOrGuid == i->entryOrGuid && i->event_id > e.event_id)
                         {
                             i->enableTimed = true;
                             break;
@@ -3382,7 +3376,7 @@ void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
 
     for (SmartAIEventList::iterator i = val.begin(); i != val.end(); ++i)
     {
-        i->enableTimed = (i == val.begin() && mTimedActionList.empty()) ? true : false;
+        i->enableTimed = (i == val.begin()) ? true : false;
 
         if (e.action.timedActionList.timerType == 1)
             i->event.type = SMART_EVENT_UPDATE_IC;
