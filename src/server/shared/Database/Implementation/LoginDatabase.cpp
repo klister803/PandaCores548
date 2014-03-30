@@ -90,7 +90,7 @@ void LoginDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(LOGIN_SEL_REALMLIST_SECURITY_LEVEL, "SELECT allowedSecurityLevel from realmlist WHERE id = ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(LOGIN_DEL_ACCOUNT, "DELETE FROM account WHERE id = ?", CONNECTION_ASYNC);
 
-    PREPARE_STATEMENT(LOGIN_SET_DUMP, "UPDATE transferts SET dump = ? ,revision = ? WHERE id = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(LOGIN_SET_DUMP, "INSERT INTO `transferts` (`account`, `perso_guid`, `from`, `to`, `state`, `dump`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PREPARE_STATEMENT(LOGIN_UPD_DUMP, "UPDATE transferts SET dump = ? ,state = ? WHERE id = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(LOGIN_ADD_TRANSFERTS_LOGS, "INSERT INTO transferts_logs (`id`, `account`, `perso_guid`, `from`, `to`, `dump`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(LOGIN_ADD_TRANSFERTS_LOGS, "INSERT INTO transferts_logs (`id`, `account`, `perso_guid`, `from`, `to`, `dump`, `toacc`, `newguid`, `transferId`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 }
