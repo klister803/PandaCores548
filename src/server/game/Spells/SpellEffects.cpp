@@ -3421,6 +3421,7 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     // Create dispel mask by dispel type
     uint32 dispel_type = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
     uint32 dispelMask  = SpellInfo::GetDispelMask(DispelType(dispel_type));
+    bool LastDispelEff = false;
 
     // Epuration can dispell Magic with Sacred Cleansing
     if (m_spellInfo->Id == 4987 && m_caster->HasAura(53551))
@@ -3431,8 +3432,26 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
 
     DispelChargesList dispel_list;
     unitTarget->GetDispellableAuraList(m_caster, dispelMask, dispel_list);
+    
+    for (uint32 eff = effIndex+1; eff < MAX_SPELL_EFFECTS; ++eff)
+    {
+        if (m_spellInfo->Effects[eff].Effect != 0)
+        {
+            if (m_spellInfo->Effects[eff].IsEffect(SPELL_EFFECT_DISPEL))
+                break;
+        }
+        else LastDispelEff = true; break;
+    }
+
     if (dispel_list.empty())
+    {
+        if (LastDispelEff && m_removeCooldown)
+            if (Player* player = m_caster->ToPlayer())
+                player->RemoveSpellCooldown(m_spellInfo->Id, true);
         return;
+    }
+    
+    m_removeCooldown = false;
 
     // Ok if exist some buffs for dispel try dispel it
     DispelChargesList success_list;
