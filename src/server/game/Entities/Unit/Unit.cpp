@@ -19159,8 +19159,6 @@ void Unit::ApplyResilience(Unit const* victim, int32* damage, bool isCrit) const
     if (!target)
         return;
 
-    if (isCrit)
-        *damage -= target->GetCritDamageReduction(*damage);
     *damage -= target->GetDamageReduction(*damage);
 }
 
@@ -19398,10 +19396,11 @@ uint32 Unit::GetCombatRatingDamageReduction(CombatRating cr, float cap, uint32 d
 {
     float percent = std::min(GetCombatRatingReduction(cr), cap);
 
-    if ((cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN || cr == CR_RESILIENCE_CRIT_TAKEN) && ToPlayer())
-        percent -= ToPlayer()->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
-    else if ((cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN || cr == CR_RESILIENCE_CRIT_TAKEN) && GetOwner() && GetOwner()->ToPlayer())
-        percent -= GetOwner()->ToPlayer()->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
+    if (cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN || cr == CR_RESILIENCE_CRIT_TAKEN)
+    {
+        if (Player* pl = GetCharmerOrOwnerPlayerOrPlayerItself())
+            percent = std::max(0.0f, percent - pl->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT));
+    }
 
     return CalculatePct(damage, percent);
 }
