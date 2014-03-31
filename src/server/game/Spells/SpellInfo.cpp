@@ -468,6 +468,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                     multiplier *= (1.0f - _spellInfo->CoefBase) * (float)(level - 1) / (float)(_spellInfo->CoefLevelBase - 1) + _spellInfo->CoefBase;
 
                 float preciseBasePoints = ScalingMultiplier * multiplier;
+
                 if (DeltaScalingMultiplier)
                 {
                     float delta = DeltaScalingMultiplier * ScalingMultiplier * multiplier * 0.5f;
@@ -475,6 +476,10 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                 }
 
                 basePoints = int32(preciseBasePoints);
+                float rounding = preciseBasePoints - basePoints;
+
+                if (rounding >= 0.444445f)
+                    basePoints++;
 
                 if (ComboScalingMultiplier)
                     comboDamage = ComboScalingMultiplier * multiplier;
