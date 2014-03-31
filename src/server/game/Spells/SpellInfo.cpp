@@ -887,6 +887,8 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ProcChance = _options ? _options->procChance : 0;
     ProcCharges = _options ? _options->procCharges : 0;
     StackAmount = _options ? _options->StackAmount : 0;
+    procTimeRec = _options ? _options->procTimeRec : 0;
+    procPerMinId = _options ? _options->procPerMinId : 0;
 
     // SpellAuraRestrictionsEntry
     SpellAuraRestrictionsEntry const* _aura = GetSpellAuraRestrictions();

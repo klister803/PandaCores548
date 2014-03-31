@@ -7152,7 +7152,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
 
                         basepoints0 = CalculatePct(damage, triggerAmount) + hasabsorb;
 
-                        if (basepoints0 > GetMaxHealth())
+                        if (basepoints0 > (int32)GetMaxHealth())
                             basepoints0 = GetMaxHealth();
                     } 
                     break;
@@ -16656,7 +16656,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         bool prepare = i->aura->CallScriptPrepareProcHandlers(aurApp, eventInfo);
 
         // For players set spell cooldown if need
-        uint32 cooldown = 0;
+        uint32 cooldown = spellInfo->procTimeRec;
         if (prepare && GetTypeId() == TYPEID_PLAYER && i->spellProcEvent && i->spellProcEvent->cooldown)
             cooldown = i->spellProcEvent->cooldown;
 
@@ -17932,6 +17932,47 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
         {
             uint32 WeaponSpeed = victim->GetAttackTime(attType);
             chance = victim->GetPPMProcChance(WeaponSpeed, spellProcEvent->ppmRate, spellProto);
+        }
+    }
+    if (spellProto->procPerMinId)
+    {
+        float spellPPM = 0.0f;
+        if(SpellProcsPerMinuteEntry const* procPPM = sSpellProcsPerMinuteStore.LookupEntry(spellProto->procPerMinId))
+        {
+            spellPPM = procPPM->ppmRate;
+
+            if (!isVictim)
+            {
+                if(Player* player = ToPlayer())
+                {
+                    uint32 specId = player->GetSpecializationId(player->GetActiveSpec());
+                    if(std::list<uint32> const* modList = GetSpellProcsPerMinuteModList(spellProto->procPerMinId))
+                        for (std::list<uint32>::const_iterator itr = modList->begin(); itr != modList->end(); ++itr)
+                        {
+                            if(SpellProcsPerMinuteModEntry const* procPPMmod = sSpellProcsPerMinuteModStore.LookupEntry((*itr)))
+                                if(procPPMmod->specId == specId)
+                                    spellPPM *= procPPMmod->ppmRateMod + 1;
+                        }
+                }
+                uint32 WeaponSpeed = GetAttackTime(attType);
+                chance = GetPPMProcChance(WeaponSpeed, spellPPM, spellProto);
+            }
+            else
+            {
+                if(Player* player = victim->ToPlayer())
+                {
+                    uint32 specId = player->GetSpecializationId(player->GetActiveSpec());
+                    if(std::list<uint32> const* modList = GetSpellProcsPerMinuteModList(spellProto->procPerMinId))
+                        for (std::list<uint32>::const_iterator itr = modList->begin(); itr != modList->end(); ++itr)
+                        {
+                            if(SpellProcsPerMinuteModEntry const* procPPMmod = sSpellProcsPerMinuteModStore.LookupEntry((*itr)))
+                                if(procPPMmod->specId == specId)
+                                    spellPPM *= procPPMmod->ppmRateMod + 1;
+                        }
+                }
+                uint32 WeaponSpeed = victim->GetAttackTime(attType);
+                chance = victim->GetPPMProcChance(WeaponSpeed, spellPPM, spellProto);
+            }
         }
     }
     // Apply chance modifer aura

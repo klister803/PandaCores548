@@ -1904,8 +1904,26 @@ struct SpellAuraOptionsEntry
     uint32    procChance;                                   // 4       m_procChance
     uint32    procCharges;                                  // 5       m_procCharges
     uint32    procFlags;                                    // 6       m_procTypeMask
-    //uint32                                                // 7       5.4.1
-    //uint32                                                // 8       5.4.1
+    uint32    procTimeRec;                                  // 7       m_procTimeRecovery
+    uint32    procPerMinId;                                 // 8       SpellProcsPerMinuteId
+};
+
+// SpellProcsPerMinute.dbc
+struct SpellProcsPerMinuteEntry
+{
+    uint32    Id;                                           // 0       m_ID
+    float     ppmRate;                                      // 1       m_ppmRate
+    //uint32                                                // 2       not use
+};
+
+// SpellProcsPerMinuteMod.dbc
+struct SpellProcsPerMinuteModEntry
+{
+    uint32    Id;                                           // 0       m_ID
+    //uint32    spellId;                                    // 1       unk
+    uint32    specId;                                       // 2       SpecializationId
+    float     ppmRateMod;                                   // 3       ppmRate mod for spec
+    uint32    ProcsPerMinuteId;                             // 4       SpellProcsPerMinuteId
 };
 
 // SpellAuraRestrictions.dbc/

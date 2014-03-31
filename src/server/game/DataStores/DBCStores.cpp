@@ -49,6 +49,7 @@ struct WMOAreaTableTripple
 
 static UNORDERED_MAP<uint32, std::list<uint32> > sCriteriaTreeEntryList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sModifierTreeEntryList;
+static UNORDERED_MAP<uint32, std::list<uint32> > sSpellProcsPerMinuteModEntryList;
 static UNORDERED_MAP<uint32, uint32 > sAchievementEntryParentList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sItemSpecsList;
 
@@ -213,6 +214,8 @@ DBCStorage <SpellEquippedItemsEntry> sSpellEquippedItemsStore(SpellEquippedItems
 DBCStorage <SpellClassOptionsEntry> sSpellClassOptionsStore(SpellClassOptionsEntryfmt);
 DBCStorage <SpellCooldownsEntry> sSpellCooldownsStore(SpellCooldownsEntryfmt);
 DBCStorage <SpellAuraOptionsEntry> sSpellAuraOptionsStore(SpellAuraOptionsEntryfmt);
+DBCStorage <SpellProcsPerMinuteEntry> sSpellProcsPerMinuteStore(SpellProcsPerMinuteEntryfmt);
+DBCStorage <SpellProcsPerMinuteModEntry> sSpellProcsPerMinuteModStore(SpellProcsPerMinuteModEntryfmt);
 DBCStorage <SpellAuraRestrictionsEntry> sSpellAuraRestrictionsStore(SpellAuraRestrictionsEntryfmt);
 DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore(SpellCastingRequirementsEntryfmt);
 
@@ -643,9 +646,17 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellEquippedItemsStore,     dbcPath,"SpellEquippedItems.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellClassOptionsStore,      dbcPath,"SpellClassOptions.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellCooldownsStore,         dbcPath,"SpellCooldowns.dbc");//14545
-    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellAuraOptionsStore,       dbcPath,"SpellAuraOptions.dbc");//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellAuraOptionsStore,       dbcPath,"SpellAuraOptions.dbc");//17538
+    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellProcsPerMinuteStore,    dbcPath,"SpellProcsPerMinute.dbc");//17538
+    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellProcsPerMinuteModStore, dbcPath,"SpellProcsPerMinuteMod.dbc");//17538
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellAuraRestrictionsStore,  dbcPath,"SpellAuraRestrictions.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellCastingRequirementsStore, dbcPath,"SpellCastingRequirements.dbc");//14545
+
+    for (uint32 i = 0; i < sSpellProcsPerMinuteModStore.GetNumRows(); ++i)
+    {
+        if(SpellProcsPerMinuteModEntry const* sppm = sSpellProcsPerMinuteModStore.LookupEntry(i))
+            sSpellProcsPerMinuteModEntryList[sppm->ProcsPerMinuteId].push_back(i);
+    }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellCategoriesStore,        dbcPath,"SpellCategories.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellCategoryStores,          dbcPath,"SpellCategory.dbc");//14545
@@ -868,6 +879,14 @@ std::list<uint32> const* GetModifierTreeList(uint32 parent)
 {
     UNORDERED_MAP<uint32, std::list<uint32> >::const_iterator itr = sModifierTreeEntryList.find(parent);
     if(itr != sModifierTreeEntryList.end())
+        return &itr->second;
+    return NULL;
+}
+
+std::list<uint32> const* GetSpellProcsPerMinuteModList(uint32 PerMinId)
+{
+    UNORDERED_MAP<uint32, std::list<uint32> >::const_iterator itr = sSpellProcsPerMinuteModEntryList.find(PerMinId);
+    if(itr != sSpellProcsPerMinuteModEntryList.end())
         return &itr->second;
     return NULL;
 }

@@ -345,6 +345,8 @@ public:
     uint32 ProcFlags;
     uint32 ProcChance;
     uint32 ProcCharges;
+    uint32 procTimeRec;
+    uint32 procPerMinId;
     uint32 MaxLevel;
     uint32 BaseLevel;
     uint32 SpellLevel;
