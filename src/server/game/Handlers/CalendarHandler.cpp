@@ -268,56 +268,55 @@ void WorldSession::HandleCalendarArenaTeam(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Calendar: CMSG_CALENDAR_ARENA_TEAM - unk1: %d", unk1);
 }
 
+//! 5.4.1
+//! ToDo: MassInvites!
 void WorldSession::HandleCalendarAddEvent(WorldPacket& recvData)
 {
     uint64 guid = _player->GetGUID();
     std::string title;
     std::string description;
     uint8 type;
-    bool repeatable;
     uint32 maxInvites;
     int32 dungeonId;
-    uint32 eventPackedTime;
-    uint32 unkPackedTime;
+    uint32 eventTime;
     uint32 flags;
     uint64 inviteId = 0;
     uint64 invitee = 0;
-    uint8 status;
-    uint8 rank;
+    uint8 status = CALENDAR_STATUS_NO_OWNER;
+    uint8 rank = CALENDAR_RANK_PLAYER;
 
-    recvData >> title >> description >> type >> repeatable >> maxInvites;
-    recvData >> dungeonId >> eventPackedTime >> unkPackedTime >> flags;
+    recvData >> flags >> eventTime >> maxInvites >> dungeonId >> type;
+    uint32 inviteCount = recvData.ReadBits(22);
 
-    if (!(flags & CALENDAR_FLAG_WITHOUT_INVITES))
+    std::map<uint32, ObjectGuid> inviteCountGuid;
+    for(uint32 i = 0; i < inviteCount; ++i)
+        recvData.ReadGuidMask<1, 7, 2, 3, 4, 0, 6, 5>(inviteCountGuid[i]);
+
+    uint16 titleLen = recvData.ReadBits(5);
+    uint16 descrLen = recvData.ReadBits(11);
+
+    recvData.ResetBitReader();
+
+    title = recvData.ReadString(titleLen);
+
+    for(uint32 i = 0; i < inviteCount; ++i)
     {
-        uint32 inviteCount;
-        recvData >> inviteCount;
-        recvData.readPackGUID(invitee);
-        recvData >> status >> rank;
-
-        if (inviteCount != 1 || invitee != guid)
-        {
-            sLog->outError(LOG_FILTER_NETWORKIO, "HandleCalendarAddEvent: [" UI64FMTD
-                 "]: More than one invite (%d) or Invitee  [" UI64FMTD
-                 "] differs", guid, inviteCount, invitee);
-            return;
-        }
-
+        recvData.ReadGuidBytes<2>(inviteCountGuid[i]);
+        recvData >> status;
+        recvData.ReadGuidBytes<5, 3>(inviteCountGuid[i]);
+        recvData >> rank;
+        recvData.ReadGuidBytes<1, 7, 0, 4, 6>(inviteCountGuid[i]);
         inviteId = sCalendarMgr->GetFreeInviteId();
     }
-    else
-    {
-        inviteId = 0;
-        status = CALENDAR_STATUS_NO_OWNER;
-        rank = CALENDAR_RANK_PLAYER;
-    }
+
+    description = recvData.ReadString(descrLen);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_CALENDAR_ADD_EVENT: [" UI64FMTD "] "
-        "Title %s, Description %s, type %u, Repeatable %u, MaxInvites %u, "
-        "Dungeon ID %d, Time %u, Time2 %u, Flags %u, Invitee [" UI64FMTD "] "
+        "Title %s, Description %s, type %u, MaxInvites %u, "
+        "Dungeon ID %d, Time %u Flags %u, Invitee [" UI64FMTD "] "
         "Status %d, Rank %d", guid, title.c_str(), description.c_str(),
-        type, repeatable, maxInvites, dungeonId, eventPackedTime,
-        unkPackedTime, flags, invitee, status, rank);
+        type, maxInvites, dungeonId, eventTime,
+        flags, invitee, status, rank);
 
     CalendarAction action;
 
@@ -327,9 +326,9 @@ void WorldSession::HandleCalendarAddEvent(WorldPacket& recvData)
     action.Event.SetCreatorGUID(guid);
     action.Event.SetType((CalendarEventType) type);
     action.Event.SetFlags(flags);
-    action.Event.SetTime(eventPackedTime);
-    action.Event.SetTimeZoneTime(unkPackedTime);
-    action.Event.SetRepeatable(repeatable);
+    action.Event.SetTime(eventTime);
+    action.Event.SetTimeZoneTime(eventTime);
+    action.Event.SetRepeatable(false);
     action.Event.SetMaxInvites(maxInvites);
     action.Event.SetDungeonId(dungeonId);
     action.Event.SetGuildId((flags & CALENDAR_FLAG_GUILD_ONLY) ? GetPlayer()->GetGuildId() : 0);
