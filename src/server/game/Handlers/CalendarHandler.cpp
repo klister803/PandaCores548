@@ -78,7 +78,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
     ObjectGuid tmpGUID2 = 0;
 
     ByteBuffer eventBuffer;
-    uint32 counter = 0;
+    uint32 p1 = 0;
     for (CalendarEventIdList::const_iterator it = events.begin(); it != events.end(); ++it)
     {
         CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(*it);
@@ -118,12 +118,11 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
         eventBuffer.WriteGuidBytes<0>(tmpGUID);
         eventBuffer.WriteGuidBytes<5, 1, 2, 3, 4>(tmpGUID2);
         eventBuffer.WriteGuidBytes<4>(tmpGUID);
-        ++counter;
+        ++p1;
     }
-    data.PutBits<uint32>(bpos3, counter, 19);
 
     ByteBuffer instanceBuffer;
-    counter = 0;
+    uint32 p2 = 0;
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (Player::BoundInstancesMap::const_iterator itr = _player->m_boundInstances[i].begin(); itr != _player->m_boundInstances[i].end(); ++itr)
             if (itr->second.perm)
@@ -138,13 +137,11 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
                 instanceBuffer << uint32(save->GetResetTime() - cur_time);
                 instanceBuffer.WriteGuidBytes<4, 3, 6, 0>(tmpGUID);
                 instanceBuffer << uint32(save->GetMapId());
-                ++counter;
+                ++p2;
             }
 
-    data.PutBits<uint32>(bpos4, counter, 20);
-
     ByteBuffer inviteBuffer;
-    counter = 0;
+    uint32 p3 = 0;
     for (CalendarInviteIdList::const_iterator it = invites.begin(); it != invites.end(); ++it)
     {
         CalendarInvite* invite = sCalendarMgr->GetInvite(*it);
@@ -172,9 +169,8 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
         //eventBuffer << uint8(invite->GetStatus());
         //eventBuffer << uint8(invite->GetRank());
         //eventBuffer << uint8(calendarEvent->GetGuildId() != 0);
-        ++counter;
+        ++p3;
     }
-    data.PutBits<uint32>(bpos2, counter, 19);
 
     // TODO: Fix this, how we do know how many and what holidays to send?
     uint32 holidayCount = 0;
@@ -201,14 +197,18 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
 
         data << holiday->TextureFilename;                   // m_textureFilename (holiday name)
     }
-    data.PutBits<uint32>(bpos5, holidayCount, 16);
 
     data.FlushBits();
+    data.PutBits<uint32>(bpos3, p1, 19);
+    data.PutBits<uint32>(bpos4, p2, 20);
+    data.PutBits<uint32>(bpos2, p3, 19);
+    data.PutBits<uint32>(bpos5, holidayCount, 16);
+
     data.append(eventBuffer);
     data.append(inviteBuffer);
     data.append(instanceBuffer);
 
-    counter = 0;
+    uint32 counter = 0;
     std::set<uint32> sentMaps;
     ResetTimeByMapDifficultyMap const& resets = sInstanceSaveMgr->GetResetTimeMap();
     for (ResetTimeByMapDifficultyMap::const_iterator itr = resets.begin(); itr != resets.end(); ++itr)
