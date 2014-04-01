@@ -444,7 +444,7 @@ bool SpellEffectInfo::IsUnitOwnedAuraEffect() const
     return IsAreaAuraEffect() || Effect == SPELL_EFFECT_APPLY_AURA;
 }
 
-int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const* target) const
+int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const* target, Item* m_castItem) const
 {
     float basePointsPerLevel = RealPointsPerLevel;
     int32 basePoints = bp ? *bp : BasePoints;
@@ -456,10 +456,20 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
         if (caster && _spellInfo->Id != 113344) // Hack Fix Bloodbath
         {
             int32 level = caster->getLevel();
+            int32 Reqlvl = 0;
+
             if (target && _spellInfo->IsPositiveEffect(_effIndex) && (Effect == SPELL_EFFECT_APPLY_AURA) && _spellInfo->Id != 774) // Hack Fix Rejuvenation, doesn't use the target level for basepoints
                 level = target->getLevel();
 
-            if (GtSpellScalingEntry const* gtScaling = sGtSpellScalingStore.LookupEntry(_spellInfo->ScalingClass != -1 ? (_spellInfo->ScalingClass - 1) * 100 + level - 1 : (MAX_CLASSES - 1) * 100 + level - 6))
+            if (m_castItem)                                     
+            {
+                Reqlvl = m_castItem->GetTemplate()->RequiredLevel;
+
+                if (Reqlvl != 1)
+                    level = Reqlvl;
+            }
+
+            if (GtSpellScalingEntry const* gtScaling = sGtSpellScalingStore.LookupEntry(_spellInfo->ScalingClass != -1 ? (_spellInfo->ScalingClass - 1) * 100 + level - 1 : (MAX_CLASSES - 1) * 100 + level - 1))
             {
                 float multiplier = gtScaling->value;
                 if (_spellInfo->CastTimeMax > 0 && _spellInfo->CastTimeMaxLevel > level)
@@ -475,11 +485,14 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                     preciseBasePoints += frand(-delta, delta);
                 }
 
-                basePoints = int32(preciseBasePoints);
-                float rounding = preciseBasePoints - basePoints;
+                if (Reqlvl != 1)
+                {
+                    basePoints = int32(preciseBasePoints);
+                    float rounding = preciseBasePoints - basePoints;
 
-                if (rounding >= 0.444445f)
-                    basePoints++;
+                    if (rounding >= 0.444445f)
+                        basePoints++;
+                }
 
                 if (ComboScalingMultiplier)
                     comboDamage = ComboScalingMultiplier * multiplier;
