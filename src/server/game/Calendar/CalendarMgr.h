@@ -41,7 +41,7 @@ class CalendarMgr
         uint64 GetFreeEventId();
         uint64 GetFreeInviteId();
 
-        void AddAction(CalendarAction const& action);
+        void AddAction(CalendarAction const& action, uint64 EventID);
 
         void SendCalendarEvent(CalendarEvent const& calendarEvent, CalendarSendEventType type);
         void SendCalendarEventInvite(CalendarInvite const& invite, bool pending);
@@ -54,7 +54,8 @@ class CalendarMgr
         void SendCalendarEventModeratorStatusAlert(CalendarInvite const& invite);
 
     private:
-        CalendarEvent* CheckPermisions(uint64 eventId, Player* player, uint64 inviteId, CalendarModerationRank minRank);
+        CalendarEvent* CheckPermisions(uint64 eventId, Player* player, CalendarModerationRank minRank);
+        CalendarInvite* GetInviterFromEvent(uint64 plrGuid, CalendarEvent* calendarEvent);
 
         bool AddEvent(CalendarEvent const& calendarEvent);
         bool RemoveEvent(uint64 eventId);
@@ -62,6 +63,7 @@ class CalendarMgr
         bool RemovePlayerEvent(uint64 guid, uint64 eventId);
 
         bool AddInvite(CalendarInvite const& invite);
+        bool AddInvite(CalendarInveteMap const& inviteMap);
         uint64 RemoveInvite(uint64 inviteId);
         bool AddPlayerInvite(uint64 guid, uint64 inviteId);
         bool RemovePlayerInvite(uint64 guid, uint64 inviteId);

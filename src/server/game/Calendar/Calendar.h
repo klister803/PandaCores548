@@ -31,6 +31,9 @@ class CalendarInvite
 
         ~CalendarInvite() { }
 
+        bool operator < (const CalendarInvite& i) const { return _inviteId > i.GetInviteId(); }
+        bool operator == (const CalendarInvite& i) const { return _inviteId == i.GetInviteId(); }
+
         void SetInviteId(uint64 inviteId) { _inviteId = inviteId; }
         uint64 GetInviteId() const { return _inviteId; }
 
@@ -153,14 +156,17 @@ typedef std::map<uint64, CalendarInviteIdList> CalendarPlayerInviteIdMap;
 typedef std::map<uint64, CalendarEventIdList> CalendarPlayerEventIdMap;
 typedef std::map<uint64, CalendarInvite> CalendarInviteMap;
 typedef std::map<uint64, CalendarEvent> CalendarEventMap;
-
+typedef std::set<CalendarInvite> CalendarInveteMap;
 class Player;
 
 struct CalendarAction
 {
-        CalendarAction(): _action(CALENDAR_ACTION_NONE), _player(NULL), _inviteId(0), _data(0)
+        CalendarAction(): _action(CALENDAR_ACTION_NONE), _player(NULL), _data(0), _inviteId(0)
         {
         }
+
+        void SetActionInviteId(uint64 inviteId) { _inviteId = inviteId; }
+        uint64 GetActionInviteId() const { return _inviteId; }
 
         void SetAction(CalendarActionData data) { _action = data; }
         CalendarActionData GetAction() const { return _action; }
@@ -168,21 +174,21 @@ struct CalendarAction
         void SetPlayer(Player* player) { ASSERT(player); _player = player; }
         Player* GetPlayer() const { return _player; }
 
-        void SetInviteId(uint64 id) { _inviteId = id; }
-        uint64 GetInviteId() const { return _inviteId; }
-
         void SetExtraData(uint32 data) { _data = data; }
         uint32 GetExtraData() const { return _data; }
 
-        CalendarEvent Event;
-        CalendarInvite Invite;
+        CalendarInveteMap const& GetInviteMap() const { return InveteMap; }
+        void SetInvite(CalendarInvite invite) { InveteMap.insert(invite); }
 
+        CalendarEvent Event;
+        //CalendarInvite Invite;
+        CalendarInveteMap InveteMap;
         std::string GetDebugString() const;
 
     private:
+        uint64 _inviteId;
         CalendarActionData _action;
         Player* _player;
-        uint64 _inviteId;
         uint32 _data;
 };
 

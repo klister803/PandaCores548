@@ -90,10 +90,10 @@ std::string CalendarAction::GetDebugString() const
     data << "CalendarAction::"
         << " Action: " << GetAction()
         << " Guid: " << GetPlayer()->GetGUID()
-        << " Invite Id: " << GetInviteId()
         << " Extra data: " << GetExtraData()
-        << " Event: " << Event.GetDebugString()
-        << " Invite: " << Invite.GetDebugString();
+        << " Event: " << Event.GetDebugString();
+    for(CalendarInveteMap::const_iterator itr = InveteMap.begin(); itr != InveteMap.end(); ++itr )
+        data << " Invite " << (*itr).GetInviteId() <<  ": " << (*itr).GetDebugString();
 
     return data.str();
 }

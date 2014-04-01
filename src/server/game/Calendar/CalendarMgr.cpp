@@ -179,8 +179,26 @@ void CalendarMgr::LoadFromDB()
     sLog->outInfo(LOG_FILTER_CALENDAR, ">> Loaded %u calendar Invites", count);
     */
 }
+CalendarInvite* CalendarMgr::GetInviterFromEvent(uint64 plrGuid, CalendarEvent* calendarEvent)
+{
+    if (!calendarEvent)
+        return NULL;
 
-CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, Player* player, uint64 inviteId, CalendarModerationRank minRank)
+    CalendarInvite *invite = NULL;
+    CalendarInviteIdList const& invList =  calendarEvent->GetInviteIdList();
+    for(CalendarInviteIdList::const_iterator itr = invList.begin(); itr != invList.end(); ++itr)
+    {
+        invite = GetInvite(*itr);
+        if (!invite)
+            continue;
+
+        if (invite->GetInvitee() == plrGuid)
+            return invite;
+    }
+    return NULL;
+}
+
+CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, Player* player, CalendarModerationRank minRank)
 {
     if (!player)
         return NULL;    // CALENDAR_ERROR_INTERNAL
@@ -192,16 +210,12 @@ CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, Player* player, uint
         return NULL;
     }
 
-    CalendarInvite* invite = GetInvite(inviteId);
+    CalendarInvite* invite = GetInviterFromEvent(player->GetGUID(), calendarEvent);
+
+
     if (!invite)
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_NO_INVITE);
-        return NULL;
-    }
-
-    if (!calendarEvent->HasInvite(inviteId))
-    {
-        player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_NOT_INVITED);
         return NULL;
     }
 
@@ -220,23 +234,23 @@ CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, Player* player, uint
     return calendarEvent;
 }
 
-void CalendarMgr::AddAction(CalendarAction const& action)
+void CalendarMgr::AddAction(CalendarAction const& action, uint64 eventId)
 {
     switch (action.GetAction())
     {
         case CALENDAR_ACTION_ADD_EVENT:
         {
-            if (AddEvent(action.Event) && AddInvite(action.Invite))
+            if (AddEvent(action.Event) && AddInvite(action.GetInviteMap()))
             {
-                SendCalendarEventInviteAlert(action.Event, action.Invite);
+                for(CalendarInveteMap::const_iterator itr = action.GetInviteMap().begin(); itr != action.GetInviteMap().end(); ++itr)
+                    SendCalendarEventInviteAlert(action.Event, *itr);
                 SendCalendarEvent(action.Event, CALENDAR_SENDTYPE_ADD);
             }
             break;
         }
         case CALENDAR_ACTION_MODIFY_EVENT:
         {
-            uint64 eventId = action.Event.GetEventId();
-            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_MODERATOR);
+            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), CALENDAR_RANK_MODERATOR);
             if (!calendarEvent)
                 return;
 
@@ -255,12 +269,11 @@ void CalendarMgr::AddAction(CalendarAction const& action)
             for (CalendarInviteIdList::const_iterator itr = invites.begin(); itr != invites.end(); ++itr)
                 if (CalendarInvite* invite = GetInvite(*itr))
                     SendCalendarEventUpdateAlert(invite->GetInvitee(), *calendarEvent, CALENDAR_SENDTYPE_ADD);
-
             break;
         }
         case CALENDAR_ACTION_COPY_EVENT:
         {
-            CalendarEvent* calendarEvent = CheckPermisions(action.Event.GetEventId(), action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_OWNER);
+            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), CALENDAR_RANK_OWNER);
 
             if (!calendarEvent)
                 return;
@@ -308,11 +321,10 @@ void CalendarMgr::AddAction(CalendarAction const& action)
         }
         case CALENDAR_ACTION_REMOVE_EVENT:
         {
-            uint64 eventId = action.Event.GetEventId();
             //uint32 flags = action.Event.GetFlags();
             // FIXME - Use of Flags here!
 
-            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_OWNER);
+            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), CALENDAR_RANK_OWNER);
             if (!calendarEvent)
                 return;
 
@@ -321,32 +333,33 @@ void CalendarMgr::AddAction(CalendarAction const& action)
         }
         case CALENDAR_ACTION_ADD_EVENT_INVITE:
         {
-            uint64 eventId = action.Invite.GetEventId();
-            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_MODERATOR);
+            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), CALENDAR_RANK_MODERATOR);
             if (!calendarEvent)
                 return;
 
-            if (AddInvite(action.Invite))
+            for(CalendarInveteMap::const_iterator itr = action.GetInviteMap().begin(); itr != action.GetInviteMap().end(); ++itr)
             {
-                calendarEvent->AddInvite(action.Invite.GetInviteId());
-                SendCalendarEventInvite(action.Invite, (!(calendarEvent->GetFlags() & CALENDAR_FLAG_INVITES_LOCKED) &&
-                    !action.Invite.GetStatusTime()));
-                SendCalendarEventInviteAlert(*calendarEvent, action.Invite);
+                if (AddInvite(*itr))
+                {
+                    calendarEvent->AddInvite((*itr).GetInviteId());
+                    SendCalendarEventInvite((*itr), (!(calendarEvent->GetFlags() & CALENDAR_FLAG_INVITES_LOCKED) &&
+                        !(*itr).GetStatusTime()));
+                    SendCalendarEventInviteAlert(*calendarEvent, *itr);
+                }
             }
 
             break;
         }
         case CALENDAR_ACTION_SIGNUP_TO_EVENT:
         {
-            uint64 eventId = action.Event.GetEventId();
-            CalendarEvent* calendarEvent = GetEvent(eventId);
-            CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_MODERATOR);
-
+            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), CALENDAR_RANK_PLAYER);
+            
             if (!calendarEvent || !(calendarEvent->GetFlags() & CALENDAR_FLAG_GUILD_ONLY)
                 || !calendarEvent->GetGuildId() || calendarEvent->GetGuildId() != action.GetExtraData())
                 return;
 
-            CalendarInviteStatus status = action.Invite.GetStatus();
+            //Little hack for send from handler status data
+            CalendarInviteStatus status = (CalendarInviteStatus)action.GetActionInviteId();
 
             if (status == CALENDAR_STATUS_INVITED)
                 status = CALENDAR_STATUS_CONFIRMED;
@@ -367,54 +380,58 @@ void CalendarMgr::AddAction(CalendarAction const& action)
         }
         case CALENDAR_ACTION_MODIFY_EVENT_INVITE:
         {
-            uint64 eventId = action.Invite.GetEventId();
-            uint64 inviteId = action.Invite.GetInviteId();
-
+            CalendarInvite* invite = NULL;
             CalendarEvent* calendarEvent = NULL;
-            if (action.GetInviteId() != action.Invite.GetInviteId())
-                calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_MODERATOR);
-            else
-                calendarEvent = GetEvent(eventId);
+            for(CalendarInveteMap::const_iterator itr = action.GetInviteMap().begin(); itr != action.GetInviteMap().end(); ++itr)
+            {
+                invite = GetInvite((*itr).GetInviteId());
+                if (!invite)
+                    continue;
 
-            CalendarInvite* invite = GetInvite(inviteId);
+                if (action.GetActionInviteId() != (*itr).GetInviteId())
+                    calendarEvent = CheckPermisions(eventId, action.GetPlayer(), CALENDAR_RANK_MODERATOR);
+                else
+                    calendarEvent = GetEvent(eventId);
 
-            if (!calendarEvent || !invite || !calendarEvent->HasInvite(inviteId))
-                return;
+                if (!calendarEvent)
+                    return;
 
-            invite->SetStatus(action.Invite.GetStatus());
-            SendCalendarEventStatus(invite->GetSenderGUID(), *calendarEvent, *invite);
+                invite->SetStatus((*itr).GetStatus());
+                SendCalendarEventStatus(invite->GetSenderGUID(), *calendarEvent, *invite);
+            }
             break;
         }
         case CALENDAR_ACTION_MODIFY_MODERATOR_EVENT_INVITE:
         {
-            uint64 eventId = action.Invite.GetEventId();
-            uint64 inviteId = action.Invite.GetInviteId();
-
+            CalendarInvite* invite = NULL;
             CalendarEvent* calendarEvent = NULL;
-            if (action.GetInviteId() != action.Invite.GetInviteId())
-                calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_OWNER);
-            else
-                calendarEvent = GetEvent(eventId);
+            for(CalendarInveteMap::const_iterator itr = action.GetInviteMap().begin(); itr != action.GetInviteMap().end(); ++itr)
+            {
+                invite = GetInvite((*itr).GetInviteId());
+                if (!invite)
+                    continue;
 
-            CalendarInvite* invite = GetInvite(inviteId);
+                if (action.GetActionInviteId() != (*itr).GetInviteId())
+                    calendarEvent = CheckPermisions(eventId, action.GetPlayer(), CALENDAR_RANK_OWNER);
+                else
+                    calendarEvent = GetEvent(eventId);
 
-            if (!calendarEvent || !invite || !calendarEvent->HasInvite(inviteId))
-                return;
+                if (!calendarEvent)
+                    return;
 
-            invite->SetStatus(action.Invite.GetStatus());
-            SendCalendarEventModeratorStatusAlert(*invite);
+                invite->SetStatus((*itr).GetStatus());
+                SendCalendarEventModeratorStatusAlert(*invite);
+            }
             break;
         }
         case CALENDAR_ACTION_REMOVE_EVENT_INVITE:
         {
-            uint64 eventId = action.Invite.GetEventId();
-            uint64 inviteId = action.Invite.GetInviteId();
-            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_MODERATOR);
+            CalendarEvent* calendarEvent = CheckPermisions(eventId, action.GetPlayer(), CALENDAR_RANK_MODERATOR);
             if (!calendarEvent)
                 return;
 
             // already checked in CheckPermisions
-            CalendarInvite* invite = GetInvite(inviteId);
+            CalendarInvite* invite = GetInviterFromEvent(action.GetPlayer()->GetGUID(), calendarEvent);
             if (!invite)
                 return;
 
@@ -424,10 +441,10 @@ void CalendarMgr::AddAction(CalendarAction const& action)
                 return;
             }
 
-            if (uint64 invitee = RemoveInvite(inviteId))
+            if (uint64 invitee = RemoveInvite(invite->GetInviteId()))
             {
                 SendCalendarEventInviteRemoveAlert(invitee, *calendarEvent, CALENDAR_STATUS_9);
-                SendCalendarEventInviteRemove(action.GetPlayer()->GetGUID(), action.Invite, calendarEvent->GetFlags());
+                SendCalendarEventInviteRemove(action.GetPlayer()->GetGUID(), *invite, calendarEvent->GetFlags());
             }
             break;
         }
@@ -486,6 +503,19 @@ bool CalendarMgr::AddPlayerEvent(uint64 guid, uint64 eventId)
 bool CalendarMgr::RemovePlayerEvent(uint64 guid, uint64 eventId)
 {
     _playerEvents[guid].erase(eventId);
+    return true;
+}
+
+bool CalendarMgr::AddInvite(CalendarInveteMap const& inviteMap)
+{
+    if (inviteMap.empty())
+        return false;
+
+    for(CalendarInveteMap::const_iterator itr = inviteMap.begin(); itr != inviteMap.end(); ++itr)
+    {
+        if (!AddInvite(*itr))
+            return false;
+    }
     return true;
 }
 
