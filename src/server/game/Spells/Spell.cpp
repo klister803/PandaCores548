@@ -1239,7 +1239,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             }
             case SPELLFAMILY_PALADIN:
                 // Holy Wrath
-                if (m_spellInfo->Id == 119072 && effIndex == 1)
+                if (m_spellInfo->Id == 119072 && effIndex == EFFECT_0)
                 {
                     static const uint8 types_noglyph[] = {CREATURE_TYPE_DEMON, CREATURE_TYPE_UNDEAD, 0};
                     static const uint8 types_glyph[] = {CREATURE_TYPE_DEMON, CREATURE_TYPE_UNDEAD, CREATURE_TYPE_ELEMENTAL, CREATURE_TYPE_DRAGONKIN, 0};
