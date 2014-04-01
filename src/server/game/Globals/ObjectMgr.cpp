@@ -270,7 +270,7 @@ std::list<CurrencyLoot> ObjectMgr::GetCurrencyLoot(uint32 entry, uint8 type, uin
     uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(spawnMode)));
     for (CurrencysLoot::iterator itr = _currencysLoot.begin(); itr != _currencysLoot.end(); ++itr)
     {
-        if (itr->Entry == entry && itr->Type == type && (itr->lootmode & diffMask))
+        if (itr->Entry == entry && itr->Type == type && (itr->lootmode == 0 || (itr->lootmode & diffMask)))
             temp.push_back(*itr);
     }
     return temp;
