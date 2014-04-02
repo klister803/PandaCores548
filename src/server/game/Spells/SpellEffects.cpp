@@ -475,11 +475,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     else
                         damage += CalculatePct(m_caster->GetTotalAttackPowerValue(BASE_ATTACK), 140);
                 }
-                // Victory Rush
-                if (m_spellInfo->SpellFamilyFlags[1] & 0x100)
-                    ApplyPct(damage, m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
                 // Shockwave
-                else if (m_spellInfo->Id == 46968)
+                if (m_spellInfo->Id == 46968)
                 {
                     int32 pct = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, 2);
                     if (pct > 0)
