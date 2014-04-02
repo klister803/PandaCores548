@@ -1552,7 +1552,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 AddCompletedProject(ResearchProjectEntry const* entry);
         bool IsCompletedProject(uint32 id, bool onlyRare);
         void SendCompletedProjects();
-        void SendSurveyCast(uint32 count, uint32 max, uint32 fieldId, bool completed);
+        void SendSurveyCast(uint32 count, uint32 max, uint32 branchId, bool completed);
 
         DigSite _digSites[MAX_RESEARCH_SITES];
         ResearchSiteSet _researchSites;

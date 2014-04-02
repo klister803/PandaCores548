@@ -760,10 +760,10 @@ void WorldSession::HandleRequestResearchHistory(WorldPacket& recv_data)
     _player->SendCompletedProjects();
 }
 
-void Player::SendSurveyCast(uint32 count, uint32 max, uint32 fieldId, bool completed)
+void Player::SendSurveyCast(uint32 count, uint32 max, uint32 branchId, bool completed)
 {
     WorldPacket data(SMSG_SURVEY_CAST, 4 * 3 + 1);
-    data << uint32(count) << uint32(max) << uint32(fieldId);
+    data << uint32(count) << uint32(max) << uint32(branchId);
     data.WriteBit(completed);
     SendDirectMessage(&data);
 }
