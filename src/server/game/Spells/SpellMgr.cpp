@@ -4016,9 +4016,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 324:   // Lightning Shield
                     spellInfo->ProcCharges = 0;
                     break;
-                case 116740:// Tigereye Brew
-                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
-                    break;
                 case 117993:// Chi Torpedo : Heal
                 case 124040:// Chi Torpedo : Damage
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
