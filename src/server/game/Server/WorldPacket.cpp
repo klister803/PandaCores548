@@ -18,6 +18,7 @@
 #include <zlib.h>
 #include "WorldPacket.h"
 #include "World.h"
+#include "ByteConverter.h"
 
 //! Compresses packet in place
 void WorldPacket::Compress(z_stream* compressionStream)
@@ -63,16 +64,23 @@ bool WorldPacket::Compress(z_stream* compressionStream, WorldPacket const* sourc
     }
 
     Opcodes opcode = SMSG_COMPRESSED_OPCODE;
-    uint32 size = source->wpos();
+    uint32 size = source->wpos()+4;
     uint32 destsize = compressBound(size);
     uint32 size2 = destsize;
     size_t sizePos = 0;
 
-    uint32 adler_origina = adler32( 0x9827D8F1u, source->contents(), size);
+    ByteBuffer b(size);
+    b << uint32(uncompressedOpcode);
+    b.append(source->contents(), size-4);
 
+    uint32 adler_origina = adler32( 0x9827D8F1u, b.contents(), size);
+
+    //source->appenToBegin<uint32>(uncompressedOpcode);
+    //source->contents()->insert(source->contents()->begin(), 4, uncompressedOpcode)
     std::vector<uint8> storage(destsize);
+    
     //! ToDo: client alway send inflate result -3 with msg: invalid stored block lengths
-    if (!Compress(&storage[0], &destsize, source->contents(), size, Z_SYNC_FLUSH))
+    if (!Compress(&storage[0], &destsize, b.contents(), size, Z_SYNC_FLUSH))
         return false;
 
     uint32 adler_compred = adler32( 0x9827D8F1u, &storage[0], destsize); 
