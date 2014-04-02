@@ -691,7 +691,7 @@ void Player::_LoadArchaeology(PreparedQueryResult result)
 
     // Loading current projects
     Tokenizer tokens3(fields[2].GetString(), ' ');
-    if (tokens.size() == MAX_RESEARCH_PROJECTS)
+    if (tokens3.size() == MAX_RESEARCH_PROJECTS)
     {
         for (uint8 i = 0; i < MAX_RESEARCH_PROJECTS; ++i)
             if (ResearchProjectEntry const* entry = sResearchProjectStore.LookupEntry(atoi(tokens3[i])))
