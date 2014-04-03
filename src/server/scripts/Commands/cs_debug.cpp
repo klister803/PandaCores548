@@ -279,7 +279,7 @@ public:
     
     static bool HandleDebugSendCompressCommand(ChatHandler* handler, char const* args)
     {
-        std::ostringstream ss;
+        /*std::ostringstream ss;
         for(int32 i = 0; i < 100; ++i)
             ss << "TEST" << i << " ";
 
@@ -293,7 +293,7 @@ public:
 
         WorldPacket buff;
         buff.Compress(handler->GetSession()->GetCompressionStream(), &data);
-        handler->GetSession()->SendPacket(&buff);
+        handler->GetSession()->SendPacket(&buff);*/
         return true;
     }
 
