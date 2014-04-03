@@ -5126,9 +5126,10 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 60893:                                 // Northrend Alchemy Research
                 case 61177:                                 // Northrend Inscription Research
                 case 61288:                                 // Minor Inscription Research
-                case 61756:                                 // Northrend Inscription Research (FAST QA VERSION)
                 case 64323:                                 // Book of Glyph Mastery
                 case 112996:                                // Scroll of Wisdom
+                case 125557:                                // Imperial Silk
+                case 143626:                                // Celestial Cloth
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;

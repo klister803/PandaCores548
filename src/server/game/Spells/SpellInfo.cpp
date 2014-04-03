@@ -1123,9 +1123,10 @@ bool SpellInfo::IsMountOrCompanions() const
 bool SpellInfo::IsExplicitDiscovery() const
 {
     return ((Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM
+        || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM
         || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2)
         && Effects[1].Effect == SPELL_EFFECT_SCRIPT_EFFECT)
-        || Id == 64323 || Id == 112996;
+        || Id == 64323 || Id == 143626;
 }
 
 bool SpellInfo::IsLootCrafting() const
