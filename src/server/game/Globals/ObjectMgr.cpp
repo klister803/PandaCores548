@@ -1767,9 +1767,7 @@ void ObjectMgr::LoadGameobjects()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    std::list<uint32> tempList = GetGameObjectsList();
-
-    _gameObjectDataStore.rehash(result->GetRowCount() + tempList.size());
+    _gameObjectDataStore.rehash(result->GetRowCount());
     do
     {
         Field* fields = result->Fetch();
@@ -1887,38 +1885,6 @@ void ObjectMgr::LoadGameobjects()
             AddGameobjectToGrid(guid, &data);
         ++count;
     } while (result->NextRow());
-
-    for (std::list<uint32>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
-    {
-        if (GameObjectsEntry const* goe = sGameObjectsStore.LookupEntry(*itr))
-        {
-            uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
-
-            GameObjectData& data = _gameObjectDataStore[guid];
-
-            data.id             = goe->id;
-            data.mapid          = goe->map;
-            data.posX           = goe->position_x;
-            data.posY           = goe->position_y;
-            data.posZ           = goe->position_z;
-            data.orientation    = 0.0f;
-            data.rotation0      = goe->rotation0;
-            data.rotation1      = goe->rotation1;
-            data.rotation2      = goe->rotation2;
-            data.rotation3      = goe->rotation3;
-            data.spawnMask      = spawnMasks[data.mapid];
-            data.phaseMask      = 1;
-            data.isActive       = 0;
-            data.go_state       = GOState(1);
-            data.animprogress   = 100;
-            data.artKit         = 0;
-            data.spawntimesecs  = 100;
-
-            AddGameobjectToGrid(guid, &data);
-
-            ++count;
-        }
-    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %lu gameobjects in %u ms", (unsigned long)_gameObjectDataStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
