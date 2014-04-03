@@ -279,17 +279,21 @@ public:
     
     static bool HandleDebugSendCompressCommand(ChatHandler* handler, char const* args)
     {
-        std::string msg = "TEST TEST TEST III A B C D E F G 1 2 3 4 5 6 7 8 9 0 K O P D S"
-            "TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST";
-        WorldPacket data(SMSG_NOTIFICATION, 2 + msg.length());
-        data.WriteBits(msg.length(), 12);
+        std::ostringstream ss;
+        for(int32 i = 0; i < 100; ++i)
+            ss << "TEST" << i << " ";
+
+        ss << "FINISH";
+
+        WorldPacket data(SMSG_NOTIFICATION, 2 + ss.str().length());
+        data.WriteBits(ss.str().length(), 12);
         data.FlushBits();
-        data.WriteString(msg);
+        data.WriteString(ss.str().c_str());
         //handler->GetSession()->SendPacket(&data);
 
-        //WorldPacket buff;
-        //buff.Compress(handler->GetSession()->GetCompressionStream(), &data);
-        //handler->GetSession()->SendPacket(&buff);
+        WorldPacket buff;
+        buff.Compress(handler->GetSession()->GetCompressionStream(), &data);
+        handler->GetSession()->SendPacket(&buff);
         return true;
     }
 

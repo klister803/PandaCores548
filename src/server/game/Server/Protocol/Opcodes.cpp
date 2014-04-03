@@ -677,7 +677,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_CALENDAR_CLEAR_PENDING_ACTION,           STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_CALENDAR_COMMAND_RESULT,                 STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_CALENDAR_EVENT_INVITE,                   STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_CALENDAR_EVENT_INVITE_ALERT,             STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_CALENDAR_EVENT_INVITE_ALERT,             STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_CALENDAR_EVENT_INVITE_NOTES,             STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_CALENDAR_EVENT_INVITE_NOTES_ALERT,       STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_CALENDAR_EVENT_INVITE_REMOVED,           STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
