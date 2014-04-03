@@ -239,6 +239,27 @@ struct RuleSetItemUpgradeEntry
     uint32 itemEntry;           // 3 Item ID
 };
 
+struct GameObjectsEntry
+{
+    uint32 id;                  // 0 m_ID
+    uint32 map;                 // 1 mapId
+    uint32 displayId;           // 2
+    float position_x;           // 3
+    float position_y;           // 4
+    float position_z;           // 5
+    float rotation0;            // 6
+    float rotation1;            // 7
+    float rotation2;            // 8
+    float rotation3;            // 9
+    float size;                 // 10
+    uint32 type;                // 11
+    uint32 data0;               // 12
+    uint32 data1;               // 13
+    uint32 data2;               // 14
+    uint32 data3;               // 15
+    char* name;                 // 16
+};
+
 #define MAX_ITEM_UPDGRADES 3
 
 struct ItemUpgradeData

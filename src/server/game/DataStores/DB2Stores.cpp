@@ -34,9 +34,11 @@ DB2Storage <QuestPackageItem> sQuestPackageItemStore(QuestPackageItemfmt);
 DB2Storage <SpellReagentsEntry> sSpellReagentsStore(SpellReagentsEntryfmt);
 DB2Storage <ItemUpgradeEntry> sItemUpgradeStore(ItemUpgradeEntryfmt);
 DB2Storage <RuleSetItemUpgradeEntry> sRuleSetItemUpgradeEntryStore(RuleSetItemUpgradeEntryfmt);
+DB2Storage <GameObjectsEntry> sGameObjectsStore(GameObjectsEntryfmt);
 
 typedef std::list<std::string> StoreProblemList1;
 static std::map<uint32, std::list<uint32> > sPackageItemList;
+std::list<uint32> sGameObjectsList;
 
 ItemUpgradeDataMap sItemUpgradeDataMap;
 BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
@@ -111,11 +113,18 @@ void LoadDB2Stores(const std::string& dataPath)
     LoadDB2(bad_db2_files, sItemSparseStore,        db2Path, "Item-sparse.db2");
     LoadDB2(bad_db2_files, sItemExtendedCostStore,  db2Path, "ItemExtendedCost.db2", &CustomItemExtendedCostEntryfmt, &CustomItemExtendedCostEntryIndex);
     LoadDB2(bad_db2_files, sQuestPackageItemStore,  db2Path, "QuestPackageItem.db2");
+    LoadDB2(bad_db2_files, sGameObjectsStore,       db2Path, "GameObjects.db2");
 
     for (uint32 i = 0; i < sQuestPackageItemStore.GetNumRows(); ++i)
     {
         if (QuestPackageItem const* sp = sQuestPackageItemStore.LookupEntry(i))
             sPackageItemList[sp->packageEntry].push_back(i);
+    }
+
+    for (uint32 i = 0; i < sGameObjectsStore.GetNumRows(); ++i)
+    {
+        if (GameObjectsEntry const* goe = sGameObjectsStore.LookupEntry(i))
+            sGameObjectsList.push_back(i);
     }
 
     LoadDB2(bad_db2_files, sSpellReagentsStore,     db2Path,"SpellReagents.db2");
@@ -231,6 +240,11 @@ void LoadDB2Stores(const std::string& dataPath)
 std::list<uint32> GetPackageItemList(uint32 packageEntry)
 {
     return sPackageItemList[packageEntry];
+}
+
+std::list<uint32> GetGameObjectsList()
+{
+    return sGameObjectsList;
 }
 
 ItemUpgradeData const* GetItemUpgradeData(uint32 itemEntry)

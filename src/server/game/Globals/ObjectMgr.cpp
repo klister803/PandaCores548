@@ -1767,7 +1767,9 @@ void ObjectMgr::LoadGameobjects()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    _gameObjectDataStore.rehash(result->GetRowCount());
+    std::list<uint32> tempList = GetGameObjectsList();
+
+    _gameObjectDataStore.rehash(result->GetRowCount() + tempList.size());
     do
     {
         Field* fields = result->Fetch();
@@ -1885,6 +1887,38 @@ void ObjectMgr::LoadGameobjects()
             AddGameobjectToGrid(guid, &data);
         ++count;
     } while (result->NextRow());
+
+    for (std::list<uint32>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+    {
+        if (GameObjectsEntry const* goe = sGameObjectsStore.LookupEntry(*itr))
+        {
+            uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+
+            GameObjectData& data = _gameObjectDataStore[guid];
+
+            data.id             = goe->id;
+            data.mapid          = goe->map;
+            data.posX           = goe->position_x;
+            data.posY           = goe->position_y;
+            data.posZ           = goe->position_z;
+            data.orientation    = 0.0f;
+            data.rotation0      = goe->rotation0;
+            data.rotation1      = goe->rotation1;
+            data.rotation2      = goe->rotation2;
+            data.rotation3      = goe->rotation3;
+            data.spawnMask      = spawnMasks[data.mapid];
+            data.phaseMask      = 1;
+            data.isActive       = 0;
+            data.go_state       = GOState(1);
+            data.animprogress   = 100;
+            data.artKit         = 0;
+            data.spawntimesecs  = 100;
+
+            AddGameobjectToGrid(guid, &data);
+
+            ++count;
+        }
+    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %lu gameobjects in %u ms", (unsigned long)_gameObjectDataStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
@@ -6307,7 +6341,9 @@ void ObjectMgr::LoadGameObjectTemplate()
         return;
     }
 
-    _gameObjectTemplateStore.rehash(result->GetRowCount());
+    std::list<uint32> tempList = GetGameObjectsList();
+
+    _gameObjectTemplateStore.rehash(result->GetRowCount() + tempList.size());
     uint32 count = 0;
     do
     {
@@ -6519,6 +6555,41 @@ void ObjectMgr::LoadGameObjectTemplate()
        ++count;
     }
     while (result->NextRow());
+
+    for (std::list<uint32>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+    {
+        if (GameObjectsEntry const* goe = sGameObjectsStore.LookupEntry(*itr))
+        {
+            GameObjectTemplate& got = _gameObjectTemplateStore[goe->id];
+
+            got.entry          = goe->id;
+            got.type           = goe->type;
+            got.displayId      = goe->displayId;
+            got.name           = goe->name;
+            got.IconName       = "";
+            got.castBarCaption = "";
+            got.unk1           = "";
+            got.faction        = 0;
+            got.flags          = 0;
+            got.size           = goe->size;
+            got.raw.data[0]    = goe->data0;
+            got.raw.data[1]    = goe->data1;
+            got.raw.data[2]    = goe->data2;
+            got.raw.data[3]    = goe->data3;
+
+            for (uint8 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
+                got.questItems[i] = 0;
+
+            for (uint8 i = 4; i < MAX_GAMEOBJECT_DATA; ++i)
+                got.raw.data[i] = 0;
+
+            got.unkInt32 = 0;
+            got.AIName = "";
+            got.ScriptId = GetScriptId("");
+
+            ++count;
+        }
+    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u game object templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }

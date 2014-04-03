@@ -27,6 +27,7 @@ const char QuestPackageItemfmt[]="iiiix";
 const char SpellReagentsEntryfmt[]="diiiiiiiiiiiiiiiixx";
 const char ItemUpgradeEntryfmt[]="niiiii";
 const char RuleSetItemUpgradeEntryfmt[]="niii";
+const char GameObjectsEntryfmt[]="niiffffffffiiiiis";
 const std::string CustomItemExtendedCostEntryfmt="paappppppppppppappppppppppaapaa";
 const std::string CustomItemExtendedCostEntryIndex = "ID";
 

@@ -25,6 +25,7 @@
 #include <list>
 
 std::list<uint32> GetPackageItemList(uint32 packageEntry);
+std::list<uint32> GetGameObjectsList();
 
 extern DB2Storage <ItemEntry> sItemStore;
 extern DB2Storage <ItemCurrencyCostEntry> sItemCurrencyCostStore;
@@ -35,6 +36,7 @@ extern DB2Storage <QuestPackageItem> sQuestPackageItemStore;
 extern DB2Storage <SpellReagentsEntry> sSpellReagentsStore;
 extern DB2Storage <ItemUpgradeEntry> sItemUpgradeStore;
 extern DB2Storage <RuleSetItemUpgradeEntry> sRuleSetItemUpgradeEntryStore;
+extern DB2Storage <GameObjectsEntry> sGameObjectsStore;
 
 void LoadDB2Stores(const std::string& dataPath);
 
