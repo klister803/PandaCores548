@@ -182,7 +182,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             if (spellproto->SpellFamilyFlags[0] & 0x100000)
                 return DIMINISHING_LIMITONLY;
             // Turn Evil
-            else if (spellproto->Id == 10326)
+            else if (spellproto->Id == 10326 || spellproto->Id == 145067)
                 return DIMINISHING_FEAR;
             break;
         }
