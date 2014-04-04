@@ -56,7 +56,14 @@ enum eCreatures
 };
 
 enum eGameObjects
-{   
+{  
+    GO_JINROKH_PRE_DOOR   = 218665,
+    GO_JINROKH_ENT_DOOR   = 218664,
+    GO_MOGU_SR            = 218675,
+    GO_MOGU_NR            = 218676,
+    GO_MOGU_NL            = 218677,
+    GO_MOGU_SL            = 218678,
+    GO_JINROKH_EX_DOOR    = 218663,
 };
 
 #endif THRONEOFTHUNDER

@@ -8,13 +8,19 @@
 class instance_throne_of_thunder : public InstanceMapScript
 {
 public:
-    instance_throne_of_thunder() : InstanceMapScript("instance_throne_of_thunder", 0) { }
+    instance_throne_of_thunder() : InstanceMapScript("instance_throne_of_thunder", 1098) { }
 
     struct instance_throne_of_thunder_InstanceMapScript : public InstanceScript
     {
         instance_throne_of_thunder_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         //GameObjects
+        uint64 jinrokhentdoorGuid;
+        uint64 mogufont_sr_Guid;
+        uint64 mogufont_nr_Guid;
+        uint64 mogufont_nl_Guid;
+        uint64 mogufont_sl_Guid;
+        uint64 jinrokhexdoorGuid;
         
         //Creature
         uint64 jinrokhGuid;
@@ -36,33 +42,43 @@ public:
         uint64 lulinGuid;
         uint64 leishenGuid;
         uint64 radenGuid;
+
+        std::vector <uint64> mogufontsGuids;
         
         void Initialize()
         {
             SetBossNumber(14);
 
             //GameObject
+            jinrokhentdoorGuid = 0;
+            mogufont_sr_Guid   = 0;
+            mogufont_nr_Guid   = 0;
+            mogufont_nl_Guid   = 0;
+            mogufont_sl_Guid   = 0;
+            jinrokhexdoorGuid  = 0;
            
             //Creature
-            jinrokhGuid     = 0;
-            horridonGuid    = 0;
-            mallakGuid      = 0;
-            marliGuid       = 0;
-            kazrajinGuid    = 0;
-            sulGuid         = 0;
-            tortosGuid      = 0;
-            flameheadGuid   = 0;
-            frozenheadGuid  = 0;
-            venousheadGuid  = 0;
-            jikunGuid       = 0;
-            durumuGuid      = 0;
-            primordiusGuid  = 0;
-            darkanimusGuid  = 0;
-            ironqonGuid     = 0;
-            sulinGuid       = 0;
-            lulinGuid       = 0;
-            leishenGuid     = 0;
-            radenGuid       = 0;
+            jinrokhGuid        = 0;
+            horridonGuid       = 0;
+            mallakGuid         = 0;
+            marliGuid          = 0;
+            kazrajinGuid       = 0;
+            sulGuid            = 0;
+            tortosGuid         = 0;
+            flameheadGuid      = 0;
+            frozenheadGuid     = 0;
+            venousheadGuid     = 0;
+            jikunGuid          = 0;
+            durumuGuid         = 0;
+            primordiusGuid     = 0;
+            darkanimusGuid     = 0;
+            ironqonGuid        = 0;
+            sulinGuid          = 0;
+            lulinGuid          = 0;
+            leishenGuid        = 0;
+            radenGuid          = 0;
+
+            mogufontsGuids.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -137,12 +153,66 @@ public:
 
         void OnGameObjectCreate(GameObject* go)
         {    
+            switch (go->GetEntry())
+            {
+            case GO_JINROKH_ENT_DOOR:
+                jinrokhentdoorGuid = go->GetGUID();
+                break;
+            //Mogu Fonts
+            case GO_MOGU_SR:
+                mogufont_sr_Guid = go->GetGUID();
+                mogufontsGuids.push_back(go->GetGUID());
+                break;
+            case GO_MOGU_NR:
+                mogufont_nr_Guid = go->GetGUID();
+                mogufontsGuids.push_back(go->GetGUID());
+                break;
+            case GO_MOGU_NL:
+                mogufont_nl_Guid = go->GetGUID();
+                mogufontsGuids.push_back(go->GetGUID());
+                break;
+            case GO_MOGU_SL:
+                mogufont_sl_Guid = go->GetGUID();
+                mogufontsGuids.push_back(go->GetGUID());
+                break;
+            //
+            case GO_JINROKH_EX_DOOR:
+                jinrokhexdoorGuid = go->GetGUID();
+                break;
+            default:
+                break;
+            }
         }
 
         bool SetBossState(uint32 id, EncounterState state)
         {
             if (!InstanceScript::SetBossState(id, state))
                 return false;
+
+            switch (id)
+            {
+            case DATA_JINROKH:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guid = mogufontsGuids.begin(); guid != mogufontsGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        HandleGameObject(jinrokhentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(jinrokhentdoorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(jinrokhentdoorGuid, true);
+                        //HandleGameObject(jinrokhexdoorGuid, true); next boss not ready
+                        break;
+                    }
+                }
+                break;
+            default:
+                break;
+            }
 
             return true;
         }

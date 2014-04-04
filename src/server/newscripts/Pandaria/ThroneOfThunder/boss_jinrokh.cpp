@@ -21,16 +21,26 @@
 
 enum eSpells
 {
+    SPELL_STATIC_BURST     = 137162,
+    SPELL_STATIC_WOUND     = 138349,
+    SPELL_BALL_LIGHTNING   = 136620,
+    SPELL_LIGHTNING_STORM  = 137313,//AOE 
 };
+
+//This is entry triggers(maybe needed, but not need spawn)
+//69593
+//69509
+//69676
+//69609
 
 class boss_jinrokh : public CreatureScript
 {
     public:
         boss_jinrokh() : CreatureScript("boss_jinrokh") {}
 
-        struct boss_jinrokhAI : public ScriptedAI
+        struct boss_jinrokhAI : public BossAI
         {
-            boss_jinrokhAI(Creature* creature) : ScriptedAI(creature)
+            boss_jinrokhAI(Creature* creature) : BossAI(creature, DATA_JINROKH)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -39,10 +49,12 @@ class boss_jinrokh : public CreatureScript
 
             void Reset()
             {
+                _Reset();
             }
 
             void EnterCombat(Unit* who)
             {
+                _EnterCombat();
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -55,6 +67,7 @@ class boss_jinrokh : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
+                _JustDied();
             }
 
             void UpdateAI(const uint32 diff)
