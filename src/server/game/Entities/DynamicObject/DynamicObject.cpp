@@ -121,7 +121,7 @@ bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spe
     }
 
     SetUInt32Value(DYNAMICOBJECT_SPELLID, spellId);
-    SetFloatValue(DYNAMICOBJECT_RADIUS, radius);
+    SetFloatValue(DYNAMICOBJECT_RADIUS, G3D::fuzzyEq(radius, 0.0f) ? 1.0f : radius);
     SetUInt32Value(DYNAMICOBJECT_CASTTIME, getMSTime());
 
     if (IsWorldObject())
