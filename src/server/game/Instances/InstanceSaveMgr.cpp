@@ -374,7 +374,7 @@ void InstanceSaveManager::LoadResetTimes()
             //if (oldresettime != newresettime)
             //    CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '%u' WHERE mapid = '%u' AND difficulty = '%u'", uint32(newresettime), mapid, difficulty);
 
-            SetResetTimeFor(mapid, difficulty, newresettime);
+            //SetResetTimeFor(mapid, difficulty, newresettime);
         } while (result->NextRow());
     }
 
