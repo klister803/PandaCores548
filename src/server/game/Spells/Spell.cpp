@@ -4275,8 +4275,8 @@ void Spell::SendSpellStart()
         && !GetSpellInfo()->HasPower(POWER_HEALTH))
         castFlags |= CAST_FLAG_POWER_LEFT_SELF;
 
-    /*if (m_spellInfo->RuneCostID && GetSpellInfo()->HasPower(POWER_RUNES))
-        castFlags |= CAST_FLAG_UNKNOWN_19;*/
+    if (m_spellInfo->RuneCostID && GetSpellInfo()->HasPower(POWER_RUNES))
+        castFlags |= CAST_FLAG_UNKNOWN_19;
 
     //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_START, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
 
@@ -4286,19 +4286,17 @@ void Spell::SendSpellStart()
     ObjectGuid targetGuid;
     ObjectGuid itemTargetGuid;
 
-    bool hasRuneStateAfter = castFlags & CAST_FLAG_RUNE_LIST;
+    bool hasRuneState = castFlags & CAST_FLAG_RUNE_LIST;
     bool hasCastImmunities = false;
     bool hasCastSchoolImmunities = false;
     uint8 byte180 = 0;
     bool hasPowerUnit = false/*castFlags & CAST_FLAG_POWER_LEFT_SELF*/;
     bool hasPredictedType = false;
-    bool hasDelayMoment = false;
-    bool hasRuneStateBefore = castFlags & CAST_FLAG_RUNE_LIST;
+    bool hasAdjustMissile = false;
     bool hasAmmoInventoryType = false;
     bool hasPredictedHeal = false;
     bool hasVisualChain = false;
     bool hasAmmoDisplayId = false;
-    bool hasElevation = false;
 
     uint32 powerCount = 0;
     uint32 missCount2 = 0;
@@ -4316,7 +4314,7 @@ void Spell::SendSpellStart()
             targetMask &= ~(TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM);
 
     WorldPacket data(SMSG_SPELL_START, (8+8+4+4+2));
-    data.WriteBit(!hasRuneStateAfter);                          // has rune state after
+    data.WriteBit(!hasRuneState);                               // has rune state after
     data.WriteBit(!hasCastImmunities);                          // !dword198
     data.WriteBit(!hasCastSchoolImmunities);                    // !dword194
     data.WriteGuidMask<5>(casterGuid);
@@ -4339,8 +4337,8 @@ void Spell::SendSpellStart()
         data.WriteGuidMask<6>(casterGuid);
     }
     data.WriteBit(!hasPredictedType);                           // !byte1AC
-    data.WriteBit(!hasDelayMoment);                             // !has delay moment
-    data.WriteBit(!hasRuneStateBefore);                         // has rune state before
+    data.WriteBit(!hasAdjustMissile);                           // !has delay moment
+    data.WriteBit(!hasRuneState);                               // has rune state before
 
     for (uint32 i = 0; i < extraTargetsCount; ++i)
         data.WriteGuidMask<3, 1, 7, 6, 2, 4, 5, 0>(extraTargetGuids[i]);
@@ -4402,7 +4400,7 @@ void Spell::SendSpellStart()
 
     data.WriteBit(!itemTargetGuid);
     data.WriteGuidMask<0, 1, 2, 5, 4, 7, 3, 6>(itemTargetGuid);
-    data.WriteBit(!hasElevation);                              // !has float168
+    data.WriteBit(!hasAdjustMissile);                           // !has elevation
     data.WriteGuidMask<3>(casterGuid);
 
     data.FlushBits();
@@ -4450,10 +4448,10 @@ void Spell::SendSpellStart()
         data.WriteGuidBytes<6>(dstTransportGuid);
     }
 
-    if (hasDelayMoment)
-        data << uint32(0);                                      // unk hasDelayMoment
+    if (hasAdjustMissile)
+        data << uint32(0);                                      // delay moment
 
-    if (hasRuneStateAfter)
+    if (hasRuneState)
     {
         Player* player = m_caster->ToPlayer();
         data << uint8(player->GetRunesState());                 // runes state after
@@ -4478,7 +4476,7 @@ void Spell::SendSpellStart()
     }
 
     data.WriteGuidBytes<2>(itemCasterGuid);
-    if (hasRuneStateBefore)
+    if (hasRuneState)
         data << uint8(m_runesState);                            // runes state before
     data.WriteGuidBytes<1, 7, 6, 5, 2, 3, 0, 4>(itemTargetGuid);
 
@@ -4513,8 +4511,8 @@ void Spell::SendSpellStart()
     data.WriteGuidBytes<0>(itemCasterGuid);
     data.WriteGuidBytes<4>(casterGuid);
 
-    if (hasElevation)
-        data << float(0.0f);
+    if (hasAdjustMissile)
+        data << float(0.0f);                                    // elevation
 
     if (hasVisualChain)
     {
@@ -4541,7 +4539,7 @@ void Spell::SendSpellStart()
 
     data.WriteGuidBytes<4>(itemCasterGuid);
     data.WriteGuidBytes<5>(casterGuid);
-    data << uint32(0);                                          // dword28
+    data << uint32(castFlags);                                  // dword28
     data.WriteGuidBytes<3>(casterGuid);
     data.WriteGuidBytes<7>(itemCasterGuid);
     data.WriteGuidBytes<6, 0, 2>(casterGuid);
@@ -4557,7 +4555,7 @@ void Spell::SendSpellGo()
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Sending SMSG_SPELL_GO id=%u", m_spellInfo->Id);
 
-    uint32 castFlags = 0;
+    uint32 castFlags = CAST_FLAG_UNKNOWN_9;
     // triggered spells with spell visual != 0
     if ((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell() && !(m_spellInfo->AttributesEx4 & SPELL_ATTR4_TRIGGERED)) || m_triggeredByAuraSpell)
         castFlags |= CAST_FLAG_PENDING;
@@ -4571,10 +4569,16 @@ void Spell::SendSpellGo()
         && (m_caster->getClass() == CLASS_DEATH_KNIGHT)
         && m_spellInfo->RuneCostID
         && GetSpellInfo()->HasPower(POWER_RUNES))
+    {
+        castFlags |= CAST_FLAG_UNKNOWN_19;                   // same as in SMSG_SPELL_START
         castFlags |= CAST_FLAG_RUNE_LIST;                    // rune cooldowns list
+    }
 
     if (m_spellInfo->HasEffect(SPELL_EFFECT_ACTIVATE_RUNE))
+    {
+        castFlags |= CAST_FLAG_UNKNOWN_19;                   // same as in SMSG_SPELL_START
         castFlags |= CAST_FLAG_RUNE_LIST;                    // rune cooldowns list
+    }
 
     if (m_targets.HasTraj())
         castFlags |= CAST_FLAG_ADJUST_MISSILE;
@@ -4596,13 +4600,11 @@ void Spell::SendSpellGo()
     uint8 byte180 = 0;
     bool hasCastSchoolImmunities = false;
     bool hasPredictedType = false;
-    bool hasRuneStateBefore = castFlags & CAST_FLAG_RUNE_LIST;
-    bool hasDelayMoment = castFlags & CAST_FLAG_ADJUST_MISSILE;
+    bool hasRuneState = castFlags & CAST_FLAG_RUNE_LIST;
+    bool hasAdjustMissile = castFlags & CAST_FLAG_ADJUST_MISSILE;
     bool hasAmmoInventoryType = false;
     bool hasVisualChain = false;
-    bool hasRuneStateAfter = castFlags & CAST_FLAG_RUNE_LIST;
     bool hasCastImmunities = false;
-    bool hasElevation = castFlags & CAST_FLAG_ADJUST_MISSILE;
 
     uint32 targetMask = m_targets.GetTargetMask();
     if (targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_MINIPET))
@@ -4699,20 +4701,20 @@ void Spell::SendSpellGo()
     }
     data.WriteGuidMask<3>(itemCasterGuid);
     uint8 runeCooldownCount = 0;
-    if (castFlags & CAST_FLAG_RUNE_LIST)
+    if (hasRuneState)
         runeCooldownCount = MAX_RUNES;
     data.WriteBits(runeCooldownCount, 3);
     data.WriteGuidMask<2>(casterGuid);
-    data.WriteBit(!hasRuneStateBefore);                         // has rune state before
+    data.WriteBit(!hasRuneState);                               // has rune state before
     if (targetMask & TARGET_FLAG_STRING)
         data.WriteBits(m_targets.m_strTarget.length(), 7);
     data.WriteGuidMask<6>(itemCasterGuid);
-    data.WriteBit(!hasDelayMoment);                             // !has delay moment
+    data.WriteBit(!hasAdjustMissile);                           // !has delay moment
     data.WriteGuidMask<6>(casterGuid);
     data.WriteBit(!targetMask);
     data.WriteBits(0, 13);                                      // dword2C
     data.WriteGuidMask<5>(itemCasterGuid);
-    data.WriteBits(powerCount, 21);                             // powerCount
+    data.WriteBits(hasRuneState ? 1 : powerCount, 21);          // powerCount
     data.WriteBit(!hasAmmoInventoryType);                       // !byte170
     data.WriteGuidMask<7>(casterGuid);
     data.WriteBit(m_targets.HasDst());
@@ -4728,8 +4730,8 @@ void Spell::SendSpellGo()
     if (targetMask)
         data.WriteBits(targetMask, 20);
     data.WriteGuidMask<4>(casterGuid);
-    data.WriteBit(!hasRuneStateAfter);                          // has rune state after
-    data.WriteBit(!hasElevation);                               // has elevation
+    data.WriteBit(!hasRuneState);                               // has rune state after
+    data.WriteBit(!hasAdjustMissile);                           // has elevation
     data.WriteGuidMask<1>(casterGuid);
     data.WriteBit(m_targets.HasSrc());
     if (m_targets.HasSrc())
@@ -4764,10 +4766,18 @@ void Spell::SendSpellGo()
 
     data.WriteGuidBytes<3, 1, 6, 5, 0, 7, 2, 4>(targetGuid);
 
-    for (uint32 i = 0; i < powerCount; ++i)
+    if (hasRuneState)
     {
-        data << uint32(m_caster->GetPower((Powers)GetSpellInfo()->PowerType));
-        data << uint8((Powers)GetSpellInfo()->PowerType); //Power
+        data << uint32(0);
+        data << uint8(POWER_RUNES);
+    }
+    else
+    {
+        for (uint32 i = 0; i < powerCount; ++i)
+        {
+            data << uint32(m_caster->GetPower((Powers)GetSpellInfo()->PowerType));
+            data << uint8((Powers)GetSpellInfo()->PowerType); //Power
+        }
     }
 
     counter = 0;
@@ -4846,7 +4856,7 @@ void Spell::SendSpellGo()
     if (hasCastImmunities)
         data << uint32(0);
 
-    if (hasRuneStateBefore)
+    if (hasRuneState)
         data << uint8(m_runesState);                        // runes state before
 
     if (byte180)
@@ -4862,7 +4872,7 @@ void Spell::SendSpellGo()
             ++counter;
         }
     }
-    data << uint32(0);  // dword28
+    data << uint32(castFlags);
     data.WriteGuidBytes<2>(itemCasterGuid);
     data.WriteGuidBytes<4>(casterGuid);
     if (hasVisualChain)
@@ -4876,7 +4886,7 @@ void Spell::SendSpellGo()
 
     data.WriteGuidBytes<6, 1>(casterGuid);
 
-    if (hasElevation)
+    if (hasAdjustMissile)
         data << m_targets.GetElevation();
 
     data.WriteGuidBytes<5>(itemCasterGuid);
@@ -4891,7 +4901,7 @@ void Spell::SendSpellGo()
     data.WriteGuidBytes<3>(itemCasterGuid);
     data.WriteGuidBytes<3, 2>(casterGuid);
     data << uint8(m_cast_count);                            // pending spell cast?
-    if (hasDelayMoment)
+    if (hasAdjustMissile)
         data << uint32(m_delayMoment);
     data.WriteGuidBytes<6, 4>(itemCasterGuid);
     for (int i = 0; i < runeCooldownCount; ++i)
@@ -4900,7 +4910,7 @@ void Spell::SendSpellGo()
         float baseCd = float(player->GetRuneBaseCooldown(i));
         data << uint8((baseCd - float(player->GetRuneCooldown(i))) / baseCd * 255); // rune cooldown passed
     }
-    if (hasRuneStateAfter)
+    if (hasRuneState)
     {
         Player* player = m_caster->ToPlayer();
         data << uint8(player->GetRunesState());             // runes state after
