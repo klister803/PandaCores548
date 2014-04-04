@@ -948,6 +948,9 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             uint32 leftInStock = vendorItem->maxcount <= 0 ? 0xFFFFFFFF : vendor->GetVendorItemCurrentCount(vendorItem);
             if (!_player->isGameMaster()) // ignore conditions if GM on
             {
+                // Items sold out are not displayed in list
+                if (leftInStock == 0)
+                    continue;
 
                 ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(vendor->GetEntry(), vendorItem->item);
                 if (!sConditionMgr->IsObjectMeetToConditions(_player, vendor, conditions))
@@ -993,33 +996,29 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                         break;
                     }
 
-                    if (reward->Standing)
-                        if (_player->GetReputationRank(REP_GUILD) < (*reward).Standing)
-                        {
-                            guildRewardCheckPassed = false;
-                            break;
-                        }
+                    if (reward->Standing && _player->GetReputationRank(REP_GUILD) < reward->Standing)
+                    {
+                        guildRewardCheckPassed = false;
+                        break;
+                    }
 
-                    if ((*reward).AchievementId)
-                        if (!guild->GetAchievementMgr().HasAchieved((*reward).AchievementId))
-                        {
-                            guildRewardCheckPassed = false;
-                            break;
-                        }
+                    if (reward->AchievementId && !guild->GetAchievementMgr().HasAchieved(reward->AchievementId))
+                    {
+                        guildRewardCheckPassed = false;
+                        break;
+                    }
 
-                    if ((*reward).Racemask)
-                        if (!(_player->getRaceMask() & (*reward).Racemask))
+                    if (reward->Racemask)
+                    {
+                        if (!(_player->getRaceMask() & reward->Racemask))
                         {
                             guildRewardCheckPassed = false;
                             break;
                         }
+                    }
                 }
 
                 if (!guildRewardCheckPassed)
-                    continue;
-
-                // Items sold out are not displayed in list
-                if (leftInStock == 0)
                     continue;
             }
 

@@ -2663,7 +2663,7 @@ bool AchievementMgr<T>::HasAchieved(uint32 achievementId) const
     if (itr == m_completedAchievements.end())
         return false;
 
-    return (*itr).second.completedByThisCharacter;
+    return true;
 }
 
 template<class T>
