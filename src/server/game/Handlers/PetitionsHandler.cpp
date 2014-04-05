@@ -634,7 +634,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
         Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NOT_ALLIED);
         return;
     }
-    
+
     if (player->GetGuildId())
     {
         Guild::SendCommandResult(this, GUILD_INVITE_S, ERR_ALREADY_IN_GUILD_S, _player->GetName());
@@ -708,7 +708,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
         uint32 lowGuid = fields2[0].GetUInt32();
         ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
 
-        data.WriteGuidMask<6, 3, 0, 4, 7, 5, 1, 2>(plSignGuid);
+        data.WriteGuidBytes<6, 3, 0, 4, 7, 5, 1, 2>(plSignGuid);
         data << uint32(0);
     }
 
