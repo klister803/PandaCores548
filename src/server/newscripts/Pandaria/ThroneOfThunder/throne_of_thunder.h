@@ -28,6 +28,10 @@ enum eData
 
 enum eCreatures
 {
+    //Npc
+    NPC_STORM_CALLER      = 70236,
+
+    //Bosses
     NPC_JINROKH           = 69465,
     NPC_HORRIDON          = 68476,
     //Council of Elders

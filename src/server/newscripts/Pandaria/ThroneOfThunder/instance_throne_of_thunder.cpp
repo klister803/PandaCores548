@@ -14,7 +14,10 @@ public:
     {
         instance_throne_of_thunder_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
+        uint32 SLGSS_timer;
+
         //GameObjects
+        uint64 jinrokhpredoorGuid;
         uint64 jinrokhentdoorGuid;
         uint64 mogufont_sr_Guid;
         uint64 mogufont_nr_Guid;
@@ -23,6 +26,7 @@ public:
         uint64 jinrokhexdoorGuid;
         
         //Creature
+        uint64 stormcallerGuid;
         uint64 jinrokhGuid;
         uint64 horridonGuid;
         uint64 mallakGuid;
@@ -49,6 +53,8 @@ public:
         {
             SetBossNumber(14);
 
+            SLGSS_timer        = 3000;
+
             //GameObject
             jinrokhentdoorGuid = 0;
             mogufont_sr_Guid   = 0;
@@ -58,6 +64,7 @@ public:
             jinrokhexdoorGuid  = 0;
            
             //Creature
+            stormcallerGuid    = 0;
             jinrokhGuid        = 0;
             horridonGuid       = 0;
             mallakGuid         = 0;
@@ -85,6 +92,9 @@ public:
         {
             switch (creature->GetEntry())
             {
+            case NPC_STORM_CALLER:
+                stormcallerGuid = creature->GetGUID();
+                break;
             case NPC_JINROKH:
                 jinrokhGuid = creature->GetGUID();
                 break;
@@ -155,6 +165,9 @@ public:
         {    
             switch (go->GetEntry())
             {
+            case GO_JINROKH_PRE_DOOR:
+                jinrokhpredoorGuid = go->GetGUID();
+                break;
             case GO_JINROKH_ENT_DOOR:
                 jinrokhentdoorGuid = go->GetGUID();
                 break;
@@ -276,6 +289,38 @@ public:
             return 0;
         }
 
+        void OnUnitDeath(Unit* who)
+        {
+            if (who->ToCreature())
+            {
+                if (who->GetEntry() == NPC_STORM_CALLER)
+                    HandleGameObject(jinrokhpredoorGuid, true);
+            }
+        }
+
+        void Update(uint32 diff)
+        {
+            if (SLGSS_timer)
+            {
+                if (SLGSS_timer <= diff)
+                {
+                    SLGSS_timer = 0;
+                    SLGSS_Check();
+                }
+                else
+                    SLGSS_timer -= diff;
+            }
+        }
+
+        void SLGSS_Check()
+        {
+            if (Creature* sc = instance->GetCreature(stormcallerGuid))
+            {
+                if (!sc->isAlive())
+                    HandleGameObject(jinrokhpredoorGuid, true);
+            }
+        }
+
         bool IsWipe()
         {
             Map::PlayerList const& PlayerList = instance->GetPlayers();
@@ -319,7 +364,74 @@ public:
     }
 };
 
+enum sSpells
+{
+    SPELL_STORM_WEAPON   = 139319,
+    SPELL_STORM_ENERGY   = 139322,
+};
+
+enum sEvent
+{
+    EVENT_STORM_ENERGY   = 1
+};
+
+//Mini boss, guard Jinrokh entrance
+class npc_storm_caller : public CreatureScript
+{
+    public:
+        npc_storm_caller() : CreatureScript("npc_storm_caller") { }
+        
+        struct npc_storm_callerAI : public CreatureAI
+        {
+            npc_storm_callerAI(Creature* pCreature) : CreatureAI(pCreature)
+            {
+                pInstance = pCreature->GetInstanceScript();
+            }
+            
+            InstanceScript* pInstance;
+            EventMap events;
+
+            void Reset()
+            {
+                me->RemoveAurasDueToSpell(SPELL_STORM_WEAPON);
+                events.Reset();
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                DoZoneInCombat(me, 100.0f);
+                me->AddAura(SPELL_STORM_WEAPON, me);
+                events.ScheduleEvent(EVENT_STORM_ENERGY, urand(15000, 20000));
+            }
+            
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    if (eventId == EVENT_STORM_ENERGY)
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                            DoCast(target, SPELL_STORM_ENERGY);
+                        events.ScheduleEvent(EVENT_STORM_ENERGY, urand(15000, 20000));
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+        
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return new npc_storm_callerAI(pCreature);
+        }
+};
+
 void AddSC_instance_throne_of_thunder()
 {
     new instance_throne_of_thunder();
+    new npc_storm_caller();
 }
