@@ -3146,7 +3146,10 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
             if (tabItem)
                 tabItem->AppendDynamicInfo(tabData);
             else
+            {
+                tabData << uint32(4);
                 tabData << uint32(0);
+            }
 
             uint32 enchantCount = 0;
             if (tabItem)

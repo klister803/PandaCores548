@@ -1600,6 +1600,7 @@ void Item::AppendDynamicInfo(ByteBuffer& buff) const
     uint32 dynamicMask = GetUInt32Value(ITEM_FIELD_MODIFIERS_MASK);
     if (!dynamicMask)
     {
+        buff << uint32(4);
         buff << uint32(0);
         return;
     }
