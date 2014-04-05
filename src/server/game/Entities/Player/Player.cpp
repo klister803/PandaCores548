@@ -5219,6 +5219,8 @@ void Player::SetSpecializationId(uint8 spec, uint32 id)
 
     if (spec == GetActiveSpec())
         SetUInt32Value(PLAYER_CURRENT_SPEC_ID, id);
+
+    UpdatePvPPower();
 }
 
 uint32 Player::GetRoleForGroup(uint32 specializationId)
@@ -6758,6 +6760,9 @@ void Player::UpdateRating(CombatRating cr)
             }
         case CR_MASTERY:                                    // Implemented in Player::UpdateMasteryPercentage
             UpdateMasteryAuras();
+            break;
+        case CR_PVP_POWER:
+            UpdatePvPPower();
             break;
         default:
             break;

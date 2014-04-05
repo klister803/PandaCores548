@@ -11692,7 +11692,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Apply PowerPvP damage bonus
     if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
     {
-        float PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+        float PowerPvP = ToPlayer()->GetFloatValue(PLAYER_PVP_POWER_DAMAGE);;
         AddPct(DoneTotalMod, PowerPvP);
     }
 
@@ -12588,9 +12588,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     }
 
     // Apply Power PvP healing bonus
-    if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && (HasAura(74411) || HasAura(74410)))
+    if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && victim && victim->GetTypeId() == TYPEID_PLAYER)
     {
-        float PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+        float PowerPvP = ToPlayer()->GetFloatValue(PLAYER_PVP_POWER_HEALING);
         AddPct(DoneTotalMod, PowerPvP);
     }
 
@@ -13130,9 +13130,9 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         AddPct(DoneTotalMod, 10);
 
     // Apply PowerPvP damage bonus
-    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
+    if (pdamage > 0 && GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
     {
-        float PowerPvP = ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
+        float PowerPvP = ToPlayer()->GetFloatValue(PLAYER_PVP_POWER_DAMAGE);
         AddPct(DoneTotalMod, PowerPvP);
     }
 

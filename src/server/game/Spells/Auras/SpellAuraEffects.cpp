@@ -609,6 +609,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
 
     float DoneActualBenefit = 0.0f;
+    bool  CalculateBenefit  = true;
 
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION) && !amount)
     {
@@ -649,9 +650,14 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             }
             break;
         case SPELL_AURA_SCHOOL_ABSORB:
+        {
+            bool addPvPpowerbonus = true;
             m_canBeRecalculated = false;
+            CalculateBenefit = false;
+
             if (!caster)
                 break;
+
             switch (GetSpellInfo()->SpellFamilyName)
             {
                 case SPELLFAMILY_MONK:
@@ -694,6 +700,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                             DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 1.871f;
                             break;
                         }
+                        case 114908: // Spirit Shell
+                        case 47753:  // Divine Aegis
+                        {
+                            addPvPpowerbonus = false;
+                            break;
+                        }
                         default:
                             break;
                     }
@@ -702,7 +714,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 default:
                     break;
             }
+
+            amount += (int32)DoneActualBenefit;
+
+            if (amount <= 0 || !addPvPpowerbonus)
+                break;
+
+            if (Player* player = caster->ToPlayer())
+            {
+                if (Unit* target = GetBase()->GetUnitOwner())
+                {
+                    if (target->GetTypeId() != TYPEID_PLAYER)
+                        break;
+
+                    float PowerPvP = player->GetFloatValue(PLAYER_PVP_POWER_HEALING);
+                    AddPct(amount, PowerPvP);
+                }
+            }
             break;
+        }
         case SPELL_AURA_MANA_SHIELD:
             m_canBeRecalculated = false;
             if (!caster)
@@ -1309,7 +1339,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
     }
     
-    if (DoneActualBenefit != 0.0f)
+    if (DoneActualBenefit != 0.0f && CalculateBenefit)
     {
         DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellInfo());
         amount += (int32)DoneActualBenefit;
