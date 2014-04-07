@@ -201,24 +201,8 @@ struct SpellReagentsEntry
     //uint32    Id;                                           // 0        m_ID
     int32     Reagent[MAX_SPELL_REAGENTS];                  // 1-8      m_reagent
     uint32    ReagentCount[MAX_SPELL_REAGENTS];             // 9-16     m_reagentCount
-    //uint32 unk;                                           // 17
-    //uint32 unk;                                           // 18
-};
-
-struct SpellReagent
-{
-    SpellReagent()
-    {
-        reagents[0] = NULL;
-        reagents[1] = NULL;
-        reagents[2] = NULL;
-        reagents[3] = NULL;
-        reagents[4] = NULL;
-        reagents[5] = NULL;
-        reagents[6] = NULL;
-        reagents[7] = NULL;
-    }
-    SpellReagentsEntry const* reagents[MAX_SPELL_REAGENTS];
+    uint32    ReagentCurrency;                              // 17
+    uint32    ReagentCurrencyCount;                         // 18
 };
 
 struct ItemUpgradeEntry
@@ -271,8 +255,6 @@ struct ItemUpgradeData
 
     ItemUpgradeEntry const* upgrade[MAX_ITEM_UPDGRADES];
 };
-
-typedef UNORDERED_MAP<uint32, SpellReagent> SpellReagentMap;
 
 // GCC has alternative #pragma pack(N) syntax and old gcc version does not support pack(push, N), also any gcc version does not support it at some platform
 #if defined(__GNUC__)

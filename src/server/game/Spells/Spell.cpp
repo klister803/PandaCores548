@@ -4220,6 +4220,7 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
         case SPELL_FAILED_REAGENTS:
         {
             uint32 missingItem = 0;
+            uint32 missingCount = 0;
             for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
             {
                 if (spellInfo->Reagent[i] <= 0)
@@ -4231,12 +4232,27 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
                 if (!caster->HasItemCount(itemid, itemcount))
                 {
                     missingItem = itemid;
+                    missingCount = itemcount;
                     break;
                 }
             }
 
+            if(spellInfo->ReagentCurrency != 0)
+            {
+                uint32 currencyId    = spellInfo->ReagentCurrency;
+                uint32 currencyCount = spellInfo->ReagentCurrencyCount;
+
+                if (!caster->HasCurrency(currencyId, currencyCount))
+                {
+                    missingItem = currencyId;
+                    missingCount = currencyCount;
+                }
+            }
+
             hasBit1 = true;
+            hasBit2 = true; //may be count?
             result1 = missingItem;
+            result2 = missingCount;
             break;
         }
         // TODO: SPELL_FAILED_NOT_STANDING
@@ -5597,6 +5613,8 @@ void Spell::TakeReagents()
 
         p_caster->DestroyItemCount(itemid, itemcount, true);
     }
+    if(m_spellInfo->ReagentCurrency != 0)
+        p_caster->ModifyCurrency(m_spellInfo->ReagentCurrency, -m_spellInfo->ReagentCurrencyCount);
 }
 
 void Spell::HandleThreatSpells()
@@ -7315,6 +7333,14 @@ SpellCastResult Spell::CheckItems()
                     }
                 }
                 if (!p_caster->HasItemCount(itemid, itemcount))
+                    return SPELL_FAILED_REAGENTS;
+            }
+            if(m_spellInfo->ReagentCurrency != 0)
+            {
+                uint32 currencyId    = m_spellInfo->ReagentCurrency;
+                uint32 currencyCount = m_spellInfo->ReagentCurrencyCount;
+
+                if (!p_caster->HasCurrency(currencyId, currencyCount))
                     return SPELL_FAILED_REAGENTS;
             }
         }

@@ -1015,13 +1015,14 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ActiveIconID = _misc ? _misc->activeIconID : 0;
     SchoolMask = _misc ? _misc->SchoolMask : 0;
 
-
     // SpellReagentsEntry
     SpellReagentsEntry const* _reagents = GetSpellReagents();
     for (uint8 i = 0; i < MAX_SPELL_REAGENTS; ++i)
         Reagent[i] = _reagents ? _reagents->Reagent[i] : 0;
     for (uint8 i = 0; i < MAX_SPELL_REAGENTS; ++i)
         ReagentCount[i] = _reagents ? _reagents->ReagentCount[i] : 0;
+    ReagentCurrency = _reagents ? _reagents->ReagentCurrency : 0;
+    ReagentCurrencyCount = _reagents ? _reagents->ReagentCurrencyCount : 0;
 
     // SpellShapeshiftEntry
     SpellShapeshiftEntry const* _shapeshift = GetSpellShapeshift();
