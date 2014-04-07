@@ -4249,10 +4249,10 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
                 }
             }
 
-            hasBit1 = true;
-            hasBit2 = true; //may be count?
-            result1 = missingItem;
-            result2 = missingCount;
+            hasBit1 = true; //may be count?
+            hasBit2 = true;
+            result1 = missingCount;
+            result2 = missingItem;
             break;
         }
         // TODO: SPELL_FAILED_NOT_STANDING
