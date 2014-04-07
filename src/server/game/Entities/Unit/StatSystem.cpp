@@ -863,8 +863,16 @@ void Player::UpdateMeleeHastMod()
         ApplyPercentModFloatVar(value, amount, false);
     else
         ApplyPercentModFloatVar(value, -amount, true);
+    SetFloatValue(UNIT_MOD_HASTE, value);
     SetFloatValue(UNIT_MOD_CAST_HASTE, value);
     SetFloatValue(PLAYER_FIELD_MOD_PET_HASTE, value);
+
+    Unit::AuraEffectList const& GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_416);		
+    for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
+    {	
+        (*itr)->SetCanBeRecalculated(true);
+        (*itr)->RecalculateAmount(this);
+    }
 
     if (getClass() == CLASS_DEATH_KNIGHT)
         UpdateAllRunesRegen();
