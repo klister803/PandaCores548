@@ -2702,9 +2702,10 @@ class Player : public Unit, public GridObject<Player>
 
         // current pet slot
         PetSlot m_currentPetSlot;
-        uint32 m_petSlotUsed;
 
-        void setPetSlotUsed(PetSlot slot, bool used);
+        void setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bool isHanterPet);
+        void cleanPetSlotForMove(PetSlot slot, uint32 petID);
+
         PetSlot getSlotForNewPet();
 
         // currently visible objects at player client

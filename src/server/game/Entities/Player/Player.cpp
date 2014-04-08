@@ -704,7 +704,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_speakTime = 0;
     m_speakCount = 0;
 
-    m_petSlotUsed = 0;
     m_currentPetSlot = PET_SLOT_DELETED;
 
     m_objectType |= TYPEMASK_PLAYER;
@@ -28741,12 +28740,36 @@ void Player::LoadPetSlot(std::string const &data)
         m_PetSlots[index] = uint32(atol(*iter));
 }
 
-void Player::setPetSlotUsed(PetSlot slot, bool used)
+void Player::cleanPetSlotForMove(PetSlot slot, uint32 petID)
 {
-    if (used)
-        m_petSlotUsed |= (1 << int32(slot));
-    else
-        m_petSlotUsed &= ~(1 << int32(slot));
+    ASSERT(slot < PET_SLOT_LAST);
+
+    // Clean only if we have corrcet Id, for lost link privention
+    if (m_PetSlots[slot] == petID)
+        m_PetSlots[slot] = 0;
+}
+
+void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bool isHanterPet)
+{
+    ASSERT(slot < PET_SLOT_LAST);
+
+    if (m_PetSlots[slot] && m_PetSlots[slot] != petID)
+    {
+        if (isHanterPet)    // move to free stable slot
+        {
+            for (uint32 i = PET_SLOT_STABLE_FIRST; i < PET_SLOT_STABLE_LAST; ++i)
+                if (!m_PetSlots[i])
+                {
+                    m_PetSlots[i] = m_PetSlots[slot];
+                    break;
+                }
+        }else               // delete pet data at all. WARN! REAL DELETE!
+        {
+            Pet::DeleteFromDB(m_PetSlots[slot]);
+        }
+    }
+
+    m_PetSlots[slot] = petID;
 }
 
 PetSlot Player::getSlotForNewPet()
@@ -28767,7 +28790,7 @@ PetSlot Player::getSlotForNewPet()
         last_known = 1;
 
     for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; ++i)
-        if ((m_petSlotUsed & (1 << i)) == 0)
+        if (!m_PetSlots[i])
             return PetSlot(i);
 
     return PET_SLOT_FULL_LIST;

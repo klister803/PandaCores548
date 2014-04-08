@@ -480,7 +480,7 @@ void Pet::SavePetToDB(PetSlot mode)
     else
     {
         if((owner->m_currentPetSlot >= PET_SLOT_HUNTER_FIRST && owner->m_currentPetSlot <= PET_SLOT_HUNTER_LAST) || (owner->m_currentPetSlot >= PET_SLOT_WARLOCK_PET_FIRST && owner->m_currentPetSlot <= PET_SLOT_WARLOCK_PET_LAST))
-            owner->setPetSlotUsed(owner->m_currentPetSlot, false);
+            owner->cleanPetSlotForMove(owner->m_currentPetSlot, m_charmInfo->GetPetNumber());     //could be already remove by early call this function
         RemoveAllAuras();
         DeleteFromDB(m_charmInfo->GetPetNumber());
     }

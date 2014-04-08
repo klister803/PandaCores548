@@ -48,7 +48,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // Pet
     PREPARE_STATEMENT(CHAR_SEL_PET_SLOTS, "SELECT owner, slot, id FROM character_pet WHERE owner = ?  AND slot >= ? AND slot <= ? ORDER BY slot", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_SEL_PET_SLOTS_DETAIL, "SELECT owner, slot, id, entry, level, name, modelid FROM character_pet WHERE owner = ? AND slot >= ? AND slot <= ? ORDER BY slot", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_SEL_PET_SLOTS_CHANGE, "SELECT slot, entry, id FROM character_pet WHERE owner = ? AND id = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_PET_SLOTS_CHANGE, "SELECT slot, entry, id, PetType FROM character_pet WHERE owner = ? AND id = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_SEL_PET_ENTRY, "SELECT entry FROM character_pet WHERE owner = ? AND id = ? AND slot >= ? AND slot <= ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_SEL_PET_SLOT_BY_ID, "SELECT slot, entry, id FROM character_pet WHERE owner = ? AND id = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_UDP_CHAR_PET_SLOT_BY_SLOT, "UPDATE character_pet SET slot = ? WHERE owner = ? AND slot = ?", CONNECTION_ASYNC);

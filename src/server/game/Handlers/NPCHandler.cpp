@@ -772,6 +772,7 @@ void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult result, ui
     uint32 slot        = fields[0].GetUInt8();
     uint32 creature_id = fields[1].GetUInt32();
     uint32 pet_number  = fields[2].GetUInt32();
+    bool isHunter = fields[3].GetUInt8() == HUNTER_PET;
 
     if (!creature_id)
     {
@@ -790,15 +791,12 @@ void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult result, ui
         return;
     }
 
-    CharacterDatabase.PExecute("UPDATE character_pet SET slot = '%u' WHERE slot = '%u' AND owner='%u'", new_slot, slot, GetPlayer()->GetGUIDLow());
-    CharacterDatabase.PExecute("UPDATE character_pet SET slot = '%u' WHERE slot = '%u' AND owner='%u' AND id<>'%u'", slot, new_slot, GetPlayer()->GetGUIDLow(), pet_number);
-
     // Update if its a Hunter pet
     if (new_slot != 100)
     {
         // We need to remove and add the new pet to there diffrent slots
-        GetPlayer()->setPetSlotUsed((PetSlot)slot, false);
-        GetPlayer()->setPetSlotUsed((PetSlot)new_slot, true);
+        GetPlayer()->cleanPetSlotForMove((PetSlot)slot, pet_number);
+        GetPlayer()->setPetSlotWithStableMoveOrRealDelete((PetSlot)new_slot, pet_number, isHunter);
     }
 
     SendStableResult(STABLE_SUCCESS_STABLE);

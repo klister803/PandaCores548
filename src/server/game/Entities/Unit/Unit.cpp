@@ -11021,6 +11021,9 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
             minion->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
         }
 
+        if (slot == PET_SLOT_UNK_SLOT)
+            slot = PET_SLOT_OTHER_PET;
+
         // Can only have one pet. If a new one is summoned, dismiss the old one.
         if (minion->IsGuardianPet())
         {
@@ -11042,23 +11045,15 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
                 SetPetGUID(minion->GetGUID());
                 SetMinionGUID(0);
             }
-        }
-
-        if (slot == PET_SLOT_UNK_SLOT)
-            slot = PET_SLOT_OTHER_PET;
-
-        if (GetTypeId() == TYPEID_PLAYER)
+        }else if (GetTypeId() == TYPEID_PLAYER)
         {
             if (!minion->isHunterPet()) // If its not a hunter pet, well lets not try to use it for hunter then
-            {
                 ToPlayer()->m_currentPetSlot = slot;
-                ToPlayer()->m_petSlotUsed = 3452816845; // the same as 100 so that the pet is only that and nothing more
-            }
 
             if (slot >= PET_SLOT_HUNTER_FIRST && slot <= PET_SLOT_HUNTER_LAST && !stampeded) // Always save thoose spots where hunter is correct
             {
                 ToPlayer()->m_currentPetSlot = slot;
-                ToPlayer()->setPetSlotUsed(slot, true);
+                ToPlayer()->setPetSlotWithStableMoveOrRealDelete(slot, minion->GetCharmInfo()->GetPetNumber(), minion->isHunterPet()); // minion->isHunterPet() always true ;)
             }
         }
 
