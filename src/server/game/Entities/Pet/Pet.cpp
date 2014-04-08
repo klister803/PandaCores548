@@ -323,7 +323,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         owner->SendMessageToSet(&data, true);
     }*/
 
-    owner->SetMinion(this, true, slotID == PET_SLOT_UNK_SLOT ? (PetSlot)fields[7].GetUInt8() : slotID, stampeded);
+    owner->SetMinion(this, true, slotID, stampeded);
     map->AddToMap(this->ToCreature());
 
     m_slot = fields[7].GetUInt8();
@@ -390,7 +390,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
     m_loading = false;
     m_Stampeded = stampeded;
-
     return true;
 }
 

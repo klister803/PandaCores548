@@ -41,6 +41,7 @@
 
 enum StableResultCode
 {
+    STABLE_ERR_NONE         = 0x00,                         // does nothing, just resets stable states
     STABLE_ERR_MONEY        = 0x01,                         // "you don't have enough money"
     STABLE_ERR_INVALID_SLOT = 0x03,
     STABLE_ERR_STABLE       = 0x06,                         // currently used in most fail cases
@@ -598,7 +599,7 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
             Field* fields = result->Fetch();
 
             uint32 petNumber = fields[2].GetUInt32();
-            uint8 petSlot = GetPlayer()->GetSlotForPetId(petNumber);
+            PetSlot petSlot = GetPlayer()->GetSlotForPetId(petNumber);
 
             if (petSlot > PET_SLOT_STABLE_LAST)
                 continue;
@@ -615,7 +616,7 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
                 std::string name = fields[5].GetString();
                 buf.WriteString(name);
                 nameLen.push_back(name.size());
-                buf << uint8(GetPlayer()->m_currentPetSlot == petSlot ? 3 : 1);     // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+                buf << uint8(petSlot < PET_SLOT_STABLE_FIRST ? 1 : 3);     // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
                 buf << uint32(petNumber);          // petnumber
                 buf << uint32(fields[6].GetUInt32());          // model id
                 buf << uint32(fields[4].GetUInt16());          // level
@@ -626,52 +627,8 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
 
                 stableSlot[petSlot] = true;
             }
-            else
-            {
-                PetData pData;
-                pData.slot = petSlot;
-                pData.petnumber = fields[2].GetUInt32();
-                pData.creature = fields[3].GetUInt32();
-                pData.lvl = fields[4].GetUInt16();
-                pData.name = fields[5].GetString();
-                pData.modelid = fields[6].GetUInt32();
-
-                outOfStable.push_back(pData);
-            }
         }
         while (result->NextRow());
-
-        if (!outOfStable.empty())
-        {
-            SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-            std::list<PetData>::iterator itr = outOfStable.begin();
-            for (uint8 i = 0; i < PET_SLOT_STABLE_LAST && itr != outOfStable.end(); ++i)
-                if (!stableSlot[i])
-                {
-                    PetData pData = *itr;
-                    pData.slot = i;
-
-                    buf.WriteString(pData.name);
-                    nameLen.push_back(pData.name.size());
-                    buf << uint8(pData.slot < uint8(PET_SLOT_STABLE_FIRST) ? 1 : 3); // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
-                    buf << uint32(pData.petnumber);    // petnumber
-                    buf << uint32(pData.modelid);
-                    buf << uint32(pData.lvl);          // level
-                    buf << uint32(pData.creature);     // creature entry
-                    buf << uint32(pData.slot);         // 4.x petSlot
-
-                    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UDP_CHAR_PET_SLOT_BY_ID);
-                    stmt->setUInt32(0, pData.slot);
-                    stmt->setUInt32(1, pData.petnumber);
-                    trans->Append(stmt);
-
-                    ++num;
-                    ++itr;
-                }
-
-            CharacterDatabase.CommitTransaction(trans);
-        }
     }
 
     data.WriteBits(num, 19);
@@ -685,6 +642,8 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
     data.WriteGuidBytes<6, 2, 7, 3, 4, 5, 1>(guid);
 
     SendPacket(&data);
+
+    SendStableResult(STABLE_ERR_NONE);
 }
 
 void WorldSession::SendStableResult(uint8 res)
