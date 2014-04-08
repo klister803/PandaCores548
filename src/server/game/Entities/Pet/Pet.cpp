@@ -156,17 +156,26 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     // update for case of current pet "slot = 0"
     petentry = fields[1].GetUInt32();
     if (!petentry)
+    {
+        m_loading = false;
         return false;
+    }
 
     if (petentry == 26125) // Raise Dead
     {
         if (owner->getClass() == CLASS_DEATH_KNIGHT && owner->ToPlayer()->GetSpecializationId(owner->ToPlayer()->GetActiveSpec()) != SPEC_DK_UNHOLY)
+        {
+            m_loading = false;
             return false;
+        }
     }
     else if (petentry == 17252) // Summon Felguard
     {
         if (owner->getClass() == CLASS_WARLOCK && owner->ToPlayer()->GetSpecializationId(owner->ToPlayer()->GetActiveSpec()) != SPEC_WARLOCK_DEMONOLOGY)
+        {
+            m_loading = false;
             return false;
+        }
     }
 
     uint32 summon_spell_id = fields[14].GetUInt32();
@@ -415,13 +424,13 @@ void Pet::SavePetToDB(PetSlot mode)
 
     if(mode == PET_SLOT_ACTUAL_PET_SLOT)
         mode = owner->m_currentPetSlot;
-    if(mode == PET_SLOT_DELETED && owner->m_currentPetSlot >= PET_SLOT_WARLOCK_PET_FIRST && owner->m_currentPetSlot <= PET_SLOT_WARLOCK_PET_LAST)
+
+    if(!isHunterPet() && mode == PET_SLOT_DELETED && owner->m_currentPetSlot >= PET_SLOT_WARLOCK_PET_FIRST && owner->m_currentPetSlot <= PET_SLOT_WARLOCK_PET_LAST)
     {
         mode = owner->m_currentPetSlot;
         owner->m_currentPetSlot = PET_SLOT_DELETED;
     }
-    if(mode >= PET_SLOT_HUNTER_FIRST && mode <= PET_SLOT_HUNTER_LAST && getPetType() != HUNTER_PET)
-        return;
+
     if(mode == PET_SLOT_OTHER_PET && getPetType() == HUNTER_PET)
         return;
 

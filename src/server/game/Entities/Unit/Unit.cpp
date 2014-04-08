@@ -11049,10 +11049,8 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
         
         if (GetTypeId() == TYPEID_PLAYER)
         {
-            if (!minion->isHunterPet()) // If its not a hunter pet, well lets not try to use it for hunter then
-                ToPlayer()->m_currentPetSlot = slot;
-
-            if (slot >= PET_SLOT_HUNTER_FIRST && slot <= PET_SLOT_HUNTER_LAST && !stampeded) // Always save thoose spots where hunter is correct
+            PetSlot max = minion->isHunterPet() ? PET_SLOT_STABLE_LAST : PET_SLOT_WARLOCK_PET_LAST;
+            if (slot >= PET_SLOT_HUNTER_FIRST && slot <= max && !stampeded) // Always save thoose spots where hunter is correct
             {
                 ToPlayer()->m_currentPetSlot = slot;
                 ToPlayer()->setPetSlotWithStableMoveOrRealDelete(slot, minion->GetCharmInfo()->GetPetNumber(), minion->isHunterPet()); // minion->isHunterPet() always true ;)
