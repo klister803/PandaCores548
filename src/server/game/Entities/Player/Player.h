@@ -2705,8 +2705,10 @@ class Player : public Unit, public GridObject<Player>
 
         void setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bool isHanterPet);
         void cleanPetSlotForMove(PetSlot slot, uint32 petID);
-
-        PetSlot getSlotForNewPet();
+        uint32 getPetIdBySlot(uint32 slot) const { return m_PetSlots[slot]; }
+        const PlayerPetSlotList &GetPetSlotList() { return m_PetSlots; }
+        PetSlot getSlotForNewPet(bool full = false);
+        PetSlot GetSlotForPetId(uint32 petID);
 
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;

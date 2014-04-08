@@ -3921,8 +3921,10 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     if (m_caster->getClass() != CLASS_HUNTER)
         return;
 
+    PetSlot slot = m_caster->ToPlayer()->getSlotForNewPet();
+
     // If we have a full list we shoulden't be able to create a new one.
-    if (m_caster->ToPlayer()->getSlotForNewPet() == PET_SLOT_FULL_LIST)
+    if (slot == PET_SLOT_FULL_LIST)
     {
         m_caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_TOO_MANY_PETS);
         return;
@@ -3951,7 +3953,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
 
     // caster have pet now
-    m_caster->SetMinion(pet, true, m_caster->GetTypeId() == TYPEID_PLAYER ? m_caster->ToPlayer()->getSlotForNewPet() : PET_SLOT_UNK_SLOT);
+    m_caster->SetMinion(pet, true, m_caster->GetTypeId() == TYPEID_PLAYER ? slot : PET_SLOT_UNK_SLOT);
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
@@ -7017,18 +7019,17 @@ void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)
     if (!pet)
         return;
 
+    PetSlot slot = m_caster->ToPlayer()->getSlotForNewPet();
+
     // add to world
     pet->GetMap()->AddToMap(pet->ToCreature());
 
-    // unitTarget has pet now
-    unitTarget->SetMinion(pet, true, PET_SLOT_ACTUAL_PET_SLOT);
+    unitTarget->SetMinion(pet, true, slot);
 
-    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
-    {
-        m_caster->ToPlayer()->m_currentPetSlot = m_caster->ToPlayer()->getSlotForNewPet();
-        pet->SavePetToDB(m_caster->ToPlayer()->m_currentPetSlot);
-        unitTarget->ToPlayer()->PetSpellInitialize();
-    }
+    pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+    unitTarget->ToPlayer()->PetSpellInitialize();
+
+    unitTarget->ToPlayer()->GetSession()->SendStablePet(0);
 }
 
 void Spell::EffectDiscoverTaxi(SpellEffIndex effIndex)

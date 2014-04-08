@@ -107,21 +107,43 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         }
     }
 
+    ASSERT(slotID != PET_SLOT_UNK_SLOT);
+
     if (slotID == PET_SLOT_ACTUAL_PET_SLOT)
         slotID = owner->m_currentPetSlot;
 
     uint32 ownerid = owner->GetGUIDLow();
 
-    QueryResult result;
+    // find number
+    if (!petnumber && !petentry)
+    {
+        if (current && slotID >= PET_SLOT_HUNTER_FIRST)
+            petnumber = owner->getPetIdBySlot(slotID);
+        else
+        {
+            const PlayerPetSlotList list  = owner->GetPetSlotList();
+            uint32 index = 0;
+            uint32 limit = owner->getClass() == CLASS_HUNTER ? PET_SLOT_STABLE_FIRST : PET_SLOT_WARLOCK_PET_LAST;
 
+            for(PlayerPetSlotList::const_iterator itr = list.begin(); index < limit; ++itr, ++index)
+            {
+                if (*itr)
+                {
+                    petnumber = *itr;
+                    break;
+                }
+            }
+
+            if (!petnumber)
+                petnumber = owner->getPetIdBySlot(PET_SLOT_OTHER_PET);
+        }
+    }
+
+    QueryResult result;
     if (petnumber)
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND id = '%u'", ownerid, petnumber);
-    else if (current && slotID != PET_SLOT_UNK_SLOT)
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND slot = '%u'", ownerid, uint8(slotID));
-    else if (petentry)
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND entry = '%u' AND ((slot >= '%u' AND slot <= '%u') OR slot > '%u')", ownerid, petentry, uint8(PET_SLOT_HUNTER_FIRST), uint8(PET_SLOT_WARLOCK_PET_LAST), uint8(PET_SLOT_STABLE_LAST));
-    else
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND ((slot >= '%u' AND slot <= '%u') OR slot > '%u')", ownerid, uint8(PET_SLOT_HUNTER_FIRST), uint8(PET_SLOT_WARLOCK_PET_LAST), uint8(PET_SLOT_STABLE_LAST));
+        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND id = '%u' LIMIT 1", ownerid, petnumber);
+    else if (petentry)  //non hunter pets
+        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND entry = '%u' LIMIT 1", ownerid, petentry);
 
     if (!result)
     {
@@ -439,13 +461,10 @@ void Pet::SavePetToDB(PetSlot mode)
         uint32 ownerLowGUID = GUID_LOPART(GetOwnerGUID());
         std::string name = m_name;
         CharacterDatabase.EscapeString(name);
-        trans = CharacterDatabase.BeginTransaction();
-        // remove current data
-        trans->PAppend("DELETE FROM character_pet WHERE owner = '%u' AND id = '%u'", ownerLowGUID, m_charmInfo->GetPetNumber());
 
         // save pet
         std::ostringstream ss;
-        ss  << "INSERT INTO character_pet (id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization) "
+        ss  << "REPLACE INTO character_pet (id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization) "
             << "VALUES ("
             << m_charmInfo->GetPetNumber() << ','
             << GetEntry() << ','
@@ -473,8 +492,7 @@ void Pet::SavePetToDB(PetSlot mode)
             << GetSpecializationId()
             << ')';
 
-        trans->Append(ss.str().c_str());
-        CharacterDatabase.CommitTransaction(trans);
+        CharacterDatabase.PExecute(ss.str().c_str());
     }
     // delete
     else

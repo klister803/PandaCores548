@@ -564,8 +564,6 @@ void WorldSession::SendStablePet(uint64 guid)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOTS_DETAIL);
 
     stmt->setUInt32(0, _player->GetGUIDLow());
-    stmt->setUInt8(1, PET_SLOT_HUNTER_FIRST);
-    stmt->setUInt8(2, PET_SLOT_OTHER_PET);
 
     _sendStabledPetCallback.SetParam(guid);
     _sendStabledPetCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
@@ -599,14 +597,26 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
         {
             Field* fields = result->Fetch();
 
-            uint8 petSlot = fields[1].GetUInt8();
+            uint32 petNumber = fields[2].GetUInt32();
+            uint8 petSlot = GetPlayer()->GetSlotForPetId(petNumber);
+
+            if (petSlot > PET_SLOT_STABLE_LAST)
+                continue;
+
+            if (petSlot == PET_SLOT_FULL_LIST)
+            {
+                //Find free slot and move pet there
+                petSlot = GetPlayer()->getSlotForNewPet(true);
+                GetPlayer()->setPetSlotWithStableMoveOrRealDelete(PetSlot(petSlot), petNumber, true);
+            }
+
             if (petSlot < PET_SLOT_STABLE_LAST)
             {
                 std::string name = fields[5].GetString();
                 buf.WriteString(name);
                 nameLen.push_back(name.size());
-                buf << uint8(fields[1].GetUInt8() < uint8(PET_SLOT_STABLE_FIRST)? 1 : 3);                               // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
-                buf << uint32(fields[2].GetUInt32());          // petnumber
+                buf << uint8(GetPlayer()->m_currentPetSlot == petSlot ? 3 : 1);     // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+                buf << uint32(petNumber);          // petnumber
                 buf << uint32(fields[6].GetUInt32());          // model id
                 buf << uint32(fields[4].GetUInt16());          // level
                 buf << uint32(fields[3].GetUInt32());          // creature entry

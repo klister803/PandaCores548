@@ -962,7 +962,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_groupUpdateDelay = 5000;
 
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
-    m_PetSlots.reserve(PET_SLOT_LAST);
+    m_PetSlots.resize(PET_SLOT_LAST, 0);
     m_Store = false;
     realmTransferid = 0;
 }
@@ -28772,25 +28772,39 @@ void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bo
     m_PetSlots[slot] = petID;
 }
 
-PetSlot Player::getSlotForNewPet()
+PetSlot Player::getSlotForNewPet(bool full/*=false*/)
 {
-    uint32 last_known = 0;
+    uint32 last_known = PET_SLOT_OTHER_PET; //check PET_SLOT_STABLE_LAST for last
     // Call Pet Spells
     // 883 83242 83243 83244 83245
     //  1    2     3     4     5
-    if (HasSpell(83245))
-        last_known = 5;
-    else if (HasSpell(83244))
-        last_known = 4;
-    else if (HasSpell(83243))
-        last_known = 3;
-    else if (HasSpell(83242))
-        last_known = 2;
-    else if (HasSpell(883))
-        last_known = 1;
+    if (!full)
+    {
+        if (HasSpell(83245))
+            last_known = 5;
+        else if (HasSpell(83244))
+            last_known = 4;
+        else if (HasSpell(83243))
+            last_known = 3;
+        else if (HasSpell(83242))
+            last_known = 2;
+        else if (HasSpell(883))
+            last_known = 1;
+        else
+            last_known = 0;
+    }
 
     for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; ++i)
         if (!m_PetSlots[i])
+            return PetSlot(i);
+
+    return PET_SLOT_FULL_LIST;
+}
+
+PetSlot Player::GetSlotForPetId(uint32 petID)
+{
+    for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < uint32(PET_SLOT_STABLE_LAST); ++i)
+        if (m_PetSlots[i] == petID)
             return PetSlot(i);
 
     return PET_SLOT_FULL_LIST;

@@ -11045,7 +11045,9 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
                 SetPetGUID(minion->GetGUID());
                 SetMinionGUID(0);
             }
-        }else if (GetTypeId() == TYPEID_PLAYER)
+        }
+        
+        if (GetTypeId() == TYPEID_PLAYER)
         {
             if (!minion->isHunterPet()) // If its not a hunter pet, well lets not try to use it for hunter then
                 ToPlayer()->m_currentPetSlot = slot;
