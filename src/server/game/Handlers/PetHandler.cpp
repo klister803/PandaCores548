@@ -503,7 +503,7 @@ void WorldSession::SendPetNameQuery(uint64 petguid, uint32 petnumber)
     {
         //! 5.4.1
         WorldPacket data(SMSG_PET_NAME_QUERY_RESPONSE, (4+1+4+1));
-        data << uint32(petnumber);
+        data << uint64(petnumber);
         data.WriteBit(0);
         data.FlushBits();
         _player->GetSession()->SendPacket(&data);
@@ -514,7 +514,7 @@ void WorldSession::SendPetNameQuery(uint64 petguid, uint32 petnumber)
 
     //! 5.4.1
     WorldPacket data(SMSG_PET_NAME_QUERY_RESPONSE, (4+4+name.size()+1));
-    data << uint32(petnumber);
+    data << uint64(petnumber);
     data.WriteBit(pet->isPet() ? 1 : 0);
     data.WriteBits(name.size(), 8);
 
