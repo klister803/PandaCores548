@@ -11721,20 +11721,17 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             AuraEffectList const& mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
             {
-                if (spellProto->EquippedItemClass == -1 && (*i)->GetSpellInfo()->EquippedItemClass != -1)    //prevent apply mods from weapon specific case to non weapon specific spells (Example: thunder clap and two-handed weapon specialization)
-                    continue;
-
                 // Mastery: Unshackled Fury
                 if ((*i)->GetId() == 76856 && !HasAuraState(AURA_STATE_ENRAGE))
                     continue;
 
-                if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
+                if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()) && (*i)->GetSpellInfo()->EquippedItemClass != -1)
+                    AddPct(DoneTotalMod, (*i)->GetAmount());
+                else if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
                 {
                     if ((*i)->GetSpellInfo()->EquippedItemClass == -1)
                         AddPct(DoneTotalMod, (*i)->GetAmount());
                     else if (!((*i)->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK) && ((*i)->GetSpellInfo()->EquippedItemSubClassMask == 0))
-                        AddPct(DoneTotalMod, (*i)->GetAmount());
-                    else if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()))
                         AddPct(DoneTotalMod, (*i)->GetAmount());
                 }
             }
@@ -13122,11 +13119,6 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
-
-    // Sword of Light - 53503
-    // Increase damage dealt by two handed weapons by 10%
-    if (pdamage > 0 && GetTypeId() == TYPEID_PLAYER && HasAura(53503))
-        AddPct(DoneTotalMod, 10);
 
     // Apply PowerPvP damage bonus
     if (pdamage > 0 && GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
