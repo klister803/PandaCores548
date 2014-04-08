@@ -4385,7 +4385,20 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
 
-                    
+                //Throne of Thunder
+                //Jinrokh
+                case 137162: //Static burst
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
+                case 137261: //Lightning storm tr ef - dmg
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
+                case 140819: //Lightning storm tr ef = dummy
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
+
                 //World Boss
                 //Sha of Anger
                 case 119487: //Anger

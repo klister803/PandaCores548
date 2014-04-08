@@ -21,17 +21,26 @@
 
 enum eSpells
 {
-    SPELL_STATIC_BURST     = 137162,
-    SPELL_STATIC_WOUND     = 138349,
-    SPELL_BALL_LIGHTNING   = 136620,
-    SPELL_LIGHTNING_STORM  = 137313,//AOE 
+    SPELL_STATIC_BURST          = 137162,
+    SPELL_STATIC_WOUND          = 138349,
+    SPELL_BALL_LIGHTNING        = 136620,
+    SPELL_LIGHTNING_STORM       = 137313, 
+    SPELL_LIGHTNING_BALL_DMG    = 136620,
+
+    //Visual
+    SPELL_LIGTNING_BALL_VISUAL  = 136534, //Visual for npc
+    SPELL_LIGHTNING_BALL_TARGET = 137422, 
+    SPELL_WATER_POOL_VISUAL     = 137277, //Visual water pool
+    SPELL_STATIC_WATER_VISUAL   = 137978, //Visual static water pool
+    SPELL_WATER_FONT_VISUAL     = 137340, //Visual water from font's head
 };
 
-//This is entry triggers(maybe needed, but not need spawn)
-//69593
-//69509
-//69676
-//69609
+enum Events
+{
+    EVENT_LIGHTNING_BALL      = 1,
+    EVENT_LIGHTNING_STORM     = 2,
+    EVENT_STATIC_BURST        = 3,
+};
 
 class boss_jinrokh : public CreatureScript
 {
@@ -55,27 +64,47 @@ class boss_jinrokh : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
+                events.ScheduleEvent(EVENT_STATIC_BURST,    urand(20000, 25000));
+                events.ScheduleEvent(EVENT_LIGHTNING_BALL,  urand(10000, 18000)); 
+                events.ScheduleEvent(EVENT_LIGHTNING_STORM, urand(80000, 90000));
             }
 
-            void DamageTaken(Unit* attacker, uint32 &damage)
+            void UpdateAI(const uint32 diff)
             {
-            }
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
-            void DoAction(int32 const action)
-            {
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_STATIC_BURST:
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_STATIC_BURST);
+                        events.ScheduleEvent(EVENT_STATIC_BURST, urand(20000, 25000));
+                        break;
+                    case EVENT_LIGHTNING_BALL:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 40.0f, true)) 
+                        {
+                            if (Creature* ball = me->SummonCreature(NPC_LIGHTNING_BALL, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
+                                ball->AI()->SetGUID(target->GetGUID(), 0);
+                        }
+                        events.ScheduleEvent(EVENT_LIGHTNING_BALL,  urand(10000, 18000));
+                        break;
+                    case EVENT_LIGHTNING_STORM:
+                        DoCast(me, SPELL_LIGHTNING_STORM);
+                        events.ScheduleEvent(EVENT_LIGHTNING_STORM, urand(80000, 90000));
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
             }
 
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
-            }
-
-            void UpdateAI(const uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                DoMeleeAttackIfReady();
             }
         };
 
@@ -85,7 +114,116 @@ class boss_jinrokh : public CreatureScript
         }
 };
 
+class npc_lightning_ball : public CreatureScript
+{
+public:
+    npc_lightning_ball() : CreatureScript("npc_lightning_ball") {}
+
+    struct npc_lightning_ballAI : public ScriptedAI
+    {
+        npc_lightning_ballAI(Creature* creature) : ScriptedAI(creature)
+        {
+            InstanceScript* pInstance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            me->AddAura(SPELL_LIGTNING_BALL_VISUAL, me);
+            explose = false;
+        }
+
+        InstanceScript* pInstance;
+        uint64 pl_guid;
+        uint32 CheckDist;
+        bool explose;
+
+        void Reset(){}
+
+        void EnterEvadeMode(){}
+        
+        void SetGUID(uint64 plguid, int32 id)
+        {
+            if (Player* pl = me->GetPlayer(*me, plguid))
+            {
+                if (pl->isAlive())
+                {
+                    pl_guid = plguid;
+                    me->AddAura(SPELL_LIGHTNING_BALL_TARGET, pl);
+                    me->GetMotionMaster()->MoveFollow(pl, 0.0f, 0.0f);
+                    CheckDist = 1000;
+                    return;
+                }
+            }
+            me->DespawnOrUnsummon();
+        }
+        
+        void UpdateAI(uint32 const diff)
+        {
+            if (CheckDist)
+            {
+                if (CheckDist <= diff)
+                {
+                    if (Player* pl = me->GetPlayer(*me, pl_guid))
+                    {
+                        if (pl->isAlive())
+                        {
+                            me->GetMotionMaster()->MoveFollow(pl, 0.0f, 0.0f);
+                            if (me->GetDistance(pl) <= 1.0f && !explose)
+                            {
+                                explose = true;
+                                CheckDist = 0;
+                                pl->RemoveAurasDueToSpell(SPELL_LIGHTNING_BALL_TARGET);
+                                DoCast(pl, SPELL_LIGHTNING_BALL_DMG); 
+                                me->DespawnOrUnsummon();
+                            }
+                        }
+                        else
+                            me->DespawnOrUnsummon();
+                    }
+                }
+                else
+                    CheckDist -= diff;
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_lightning_ballAI(creature);
+    }
+};
+
+class spell_static_burst : public SpellScriptLoader
+{
+    public:
+        spell_static_burst() : SpellScriptLoader("spell_static_burst") { }
+
+        class spell_static_burst_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_static_burst_AuraScript);
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                {
+                    if (GetTarget() && GetCaster())
+                        GetCaster()->CastCustomSpell(SPELL_STATIC_WOUND, SPELLVALUE_AURA_STACK, 10, GetTarget());
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_static_burst_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_static_burst_AuraScript();
+        }
+};
+
 void AddSC_boss_jinrokh()
 {
     new boss_jinrokh();
+    new npc_lightning_ball();
+    new spell_static_burst();
 }

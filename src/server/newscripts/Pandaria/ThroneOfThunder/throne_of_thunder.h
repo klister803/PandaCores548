@@ -30,6 +30,7 @@ enum eCreatures
 {
     //Npc
     NPC_STORM_CALLER      = 70236,
+    NPC_LIGHTNING_BALL    = 69232,
 
     //Bosses
     NPC_JINROKH           = 69465,
@@ -69,5 +70,10 @@ enum eGameObjects
     GO_MOGU_SL            = 218678,
     GO_JINROKH_EX_DOOR    = 218663,
 };
-
+//This is triggers entry(maybe needed, but not need spawn)
+//69593
+//69509
+//69676
+//69609
+//69469 - Condictive water
 #endif THRONEOFTHUNDER
