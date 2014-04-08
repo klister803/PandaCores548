@@ -5129,7 +5129,10 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 64323:                                 // Book of Glyph Mastery
                 case 112996:                                // Scroll of Wisdom
                 case 125557:                                // Imperial Silk
-                case 143626:                                // Celestial Cloth
+                case 140040:                                // Magnificence of Leather
+                case 143011:                                // Celestial Cloth
+                case 143255:                                // Balanced Trillium Ingot
+                case 143626:                                // Celestial Cloth and Its Uses
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
