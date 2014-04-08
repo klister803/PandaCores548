@@ -18183,8 +18183,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //"totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
     // 46      47      48      49      50      51      52           53         54             55               56                 57              58
     //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, specialization1, specialization2, exploredZones, equipmentCache, "
-    // 59           60              61               62                 63              64                              65
-    //"knownTitles, actionBars, currentpetslot, petslotused, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
+    // 59           60              61            62             63              64                              65
+    //"knownTitles, actionBars, currentpetslot, petslot, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     if (!result)
@@ -18277,7 +18277,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
 
     m_currentPetSlot = (PetSlot)fields[61].GetInt8();
-    m_petSlotUsed = fields[62].GetInt32();
+    LoadPetSlot(fields[62].GetCString());
 
     InitDisplayIds();
 
@@ -20517,7 +20517,13 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setString(index++, ss.str());
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
         stmt->setInt8(index++, m_currentPetSlot);
-        stmt->setInt8(index++, m_petSlotUsed);
+
+        ss.str("");
+        for (uint32 i = 0; i < PET_SLOT_LAST; ++i)
+            ss << m_PetSlots[i] << ' ';
+
+        stmt->setString(index++, ss.str());
+
         stmt->setUInt32(index++, m_grantableLevels);
 
         stmt->setUInt8(index++, IsInWorld() ? 1 : 0);
@@ -28717,4 +28723,45 @@ void Player::SendPvpRatedStats()
     }
 
     GetSession()->SendPacket(&data);
+}
+
+void Player::LoadPetSlot(std::string const &data)
+{
+    Tokenizer tokens(data, ' ');
+
+    uint8 index = 0;
+    for (Tokenizer::const_iterator iter = tokens.begin(); index < PET_SLOT_LAST && iter != tokens.end(); ++iter, ++index)
+        m_PetSlots[index] = uint32(atol(*iter));
+}
+
+void Player::setPetSlotUsed(PetSlot slot, bool used)
+{
+    if (used)
+        m_petSlotUsed |= (1 << int32(slot));
+    else
+        m_petSlotUsed &= ~(1 << int32(slot));
+}
+
+PetSlot Player::getSlotForNewPet()
+{
+    uint32 last_known = 0;
+    // Call Pet Spells
+    // 883 83242 83243 83244 83245
+    //  1    2     3     4     5
+    if (HasSpell(83245))
+        last_known = 5;
+    else if (HasSpell(83244))
+        last_known = 4;
+    else if (HasSpell(83243))
+        last_known = 3;
+    else if (HasSpell(83242))
+        last_known = 2;
+    else if (HasSpell(883))
+        last_known = 1;
+
+    for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; ++i)
+        if ((m_petSlotUsed & (1 << i)) == 0)
+            return PetSlot(i);
+
+    return PET_SLOT_FULL_LIST;
 }

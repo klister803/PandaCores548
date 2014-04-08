@@ -1228,6 +1228,19 @@ private:
 
 typedef UNORDERED_MAP<uint8, Bracket*> BracketList;
 
+struct PetData
+{
+    PetData() : slot(0), petnumber(0), creature(0), lvl(0), modelid(0) {}
+    int32 slot;
+    uint32 petnumber;
+    uint32 creature;
+    uint32 lvl;
+    uint32 modelid;
+    std::string name;
+};
+typedef std::set<PetData*> PetDataList;
+typedef std::vector<uint32/*PetEntry*/> PlayerPetSlotList;
+
 struct DigSite
 {
     uint8 count;
@@ -2691,37 +2704,8 @@ class Player : public Unit, public GridObject<Player>
         PetSlot m_currentPetSlot;
         uint32 m_petSlotUsed;
 
-        void setPetSlotUsed(PetSlot slot, bool used)
-        {
-            if (used)
-                m_petSlotUsed |= (1 << int32(slot));
-            else
-                m_petSlotUsed &= ~(1 << int32(slot));
-        }
-
-        PetSlot getSlotForNewPet()
-        {
-            uint32 last_known = 0;
-            // Call Pet Spells
-            // 883 83242 83243 83244 83245
-            //  1    2     3     4     5
-            if (HasSpell(83245))
-                last_known = 5;
-            else if (HasSpell(83244))
-                last_known = 4;
-            else if (HasSpell(83243))
-                last_known = 3;
-            else if (HasSpell(83242))
-                last_known = 2;
-            else if (HasSpell(883))
-                last_known = 1;
-
-            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; ++i)
-                if ((m_petSlotUsed & (1 << i)) == 0)
-                    return PetSlot(i);
-
-            return PET_SLOT_FULL_LIST;
-        }
+        void setPetSlotUsed(PetSlot slot, bool used);
+        PetSlot getSlotForNewPet();
 
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
@@ -3227,6 +3211,11 @@ class Player : public Unit, public GridObject<Player>
         RestType rest_type;
         ////////////////////Rest System/////////////////////
 
+        ////////////////////Pet System/////////////////////
+        void LoadPetSlot(std::string const &data);
+        PetDataList m_PetDataList;
+        PlayerPetSlotList m_PetSlots;
+        ////////////////////Rest System/////////////////////
     public:
          // movement anticheat
         time_t m_anti_LastClientTime;         // last movement client time

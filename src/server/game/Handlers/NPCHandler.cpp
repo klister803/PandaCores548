@@ -571,16 +571,6 @@ void WorldSession::SendStablePet(uint64 guid)
     _sendStabledPetCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
 }
 
-struct PetData
-{
-    uint32 slot;
-    uint32 petnumber;
-    uint32 creature;
-    uint32 lvl;
-    uint32 modelid;
-    std::string name;
-};
-
 void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid)
 {
     if (!GetPlayer())
