@@ -744,6 +744,74 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.807f;
             }
             break;
+        case SPELL_AURA_MOD_HEALING_PCT:
+        {
+            if (!caster)
+                break;
+
+            switch (m_spellInfo->Id)
+            {
+                case 114232: // Sanctified Wrath
+                {
+                    if (Player* paladin = caster->ToPlayer())
+                    {
+                        if (paladin->GetSpecializationId(paladin->GetActiveSpec()) != SPEC_PALADIN_PROTECTION)
+                            amount = 0;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
+        case SPELL_AURA_ADD_FLAT_MODIFIER:
+        {
+            if (!caster)
+                break;
+
+            switch (m_spellInfo->Id)
+            {
+                case 114232: // Sanctified Wrath
+                {
+                    if (Player* paladin = caster->ToPlayer())
+                    {
+                        if (paladin->GetSpecializationId(paladin->GetActiveSpec()) != SPEC_PALADIN_HOLY)
+                            amount = 0;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
+        case SPELL_AURA_ADD_PCT_MODIFIER:
+        {
+            if (!caster)
+                break;
+
+            switch (m_spellInfo->Id)
+            {
+                case 114232: // Sanctified Wrath
+                {
+                    if (Player* paladin = caster->ToPlayer())
+                    {
+                        switch (paladin->GetSpecializationId(paladin->GetActiveSpec()))
+                        {
+                            case SPEC_PALADIN_HOLY:        if (m_effIndex != 0) amount = 0; break;
+                            case SPEC_PALADIN_PROTECTION:  if (m_effIndex != 1) amount = 0; break;
+                            case SPEC_PALADIN_RETRIBUTION: if (m_effIndex != 2) amount = 0; break;
+                            default: amount = 0; break;
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_MOD_RESILIENCE_PCT:
         {
             if (!caster)

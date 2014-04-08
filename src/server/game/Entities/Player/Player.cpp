@@ -22121,19 +22121,19 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
         {
             if (opcode == SMSG_SET_PCT_SPELL_MODIFIER)
             {
-                int32 amount = 100;
+                float val = 1.0f;
 
                 for (SpellModList::iterator itr = m_spellMods[mod->op].begin(); itr != m_spellMods[mod->op].end(); ++itr)
                     if ((*itr)->type == mod->type && (*itr)->mask & _mask)
-                        amount += (*itr)->value;
+                    {
+                        if (!apply && (*itr)->spellId == mod->spellId)
+                            continue;
 
-                if (mod->value)
-                    amount += apply ? mod->value : -mod->value;
+                        AddPct(val, (*itr)->value);
+                    }
 
-                if (amount < 0)
-                    amount = 0;
-
-                float val = amount / 100.0f;
+                if (mod->value && apply)
+                    AddPct(val, mod->value);
 
                 data << float(val);
                 data << uint8(eff);

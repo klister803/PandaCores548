@@ -2658,7 +2658,12 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     int level_diff = 0;
     switch (m_spellInfo->Id)
     {
-        case 23922: // Shield Slam
+        case 105427: // Judgments of the Wise
+        {
+            damage += m_caster->HasAura(114232) ? 1: 0;
+            break;
+        }
+        case 23922:  // Shield Slam
         {
             if (!m_caster->HasAura(71))
             {
