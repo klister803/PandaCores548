@@ -4321,15 +4321,15 @@ enum PetSlot
     PET_SLOT_HUNTER_FIRST           =   0,        //PetType == HUNTER_PET
     PET_SLOT_HUNTER_LAST            =   4,        //PetType == HUNTER_PET
     PET_SLOT_STABLE_FIRST           =   5,
-    PET_SLOT_STABLE_LAST            =  24,
+    PET_SLOT_STABLE_LAST            =  55,
     PET_SLOT_WARLOCK_PET_FIRST      =  0,
     PET_SLOT_WARLOCK_PET_LAST       =  10,
     PET_SLOT_STAMPED_FIRST          =  0,
     PET_SLOT_STAMPED_LAST           =  10,
 
     //Non-hunter pet slot
-    PET_SLOT_OTHER_PET       = 25,        // PetType != HUNTER_PET
-    PET_SLOT_LAST                         // For iteration
+    PET_SLOT_OTHER_PET              = 56,        // PetType != HUNTER_PET
+    PET_SLOT_LAST                                // For iteration
 };
 
 #define MAX_PET_STABLES         PET_SLOT_STABLE_LAST
