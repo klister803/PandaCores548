@@ -27,7 +27,8 @@ namespace CharacterDatabaseCleaner
         CLEANING_FLAG_SKILLS                = 0x2,
         CLEANING_FLAG_SPELLS                = 0x4,
         CLEANING_FLAG_TALENTS               = 0x8,
-        CLEANING_FLAG_QUESTSTATUS           = 0x10
+        CLEANING_FLAG_QUESTSTATUS           = 0x10,
+        CLEANING_FLAG_PETSLOT               = 0x20      //Now used for store pet slots on new plr field, after for find lost link pets.
     };
 
     void CleanDatabase();
@@ -44,6 +45,7 @@ namespace CharacterDatabaseCleaner
     void CleanCharacterSpell();
     void CleanCharacterTalent();
     void CleanCharacterQuestStatus();
+    void CleanPetSlots();
 }
 
 #endif

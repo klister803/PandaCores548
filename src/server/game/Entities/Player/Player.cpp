@@ -963,7 +963,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_groupUpdateDelay = 5000;
 
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
-
+    m_PetSlots.reserve(PET_SLOT_LAST);
     m_Store = false;
     realmTransferid = 0;
 }
@@ -20391,7 +20391,14 @@ void Player::SaveToDB(bool create /*=false*/)
 
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
         stmt->setInt8(index++, m_currentPetSlot);
-        stmt->setInt8(index++, m_petSlotUsed);
+
+        ss.str("");
+        for (uint32 i = 0; i < PET_SLOT_LAST; ++i)
+            ss << m_PetSlots[i] << ' ';
+
+        stmt->setString(index++, ss.str());
+
+
         stmt->setUInt32(index++, m_grantableLevels);
     }
     else
