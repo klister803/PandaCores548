@@ -532,8 +532,9 @@ void WorldSession::SendBindPoint(Creature* npc)
 void WorldSession::HandleListStabledPetsOpcode(WorldPacket & recvData)
 {
     time_t now = time(NULL);
-    if (now - timeAddIgnoreOpcode < 3)
+    if (now - timeAddIgnoreOpcode < 1)
     {
+        SendStableResult(STABLE_ERR_STABLE);
         recvData.rfinish();
         return;
     }
@@ -547,7 +548,10 @@ void WorldSession::HandleListStabledPetsOpcode(WorldPacket & recvData)
     recvData.ReadGuidBytes<0, 6, 1, 2, 5, 3, 7, 4>(npcGUID);
 
     if (!CheckStableMaster(npcGUID))
+    {
+        SendStableResult(STABLE_ERR_STABLE);
         return;
+    }
 
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
@@ -653,11 +657,13 @@ void WorldSession::SendStableResult(uint8 res)
     SendPacket(&data);
 }
 
+//! 5.4.1
 void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
 {
     time_t now = time(NULL);
-    if (now - timeAddIgnoreOpcode < 3)
+    if (now - timeAddIgnoreOpcode < 1)
     {
+        SendStableResult(STABLE_ERR_STABLE);
         recv_data.rfinish();
         return;
     }
@@ -671,23 +677,8 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
 
     recv_data >> pet_number >> new_slot;
 
-    npcGUID[6] = recv_data.ReadBit();
-    npcGUID[7] = recv_data.ReadBit();
-    npcGUID[1] = recv_data.ReadBit();
-    npcGUID[2] = recv_data.ReadBit();
-    npcGUID[5] = recv_data.ReadBit();
-    npcGUID[0] = recv_data.ReadBit();
-    npcGUID[3] = recv_data.ReadBit();
-    npcGUID[4] = recv_data.ReadBit();
-
-    recv_data.ReadByteSeq(npcGUID[0]);
-    recv_data.ReadByteSeq(npcGUID[7]);
-    recv_data.ReadByteSeq(npcGUID[2]);
-    recv_data.ReadByteSeq(npcGUID[3]);
-    recv_data.ReadByteSeq(npcGUID[6]);
-    recv_data.ReadByteSeq(npcGUID[5]);
-    recv_data.ReadByteSeq(npcGUID[1]);
-    recv_data.ReadByteSeq(npcGUID[4]);
+    recv_data.ReadGuidMask<4, 1, 5, 3, 0, 6, 7, 2>(npcGUID);
+    recv_data.ReadGuidBytes<5, 1, 4, 6, 3, 7, 2, 0>(npcGUID);
 
     if (!CheckStableMaster(npcGUID))
     {
@@ -738,18 +729,19 @@ void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult result, ui
 
     Field *fields = result->Fetch();
 
-    uint32 slot        = fields[0].GetUInt8();
-    uint32 creature_id = fields[1].GetUInt32();
-    uint32 pet_number  = fields[2].GetUInt32();
-    bool isHunter = fields[3].GetUInt8() == HUNTER_PET;
+    uint32 pet_entry = fields[0].GetUInt32();
+    uint32 pet_number  = fields[1].GetUInt32();
+    bool isHunter = fields[2].GetUInt8() == HUNTER_PET;
 
-    if (!creature_id)
+    PetSlot slot = GetPlayer()->GetSlotForPetId(pet_number);
+
+    if (!pet_entry)
     {
         SendStableResult(STABLE_ERR_STABLE);
         return;
     }
 
-    CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creature_id);
+    CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(pet_entry);
     if (!creatureInfo || !creatureInfo->isTameable(_player->CanTameExoticPets()))
     {
         // if problem in exotic pet
@@ -766,6 +758,7 @@ void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult result, ui
         // We need to remove and add the new pet to there diffrent slots
         GetPlayer()->cleanPetSlotForMove((PetSlot)slot, pet_number);
         GetPlayer()->setPetSlotWithStableMoveOrRealDelete((PetSlot)new_slot, pet_number, isHunter);
+        timeAddIgnoreOpcode = 0;
     }
 
     SendStableResult(STABLE_SUCCESS_STABLE);
