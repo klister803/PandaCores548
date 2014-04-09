@@ -7115,8 +7115,11 @@ void ObjectMgr::LoadQuestPOI()
         uint32 unk3               = fields[6].GetUInt32();
         uint32 unk4               = fields[7].GetUInt32();
 
-        QuestPOI POI(id, objIndex, mapId, WorldMapAreaId, FloorId, unk3, unk4);
-        POI.points = POIs[questId][id];
+        if(POIs[questId].size() > 0)
+        {
+            QuestPOI POI(id, objIndex, mapId, WorldMapAreaId, FloorId, unk3, unk4);
+            POI.points = POIs[questId][id];
+        }
 
         _questPOIStore[questId].push_back(POI);
 
