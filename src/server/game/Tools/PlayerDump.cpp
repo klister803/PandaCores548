@@ -44,7 +44,7 @@ static DumpTable dumpTables[DUMP_TABLE_COUNT] =
     { "character_glyphs",                 DTT_CHAR_TABLE, "`guid`, `spec`, `glyph1`, `glyph2`, `glyph3`, `glyph4`, `glyph5`, `glyph6`, `glyph7`, `glyph8`, `glyph9`"},
     { "character_homebind",               DTT_CHAR_TABLE, "guid, mapId, zoneId, posX, posY, posZ"},
     { "character_inventory",              DTT_INVENTORY,  "guid, bag, slot, item"},
-    { "character_pet",                    DTT_PET,        "`id`, `entry`, `owner`, `modelid`, `CreatedBySpell`, `PetType`, `level`, `exp`, `Reactstate`, `name`, `renamed`, `slot`, `curhealth`, `curmana`, `savetime`, `abdata`, `specialization`"},
+    { "character_pet",                    DTT_PET,        "`id`, `entry`, `owner`, `modelid`, `CreatedBySpell`, `PetType`, `level`, `exp`, `Reactstate`, `name`, `renamed`, `curhealth`, `curmana`, `savetime`, `abdata`, `specialization`"},
     { "character_pet_declinedname",       DTT_PET,        "id, owner, genitive, dative, accusative, instrumental, prepositional"},
     { "character_queststatus",            DTT_CHAR_TABLE, "`guid`, `quest`, `status`, `explored`, `timer`, `mobcount1`, `mobcount2`, `mobcount3`, `mobcount4`, `mobcount5`, `mobcount6`, `mobcount7`, `mobcount8`, `mobcount9`, `mobcount10`, `itemcount1`, `itemcount2`, `itemcount3`, `itemcount4`, `itemcount5`, `itemcount6`, `itemcount7`, `itemcount8`, `itemcount9`, `itemcount10`, `playercount`"},
     { "character_queststatus_rewarded",   DTT_CHAR_TABLE, "guid, quest"},

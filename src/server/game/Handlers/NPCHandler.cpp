@@ -566,7 +566,7 @@ void WorldSession::HandleListStabledPetsOpcode(WorldPacket & recvData)
 
 void WorldSession::SendStablePet(uint64 guid)
 {
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOTS_DETAIL);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_DETAIL);
 
     stmt->setUInt32(0, _player->GetGUIDLow());
 
@@ -602,7 +602,7 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
         {
             Field* fields = result->Fetch();
 
-            uint32 petNumber = fields[2].GetUInt32();
+            uint32 petNumber = fields[0].GetUInt32();
             PetSlot petSlot = GetPlayer()->GetSlotForPetId(petNumber);
 
             if (petSlot > PET_SLOT_STABLE_LAST)
@@ -617,14 +617,14 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
 
             if (petSlot < PET_SLOT_STABLE_LAST)
             {
-                std::string name = fields[5].GetString();
+                std::string name = fields[3].GetString();
                 buf.WriteString(name);
                 nameLen.push_back(name.size());
                 buf << uint8(petSlot < PET_SLOT_STABLE_FIRST ? 1 : 3);     // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
                 buf << uint32(petNumber);          // petnumber
-                buf << uint32(fields[6].GetUInt32());          // model id
-                buf << uint32(fields[4].GetUInt16());          // level
-                buf << uint32(fields[3].GetUInt32());          // creature entry
+                buf << uint32(fields[4].GetUInt32());          // model id
+                buf << uint32(fields[2].GetUInt16());          // level
+                buf << uint32(fields[1].GetUInt32());          // creature entry
                 buf << uint32(petSlot);                        // 4.x petSlot
 
                 ++num;
@@ -708,7 +708,7 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
         _player->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
 
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOTS_CHANGE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_BY_ID);
 
     stmt->setUInt32(0, _player->GetGUIDLow());
     stmt->setUInt32(1, pet_number);

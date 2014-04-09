@@ -185,68 +185,68 @@ uint8 CheckSlot(PlayerPetSlotList &list, uint8 slot, uint32 id)
 
 void CharacterDatabaseCleaner::CleanPetSlots()
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT DISTINCT owner FROM character_pet");
-    if (!result)
-    {
-        sLog->outInfo(LOG_FILTER_GENERAL, "Table character_pet is empty.");
-        return;
-    }
-    
-    uint8 res = 0;
-    do
-    {
-        Field* fields = result->Fetch();
-        uint32 ownerID = fields[0].GetUInt32();
+    //QueryResult result = CharacterDatabase.PQuery("SELECT DISTINCT owner FROM character_pet");
+    //if (!result)
+    //{
+    //    sLog->outInfo(LOG_FILTER_GENERAL, "Table character_pet is empty.");
+    //    return;
+    //}
+    //
+    //uint8 res = 0;
+    //do
+    //{
+    //    Field* fields = result->Fetch();
+    //    uint32 ownerID = fields[0].GetUInt32();
 
-        QueryResult r2 = CharacterDatabase.PQuery("SELECT id, slot FROM character_pet WHERE owner = %u", ownerID);
-        if (!r2)
-        {
-            sLog->outError(LOG_FILTER_GENERAL, "Warning! Problem with table character_pet at cleanup");
-            continue;
-        }
+    //    QueryResult r2 = CharacterDatabase.PQuery("SELECT id, slot FROM character_pet WHERE owner = %u", ownerID);
+    //    if (!r2)
+    //    {
+    //        sLog->outError(LOG_FILTER_GENERAL, "Warning! Problem with table character_pet at cleanup");
+    //        continue;
+    //    }
 
-        PlayerPetSlotList list(PET_SLOT_LAST);
-        std::set<uint32> lost;
-        do
-        {
-            Field* fields2 = r2->Fetch();
-            uint8 id = fields2[0].GetUInt32();
-            uint8 slot = fields2[1].GetUInt8();
+    //    PlayerPetSlotList list(PET_SLOT_LAST);
+    //    std::set<uint32> lost;
+    //    do
+    //    {
+    //        Field* fields2 = r2->Fetch();
+    //        uint8 id = fields2[0].GetUInt32();
+    //        uint8 slot = fields2[1].GetUInt8();
 
-            res = CheckSlot(list, slot, id);
-            switch(res)
-            {
-                case 1: //double add
-                    break;
-                case 2: //lost link.
-                    lost.insert(id);
-                    break;
-                case 0: //good
-                    list.at(slot) = id;
-                    break;
-            }
-        }
-        while (r2->NextRow());
+    //        res = CheckSlot(list, slot, id);
+    //        switch(res)
+    //        {
+    //            case 1: //double add
+    //                break;
+    //            case 2: //lost link.
+    //                lost.insert(id);
+    //                break;
+    //            case 0: //good
+    //                list.at(slot) = id;
+    //                break;
+    //        }
+    //    }
+    //    while (r2->NextRow());
 
-        //find slot for lost link
-        uint32 index = 0;
-        for(std::set<uint32>::iterator itr = lost.begin(); itr != lost.end(); ++itr)
-        {
-            for(; index < PET_SLOT_LAST; ++index)
-            {
-                if (list.at(index) > 0)
-                    continue;
-                list.at(index) = *itr;
-                break;
-            }
-        }
+    //    //find slot for lost link
+    //    uint32 index = 0;
+    //    for(std::set<uint32>::iterator itr = lost.begin(); itr != lost.end(); ++itr)
+    //    {
+    //        for(; index < PET_SLOT_LAST; ++index)
+    //        {
+    //            if (list.at(index) > 0)
+    //                continue;
+    //            list.at(index) = *itr;
+    //            break;
+    //        }
+    //    }
 
-        // create save string
-        std::ostringstream ss;
-        for (uint32 i = 0; i < PET_SLOT_LAST; ++i)
-            ss << list[i] << ' ';
+    //    // create save string
+    //    std::ostringstream ss;
+    //    for (uint32 i = 0; i < PET_SLOT_LAST; ++i)
+    //        ss << list[i] << ' ';
 
-        CharacterDatabase.PExecute("UPDATE characters SET petSlot = '%s' WHERE guid = %u", ss.str().c_str(), ownerID);
-    }
-    while (result->NextRow());
+    //    CharacterDatabase.PExecute("UPDATE characters SET petSlot = '%s' WHERE guid = %u", ss.str().c_str(), ownerID);
+    //}
+    //while (result->NextRow());
 }
