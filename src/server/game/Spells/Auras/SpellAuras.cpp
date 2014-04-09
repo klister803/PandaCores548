@@ -1800,7 +1800,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 case 84746: // YellowBuff
                 case 84747: //    RedBuff
                 {
-                    if (apply)
+                    if (apply && caster)
                     {
                         switch (m_spellInfo->Id)
                         {
