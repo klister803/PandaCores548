@@ -340,10 +340,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     uint32 timediff = uint32(time(NULL) - fields[13].GetUInt32());
     _LoadAuras(timediff);
 
-    // Spirit Bond
-    if (owner->HasAura(109212) && !stampeded)
-        AddAura(118694, this);
-
     if (owner->GetTypeId() == TYPEID_PLAYER && owner->ToPlayer()->InArena())
         RemoveArenaAuras();
 
@@ -2009,6 +2005,10 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
             }
         }
     }
+
+    // Spirit Bond
+    if (owner->HasAura(109212))
+        AddAura(118694, this);
 }
 
 bool Pet::IsPetAura(Aura const* aura)

@@ -6666,6 +6666,14 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 118694: // Spirit Bond
+                {
+                    if (!target->isPet())
+                        break;
+
+                    target->CastSpell(target, 149254, true);
+                    break;
+                }
                 case 113957: // Cooking
                     target->CastSpell(caster, 113950, true);
                     break;
