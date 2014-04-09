@@ -2116,7 +2116,9 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
                     tabData << uint32(tabItem->GetItemRandomPropertyId());
                     tabData << uint32(0);
                     tabData << uint32(slotId);
-                    tabItem->AppendDynamicInfo(tabData);
+                    //tabItem->AppendDynamicInfo(tabData);
+                    tabData << uint32(4);
+                    tabData << uint32(0);
 
                     uint32 enchants = 0;
                     for (uint32 ench = 0; ench < MAX_ENCHANTMENT_SLOT; ++ench)
@@ -3143,9 +3145,9 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
             tabData << uint32(tabItem ? tabItem->GetItemRandomPropertyId() : 0);
             tabData << uint32(0);
             tabData << uint32(*itr);
-            if (tabItem)
-                tabItem->AppendDynamicInfo(tabData);
-            else
+            //if (tabItem)
+            //    tabItem->AppendDynamicInfo(tabData);
+            //else
             {
                 tabData << uint32(4);
                 tabData << uint32(0);
