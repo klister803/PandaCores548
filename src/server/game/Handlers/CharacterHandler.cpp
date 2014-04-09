@@ -963,12 +963,22 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     SendTutorialsData();
 
     data.Initialize(SMSG_FEATURE_SYSTEM_STATUS);
-    // send whole packet because blizz features are not used in private servers
-    uint8 fss[35] = {0x82, 0xE0, 0x59, 0x06, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x00, 0x00,
-        0x60, 0xEA, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xB7, 0x37, 0x21, 0x01, 0x2B, 0x00, 0x00, 0x00, 0x02};
-    for (int i = 0; i < 35; i++)
-        data << fss[i];
-   
+    data.WriteBit(0);           // has travel pass
+    data.WriteBit(1);           // shop enabled
+    data.WriteBit(0);           // shop disabled by parental controls
+    data.WriteBit(0);           // has session time alert
+    data.WriteBit(0);           // can sor by text
+    data.WriteBit(0);           // voice chat enabled
+    data.WriteBit(1);           // shop available
+    data.WriteBit(0);           // raf status
+    data.WriteBit(0);           // quick ticket status
+    data.WriteBit(0);           // has item restoration button
+    data.WriteBit(1);           // byte2D
+    data << uint32(realmID);    // realm id?
+    data << uint32(0);          // sor dword44
+    data << uint32(0);          // sor remaining
+    data << uint32(43);         // dword50
+    data << uint8(2);           // complain state
     SendPacket(&data);
 
     // Send MOTD
