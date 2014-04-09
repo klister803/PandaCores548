@@ -622,7 +622,9 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket& data) const
         data << uint32(item->GetEnchantmentCharges(EnchantmentSlot(i)));
     }
     
-    item->AppendDynamicInfo(data);
+    // while not handle item dynamic info (needed only for battlepets auction lots)
+    data << uint32(4);
+    data << uint32(0);
 
     data << int32(item->GetItemRandomPropertyId());                 // Random item property id
     data << uint32(item->GetItemSuffixFactor());                    // SuffixFactor
