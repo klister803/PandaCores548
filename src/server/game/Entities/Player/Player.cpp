@@ -3243,7 +3243,7 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask, uint3
                     return NULL;
 
     // not too far
-    if (!creature->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+    if (!creature->IsWithinDistInMap(this, INTERACTION_DISTANCE + GetFloatValue(UNIT_FIELD_HOVERHEIGHT)))
         return NULL;
 
     return creature;
