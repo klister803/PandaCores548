@@ -7119,9 +7119,8 @@ void ObjectMgr::LoadQuestPOI()
         {
             QuestPOI POI(id, objIndex, mapId, WorldMapAreaId, FloorId, unk3, unk4);
             POI.points = POIs[questId][id];
+            _questPOIStore[questId].push_back(POI);
         }
-
-        _questPOIStore[questId].push_back(POI);
 
         ++count;
     } while (result->NextRow());
