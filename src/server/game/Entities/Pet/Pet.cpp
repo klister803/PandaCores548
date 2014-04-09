@@ -109,8 +109,16 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
     ASSERT(slotID != PET_SLOT_UNK_SLOT);
 
+    PetSlot curentSlot = owner->GetSlotForPetId(owner->m_currentPetNumber);
+
     if (slotID == PET_SLOT_ACTUAL_PET_SLOT)
-        slotID = owner->m_currentPetSlot;
+        slotID = curentSlot;
+
+    if (slotID == PET_SLOT_FULL_LIST)
+    {
+        m_loading = false;
+        return false;
+    }
 
     uint32 ownerid = owner->GetGUIDLow();
 
@@ -418,13 +426,22 @@ void Pet::SavePetToDB(PetSlot mode)
     if (!owner || owner->getClass() == CLASS_SHAMAN)
         return;
 
-    if(mode == PET_SLOT_ACTUAL_PET_SLOT)
-        mode = owner->m_currentPetSlot;
+    PetSlot curentSlot = owner->GetSlotForPetId(owner->m_currentPetNumber);
 
-    if(!isHunterPet() && mode == PET_SLOT_DELETED && owner->m_currentPetSlot >= PET_SLOT_WARLOCK_PET_FIRST && owner->m_currentPetSlot <= PET_SLOT_WARLOCK_PET_LAST)
+    if(mode == PET_SLOT_ACTUAL_PET_SLOT)
     {
-        mode = owner->m_currentPetSlot;
-        owner->m_currentPetSlot = PET_SLOT_DELETED;
+        // curent pet should already has slot, if it not have - error?
+        mode = curentSlot;
+        if (mode == PET_SLOT_FULL_LIST)
+            return;
+    }
+
+    //not delete, just remove from curent slot
+    if(m_owner->getClass() == CLASS_WARLOCK && mode == PET_SLOT_DELETED &&
+        curentSlot >= PET_SLOT_WARLOCK_PET_FIRST && curentSlot <= PET_SLOT_WARLOCK_PET_LAST)
+    {
+        mode = curentSlot;
+        owner->m_currentPetNumber = 0;
     }
 
     if(mode == PET_SLOT_OTHER_PET && getPetType() == HUNTER_PET)
@@ -433,7 +450,7 @@ void Pet::SavePetToDB(PetSlot mode)
     SetSlot(mode);
 
     // not save pet as current if another pet temporary unsummoned
-    if (mode == owner->m_currentPetSlot && owner->GetTemporaryUnsummonedPetNumber() &&
+    if (mode == curentSlot && owner->GetTemporaryUnsummonedPetNumber() &&
         owner->GetTemporaryUnsummonedPetNumber() != m_charmInfo->GetPetNumber())
     {
         // pet will lost anyway at restore temporary unsummoned
@@ -501,8 +518,8 @@ void Pet::SavePetToDB(PetSlot mode)
     // delete
     else
     {
-        if((owner->m_currentPetSlot >= PET_SLOT_HUNTER_FIRST && owner->m_currentPetSlot <= PET_SLOT_HUNTER_LAST) || (owner->m_currentPetSlot >= PET_SLOT_WARLOCK_PET_FIRST && owner->m_currentPetSlot <= PET_SLOT_WARLOCK_PET_LAST))
-            owner->cleanPetSlotForMove(owner->m_currentPetSlot, m_charmInfo->GetPetNumber());     //could be already remove by early call this function
+        if((curentSlot >= PET_SLOT_HUNTER_FIRST && curentSlot <= owner->GetMaxCurentPetSlot()))
+            owner->cleanPetSlotForMove(curentSlot, m_charmInfo->GetPetNumber());     //could be already remove by early call this function
         RemoveAllAuras();
         DeleteFromDB(m_charmInfo->GetPetNumber());
     }

@@ -11047,12 +11047,12 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
             }
         }
         
+        //! Important part for pet slot system. Where we set curent pet number and set in slot array
         if (GetTypeId() == TYPEID_PLAYER)
         {
-            PetSlot max = minion->isHunterPet() ? PET_SLOT_STABLE_LAST : PET_SLOT_WARLOCK_PET_LAST;
-            if (slot >= PET_SLOT_HUNTER_FIRST && slot <= max && !stampeded) // Always save thoose spots where hunter is correct
+            if (slot >= PET_SLOT_HUNTER_FIRST && slot <= ToPlayer()->GetMaxCurentPetSlot() && !stampeded) // Always save thoose spots where hunter is correct
             {
-                ToPlayer()->m_currentPetSlot = slot;
+                ToPlayer()->m_currentPetNumber = minion->GetCharmInfo()->GetPetNumber();
                 ToPlayer()->setPetSlotWithStableMoveOrRealDelete(slot, minion->GetCharmInfo()->GetPetNumber(), minion->isHunterPet()); // minion->isHunterPet() always true ;)
             }
         }

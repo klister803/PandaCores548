@@ -5781,7 +5781,7 @@ void Spell::EffectDismissPet(SpellEffIndex effIndex)
 
     ExecuteLogEffectGeneric(effIndex, pet->GetGUID());
     pet->GetOwner()->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
-    pet->GetOwner()->m_currentPetSlot = PET_SLOT_DELETED;
+    pet->GetOwner()->m_currentPetNumber = 0;
 }
 
 void Spell::EffectSummonObject(SpellEffIndex effIndex)

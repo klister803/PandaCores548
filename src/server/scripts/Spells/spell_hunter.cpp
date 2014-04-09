@@ -223,8 +223,7 @@ class spell_hun_stampede : public SpellScriptLoader
                 {
                     //if (Unit* target = GetHitUnit())
                     {
-                        uint32 currentSlot = uint32(_player->m_currentPetSlot);
-
+                        uint32 currentSlot = _player->GetSlotForPetId(_player->m_currentPetNumber);
                         if (_player->HasAura(HUNTER_SPELL_GLYPH_OF_STAMPEDE))
                         {
                             for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)

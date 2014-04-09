@@ -704,7 +704,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_speakTime = 0;
     m_speakCount = 0;
 
-    m_currentPetSlot = PET_SLOT_DELETED;
+    m_currentPetNumber = 0;
 
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
@@ -18182,8 +18182,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //"totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
     // 46      47      48      49      50      51      52           53         54             55               56                 57              58
     //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, specialization1, specialization2, exploredZones, equipmentCache, "
-    // 59           60              61            62             63              64                              65
-    //"knownTitles, actionBars, currentpetslot, petslot, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
+    // 59           60                  61          62             63              64                              65
+    //"knownTitles, actionBars, currentpetnumber, petslot, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     if (!result)
@@ -18275,7 +18275,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
 
-    m_currentPetSlot = (PetSlot)fields[61].GetInt8();
+    m_currentPetNumber = (PetSlot)fields[61].GetInt32();
     LoadPetSlot(fields[62].GetCString());
 
     InitDisplayIds();
@@ -20389,7 +20389,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setString(index++, ss.str());
 
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
-        stmt->setInt8(index++, m_currentPetSlot);
+        stmt->setInt32(index++, m_currentPetNumber);
 
         ss.str("");
         for (uint32 i = 0; i < PET_SLOT_LAST; ++i)
@@ -20522,7 +20522,7 @@ void Player::SaveToDB(bool create /*=false*/)
 
         stmt->setString(index++, ss.str());
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
-        stmt->setInt8(index++, m_currentPetSlot);
+        stmt->setInt32(index++, m_currentPetNumber);
 
         ss.str("");
         for (uint32 i = 0; i < PET_SLOT_LAST; ++i)
@@ -28808,4 +28808,12 @@ PetSlot Player::GetSlotForPetId(uint32 petID)
             return PetSlot(i);
 
     return PET_SLOT_FULL_LIST;
+}
+
+PetSlot Player::GetMaxCurentPetSlot() const
+{
+    if (getClass() == CLASS_HUNTER)
+        return PET_SLOT_HUNTER_FIRST;
+
+    return PET_SLOT_WARLOCK_PET_LAST;
 }

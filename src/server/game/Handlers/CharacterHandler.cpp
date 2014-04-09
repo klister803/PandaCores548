@@ -785,7 +785,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 for (size_t i=0; i < PET_SLOT_LAST; ++i)
                     ss << 0 << ' ';
 
-                CharacterDatabase.PExecute("UPDATE characters SET currentPetSlot = '0', petSlot = '%s' WHERE guid = %u", ss.str().c_str(), newChar.GetGUIDLow());
+                CharacterDatabase.PExecute("UPDATE characters SET currentpetnumber = '%u', petSlot = '%s' WHERE guid = %u", pet_id, ss.str().c_str(), newChar.GetGUIDLow());
                 newChar.SetTemporaryUnsummonedPetNumber(pet_id);
             }
 

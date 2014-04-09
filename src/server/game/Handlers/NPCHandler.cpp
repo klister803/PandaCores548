@@ -703,7 +703,8 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
         _player->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
 
     //If we move to the pet already summoned...
-    if (pet && GetPlayer()->m_currentPetSlot == new_slot)
+    PetSlot curentSlot = GetPlayer()->GetSlotForPetId(GetPlayer()->m_currentPetNumber);
+    if (pet && curentSlot == new_slot)
         _player->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
 
 
