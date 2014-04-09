@@ -638,12 +638,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             return;
                         }
                         break;
-                    // Claw, Bite
+                    // Claw, Bite, Smack
+                    case 49966:
                     case 16827:
                     case 17253:
-                        if (m_caster->GetOwner())
+                    {
+                        if (Unit* hunter = m_caster->GetOwner())
                         {
-                            damage += int32(m_caster->GetOwner()->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2544f);
+                            damage += int32(hunter->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2544f);
 
                             // Deals 100% more damage and costs 100% more Focus when your pet has 50 or more Focus.
                             if (m_caster->GetPower(POWER_FOCUS) + 25 > 50)
@@ -653,11 +655,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             }
                         }
                         break;
+                    }
                     // Glaive Toss
                     case 121414:
                         damage += m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2f;
                         break;
-                    // A Murder of Crows
+                        // A Murder of Crows
                     case 131900:
                         damage += m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.288f;
                         break;

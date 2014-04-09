@@ -2939,14 +2939,25 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
             }
             else
             {
-                if(i->type2 == 2)
+                if (i->type2 == 3)
+                {
+                    if (Unit* owner = m_caster->GetOwner())
+                    {
+                        if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
+                            continue;
+                        if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
+                            continue;
+                    }
+                    else continue;
+                }
+                else if (i->type2 == 2)
                 {
                     if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
                         continue;
                     if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
                         continue;
                 }
-                else if(i->type2)
+                else if (i->type2)
                 {
                     if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
                         continue;
@@ -3490,7 +3501,18 @@ void Spell::cast(bool skipCheck)
             }
             else
             {
-                if(i->type2 == 2)
+                if (i->type2 == 3)
+                {
+                    if (Unit* owner = m_caster->GetOwner())
+                    {
+                        if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
+                            continue;
+                        if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
+                            continue;
+                    }
+                    else continue;
+                }
+                else if(i->type2 == 2)
                 {
                     if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
                         continue;
