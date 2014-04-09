@@ -107,11 +107,11 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         }
     }
 
-    ASSERT(slotID != PET_SLOT_UNK_SLOT);
+    //ASSERT(slotID != PET_SLOT_UNK_SLOT);
 
     PetSlot curentSlot = owner->GetSlotForPetId(owner->m_currentPetNumber);
 
-    if (slotID == PET_SLOT_ACTUAL_PET_SLOT)
+    if (slotID == PET_SLOT_ACTUAL_PET_SLOT || slotID == PET_SLOT_UNK_SLOT)
         slotID = curentSlot;
 
     if (slotID == PET_SLOT_FULL_LIST)
