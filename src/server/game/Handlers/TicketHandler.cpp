@@ -29,11 +29,15 @@
 void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recvData)
 {
     // Don't accept tickets if the ticket queue is disabled. (Ticket UI is greyed out but not fully dependable)
-    if (sTicketMgr->GetStatus() == GMTICKET_QUEUE_STATUS_DISABLED)
+    if (!sTicketMgr->GetStatus())
+    {
+        recvData.rfinish();
         return;
+    }
 
     if (GetPlayer()->getLevel() < sWorld->getIntConfig(CONFIG_TICKET_LEVEL_REQ))
     {
+        recvData.rfinish();
         SendNotification(GetTrinityString(LANG_TICKET_REQ), sWorld->getIntConfig(CONFIG_TICKET_LEVEL_REQ));
         return;
     }
@@ -51,8 +55,9 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recvData)
         response = GMTICKET_RESPONSE_CREATE_SUCCESS;
     }
 
-    WorldPacket data(SMSG_GMTICKET_CREATE, 4);
-    data << uint32(response);
+    //WorldPacket data(SMSG_GMTICKET_CREATE, 4);
+    WorldPacket data(SMSG_GMTICKET_UPDATETEXT, 1);
+    data << uint8(response);
     SendPacket(&data);
 }
 
@@ -81,8 +86,9 @@ void WorldSession::HandleGMTicketDeleteOpcode(WorldPacket & /*recvData*/)
 {
     if (GmTicket* ticket = sTicketMgr->GetTicketByPlayer(GetPlayer()->GetGUID()))
     {
-        WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
-        data << uint32(GMTICKET_RESPONSE_TICKET_DELETED);
+        //WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
+        WorldPacket data(SMSG_GMTICKET_UPDATETEXT, 1);
+        data << uint8(GMTICKET_RESPONSE_TICKET_DELETED);
         SendPacket(&data);
 
         sWorld->SendGMText(LANG_COMMAND_TICKETPLAYERABANDON, GetPlayer()->GetName(), ticket->GetId());
@@ -110,7 +116,6 @@ void WorldSession::HandleGMTicketGetTicketOpcode(WorldPacket & /*recvData*/)
 void WorldSession::HandleGMTicketSystemStatusOpcode(WorldPacket & /*recvData*/)
 {
     // Note: This only disables the ticket UI at client side and is not fully reliable
-    // are we sure this is a uint32? Should ask Zor
     WorldPacket data(SMSG_GMTICKET_SYSTEMSTATUS, 4);
     data << uint32(sTicketMgr->GetStatus() ? GMTICKET_QUEUE_STATUS_ENABLED : GMTICKET_QUEUE_STATUS_DISABLED);
     SendPacket(&data);
@@ -189,12 +194,13 @@ void WorldSession::HandleGMResponseResolve(WorldPacket& /*recvPacket*/)
         if (float(rand_chance()) < sWorld->getFloatConfig(CONFIG_CHANCE_OF_GM_SURVEY))
             getSurvey = 1;
 
-        WorldPacket data(SMSG_GMRESPONSE_STATUS_UPDATE, 4);
-        data << uint8(getSurvey);
+        WorldPacket data(SMSG_GMRESPONSE_STATUS_UPDATE, 1);
+        data.WriteBit(getSurvey);
         SendPacket(&data);
 
-        WorldPacket data2(SMSG_GMTICKET_DELETETICKET, 4);
-        data2 << uint32(GMTICKET_RESPONSE_TICKET_DELETED);
+        //WorldPacket data2(SMSG_GMTICKET_DELETETICKET, 4);
+        WorldPacket data2(SMSG_GMTICKET_UPDATETEXT, 1);
+        data2 << uint8(GMTICKET_RESPONSE_TICKET_DELETED);
         SendPacket(&data2);
 
         sTicketMgr->CloseTicket(ticket->GetId(), GetPlayer()->GetGUID());

@@ -28,12 +28,13 @@ class ChatHandler;
 // from blizzard lua
 enum GMTicketSystemStatus
 {
-    GMTICKET_QUEUE_STATUS_DISABLED = 0,
+    GMTICKET_QUEUE_STATUS_DISABLED = -1,
     GMTICKET_QUEUE_STATUS_ENABLED = 1,
 };
 
 enum GMTicketStatus
 {
+    GMTICKET_STATUS_DB_ERROR                     = 0x00,
     GMTICKET_STATUS_HASTEXT                      = 0x06,
     GMTICKET_STATUS_DEFAULT                      = 0x0A,
 };
@@ -96,7 +97,8 @@ public:
     uint32 GetId() const { return _id; }
     Player* GetPlayer() const { return ObjectAccessor::FindPlayer(_playerGuid); }
     std::string GetPlayerName() const { return _playerName; }
-    std::string GetMessage() const { return _message; }
+    std::string const& GetMessage() const { return _message; }
+    std::string const& GetResponse() const { return _response; }
     Player* GetAssignedPlayer() const { return ObjectAccessor::FindPlayer(_assignedTo); }
     uint64 GetAssignedToGUID() const { return _assignedTo; }
     std::string GetAssignedToName() const

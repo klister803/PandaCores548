@@ -38,30 +38,22 @@ GmTicket::GmTicket(Player* player, WorldPacket& recvData) : _createTime(time(NUL
     _playerGuid = player->GetGUID();
 
     uint32 mapId;
-    recvData >> mapId; // Map is sent as UInt32!
-    _mapId = mapId;
+    uint8 needResponse;
 
-    recvData >> _posX;
-    recvData >> _posY;
     recvData >> _posZ;
-    recvData >> _message;
-    uint32 needResponse;
+    recvData >> _posY;
     recvData >> needResponse;
+    recvData >> mapId; // Map is sent as UInt32!
+    recvData >> _posX;
+    uint32 dataLen = recvData.read<uint32>();
+    recvData.read_skip(dataLen);
+    recvData.ReadBit(); // need resp - 1
+    recvData.ReadBit(); // unk 0 Requests further GM interaction on a ticket to which a GM has already responded?
+    uint32 msgLen = recvData.ReadBits(11);
+    _message = recvData.ReadString(msgLen);
+
+    _mapId = mapId;
     _needResponse = (needResponse == 17); // Requires GM response. 17 = true, 1 = false (17 is default)
-    uint8 unk1;
-    recvData >> unk1; // Requests further GM interaction on a ticket to which a GM has already responded
-
-    recvData.rfinish();
-    /*
-    recvData >> count; // text lines
-    for (int i = 0; i < count; i++)
-        recvData >> uint32();
-
-    if (something)
-        recvData >> uint32();
-    else
-        compressed uint32 + string;
-    */
 }
 
 GmTicket::~GmTicket() { }
@@ -140,33 +132,28 @@ void GmTicket::WritePacket(WorldPacket& data) const
     // I am not sure how blizzlike this is, and we don't really have a way to find out
     data << uint32(GetAge(sTicketMgr->GetLastChange()));
     data << uint32(GetId());
-    data.WriteString(GetMessage());
+    data.WriteString(GetResponse());
     data << uint8(0);
 }
 
 void GmTicket::SendResponse(WorldSession* session) const
 {
-    WorldPacket data(SMSG_GMRESPONSE_RECEIVED);
+    uint32 responseSize = _response.size();
+    uint32 messageSize = _message.size();
+
+    WorldPacket data(SMSG_GMRESPONSE_RECEIVED, 4 + 4 + messageSize + responseSize + 2 + 2 + 1);
     data << uint32(1);          // responseID
     data << uint32(_id);        // ticketID
-    data << _message.c_str();
-
-    size_t len = _response.size();
-    char const* s = _response.c_str();
-
-    for (int i = 0; i < 4; i++)
-    {
-        if (len)
-        {
-            size_t writeLen = std::min<size_t>(len, 3999);
-            data.append(s, writeLen);
-
-            len -= writeLen;
-            s += writeLen;
-        }
-
-        data << uint8(0);
-    }
+    data.WriteBit(!responseSize);
+    if (responseSize)
+        data.WriteBits(responseSize, 14);
+    data.WriteBit(!messageSize);
+    if (messageSize)
+        data.WriteBits(messageSize, 11);
+    if (messageSize)
+        data.WriteString(_message);
+    if (responseSize)
+        data.WriteString(_response);
 
     session->SendPacket(&data);
 }
@@ -375,19 +362,21 @@ void TicketMgr::SendTicket(WorldSession* session, GmTicket* ticket) const
 {
     uint32 status = GMTICKET_STATUS_DEFAULT;
     std::string message;
+    std::string response;
     if (ticket)
     {
         message = ticket->GetMessage();
+        response = ticket->GetResponse();
         status = GMTICKET_STATUS_HASTEXT;
     }
 
     WorldPacket data(SMSG_GMTICKET_GETTICKET, (4 + (ticket ? 4 + message.length() + 1 + 4 + 4 + 4 + 1 + 1 : 0)));
     data << uint32(status);
     data.WriteBit(status == GMTICKET_STATUS_HASTEXT);                         // standard 0x0A, 0x06 if text present
-    if (ticket)
+    if (status == GMTICKET_STATUS_HASTEXT)
     {
         data.WriteBits(message.size(), 11);
-        data.WriteBits(message.size(), 10);
+        data.WriteBits(response.size(), 10);
         //data << uint32(ticket->GetId());            // ticketID
         //data << message.c_str();                    // ticket text
         //data << uint8(0x7);                         // ticket category; why is this hardcoded? does it make a diff re: client?

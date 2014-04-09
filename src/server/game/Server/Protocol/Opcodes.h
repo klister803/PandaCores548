@@ -920,13 +920,13 @@ enum Opcodes
     SMSG_GAMETIME_UPDATE                              = 0xCE3,  // 5.0.5 16048
     SMSG_GAME_EVENT_DEBUG_LOG                         = 0xBDC,  // 5.0.5 16048
     SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT                = 0xAB7,  // 5.0.5 16048
-    SMSG_GMRESPONSE_DB_ERROR                          = 0x983,  // 5.0.5 16048
-    SMSG_GMRESPONSE_RECEIVED                          = 0xC4E,  // 5.0.5 16048
-    SMSG_GMRESPONSE_STATUS_UPDATE                     = 0xD2F,  // 5.0.5 16048
+    SMSG_GMRESPONSE_DB_ERROR                          = 0x109C, // 5.4.1 17538
+    SMSG_GMRESPONSE_RECEIVED                          = 0x0027, // 5.4.1 17538
+    SMSG_GMRESPONSE_STATUS_UPDATE                     = 0x053E, // 5.4.1 17538
     SMSG_GMTICKET_CREATE                              = 0,      // 5.4.1 17538 - obsolete. SMSG_GMTICKET_UPDATETEXT with GMTicketResponse
     SMSG_GMTICKET_DELETETICKET                        = 0,      // 5.4.1 17538 - obsolete. SMSG_GMTICKET_UPDATETEXT with GMTICKET_RESPONSE_TICKET_DELETED
     SMSG_GMTICKET_GETTICKET                           = 0x0994, // 5.4.1 17538
-    SMSG_GMTICKET_SYSTEMSTATUS                        = 0xD1F,  // 5.0.5 16048
+    SMSG_GMTICKET_SYSTEMSTATUS                        = 0x01BE, // 5.4.1 17538
     SMSG_GMTICKET_UPDATETEXT                          = 0x0C1E, // 5.4.1 17538
     SMSG_GM_MESSAGECHAT                               = 0x90F,  // 5.0.5 16048
     SMSG_GM_PLAYER_INFO                               = 0xD99,  // 5.0.5 16048
