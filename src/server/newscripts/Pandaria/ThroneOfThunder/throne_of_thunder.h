@@ -28,8 +28,11 @@ enum eData
 
 enum eCreatures
 {
-    //Npc
+    //Minibosses
     NPC_STORM_CALLER      = 70236,
+    NPC_STORMBRINGER      = 70445,
+
+    //Npc
     NPC_LIGHTNING_BALL    = 69232,
 
     //Bosses
@@ -62,6 +65,7 @@ enum eCreatures
 
 enum eGameObjects
 {  
+    //Jinrokh
     GO_JINROKH_PRE_DOOR   = 218665,
     GO_JINROKH_ENT_DOOR   = 218664,
     GO_MOGU_SR            = 218675,
@@ -69,11 +73,19 @@ enum eGameObjects
     GO_MOGU_NL            = 218677,
     GO_MOGU_SL            = 218678,
     GO_JINROKH_EX_DOOR    = 218663,
+    //
+    //Horridon
+    GO_HORRIDON_PRE_DOOR  = 218669,
+    GO_HORRIDON_ENT_DOOR  = 218667,
+    GO_MAIN_GATE          = 218674,
+    GO_FARRAK_GATE        = 218672,
+    GO_GURUBASHI_GATE     = 218670,
+    GO_DRAKKARI_GATE      = 218671,
+    GO_AMANI_GATE         = 218673,
+    GO_HORRIDON_EX_DOOR   = 218666,
+    //
 };
-//This is triggers entry(maybe needed, but not need spawn)
-//69593
-//69509
-//69676
-//69609
-//69469 - Condictive water
+
+//This is triggers entry (maybe needed, but not need spawn)
+//69593, 69509, 69676, 69609, 69469 - Condictive water
 #endif THRONEOFTHUNDER

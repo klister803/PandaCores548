@@ -4398,6 +4398,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 15;
                     break;
+                //
+                case 139900: //Stormcloud
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
+                case 139901: //Stormcloud tr ef - dmg
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
 
                 //World Boss
                 //Sha of Anger

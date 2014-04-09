@@ -24,6 +24,7 @@ public:
         uint64 mogufont_nl_Guid;
         uint64 mogufont_sl_Guid;
         uint64 jinrokhexdoorGuid;
+        uint64 horridonpredoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -56,34 +57,35 @@ public:
             SLGSS_timer        = 3000;
 
             //GameObject
-            jinrokhentdoorGuid = 0;
-            mogufont_sr_Guid   = 0;
-            mogufont_nr_Guid   = 0;
-            mogufont_nl_Guid   = 0;
-            mogufont_sl_Guid   = 0;
-            jinrokhexdoorGuid  = 0;
+            jinrokhentdoorGuid  = 0;
+            mogufont_sr_Guid    = 0;
+            mogufont_nr_Guid    = 0;
+            mogufont_nl_Guid    = 0;
+            mogufont_sl_Guid    = 0;
+            jinrokhexdoorGuid   = 0;
+            horridonpredoorGuid = 0;
            
             //Creature
-            stormcallerGuid    = 0;
-            jinrokhGuid        = 0;
-            horridonGuid       = 0;
-            mallakGuid         = 0;
-            marliGuid          = 0;
-            kazrajinGuid       = 0;
-            sulGuid            = 0;
-            tortosGuid         = 0;
-            flameheadGuid      = 0;
-            frozenheadGuid     = 0;
-            venousheadGuid     = 0;
-            jikunGuid          = 0;
-            durumuGuid         = 0;
-            primordiusGuid     = 0;
-            darkanimusGuid     = 0;
-            ironqonGuid        = 0;
-            sulinGuid          = 0;
-            lulinGuid          = 0;
-            leishenGuid        = 0;
-            radenGuid          = 0;
+            stormcallerGuid     = 0;
+            jinrokhGuid         = 0;
+            horridonGuid        = 0;
+            mallakGuid          = 0;
+            marliGuid           = 0;
+            kazrajinGuid        = 0;
+            sulGuid             = 0;
+            tortosGuid          = 0;
+            flameheadGuid       = 0;
+            frozenheadGuid      = 0;
+            venousheadGuid      = 0;
+            jikunGuid           = 0;
+            durumuGuid          = 0;
+            primordiusGuid      = 0;
+            darkanimusGuid      = 0;
+            ironqonGuid         = 0;
+            sulinGuid           = 0;
+            lulinGuid           = 0;
+            leishenGuid         = 0;
+            radenGuid           = 0;
 
             mogufontsGuids.clear();
         }
@@ -192,6 +194,9 @@ public:
             case GO_JINROKH_EX_DOOR:
                 jinrokhexdoorGuid = go->GetGUID();
                 break;
+            case GO_HORRIDON_PRE_DOOR:
+                horridonpredoorGuid = go->GetGUID();
+                break;
             default:
                 break;
             }
@@ -293,8 +298,17 @@ public:
         {
             if (who->ToCreature())
             {
-                if (who->GetEntry() == NPC_STORM_CALLER)
+                switch (who->GetEntry())
+                {
+                case NPC_STORM_CALLER:
                     HandleGameObject(jinrokhpredoorGuid, true);
+                    break;
+                case NPC_STORMBRINGER:
+                    HandleGameObject(horridonpredoorGuid, true);
+                    break;
+                default:
+                    break;
+                }
             }
         }
 
@@ -368,11 +382,14 @@ enum sSpells
 {
     SPELL_STORM_WEAPON   = 139319,
     SPELL_STORM_ENERGY   = 139322,
+    SPELL_CHAIN_LIGHTNIG = 139903,
+    SPELL_STORMCLOUD     = 139900,
 };
 
 enum sEvent
 {
-    EVENT_STORM_ENERGY   = 1
+    EVENT_STORM_ENERGY   = 1,
+    EVENT_CHAIN_LIGHTNIG = 2,
 };
 
 //Mini boss, guard Jinrokh entrance
@@ -430,8 +447,64 @@ class npc_storm_caller : public CreatureScript
         }
 };
 
+//Mini boss, guard Horridon entrance
+class npc_stormbringer : public CreatureScript
+{
+    public:
+        npc_stormbringer() : CreatureScript("npc_stormbringer") { }
+        
+        struct npc_stormbringerAI : public CreatureAI
+        {
+            npc_stormbringerAI(Creature* pCreature) : CreatureAI(pCreature)
+            {
+                pInstance = pCreature->GetInstanceScript();
+            }
+            
+            InstanceScript* pInstance;
+            EventMap events;
+
+            void Reset()
+            {
+                me->RemoveAurasDueToSpell(SPELL_STORMCLOUD);
+                events.Reset();
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                DoZoneInCombat(me, 100.0f);
+                DoCast(me, SPELL_STORMCLOUD);
+                events.ScheduleEvent(EVENT_CHAIN_LIGHTNIG, urand(15000, 20000));
+            }
+            
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    if (eventId == EVENT_CHAIN_LIGHTNIG)
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                            DoCast(target, SPELL_CHAIN_LIGHTNIG);
+                        events.ScheduleEvent(EVENT_STORM_ENERGY, urand(15000, 20000));
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+        
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return new npc_stormbringerAI(pCreature);
+        }
+};
+
 void AddSC_instance_throne_of_thunder()
 {
     new instance_throne_of_thunder();
     new npc_storm_caller();
+    new npc_stormbringer();
 }
