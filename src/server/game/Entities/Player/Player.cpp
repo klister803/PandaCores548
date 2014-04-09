@@ -18690,9 +18690,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
     //_LoadMail();
 
-    uint8 specID = fields[54].GetUInt8();
-    SetSpecsCount(fields[53].GetUInt8());
-    SetActiveSpec(specID ? specID : 1);
+    uint8 specCount = fields[53].GetUInt8();
+    SetSpecsCount(specCount == 0 ? 1 : specCount);
+    SetActiveSpec(specCount > 1 ? fields[54].GetUInt8() : 0);
 
     SetSpecializationId(0, fields[55].GetUInt32());
     SetSpecializationId(1, fields[56].GetUInt32());
