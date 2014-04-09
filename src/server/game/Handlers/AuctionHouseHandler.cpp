@@ -664,8 +664,9 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recvData)
     }
 
     auctionHouse->BuildListBidderItems(data, _player, count, totalcount);
+
     data.put<uint32>(0, count);                           // add count to placeholder
-    data << totalcount;                                   // CGAuctionHouse__m_numTotalBid
+    data << uint32(totalcount);                           // CGAuctionHouse__m_numTotalBid
     data << uint32(300);                                  // CGAuctionHouse__m_desiredDelayTime
     SendPacket(&data);
 }
@@ -703,9 +704,10 @@ void WorldSession::HandleAuctionListOwnerItems(WorldPacket & recvData)
     uint32 totalcount = 0;
 
     auctionHouse->BuildListOwnerItems(data, _player, count, totalcount);
-    data.put<uint32>(0, count);
+
+    data.put<uint32>(0, count);                  // add count to placeholder
     data << uint32(totalcount);
-    data << uint32(0);
+    data << uint32(300);                         // CGAuctionHouse__m_desiredDelayTime
     SendPacket(&data);
 }
 
