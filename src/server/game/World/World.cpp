@@ -3547,7 +3547,7 @@ void World::Transfer()
                     stmt->setUInt32(8, transferId);
                     LoginDatabase.Execute(stmt);
                     if(transferId)
-                        LoginDatabase.PQuery("UPDATE `transfert_dump` SET `guid` = '%u' WHERE `id` = '%u'", newguid, transferId);
+                        LoginDatabase.PQuery("UPDATE `transfer_requests` SET `guid` = '%u' WHERE `id` = '%u'", newguid, transferId);
                 }
             }
             else
