@@ -18275,7 +18275,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
 
-    m_currentPetNumber = (PetSlot)fields[61].GetInt32();
+    m_currentPetNumber = fields[61].GetInt32();
     LoadPetSlot(fields[62].GetCString());
 
     InitDisplayIds();
@@ -28813,7 +28813,7 @@ PetSlot Player::GetSlotForPetId(uint32 petID)
 PetSlot Player::GetMaxCurentPetSlot() const
 {
     if (getClass() == CLASS_HUNTER)
-        return PET_SLOT_HUNTER_FIRST;
+        return PET_SLOT_HUNTER_LAST;
 
     return PET_SLOT_WARLOCK_PET_LAST;
 }
