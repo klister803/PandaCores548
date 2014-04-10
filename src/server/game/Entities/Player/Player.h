@@ -2274,7 +2274,18 @@ class Player : public Unit, public GridObject<Player>
         {
             if (GetFieldLootSpecID() > 0)
                 return GetFieldLootSpecID();
-            return GetSpecializationId(GetActiveSpec());
+            if(GetSpecializationId(GetActiveSpec()) > 0)
+                return GetSpecializationId(GetActiveSpec());
+            return GetDefaultLootSpecID();
+        }
+        uint32 GetDefaultLootSpecID() const
+        {
+            for (uint32 i = 0; i < sChrSpecializationsStore.GetNumRows(); i++)
+            {
+                if(ChrSpecializationsEntry const* specialization = sChrSpecializationsStore.LookupEntry(i))
+                    if (specialization->classId == getClass() && specialization->tabId == 0)
+                        return specialization->entry;
+            }
         }
 
         uint64 GetLootGUID() const { return m_lootGuid; }
