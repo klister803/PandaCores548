@@ -400,6 +400,8 @@ enum Opcodes
     CMSG_PLAYER_LOGOUT                                = 0x0EC1, // 5.4.1 17538
     CMSG_PLAYER_VEHICLE_ENTER                         = 0x164E, // 5.4.1 17538
     CMSG_PLAY_DANCE                                   = 0x0,    // 5.4.1 17538
+    CMSG_PURCHASE_GET_PRODUCT_LIST                    = 0x1064, // 5.4.1 17538
+    CMSG_PURCHASE_GET_PURCHASE_LIST                   = 0x186C, // 5.4.1 17538
     CMSG_PUSHQUESTTOPARTY                             = 0x0A6C, // 5.4.1 17538
     CMSG_PVP_LOG_DATA                                 = 0x12F5, // 5.4.1 17538
     CMSG_QUERY_BATTLEFIELD_STATE                      = 0x17C7, // 5.4.1 17538
@@ -1218,6 +1220,8 @@ enum Opcodes
     SMSG_PRE_RESURRECT                                = 0x88A,  // 5.0.5 16048
     SMSG_PROCRESIST                                   = 0X80F,  // 5.0.5 16048
     SMSG_PROPOSE_LEVEL_GRANT                          = 0xD8D,  // 5.0.5 16048
+    SMSG_PURCHASE_STORE_PRODUCTS_UPDATED              = 0x1185, // 5.4.1 17538
+    SMSG_PURCHASE_STORE_PURCHASE_LIST_UPDATED         = 0x0895, // 5.4.1 17538
     SMSG_PUREMOUNT_CANCELLED_OBSOLETE                 = 0,      // Not found in 4.3.4
     SMSG_PVP_CREDIT                                   = 0x0585, // 5.4.1 17538
     SMSG_PVP_BRACKET_DATA                             = 0x11BF, // 5.4.1 17538

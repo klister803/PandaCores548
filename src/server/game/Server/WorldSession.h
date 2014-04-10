@@ -989,6 +989,10 @@ class WorldSession
         void HandleBattlePetReadyForBattle(WorldPacket& recvData);
         void HandleBattlePetUseAction(WorldPacket& recvData);
 
+        // Blizzard Store
+        void HandlePurchaseGetProductList(WorldPacket& recvData);
+        void HandlePurchaseGetPurchaseList(WorldPacket& recvData);
+
         // Miscellaneous
         void HandleSpellClick(WorldPacket& recvData);
         void HandleMirrorImageDataRequest(WorldPacket& recvData);
