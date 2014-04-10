@@ -1345,6 +1345,9 @@ void World::LoadConfigSettings(bool reload)
     m_float_configs[CONFIG_ARCHAEOLOGY_RARE_BASE_CHANCE] = ConfigMgr::GetFloatDefault("Archaeology.RareBaseChance", 10.0f);
     m_float_configs[CONFIG_ARCHAEOLOGY_RARE_MAXLEVEL_CHANCE] = ConfigMgr::GetFloatDefault("Archaeology.RareMaxLevelChance", 10.0f);
 
+    // Blizzard Shop
+    m_bool_configs[CONFIG_PURCHASE_SHOP_ENABLED] = ConfigMgr::GetBoolDefault("Purchase.Shop.Enabled", true);
+
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }

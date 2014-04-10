@@ -963,22 +963,22 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     SendTutorialsData();
 
     data.Initialize(SMSG_FEATURE_SYSTEM_STATUS);
-    data.WriteBit(0);           // has travel pass
-    data.WriteBit(1);           // shop enabled
-    data.WriteBit(0);           // shop disabled by parental controls
-    data.WriteBit(0);           // has session time alert
-    data.WriteBit(0);           // can sor by text
-    data.WriteBit(0);           // voice chat enabled
-    data.WriteBit(1);           // shop available
-    data.WriteBit(0);           // raf status
-    data.WriteBit(0);           // quick ticket status
-    data.WriteBit(0);           // has item restoration button
-    data.WriteBit(1);           // byte2D
-    data << uint32(realmID);    // realm id?
-    data << uint32(0);          // sor dword44
-    data << uint32(0);          // sor remaining
-    data << uint32(43);         // dword50
-    data << uint8(2);           // complain state
+    data.WriteBit(0);                                                       // has travel pass
+    data.WriteBit(sWorld->getBoolConfig(CONFIG_PURCHASE_SHOP_ENABLED));     // shop enabled
+    data.WriteBit(0);                                                       // shop disabled by parental controls
+    data.WriteBit(0);                                                       // has session time alert
+    data.WriteBit(0);                                                       // can sor by text
+    data.WriteBit(0);                                                       // voice chat enabled
+    data.WriteBit(sWorld->getBoolConfig(CONFIG_PURCHASE_SHOP_ENABLED));     // shop available
+    data.WriteBit(0);                                                       // raf status
+    data.WriteBit(0);                                                       // quick ticket status
+    data.WriteBit(0);                                                       // has item restoration button
+    data.WriteBit(1);                                                       // byte2D
+    data << uint32(realmID);                                                // realm id?
+    data << uint32(0);                                                      // sor dword44
+    data << uint32(0);                                                      // sor remaining
+    data << uint32(43);                                                     // dword50
+    data << uint8(2);                                                       // complain state
     SendPacket(&data);
 
     // Send MOTD
