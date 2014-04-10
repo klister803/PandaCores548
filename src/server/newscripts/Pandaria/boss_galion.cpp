@@ -1,8 +1,6 @@
 /*
 Pandaria
 World boss
-Antoine Vallee for Pandashan Servers
-
 */
 #include "NewScriptPCH.h"
 

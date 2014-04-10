@@ -3532,7 +3532,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 58563: // Assassinate Restless Lookout
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
-                // Pandashan's Dragon Gun
+                // Shado-Pan Dragon Gun
                 case 120751:
                 case 120876:
                 case 120964:
