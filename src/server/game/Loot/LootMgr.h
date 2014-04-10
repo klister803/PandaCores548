@@ -321,6 +321,7 @@ struct Loot
     uint8 objType;
     uint8 spawnMode;
     uint32 countItem;
+    uint32 specId;
 
     Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0), m_lootOwner(NULL) {}
     ~Loot() { clear(); }

@@ -2395,6 +2395,7 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.FoodType = 0;
         itemTemplate.MinMoneyLoot = 0;
         itemTemplate.MaxMoneyLoot = 0;
+        itemTemplate.ItemSpecExist = GetItemSpecsList(itemId).empty() ? 0 : 1;
         ++sparseCount;
     }
 
@@ -2562,6 +2563,7 @@ void ObjectMgr::LoadItemTemplates()
             itemTemplate.FoodType                  = 0;
             itemTemplate.MinMoneyLoot              = 0;
             itemTemplate.MaxMoneyLoot              = 0;
+            itemTemplate.ItemSpecExist             = GetItemSpecsList(itemId).empty() ? 0 : 1;
             ++dbCount;
         } while (result->NextRow());
     }

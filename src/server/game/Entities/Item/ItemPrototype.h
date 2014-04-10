@@ -704,6 +704,7 @@ struct ItemTemplate
     uint32 FoodType;
     uint32 MinMoneyLoot;
     uint32 MaxMoneyLoot;
+    bool   ItemSpecExist;
     uint32 FlagsCu;
 
     // helpers

@@ -25,6 +25,7 @@
 #include "SpellMgr.h"
 #include "SpellInfo.h"
 #include "Group.h"
+#include "DBCStores.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {
@@ -1650,6 +1651,19 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
                     }
                 if (_item != loot.items.end())
                     continue;
+                if(_proto->ItemSpecExist && loot.objType == 4)
+                {
+                    bool specFind = false;
+                    std::list<uint32> specList = GetItemSpecsList(i->itemid);
+                    for (std::list<uint32>::const_iterator spec = specList.begin(); spec != specList.end(); ++spec)
+                        if(loot.specId == (*spec))
+                        {
+                            specFind = true;
+                            break;
+                        }
+                    if(!specFind)
+                        continue;
+                }
             }
         }
 
