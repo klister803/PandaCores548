@@ -873,6 +873,7 @@ public:
     void SendGuildEventRankUpdate(uint32 rankId = 0);
     void SendGuildEventOnline(uint64 guid, std::string name, bool online, WorldSession* session = NULL);
     void SendGuildEventTabTextChanged(uint32 tabId, WorldSession* session = NULL);
+    void SendGuildEventBankSlotChanged();
 
 protected:
     uint32 m_id;

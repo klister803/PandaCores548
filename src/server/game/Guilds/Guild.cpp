@@ -3042,8 +3042,10 @@ void Guild::_MoveItems(MoveItemData* pSrc, MoveItemData* pDest, uint32 splitedAm
             _DoItemsMove(pSrc, pDest, true);
         }
     }
+
     // 7. Send changes
-    _SendBankContentUpdate(pSrc, pDest);
+    SendGuildEventBankSlotChanged();    //call client to send list
+    _SendBankContentUpdate(pSrc, pDest);   //after SendGuildEventBankSlotChanged client ask for double update, but we will send full
 }
 
 bool Guild::_DoItemsMove(MoveItemData* pSrc, MoveItemData* pDest, bool sendError, uint32 splitedAmount)
@@ -3641,4 +3643,10 @@ void Guild::SendGuildEventTabTextChanged(uint32 tabId, WorldSession* session)
         session->SendPacket(&data);
     else
         BroadcastPacket(&data);
+}
+
+void Guild::SendGuildEventBankSlotChanged()
+{
+    WorldPacket data(SMSG_GUILD_EVENT_GUILDBANKBAGSLOTS_CHANGED, 0);
+    BroadcastPacket(&data);
 }
