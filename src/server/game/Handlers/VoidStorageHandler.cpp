@@ -296,6 +296,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
             return;
         }
 
+        dest.clear();
         item = player->StoreNewItem(dest, itemVS->ItemEntry, true, itemVS->ItemRandomPropertyId);
         item->SetUInt64Value(ITEM_FIELD_CREATOR, uint64(itemVS->CreatorGuid));
         item->SetBinding(true);
