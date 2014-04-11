@@ -406,7 +406,7 @@ class Spell
         void EffectGiveCurrency(SpellEffIndex effIndex);
         void EffectUnlearnTalent(SpellEffIndex effIndex);
         void EffectBuyGuilkBankTab(SpellEffIndex effIndex);
-        void EffectCreateAreatrigger(SpellEffIndex effIndex);
+        void EffectCreateAreaTrigger(SpellEffIndex effIndex);
         int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
         int32 CalculateMonkSpellDamage(Unit* caster, float coeff, float APmultiplier, int32 base);
         void EffectResurrectWithAura(SpellEffIndex effIndex);

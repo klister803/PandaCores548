@@ -48,6 +48,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/Addons
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
+  ${CMAKE_SOURCE_DIR}/src/server/game/Entities/AreaTrigger
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Item
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/GameObject
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Creature
