@@ -8082,7 +8082,7 @@ void Player::_LoadCurrency(PreparedQueryResult result)
         CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(currencyID);
         if (!currency)
         {
-            CharacterDatabase.PExecute("DELETE FROM character_currency WHERE id = '%u'", currencyID);
+            CharacterDatabase.PExecute("DELETE FROM character_currency WHERE currency = '%u'", currencyID);
             continue;
         }
 
