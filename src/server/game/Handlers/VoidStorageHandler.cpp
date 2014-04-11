@@ -287,7 +287,9 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
             sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleVoidStorageTransfer - Player (GUID: %u, name: %s) tried to withdraw an invalid item (id: " UI64FMTD ")", player->GetGUIDLow(), player->GetName(), uint64(*itr));
             continue;
         }
-        
+     
+        dest.clear();
+
         msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemVS->ItemEntry, 1);
         if (msg != EQUIP_ERR_OK)
         {
@@ -296,7 +298,6 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
             return;
         }
 
-        dest.clear();
         item = player->StoreNewItem(dest, itemVS->ItemEntry, true, itemVS->ItemRandomPropertyId);
         item->SetUInt64Value(ITEM_FIELD_CREATOR, uint64(itemVS->CreatorGuid));
         item->SetBinding(true);
