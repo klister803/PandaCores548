@@ -9075,13 +9075,13 @@ void ObjectMgr::RestructCreatureGUID(uint32 nbLigneToRestruct)
         addon_ss << "UPDATE creature_addon SET guid = "                     << newGUID << " WHERE guid = "          << oldGUID << "; ";
         worldTrans->Append(addon_ss.str().c_str());
 
-        std::ostringstream addon_ss;
-        addon_ss << "UPDATE creature_addon SET path_id = "                     << newGUID << " WHERE path_id = "          << oldGUID << "; ";
-        worldTrans->Append(addon_ss.str().c_str());
+        std::ostringstream addon_patch_ss;
+        addon_patch_ss << "UPDATE creature_addon SET path_id = "                     << newGUID << " WHERE path_id = "          << oldGUID << "; ";
+        worldTrans->Append(addon_patch_ss.str().c_str());
 
-        std::ostringstream addon_ss;
-        addon_ss << "UPDATE waypoint_data SET id = "                     << newGUID << " WHERE id = "          << oldGUID << "; ";
-        worldTrans->Append(addon_ss.str().c_str());
+        std::ostringstream waypoint_ss;
+        waypoint_ss << "UPDATE waypoint_data SET id = "                     << newGUID << " WHERE id = "          << oldGUID << "; ";
+        worldTrans->Append(waypoint_ss.str().c_str());
 
         std::ostringstream formation1_ss;
         formation1_ss << "UPDATE creature_formations SET leaderGUID = "     << newGUID << " WHERE leaderGUID = "    << oldGUID << "; ";
