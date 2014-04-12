@@ -239,7 +239,7 @@ bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clicke
 ObjectMgr::ObjectMgr(): _auctionId(1), _equipmentSetGuid(1),
     _itemTextId(1), _mailId(1), _hiPetNumber(1), _voidItemId(1), _hiCharGuid(1),
     _hiCreatureGuid(1), _hiPetGuid(1), _hiVehicleGuid(1), _hiItemGuid(1),
-    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _hiAreaTriggerGuid(1), _skipUpdateCount(1)
+    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _skipUpdateCount(1)
 {}
 
 ObjectMgr::~ObjectMgr()
@@ -5881,7 +5881,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
 
         uint32 Trigger_ID = fields[0].GetUInt32();
 
-        AreaTriggerStruct at;
+        AreaTrigger at;
 
         at.target_mapId             = fields[1].GetUInt16();
         at.target_X                 = fields[2].GetFloat();
@@ -6009,7 +6009,7 @@ void ObjectMgr::LoadAccessRequirements()
 /*
  * Searches for the areatrigger which teleports players out of the given map with instance_template.parent field support
  */
-AreaTriggerStruct const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
+AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 {
     bool useParentDbValue = false;
     uint32 parentId = 0;
@@ -6042,7 +6042,7 @@ AreaTriggerStruct const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 /**
  * Searches for the areatrigger which teleports players to the given map
  */
-AreaTriggerStruct const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
+AreaTrigger const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
 {
     for (AreaTriggerContainer::const_iterator itr = _areaTriggerStore.begin(); itr != _areaTriggerStore.end(); ++itr)
     {
@@ -6181,11 +6181,6 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
         {
             ASSERT(_hiCorpseGuid < 0xFFFFFFFE && "Corpse guid overflow!");
             return _hiCorpseGuid++;
-        }
-        case HIGHGUID_AREATRIGGER:
-        {
-            ASSERT(_hiAreaTriggerGuid < 0xFFFFFFFE && "AreaTrigger guid overflow!");
-            return _hiAreaTriggerGuid++;
         }
         case HIGHGUID_DYNAMICOBJECT:
         {

@@ -163,28 +163,6 @@ void Trinity::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
     }
 }
 
-template<class Check>
-void Trinity::WorldObjectSearcher<Check>::Visit(AreaTriggerMapType &m)
-{
-    if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGER))
-        return;
-
-    // already found
-    if (i_object)
-        return;
-
-    for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
 
 template<class Check>
 void Trinity::WorldObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
@@ -267,22 +245,6 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(DynamicObjectMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectLastSearcher<Check>::Visit(AreaTriggerMapType &m)
-{
-    if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGER))
-        return;
-
-    for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
-}
-
-template<class Check>
 void Trinity::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
@@ -333,17 +295,6 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
         return;
 
     for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Trinity::WorldObjectListSearcher<Check>::Visit(AreaTriggerMapType &m)
-{
-    if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGER))
-        return;
-
-    for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
         if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }

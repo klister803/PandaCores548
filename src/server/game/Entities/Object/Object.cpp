@@ -64,7 +64,6 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
         case HIGHGUID_GAMEOBJECT:   return TYPEID_GAMEOBJECT;
         case HIGHGUID_DYNAMICOBJECT:return TYPEID_DYNAMICOBJECT;
         case HIGHGUID_CORPSE:       return TYPEID_CORPSE;
-        case HIGHGUID_AREATRIGGER:  return TYPEID_AREATRIGGER;
         case HIGHGUID_MO_TRANSPORT: return TYPEID_GAMEOBJECT;
         case HIGHGUID_VEHICLE:      return TYPEID_UNIT;
     }
@@ -204,7 +203,6 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
         case HIGHGUID_PET:
         case HIGHGUID_CORPSE:
         case HIGHGUID_DYNAMICOBJECT:
-        case HIGHGUID_AREATRIGGER:
             updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
         case HIGHGUID_UNIT:
@@ -1034,10 +1032,6 @@ void Object::GetUpdateFieldData(Player const* target, uint32*& flags, bool& isOw
         case TYPEID_CORPSE:
             flags = CorpseUpdateFieldFlags;
             isOwner = ToCorpse()->GetOwnerGUID() == target->GetGUID();
-            break;
-        case TYPEID_AREATRIGGER:
-            flags = AreaTriggerUpdateFieldFlags;
-            isOwner = ToAreaTrigger()->GetUInt64Value(AREATRIGGER_CASTER) == target->GetGUID();
             break;
         case TYPEID_OBJECT:
             break;
