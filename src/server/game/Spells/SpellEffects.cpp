@@ -7497,28 +7497,12 @@ void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
     else
         destTarget->GetPosition(&pos);
 
-    Unit* caster = GetCaster();
     // trigger entry/miscvalue relation is currently unknown, for now use MiscValue as trigger entry
     uint32 triggerEntry = GetSpellInfo()->Effects[effIndex].MiscValue;
 
     AreaTrigger * areaTrigger = new AreaTrigger;
-    if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, caster, GetSpellInfo(), pos))
-    {
+    if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, GetCaster(), GetSpellInfo(), pos))
         delete areaTrigger;
-        return;
-    }
-
-    Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, areaTrigger, caster, &m_spellValue->EffectBasePoints[effIndex]);
-    if (aura != NULL)
-    {
-        m_spellAura = aura;
-        m_spellAura->_RegisterForTargets();
-    }
-    else
-        return;
-
-    ASSERT(m_spellAura->GetDynobjOwner());
-    m_spellAura->_ApplyEffectForTargets(effIndex);
 }
 
 int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier)

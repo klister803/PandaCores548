@@ -39,10 +39,8 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         int32 GetDuration() const { return _duration; }
         void SetDuration(int32 newDuration) { _duration = newDuration; }
         void Delay(int32 delaytime) { SetDuration(GetDuration() - delaytime); }
-        void SetAura(Aura* aura);
 
     protected:
-        Aura* _aura;
         int32 _duration;
 };
 #endif
