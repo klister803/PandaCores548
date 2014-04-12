@@ -84,24 +84,7 @@ public:
                 case 1:
                     SetRun();
                     break;
-                case 10:
                 case 11:
-                case 12:
-                case 13:
-                case 14:
-                case 15:
-                case 16:
-                case 17:
-                case 18:
-                    me->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
-                    me->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
-                    me->SetSpeed(MOVE_SWIM, 0.85f, true);
-                    me->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_DISABLE_GRAVITY);
-                    break;
-                case 19:
-                    me->SetUnitMovementFlags(MOVEMENTFLAG_FALLING);
-                    break;
-                case 28:
                     player->GroupEventHappens(QUEST_FORTUNATE_MISUNDERSTANDINGS, me);
                     // me->RestoreFaction();
                     DoScriptText(SAY_END_IRO, me);
