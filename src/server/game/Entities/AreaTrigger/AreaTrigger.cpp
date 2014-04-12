@@ -21,7 +21,7 @@
 #include "Log.h"
 #include "AreaTrigger.h"
 
-AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0)
+AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _aura(NULL)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -105,4 +105,10 @@ void AreaTrigger::Remove()
         RemoveFromWorld();
         AddObjectToRemoveList();
     }
+}
+
+void AreaTrigger::SetAura(Aura* aura)
+{
+    ASSERT(!_aura && aura);
+    _aura = aura;
 }

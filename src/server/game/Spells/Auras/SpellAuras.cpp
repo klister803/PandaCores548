@@ -316,11 +316,11 @@ uint32 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibl
             }
             break;
         case TYPEID_DYNAMICOBJECT:
+        case TYPEID_AREATRIGGER:
             for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
             {
-                if (spellProto->Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
-                    effMask |= 1 << i;
-                else if (spellProto->Effects[i].Effect == SPELL_EFFECT_CREATE_AREATRIGGER)
+                if (spellProto->Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA ||
+                    spellProto->Effects[i].Effect == SPELL_EFFECT_CREATE_AREATRIGGER)
                     effMask |= 1 << i;
             }
             break;
@@ -413,11 +413,21 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
             aura = new DynObjAura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID);
             aura->GetDynobjOwner()->SetAura(aura);
             aura->_InitEffects(effMask, caster, baseAmount);
-            
+
             aura->LoadScripts();
             ASSERT(aura->GetDynobjOwner());
             ASSERT(aura->GetDynobjOwner()->IsInWorld());
             ASSERT(aura->GetDynobjOwner()->GetMap() == aura->GetCaster()->GetMap());
+            break;
+        case TYPEID_AREATRIGGER:
+            aura = new AreaTriggerAura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID);
+            aura->GetAreaTriggerOwner()->SetAura(aura);
+            aura->_InitEffects(effMask, caster, baseAmount);
+
+            aura->LoadScripts();
+            ASSERT(aura->GetAreaTriggerOwner());
+            ASSERT(aura->GetAreaTriggerOwner()->IsInWorld());
+            ASSERT(aura->GetAreaTriggerOwner()->GetMap() == aura->GetCaster()->GetMap());
             break;
         default:
             ASSERT(false);
@@ -495,7 +505,17 @@ Unit* Aura::GetCaster() const
 
 AuraObjectType Aura::GetType() const
 {
-    return (m_owner->GetTypeId() == TYPEID_DYNAMICOBJECT) ? DYNOBJ_AURA_TYPE : UNIT_AURA_TYPE;
+    switch (m_owner->GetTypeId())
+    {
+        case TYPEID_DYNAMICOBJECT:
+            return DYNOBJ_AURA_TYPE;
+        case TYPEID_AREATRIGGER:
+            return AREA_TRIGGER_AURA_TYPE;
+        default:
+            break;
+    }
+
+    return UNIT_AURA_TYPE;
 }
 
 void Aura::_ApplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp)
@@ -2748,10 +2768,52 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
             Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
             GetDynobjOwner()->VisitNearbyObject(radius, searcher);
         }
-        else if (GetSpellInfo()->Effects[effIndex].Effect != SPELL_EFFECT_CREATE_AREATRIGGER)
+        else
         {
             Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
             Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+            GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+        }
+
+        for (UnitList::iterator itr = targetList.begin(); itr!= targetList.end();++itr)
+        {
+            std::map<Unit*, uint32>::iterator existing = targets.find(*itr);
+            if (existing != targets.end())
+                existing->second |= 1<<effIndex;
+            else
+                targets[*itr] = 1<<effIndex;
+        }
+    }
+}
+
+AreaTriggerAura::AreaTriggerAura(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, uint64 casterGUID)
+    : Aura(spellproto, owner, caster, castItem, casterGUID)
+{
+}
+
+void AreaTriggerAura::Remove(AuraRemoveMode removeMode)
+{
+    if (IsRemoved())
+        return;
+    _Remove(removeMode);
+}
+
+void AreaTriggerAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster*/)
+{
+    Unit* dynObjOwnerCaster = GetDynobjOwner()->GetCaster();
+    float radius = GetDynobjOwner()->GetRadius();
+
+    for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+    {
+        if (!HasEffect(effIndex))
+            continue;
+
+        UnitList targetList;
+        if (GetSpellInfo()->Effects[effIndex].TargetB.GetTarget() == TARGET_DEST_DYNOBJ_ALLY
+            || GetSpellInfo()->Effects[effIndex].TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ALLY)
+        {
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
             GetDynobjOwner()->VisitNearbyObject(radius, searcher);
         }
         else

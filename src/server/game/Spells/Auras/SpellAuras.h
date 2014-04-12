@@ -109,6 +109,7 @@ class Aura
         WorldObject* GetOwner() const { return m_owner; }
         Unit* GetUnitOwner() const { ASSERT(GetType() == UNIT_AURA_TYPE); return (Unit*)m_owner; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
+        AreaTrigger* GetAreaTriggerOwner() const { ASSERT(GetType() == AREA_TRIGGER_AURA_TYPE); return (AreaTrigger*)m_owner; }
 
         AuraObjectType GetType() const;
 
@@ -288,6 +289,17 @@ class DynObjAura : public Aura
     friend Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, uint64 casterGUID);
     protected:
         explicit DynObjAura(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, uint64 casterGUID);
+    public:
+        void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
+
+        void FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster);
+};
+
+class AreaTriggerAura : public Aura
+{
+    friend Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, uint64 casterGUID);
+    protected:
+        explicit AreaTriggerAura(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, int32 *baseAmount, Item* castItem, uint64 casterGUID);
     public:
         void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
