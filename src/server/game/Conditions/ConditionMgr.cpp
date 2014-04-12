@@ -127,7 +127,22 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_QUESTTAKEN:
         {
-            if (Player* player = object->ToPlayer())
+            Player* player = NULL;
+            // if its creature than try to find targeted player
+            if (object->GetTypeId() == TYPEID_UNIT)
+            {
+                if (Unit* target = object->ToUnit()->getThreatManager().getHostilTarget())
+                {
+                    if (target->ToPlayer())
+                        player = target->ToPlayer();
+                    else if (target->isPet() && target->GetOwner() && target->GetOwner()->ToPlayer())
+                        player = target->GetOwner()->ToPlayer();
+                }
+            }
+            else
+                player = object->ToPlayer();
+
+            if (player)
             {
                 QuestStatus status = player->GetQuestStatus(ConditionValue1);
                 condMeets = (status == QUEST_STATUS_INCOMPLETE);
