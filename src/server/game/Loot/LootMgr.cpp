@@ -1433,6 +1433,20 @@ void LootTemplate::LootGroup::Process(Loot& loot) const
                         else if (_proto->InventoryType != 0 && _item_counter == 1) // Equippable item are limited to 1 drop
                             duplicate = true;
                     }
+
+                if(_proto->ItemSpecExist && loot.objType == 4)
+                {
+                    bool specFind = false;
+                    std::list<uint32> specList = GetItemSpecsList(itr->itemid);
+                    for (std::list<uint32>::const_iterator spec = specList.begin(); spec != specList.end(); ++spec)
+                        if(loot.specId == (*spec))
+                        {
+                            specFind = true;
+                            break;
+                        }
+                    if(!specFind)
+                        duplicate = true;
+                }
             }
             if (duplicate) // if item->itemid is a duplicate, remove it
                 switch (itemSource)
