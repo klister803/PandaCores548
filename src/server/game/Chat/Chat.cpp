@@ -634,6 +634,7 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
     c.message = message ? message : "";
     c.chatType = type;
     c.targetGuid = target_guid;
+    c.realmId = (speaker && speaker->GetTypeId() == TYPEID_PLAYER) ? realmID : 0;
 
     if ((type != CHAT_MSG_CHANNEL && type != CHAT_MSG_WHISPER) || language == LANG_ADDON)
         c.language = uint8(language);
