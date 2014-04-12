@@ -909,19 +909,15 @@ void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Playe
     dynamicFieldsMask.resize(m_dynamicTab.size());
 
     for (size_t i = 0; i < m_dynamicTab.size(); ++i)
-        dynamicFieldsMask[i] = 0;
-
-    for (size_t i = 0; i < m_dynamicChange.size(); ++i)
     {
+        dynamicFieldsMask[i] = 0;
         for (int index = 0; index < 32; ++index)
         {
             if (updatetype == UPDATETYPE_CREATE_OBJECT || updatetype == UPDATETYPE_CREATE_OBJECT2)
             {
+                dynamicTabMask |= 1 << i;
                 if (m_dynamicTab[i][index] != 0)
-                {
-                    dynamicTabMask |= 1 << i;
                     dynamicFieldsMask[i] |= 1 << index;
-                }
             }
             else if (updatetype == UPDATETYPE_VALUES)
             {
@@ -943,13 +939,16 @@ void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Playe
         {
             if (dynamicTabMask & (1 << i))
             {
-                *data << uint8(1);          // count of dynamic field masks
-                *data << uint32(dynamicFieldsMask[i]);
-
-                for (int index = 0; index < 32; ++index)
+                *data << uint8(bool(dynamicFieldsMask[i]));      // count of dynamic field masks
+                if (dynamicFieldsMask[i])
                 {
-                    if (dynamicFieldsMask[i] & (1 << index))
-                        *data << uint32(m_dynamicTab[i][index]);
+                    *data << uint32(dynamicFieldsMask[i]);
+
+                    for (int index = 0; index < 32; ++index)
+                    {
+                        if (dynamicFieldsMask[i] & (1 << index))
+                            *data << uint32(m_dynamicTab[i][index]);
+                    }
                 }
             }
         }
