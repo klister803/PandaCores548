@@ -1797,7 +1797,7 @@ struct SkillLineEntry
     uint32 spellIcon;                                       // 4	m_spellIconID
     //DBCString alternateVerb;                              // 5	m_alternateVerb_lang
     uint32 canLink;                                         // 6	m_canLink (prof. with recipes)
-    //uint32 Unknown;                                       // 7	5.0.1
+    uint32 parentSkillId;                                   // 7	5.0.1
     //uint32                                                // 8    5.4.1
 };
 

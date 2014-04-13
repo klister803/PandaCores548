@@ -411,6 +411,7 @@ enum Opcodes
     CMSG_QUERY_GUILD_REWARDS                          = 0x16DE, // 5.4.1 17538
     CMSG_QUERY_GUILD_XP                               = 0x0ECA, // 5.4.1 17538
     CMSG_QUERY_INSPECT_ACHIEVEMENTS                   = 0x0AF5, // 5.4.1 17538
+    CMSG_QUERY_PLAYER_RECIPES                         = 0x10E5, // 5.4.1 17538
     CMSG_QUERY_QUESTS_COMPLETED                       = 0x000,  // 5.4.1 17538
     CMSG_QUERY_TIME                                   = 0x0AEF, // 5.4.1 17538
     CMSG_QUESTGIVER_ACCEPT_QUEST                      = 0x0A77, // 5.4.1 17538
@@ -1215,6 +1216,7 @@ enum Opcodes
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0x103F, // 5.4.1 17538 real SMSG_PLAY_SPELL_IMPACT
     SMSG_PLAY_TIME_WARNING                            = 0x817,  // 5.0.5 16048
+    SMSG_PLAYER_RECIPES                               = 0x0D24, // 5.4.1 17538
     SMSG_PONG                                         = 0x005D, // 5.4.1 17538
     SMSG_POWER_UPDATE                                 = 0x09A4, // 5.4.1 17538
     SMSG_PRE_RESURRECT                                = 0x88A,  // 5.0.5 16048

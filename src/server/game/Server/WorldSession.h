@@ -1023,6 +1023,7 @@ class WorldSession
         void HandleCemeteryListOpcode(WorldPacket& recvPacket);
         void HandlerCategoryCooldownOpocde(WorldPacket& recvPacket);
         void HandleClearRaidMarkerOpcode(WorldPacket& recvPacket);
+        void HandleQueryPlayerRecipes(WorldPacket& recvPacket);
 
     private:
         void InitializeQueryCallbackParameters();

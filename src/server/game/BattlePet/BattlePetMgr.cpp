@@ -47,7 +47,7 @@ BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
 
 void BattlePetMgr::GetBattlePetList(PetBattleDataList &battlePetList) const
 {
-    PlayerSpellMap spellMap = m_player->GetSpellMap();
+    PlayerSpellMap const& spellMap = m_player->GetSpellMap();
     for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
     {
         if (itr->second->state == PLAYERSPELL_REMOVED)
