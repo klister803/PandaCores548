@@ -928,6 +928,8 @@ void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Playe
                     dynamicFieldsMask[i] |= 1 << index;
                 }
             }
+            // reset change state for create and update.
+            m_dynamicChange[i][index] = false;
         }
     }
 
