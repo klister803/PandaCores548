@@ -542,13 +542,28 @@ void Guild::Member::SetStats(Player* player)
     m_accountId = player->GetSession()->GetAccountId();
     m_achievementPoints = player->GetAchievementPoints();
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_MEMBERS_ACHIVPOINTS);
-    stmt->setUInt8 (0, m_achievementPoints);
-    stmt->setUInt32(1, player->GetGUIDLow());
-    CharacterDatabase.Execute(stmt);
+    for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+    {
+        uint32 id = player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i);
+        m_professionInfo[i] = ProfessionInfo(id, player->GetSkillValue(id), player->GetSkillStep(id));
+    }
 }
 
-void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender)
+void Guild::Member::SaveStatsToDB(SQLTransaction* trans)
+{
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_MEMBER_STATS);
+    stmt->setUInt64(0, m_weekReputation);
+    stmt->setUInt64(1, m_weekActivity);
+    stmt->setUInt64(2, m_totalActivity);
+    stmt->setUInt32(3, m_achievementPoints);
+    stmt->setUInt32(4, GUID_LOPART(GetGUID()));
+    if (trans)
+        (*trans)->Append(stmt);
+    else
+        CharacterDatabase.Execute(stmt);
+}
+
+void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints)
 {
     m_name      = name;
     m_level     = level;
@@ -557,6 +572,7 @@ void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class,
     m_gender    = gender;
     m_accountId = accountId;
     m_totalReputation = reputation;
+    m_achievementPoints = achPoints;
 }
 
 void Guild::Member::SetPublicNote(const std::string& publicNote)
@@ -631,12 +647,12 @@ bool Guild::Member::LoadFromDB(Field* fields)
              fields[26].GetUInt16(),                        // characters.zone
              fields[27].GetUInt32(),                        // characters.account
              fields[29].GetUInt32(),                        // character_reputation.standing
-             fields[34].GetUInt8());                        // characters.gender
+             fields[34].GetUInt8(),                         // characters.gender
+             fields[33].GetUInt32());                       // achievement points
     m_logoutTime    = fields[28].GetUInt32();               // characters.logout_time
     m_totalActivity = fields[30].GetUInt64();
     m_weekActivity = fields[31].GetUInt64();
     m_weekReputation = fields[32].GetUInt32();
-    m_achievementPoints = fields[33].GetUInt32();
 
     if (!CheckStats())
         return false;
@@ -1233,7 +1249,7 @@ void Guild::Disband()
     sGuildMgr->RemoveGuild(m_id);
 }
 
-void Guild::SaveToDB()
+void Guild::SaveToDB(bool withMembers)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
@@ -1245,6 +1261,17 @@ void Guild::SaveToDB()
     trans->Append(stmt);
 
     m_achievementMgr.SaveToDB(trans);
+
+    if (withMembers)
+    {
+        for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+        {
+            if (Player* player = sObjectAccessor->FindPlayer(itr->second->GetGUID()))
+                itr->second->SetStats(player);
+
+            itr->second->SaveStatsToDB(&trans);
+        }
+    }
 
     CharacterDatabase.CommitTransaction(trans);
 }
@@ -1305,13 +1332,8 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
 
         data << uint8(flags);
         data.WriteGuidBytes<3>(guid);
-        for (uint8 i = 0; i < 2; ++i)
-        {
-            if (uint32 id = (player ? player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i) : 0))
-                data << uint32(player->GetSkillStep(id)) << uint32(player->GetSkillValue(id)) << uint32(id);
-            else
-                data << uint32(0) << uint32(0) << uint32(0);
-        }
+        for (uint8 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+            data << uint32(member->GetProfessionInfo(i).maxSkill) << uint32(member->GetProfessionInfo(i).currentSkill) << uint32(member->GetProfessionInfo(i).professionId);
         data.WriteGuidBytes<1>(guid);
         data << uint32(player ? player->GetAchievementPoints() : member->GetAchievementPoints());// player->GetAchievementMgr().GetCompletedAchievementsAmount()
         data.WriteGuidBytes<6>(guid);
@@ -1998,11 +2020,12 @@ void Guild::HandleMemberLogout(WorldSession* session)
     {
         member->SetStats(player);
         member->UpdateLogoutTime();
+        member->SaveStatsToDB(NULL);
     }
 
     SendGuildEventOnline(player->GetGUID(), player->GetName(), false);
 
-    SaveToDB();
+    SaveToDB(false);
 }
 
 void Guild::HandleDisband(WorldSession* session)
@@ -2538,7 +2561,8 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
                 fields[3].GetUInt16(),
                 fields[4].GetUInt32(),
                 fields[5].GetUInt32(),
-                fields[6].GetUInt8());
+                fields[6].GetUInt8(),
+                0);     // ach points calculated on first login
 
             ok = member->CheckStats();
         }
@@ -3280,16 +3304,6 @@ void Guild::GiveXP(uint32 xp, Player* source)
     _experience += xp;
     _todayExperience += xp;
 
-    if (Member* member = GetMember(source->GetGUID()))
-    {
-        member->AddActivity(xp);
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPDATE_GUILD_MEMBER_ACTIV);
-        stmt->setUInt64(0, member->GetWeekActivity());
-        stmt->setUInt64(1, member->GetTotalActivity());
-        stmt->setUInt32(2, source->GetGUIDLow());
-        CharacterDatabase.Execute(stmt);
-    }
-
     if (!xp)
         return;
 
@@ -3354,11 +3368,6 @@ void Guild::Member::RepEarned(Player* player, uint32 value)
     player->GetReputationMgr().ModifyReputation(entry, int32(value));
 
     SendGuildReputationWeeklyCap(player->GetSession(), GetWeekReputation());
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPDATE_GUILD_MEMBER_REP);
-    stmt->setUInt64(0, m_weekReputation);
-    stmt->setUInt32(1, player->GetGUIDLow());
-    CharacterDatabase.Execute(stmt);
 }
 
 void Guild::Member::SendGuildReputationWeeklyCap(WorldSession* session, uint32 reputation) const

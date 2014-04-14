@@ -995,7 +995,7 @@ enum Opcodes
     SMSG_GUILD_QUERY_RESPONSE                         = 0x0859, // 5.4.1 17538
     SMSG_GUILD_RANK                                   = 0x1459, // 5.4.1 17538
     SMSG_GUILD_RANKS_UPDATE                           = 0x0C58, // 5.4.1 17538
-    SMSG_GUILD_RECIPES                                = 0xB7E,  // 5.0.5 16048
+    SMSG_GUILD_RECIPES                                = 0x15D8, // 5.4.1 17538
     SMSG_GUILD_RENAMED                                = 0xED1,  // 5.0.5 16048
     SMSG_GUILD_REPUTATION_REACTION_CHANGED            = 0xBDD,  // 5.0.5 16048
     SMSG_GUILD_REPUTATION_WEEKLY_CAP                  = 0x08D9, // 5.4.1 17538

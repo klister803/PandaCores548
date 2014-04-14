@@ -740,3 +740,23 @@ void WorldSession::HandleGuildNewsUpdateStickyOpcode(WorldPacket& recvPacket)
         }
     }
 }
+
+void WorldSession::HandleGuildQueryGuildRecipesOpcode(WorldPacket& recvPacket)
+{
+    return;
+
+    ObjectGuid guildGuid;
+    recvPacket.ReadGuidMask<6, 7, 1, 2, 5, 0, 3, 4>(guildGuid);
+    recvPacket.ReadGuidBytes<1, 6, 5, 4, 0, 7, 3, 2>(guildGuid);
+
+    WorldPacket data(SMSG_GUILD_RECIPES);
+    data.WriteBits(1, 15);
+    data << uint32(197);
+    for (uint32 i = 0; i < 300; ++i)
+        if (i == 0)
+            data << uint8(112);
+        else
+            data << uint8(0);
+
+    SendPacket(&data);
+}

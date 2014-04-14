@@ -42,7 +42,7 @@ void GuildMgr::RemoveGuild(uint32 guildId)
 void GuildMgr::SaveGuilds()
 {
     for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
-        itr->second->SaveToDB();
+        itr->second->SaveToDB(true);
 }
 
 uint32 GuildMgr::GenerateGuildId()

@@ -176,9 +176,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_DEL_GUILD_MEMBER, "DELETE FROM guild_member WHERE guid = ?", CONNECTION_ASYNC) // 0: uint32
     PREPARE_STATEMENT(CHAR_DEL_GUILD_MEMBERS, "DELETE FROM guild_member WHERE guildid = ?", CONNECTION_ASYNC) // 0: uint32
     PREPARE_STATEMENT(CHAR_UPD_GUILD_MEMBERS_RANK, "UPDATE guild_member SET rank = ? WHERE guildid = ? AND rank = ?", CONNECTION_ASYNC) // 0: uint32
-    PREPARE_STATEMENT(CHAR_UPDATE_GUILD_MEMBER_REP, "UPDATE guild_member SET RepWeek = ? WHERE guid = ?", CONNECTION_ASYNC)
-    PREPARE_STATEMENT(CHAR_UPDATE_GUILD_MEMBER_ACTIV, "UPDATE guild_member SET XpContribWeek = ?, XpContrib = ? WHERE guid = ?", CONNECTION_ASYNC)
-    PREPARE_STATEMENT(CHAR_UPD_GUILD_MEMBERS_ACHIVPOINTS, "UPDATE guild_member SET AchPoint = ? WHERE guid = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_UPD_GUILD_MEMBER_STATS, "UPDATE guild_member SET RepWeek = ?, XpContribWeek = ?, XpContrib = ? WHERE guid = ?", CONNECTION_ASYNC)
     // 0: uint32, 1: uint8, 3: string, 4: uint32
     PREPARE_STATEMENT(CHAR_INS_GUILD_RANK, "INSERT INTO guild_rank (guildid, rid, rname, rights) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_DEL_GUILD_RANKS, "DELETE FROM guild_rank WHERE guildid = ?", CONNECTION_ASYNC) // 0: uint32

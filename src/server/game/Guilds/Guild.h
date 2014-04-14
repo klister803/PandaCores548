@@ -321,6 +321,9 @@ typedef std::vector <GuildBankRightsAndSlots> GuildBankRightsAndSlotsVec;
 
 typedef std::set <uint8> SlotIds;
 
+#define MAX_GUILD_PROFESSIONS 2
+#define KNOW_RECIPES_MASK_SIZE 300
+
 class Guild
 {
 private:
@@ -333,6 +336,23 @@ private:
 
             uint32 value;
             uint32 resetTime;
+        };
+
+        struct ProfessionInfo
+        {
+            ProfessionInfo(uint32 _professionId, uint32 _currentSkill, uint32 _maxSkill) :
+                professionId(_professionId), currentSkill(_currentSkill), maxSkill(_maxSkill) { }
+
+            ProfessionInfo() : professionId(0), currentSkill(0), maxSkill(0) { }
+            uint32 professionId;
+            uint32 currentSkill;
+            uint32 maxSkill;
+
+            struct KnownRecipes
+            {
+                std::set<uint32> knownRecipes;
+                uint8 recipesMask[KNOW_RECIPES_MASK_SIZE];
+            };
         };
 
     public:
@@ -356,7 +376,8 @@ private:
             memset(m_bankWithdraw, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(int32));
         }
         void SetStats(Player* player);
-        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender);
+        void SaveStatsToDB(SQLTransaction* trans);
+        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints);
         bool CheckStats() const;
 
         void SetPublicNote(std::string const& publicNote);
@@ -395,6 +416,7 @@ private:
         uint64 GetWeekActivity() const { return m_weekActivity; }
         uint32 GetTotalReputation() const { return m_totalReputation; }
         uint32 GetWeekReputation() const { return m_weekReputation; }
+        ProfessionInfo const& GetProfessionInfo(uint32 index) const { return m_professionInfo[index]; }
 
         bool IsOnline() { return (m_flags & GUILDMEMBER_STATUS_ONLINE); }
 
@@ -443,6 +465,7 @@ private:
         uint64 m_weekActivity;
         uint32 m_totalReputation;
         uint32 m_weekReputation;
+        ProfessionInfo m_professionInfo[MAX_GUILD_PROFESSIONS];
     };
 
     // News Log class
@@ -757,7 +780,7 @@ public:
     bool Create(Player* pLeader, const std::string& name);
     void Disband();
 
-    void SaveToDB();
+    void SaveToDB(bool withMembers);
 
     // Getters
     uint32 GetId() const { return m_id; }
