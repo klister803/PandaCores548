@@ -5636,7 +5636,7 @@ void Spell::TakeReagents()
         p_caster->DestroyItemCount(itemid, itemcount, true);
     }
     if(m_spellInfo->ReagentCurrency != 0)
-        p_caster->ModifyCurrency(m_spellInfo->ReagentCurrency, -m_spellInfo->ReagentCurrencyCount);
+        p_caster->ModifyCurrency(m_spellInfo->ReagentCurrency, -int32(m_spellInfo->ReagentCurrencyCount));
 }
 
 void Spell::HandleThreatSpells()
