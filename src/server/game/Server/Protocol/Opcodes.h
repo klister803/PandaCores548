@@ -982,7 +982,7 @@ enum Opcodes
     SMSG_GUILD_INVITE                                 = 0x0CD0, // 5.4.1 17538
     SMSG_GUILD_INVITE_CANCEL                          = 0,      // 0x0606 in 4.3.4 @todo : Find me and BACON !
     SMSG_GUILD_MAX_DAILY_XP                           = 0,      // 5.4.1 17538 obsolete
-    SMSG_GUILD_MEMBERS_FOR_RECIPE                     = 0xA04,  // 5.0.5 16048
+    SMSG_GUILD_MEMBERS_FOR_RECIPE                     = 0x1050, // 5.4.1 17538
     SMSG_GUILD_MEMBER_DAILY_RESET                     = 0x10D9, // 5.4.1 17538
     SMSG_GUILD_MEMBER_RECIPES                         = 0xBFF,  // 5.0.5 16048
     SMSG_GUILD_MEMBER_UPDATE_NOTE                     = 0xF6C,  // 5.0.5 16048

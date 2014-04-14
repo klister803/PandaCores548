@@ -919,6 +919,7 @@ public:
     KnownRecipesMap const& GetGuildRecipes() const { return _guildRecipes; }
     KnownRecipes& GetGuildRecipes(uint32 skillId) { return _guildRecipes[skillId]; }
     void UpdateGuildRecipes(uint32 skillId = 0);
+    void SendGuildMembersForRecipeResponse(WorldSession* session, uint32 skillId, uint32 spellId);
 
 protected:
     uint32 m_id;

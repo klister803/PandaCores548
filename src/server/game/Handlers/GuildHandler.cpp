@@ -774,3 +774,19 @@ void WorldSession::HandleGuildQueryGuildRecipesOpcode(WorldPacket& recvPacket)
 
     SendPacket(&data);
 }
+
+void WorldSession::HandleGuildQueryGuildMembersForRecipe(WorldPacket& recvPacket)
+{
+    uint32 skillId, spellId;
+    ObjectGuid guildGuid;
+
+    recvPacket.read_skip<uint32>(); // unk
+    recvPacket >> skillId;
+    recvPacket >> spellId;
+
+    recvPacket.ReadGuidMask<1, 4, 3, 7, 2, 0, 5, 6>(guildGuid);
+    recvPacket.ReadGuidBytes<4, 1, 6, 2, 3, 0, 5, 7>(guildGuid);
+
+    if (Guild* guild = _player->GetGuild())
+        guild->SendGuildMembersForRecipeResponse(this, skillId, spellId);
+}

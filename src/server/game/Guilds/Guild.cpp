@@ -3725,6 +3725,9 @@ void Guild::KnownRecipes::GenerateMask(uint32 skillId, std::set<uint32> const& s
         if (spells.find(entry->spellId) == spells.end())
             continue;
 
+        if (index / 8 > KNOW_RECIPES_MASK_SIZE)
+            break;
+
         recipesMask[index / 8] |= 1 << (index % 8);
     }
 }
@@ -3774,4 +3777,54 @@ void Guild::UpdateGuildRecipes(uint32 skillId)
                     _guildRecipes[info.skillId].recipesMask[j] |= info.knownRecipes.recipesMask[j];
         }
     }
+}
+
+void Guild::SendGuildMembersForRecipeResponse(WorldSession* session, uint32 skillId, uint32 spellId)
+{
+    uint32 index = 0;
+    bool found = false;
+    for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
+    {
+        SkillLineAbilityEntry const* entry = sSkillLineAbilityStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        if (entry->skillId != skillId)
+            continue;
+
+        ++index;
+        if (entry->spellId == spellId)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    if (!found || index / 8 > KNOW_RECIPES_MASK_SIZE)
+        return;
+
+    std::set<uint64> guids;
+    for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+        {
+            Member::ProfessionInfo const& info = itr->second->GetProfessionInfo(i);
+            if (info.skillId != skillId)
+                continue;
+
+            if (info.knownRecipes.recipesMask[index / 8] & (1 << (index % 8)))
+                guids.insert(itr->second->GetGUID());
+        }
+    }
+
+    WorldPacket data(SMSG_GUILD_MEMBERS_FOR_RECIPE, 4 + 4 + 3 + guids.size() * 9);
+    data << uint32(skillId);
+    data << uint32(spellId);
+    data.WriteBits(guids.size(), 24);
+    for (std::set<uint64>::const_iterator itr = guids.begin(); itr != guids.end(); ++itr)
+        data.WriteGuidMask<2, 0, 1, 6, 7, 5, 3, 4>(*itr);
+    for (std::set<uint64>::const_iterator itr = guids.begin(); itr != guids.end(); ++itr)
+        data.WriteGuidBytes<1, 2, 7, 4, 6, 3, 5, 0>(*itr);
+
+    session->SendPacket(&data);
 }
