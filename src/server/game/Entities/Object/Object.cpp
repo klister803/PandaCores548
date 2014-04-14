@@ -114,11 +114,7 @@ Object::~Object()
     delete [] _changedFields;
 
     for(size_t i = 0; i < m_dynamicTab.size(); ++i)
-    {
         delete [] m_dynamicTab[i];
-        delete [] m_dynamicChange[i];
-    }
-
 }
 
 void Object::_InitValues()
@@ -132,7 +128,7 @@ void Object::_InitValues()
     for(size_t i = 0; i < m_dynamicTab.size(); ++i)
     {
         memset(m_dynamicTab[i], 0, 32*sizeof(uint32));
-        memset(m_dynamicChange[i], 0, 32*sizeof(bool));
+        m_dynamicChange[i] = false;
     }
 
     m_objectUpdated = false;
@@ -899,7 +895,7 @@ void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Playe
 {
     // Crashfix, prevent use of bag with dynamic field
     if (isType(TYPEMAST_BAG) || 
-        ( updatetype == UPDATETYPE_VALUES && GetTypeId() == TYPEID_PLAYER))
+        (updatetype == UPDATETYPE_VALUES && GetTypeId() == TYPEID_PLAYER && this != target))
     {
         *data << uint8(0);
         return;
@@ -914,22 +910,13 @@ void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Playe
         dynamicFieldsMask[i] = 0;
         for (int index = 0; index < 32; ++index)
         {
-            if (updatetype == UPDATETYPE_CREATE_OBJECT || updatetype == UPDATETYPE_CREATE_OBJECT2)
+            if ((updatetype == UPDATETYPE_CREATE_OBJECT || updatetype == UPDATETYPE_CREATE_OBJECT2) ||
+                updatetype == UPDATETYPE_VALUES && m_dynamicChange[i])
             {
                 dynamicTabMask |= 1 << i;
                 if (m_dynamicTab[i][index] != 0)
                     dynamicFieldsMask[i] |= 1 << index;
             }
-            else if (updatetype == UPDATETYPE_VALUES)
-            {
-                if (m_dynamicChange[i][index])
-                {
-                    dynamicTabMask |= 1 << i;
-                    dynamicFieldsMask[i] |= 1 << index;
-                }
-            }
-            // reset change state for create and update.
-            m_dynamicChange[i][index] = false;
         }
     }
 
@@ -965,7 +952,7 @@ void Object::ClearUpdateMask(bool remove)
     if (m_objectUpdated)
     {
         for(size_t i = 0; i < m_dynamicTab.size(); i++)
-            memset(m_dynamicChange[i], 0, 32*sizeof(bool));
+            m_dynamicChange[i] = false;
 
         if (remove)
             sObjectAccessor->RemoveUpdateObject(this);
@@ -1417,7 +1404,7 @@ void Object::SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value)
     if (m_dynamicTab[tab][index] != value)
     {
         m_dynamicTab[tab][index] = value;
-        m_dynamicChange[tab][index] = true;
+        m_dynamicChange[tab] = true;
         if (m_inWorld && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
