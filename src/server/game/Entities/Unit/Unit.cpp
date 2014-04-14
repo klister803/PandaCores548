@@ -175,6 +175,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , LastCharmerGUID(0)
     , _haveCCDEffect(0)
     , _delayInterruptFlag(0)
+    , m_onMount(false)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -13430,7 +13431,7 @@ void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
     if (mount)
         SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, mount);
 
-    SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT);
+    m_onMount = true;
 
     if (Player* player = ToPlayer())
     {
@@ -13472,7 +13473,7 @@ void Unit::Dismount()
         return;
 
     SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);
-    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT);
+    m_onMount = false;
 
     if (Player* thisPlayer = ToPlayer())
         thisPlayer->SendMovementSetCollisionHeight(thisPlayer->GetCollisionHeight(false));
