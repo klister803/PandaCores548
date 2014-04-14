@@ -340,19 +340,27 @@ private:
 
         struct ProfessionInfo
         {
-            ProfessionInfo(uint32 _professionId, uint32 _currentSkill, uint32 _maxSkill) :
-                professionId(_professionId), currentSkill(_currentSkill), maxSkill(_maxSkill) { }
+            ProfessionInfo(uint32 _skillId, uint32 _skillValue, uint32 _skillRank) :
+                skillId(_skillId), skillValue(_skillValue), skillRank(_skillRank) { }
 
-            ProfessionInfo() : professionId(0), currentSkill(0), maxSkill(0) { }
-            uint32 professionId;
-            uint32 currentSkill;
-            uint32 maxSkill;
+            ProfessionInfo() : skillId(0), skillValue(0), skillRank(0) { }
+            uint32 skillId;
+            uint32 skillValue;
+            uint32 skillRank;
 
             struct KnownRecipes
             {
+                void Clear()
+                {
+                    knownRecipes.clear();
+                    memset(recipesMask, 0, sizeof(recipesMask));
+                }
+
                 std::set<uint32> knownRecipes;
                 uint8 recipesMask[KNOW_RECIPES_MASK_SIZE];
             };
+
+            KnownRecipes knownRecipes;
         };
 
     public:
@@ -377,7 +385,8 @@ private:
         }
         void SetStats(Player* player);
         void SaveStatsToDB(SQLTransaction* trans);
-        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints);
+        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints,
+            uint32 profId1, uint32 profValue1, uint8 profRank1, uint32 profId2, uint32 profValue2, uint8 profRank2);
         bool CheckStats() const;
 
         void SetPublicNote(std::string const& publicNote);

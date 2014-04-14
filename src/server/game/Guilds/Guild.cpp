@@ -556,14 +556,22 @@ void Guild::Member::SaveStatsToDB(SQLTransaction* trans)
     stmt->setUInt64(1, m_weekActivity);
     stmt->setUInt64(2, m_totalActivity);
     stmt->setUInt32(3, m_achievementPoints);
-    stmt->setUInt32(4, GUID_LOPART(GetGUID()));
+    for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+    {
+        stmt->setInt32(4 + i * 3, m_professionInfo[i].skillId);
+        stmt->setInt32(5 + i * 3, m_professionInfo[i].skillValue);
+        stmt->setInt8(6 + i * 3, m_professionInfo[i].skillRank);
+    }
+    stmt->setUInt32(10, GUID_LOPART(GetGUID()));
+
     if (trans)
         (*trans)->Append(stmt);
     else
         CharacterDatabase.Execute(stmt);
 }
 
-void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints)
+void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints,
+                             uint32 profId1, uint32 profValue1, uint8 profRank1, uint32 profId2, uint32 profValue2, uint8 profRank2)
 {
     m_name      = name;
     m_level     = level;
@@ -573,6 +581,9 @@ void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class,
     m_accountId = accountId;
     m_totalReputation = reputation;
     m_achievementPoints = achPoints;
+
+    m_professionInfo[0] = ProfessionInfo(profId1, profValue1, profRank1);
+    m_professionInfo[1] = ProfessionInfo(profId2, profValue2, profRank2);
 }
 
 void Guild::Member::SetPublicNote(const std::string& publicNote)
@@ -648,7 +659,13 @@ bool Guild::Member::LoadFromDB(Field* fields)
              fields[27].GetUInt32(),                        // characters.account
              fields[29].GetUInt32(),                        // character_reputation.standing
              fields[34].GetUInt8(),                         // characters.gender
-             fields[33].GetUInt32());                       // achievement points
+             fields[33].GetUInt32(),                        // achievement points
+             fields[35].GetUInt32(),                        // prof id 1
+             fields[36].GetUInt32(),                        // prof value 1
+             fields[37].GetUInt8(),                         // prof rank 1
+             fields[38].GetUInt32(),                        // prof id 2
+             fields[39].GetUInt32(),                        // prof value 2
+             fields[40].GetUInt8());                        // prof rank 2
     m_logoutTime    = fields[28].GetUInt32();               // characters.logout_time
     m_totalActivity = fields[30].GetUInt64();
     m_weekActivity = fields[31].GetUInt64();
@@ -1333,7 +1350,7 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         data << uint8(flags);
         data.WriteGuidBytes<3>(guid);
         for (uint8 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
-            data << uint32(member->GetProfessionInfo(i).maxSkill) << uint32(member->GetProfessionInfo(i).currentSkill) << uint32(member->GetProfessionInfo(i).professionId);
+            data << uint32(member->GetProfessionInfo(i).skillRank) << uint32(member->GetProfessionInfo(i).skillValue) << uint32(member->GetProfessionInfo(i).skillId);
         data.WriteGuidBytes<1>(guid);
         data << uint32(player ? player->GetAchievementPoints() : member->GetAchievementPoints());// player->GetAchievementMgr().GetCompletedAchievementsAmount()
         data.WriteGuidBytes<6>(guid);
@@ -2562,7 +2579,7 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
                 fields[4].GetUInt32(),
                 fields[5].GetUInt32(),
                 fields[6].GetUInt8(),
-                0);     // ach points calculated on first login
+                0, 0, 0, 0, 0, 0, 0);     // ach points and professions set on first login
 
             ok = member->CheckStats();
         }
