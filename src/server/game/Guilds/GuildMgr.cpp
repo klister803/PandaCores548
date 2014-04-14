@@ -224,8 +224,8 @@ void GuildMgr::LoadGuilds()
                                                      "BankResetTimeTab6, BankRemSlotsTab6, BankResetTimeTab7, BankRemSlotsTab7, "
                                                      //   23      24       25       26      27         28             29          30           31          32       33         34
                                                      "c.name, c.level, c.class, c.zone, c.account, c.logout_time, re.standing, XpContrib, XpContribWeek, RepWeek, AchPoint, c.gender, "
-                                                     //   35   36          37         38       39          40
-                                                     "profId1, profValue1, profRank1, profId2, profValue2, profRank2 "
+                                                     //   35   36          37         38            39       40          41         42
+                                                     "profId1, profValue1, profRank1, recipesMask1, profId2, profValue2, profRank2, recipesMask2 "
                                                      "FROM guild_member gm LEFT JOIN characters c ON c.guid = gm.guid LEFT JOIN character_reputation re ON re.guid = gm.guid AND re.faction = 1168 ORDER BY guildid ASC");
 
         if (!result)
@@ -450,8 +450,18 @@ void GuildMgr::LoadGuilds()
             itr->second->GetNewsLog().LoadFromDB(CharacterDatabase.Query(stmt));
          }
     }
-    
-    // 11. Validate loaded guild data
+
+    // 11. Update Guild Known Recipes
+    for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
+    {
+        Guild* guild = itr->second;
+        if (!guild)
+            continue;
+
+        guild->UpdateGuildRecipes();
+    }
+
+    // 12. Validate loaded guild data
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Validating data of loaded guilds...");
     {
         uint32 oldMSTime = getMSTime();

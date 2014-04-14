@@ -547,6 +547,26 @@ void Guild::Member::SetStats(Player* player)
         uint32 id = player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i);
         m_professionInfo[i] = ProfessionInfo(id, player->GetSkillValue(id), player->GetSkillStep(id));
     }
+
+    std::set<uint32> profSpells[MAX_GUILD_PROFESSIONS];
+    PlayerSpellMap const& spellMap = player->GetSpellMap();
+    for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
+    {
+        if (itr->second->state == PLAYERSPELL_REMOVED)
+            continue;
+
+        if (!itr->second->active || itr->second->disabled)
+            continue;
+
+        for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+        {
+            if (IsPartOfSkillLine(m_professionInfo[i].skillId, itr->first))
+                profSpells[i].insert(itr->first);
+        }
+    }
+
+    for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+        m_professionInfo[i].GenerateRecipesMask(profSpells[i]);
 }
 
 void Guild::Member::SaveStatsToDB(SQLTransaction* trans)
@@ -558,11 +578,12 @@ void Guild::Member::SaveStatsToDB(SQLTransaction* trans)
     stmt->setUInt32(3, m_achievementPoints);
     for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
     {
-        stmt->setInt32(4 + i * 3, m_professionInfo[i].skillId);
-        stmt->setInt32(5 + i * 3, m_professionInfo[i].skillValue);
-        stmt->setInt8(6 + i * 3, m_professionInfo[i].skillRank);
+        stmt->setInt32(4 + i * 4, m_professionInfo[i].skillId);
+        stmt->setInt32(5 + i * 4, m_professionInfo[i].skillValue);
+        stmt->setInt8(6 + i * 4, m_professionInfo[i].skillRank);
+        stmt->setString(7 + i * 4, m_professionInfo[i].knownRecipes.GetMaskForSave());
     }
-    stmt->setUInt32(10, GUID_LOPART(GetGUID()));
+    stmt->setUInt32(12, GUID_LOPART(GetGUID()));
 
     if (trans)
         (*trans)->Append(stmt);
@@ -571,7 +592,7 @@ void Guild::Member::SaveStatsToDB(SQLTransaction* trans)
 }
 
 void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints,
-                             uint32 profId1, uint32 profValue1, uint8 profRank1, uint32 profId2, uint32 profValue2, uint8 profRank2)
+                             uint32 profId1, uint32 profValue1, uint8 profRank1, std::string const& recipesMask1, uint32 profId2, uint32 profValue2, uint8 profRank2, std::string const& recipesMask2)
 {
     m_name      = name;
     m_level     = level;
@@ -583,7 +604,9 @@ void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class,
     m_achievementPoints = achPoints;
 
     m_professionInfo[0] = ProfessionInfo(profId1, profValue1, profRank1);
+    m_professionInfo[0].knownRecipes.LoadFromString(recipesMask1);
     m_professionInfo[1] = ProfessionInfo(profId2, profValue2, profRank2);
+    m_professionInfo[1].knownRecipes.LoadFromString(recipesMask2);
 }
 
 void Guild::Member::SetPublicNote(const std::string& publicNote)
@@ -663,9 +686,12 @@ bool Guild::Member::LoadFromDB(Field* fields)
              fields[35].GetUInt32(),                        // prof id 1
              fields[36].GetUInt32(),                        // prof value 1
              fields[37].GetUInt8(),                         // prof rank 1
-             fields[38].GetUInt32(),                        // prof id 2
-             fields[39].GetUInt32(),                        // prof value 2
-             fields[40].GetUInt8());                        // prof rank 2
+             fields[38].GetString(),                        // prof recipes mask 1
+             fields[39].GetUInt32(),                        // prof id 2
+             fields[40].GetUInt32(),                        // prof value 2
+             fields[41].GetUInt8(),                         // prof rank 2
+             fields[32].GetString()                         // prof recipes mask 2
+             );
     m_logoutTime    = fields[28].GetUInt32();               // characters.logout_time
     m_totalActivity = fields[30].GetUInt64();
     m_weekActivity = fields[31].GetUInt64();
@@ -1284,10 +1310,13 @@ void Guild::SaveToDB(bool withMembers)
         for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
         {
             if (Player* player = sObjectAccessor->FindPlayer(itr->second->GetGUID()))
+            {
                 itr->second->SetStats(player);
-
-            itr->second->SaveStatsToDB(&trans);
+                itr->second->SaveStatsToDB(&trans);
+            }
         }
+
+        UpdateGuildRecipes();
     }
 
     CharacterDatabase.CommitTransaction(trans);
@@ -2036,6 +2065,7 @@ void Guild::HandleMemberLogout(WorldSession* session)
     if (Member* member = GetMember(player->GetGUID()))
     {
         member->SetStats(player);
+        UpdateGuildRecipes();
         member->UpdateLogoutTime();
         member->SaveStatsToDB(NULL);
     }
@@ -2579,7 +2609,7 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
                 fields[4].GetUInt32(),
                 fields[5].GetUInt32(),
                 fields[6].GetUInt8(),
-                0, 0, 0, 0, 0, 0, 0);     // ach points and professions set on first login
+                0, 0, 0, 0, "", 0, 0, 0, "");     // ach points and professions set on first login
 
             ok = member->CheckStats();
         }
@@ -3675,4 +3705,73 @@ void Guild::SendGuildEventBankSlotChanged()
 {
     WorldPacket data(SMSG_GUILD_EVENT_GUILDBANKBAGSLOTS_CHANGED, 0);
     BroadcastPacket(&data);
+}
+
+void Guild::KnownRecipes::GenerateMask(uint32 skillId, std::set<uint32> const& spells)
+{
+    Clear();
+
+    uint32 index = 0;
+    for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
+    {
+        SkillLineAbilityEntry const* entry = sSkillLineAbilityStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        if (entry->skillId != skillId)
+            continue;
+
+        ++index;
+        if (spells.find(entry->spellId) == spells.end())
+            continue;
+
+        recipesMask[index / 8] |= 1 << (index % 8);
+    }
+}
+
+std::string Guild::KnownRecipes::GetMaskForSave() const
+{
+    std::stringstream ss;
+    for (uint32 i = 0; i < KNOW_RECIPES_MASK_SIZE; ++i)
+        ss << uint32(recipesMask[i]) << " ";
+
+    return ss.str();
+}
+
+void Guild::KnownRecipes::LoadFromString(std::string const& str)
+{
+    Clear();
+
+    Tokenizer tok(str, ' ');
+    for (uint32 i = 0; i < tok.size(); ++i)
+        recipesMask[i] = atoi(tok[i]);
+}
+
+bool Guild::KnownRecipes::IsEmpty() const
+{
+    for (uint32 i = 0; i < KNOW_RECIPES_MASK_SIZE; ++i)
+        if (recipesMask[i])
+            return false;
+
+    return true;
+}
+
+void Guild::UpdateGuildRecipes(uint32 skillId)
+{
+    if (skillId)
+        _guildRecipes[skillId].Clear();
+    else
+        _guildRecipes.clear();
+
+    for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+        {
+            Guild::Member::ProfessionInfo const& info = itr->second->GetProfessionInfo(i);
+
+            if (info.skillId && (!skillId || info.skillId == skillId))
+                for (uint32 j = 0; j < KNOW_RECIPES_MASK_SIZE; ++j)
+                    _guildRecipes[info.skillId].recipesMask[j] |= info.knownRecipes.recipesMask[j];
+        }
+    }
 }

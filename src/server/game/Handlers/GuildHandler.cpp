@@ -743,20 +743,34 @@ void WorldSession::HandleGuildNewsUpdateStickyOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildQueryGuildRecipesOpcode(WorldPacket& recvPacket)
 {
-    return;
-
     ObjectGuid guildGuid;
     recvPacket.ReadGuidMask<6, 7, 1, 2, 5, 0, 3, 4>(guildGuid);
     recvPacket.ReadGuidBytes<1, 6, 5, 4, 0, 7, 3, 2>(guildGuid);
 
-    WorldPacket data(SMSG_GUILD_RECIPES);
-    data.WriteBits(1, 15);
-    data << uint32(197);
-    for (uint32 i = 0; i < 300; ++i)
-        if (i == 0)
-            data << uint8(112);
-        else
-            data << uint8(0);
+    Guild* guild = _player->GetGuild();
+    if (!guild)
+        return;
+
+    Guild::KnownRecipesMap const& recipesMap = guild->GetGuildRecipes();
+
+    WorldPacket data(SMSG_GUILD_RECIPES, 2 + recipesMap.size() * (300 + 4));
+    uint32 bitpos = data.bitwpos();
+    uint32 count = 0;
+    data.WriteBits(count, 15);
+
+    for (Guild::KnownRecipesMap::const_iterator itr = recipesMap.begin(); itr != recipesMap.end(); ++itr)
+    {
+        if (itr->second.IsEmpty())
+            continue;
+
+        data << uint32(itr->first);
+        for (uint32 i = 0; i < KNOW_RECIPES_MASK_SIZE; ++i)
+            data << uint8(itr->second.recipesMask[i]);
+        ++count;
+    }
+
+    data.FlushBits();
+    data.PutBits(bitpos, count, 15);
 
     SendPacket(&data);
 }
