@@ -1407,7 +1407,12 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
 
 void Object::SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value)
 {
-    ASSERT(tab < m_dynamicTab.size() && index < 32);
+    //ASSERT(tab < m_dynamicTab.size() && index < 32);
+    if(!(tab < m_dynamicTab.size() && index < 32))
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "Object::SetDynamicUInt32Value: ASSERT FAILED index %u, tab %u, m_dynamicTab.size() %u", index, tab, m_dynamicTab.size());
+        return;
+    }
 
     if (m_dynamicTab[tab][index] != value)
     {
