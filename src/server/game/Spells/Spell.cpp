@@ -405,6 +405,7 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
 {
     m_customError = SPELL_CUSTOM_ERROR_NONE;
     m_skipCheck = skipCheck;
+    m_missed = false;
     m_selfContainer = NULL;
     m_referencedFromCurrentSpell = false;
     m_executedCurrently = false;
@@ -636,6 +637,8 @@ void Spell::SelectSpellTargets()
     uint32 processedAreaEffectsMask = 0;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
+        if (m_missed)
+            break;
         // not call for empty effect.
         // Also some spells use not used effect targets for store targets for dummy effect in triggered spells
         if (!m_spellInfo->GetEffect(i, m_diffMode).IsEffect())
@@ -660,6 +663,16 @@ void Spell::SelectSpellTargets()
 
         if (m_targets.HasDst())
             AddDestTarget(*m_targets.GetDst(), i);
+
+        uint32 targethit = 0;
+        for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+        {
+            if (ihit->missCondition == SPELL_MISS_NONE)
+                targethit++;
+        }
+
+        if (!targethit)
+            m_missed = true;
 
         if (m_spellInfo->IsChanneled())
         {
@@ -3486,69 +3499,72 @@ void Spell::cast(bool skipCheck)
 
     CallScriptAfterCastHandlers();
 
-    if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
+    if (!m_missed)
     {
-        for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
-            if (i->effect < 0)
-            {
-                if(i->learnspell)
+        if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
+        {
+            for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+                if (i->effect < 0)
                 {
-                    if(Player* _lplayer = m_caster->ToPlayer())
-                        _lplayer->removeSpell(-(i->effect));
+                    if(i->learnspell)
+                    {
+                        if(Player* _lplayer = m_caster->ToPlayer())
+                            _lplayer->removeSpell(-(i->effect));
+                    }
+                    else
+                        m_caster->RemoveAurasDueToSpell(-(i->effect));
                 }
                 else
-                    m_caster->RemoveAurasDueToSpell(-(i->effect));
-            }
-            else
-            {
-                if (i->type2 == 3)
                 {
-                    if (Unit* owner = m_caster->GetOwner())
+                    if (i->type2 == 3)
                     {
-                        if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
+                        if (Unit* owner = m_caster->GetOwner())
+                        {
+                            if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
+                                continue;
+                            if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
+                                continue;
+                        }
+                        else continue;
+                    }
+                    else if(i->type2 == 2)
+                    {
+                        if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
                             continue;
-                        if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
+                        if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
                             continue;
                     }
-                    else continue;
-                }
-                else if(i->type2 == 2)
-                {
-                    if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
+                    else if(i->type2 && m_targets.GetUnitTarget())
+                    {
+                        if(i->hastalent != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent))
+                            continue;
+                        if(i->hastalent2 != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent2))
+                            continue;
+                    }
+                    else
+                    {
+                        if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
+                            continue;
+                        if(i->hastalent2 != 0 && !m_caster->HasAura(i->hastalent2))
+                            continue;
+                    }
+                    if(i->chance != 0 && !roll_chance_i(i->chance))
                         continue;
-                    if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
+                    if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->HasSpellCooldown(i->effect))
                         continue;
-                }
-                else if(i->type2 && m_targets.GetUnitTarget())
-                {
-                    if(i->hastalent != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent))
-                        continue;
-                    if(i->hastalent2 != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent2))
-                        continue;
-                }
-                else
-                {
-                    if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
-                        continue;
-                    if(i->hastalent2 != 0 && !m_caster->HasAura(i->hastalent2))
-                        continue;
-                }
-                if(i->chance != 0 && !roll_chance_i(i->chance))
-                    continue;
-                if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->HasSpellCooldown(i->effect))
-                    continue;
 
-                if(i->learnspell)
-                {
-                    if(Player* _lplayer = m_caster->ToPlayer())
-                        _lplayer->learnSpell(i->effect, false);
-                }
-                else
-                    m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
+                    if(i->learnspell)
+                    {
+                        if(Player* _lplayer = m_caster->ToPlayer())
+                            _lplayer->learnSpell(i->effect, false);
+                    }
+                    else
+                        m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
 
-                if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
-                    m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
-            }
+                    if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
+                        m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
+                }
+        }
     }
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -5390,23 +5406,39 @@ void Spell::TakePower()
         return;
 
     Powers powerType = Powers(power.powerType);
+    int32  ifMissedPowerCost = m_powerCost;
     bool hit = true;
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (powerType == POWER_RAGE || powerType == POWER_ENERGY || powerType == POWER_RUNES)
-            if (uint64 targetGUID = m_targets.GetUnitTargetGUID())
-                for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-                    if (ihit->targetGUID == targetGUID)
+        if (uint64 targetGUID = m_targets.GetUnitTargetGUID())
+            for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+                if (ihit->targetGUID == targetGUID)
+                {
+                    if (ihit->missCondition != SPELL_MISS_NONE && ihit->missCondition != SPELL_MISS_IMMUNE)
                     {
-                        if (ihit->missCondition != SPELL_MISS_NONE)
+                        switch (powerType)
                         {
-                            hit = false;
-                            //lower spell cost on fail (by talent aura)
-                            if (Player* modOwner = m_caster->ToPlayer()->GetSpellModOwner())
-                                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_SPELL_COST_REFUND_ON_FAIL, m_powerCost);
+                        case POWER_CHI:
+                        case POWER_HOLY_POWER:
+                        case POWER_SHADOW_ORB:
+                        case POWER_SOUL_SHARDS:
+                            ifMissedPowerCost = 0;
+                            break;
+                        case POWER_ENERGY:
+                        case POWER_RAGE:
+                        case POWER_RUNES:
+                            ifMissedPowerCost = CalculatePct(m_powerCost, 20);
+                            break;
+                        default:
+                            break;
                         }
-                        break;
+                        hit = false;
+                        //lower spell cost on fail (by talent aura)
+                        if (Player* modOwner = m_caster->ToPlayer()->GetSpellModOwner())
+                            modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_SPELL_COST_REFUND_ON_FAIL, m_powerCost);
                     }
+                    break;
+                }
     }
 
     if (powerType == POWER_RUNES)
@@ -5434,7 +5466,7 @@ void Spell::TakePower()
     if (hit)
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
-        m_caster->ModifyPower(powerType, -irand(0, m_powerCost/4));
+        m_caster->ModifyPower(powerType, -ifMissedPowerCost);
 }
 
 void Spell::TakeAmmo()
