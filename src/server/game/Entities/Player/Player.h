@@ -166,34 +166,10 @@ struct PlayerCurrency
     CurrencyTypesEntry const * currencyEntry;
 };
 
-struct PlayerArchaelogy
-{
-    uint32 pointId;
-    uint32 count;
-    bool active;
-    time_t resetTime;
-};
-
-struct PlayerArchProject
-{
-    uint32 projectId;
-    uint32 RaceID;
-};
-
-struct PlayerArchProjectHistory
-{
-    uint32 projectId;
-    uint32 count;
-    time_t TimeCreated;
-};
-
 typedef UNORDERED_MAP<uint32, PlayerTalent*> PlayerTalentMap;
 typedef UNORDERED_MAP<uint32, PlayerSpell*> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
 typedef UNORDERED_MAP<uint32, PlayerCurrency> PlayerCurrenciesMap;
-typedef UNORDERED_MAP<uint32, PlayerArchaelogy> PlayerArchaelogyMap;
-typedef UNORDERED_MAP<uint32, PlayerArchProject> PlayerArchProjectMap;
-typedef UNORDERED_MAP<uint32, PlayerArchProjectHistory> PlayerArchProjectHistoryMap;
 
 typedef std::list<uint64> WhisperListContainer;
 
@@ -203,7 +179,17 @@ struct SpellCooldown
     uint16 itemid;
 };
 
+struct SpellChargeData
+{
+    uint8 charges;
+    uint8 maxCharges;
+
+    SpellInfo const* spellInfo;
+    uint32 timer;
+};
+
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
+typedef std::map<uint32, SpellChargeData> SpellChargeDataMap;
 typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
@@ -2082,6 +2068,12 @@ class Player : public Unit, public GridObject<Player>
         void RemoveAllSpellCooldown();
         void _LoadSpellCooldowns(PreparedQueryResult result);
         void _SaveSpellCooldowns(SQLTransaction& trans);
+
+        bool HasChargesForSpell(SpellInfo const* spellInfo) const;
+        uint8 GetSpellMaxCharges(SpellInfo const* spellInfo) const;
+        void TakeSpellCharge(SpellInfo const* spellInfo);
+        void UpdateSpellCharges(uint32 diff);
+
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
 
@@ -3357,6 +3349,7 @@ class Player : public Unit, public GridObject<Player>
         BattlePetMgr   m_battlePetMgr;
 
         SpellCooldowns m_spellCooldowns;
+        SpellChargeDataMap m_spellChargeData;
 
         uint32 m_ChampioningFaction;
         uint32 m_ChampioningFactionDungeonLevel;

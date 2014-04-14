@@ -3436,16 +3436,18 @@ void Spell::cast(bool skipCheck)
     // set to real guid to be sent later to the client
     m_targets.UpdateTradeSlotItem();
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (Player* plrCaster = m_caster->ToPlayer())
     {
         if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_ITEM) && m_CastItem)
         {
-            m_caster->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM, m_CastItem->GetEntry());
-            m_caster->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM2, m_CastItem->GetEntry());
-            m_caster->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM, m_CastItem->GetEntry());
+            plrCaster->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM, m_CastItem->GetEntry());
+            plrCaster->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM2, m_CastItem->GetEntry());
+            plrCaster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM, m_CastItem->GetEntry());
         }
 
-        m_caster->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, m_spellInfo->Id);
+        plrCaster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, m_spellInfo->Id);
+
+        plrCaster->TakeSpellCharge(m_spellInfo);
     }
 
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
@@ -5823,13 +5825,17 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_SPELL_IN_PROGRESS;
         }
 
-        if (m_caster->ToPlayer()->HasSpellCooldown(m_spellInfo->Id))
+        Player* playerCaster = m_caster->ToPlayer();
+        if (playerCaster->HasSpellCooldown(m_spellInfo->Id))
         {
             if (m_triggeredByAuraSpell)
                 return SPELL_FAILED_DONT_REPORT;
             else
                 return SPELL_FAILED_NOT_READY;
         }
+
+        if (!playerCaster->HasChargesForSpell(m_spellInfo))
+            return m_triggeredByAuraSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NO_CHARGES_REMAIN;
     }
 
     if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL && !m_caster->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_ALLOW_CHEAT_SPELLS))

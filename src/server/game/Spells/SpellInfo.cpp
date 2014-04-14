@@ -931,13 +931,18 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     Dispel = _categorie ? _categorie->Dispel : 0;
     Mechanic = _categorie ? _categorie->Mechanic : 0;
     StartRecoveryCategory = _categorie ? _categorie->StartRecoveryCategory : 0;
+    ChargeRecoveryCategory = _categorie ? _categorie->ChargeRecoveryCategory : 0;
     DmgClass = _categorie ? _categorie->DmgClass : 0;
     PreventionType = _categorie ? _categorie->PreventionType : 0;
 
-    if (SpellCategoryEntry const* categoryInfo = sSpellCategoryStores.LookupEntry(Category))
-    	CategoryFlags = categoryInfo->Flags;
-    else
-    	CategoryFlags = 0;
+    // SpellCategoryEntry
+    SpellCategoryEntry const* categoryInfo = sSpellCategoryStores.LookupEntry(Category);
+    CategoryFlags = categoryInfo ? categoryInfo->Flags : 0;
+
+    // SpellCategoryEntry
+    categoryInfo = sSpellCategoryStores.LookupEntry(ChargeRecoveryCategory);
+    CategoryCharges = categoryInfo ? categoryInfo->chargeCount : 0;
+    CategoryChargeRecoveryTime = categoryInfo ? categoryInfo->chargeRegenTime : 0;
 
     // SpellClassOptionsEntry
     SpellClassOptionsEntry const* _class = GetSpellClassOptions();

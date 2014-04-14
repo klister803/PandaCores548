@@ -2023,6 +2023,8 @@ void Player::Update(uint32 p_time)
     else
         m_groupUpdateDelay -= p_time;
 
+    UpdateSpellCharges(p_time);
+
     Pet* pet = GetPet();
     if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange()) && !pet->isPossessed())
         RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT, true);
@@ -5038,6 +5040,72 @@ void Player::_SaveSpellCooldowns(SQLTransaction& trans)
     // if something changed execute
     if (!first_round)
         trans->Append(ss.str().c_str());
+}
+
+bool Player::HasChargesForSpell(SpellInfo const* spellInfo) const
+{
+    SpellChargeDataMap::const_iterator itr = m_spellChargeData.find(spellInfo->Id);
+
+    return itr == m_spellChargeData.end() || itr->second.charges > 0;
+}
+
+uint8 Player::GetSpellMaxCharges(SpellInfo const* spellInfo) const
+{
+    int count = spellInfo->CategoryCharges;
+
+    AuraEffectList const& auraEffs = GetAuraEffectsByType(SPELL_AURA_MOD_CHARGES);
+    for (AuraEffectList::const_iterator itr = auraEffs.begin(); itr != auraEffs.end(); ++itr)
+        if ((*itr)->GetMiscValue() == spellInfo->ChargeRecoveryCategory)
+            count += (*itr)->GetAmount();
+
+    return std::max(0, count);
+}
+
+void Player::TakeSpellCharge(SpellInfo const* spellInfo)
+{
+    uint32 maxCharges = GetSpellMaxCharges(spellInfo);
+    if (!maxCharges)
+        return;
+
+    if (m_spellChargeData.find(spellInfo->Id) == m_spellChargeData.end())
+    {
+        SpellChargeData& data = m_spellChargeData[spellInfo->Id];
+        data.charges = data.maxCharges = maxCharges;
+        data.spellInfo = spellInfo;
+        data.timer = 0;
+    }
+
+    SpellChargeData& data = m_spellChargeData[spellInfo->Id];
+    if (!data.charges)
+        return;
+
+    data.maxCharges = maxCharges;
+    if (data.charges >= data.maxCharges)
+    {
+        data.maxCharges = data.charges = maxCharges;
+        data.timer = 0;
+    }
+
+    --data.charges;
+    //ChatHandler(this).PSendSysMessage("Spell %u now has %u charges (%u max)", spellInfo->Id, data.charges, data.maxCharges);
+}
+
+void Player::UpdateSpellCharges(uint32 diff)
+{
+    for (SpellChargeDataMap::iterator itr = m_spellChargeData.begin(); itr != m_spellChargeData.end(); ++itr)
+    {
+        SpellChargeData& data = itr->second;
+        if (data.charges == data.maxCharges)
+            continue;
+
+        data.timer += diff;
+        while (data.timer >= data.spellInfo->CategoryChargeRecoveryTime && data.charges < data.maxCharges)
+        {
+            data.timer -= data.spellInfo->CategoryChargeRecoveryTime;
+            ++data.charges;
+            //ChatHandler(this).PSendSysMessage("Spell %u now has %u charges (%u max)", data.spellInfo->Id, data.charges, data.maxCharges);
+        }
+    }
 }
 
 uint32 Player::GetNextResetSpecializationCost() const
@@ -23505,13 +23573,13 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     // SPELL_CATEGORY_FLAGS_IS_DAILY_COOLDOWN
     if (spellInfo->CategoryFlags & SPELL_CATEGORY_FLAGS_IS_DAILY_COOLDOWN)
     {
-    	int days = catrec / 1000;
-    	time_t cooldown = curTime + (86400 * days);
-    	tm *ltm = localtime(&cooldown);
-    	ltm->tm_hour = 0;
-    	ltm->tm_min = 0;
-    	ltm->tm_sec = 0;
-    	recTime = mktime(ltm);
+        int days = catrec / 1000;
+        time_t cooldown = curTime + (86400 * days);
+        tm *ltm = localtime(&cooldown);
+        ltm->tm_hour = 0;
+        ltm->tm_min = 0;
+        ltm->tm_sec = 0;
+        recTime = mktime(ltm);
     }
 
     // self spell cooldown

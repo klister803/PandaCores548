@@ -2017,13 +2017,18 @@ struct SpellCategoriesEntry
     uint32    Mechanic;                                     // 3        m_mechanic
     uint32    PreventionType;                               // 154      m_preventionType
     uint32    StartRecoveryCategory;                        // 145      m_startRecoveryCategory
+    uint32    ChargeRecoveryCategory;                       //
 };
 
 // SpellCategory.dbc
 struct SpellCategoryEntry
 {
-	uint32 CategoryId;
-	uint32 Flags;
+    uint32 CategoryId;
+    uint32 Flags;
+    //uint32
+    //char* categoryName;
+    uint32 chargeCount;
+    uint32 chargeRegenTime;
 };
 
 typedef std::set<uint32> SpellCategorySet;

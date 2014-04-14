@@ -304,6 +304,8 @@ public:
     uint32 Id;
     uint32 Category;
     uint32 CategoryFlags;
+    uint32 CategoryCharges;
+    uint32 CategoryChargeRecoveryTime;
     uint32 Dispel;
     uint32 Mechanic;
     uint32 Attributes;
@@ -338,6 +340,7 @@ public:
     uint32 RecoveryTime;
     uint32 CategoryRecoveryTime;
     uint32 StartRecoveryCategory;
+    uint32 ChargeRecoveryCategory;
     uint32 StartRecoveryTime;
     uint32 InterruptFlags;
     uint32 AuraInterruptFlags;
