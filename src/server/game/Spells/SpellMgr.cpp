@@ -4398,13 +4398,21 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 15;
                     break;
-                //
+                //Minibosses
                 case 139900: //Stormcloud
                     spellInfo->Effects[0].TargetA = 1;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
                 case 139901: //Stormcloud tr ef - dmg
                     spellInfo->Effects[0].TargetB = 15;
+                    break;
+                //Horridon
+                case 136740: //Double swipe tr ef
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(4);
+                    break;
+                case 136769: //Horridon charge
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     break;
 
                 //World Boss

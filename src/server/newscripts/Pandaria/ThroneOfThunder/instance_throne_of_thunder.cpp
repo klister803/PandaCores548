@@ -13,9 +13,7 @@ public:
     struct instance_throne_of_thunder_InstanceMapScript : public InstanceScript
     {
         instance_throne_of_thunder_InstanceMapScript(Map* map) : InstanceScript(map) {}
-
-        uint32 SLGSS_timer;
-
+        
         //GameObjects
         uint64 jinrokhpredoorGuid;
         uint64 jinrokhentdoorGuid;
@@ -25,11 +23,15 @@ public:
         uint64 mogufont_sl_Guid;
         uint64 jinrokhexdoorGuid;
         uint64 horridonpredoorGuid;
+        uint64 horridonentdoorGuid;
+        uint64 horridonexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
         uint64 jinrokhGuid;
+        uint64 stormbringerGuid;
         uint64 horridonGuid;
+        uint64 jalakGuid;
         uint64 mallakGuid;
         uint64 marliGuid;
         uint64 kazrajinGuid;
@@ -54,8 +56,6 @@ public:
         {
             SetBossNumber(14);
 
-            SLGSS_timer        = 3000;
-
             //GameObject
             jinrokhentdoorGuid  = 0;
             mogufont_sr_Guid    = 0;
@@ -64,11 +64,15 @@ public:
             mogufont_sl_Guid    = 0;
             jinrokhexdoorGuid   = 0;
             horridonpredoorGuid = 0;
+            horridonentdoorGuid = 0;
+            horridonexdoorGuid  = 0;
            
             //Creature
             stormcallerGuid     = 0;
             jinrokhGuid         = 0;
+            stormbringerGuid    = 0;
             horridonGuid        = 0;
+            jalakGuid           = 0;
             mallakGuid          = 0;
             marliGuid           = 0;
             kazrajinGuid        = 0;
@@ -100,8 +104,14 @@ public:
             case NPC_JINROKH:
                 jinrokhGuid = creature->GetGUID();
                 break;
+            case NPC_STORMBRINGER:
+                stormbringerGuid = creature->GetGUID();
+                break;
             case NPC_HORRIDON: 
                 horridonGuid = creature->GetGUID();
+                break;
+            case NPC_JALAK:
+                jalakGuid = creature->GetGUID();
                 break;
             //Council of Elders
             case NPC_FROST_KING_MALAKK:
@@ -197,6 +207,12 @@ public:
             case GO_HORRIDON_PRE_DOOR:
                 horridonpredoorGuid = go->GetGUID();
                 break;
+            case GO_HORRIDON_ENT_DOOR:
+                horridonentdoorGuid = go->GetGUID();
+                break;
+            case GO_HORRIDON_EX_DOOR:
+                horridonexdoorGuid = go->GetGUID();
+                break;
             default:
                 break;
             }
@@ -223,7 +239,24 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(jinrokhentdoorGuid, true);
-                        //HandleGameObject(jinrokhexdoorGuid, true); next boss not ready
+                        HandleGameObject(jinrokhexdoorGuid, true); 
+                        break;
+                    }
+                }
+                break;
+            case DATA_HORRIDON:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(horridonentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(horridonentdoorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(horridonentdoorGuid, true);
+                        //HandleGameObject(horridonexdoorGuid, true);
                         break;
                     }
                 }
@@ -250,6 +283,8 @@ public:
                 return jinrokhGuid;
             case NPC_HORRIDON: 
                 return horridonGuid;
+            case NPC_JALAK:
+                return jalakGuid;
             //Council of Elders
             case NPC_FROST_KING_MALAKK:
                 return mallakGuid;
@@ -311,30 +346,7 @@ public:
                 }
             }
         }
-
-        void Update(uint32 diff)
-        {
-            if (SLGSS_timer)
-            {
-                if (SLGSS_timer <= diff)
-                {
-                    SLGSS_timer = 0;
-                    SLGSS_Check();
-                }
-                else
-                    SLGSS_timer -= diff;
-            }
-        }
-
-        void SLGSS_Check()
-        {
-            if (Creature* sc = instance->GetCreature(stormcallerGuid))
-            {
-                if (!sc->isAlive())
-                    HandleGameObject(jinrokhpredoorGuid, true);
-            }
-        }
-
+        
         bool IsWipe()
         {
             Map::PlayerList const& PlayerList = instance->GetPlayers();
