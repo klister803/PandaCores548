@@ -223,7 +223,9 @@ void GuildMgr::LoadGuilds()
                                                      //   19                 20                21                 22
                                                      "BankResetTimeTab6, BankRemSlotsTab6, BankResetTimeTab7, BankRemSlotsTab7, "
                                                      //   23      24       25       26      27         28             29          30           31          32       33         34
-                                                     "c.name, c.level, c.class, c.zone, c.account, c.logout_time, re.standing, XpContrib, XpContribWeek, RepWeek, AchPoint, c.gender "
+                                                     "c.name, c.level, c.class, c.zone, c.account, c.logout_time, re.standing, XpContrib, XpContribWeek, RepWeek, AchPoint, c.gender, "
+                                                     //   35   36          37         38       39          40
+                                                     "profId1, profValue1, profRank1, profId2, profValue2, profRank2 "
                                                      "FROM guild_member gm LEFT JOIN characters c ON c.guid = gm.guid LEFT JOIN character_reputation re ON re.guid = gm.guid AND re.faction = 1168 ORDER BY guildid ASC");
 
         if (!result)
