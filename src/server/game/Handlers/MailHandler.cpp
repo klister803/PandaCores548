@@ -613,10 +613,6 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
     // client can't work with packets > max int16 value
     const uint32 maxPacketSize = 32767;
 
-    uint32 mailsCount = 0;                                 // real send to client mails amount
-    uint32 realCount  = 0;                                 // real mails amount
-    time_t cur_time = time(NULL);
-
     GameObject* _mailbox = NULL;
     Trinity::MailBoxMasterCheck check(player);
     Trinity::GameObjectSearcher<Trinity::MailBoxMasterCheck> searcher(player, _mailbox, check);
@@ -624,16 +620,22 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 
     WorldPacket data(SMSG_MAIL_LIST_RESULT, 200);         // guess size
 
-    data << uint32(0);                                    // real mail's count
+    // create bit stream
+    uint32 shownCount = 0;                                // real send to client mails amount
+    uint32 totalCount  = 0;                               // real mails amount
+    time_t cur_time = time(NULL);
+
+    data << uint32(0);                                    // placeholder, real mail's count
     uint32 bit_pos = data.bitwpos();
     data.WriteBits(0, 18);                                // placeholder, client mail show count
 
+    // create bit stream
     for (PlayerMails::iterator itr = player->GetMailBegin(); itr != player->GetMailEnd(); ++itr)
     {
         // Only first 50 mails are displayed
-        if (mailsCount >= 50)
+        if (shownCount >= 50)
         {
-            realCount += 1;
+            totalCount += 1;
             continue;
         }
 
@@ -649,11 +651,8 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         data.WriteBit(otherMail);                                // non-player sender
         data.WriteBits(item_count, 17);                          // attached items count
 
-        if (item_count)
-        {
-            for (int i = 0; i < item_count; i++)
-                data.WriteBit(0);                                // unk bit, maybe related to accBound items
-        }
+        for (int i = 0; i < item_count; i++)
+            data.WriteBit(0);                                    // unk bit, maybe related to accBound items
 
         data.WriteBit(normalMail);                               // player sender
 
@@ -665,15 +664,23 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
 
         data.WriteBits((*itr)->body.size(), 13);                 // mail body size
 
-        ++realCount;
-        ++mailsCount;
+        ++totalCount;
+        ++shownCount;
     }
 
+    // required more reliable check bit stream size -> byte data size
+    shownCount = 0;
+    totalCount = 0;
+
+    // create raw byte data
     for (PlayerMails::iterator itr = player->GetMailBegin(); itr != player->GetMailEnd(); ++itr)
     {
         // Only first 50 mails are displayed
-        if (mailsCount >= 50)
+        if (shownCount >= 50)
+        {
+            totalCount += 1;
             continue;
+        }
 
         // skip deleted or not delivered (deliver delay not expired) mails
         if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
@@ -683,30 +690,31 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         bool normalMail = (*itr)->messageType == MAIL_NORMAL;
         bool otherMail = (*itr)->messageType != MAIL_NORMAL;
 
-        if (item_count)
+        for (uint8 i = 0; i < item_count; i++)
         {
-            for (uint8 i = 0; i < item_count; i++)
-            {
-                Item* item = player->GetMItem((*itr)->items[i].item_guid);
+            Item* item = player->GetMItem((*itr)->items[i].item_guid);
 
-                data << uint32((item ? item->GetCount() : 0));   // stack count
-                data << uint8(i);                                // item index, order in attachments
-                data << uint32(4);                               // next data size for some client packet? sniffs has only number 4
-                data << uint32(0);                               // some unk data X
-                data << uint32((item ? item->GetGUIDLow() : 0)); // unk, item low guid?
-                data << uint32(0);                               // unk
-                data << uint32((item ? item->GetEntry() : 0));   // item entry
-                for (uint8 j = 0; j < MAX_INSPECTED_ENCHANTMENT_SLOT; j++)
-                {
-                    data << uint32((item ? item->GetEnchantmentId((EnchantmentSlot)j) : 0));
-                    data << uint32((item ? item->GetEnchantmentDuration((EnchantmentSlot)j) : 0));
-                    data << uint32((item ? item->GetEnchantmentCharges((EnchantmentSlot)j) : 0));
-                }
-                data << uint32((item ? item->GetUInt32Value(ITEM_FIELD_DURABILITY) : 0));
-                data << uint32((item ? item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY) : 0));
-                data << int32((item ? item->GetItemRandomPropertyId() : 0));
-                data << uint32((item ? item->GetSpellCharges() : 0));
+            data << uint32((item ? item->GetCount() : 0));   // stack count
+            data << uint8(i);                                // item index, order in attachments
+            // item dynamic info (needed for battlepets again!)
+            data << uint32(4);
+            data << uint32(0);
+            //
+            data << uint32((item ? item->GetGUIDLow() : 0));
+            data << uint32((item ? item->GetItemSuffixFactor() : 0));
+            data << uint32((item ? item->GetEntry() : 0));
+
+            for (uint8 j = 0; j < MAX_INSPECTED_ENCHANTMENT_SLOT; j++)
+            {
+                data << uint32((item ? item->GetEnchantmentId((EnchantmentSlot)j) : 0));
+                data << uint32((item ? item->GetEnchantmentDuration((EnchantmentSlot)j) : 0));
+                data << uint32((item ? item->GetEnchantmentCharges((EnchantmentSlot)j) : 0));
             }
+
+            data << uint32((item ? item->GetUInt32Value(ITEM_FIELD_DURABILITY) : 0));
+            data << uint32((item ? item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY) : 0));
+            data << int32((item ? item->GetItemRandomPropertyId() : 0));
+            data << uint32((item ? item->GetSpellCharges() : 0));
         }
 
         data << uint32((*itr)->messageID);                       // message ID?
@@ -729,11 +737,14 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         data << uint32((*itr)->checked);                         // checked
         data << uint32((*itr)->stationery);                      // stationery (Stationery.dbc)
         data << float(((*itr)->expire_time-time(NULL))/DAY);     // time to expire
+
+        ++totalCount;
+        ++shownCount;
     }
 
-    data.put<uint32>(0, realCount);                         // this will display warning about undelivered mail to player if realCount > mailsCount
+    data.put<uint32>(0, totalCount);                         // this will display warning about undelivered mail to player if realCount > mailsCount
     data.FlushBits();
-    data.PutBits<uint8>(bit_pos, mailsCount, 18);
+    data.PutBits<uint8>(bit_pos, shownCount, 18);
     SendPacket(&data);
 
     // recalculate m_nextMailDelivereTime and unReadMails
