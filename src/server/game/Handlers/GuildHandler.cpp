@@ -764,8 +764,7 @@ void WorldSession::HandleGuildQueryGuildRecipesOpcode(WorldPacket& recvPacket)
             continue;
 
         data << uint32(itr->first);
-        for (uint32 i = 0; i < KNOW_RECIPES_MASK_SIZE; ++i)
-            data << uint8(itr->second.recipesMask[i]);
+        data.append(itr->second.recipesMask, KNOW_RECIPES_MASK_SIZE);
         ++count;
     }
 
@@ -789,4 +788,35 @@ void WorldSession::HandleGuildQueryGuildMembersForRecipe(WorldPacket& recvPacket
 
     if (Guild* guild = _player->GetGuild())
         guild->SendGuildMembersForRecipeResponse(this, skillId, spellId);
+}
+
+void WorldSession::HandleGuildQueryGuildMembersRecipes(WorldPacket& recvPacket)
+{
+    ObjectGuid playerGuid, guildGuid;
+    uint32 skillId;
+
+    recvPacket >> skillId;
+    recvPacket.ReadGuidMask<0, 4>(guildGuid);
+    recvPacket.ReadGuidMask<4, 0>(playerGuid);
+    recvPacket.ReadGuidMask<6, 5, 1>(guildGuid);
+    recvPacket.ReadGuidMask<5, 1, 3, 2>(playerGuid);
+    recvPacket.ReadGuidMask<2, 7, 3>(guildGuid);
+    recvPacket.ReadGuidMask<7, 6>(playerGuid);
+
+    recvPacket.ReadGuidBytes<2>(guildGuid);
+    recvPacket.ReadGuidBytes<0>(playerGuid);
+    recvPacket.ReadGuidBytes<1>(guildGuid);
+    recvPacket.ReadGuidBytes<7, 5>(playerGuid);
+    recvPacket.ReadGuidBytes<4, 5, 7, 3>(guildGuid);
+    recvPacket.ReadGuidBytes<4>(playerGuid);
+    recvPacket.ReadGuidBytes<6>(guildGuid);
+    recvPacket.ReadGuidBytes<3>(playerGuid);
+    recvPacket.ReadGuidBytes<0>(guildGuid);
+    recvPacket.ReadGuidBytes<2, 6, 1>(playerGuid);
+
+    Guild* guild = _player->GetGuild();
+    if (!guild || !guild->IsMember(playerGuid))
+        return;
+
+    guild->SendGuildMemberRecipesResponse(this, playerGuid, skillId);
 }

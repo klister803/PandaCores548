@@ -984,7 +984,7 @@ enum Opcodes
     SMSG_GUILD_MAX_DAILY_XP                           = 0,      // 5.4.1 17538 obsolete
     SMSG_GUILD_MEMBERS_FOR_RECIPE                     = 0x1050, // 5.4.1 17538
     SMSG_GUILD_MEMBER_DAILY_RESET                     = 0x10D9, // 5.4.1 17538
-    SMSG_GUILD_MEMBER_RECIPES                         = 0xBFF,  // 5.0.5 16048
+    SMSG_GUILD_MEMBER_RECIPES                         = 0x0D51, // 5.4.1 17538
     SMSG_GUILD_MEMBER_UPDATE_NOTE                     = 0xF6C,  // 5.0.5 16048
     SMSG_GUILD_MOVE_COMPLETE                          = 0xB40,  // 5.0.5 16048
     SMSG_GUILD_MOVE_STARTING                          = 0xA76,  // 5.0.5 16048

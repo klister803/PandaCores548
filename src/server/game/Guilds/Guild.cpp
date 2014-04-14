@@ -3828,3 +3828,31 @@ void Guild::SendGuildMembersForRecipeResponse(WorldSession* session, uint32 skil
 
     session->SendPacket(&data);
 }
+
+void Guild::SendGuildMemberRecipesResponse(WorldSession* session, ObjectGuid playerGuid, uint32 skillId)
+{
+    Member* member = GetMember(playerGuid);
+    if (!member)
+        return;
+
+    for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+    {
+        Member::ProfessionInfo const& info = member->GetProfessionInfo(i);
+        if (info.skillId == skillId)
+        {
+            WorldPacket data(SMSG_GUILD_MEMBER_RECIPES, 8 + 1 + 4 * 3 + 300);
+            data.WriteGuidMask<0, 7, 5, 2, 4, 1, 6, 3>(playerGuid);
+
+            data << uint32(info.skillValue);
+            data.WriteGuidBytes<7, 1, 6>(playerGuid);
+            data.append(info.knownRecipes.recipesMask, KNOW_RECIPES_MASK_SIZE);
+            data << uint32(info.skillRank);
+            data.WriteGuidBytes<4, 0>(playerGuid);
+            data << uint32(info.skillId);
+            data.WriteGuidBytes<5, 3, 2>(playerGuid);
+
+            session->SendPacket(&data);
+            return;
+        }
+    }
+}

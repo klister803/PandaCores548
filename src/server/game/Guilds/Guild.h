@@ -920,6 +920,7 @@ public:
     KnownRecipes& GetGuildRecipes(uint32 skillId) { return _guildRecipes[skillId]; }
     void UpdateGuildRecipes(uint32 skillId = 0);
     void SendGuildMembersForRecipeResponse(WorldSession* session, uint32 skillId, uint32 spellId);
+    void SendGuildMemberRecipesResponse(WorldSession* session, ObjectGuid playerGuid, uint32 skillId);
 
 protected:
     uint32 m_id;
