@@ -1454,10 +1454,10 @@ void World::SetInitialWorldSettings()
     sInstanceSaveMgr->LoadInstances();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Restructuring Creatures GUIDs...");
-    sObjectMgr->RestructCreatureGUID(10000);
+    //sObjectMgr->RestructCreatureGUID(10000);
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Restructuring Gameobjects GUIDs...");
-    sObjectMgr->RestructGameObjectGUID(10000);
+    //sObjectMgr->RestructGameObjectGUID(10000);
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Localization strings...");
     uint32 oldMSTime = getMSTime();
