@@ -3668,6 +3668,46 @@ public:
     }
 };
 
+// spell 147655 - Токсин хваткой лягушки
+class spell_gulp_frog_toxin : public SpellScriptLoader
+{
+    public:
+        spell_gulp_frog_toxin() : SpellScriptLoader("spell_gulp_frog_toxin") { }
+
+        class spell_gulp_frog_toxinAuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gulp_frog_toxinAuraScript);
+
+            uint32 lastStack;
+
+            bool Load()
+            {
+                lastStack = 0;
+                return true;
+            }
+
+            void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* target = GetTarget())
+                    if(lastStack == 10)
+                        target->CastSpell(target, 147656, false);
+
+                lastStack = GetStackAmount();
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_gulp_frog_toxinAuraScript::OnStackChange, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        // function which creates AuraScript
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gulp_frog_toxinAuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3748,4 +3788,5 @@ void AddSC_generic_spell_scripts()
     new spell_brewfest_speed();
     new spell_gen_tricky_treat();
     new spell_gen_leviroth_self_impale();
+    new spell_gulp_frog_toxin();
 }
