@@ -49,9 +49,6 @@ enum WarriorSpells
     WARRIOR_NPC_MOCKING_BANNER                  = 59390,
     WARRIOR_SPELL_COLOSSUS_SMASH                = 86346,
     WARRIOR_SPELL_MORTAL_STRIKE_AURA            = 12294,
-    WARRIOR_SPELL_TASTE_FOR_BLOOD               = 56638,
-    WARRIOR_SPELL_ALLOW_OVERPOWER               = 119962,
-    WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE   = 125831,
     WARRIOR_SPELL_SECOND_WIND_REGEN             = 16491,
     WARRIOR_SPELL_DRAGON_ROAR_KNOCK_BACK        = 118895,
     WARRIOR_SPELL_MEAT_CLEAVER_PROC             = 85739,
@@ -407,51 +404,6 @@ class spell_warr_second_wind : public SpellScriptLoader
         }
 };
 
-// Called by Overpower - 7384
-// Taste for Blood - 56638
-class spell_warr_taste_for_blood : public SpellScriptLoader
-{
-    public:
-        spell_warr_taste_for_blood() : SpellScriptLoader("spell_warr_taste_for_blood") { }
-
-        class spell_warr_taste_for_blood_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_taste_for_blood_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(WARRIOR_SPELL_TASTE_FOR_BLOOD))
-                        {
-                            if (roll_chance_i(30))
-                            {
-                                // Second chance to allow overpower
-                                _player->AddComboPoints(target, 1);
-                                _player->StartReactiveTimer(REACTIVE_OVERPOWER);
-                                _player->CastSpell(_player, WARRIOR_SPELL_ALLOW_OVERPOWER, true);
-                                // Increase damage of next Heroic Strike or Slam
-                                _player->CastSpell(_player, WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE, true);
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_warr_taste_for_blood_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_taste_for_blood_SpellScript();
-        }
-};
-
 // Sudden Death - 52437
 class spell_warr_sudden_death : public SpellScriptLoader
 {
@@ -618,13 +570,6 @@ class spell_warr_mortal_strike : public SpellScriptLoader
                         if (_player->HasAura(WARRIOR_SPELL_MORTAL_STRIKE_AURA))
                             if (!_player->HasAura(WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE))
                                 _player->RemoveAura(WARRIOR_SPELL_MORTAL_STRIKE_AURA);
-
-                        if (_player->HasAura(WARRIOR_SPELL_TASTE_FOR_BLOOD))
-                        {
-                            _player->AddComboPoints(target, 1);
-                            _player->StartReactiveTimer(REACTIVE_OVERPOWER);
-                            _player->CastSpell(_player, WARRIOR_SPELL_ALLOW_OVERPOWER, true);
-                        }
                     }
                 }
             }
@@ -1018,7 +963,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_staggering_shout();
     new spell_warr_frenzied_regeneration();
     new spell_warr_second_wind();
-    new spell_warr_taste_for_blood();
     new spell_warr_sudden_death();
     new spell_warr_mocking_banner();
     new spell_warr_raging_blow();
