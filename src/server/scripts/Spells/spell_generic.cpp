@@ -3708,6 +3708,43 @@ class spell_gulp_frog_toxin : public SpellScriptLoader
         }
 };
 
+// spell 147280 - Time-Lost Wisdom
+class spell_time_lost_wisdom : public SpellScriptLoader
+{
+    public:
+        spell_time_lost_wisdom() : SpellScriptLoader("spell_time_lost_wisdom") { }
+
+        class spell_time_lost_wisdom_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_time_lost_wisdom_SpellScript);
+
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    switch (urand(0, 4))
+                    {
+                        case 0: target->CastSpell(target, 147281, true); break;
+                        case 1: target->CastSpell(target, 147282, true); break;
+                        case 2: target->CastSpell(target, 147283, true); break;
+                        case 3: target->CastSpell(target, 147284, true); break;
+                        case 4: target->CastSpell(target, 147285, true); break;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_time_lost_wisdom_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_time_lost_wisdom_SpellScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3789,4 +3826,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_tricky_treat();
     new spell_gen_leviroth_self_impale();
     new spell_gulp_frog_toxin();
+    new spell_time_lost_wisdom();
 }
