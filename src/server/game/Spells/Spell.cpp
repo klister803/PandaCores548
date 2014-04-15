@@ -665,13 +665,16 @@ void Spell::SelectSpellTargets()
             AddDestTarget(*m_targets.GetDst(), i);
 
         uint32 targethit = 0;
+        bool hastarget = false;
         for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
         {
+            hastarget = true;
+
             if (ihit->missCondition == SPELL_MISS_NONE)
                 targethit++;
         }
 
-        if (!targethit)
+        if (!targethit && hastarget)
             m_missed = true;
 
         if (m_spellInfo->IsChanneled())
