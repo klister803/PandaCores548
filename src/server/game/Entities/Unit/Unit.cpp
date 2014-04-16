@@ -16784,6 +16784,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     continue;
                 }
 
+                // Proc chain chack. Not handle proc from curent effect in future prock from it.
+                triggeredEffectList::iterator itr = m_triggeredEffect.find(triggeredByAura);
+                if (itr != m_triggeredEffect.end())
+                    continue;
+
+                m_triggeredEffect.insert(triggeredByAura);
+
                 switch (triggeredByAura->GetAuraType())
                 {
                     case SPELL_AURA_PROC_TRIGGER_SPELL:
@@ -17012,6 +17019,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         break;
                 } // switch (triggeredByAura->GetAuraType())
                 i->aura->CallScriptAfterEffectProcHandlers(triggeredByAura, aurApp, eventInfo);
+                m_triggeredEffect.erase(triggeredByAura);
             } // for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         } // if (!handled)
 

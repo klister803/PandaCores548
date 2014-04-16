@@ -2397,6 +2397,9 @@ class Unit : public WorldObject
         bool m_isSorted;
         uint32 m_transform;
 
+        typedef std::set<AuraEffect*> triggeredEffectList;
+        triggeredEffectList m_triggeredEffect;
+
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
         uint32 m_castCounter;                               // count casts chain of triggered spells for prevent infinity cast crashes
 
