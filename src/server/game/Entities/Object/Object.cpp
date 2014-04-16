@@ -825,7 +825,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 // send in current format (float as float, uint32 as uint32)
                 if (index == OBJECT_FIELD_DYNAMIC_FLAGS)
                 {
-                    if (IsActivateToQuest)
+                    if (IsActivateToQuest || ToGameObject()->isDynActive())
                     {
                         switch (ToGameObject()->GetGoType())
                         {
@@ -893,6 +893,9 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
 
 void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Player* target) const
 {
+    *data << uint8(0);
+    return;
+
     // Crashfix, prevent use of bag with dynamic field
     if (isType(TYPEMAST_BAG) || 
         (updatetype == UPDATETYPE_VALUES && GetTypeId() == TYPEID_PLAYER && this != target))

@@ -819,7 +819,7 @@ void WorldSession::SendAccountDataTimes(uint32 mask, bool ready)
     data.WriteBit(!ready);
     data.FlushBits();
     SendPacket(&data);
-    //SendTimeZoneInformation();
+    SendTimeZoneInformation();
 }
 
 // ToDo: add confing. Are we need it?

@@ -128,7 +128,7 @@ public:
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, handler->GetSession()->GetPlayer(), false))
                 continue;
 
-            if (!spellInfo->IsAbilityOfSkillType(SKILL_INTERNAL))
+            if (!IsPartOfSkillLine(SKILL_INTERNAL, spellInfo->Id))
                 continue;
 
             handler->GetSession()->GetPlayer()->learnSpell(i, false);

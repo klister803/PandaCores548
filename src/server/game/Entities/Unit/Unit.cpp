@@ -176,6 +176,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , _haveCCDEffect(0)
     , _delayInterruptFlag(0)
     , m_onMount(false)
+    , m_castCounter(0)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -16783,6 +16784,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     continue;
                 }
 
+                // Proc chain chack. Not handle proc from curent effect in future prock from it.
+                triggeredEffectList::iterator itr = m_triggeredEffect.find(triggeredByAura);
+                if (itr != m_triggeredEffect.end())
+                    continue;
+
+                m_triggeredEffect.insert(triggeredByAura);
+
                 switch (triggeredByAura->GetAuraType())
                 {
                     case SPELL_AURA_PROC_TRIGGER_SPELL:
@@ -17011,6 +17019,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         break;
                 } // switch (triggeredByAura->GetAuraType())
                 i->aura->CallScriptAfterEffectProcHandlers(triggeredByAura, aurApp, eventInfo);
+                m_triggeredEffect.erase(triggeredByAura);
             } // for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         } // if (!handled)
 
@@ -20989,7 +20998,7 @@ void Unit::SendTeleportPacket(Position &oldPos)
     data << float(GetPositionX());
     data.WriteGuidBytes<4, 3, 2>(guid);
     data << float(GetPositionY());
-    data << float(GetOrientation());
+    data << float(NormalizeOrientation(GetOrientation()));
     data << float(GetPositionZMinusOffset());
 
     Relocate(&oldPos);
@@ -21390,3 +21399,13 @@ bool Unit::HandleVengeanceProc(Unit* pVictim, int32 damage, int32 triggerAmount)
     return true;
 }
 
+bool Unit::CheckAndIncreaseCastCounter()
+{
+    uint32 maxCasts = sWorld->getIntConfig(CONFIG_MAX_SPELL_CASTS_IN_CHAIN);
+
+    if (maxCasts && m_castCounter >= maxCasts)
+        return false;
+
+    ++m_castCounter;
+    return true;
+}

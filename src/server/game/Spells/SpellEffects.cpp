@@ -2533,7 +2533,7 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && IsPartOfSkillLine(SKILL_ARCHAEOLOGY, m_spellInfo->Id))
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -2562,7 +2562,7 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && IsPartOfSkillLine(SKILL_ARCHAEOLOGY, m_spellInfo->Id))
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -2587,7 +2587,10 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
                 player->DestroyItemCount(item_id, 1, true);
         }
         else
+        {
             player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);    // create some random items
+            player->UpdateCraftSkill(m_spellInfo->Id);
+        }
     }
 
     ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
@@ -3986,27 +3989,38 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     {
         switch(petentry)
         {
-            case 17252:
+            case 17252: //Felguard
                 slot = PET_SLOT_WARLOCK_PET_FIRST;
                 break;
-            case 1863:
+            case 1863:  //Succubus
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 1);
                 break;
-            case 1860:
+            case 1860:  //Voidwalker
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 2);
                 break;
-            case 417:
+            case 417:   //Felhunter
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 3);
                 break;
-            case 416:
+            case 416:   //Imp
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 4);
                 break;
-            case 510:
+            case 58959: //Fel Imp
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 5);
                 break;
-            case 26125:
+            case 58960: //Voidlord
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 6);
                 break;
+            case 58963: //Shivarra
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 7);
+                break;
+            case 58964: //Observer
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 8);
+                break;
+            case 58965: //Wrathguard
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 9);
+                break;
+            case 510:   //Water Elemental
+            case 26125: //Risen Ally
             default:
                 slot = PET_SLOT_UNK_SLOT;
                 break;
@@ -7128,11 +7142,28 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
     float radius = 5.0f;
     int32 duration = m_spellInfo->GetDuration();
+    uint32 spell1 = 0;
+    uint32 spell2 = 0;
 
     switch (m_spellInfo->Id)
     {
         case 81283: // Fungal Growth
             numGuardians = 1;
+            break;
+        case 111898:   //Grimoire: Felguard
+            spell2 = 89766;
+            break;
+        case 111897:   //Grimoire: Felhunter
+            spell2 = 19647;
+            break;
+        case 111896:   //Grimoire: Succubus
+            spell1 = 6358;
+            break;
+        case 111895:   //Grimoire: Voidwalker
+            spell1 = 17735;
+            break;
+        case 111859:   //Grimoire: Imp
+            spell1 = 3110;
             break;
         default:
             break;
@@ -7140,6 +7171,34 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+
+    // Grimoire of Service. May move it or create by script? But PatAI better ;)
+    if (spell1 || spell2)
+    {
+        if (Player * player = caster->ToPlayer())
+        {
+            float x, y, z;
+            caster->GetClosePoint(x, y, z, caster->GetObjectSize());
+            if(Pet* pet = player->SummonPet(entry, x, y, z, caster->GetOrientation(), SUMMON_PET, duration, PET_SLOT_OTHER_PET, true))
+            {
+                pet->SetReactState(REACT_AGGRESSIVE);
+                if (Unit * target = player->GetSelectedUnit())
+                {
+                    pet->ToCreature()->AI()->AttackStart(target);
+                    if (spell2)
+                        pet->CastSpell(target, spell2, true);
+                }
+
+                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spell1))
+                    pet->ToggleAutocast(sInfo, true);
+
+                if (m_spellInfo->Id == 111859)  //Singe Magic for imp
+                    if (SpellInfo const* sInfo2 = sSpellMgr->GetSpellInfo(89808))
+                        pet->ToggleAutocast(sInfo2, true);
+            }
+        }
+        return;
+    }
 
     //TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Map* map = caster->GetMap();

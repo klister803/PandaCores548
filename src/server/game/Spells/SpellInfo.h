@@ -459,7 +459,6 @@ public:
     bool IsPrimaryProfession() const;
     bool IsPrimaryProfessionFirstRank() const;
     bool IsAbilityLearnedWithProfession() const;
-    bool IsAbilityOfSkillType(uint32 skillType) const;
 
     bool IsAffectingArea() const;
     bool IsTargetingArea() const;

@@ -545,6 +545,7 @@ typedef std::map<uint32, SpellLearnSkillNode> SpellLearnSkillMap;
 struct SpellLearnSpellNode
 {
     uint32 spell;
+    uint32 reqSpell;
     bool active;                                            // show in spellbook or not
     bool autoLearned;
 };

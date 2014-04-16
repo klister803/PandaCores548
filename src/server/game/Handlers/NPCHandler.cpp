@@ -579,8 +579,6 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
     if (!GetPlayer())
         return;
 
-    if (GetPlayer()->getClass() != CLASS_HUNTER)
-        return;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Send SMSG_LIST_STABLED_PETS.");
 
@@ -590,20 +588,16 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
     uint8 num = 0;
 
     std::vector<uint32> nameLen;
+    std::set<uint32> stableNumber;
     if (result)
     {
-        bool stableSlot[PET_SLOT_STABLE_LAST];
-        for (uint8 i = 0; i < PET_SLOT_STABLE_LAST; ++i)
-            stableSlot[i] = 0;
-
-        std::list<PetData> outOfStable;
-
         do
         {
             Field* fields = result->Fetch();
 
             uint32 petNumber = fields[0].GetUInt32();
             PetSlot petSlot = GetPlayer()->GetSlotForPetId(petNumber);
+            stableNumber.insert(petNumber);
 
             if (petSlot > PET_SLOT_STABLE_LAST)
                 continue;
@@ -628,8 +622,6 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
                 buf << uint32(petSlot);                        // 4.x petSlot
 
                 ++num;
-
-                stableSlot[petSlot] = true;
             }
         }
         while (result->NextRow());
@@ -645,9 +637,27 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
         data.append(buf);
     data.WriteGuidBytes<6, 2, 7, 3, 4, 5, 1>(guid);
 
-    SendPacket(&data);
+    //send only for hunter
+    if (GetPlayer()->getClass() == CLASS_HUNTER)
+    {
+        SendPacket(&data);
+        SendStableResult(STABLE_ERR_NONE);
+    }
 
-    SendStableResult(STABLE_ERR_NONE);
+    // Cleaner. As this send at first login in any way. no need do it at playerLoading.
+    const PlayerPetSlotList &petSlots = GetPlayer()->GetPetSlotList();
+    for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < uint32(PET_SLOT_STABLE_LAST); ++i)
+    {
+        if (!petSlots[i])
+            continue;
+
+        std::set<uint32>::iterator find = stableNumber.find(petSlots[i]);
+        if (find == stableNumber.end())
+        {
+            //where is no pet. need clear data.
+            GetPlayer()->cleanPetSlotForMove(PetSlot(i), petSlots[i]);
+        }
+    }
 }
 
 void WorldSession::SendStableResult(uint8 res)
