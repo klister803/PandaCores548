@@ -294,7 +294,6 @@ void World::AddSession_(WorldSession* s)
     s->SendBattlePay();
     s->SendTutorialsData();
     s->SendDisplayPromo(0);
-    s->SendTimeZoneInformation();
 
     UpdateMaxSessionCounters();
 
@@ -392,7 +391,6 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
         pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
         pop_sess->SendTutorialsData();
-        pop_sess->SendTimeZoneInformation();
 
         m_QueuedPlayer.pop_front();
 
