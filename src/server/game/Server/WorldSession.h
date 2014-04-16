@@ -1028,6 +1028,9 @@ class WorldSession
         void HandleClearRaidMarkerOpcode(WorldPacket& recvPacket);
         void HandleQueryPlayerRecipes(WorldPacket& recvPacket);
 
+        // Challenge Mode
+        void HandleChallengeModeRequestOpcode(WorldPacket& recvPacket);
+
     private:
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
