@@ -3324,6 +3324,18 @@ void Spell::cancel()
 
 void Spell::cast(bool skipCheck)
 {
+    if (!m_caster->CheckAndIncreaseCastCounter())
+    {
+        if (m_triggeredByAuraSpell)
+            sLog->outError(LOG_FILTER_GENERAL, "Spell %u triggered by aura spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
+        else
+            sLog->outError(LOG_FILTER_GENERAL, "Spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
+
+        SendCastResult(SPELL_FAILED_ERROR);
+        finish(false);
+        return;
+    }
+
     volatile uint32 spellid = m_spellInfo->Id;
     // update pointers base at GUIDs to prevent access to non-existed already object
     UpdatePointers();
@@ -3332,6 +3344,7 @@ void Spell::cast(bool skipCheck)
     if (m_targets.GetObjectTargetGUID() && !m_targets.GetObjectTarget())
     {
         cancel();
+        m_caster->DecreaseCastCounter();
         return;
     }
 
@@ -3382,6 +3395,7 @@ void Spell::cast(bool skipCheck)
             }
             finish(false);
             SetExecutedCurrently(false);
+            m_caster->DecreaseCastCounter();
             return;
         }
 
@@ -3405,6 +3419,7 @@ void Spell::cast(bool skipCheck)
                         m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
                         finish(false);
                         SetExecutedCurrently(false);
+                        m_caster->DecreaseCastCounter();
                         return;
                     }
                 }
@@ -3428,6 +3443,7 @@ void Spell::cast(bool skipCheck)
         }
         finish(false);
         SetExecutedCurrently(false);
+        m_caster->DecreaseCastCounter();
         return;
     }
 
@@ -3581,6 +3597,7 @@ void Spell::cast(bool skipCheck)
     }
 
     SetExecutedCurrently(false);
+    m_caster->DecreaseCastCounter();
 }
 
 void Spell::handle_immediate()

@@ -1996,6 +1996,9 @@ class Unit : public WorldObject
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         int32 GetCurrentSpellCastTime(uint32 spell_id) const;
 
+        bool CheckAndIncreaseCastCounter();
+        void DecreaseCastCounter() { if (m_castCounter) --m_castCounter; }
+
         uint32 m_addDmgOnce;
         uint64 m_SummonSlot[MAX_SUMMON_SLOT];
         uint64 m_ObjectSlot[MAX_GAMEOBJECT_SLOT];
@@ -2395,6 +2398,7 @@ class Unit : public WorldObject
         uint32 m_transform;
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
+        uint32 m_castCounter;                               // count casts chain of triggered spells for prevent infinity cast crashes
 
         AuraMap m_ownedAuras;
         AuraApplicationMap m_appliedAuras;

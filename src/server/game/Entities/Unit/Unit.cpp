@@ -176,6 +176,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , _haveCCDEffect(0)
     , _delayInterruptFlag(0)
     , m_onMount(false)
+    , m_castCounter(0)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -21390,3 +21391,13 @@ bool Unit::HandleVengeanceProc(Unit* pVictim, int32 damage, int32 triggerAmount)
     return true;
 }
 
+bool Unit::CheckAndIncreaseCastCounter()
+{
+    uint32 maxCasts = sWorld->getIntConfig(CONFIG_MAX_SPELL_CASTS_IN_CHAIN);
+
+    if (maxCasts && m_castCounter >= maxCasts)
+        return false;
+
+    ++m_castCounter;
+    return true;
+}

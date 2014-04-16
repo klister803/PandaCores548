@@ -901,6 +901,15 @@ ActivateWeather = 1
 
 CastUnstuck = 1
 
+#    MaxSpellCastsInChain
+#        Max amount triggered spell casts in chain by one caster, prevent stack overflow crash
+#        Too Low value will make some correct triggered casts fail
+#                 0 (no limit)
+#        Default: 10
+#
+
+MaxSpellCastsInChain = 10
+
 #
 #    Instance.IgnoreLevel
 #        Description: Ignore level requirement when entering instances.
