@@ -3989,27 +3989,38 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     {
         switch(petentry)
         {
-            case 17252:
+            case 17252: //Felguard
                 slot = PET_SLOT_WARLOCK_PET_FIRST;
                 break;
-            case 1863:
+            case 1863:  //Succubus
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 1);
                 break;
-            case 1860:
+            case 1860:  //Voidwalker
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 2);
                 break;
-            case 417:
+            case 417:   //Felhunter
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 3);
                 break;
-            case 416:
+            case 416:   //Imp
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 4);
                 break;
-            case 510:
+            case 58959: //Fel Imp
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 5);
                 break;
-            case 26125:
+            case 58960: //Voidlord
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 6);
                 break;
+            case 58963: //Shivarra
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 7);
+                break;
+            case 58964: //Observer
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 8);
+                break;
+            case 58965: //Wrathguard
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 9);
+                break;
+            case 510:   //Water Elemental
+            case 26125: //Risen Ally
             default:
                 slot = PET_SLOT_UNK_SLOT;
                 break;

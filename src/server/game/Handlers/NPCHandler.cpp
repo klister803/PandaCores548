@@ -579,8 +579,6 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
     if (!GetPlayer())
         return;
 
-    if (GetPlayer()->getClass() != CLASS_HUNTER)
-        return;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Send SMSG_LIST_STABLED_PETS.");
 
@@ -639,9 +637,12 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
         data.append(buf);
     data.WriteGuidBytes<6, 2, 7, 3, 4, 5, 1>(guid);
 
-    SendPacket(&data);
-
-    SendStableResult(STABLE_ERR_NONE);
+    //send only for hunter
+    if (GetPlayer()->getClass() == CLASS_HUNTER)
+    {
+        SendPacket(&data);
+        SendStableResult(STABLE_ERR_NONE);
+    }
 
     // Cleaner. As this send at first login in any way. no need do it at playerLoading.
     const PlayerPetSlotList &petSlots = GetPlayer()->GetPetSlotList();
