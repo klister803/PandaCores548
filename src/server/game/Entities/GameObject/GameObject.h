@@ -828,6 +828,9 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void SetDisplayId(uint32 displayid);
         uint32 GetDisplayId() const { return GetUInt32Value(GAMEOBJECT_DISPLAYID); }
 
+        bool isDynActive() const { return m_isDynActive; }
+        void setDynActive(bool active) { m_isDynActive = active; }
+
         GameObjectModel * m_model;
     protected:
         bool AIM_Initialize();
@@ -857,6 +860,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         uint64 m_lootRecipient;
         uint32 m_lootRecipientGroup;
         bool   m_manual_anim;
+        bool   m_isDynActive;
     private:
         void RemoveFromOwner();
         void SwitchDoorOrButton(bool activate, bool alternative = false);

@@ -825,7 +825,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 // send in current format (float as float, uint32 as uint32)
                 if (index == OBJECT_FIELD_DYNAMIC_FLAGS)
                 {
-                    if (IsActivateToQuest || ToGameObject()->isActiveObject())
+                    if (IsActivateToQuest || ToGameObject()->isDynActive())
                     {
                         switch (ToGameObject()->GetGoType())
                         {
