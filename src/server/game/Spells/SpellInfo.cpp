@@ -1137,10 +1137,10 @@ bool SpellInfo::IsExplicitDiscovery() const
 
 bool SpellInfo::IsLootCrafting() const
 {
-    return (Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM ||
+    return Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM ||
         // different random cards from Inscription (121==Virtuoso Inking Set category) r without explicit item
-        (Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2 &&
-        (TotemCategory[0] != 0 || Effects[0].ItemType == 0)));
+        Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2 &&
+        (TotemCategory[0] != 0 || Effects[0].ItemType == 0);
 }
 
 bool SpellInfo::IsQuestTame() const
@@ -1211,17 +1211,6 @@ bool SpellInfo::IsAbilityLearnedWithProfession() const
         if (pAbility->req_skill_value > 0)
             return true;
     }
-
-    return false;
-}
-
-bool SpellInfo::IsAbilityOfSkillType(uint32 skillType) const
-{
-    SkillLineAbilityMapBounds bounds = sSpellMgr->GetSkillLineAbilityMapBounds(Id);
-
-    for (SkillLineAbilityMap::const_iterator _spell_idx = bounds.first; _spell_idx != bounds.second; ++_spell_idx)
-        if (_spell_idx->second->skillId == uint32(skillType))
-            return true;
 
     return false;
 }

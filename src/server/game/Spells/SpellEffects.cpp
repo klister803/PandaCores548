@@ -2533,7 +2533,7 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && IsPartOfSkillLine(SKILL_ARCHAEOLOGY, m_spellInfo->Id))
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -2562,7 +2562,7 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && IsPartOfSkillLine(SKILL_ARCHAEOLOGY, m_spellInfo->Id))
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -2587,7 +2587,10 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
                 player->DestroyItemCount(item_id, 1, true);
         }
         else
+        {
             player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);    // create some random items
+            player->UpdateCraftSkill(m_spellInfo->Id);
+        }
     }
 
     ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
