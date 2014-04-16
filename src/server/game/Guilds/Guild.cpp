@@ -1795,12 +1795,12 @@ void Guild::HandleLeaveMember(WorldSession* session)
     }
     else
     {
+        SendGuildEventRemoveMember(player->GetGUID(), player->GetName());
+        SendCommandResult(session, GUILD_QUIT_S, ERR_PLAYER_NO_MORE_IN_GUILD, m_name);
+
         DeleteMember(player->GetGUID(), false, false);
 
         _LogEvent(GUILD_EVENT_LOG_LEAVE_GUILD, player->GetGUIDLow());
-        SendGuildEventRemoveMember(player->GetGUID(), player->GetName());
-
-        SendCommandResult(session, GUILD_QUIT_S, ERR_PLAYER_NO_MORE_IN_GUILD, m_name);
         UpdateGuildRecipes();
     }
 }
