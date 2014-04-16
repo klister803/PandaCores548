@@ -2559,7 +2559,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             {
                 WorldPacket data(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
                 data << float(final_y);
-                data << float(final_o);
+                data << float(NormalizeOrientation(final_o));
                 data << uint32(mapid);
                 data << float(final_x);
                 data << float(final_z);
@@ -24464,19 +24464,18 @@ void Player::SendInitialPacketsAfterAddToMap()
     UpdateZone(newzone, newarea);                            // also call SendInitWorldStates();
 
     InstanceMap* inst = GetMap()->ToInstanceMap();
-    uint32 loot_mask = inst ? inst->GetMaxPlayers() : 0;
+    uint32 instancePlayers = inst ? inst->GetMaxPlayers() : 0;
 
     WorldPacket data(SMSG_WORLD_SERVER_INFO, 4 + 4 + 1 + 1);
     data << uint32(sWorld->GetNextWeeklyQuestsResetTime() -  WEEK);
     data << uint8(0);                                       // is on tournament realm
     data << uint32(GetMap()->GetDifficulty());
-    data.WriteBit(loot_mask);                               // is ineligible for loot
-    data.WriteBit(false);                                   // unk
+    data.WriteBit(instancePlayers);                         // has instance players count
+    data.WriteBit(false);                                   // is ineligible for loot
+    data.WriteBit(false);                                   // has trial money
     data.WriteBit(false);                                   // has trial level
-    data.WriteBit(false);    
-    data.FlushBits();
-    if (loot_mask)
-        data << uint32(loot_mask);
+    if (instancePlayers)
+        data << uint32(instancePlayers);
     GetSession()->SendPacket(&data);
 
     // SMSG_TALENTS_INFO x 2 for pet (unspent points and talents in separate packets...)

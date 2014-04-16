@@ -20998,7 +20998,7 @@ void Unit::SendTeleportPacket(Position &oldPos)
     data << float(GetPositionX());
     data.WriteGuidBytes<4, 3, 2>(guid);
     data << float(GetPositionY());
-    data << float(GetOrientation());
+    data << float(NormalizeOrientation(GetOrientation()));
     data << float(GetPositionZMinusOffset());
 
     Relocate(&oldPos);
