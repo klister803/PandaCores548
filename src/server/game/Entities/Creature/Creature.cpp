@@ -2716,29 +2716,15 @@ bool Creature::SetHover(bool enable)
     if (enable)
     {
         WorldPacket data(SMSG_SPLINE_MOVE_SET_HOVER, 9);
-    
-        uint8 bitOrder[8] = {2, 0, 6, 1, 5, 7, 3, 4};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.FlushBits();
-    
-        uint8 byteOrder[8] = {3, 6, 5, 0, 4, 7, 1, 2};
-        data.WriteBytesSeq(guid, byteOrder);
-
+        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
+        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
         SendMessageToSet(&data, false);
     }
     else
     {
         WorldPacket data(SMSG_SPLINE_MOVE_UNSET_HOVER, 9);
-    
-        uint8 bitOrder[8] = {7, 0, 5, 6, 2, 4, 1, 3};
-        data.WriteBitInOrder(guid, bitOrder);
-
-        data.FlushBits();
-    
-        uint8 byteOrder[8] = {4, 3, 2, 0, 6, 5, 7, 1};
-        data.WriteBytesSeq(guid, byteOrder);
-
+        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
+        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
         SendMessageToSet(&data, false);
     }
 

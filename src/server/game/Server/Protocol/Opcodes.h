@@ -1264,12 +1264,12 @@ enum Opcodes
     SMSG_RANDOMIZE_CHAR_NAME                          = 0x081E, // 5.4.1 17538
     SMSG_RATED_BG_RATING                              = 0xA4B,  // 5.0.5 16048
     SMSG_PVP_RATED_STATS                              = 0x108F, // 5.4.1 17538
-    SMSG_READ_ITEM_FAILED                             = 0x86D,  // 5.0.5 16048
-    SMSG_READ_ITEM_OK                                 = 0xD80,  // 5.0.5 16048
+    SMSG_READ_ITEM_FAILED                             = 0x052A, // 5.4.1 17538
+    SMSG_READ_ITEM_OK                                 = 0x1C82, // 5.4.1 17538
     SMSG_REALM_QUERY_RESPONSE                         = 0x052D, // 5.4.1 17538
     SMSG_REALM_SPLIT                                  = 0x0884, // 5.4.1 17538
     SMSG_REAL_GROUP_UPDATE                            = 0x000,  // 5.0.5 16048 Deprecated
-    SMSG_RECEIVED_MAIL                                = 0x8D7,  // 5.0.5 16048
+    SMSG_RECEIVED_MAIL                                = 0x0CAD, // 5.4.1 17538
     SMSG_REDIRECT_CLIENT                              = 0x423,  // 5.0.5 16048
     SMSG_REFER_A_FRIEND_EXPIRED                       = 0xC01,  // 5.0.5 16048
     SMSG_REFER_A_FRIEND_FAILURE                       = 0x8C5,  // 5.0.5 16048
@@ -1352,7 +1352,7 @@ enum Opcodes
     SMSG_SPLINE_MOVE_SET_FLIGHT_BACK_SPEED            = 0x03B1, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_FLIGHT_SPEED                 = 0x0221, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_FLYING                       = 0xE95,  // 5.0.5 16048
-    SMSG_SPLINE_MOVE_SET_HOVER                        = 0xA90,  // 5.0.5 16048
+    SMSG_SPLINE_MOVE_SET_HOVER                        = 0x0316, // 5.4.1 17538
     SMSG_SPLINE_MOVE_SET_LAND_WALK                    = 0xA49,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_SET_NORMAL_FALL                  = 0,      //
     SMSG_SPLINE_MOVE_SET_PITCH_RATE                   = 0x06AC, // 5.4.1 17538
@@ -1369,7 +1369,7 @@ enum Opcodes
     SMSG_SPLINE_MOVE_STOP_SWIM                        = 0xE0B,  // 5.0.5 16048
     SMSG_SPLINE_MOVE_UNROOT                           = 0x03AF, // 5.4.1 17538
     SMSG_SPLINE_MOVE_UNSET_FLYING                     = 0xEB1,  // 5.0.5 16048
-    SMSG_SPLINE_MOVE_UNSET_HOVER                      = 0xBC0,  // 5.0.5 16048
+    SMSG_SPLINE_MOVE_UNSET_HOVER                      = 0x03AE, // 5.4.1 17538
     SMSG_STABLE_RESULT                                = 0x0C26, // 5.4.1 17538
     SMSG_STANDSTATE_UPDATE                            = 0x112F, // 5.4.1 17538
     SMSG_START_MIRROR_TIMER                           = 0x09BC, // 5.4.1 17538
