@@ -7142,11 +7142,27 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
     float radius = 5.0f;
     int32 duration = m_spellInfo->GetDuration();
+    uint32 spell1 = 0;
 
     switch (m_spellInfo->Id)
     {
         case 81283: // Fungal Growth
             numGuardians = 1;
+            break;
+        case 111898:   //Grimoire: Felguard
+            spell1 = 89766;
+            break;
+        case 111897:   //Grimoire: Felhunter
+            spell1 = 19647;
+            break;
+        case 111896:   //Grimoire: Succubus
+            spell1 = 6358;
+            break;
+        case 111895:   //Grimoire: Voidwalker
+            spell1 = 17735;
+            break;
+        case 111859:   //Grimoire: Imp
+            spell1 = 3110;
             break;
         default:
             break;
@@ -7154,6 +7170,30 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+
+    // Grimoire of Service. May move it or create by script? But PatAI better ;)
+    if (spell1)
+    {
+        if (Player * player = caster->ToPlayer())
+        {
+            float x, y, z;
+            caster->GetClosePoint(x, y, z, caster->GetObjectSize());
+            if(Pet* pet = player->SummonPet(entry, x, y, z, caster->GetOrientation(), SUMMON_PET, duration, PET_SLOT_OTHER_PET, true))
+            {
+                pet->SetReactState(REACT_AGGRESSIVE);
+                if (Unit * target = player->GetSelectedUnit())
+                    pet->ToCreature()->AI()->AttackStart(target);
+
+                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spell1))
+                    pet->ToggleAutocast(sInfo, true);
+
+                if (m_spellInfo->Id == 111859)  //Singe Magic for imp
+                    if (SpellInfo const* sInfo2 = sSpellMgr->GetSpellInfo(89808))
+                        pet->ToggleAutocast(sInfo2, true);
+            }
+        }
+        return;
+    }
 
     //TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Map* map = caster->GetMap();

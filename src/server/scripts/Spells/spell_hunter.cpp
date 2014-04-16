@@ -192,7 +192,7 @@ class spell_hun_stampede : public SpellScriptLoader
                                 {
                                     float x, y, z;
                                     _player->GetClosePoint(x, y, z, _player->GetObjectSize());
-                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), PetSlot(i + 36)))
+                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PET_SLOT_OTHER_PET, true))
                                     {
                                         pet->SetReactState(REACT_AGGRESSIVE);
                                         pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
@@ -209,7 +209,7 @@ class spell_hun_stampede : public SpellScriptLoader
                                 {
                                     float x, y, z;
                                     _player->GetClosePoint(x, y, z, _player->GetObjectSize());
-                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(i), PetSlot(i + 36)))
+                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PET_SLOT_OTHER_PET, true))
                                     {
                                         pet->SetReactState(REACT_AGGRESSIVE);
                                         pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
