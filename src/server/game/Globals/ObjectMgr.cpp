@@ -1089,6 +1089,12 @@ void ObjectMgr::LoadCreatureModelInfo()
 
         uint32 modelId = fields[0].GetUInt32();
 
+        if (!sCreatureDisplayInfoStore.LookupEntry(modelId))
+        {
+            sLog->outError(LOG_FILTER_SQL, "Table `creature_model_info` has model for not existed display id (%u).", modelId);
+            continue;
+        }
+
         CreatureModelInfo& modelInfo = _creatureModelStore[modelId];
 
         modelInfo.bounding_radius      = fields[1].GetFloat();
@@ -1097,9 +1103,6 @@ void ObjectMgr::LoadCreatureModelInfo()
         modelInfo.modelid_other_gender = fields[4].GetUInt32();
 
         // Checks
-
-        if (!sCreatureDisplayInfoStore.LookupEntry(modelId))
-            sLog->outError(LOG_FILTER_SQL, "Table `creature_model_info` has model for not existed display id (%u).", modelId);
 
         if (modelInfo.gender > GENDER_NONE)
         {
