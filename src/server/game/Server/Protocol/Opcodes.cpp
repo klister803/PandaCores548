@@ -318,12 +318,12 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_TAKE_ITEM,                          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailTakeItem              );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MAIL_TAKE_MONEY,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMailTakeMoney             );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_BATTLEGROUND,          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_GUILD,                 STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_INSTANCE,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_OFFICER,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_PARTY,                 STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_RAID,                  STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_WHISPER,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_GUILD,                 STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_INSTANCE,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_OFFICER,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_PARTY,                 STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_RAID,                  STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_ADDON_WHISPER,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAddonMessagechatOpcode    );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_AFK,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMessagechatOpcode         );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_BATTLEGROUND,                STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMessagechatOpcode         );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_CHANNEL,                     STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMessagechatOpcode         );
@@ -378,7 +378,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_PLAY_DANCE,                              STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PURCHASE_GET_PRODUCT_LIST,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePurchaseGetProductList    );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PURCHASE_GET_PURCHASE_LIST,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePurchaseGetPurchaseList   );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_PUSHQUESTTOPARTY,                        STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePushQuestToParty          );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_PUSHQUESTTOPARTY,                        STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePushQuestToParty          );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PVP_LOG_DATA,                            STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandlePVPLogDataOpcode          );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_QUERY_BATTLEFIELD_STATE,                 STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_QUERY_GUILD_MEMBERS_FOR_RECIPE,          STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleGuildQueryGuildMembersForRecipe);
