@@ -893,6 +893,9 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
 
 void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Player* target) const
 {
+    *data << uint8(0);
+    return;
+
     // Crashfix, prevent use of bag with dynamic field
     if (isType(TYPEMAST_BAG) || 
         (updatetype == UPDATETYPE_VALUES && GetTypeId() == TYPEID_PLAYER && this != target))
