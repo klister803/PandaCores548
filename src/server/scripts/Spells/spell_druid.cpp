@@ -52,8 +52,6 @@ enum DruidSpells
     SPELL_DRUID_ASTRAL_COMMUNION            = 127663,
     SPELL_DRUID_SUNFIRE                     = 93402,
     SPELL_DRUID_MOONFIRE                    = 8921,
-    SPELL_DRUID_SWIFTMEND                   = 81262,
-    SPELL_DRUID_SWIFTMEND_TICK              = 81269,
     DRUID_NPC_WILD_MUSHROOM                 = 47649,
     DRUID_SPELL_FUNGAL_GROWTH_SUMMON        = 81283,
     DRUID_SPELL_MUSHROOM_BIRTH_VISUAL       = 94081,
@@ -2063,35 +2061,6 @@ class spell_dru_swiftmend : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_swiftmend_AuraScript);
 
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if(Unit* caster = GetCaster())
-                    if (DynamicObject* dynObj = caster->GetDynObject(SPELL_DRUID_SWIFTMEND))
-                        caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_SWIFTMEND_TICK, true);
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_swiftmend_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_swiftmend_AuraScript();
-        }
-};
-
-// Swiftmend tick - 81269
-class spell_dru_swiftmend_tick : public SpellScriptLoader
-{
-    public:
-        spell_dru_swiftmend_tick() : SpellScriptLoader("spell_dru_swiftmend_tick") { }
-
-        class spell_dru_swiftmend_tick_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_swiftmend_tick_AuraScript);
-
             void CheckTargetsList(std::list<Unit*>& unitList)
             {
                 for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end();)
@@ -2107,13 +2076,13 @@ class spell_dru_swiftmend_tick : public SpellScriptLoader
 
             void Register()
             {
-                DoCheckTargetsList += AuraCheckTargetsListFn(spell_dru_swiftmend_tick_AuraScript::CheckTargetsList);
+                DoCheckTargetsList += AuraCheckTargetsListFn(spell_dru_swiftmend_AuraScript::CheckTargetsList);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
-            return new spell_dru_swiftmend_tick_AuraScript();
+            return new spell_dru_swiftmend_AuraScript();
         }
 };
 
@@ -3261,7 +3230,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_wild_mushroom_detonate();
     new spell_dru_wild_mushroom();
     new spell_dru_swiftmend();
-    new spell_dru_swiftmend_tick();
     new spell_dru_astral_communion();
     new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();

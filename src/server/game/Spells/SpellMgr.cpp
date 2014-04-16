@@ -4648,6 +4648,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     //! periodic tick remove aura. WTF?
                     spellInfo->Effects[EFFECT_1].Amplitude = 0;
                     break;
+                case 774: // Rejuvenation
+                    spellInfo->Effects[2].Effect = 0;
+                    spellInfo->Effects[2].ApplyAuraName = 0;
+                    break;
+                case 81262: // Swiftmend
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_HEAL;
+                    spellInfo->Effects[0].TargetB = TARGET_DEST_DYNOBJ_ALLY;
+                    spellInfo->Effects[0].Amplitude = 2000;
+                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[1].ApplyAuraName = 0;
+                    break;
                 default:
                     break;
             }
