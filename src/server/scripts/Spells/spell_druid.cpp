@@ -2088,7 +2088,7 @@ class spell_dru_swiftmend_tick : public SpellScriptLoader
     public:
         spell_dru_swiftmend_tick() : SpellScriptLoader("spell_dru_swiftmend_tick") { }
 
-        class spell_dru_swiftmend_AuraScript : public AuraScript
+        class spell_dru_swiftmend_tick_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_dru_swiftmend_tick_AuraScript);
 
