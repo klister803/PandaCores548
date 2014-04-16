@@ -2278,6 +2278,7 @@ class Player : public Unit, public GridObject<Player>
                     if (specialization->classId == getClass() && specialization->tabId == 0)
                         return specialization->entry;
             }
+            return 0;
         }
 
         uint64 GetLootGUID() const { return m_lootGuid; }
