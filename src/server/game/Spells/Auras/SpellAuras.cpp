@@ -2253,6 +2253,18 @@ void Aura::LoadScripts()
     }
 }
 
+void Aura::CallScriptCheckTargetsListHandlers(std::list<Unit*>& unitTargets)
+{
+    for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_CHECK_TARGETS_LIST);
+        std::list<AuraScript::CheckTargetsListHandler>::iterator hookItrEnd = (*scritr)->DoCheckTargetsList.end(), hookItr = (*scritr)->DoCheckTargetsList.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr, unitTargets);
+        (*scritr)->_FinishScriptCall();
+    }
+}
+
 bool Aura::CallScriptCheckAreaTargetHandlers(Unit* target)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
@@ -2936,6 +2948,7 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
             }
         }
 
+        CallScriptCheckTargetsListHandlers(targetList);
         for (UnitList::iterator itr = targetList.begin(); itr!= targetList.end();++itr)
         {
             std::map<Unit*, uint32>::iterator existing = targets.find(*itr);

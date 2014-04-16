@@ -1126,6 +1126,14 @@ bool SpellInfo::IsMountOrCompanions() const
     return false;
 }
 
+bool SpellInfo::HasDynAuraEffect() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+            return true;
+    return false;
+}
+
 bool SpellInfo::IsExplicitDiscovery() const
 {
     return ((Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM
