@@ -4520,6 +4520,10 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
 
     for (SpellLearnSpellMap::const_iterator itr2 = spell_bounds.first; itr2 != spell_bounds.second; ++itr2)
     {
+        //Check requarement for spells on spellbook
+        if (itr2->second.reqSpell && !HasSpell(itr2->second.reqSpell))
+            continue;
+
         if (!itr2->second.autoLearned)
         {
             if (!IsInWorld() || !itr2->second.active)       // at spells loading, no output, but allow save

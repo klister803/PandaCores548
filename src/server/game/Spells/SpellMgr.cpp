@@ -1470,8 +1470,8 @@ void SpellMgr::LoadSpellLearnSpells()
 
     mSpellLearnSpells.clear();                              // need for reload case
 
-    //                                                  0      1        2
-    QueryResult result = WorldDatabase.Query("SELECT entry, SpellID, Active FROM spell_learn_spell");
+    //                                                  0      1        2       3
+    QueryResult result = WorldDatabase.Query("SELECT entry, SpellID, Active, ReqSpell FROM spell_learn_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell learn spells. DB table `spell_learn_spell` is empty.");
@@ -1488,6 +1488,7 @@ void SpellMgr::LoadSpellLearnSpells()
         SpellLearnSpellNode node;
         node.spell       = fields[1].GetUInt32();
         node.active      = fields[2].GetBool();
+        node.reqSpell    = fields[3].GetUInt32();
         node.autoLearned = false;
 
         if (!GetSpellInfo(spell_id))
@@ -1497,7 +1498,7 @@ void SpellMgr::LoadSpellLearnSpells()
             continue;
         }
 
-        if (!GetSpellInfo(node.spell))
+        if (!GetSpellInfo(node.spell) || node.reqSpell && !GetSpellInfo(node.reqSpell))
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_learn_spell` learning not existed spell %u", spell_id, node.spell);
             WorldDatabase.PExecute("DELETE FROM `spell_learn_spell` WHERE entry = %u", spell_id);
