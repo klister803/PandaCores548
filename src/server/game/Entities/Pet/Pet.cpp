@@ -310,7 +310,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     {
         uint32 savedhealth = fields[9].GetUInt32();
         uint32 savedmana = fields[10].GetUInt32();
-        if (!savedhealth && getPetType() == HUNTER_PET)
+        if (!stampeded && !savedhealth && getPetType() == HUNTER_PET)
             setDeathState(JUST_DIED);
         else if (owner && owner->getClass() != CLASS_WARLOCK && !IsPetGhoul())
         {
@@ -319,7 +319,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         }
         else if (!IsPetGhoul())
         {
-            SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
+            if (!stampeded)
+                SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
             SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
             SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
         }

@@ -7143,6 +7143,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
     float radius = 5.0f;
     int32 duration = m_spellInfo->GetDuration();
     uint32 spell1 = 0;
+    uint32 spell2 = 0;
 
     switch (m_spellInfo->Id)
     {
@@ -7150,10 +7151,10 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             numGuardians = 1;
             break;
         case 111898:   //Grimoire: Felguard
-            spell1 = 89766;
+            spell2 = 89766;
             break;
         case 111897:   //Grimoire: Felhunter
-            spell1 = 19647;
+            spell2 = 19647;
             break;
         case 111896:   //Grimoire: Succubus
             spell1 = 6358;
@@ -7172,7 +7173,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
 
     // Grimoire of Service. May move it or create by script? But PatAI better ;)
-    if (spell1)
+    if (spell1 || spell2)
     {
         if (Player * player = caster->ToPlayer())
         {
@@ -7182,7 +7183,11 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             {
                 pet->SetReactState(REACT_AGGRESSIVE);
                 if (Unit * target = player->GetSelectedUnit())
+                {
                     pet->ToCreature()->AI()->AttackStart(target);
+                    if (spell2)
+                        pet->CastSpell(target, spell2, true);
+                }
 
                 if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spell1))
                     pet->ToggleAutocast(sInfo, true);
