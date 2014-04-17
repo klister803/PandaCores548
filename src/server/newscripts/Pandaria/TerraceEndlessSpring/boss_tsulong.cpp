@@ -99,6 +99,8 @@ class boss_tsulong : public CreatureScript
             boss_tsulongAI(Creature* creature) : BossAI(creature, DATA_TSULONG)
             {
                 instance = creature->GetInstanceScript();
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ENERGIZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_PERIODIC_ENERGIZE, true);
                 if (instance)
                 {
                     if (CheckProtectors(instance, me))

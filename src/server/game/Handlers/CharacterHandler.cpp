@@ -1214,6 +1214,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     if (!pCurrChar->IsStandState() && !pCurrChar->HasUnitState(UNIT_STATE_STUNNED))
         pCurrChar->SetStandState(UNIT_STAND_STATE_STAND);
 
+    // added ONLY for testing - unlock battle pet test round for all - without spell
+    if (!pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED))
+        pCurrChar->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED);
+
     m_playerLoading = false;
 
     sScriptMgr->OnPlayerLogin(pCurrChar);

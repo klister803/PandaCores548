@@ -2360,6 +2360,9 @@ class spell_dru_innervate : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
+                        if (target->ToCreature() && target->GetMap()->IsDungeon()) //Evade crash(Tsulong)
+                            return;
+
                         int32 mana = target->GetMaxPower(POWER_MANA) / 10;
 
                         if (target->GetGUID() == _player->GetGUID())

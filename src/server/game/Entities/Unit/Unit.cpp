@@ -19403,7 +19403,13 @@ uint32 Unit::GetCombatRatingDamageReduction(CombatRating cr, float cap, uint32 d
     if (cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN || cr == CR_RESILIENCE_CRIT_TAKEN)
     {
         if (Player* pl = GetCharmerOrOwnerPlayerOrPlayerItself())
-            percent = std::max(0.0f, percent - pl->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT));
+        {
+            float auraPercent = pl->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
+            float scalar      = pl->GetRatingMultiplier(CR_RESILIENCE_PLAYER_DAMAGE_TAKEN) * 93.225806452f;
+            uint32 resRating  = float(pl->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_RESILIENCE_PLAYER_DAMAGE_TAKEN));
+
+            percent = ((scalar * 0.72f) + resRating) / (scalar + resRating) * 100.0f - 72.0f - auraPercent;
+        }
     }
 
     return CalculatePct(damage, percent);

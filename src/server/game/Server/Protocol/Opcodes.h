@@ -725,7 +725,7 @@ enum Opcodes
     SMSG_ARENA_SEASON_WORLDSTATE                      = 0x041F, // 5.4.1 17538
     SMSG_BARBER_SHOP_RESULT                           = 0x0126, // 5.4.1 17538
     SMSG_BATTLEPAY_PRODUCT_ITEM                       = 0x0CAF, // 5.4.1 17538
-    SMSG_BATTLE_PET_BATTLE_FINISHED                   = 0xBC8,  // 5.0.5 16048
+    SMSG_BATTLE_PET_BATTLE_FINISHED                   = 0x118C, // 5.4.1 17538
     SMSG_BATTLE_PET_CHAT_RESTRICTED                   = 0xB68,  // 5.0.5 16048
     SMSG_BATTLE_PET_DELETED                           = 0xF49,  // 5.0.5 16048
     SMSG_BATTLE_PET_ERROR                             = 0xBA0,  // 5.0.5 16048

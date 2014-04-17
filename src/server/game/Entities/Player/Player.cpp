@@ -6664,6 +6664,10 @@ float Player::GetRatingMultiplier(CombatRating cr) const
     GtCombatRatingsEntry const* Rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
     // gtOCTClassCombatRatingScalarStore.dbc starts with 1, CombatRating with zero, so cr+1
     GtOCTClassCombatRatingScalarEntry const* classRating = sGtOCTClassCombatRatingScalarStore.LookupEntry((getClass()-1)*GT_MAX_RATING+cr+1);
+
+    if (cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN)
+        return Rating->ratio;
+
     if (!Rating || !classRating)
         return 1.0f;                                        // By default use minimum coefficient (not must be called)
 
@@ -6673,9 +6677,9 @@ float Player::GetRatingMultiplier(CombatRating cr) const
 float Player::GetRatingBonusValue(CombatRating cr) const
 {
     float baseResult = float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) * GetRatingMultiplier(cr);
-    if (cr != CR_RESILIENCE_PLAYER_DAMAGE_TAKEN)
+//    if (cr != CR_RESILIENCE_PLAYER_DAMAGE_TAKEN)
         return baseResult;
-    return float(1.0f - pow(0.99f, baseResult)) * 100.0f;
+//    return float(1.0f - pow(0.99f, baseResult)) * 100.0f;
 }
 
 float Player::GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const

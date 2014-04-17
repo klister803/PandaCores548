@@ -304,11 +304,11 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1.WriteGuidMask<2, 1, 7>(ownerGuid);
                 data1.WriteBit(1);
                 data1.WriteBits(0, 7);
-                data1.WriteBits(1, 21);
+                data1.WriteBits(0, 21);
 
-                data1.WriteBit(1);
-                data1.WriteBit(0);
-                data1.WriteBit(0);
+                //data1.WriteBit(1);
+                //data1.WriteBit(0);
+                //data1.WriteBit(0);
             }
             else
             {
@@ -358,7 +358,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             if (i == 0)
             {
                 // 1 ability (for 1)
-                uint32 abilityID = 119;
+                uint32 abilityID = 114;
                 data1 << uint8(0);
                 data1 << uint16(0);
                 data1 << uint8(0);  // slot index
@@ -368,7 +368,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             else
             {
                 // 1 ability (for 1)
-                uint32 abilityID1 = 119;
+                uint32 abilityID1 = 484;
                 data1 << uint8(0);
                 data1 << uint16(0);
                 data1 << uint8(0);  // slot index
@@ -376,8 +376,8 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1 << uint32(abilityID1); // ability ID
             }
 
-            data1 << uint16(22);  // experience
-            data1 << uint32(210); // total HP
+            data1 << uint16(25);  // experience
+            data1 << uint32(250); // total HP
 
             if (i == 0)
                 data1.WriteGuidBytes<1>(ownerGuid);
@@ -415,17 +415,17 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             }
 
             data1 << uint32(0);
-            data1 << uint32(200); // speed
+            data1 << uint32(25); // speed
 
             // aura handle test
             // 239 - flying creature passive
-            if (i == 0)
+            /*if (i == 0)
             {
                 data1 << uint32(-1); // duration?
                 data1 << uint32(1);
                 data1 << uint8(0);
                 data1 << uint32(239); // auraID = spellID
-            }
+            }*/
 
             if (i == 0)
                 data1.WriteGuidBytes<4>(ownerGuid);
@@ -444,9 +444,9 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 
             // current HP
             if (i == 0)
-                data1 << uint32(210);
+                data1 << uint32(250);
             else
-                data1 << uint32(210);
+                data1 << uint32(250);
 
             if (i == 0)
                 data1.WriteGuidBytes<3>(ownerGuid);
@@ -474,7 +474,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 
             // Level
             if (i == 0)
-                data1 << uint16(12);
+                data1 << uint16(15);
             else
                 data1 << uint16(15);
 
@@ -485,9 +485,9 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 
             // Attack Power
             if (i == 0)
-                data1 << uint32(300);
+                data1 << uint32(25);
             else
-                data1 << uint32(500);
+                data1 << uint32(25);
 
             data1 << uint8(0); // pet slot index?
         }
@@ -703,13 +703,15 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     bool bit6 = recvData.ReadBit();
 
     uint32 abilityID = 0;
+    uint32 roundID = 0;
+    uint8 endGame = 0;
 
     if (!bit5)
         recvData.read_skip<uint8>();
     if (!bit6)
-        recvData.read_skip<uint32>();
+        recvData >> roundID;
     if (!bit1)
-        recvData.read_skip<uint8>();
+        recvData >> endGame;
     if (!bit)
         recvData >> abilityID;
     if (!bit2)
@@ -717,9 +719,16 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     if (!bit4)
         recvData.read_skip<uint8>();
 
-    // skip other action - trap, forfeit, etc....
-    if (!abilityID)
+    // skip other action - trap, forfeit, skip turn, etc....
+    if (!abilityID && !bit6)
         return;
+
+    // finish
+    if (bit6 && endGame == 4)
+    {
+        _player->GetBattlePetMgr().SendClosePetBattle(_player);
+        return;
+    }
 
     WorldPacket data(SMSG_BATTLE_PET_ROUND_RESULT);
     data.WriteBit(0);
@@ -829,6 +838,34 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
 
     data.WriteBits(0, 3);
 
+    uint32 remHp1 = 250;
+    uint32 remHp2 = 250;
+
+    uint32 winner = 2;
+
+    // test calc damage - 2 round battle ended
+    if (roundID == 0)
+    {
+        remHp1 = 250 - urand(50, 95);
+        remHp2 = 250 - urand(50, 95);
+    }
+    else if (roundID == 1)
+    {
+        // roll winner
+        winner = urand(0, 1);
+
+        if (winner)
+        {
+            remHp2 = -2;
+            remHp1 = 34;
+        }
+        else
+        {
+            remHp2 = 35;
+            remHp1 = -1;
+        }
+    }
+
     // 0
     uint16 val7 = 1;       // opponent index
     uint8 val18 = 3;       // target ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
@@ -836,10 +873,10 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     uint16 val10 = 4100;   // attack flags
     uint8 val11 = 0;       // attacker ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
     uint8 val12 = 1;
-    uint32 val13 = 286;    // effect ID
+    uint32 val13 = 281;    // effect ID
     data << uint16(val7);  // opponent index
     data << uint8(val18);  // target ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
-    data << uint32(val9);  // remaining health
+    data << int32(remHp1);  // remaining health
     data << uint16(val10); // attack flags
     data << uint8(val11);  // attacker ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
     data << uint8(val12);
@@ -870,10 +907,10 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     uint16 val3 = 4096;  // attack flags
     uint8 val4 = 3;      // attacker ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
     uint8 val5 = 1;
-    uint32 val6 = 286;   // effect ID
+    uint32 val6 = 769;   // effect ID
     data << uint16(val);
     data << uint8(val1);
-    data << uint32(val2);
+    data << int32(remHp2);
     data << uint16(val3);
     data << uint8(val4);
     data << uint8(val5);
@@ -917,8 +954,122 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     data << uint8(2);
     //
 
-    data << uint32(1);     // Round ID
+    roundID++;
+    data << uint32(roundID);     // Round ID
     data << uint8(2);
 
     SendPacket(&data);
+
+    // final
+    if (roundID == 2)
+    {
+        if (winner == 2)
+            return;
+
+        WorldPacket data1(SMSG_BATTLE_PET_FINAL_ROUND);
+        data1.WriteBits(2, 20);
+
+        for (uint8 i = 0; i < 2; i++)
+        {
+            data1.WriteBit(0);
+            data1.WriteBit(1);
+
+            if (i == 0)
+                data1.WriteBit(winner ? 1 : 0);
+            else
+                data1.WriteBit(1);
+
+            data1.WriteBit(0);
+            data1.WriteBit(0);
+            data1.WriteBit(0);
+            data1.WriteBit(0);
+        }
+
+        data1.WriteBit(0);
+
+        // winner bit
+        for (uint8 i = 0; i < 2; i++)
+        {
+            if (i == 0)
+                data1.WriteBit(winner ? 0 : 1);
+            else
+                data1.WriteBit(winner ? 1 : 0);
+        }
+
+        // forfeit/abandoned bit
+        data1.WriteBit(0);
+
+        for (uint8 i = 0; i < 2; i++)
+        {
+            // experience
+            if (!winner && i == 0)
+                data1 << uint16(15);
+
+            // pet ID
+            if (i == 0)
+                data1 << uint8(0);
+            else
+                data1 << uint8(3);
+
+            // remaining health
+            if (i == 0)
+            {
+                if (!winner)
+                {
+                    data1 << int32(35);
+                }
+                else
+                {
+                    data1 << int32(-2);
+                }
+            }
+            else
+            {
+                if (!winner)
+                {
+                    data1 << int32(-1);
+                }
+                else
+                {
+                    data1 << int32(34);
+                }
+            }
+
+            // level after battle
+            if (i == 0)
+            {
+                if (!winner)
+                {
+                    data1 << uint16(16);
+                }
+                else
+                {
+                    data1 << uint16(15);
+                }
+            }
+            else
+            {
+                data1 << uint16(15);
+            }
+
+            // total health
+            data1 << uint32(250);
+            // level before battle
+            data1 << uint16(15);
+        }
+
+        data1 << uint32(0);
+        data1 << uint32(0);
+
+        SendPacket(&data1);
+    }
+}
+
+void BattlePetMgr::SendClosePetBattle(Player * plr)
+{
+    if (!plr)
+        return;
+
+    WorldPacket data(SMSG_BATTLE_PET_BATTLE_FINISHED);
+    plr->GetSession()->SendPacket(&data);
 }
