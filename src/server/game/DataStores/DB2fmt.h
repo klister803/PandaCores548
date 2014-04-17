@@ -28,6 +28,7 @@ const char SpellReagentsEntryfmt[]="diiiiiiiiiiiiiiiiii";
 const char ItemUpgradeEntryfmt[]="niiiii";
 const char RuleSetItemUpgradeEntryfmt[]="niii";
 const char GameObjectsEntryfmt[]="niiffffffffiiiiis";
+const char MapChallengeModeEntryfmt[]="niiiiiiiii";
 const std::string CustomItemExtendedCostEntryfmt="paappppppppppppappppppppppaapaa";
 const std::string CustomItemExtendedCostEntryIndex = "ID";
 
