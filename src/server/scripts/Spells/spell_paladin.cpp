@@ -1137,9 +1137,13 @@ class spell_pal_lay_on_hands : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
                 if (Unit* target = GetExplTargetUnit())
+                {
+                    if (target->ToCreature() && target->GetMap()->IsDungeon())
+                        return SPELL_FAILED_NO_VALID_TARGETS;
+
                     if (target->HasAura(SPELL_FORBEARANCE))
                         return SPELL_FAILED_TARGET_AURASTATE;
-
+                }
                 return SPELL_CAST_OK;
             }
 
