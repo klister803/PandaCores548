@@ -4649,8 +4649,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].Amplitude = 0;
                     break;
                 case 774: // Rejuvenation
-                    spellInfo->Effects[2].Effect = 0;
-                    spellInfo->Effects[2].ApplyAuraName = 0;
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
+                    spellInfo->Effects[0].ApplyAuraName = 0;
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_START_PERIODIC_AT_APPLY;
                     break;
                 case 81262: // Swiftmend
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_HEAL;
