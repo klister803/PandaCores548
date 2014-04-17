@@ -3737,6 +3737,11 @@ void AuraEffect::HandleModConfuse(AuraApplication const* aurApp, uint8 mode, boo
 
     Unit* target = aurApp->GetTarget();
 
+    if(apply)
+        target->SetTimeForSpline(GetBase()->GetDuration());
+    else
+        target->SetTimeForSpline(0);
+
     target->SetControlled(apply, UNIT_STATE_CONFUSED);
 }
 
@@ -3746,6 +3751,11 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
         return;
 
     Unit* target = aurApp->GetTarget();
+
+    if(apply)
+        target->SetTimeForSpline(GetBase()->GetDuration());
+    else
+        target->SetTimeForSpline(0);
 
     target->SetControlled(apply, UNIT_STATE_FLEEING);
 }

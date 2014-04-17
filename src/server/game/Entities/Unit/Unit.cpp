@@ -199,6 +199,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_canDualWield = false;
 
     m_rootTimes = 0;
+    m_timeForSpline = 0;
 
     m_state = 0;
     m_deathState = ALIVE;
@@ -423,10 +424,10 @@ bool Unit::haveOffhandWeapon() const
         return m_canDualWield;
 }
 
-void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed)
+void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed, bool generatePath, bool forceDestination)
 {
     Movement::MoveSplineInit init(*this);
-    init.MoveTo(x,y,z);
+    init.MoveTo(x, y, z, generatePath, forceDestination);
     init.SetVelocity(speed);
     init.Launch();
 }
@@ -14815,6 +14816,20 @@ void Unit::DeleteThreatList()
     if (CanHaveThreatList() && !m_ThreatManager.isThreatListEmpty())
         SendClearThreatListOpcode();
     m_ThreatManager.clearReferences();
+}
+
+//======================================================================
+
+void Unit::DeleteFromThreatList(Unit* victim)
+{
+    if (CanHaveThreatList() && !m_ThreatManager.isThreatListEmpty())
+    {
+        // remove unreachable target from our threat list
+        // next tick we will select next possible target
+        m_HostileRefManager.deleteReference(victim);
+        m_ThreatManager.modifyThreatPercent(victim, -101);
+       // _removeAttacker(victim);
+    }
 }
 
 //======================================================================

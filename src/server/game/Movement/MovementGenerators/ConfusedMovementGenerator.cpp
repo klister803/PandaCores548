@@ -19,6 +19,7 @@
 #include "Creature.h"
 #include "MapManager.h"
 #include "ConfusedMovementGenerator.h"
+#include "PathFinderMovementGenerator.h"
 #include "VMapFactory.h"
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
@@ -29,83 +30,27 @@
 #define urand(a, b) unit.urand(a, b)
 #endif
 
+#define WALK_SPEED_YARDS_PER_SECOND 2.45f
+
 template<class T>
 void ConfusedMovementGenerator<T>::Initialize(T &unit)
 {
-    unit.StopMoving();
-    float const wander_distance = 4;
-    float x = unit.GetPositionX();
-    float y = unit.GetPositionY();
-    float z = unit.GetPositionZ();
-
-    Map const* map = unit.GetBaseMap();
-
-    i_nextMove = 1;
-
-    bool is_water_ok, is_land_ok;
-    _InitSpecific(unit, is_water_ok, is_land_ok);
-
-    for (uint8 idx = 0; idx < MAX_CONF_WAYPOINTS + 1; ++idx)
-    {
-        float wanderX = x + (wander_distance * (float)rand_norm() - wander_distance/2);
-        float wanderY = y + (wander_distance * (float)rand_norm() - wander_distance/2);
-
-        // prevent invalid coordinates generation
-        Trinity::NormalizeMapCoord(wanderX);
-        Trinity::NormalizeMapCoord(wanderY);
-
-        if (unit.IsWithinLOS(wanderX, wanderY, z))
-        {
-            bool is_water = map->IsInWater(wanderX, wanderY, z);
-
-            if ((is_water && !is_water_ok) || (!is_water && !is_land_ok))
-            {
-                //! Cannot use coordinates outside our InhabitType. Use the current or previous position.
-                wanderX = idx > 0 ? i_waypoints[idx-1][0] : x;
-                wanderY = idx > 0 ? i_waypoints[idx-1][1] : y;
-            }
-        }
-        else
-        {
-            //! Trying to access path outside line of sight. Skip this by using the current or previous position.
-            wanderX = idx > 0 ? i_waypoints[idx-1][0] : x;
-            wanderY = idx > 0 ? i_waypoints[idx-1][1] : y;
-        }
-
-        unit.UpdateAllowedPositionZ(wanderX, wanderY, z);
-
-        //! Positions are fine - apply them to this waypoint
-        i_waypoints[idx][0] = wanderX;
-        i_waypoints[idx][1] = wanderY;
-        i_waypoints[idx][2] = z;
-    }
-
+    unit.GetPosition(i_x, i_y, i_z);
     unit.StopMoving();
     unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.AddUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
-}
-
-template<>
-void ConfusedMovementGenerator<Creature>::_InitSpecific(Creature &creature, bool &is_water_ok, bool &is_land_ok)
-{
-    is_water_ok = creature.canSwim();
-    is_land_ok  = creature.canWalk();
-}
-
-template<>
-void ConfusedMovementGenerator<Player>::_InitSpecific(Player &, bool &is_water_ok, bool &is_land_ok)
-{
-    is_water_ok = true;
-    is_land_ok  = true;
+    i_duration = unit.GetTimeForSpline();
+    unit.SetSpeed(MOVE_WALK, 1.f, true);
+    speed = WALK_SPEED_YARDS_PER_SECOND;
+    moving_to_start = false;
 }
 
 template<class T>
 void ConfusedMovementGenerator<T>::Reset(T &unit)
 {
-    i_nextMove = 1;
     i_nextMoveTime.Reset(0);
-    unit.StopMoving();
     unit.AddUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
+    unit.StopMoving();
 }
 
 template<class T>
@@ -114,32 +59,82 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
     if (unit.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
         return true;
 
-    if (i_nextMoveTime.Passed())
-    {
-        // currently moving, update location
-        unit.AddUnitState(UNIT_STATE_CONFUSED_MOVE);
+    i_nextMoveTime.Update(diff);
+    if(i_duration >= diff)
+        i_duration -= diff;
 
-        if (unit.movespline->Finalized())
+    if (!moving_to_start)
+    {
+        float max_accuracyMiliYard = 150 * speed;
+        float min_accuracyMiliYard = -20 * speed;
+        PathFinderMovementGenerator path(&unit);
+
+        if (path.calculate(i_x, i_y, i_z))
         {
-            i_nextMove = urand(1, MAX_CONF_WAYPOINTS);
-            i_nextMoveTime.Reset(urand(500, 1200)); // Guessed
+            float len = 0;
+            for (uint32 i = 1; i < path.getPath().size(); ++i)
+            {
+                Vector3 node = path.getPath()[i];
+                Vector3 prev = path.getPath()[i-1];
+                float xd = node.x - prev.x;
+                float yd = node.y - prev.y;
+                float zd = node.z - prev.z;
+                len += sqrtf(xd*xd + yd*yd + zd*zd);
+            }
+
+            float timeSpent = float(i_duration) - len * 1000.f / speed;
+
+            if (timeSpent <= max_accuracyMiliYard && timeSpent >= min_accuracyMiliYard)
+            {
+                moving_to_start = true;
+                unit.AddUnitState(UNIT_STATE_CONFUSED_MOVE);
+                unit.UpdateAllowedPositionZ(i_x, i_y, i_z);
+
+                Movement::MoveSplineInit init(unit);
+                init.MovebyPath(path.getPath());
+                init.SetWalk(true);
+                init.Launch();
+                return true;
+            }
         }
     }
     else
+        return true;
+
+    // waiting for next move
+    if (i_nextMoveTime.Passed() && unit.movespline->Finalized())
     {
-        // waiting for next move
-        i_nextMoveTime.Update(diff);
-        if (i_nextMoveTime.Passed())
         {
             // start moving
             unit.AddUnitState(UNIT_STATE_CONFUSED_MOVE);
 
-            ASSERT(i_nextMove <= MAX_CONF_WAYPOINTS);
-            float x = i_waypoints[i_nextMove][0];
-            float y = i_waypoints[i_nextMove][1];
-            float z = i_waypoints[i_nextMove][2];
+            float const wander_distance = 5;
+            float x = unit.GetPositionX();
+            float y = unit.GetPositionY();
+            float z = unit.GetPositionZ();
+            x += (wander_distance * (float)rand_norm() - wander_distance/2);
+            y += (wander_distance * (float)rand_norm() - wander_distance/2);
+
+            Trinity::NormalizeMapCoord(x);
+            Trinity::NormalizeMapCoord(y);
+
+            unit.UpdateAllowedPositionZ(x, y, z);
+
+            if (z <= INVALID_HEIGHT)
+                i_z = unit.GetBaseMap()->GetHeight(unit.GetPhaseMask(), x, y, MAX_HEIGHT) + 2.0f;
+
+            PathFinderMovementGenerator path(&unit);
+            path.setPathLengthLimit(30.0f);
+            path.setUseStrightPath(false);
+
+            if (!unit.IsWithinLOS(x, y, z) || !path.calculate(x, y, z) || path.getPathType() & PATHFIND_NOPATH)
+            {
+                i_nextMoveTime.Reset(urand(200, 500));
+                return true;
+            }
+
             Movement::MoveSplineInit init(unit);
-            init.MoveTo(x, y, z);
+            init.MovebyPath(path.getPath());
             init.SetWalk(true);
             init.Launch();
         }
@@ -153,6 +148,7 @@ void ConfusedMovementGenerator<Player>::Finalize(Player &unit)
 {
     unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.ClearUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
+    unit.StopMoving();
 }
 
 template<>

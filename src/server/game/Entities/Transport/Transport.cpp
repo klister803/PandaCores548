@@ -667,6 +667,7 @@ Creature * Transport::AddNPCPassengerCreature(uint32 tguid, uint32 entry, float 
     }
 
     pCreature->SetTransport(this);
+    pCreature->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
     pCreature->m_movementInfo.guid = GetGUID();
     pCreature->m_movementInfo.t_pos.Relocate(x, y, z, o);
 
@@ -717,6 +718,7 @@ uint32 Transport::AddNPCPassenger(uint32 tguid, uint32 entry, float x, float y, 
     }
 
     creature->SetTransport(this);
+    creature->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
     creature->m_movementInfo.t_guid = GetGUID();
     creature->m_movementInfo.t_pos.Relocate(x, y, z, o);
 

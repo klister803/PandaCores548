@@ -126,6 +126,13 @@ enum ZLiquidStatus
     LIQUID_MAP_UNDER_WATER  = 0x00000008
 };
 
+enum MMAP_LOAD_RESULT
+{
+    MMAP_LOAD_RESULT_ERROR,
+    MMAP_LOAD_RESULT_OK,
+    MMAP_LOAD_RESULT_IGNORED,
+};
+
 #define MAP_LIQUID_TYPE_NO_WATER    0x00
 #define MAP_LIQUID_TYPE_WATER       0x01
 #define MAP_LIQUID_TYPE_OCEAN       0x02
@@ -486,6 +493,7 @@ class Map : public GridRefManager<NGridType>
         void LoadMapAndVMap(int gx, int gy);
         void LoadVMap(int gx, int gy);
         void LoadMap(int gx, int gy, bool reload = false);
+        void LoadMMap(int gx, int gy);
         GridMap* GetGrid(float x, float y);
 
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
