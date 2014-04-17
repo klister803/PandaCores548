@@ -2297,7 +2297,8 @@ void WorldSession::HandleViolenceLevel(WorldPacket& recvPacket)
 void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvData)
 {
     sLog->outError(LOG_FILTER_NETWORKIO, "Received CMSG_OBJECT_UPDATE_FAILED from player %s (%u). Not patched client - kick him", GetPlayerName().c_str(), GetGuidLow());
-    KickPlayer();
+    //KickPlayer();
+    recvData.rfinish();
     /*ObjectGuid guid;
 
     recvData.ReadGuidMask<2, 3, 5, 0, 4, 7, 6, 1>(guid);
