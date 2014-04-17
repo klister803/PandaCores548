@@ -4662,6 +4662,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 73920: // Healing Rain
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
+                    spellInfo->Effects[1].BasePoints = 0;
                     break;
                 default:
                     break;
