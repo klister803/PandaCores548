@@ -7008,23 +7008,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
-                // Bloodbath
-                case 12292:
-                {
-                    if (!procSpell)
-                        return false;
-
-                    if (!damage)
-                        return false;
-
-                    if (!roll_chance_i(30))
-                        return false;
-
-                    int32 bp = int32(CalculatePct(damage, triggerAmount) / 6); // damage / tick_number
-                    CastCustomSpell(victim, 113344, &bp, NULL, NULL, true);
-
-                    break;
-                }
                 // Sweeping Strikes
                 case 12328:
                 {
@@ -9568,6 +9551,22 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                         target = victim;
                         break;
                     }
+                }
+                break;
+            }
+            case SPELLFAMILY_WARRIOR:
+            {
+                if (auraSpellInfo->Id == 12292)     // Bloodbath
+                {
+                    trigger_spell_id = 113344;
+        
+                    SpellInfo const* TriggerPS = sSpellMgr->GetSpellInfo(trigger_spell_id);
+                    if (!TriggerPS)
+                        return false;
+        
+                    basepoints0 = CalculatePct(int32(damage), triggerAmount) / (TriggerPS->GetMaxDuration() / TriggerPS->GetEffect(0, GetSpawnMode()).Amplitude);
+                    basepoints0 += victim->GetRemainingPeriodicAmount(GetGUID(), trigger_spell_id, SPELL_AURA_PERIODIC_DAMAGE);
+                    break;
                 }
                 break;
             }

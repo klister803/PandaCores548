@@ -4664,6 +4664,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
                     spellInfo->Effects[1].BasePoints = 0;
                     break;
+                case 12292: // Bloodbath
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    break;
                 default:
                     break;
             }
