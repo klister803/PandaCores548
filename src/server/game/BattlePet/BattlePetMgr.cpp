@@ -717,7 +717,7 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     if (!bit4)
         recvData.read_skip<uint8>();
 
-    // skip other action - trap, forfeit, etc....
+    // skip other action - trap, forfeit, skip turn, etc....
     if (!abilityID)
         return;
 
@@ -921,4 +921,13 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     data << uint8(2);
 
     SendPacket(&data);
+}
+
+void BattlePetMgr::SendClosePetBattle(Player * plr)
+{
+    if (!plr)
+        return;
+
+    WorldPacket data(SMSG_BATTLE_PET_BATTLE_FINISHED);
+    plr->GetSession()->SendPacket(&data);
 }
