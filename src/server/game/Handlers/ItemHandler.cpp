@@ -2086,12 +2086,21 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    if (!item->GetReforgableStat(ItemModType(stats->SourceStat)) || item->GetReforgableStat(ItemModType(stats->FinalStat))) // Cheating, you cant reforge to a stat that the item already has, nor reforge from a stat that the item does not have
+    // prevent cheating with same refore entry
+    if (item->GetReforge() == reforgeEntry)
     {
         SendReforgeResult(false);
         return;
     }
 
+    // prevent cheating, you cant reforge to a stat that the item already has, nor reforge from a stat that the item does not have
+    if (!item->GetReforgableStat(ItemModType(stats->SourceStat)) || item->GetReforgableStat(ItemModType(stats->FinalStat))) 
+    {
+        SendReforgeResult(false);
+        return;
+    }
+
+    // prevent cheating with money
     if (!player->HasEnoughMoney(uint64(item->GetSpecialPrice()))) // cheating
     {
         SendReforgeResult(false);
@@ -2106,6 +2115,9 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
     }*/
 
     player->ModifyMoney(-int64(item->GetSpecialPrice()));
+
+    if (item->IsEquipped())
+        player->ApplyReforgeEnchantment(item, false);
 
     item->SetReforge(reforgeEntry);
     item->SetState(ITEM_CHANGED, player);
