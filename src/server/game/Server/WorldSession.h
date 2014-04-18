@@ -1029,6 +1029,8 @@ class WorldSession
         void HandleQueryPlayerRecipes(WorldPacket& recvPacket);
 
         // Challenge Mode
+        void HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvPacket);
+        void HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& recvPacket);
         void HandleChallengeModeRequestOpcode(WorldPacket& recvPacket);
 
     private:
