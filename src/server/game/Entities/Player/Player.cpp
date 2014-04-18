@@ -22255,6 +22255,89 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
     }
 }
 
+void Player::SendSpellMods()
+{
+    uint8 mods[] = { SPELLMOD_FLAT, SPELLMOD_PCT };
+    for (uint8 k = 0; k < 2; ++k)
+    {
+        ByteBuffer buff;
+        WorldPacket data(mods[k] == SPELLMOD_FLAT ? SMSG_SET_FLAT_SPELL_MODIFIER : SMSG_SET_PCT_SPELL_MODIFIER);
+        uint32 opTypeCount = 0;
+        uint32 opTypeCountPos = data.bitwpos();
+        data.WriteBits(opTypeCount, 22);
+
+        std::list< std::pair<uint32, uint32> > wherePutWhat;
+
+        for (uint32 j = 0; j < MAX_SPELLMOD; ++j)
+        {
+            if (m_spellMods[j].empty())
+                continue;
+            ++opTypeCount;
+
+            int i = 0;
+            flag128 _mask = 0;
+            uint32 modCount = 0;                // count of mods per one mod->op
+            uint32 modCountPos = data.bitwpos();
+            data.WriteBits(modCount, 21);
+
+            for (int eff = 0; eff < 128; ++eff)
+            {
+                if (eff != 0 && (eff % 32) == 0)
+                    _mask[i++] = 0;
+
+                _mask[i] = uint32(1) << (eff - (32 * i));
+                if (mods[k] == SPELLMOD_PCT)
+                {
+                    float val = 1.0f;
+
+                    bool found = false;
+                    for (SpellModList::iterator itr = m_spellMods[j].begin(); itr != m_spellMods[j].end(); ++itr)
+                        if ((*itr)->type == mods[k] && (*itr)->mask & _mask)
+                        {
+                            AddPct(val, (*itr)->value);
+                            found = true;
+                        }
+                    if (!found)
+                        continue;
+
+                    buff << float(val);
+                    buff << uint8(eff);
+                }
+                else
+                {
+                    int32 val = 0;
+                    bool found = false;
+                    for (SpellModList::iterator itr = m_spellMods[j].begin(); itr != m_spellMods[j].end(); ++itr)
+                        if ((*itr)->type == mods[k] && (*itr)->mask & _mask)
+                        {
+                            val += (*itr)->value;
+                            found = true;
+                        }
+                    if (!found)
+                        continue;
+
+                    buff << uint8(eff);
+                    buff << float(val);
+                }
+                ++modCount;
+            }
+
+            wherePutWhat.push_back(std::pair<uint32, uint32>(modCountPos, modCount));
+
+            buff << uint8(j);
+        }
+        data.FlushBits();
+        if (!buff.empty())
+            data.append(buff);
+        data.PutBits(opTypeCountPos, opTypeCount, 22);
+
+        for (std::list< std::pair<uint32, uint32> >::const_iterator itr = wherePutWhat.begin(); itr != wherePutWhat.end(); ++itr)
+            data.PutBits(itr->first, itr->second, 21);
+
+        SendDirectMessage(&data);
+    }
+}
+
 // Restore spellmods in case of failed cast
 void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, Aura* aura)
 {
@@ -24361,8 +24444,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     // SMSG_SET_PROFICIENCY
-    // SMSG_SET_PCT_SPELL_MODIFIER
-    // SMSG_SET_FLAT_SPELL_MODIFIER
+    SendSpellMods();
     // SMSG_UPDATE_AURA_DURATION
 
     data.Initialize(SMSG_SPELL_0x00E9);
