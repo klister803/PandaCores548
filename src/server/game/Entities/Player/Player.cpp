@@ -22762,8 +22762,6 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
     data.WriteBit(1);
     data.WriteGuidMask<5>(guid);
 
-    data.FlushBits();
-   
     data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
     time_t curTime = time(NULL);
@@ -22795,6 +22793,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
             ++count;
         }
     }
+    data.FlushBits();
     data.PutBits(count_pos, count, 21);
     GetSession()->SendPacket(&data);
 }
@@ -24566,6 +24565,7 @@ void Player::SendCooldownAtLogin()
         data << uint32(itr->first);
         ++count;
     }
+    data.FlushBits();
     data.PutBits(count_pos, count, 21);
 
     GetSession()->SendPacket(&data);

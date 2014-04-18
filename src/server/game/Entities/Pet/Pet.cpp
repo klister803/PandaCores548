@@ -1319,6 +1319,7 @@ void Pet::_LoadSpellCooldowns()
         }
         while (result->NextRow());
 
+        data.FlushBits();
         data.PutBits(count_pos, count, 21);
 
         if (!m_CreatureSpellCooldowns.empty() && GetOwner())
