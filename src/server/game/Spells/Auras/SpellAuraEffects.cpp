@@ -467,7 +467,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_PROC_SPELL_CHARGE
     &AuraEffect::HandleAuraGlide,                                 //409 SPELL_AURA_GLIDE
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
-    &AuraEffect::HandleNoImmediateEffect,                         //411 SPELL_AURA_MOD_CHARGES implemented in Spell::cast
+    &AuraEffect::HandleAuraModCharges,                            //411 SPELL_AURA_MOD_CHARGES
     &AuraEffect::HandleModPowerRegen,                             //412 SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN
     &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_413
     &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_414
@@ -8278,4 +8278,17 @@ void AuraEffect::HandleAuraMastery(AuraApplication const* aurApp, uint8 mode, bo
         return;
 
     target->UpdateMasteryAuras();
+}
+
+void AuraEffect::HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+    if (!target)
+        return;
+
+    target->RecalculateSpellCharges(GetMiscValue());
+    target->SendSpellChargeData();
 }

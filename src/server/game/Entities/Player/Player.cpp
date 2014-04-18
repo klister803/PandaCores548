@@ -5112,6 +5112,33 @@ void Player::UpdateSpellCharges(uint32 diff)
     }
 }
 
+void Player::RecalculateSpellCharges(uint32 category)
+{
+    for (SpellChargeDataMap::iterator itr = m_spellChargeData.begin(); itr != m_spellChargeData.end();)
+    {
+        SpellChargeData& data = itr->second;
+        SpellInfo const* info = data.spellInfo;
+        if (info->ChargeRecoveryCategory != category)
+            continue;
+
+        uint8 maxCharges = GetSpellMaxCharges(info);
+        if (!maxCharges)
+        {
+            m_spellChargeData.erase(itr++);
+            continue;
+        }
+
+        if (data.maxCharges < maxCharges)
+            data.timer = 0;
+
+        data.maxCharges = maxCharges;
+        if (data.charges > maxCharges)
+            data.charges = maxCharges;
+
+        ++itr;
+    }
+}
+
 uint32 Player::GetNextResetSpecializationCost() const
 {
     // The first time reset costs 1 gold
@@ -24462,11 +24489,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     SendKnownSpells();
     SendInitialCooldowns();
-
-    data.Initialize(SMSG_SPELL_CHARGE_DATA);
-    data.WriteBits(0, 21);
-    data.FlushBits();
-    GetSession()->SendPacket(&data);
+    SendSpellChargeData();
 
     SendInitialActionButtons();
 
@@ -24670,6 +24693,24 @@ void Player::SendInitialCooldowns()
     data.PutBits(count_pos, spellCount, 19);
 
     GetSession()->SendPacket(&data);
+}
+
+void Player::SendSpellChargeData()
+{
+    WorldPacket data(SMSG_SPELL_CHARGE_DATA, m_spellChargeData.size() * 9 + 3);
+    data.WriteBits(m_spellChargeData.size(), 21);
+    for (SpellChargeDataMap::const_iterator itr = m_spellChargeData.begin(); itr != m_spellChargeData.end(); ++itr)
+    {
+        SpellChargeData const& chargeData = itr->second;
+        data << uint8(chargeData.maxCharges - chargeData.charges);
+        int32 diff = int32(chargeData.spellInfo->CategoryChargeRecoveryTime) - int32(chargeData.timer);
+        if (diff < 0)
+            diff = 0;
+        data << uint32(chargeData.charges != chargeData.maxCharges ? diff : 0);
+        data << uint32(chargeData.spellInfo->ChargeRecoveryCategory);
+    }
+
+    SendDirectMessage(&data);
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()

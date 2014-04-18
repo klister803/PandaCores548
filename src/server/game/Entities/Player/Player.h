@@ -2074,6 +2074,7 @@ class Player : public Unit, public GridObject<Player>
         uint8 GetSpellMaxCharges(SpellInfo const* spellInfo) const;
         void TakeSpellCharge(SpellInfo const* spellInfo);
         void UpdateSpellCharges(uint32 diff);
+        void RecalculateSpellCharges(uint32 category);
 
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
@@ -2489,6 +2490,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SendAurasForTarget(Unit* target);
         void SendInitialCooldowns();
+        void SendSpellChargeData();
         void SendCategoryCooldownMods();
         void SendModifyCooldown(uint32 spellId, int32 value);
 
