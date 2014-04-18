@@ -888,58 +888,6 @@ class spell_rog_poisons : public SpellScriptLoader
         }
 };
 
-// Preparation - 14185
-class spell_rog_preparation : public SpellScriptLoader
-{
-    public:
-        spell_rog_preparation() : SpellScriptLoader("spell_rog_preparation") { }
-
-        class spell_rog_preparation_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_preparation_SpellScript);
-
-            bool Load()
-            {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                Player* caster = GetCaster()->ToPlayer();
-
-                //immediately finishes the cooldown on certain Rogue abilities
-                const SpellCooldowns& cm = caster->GetSpellCooldownMap();
-                for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
-                {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
-
-                    if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
-                    {
-                        if (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT ||   // Vanish, Evasion, Sprint
-                            spellInfo->Id == 31224 ||
-                            spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE)          // Dismantle
-                            caster->RemoveSpellCooldown((itr++)->first, true);
-                        else
-                            ++itr;
-                    }
-                    else
-                        ++itr;
-                }
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Preparation
-                OnEffectHitTarget += SpellEffectFn(spell_rog_preparation_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_preparation_SpellScript();
-        }
-};
-
 class spell_rog_deadly_poison : public SpellScriptLoader
 {
     public:
@@ -1161,7 +1109,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_paralytic_poison();
     new spell_rog_shiv();
     new spell_rog_poisons();
-    new spell_rog_preparation();
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
     new spell_rog_eviscerate();
