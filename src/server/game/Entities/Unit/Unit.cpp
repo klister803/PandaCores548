@@ -2165,6 +2165,40 @@ void Unit::CalcHealAbsorb(Unit* victim, const SpellInfo* healSpell, uint32 &heal
     healAmount = RemainingHeal;
 }
 
+uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount)
+{
+    if (!victim || !spellProto)
+        return amount;
+
+    if (spellProto->Id == 114908 || spellProto->Id == 47753)
+        return amount;
+
+    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
+
+    if (bonus)
+    {
+        if (bonus->direct_damage > 0)
+            amount += int32(bonus->direct_damage * SpellBaseDamageBonusDone(spellProto->GetSchoolMask()));
+        else if (bonus->ap_bonus > 0)
+            amount += int32(bonus->ap_bonus * GetTotalAttackPowerValue(BASE_ATTACK));
+    }
+
+    AuraEffectList const& mAbsorbReducedDamage = victim->GetAuraEffectsByType(SPELL_AURA_421);
+    for (AuraEffectList::const_iterator i = mAbsorbReducedDamage.begin(); i != mAbsorbReducedDamage.end(); ++i)
+        AddPct(amount, (*i)->GetAmount());
+
+    if (Player* player = ToPlayer())
+    {
+        if (victim->GetTypeId() == TYPEID_PLAYER)
+        {
+            float PowerPvP = player->GetFloatValue(PLAYER_PVP_POWER_HEALING);
+            AddPct(amount, PowerPvP);
+        }
+    }
+
+    return amount;
+}
+
 void Unit::AttackerStateUpdate (Unit* victim, WeaponAttackType attType, bool extra)
 {
     if (HasUnitState(UNIT_STATE_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
