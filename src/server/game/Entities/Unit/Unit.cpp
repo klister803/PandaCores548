@@ -9798,30 +9798,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             break;
         }
-        // Grand Crusader
-        case 85043:
-        {
-            if (!procSpell)
-                return false;
-
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if ((procSpell->Id == 35395) || (procSpell->Id == 53595))
-            {
-                if (procSpell->Id == 35395)
-                    break;
-                else
-                {
-                    if (!(roll_chance_i(20)))
-                        return false;
-                }
-            }
-            else
-                return false;
-
-            break;
-        }
         // Daybreak
         case 88821:
         {

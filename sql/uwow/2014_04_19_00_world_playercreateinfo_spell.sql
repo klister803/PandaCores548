@@ -1,4 +1,5 @@
 delete from playercreateinfo_spell_custom where spell = 5301;
+delete from playercreateinfo_spell where spell = 5301;
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES 
 (1, 1, 5301, 'Defensive State(DND)'),
 (2, 1, 5301, 'Defensive State(DND)'),
