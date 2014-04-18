@@ -3477,7 +3477,8 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     {
         if (LastDispelEff && m_removeCooldown)
             if (Player* player = m_caster->ToPlayer())
-                player->RemoveSpellCooldown(m_spellInfo->Id, true);
+                if (m_spellInfo->RecoveryTime <= 8000)
+                    player->RemoveSpellCooldown(m_spellInfo->Id, true);
         return;
     }
     
