@@ -1286,12 +1286,10 @@ void Pet::_LoadSpellCooldowns()
 
         data.WriteGuidMask<4, 7, 6>(guid);
         size_t count_pos = data.bitwpos();
-        data.WriteBits(1, 21);
+        data.WriteBits(0, 21);
         data.WriteGuidMask<2, 3, 1, 0>(guid);
         data.WriteBit(1);
         data.WriteGuidMask<5>(guid);
-
-        data.FlushBits();
 
         data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
@@ -1312,8 +1310,8 @@ void Pet::_LoadSpellCooldowns()
             if (db_time <= curTime)
                 continue;
 
-            data << uint32(spell_id);
             data << uint32(uint32(db_time-curTime)*IN_MILLISECONDS);
+            data << uint32(spell_id);
 
             _AddCreatureSpellCooldown(spell_id, db_time);
 

@@ -1073,11 +1073,17 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         {
                             if (Player* _player = owner->ToPlayer())
                             {
-                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4); //visual cd
-                                data << uint64(_player->GetGUID());
-                                data << uint8(0x0);
-                                data << uint32(m_spellInfo->Id);
+                                ObjectGuid guid = _player->GetGUID();
+                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4); //visual cd
+                                data.WriteGuidMask<4, 7, 6>(guid);
+                                data.WriteBits(1, 21);
+                                data.WriteGuidMask<2, 3, 1, 0>(guid);
+                                data.WriteBit(1);
+                                data.WriteGuidMask<5>(guid);
+
+                                data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
                                 data << uint32(spellInfo->RecoveryTime);
+                                data << uint32(m_spellInfo->Id);
                                 _player->GetSession()->SendPacket(&data);
                             }
                         }
@@ -1096,11 +1102,17 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         {
                             if (Player* _player = owner->ToPlayer())
                             {
-                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4); //visual cd
-                                data << uint64(_player->GetGUID());
-                                data << uint8(0x0);
-                                data << uint32(m_spellInfo->Id);
+                                ObjectGuid guid = _player->GetGUID();
+                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4); //visual cd
+                                data.WriteGuidMask<4, 7, 6>(guid);
+                                data.WriteBits(1, 21);
+                                data.WriteGuidMask<2, 3, 1, 0>(guid);
+                                data.WriteBit(1);
+                                data.WriteGuidMask<5>(guid);
+
+                                data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
                                 data << uint32(spellInfo->RecoveryTime);
+                                data << uint32(m_spellInfo->Id);
                                 _player->GetSession()->SendPacket(&data);
                             }
                         }

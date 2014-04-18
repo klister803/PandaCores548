@@ -13302,11 +13302,9 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
                     data.WriteBit(1);
                     data.WriteGuidMask<5>(guid);
 
-                    data.FlushBits();
-   
                     data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
-                    data << uint32(cooldownSpell);                   
-                    data << uint32(0);
+                    data << uint32(m_weaponChangeTimer);
+                    data << uint32(cooldownSpell);
                     GetSession()->SendPacket(&data);
                 }
             }
@@ -22759,7 +22757,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 
     data.WriteGuidMask<4, 7, 6>(guid);
     size_t count_pos = data.bitwpos();
-    data.WriteBits(1, 21);
+    data.WriteBits(0, 21);
     data.WriteGuidMask<2, 3, 1, 0>(guid);
     data.WriteBit(1);
     data.WriteGuidMask<5>(guid);
@@ -22791,11 +22789,11 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 
         if ((idSchoolMask & spellInfo->GetSchoolMask()) && GetSpellCooldownDelay(unSpellId) < unTimeMs/IN_MILLISECONDS)
         {
-            data << uint32(unSpellId);
             data << uint32(unTimeMs);                       // in m.secs
+            data << uint32(unSpellId);
             AddSpellCooldown(unSpellId, 0, curTime + unTimeMs/IN_MILLISECONDS);
+            ++count;
         }
-        ++count;
     }
     data.PutBits(count_pos, count, 21);
     GetSession()->SendPacket(&data);
@@ -24557,8 +24555,6 @@ void Player::SendCooldownAtLogin()
     data.WriteBit(1);
     data.WriteGuidMask<5>(guid);
 
-    data.FlushBits();
-   
     data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
     for (SpellCooldowns::const_iterator itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
@@ -24566,8 +24562,8 @@ void Player::SendCooldownAtLogin()
         if (itr->second.end <= curTime)
             continue;
 
+        data << uint32(uint32(itr->second.end - curTime) * IN_MILLISECONDS);
         data << uint32(itr->first);
-        data << uint32(uint32(itr->second.end - curTime)*IN_MILLISECONDS);
         ++count;
     }
     data.PutBits(count_pos, count, 21);
