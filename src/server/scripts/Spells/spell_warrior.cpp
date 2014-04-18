@@ -169,8 +169,6 @@ class spell_warr_storm_bolt : public SpellScriptLoader
                     {
                         if (unitTarget->IsImmunedToSpellEffect(sSpellMgr->GetSpellInfo(WARRIOR_SPELL_STORM_BOLT_STUN), 0))
                             SetHitDamage(GetHitDamage() * 4);
-
-                        _player->CastSpell(unitTarget, WARRIOR_SPELL_STORM_BOLT_STUN, true);
                     }
                 }
             }
