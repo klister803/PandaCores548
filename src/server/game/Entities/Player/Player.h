@@ -2487,7 +2487,7 @@ class Player : public Unit, public GridObject<Player>
         void SendBGWeekendWorldStates();
 
         void SendAurasForTarget(Unit* target);
-        void SendCooldownAtLogin();
+        void SendInitialCooldowns();
         void SendCategoryCooldownMods();
         void SendModifyCooldown(uint32 spellId, int32 value);
 

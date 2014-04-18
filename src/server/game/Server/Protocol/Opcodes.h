@@ -1015,6 +1015,7 @@ enum Opcodes
     SMSG_INITIALIZE_FACTIONS                          = 0x0CAC, // 5.4.1 17538
     SMSG_INIT_CURRENCY                                = 0x08AC, // 5.4.1 17538
     SMSG_INIT_WORLD_STATES                            = 0x0D94, // 5.4.1 17538
+    SMSG_INITIAL_COOLDOWNS                            = 0x05E8, // 5.4.1 17538
     SMSG_INSPECT                                      = 0,      // Not found in 4.3.4
     SMSG_INSPECT_RATED_BG_STATS                       = 0xB42,  // 5.0.5 16048
     SMSG_INSPECT_HONOR_STATS                          = 0x0436, // 5.4.1 17538
@@ -1458,7 +1459,6 @@ enum Opcodes
     SMSG_SET_MOVEFLAG2_0x1000                         = 0x0386, // 5.4.1 17538
     SMSG_UNSET_MOVEFLAG2_0x1000                       = 0x07A4, // 5.4.1 17538
     SMSG_SPELL_0x00E9                                 = 0x00E9, // 5.4.1 17538
-    SMSG_SPELL_HISTORY_0x05E8                         = 0x05E8, // 5.4.1 17538
 };
 
 /// Player state

@@ -24379,11 +24379,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     SendKnownSpells();
-
-    data.Initialize(SMSG_SPELL_HISTORY_0x05E8);
-    data.WriteBits(0, 19);
-    data.FlushBits();
-    GetSession()->SendPacket(&data);
+    SendInitialCooldowns();
 
     data.Initialize(SMSG_SPELL_CHARGE_DATA);
     data.WriteBits(0, 21);
@@ -24508,7 +24504,6 @@ void Player::SendInitialPacketsAfterAddToMap()
     if (HasAuraType(SPELL_AURA_MOD_ROOT))
         SendMoveRoot(2);
 
-    SendCooldownAtLogin();
     SendAurasForTarget(this);
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
@@ -24539,34 +24534,58 @@ void Player::SendInitialPacketsAfterAddToMap()
     SetMover(this);
 }
 
-void Player::SendCooldownAtLogin()
+void Player::SendInitialCooldowns()
 {
-    ObjectGuid guid = GetGUID();
     time_t curTime = time(NULL);
-    uint32 count = 0;
+    time_t infTime = curTime + infinityCooldownDelayCheck;
+    uint32 spellCount = 0;
 
-    //! 5.4.1
-    WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
-    data.WriteGuidMask<4, 7, 6>(guid);
+    ByteBuffer buff;
+    WorldPacket data(SMSG_INITIAL_COOLDOWNS, 3 + 5 * (8 + 1) * m_spellCooldowns.size());
     size_t count_pos = data.bitwpos();
-    data.WriteBits(1, 21);
-    data.WriteGuidMask<2, 3, 1, 0>(guid);
-    data.WriteBit(1);
-    data.WriteGuidMask<5>(guid);
+    data.WriteBits(0, 19);
 
-    data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
-
-    for (SpellCooldowns::const_iterator itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
+    for (SpellCooldowns::const_iterator itr = m_spellCooldowns.begin(); itr != m_spellCooldowns.end(); ++itr)
     {
-        if (itr->second.end <= curTime)
+        SpellInfo const *info = sSpellMgr->GetSpellInfo(itr->first);
+        if(!info)
             continue;
 
-        data << uint32(uint32(itr->second.end - curTime) * IN_MILLISECONDS);
-        data << uint32(itr->first);
-        ++count;
+        ++spellCount;
+
+        data.WriteBit(0);                                   // is pet
+        buff << uint32(itr->second.itemid);                 // cast item id
+        buff << uint32(info->Category);                     // spell category
+
+        // send infinity cooldown in special format
+        if (itr->second.end >= infTime)
+        {
+            buff << uint32(0x80000000);                     // category cooldown
+            buff << uint32(itr->first);
+            buff << uint32(1);                              // cooldown
+            continue;
+        }
+
+        time_t cooldown = itr->second.end > curTime ? (itr->second.end - curTime) * IN_MILLISECONDS : 0;
+
+        //if (info->Category)                                 // may be wrong, but anyway better than nothing...
+        {
+            buff << uint32(cooldown);                       // category cooldown
+            buff << uint32(itr->first);
+            buff << uint32(0);                              // cooldown
+        }
+        /*else
+        {
+            buff << uint32(0);                              // category cooldown
+            buff << uint32(itr->first);
+            buff << uint32(cooldown);                       // cooldown
+        }*/
     }
+
     data.FlushBits();
-    data.PutBits(count_pos, count, 21);
+    if (!buff.empty())
+        data.append(buff);
+    data.PutBits(count_pos, spellCount, 19);
 
     GetSession()->SendPacket(&data);
 }
