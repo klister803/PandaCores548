@@ -4947,6 +4947,10 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
             // remove & notify
             RemoveSpellCooldown(itr->first, true);
         }
+
+        // restore spell charges
+        if (entry && entry->ChargeRecoveryCategory)
+            RestoreSpellCategoryCharges(entry->ChargeRecoveryCategory);
     }
 
     // pet cooldowns
@@ -4971,6 +4975,8 @@ void Player::RemoveAllSpellCooldown()
 
         m_spellCooldowns.clear();
     }
+
+    RestoreSpellCategoryCharges();
 }
 
 void Player::_LoadSpellCooldowns(PreparedQueryResult result)
@@ -5048,50 +5054,40 @@ void Player::_SaveSpellCooldowns(SQLTransaction& trans)
 
 bool Player::HasChargesForSpell(SpellInfo const* spellInfo) const
 {
-    SpellChargeDataMap::const_iterator itr = m_spellChargeData.find(spellInfo->Id);
+    SpellChargeDataMap::const_iterator itr = m_spellChargeData.find(spellInfo->ChargeRecoveryCategory);
 
     return itr == m_spellChargeData.end() || itr->second.charges > 0;
 }
 
-uint8 Player::GetSpellMaxCharges(SpellInfo const* spellInfo) const
+uint8 Player::GetMaxSpellCategoryCharges(SpellCategoryEntry const* categoryEntry) const
 {
-    int count = spellInfo->CategoryCharges;
+    int count = categoryEntry->chargeCount;
 
     AuraEffectList const& auraEffs = GetAuraEffectsByType(SPELL_AURA_MOD_CHARGES);
     for (AuraEffectList::const_iterator itr = auraEffs.begin(); itr != auraEffs.end(); ++itr)
-        if ((*itr)->GetMiscValue() == spellInfo->ChargeRecoveryCategory)
+        if ((*itr)->GetMiscValue() == categoryEntry->CategoryId)
             count += (*itr)->GetAmount();
 
     return std::max(0, count);
 }
 
+uint8 Player::GetMaxSpellCategoryCharges(uint32 category) const
+{
+    SpellCategoryEntry const* categoryEntry = sSpellCategoryStores.LookupEntry(category);
+    return categoryEntry ? GetMaxSpellCategoryCharges(categoryEntry) : 0;
+}
+
 void Player::TakeSpellCharge(SpellInfo const* spellInfo)
 {
-    uint32 maxCharges = GetSpellMaxCharges(spellInfo);
-    if (!maxCharges)
+    SpellChargeDataMap::iterator itr = m_spellChargeData.find(spellInfo->ChargeRecoveryCategory);
+    if (itr == m_spellChargeData.end())
         return;
 
-    if (m_spellChargeData.find(spellInfo->Id) == m_spellChargeData.end())
-    {
-        SpellChargeData& data = m_spellChargeData[spellInfo->Id];
-        data.charges = data.maxCharges = maxCharges;
-        data.spellInfo = spellInfo;
-        data.timer = 0;
-    }
-
-    SpellChargeData& data = m_spellChargeData[spellInfo->Id];
+    SpellChargeData& data = itr->second;
     if (!data.charges)
         return;
 
-    data.maxCharges = maxCharges;
-    if (data.charges >= data.maxCharges)
-    {
-        data.maxCharges = data.charges = maxCharges;
-        data.timer = 0;
-    }
-
     --data.charges;
-    //ChatHandler(this).PSendSysMessage("Spell %u now has %u charges (%u max)", spellInfo->Id, data.charges, data.maxCharges);
 }
 
 void Player::UpdateSpellCharges(uint32 diff)
@@ -5103,40 +5099,65 @@ void Player::UpdateSpellCharges(uint32 diff)
             continue;
 
         data.timer += diff;
-        while (data.timer >= data.spellInfo->CategoryChargeRecoveryTime && data.charges < data.maxCharges)
+        while (data.timer >= data.categoryEntry->chargeRegenTime && data.charges < data.maxCharges)
         {
-            data.timer -= data.spellInfo->CategoryChargeRecoveryTime;
+            data.timer -= data.categoryEntry->chargeRegenTime;
             ++data.charges;
-            //ChatHandler(this).PSendSysMessage("Spell %u now has %u charges (%u max)", data.spellInfo->Id, data.charges, data.maxCharges);
+            if (data.charges == data.maxCharges)
+                data.timer = 0;
         }
     }
 }
 
-void Player::RecalculateSpellCharges(uint32 category)
+void Player::RecalculateSpellCategoryCharges(uint32 category)
 {
-    for (SpellChargeDataMap::iterator itr = m_spellChargeData.begin(); itr != m_spellChargeData.end();)
+    SpellChargeDataMap::iterator itr = m_spellChargeData.find(category);
+    if (itr == m_spellChargeData.end())
     {
-        SpellChargeData& data = itr->second;
-        SpellInfo const* info = data.spellInfo;
-        if (info->ChargeRecoveryCategory != category)
-            continue;
+        SpellCategoryEntry const* categoryEntry = sSpellCategoryStores.LookupEntry(category);
+        if (!categoryEntry)
+            return;
 
-        uint8 maxCharges = GetSpellMaxCharges(info);
+        uint8 maxCharges = GetMaxSpellCategoryCharges(categoryEntry);
         if (!maxCharges)
-        {
-            m_spellChargeData.erase(itr++);
-            continue;
-        }
+            return;
 
-        if (data.maxCharges < maxCharges)
-            data.timer = 0;
-
-        data.maxCharges = maxCharges;
-        if (data.charges > maxCharges)
-            data.charges = maxCharges;
-
-        ++itr;
+        SpellChargeData& data = m_spellChargeData[category];
+        data.charges = data.maxCharges = maxCharges;
+        data.categoryEntry = categoryEntry;
+        data.timer = 0;
+        return;
     }
+
+    SpellChargeData& data = itr->second;
+    uint8 maxCharges = GetMaxSpellCategoryCharges(data.categoryEntry);
+    if (!maxCharges)
+    {
+        m_spellChargeData.erase(itr);
+        return;
+    }
+
+    if (data.maxCharges < maxCharges)
+        data.timer = 0;
+
+    data.maxCharges = maxCharges;
+    if (data.charges > maxCharges)
+        data.charges = maxCharges;
+}
+
+void Player::RestoreSpellCategoryCharges(uint32 categoryId)
+{
+    for (SpellChargeDataMap::iterator itr = m_spellChargeData.begin(); itr != m_spellChargeData.end(); ++itr)
+    {
+        if (categoryId && categoryId != categoryId)
+            continue;
+
+        SpellChargeData& data = itr->second;
+        data.charges = data.maxCharges;
+        data.timer = 0;
+    }
+
+    SendSpellChargeData();
 }
 
 uint32 Player::GetNextResetSpecializationCost() const
@@ -24702,12 +24723,12 @@ void Player::SendSpellChargeData()
     for (SpellChargeDataMap::const_iterator itr = m_spellChargeData.begin(); itr != m_spellChargeData.end(); ++itr)
     {
         SpellChargeData const& chargeData = itr->second;
-        data << uint8(chargeData.maxCharges - chargeData.charges);
-        int32 diff = int32(chargeData.spellInfo->CategoryChargeRecoveryTime) - int32(chargeData.timer);
+        data << uint8(chargeData.maxCharges - chargeData.charges);  // charges on cd
+        int32 diff = int32(chargeData.categoryEntry->chargeRegenTime) - int32(chargeData.timer);
         if (diff < 0)
             diff = 0;
-        data << uint32(chargeData.charges != chargeData.maxCharges ? diff : 0);
-        data << uint32(chargeData.spellInfo->ChargeRecoveryCategory);
+        data << uint32(chargeData.charges != chargeData.maxCharges ? diff : 0); // recovery time
+        data << uint32(itr->first);             // category id
     }
 
     SendDirectMessage(&data);

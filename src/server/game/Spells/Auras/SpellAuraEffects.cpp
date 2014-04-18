@@ -8289,6 +8289,6 @@ void AuraEffect::HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode,
     if (!target)
         return;
 
-    target->RecalculateSpellCharges(GetMiscValue());
+    target->RecalculateSpellCategoryCharges(GetMiscValue());
     target->SendSpellChargeData();
 }

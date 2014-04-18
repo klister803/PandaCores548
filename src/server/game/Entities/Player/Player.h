@@ -184,12 +184,12 @@ struct SpellChargeData
     uint8 charges;
     uint8 maxCharges;
 
-    SpellInfo const* spellInfo;
+    SpellCategoryEntry const* categoryEntry;
     uint32 timer;
 };
 
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
-typedef std::map<uint32, SpellChargeData> SpellChargeDataMap;
+typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
 typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
@@ -2071,10 +2071,12 @@ class Player : public Unit, public GridObject<Player>
         void _SaveSpellCooldowns(SQLTransaction& trans);
 
         bool HasChargesForSpell(SpellInfo const* spellInfo) const;
-        uint8 GetSpellMaxCharges(SpellInfo const* spellInfo) const;
+        uint8 GetMaxSpellCategoryCharges(SpellCategoryEntry const* categoryEntry) const;
+        uint8 GetMaxSpellCategoryCharges(uint32 category) const;
         void TakeSpellCharge(SpellInfo const* spellInfo);
         void UpdateSpellCharges(uint32 diff);
-        void RecalculateSpellCharges(uint32 category);
+        void RecalculateSpellCategoryCharges(uint32 category);
+        void RestoreSpellCategoryCharges(uint32 categoryId = 0);
 
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
