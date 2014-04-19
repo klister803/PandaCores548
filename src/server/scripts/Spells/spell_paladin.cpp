@@ -153,7 +153,7 @@ class spell_pal_unbreakable_spirit : public SpellScriptLoader
                         newCooldownDelay -= lessCooldown;
 
                         if (newCooldownDelay > maxCooldownReduction)
-                            player->ModifySpellCooldown(PALADIN_SPELL_LAY_ON_HANDS, -lessCooldown);
+                            _player->ModifySpellCooldown(PALADIN_SPELL_LAY_ON_HANDS, -lessCooldown);
                     }
                     if (_player->HasSpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION))
                     {
@@ -165,7 +165,7 @@ class spell_pal_unbreakable_spirit : public SpellScriptLoader
                         newCooldownDelay -= lessCooldown;
 
                         if (newCooldownDelay > maxCooldownReduction)
-                            player->ModifySpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION, -lessCooldown);
+                            _player->ModifySpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION, -lessCooldown);
                     }
                 }
             }
