@@ -1459,42 +1459,42 @@ class npc_sayge : public CreatureScript
                     break;
                 case GOSSIP_SENDER_MAIN + 1:
                     creature->CastSpell(player, SPELL_DMG, false);
-                    player->AddSpellCooldown(SPELL_DMG, 0, time(NULL) + 7200);
+                    player->AddSpellCooldown(SPELL_DMG, 0, getPreciseTime() + 7200.0);
                     SendAction(player, creature, action);
                     break;
                 case GOSSIP_SENDER_MAIN + 2:
                     creature->CastSpell(player, SPELL_RES, false);
-                    player->AddSpellCooldown(SPELL_RES, 0, time(NULL) + 7200);
+                    player->AddSpellCooldown(SPELL_RES, 0, getPreciseTime() + 7200.0);
                     SendAction(player, creature, action);
                     break;
                 case GOSSIP_SENDER_MAIN + 3:
                     creature->CastSpell(player, SPELL_ARM, false);
-                    player->AddSpellCooldown(SPELL_ARM, 0, time(NULL) + 7200);
+                    player->AddSpellCooldown(SPELL_ARM, 0, getPreciseTime() + 7200.0);
                     SendAction(player, creature, action);
                     break;
                 case GOSSIP_SENDER_MAIN + 4:
                     creature->CastSpell(player, SPELL_SPI, false);
-                    player->AddSpellCooldown(SPELL_SPI, 0, time(NULL) + 7200);
+                    player->AddSpellCooldown(SPELL_SPI, 0, getPreciseTime() + 7200.0);
                     SendAction(player, creature, action);
                     break;
                 case GOSSIP_SENDER_MAIN + 5:
                     creature->CastSpell(player, SPELL_INT, false);
-                    player->AddSpellCooldown(SPELL_INT, 0, time(NULL) + 7200);
+                    player->AddSpellCooldown(SPELL_INT, 0, getPreciseTime() + 7200.0);
                     SendAction(player, creature, action);
                     break;
                 case GOSSIP_SENDER_MAIN + 6:
                     creature->CastSpell(player, SPELL_STM, false);
-                    player->AddSpellCooldown(SPELL_STM, 0, time(NULL) + 7200);
+                    player->AddSpellCooldown(SPELL_STM, 0, getPreciseTime() + 7200.0);
                     SendAction(player, creature, action);
                     break;
                 case GOSSIP_SENDER_MAIN + 7:
                     creature->CastSpell(player, SPELL_STR, false);
-                    player->AddSpellCooldown(SPELL_STR, 0, time(NULL) + 7200);
+                    player->AddSpellCooldown(SPELL_STR, 0, getPreciseTime() + 7200.0);
                     SendAction(player, creature, action);
                     break;
                 case GOSSIP_SENDER_MAIN + 8:
                     creature->CastSpell(player, SPELL_AGI, false);
-                    player->AddSpellCooldown(SPELL_AGI, 0, time(NULL) + 7200);
+                    player->AddSpellCooldown(SPELL_AGI, 0, getPreciseTime() + 7200.0);
                     SendAction(player, creature, action);
                     break;
             }
@@ -1822,7 +1822,7 @@ public:
             if (pPlayer->HasItemCount(ITEM_BREWFEST_KEG,1)) 
                 pPlayer->DestroyItemCount(ITEM_BREWFEST_KEG,1,true);
             pPlayer->CastSpell(pPlayer,SPELL_BREWFEST_SUMMON_RAM,true);
-            pPlayer->AddSpellCooldown(SPELL_BREWFEST_SUMMON_RAM,0,time(NULL) + 18*60*60);
+            pPlayer->AddSpellCooldown(SPELL_BREWFEST_SUMMON_RAM,0, getPreciseTime() + 64800.0);
         }
         if (uiAction == GOSSIP_ACTION_INFO_DEF+2)
         {

@@ -1280,7 +1280,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             caster->AddAura(itr->effect, target);
 
                         if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
-                            target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
+                            target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
                     }
                 }
             }
@@ -1344,7 +1344,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 target->CastSpell(target, itr->effect, true, NULL, NULL, GetCasterGUID());
 
                             if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
-                                target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
+                                target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
                         }
                     }
                 }
@@ -1413,7 +1413,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             triggeredAura->ModStackAmount(GetStackAmount() - triggeredAura->GetStackAmount());
 
                     if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
-                        target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
+                        target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
                 }
         }
     }

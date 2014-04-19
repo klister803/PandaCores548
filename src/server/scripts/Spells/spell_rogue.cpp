@@ -92,7 +92,7 @@ class spell_rog_cheat_death : public SpellScriptLoader
                         return;
 
                     target->CastSpell(target, ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, true);
-                    target->ToPlayer()->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, 0, time(NULL) + 90);
+                    target->ToPlayer()->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, 0, getPreciseTime() + 90.0);
 
                     uint32 health10 = target->CountPctFromMaxHealth(10);
 
