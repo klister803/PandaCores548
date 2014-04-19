@@ -2187,14 +2187,8 @@ uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount
     for (AuraEffectList::const_iterator i = mAbsorbReducedDamage.begin(); i != mAbsorbReducedDamage.end(); ++i)
         AddPct(amount, (*i)->GetAmount());
 
-    if (Player* player = ToPlayer())
-    {
-        if (victim->GetTypeId() == TYPEID_PLAYER)
-        {
-            float PowerPvP = player->GetFloatValue(PLAYER_PVP_POWER_HEALING);
-            AddPct(amount, PowerPvP);
-        }
-    }
+    float PowerPvP = CalcPvPPower(victim, 1.0f, true);
+    amount *= PowerPvP;
 
     return amount;
 }
@@ -11726,11 +11720,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
 
         // Apply PowerPvP damage bonus
-        if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
-        {
-            float PowerPvP = ToPlayer()->GetFloatValue(PLAYER_PVP_POWER_DAMAGE);;
-            AddPct(DoneTotalMod, PowerPvP);
-        }
+        DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
 
         // Chaos Bolt - 116858 and Soul Fire - 6353
         // damage is increased by your critical strike chance
@@ -12613,12 +12603,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         }
     }
 
-    // Apply Power PvP healing bonus
-    if (healamount > 0 && GetTypeId() == TYPEID_PLAYER && victim && victim->GetTypeId() == TYPEID_PLAYER)
-    {
-        float PowerPvP = ToPlayer()->GetFloatValue(PLAYER_PVP_POWER_HEALING);
-        AddPct(DoneTotalMod, PowerPvP);
-    }
+    DoneTotalMod = CalcPvPPower(victim, DoneTotalMod, true);
 
     // done scripted mod (take it from owner)
     Unit* owner = GetOwner() ? GetOwner() : this;
@@ -12892,6 +12877,41 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     return uint32(std::max(heal, 0.0f));
 }
 
+float Unit::CalcPvPPower(Unit* target, float amount, bool isHeal)
+{
+    if (!target)
+        return amount;
+
+    Unit* caster = this;
+
+    if (target->GetTypeId() != TYPEID_PLAYER)
+        if (Unit* owner = target->GetOwner())
+        {
+            if (owner->GetTypeId() != TYPEID_PLAYER)
+                return amount;
+        }
+        else return amount;
+
+    if (GetTypeId() != TYPEID_PLAYER)
+        if (Unit* owner = GetOwner())
+        {
+            if (owner->GetTypeId() == TYPEID_PLAYER)
+            {
+                caster = owner;
+            }
+            else return amount;
+        }
+        else return amount;
+
+    if (Player* plr = caster->ToPlayer())
+    {
+        float PowerPvP = plr->GetFloatValue(isHeal ? PLAYER_PVP_POWER_HEALING: PLAYER_PVP_POWER_DAMAGE);
+        AddPct(amount, PowerPvP);
+    }
+
+    return amount;
+}
+
 int32 Unit::SpellBaseHealingBonusDone(SpellSchoolMask schoolMask)
 {
     int32 AdvertisedBenefit = 0;
@@ -13151,11 +13171,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     float DoneTotalMod = 1.0f;
 
     // Apply PowerPvP damage bonus
-    if (pdamage > 0 && GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
-    {
-        float PowerPvP = ToPlayer()->GetFloatValue(PLAYER_PVP_POWER_DAMAGE);
-        AddPct(DoneTotalMod, PowerPvP);
-    }
+    DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
 
     // Sudden Death - 29725
     if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARRIOR_ARMS && HasAura(29725) && (attType == BASE_ATTACK || attType == OFF_ATTACK || spellProto))
