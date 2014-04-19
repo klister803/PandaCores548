@@ -1368,7 +1368,6 @@ void ObjectMgr::LoadCreatures()
     if (!result)
     {
         sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 creatures. DB table `creature` is empty.");
-
         return;
     }
 
