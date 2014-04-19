@@ -379,6 +379,7 @@ class AuraEffect
         void HandleAuraModCategoryCooldown(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraSeeWhileInvisible(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraMastery(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
         // aura effect periodic tick handlers
         void HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const;

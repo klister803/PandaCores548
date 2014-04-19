@@ -909,7 +909,7 @@ class spell_sha_fulmination : public SpellScriptLoader
                 if (lsCharges <= 1)
                     return;
 
-                uint8 usedCharges = lsCharges - 1;
+                uint8 usedCharges = lsCharges - 2;
 
                 SpellEntry const* spellInfo = sSpellStore.LookupEntry(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
                 int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);

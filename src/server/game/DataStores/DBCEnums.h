@@ -542,7 +542,9 @@ enum SummonPropType
     SUMMON_PROP_TYPE_DRAKE_VEH       = 10,                  // summon drake (vehicle), 3 spells
     SUMMON_PROP_TYPE_LIGHTWELL       = 11,                  // summon lightwell, 6 spells in 3.0.3
     SUMMON_PROP_TYPE_JEEVES          = 12,                  // summon Jeeves, 1 spell in 3.3.5a
-    SUMMON_PROP_TYPE_LASHTAIL        = 13                   // Lashtail Hatchling, 1 spell in 4.2.2
+    SUMMON_PROP_TYPE_LASHTAIL        = 13,                  // Lashtail Hatchling, 1 spell in 4.2.2
+    SUMMON_PROP_TYPE_GATE            = 14,                  // summon gate, 2 spells in 5.4.1
+    SUMMON_PROP_TYPE_BANNER          = 18                   // summon Banner, 3 spell in 5.4.1
 };
 
 // SummonProperties.dbc, col 5

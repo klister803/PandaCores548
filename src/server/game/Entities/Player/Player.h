@@ -184,12 +184,12 @@ struct SpellChargeData
     uint8 charges;
     uint8 maxCharges;
 
-    SpellInfo const* spellInfo;
+    SpellCategoryEntry const* categoryEntry;
     uint32 timer;
 };
 
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
-typedef std::map<uint32, SpellChargeData> SpellChargeDataMap;
+typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
 typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
@@ -2030,6 +2030,7 @@ class Player : public Unit, public GridObject<Player>
         SpellCooldowns const& GetSpellCooldownMap() const { return m_spellCooldowns; }
 
         void AddSpellMod(SpellModifier* mod, bool apply);
+        void SendSpellMods();
         bool IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod, Spell* spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell = NULL);
         void RemoveSpellMods(Spell* spell);
@@ -2070,9 +2071,12 @@ class Player : public Unit, public GridObject<Player>
         void _SaveSpellCooldowns(SQLTransaction& trans);
 
         bool HasChargesForSpell(SpellInfo const* spellInfo) const;
-        uint8 GetSpellMaxCharges(SpellInfo const* spellInfo) const;
+        uint8 GetMaxSpellCategoryCharges(SpellCategoryEntry const* categoryEntry) const;
+        uint8 GetMaxSpellCategoryCharges(uint32 category) const;
         void TakeSpellCharge(SpellInfo const* spellInfo);
         void UpdateSpellCharges(uint32 diff);
+        void RecalculateSpellCategoryCharges(uint32 category);
+        void RestoreSpellCategoryCharges(uint32 categoryId = 0);
 
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
@@ -2487,7 +2491,8 @@ class Player : public Unit, public GridObject<Player>
         void SendBGWeekendWorldStates();
 
         void SendAurasForTarget(Unit* target);
-        void SendCooldownAtLogin();
+        void SendInitialCooldowns();
+        void SendSpellChargeData();
         void SendCategoryCooldownMods();
         void SendModifyCooldown(uint32 spellId, int32 value);
 

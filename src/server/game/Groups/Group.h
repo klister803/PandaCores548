@@ -223,6 +223,7 @@ class Group
         bool isBGGroup()   const;
         bool isBFGroup()   const;
         bool IsCreated()   const;
+        inline bool IsHomeGroup() const { return !isLFGGroup() && !isBGGroup() && !isBFGroup(); }
         uint64 GetLeaderGUID() const;
         uint64 GetGUID() const;
         uint32 GetLowGUID() const;

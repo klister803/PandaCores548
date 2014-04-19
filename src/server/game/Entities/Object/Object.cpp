@@ -364,11 +364,18 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         ObjectGuid guid = GetGUID();
         uint32 movementFlags = self->m_movementInfo.GetMovementFlags();
         uint16 movementFlagsExtra = self->m_movementInfo.GetExtraMovementFlags();
-        if (GetTypeId() == TYPEID_UNIT)
-            movementFlags &= MOVEMENTFLAG_MASK_CREATURE_ALLOWED;
-        else
-            if (movementFlags & (MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY))
-                movementFlags &= ~(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_FALLING_SLOW);
+        // these break update packet
+        {
+            if (GetTypeId() == TYPEID_UNIT)
+                movementFlags &= MOVEMENTFLAG_MASK_CREATURE_ALLOWED;
+            else
+            {
+                if (movementFlags & (MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY))
+                    movementFlags &= ~(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_FALLING_SLOW);
+                if ((movementFlagsExtra & MOVEMENTFLAG2_INTERPOLATED_TURNING) == 0)
+                    movementFlags &= ~MOVEMENTFLAG_FALLING;
+            }
+        }
 
         ObjectGuid transGuid = self->m_movementInfo.t_guid;
 
@@ -2564,6 +2571,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                         mask = UNIT_MASK_GUARDIAN;
                         break;
                     case SUMMON_TYPE_TOTEM:
+                    case SUMMON_TYPE_BANNER:
                         mask = UNIT_MASK_TOTEM;
                         break;
                     case SUMMON_TYPE_VEHICLE:

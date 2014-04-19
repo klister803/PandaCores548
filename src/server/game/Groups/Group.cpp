@@ -1743,7 +1743,7 @@ void Group::SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid)
     data.WriteGuidBytes<6, 5>(targetGuid);
     data.WriteGuidBytes<7, 5, 0>(whoGuid);
     data.WriteGuidBytes<1, 2>(targetGuid);
-    data << uint8(0);                                       // set targets
+    data << uint8(IsHomeGroup() ? 0 : 1);
     data.WriteGuidBytes<2, 1>(whoGuid);
     data.WriteGuidBytes<3, 0, 4>(targetGuid);
 
@@ -1757,7 +1757,7 @@ void Group::SendTargetIconList(WorldSession* session)
         return;
 
     WorldPacket data(SMSG_RAID_TARGET_UPDATE_ALL, (1+TARGETICONCOUNT*9));
-    data << uint8(1);                                       // list targets
+    data << uint8(IsHomeGroup() ? 0 : 1);
     size_t count = 0;
     size_t pos = data.wpos();
     data.WriteBits(TARGETICONCOUNT, 23);
@@ -1828,7 +1828,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 
     data << uint32(m_counter++);
     data << uint8(0);                                                   // unk
-    data << uint8(0);                                                   // unk, always 1
+    data << uint8(IsHomeGroup() ? 0 : 1);                               // 0 - home group, 1 - instance group
     data << uint8(m_groupType);                                         // group type (flags in 3.3)
     data << uint32(0);                                                  // unk, sometime 32 in sniff (flags ?)
 
@@ -1934,7 +1934,7 @@ void Group::SendEmptyParty(Player *player)
 
     data << uint32(m_counter++);
     data << uint8(0);                                                   // unk
-    data << uint8(0);                                                   // unk, always 1
+    data << uint8(IsHomeGroup() ? 0 : 1);
     data << uint8(0);                                                   // group type (flags in 3.3)
     data << uint32(0);                                                  // unk, sometime 32 in sniff (flags ?)
     data.WriteGuidMask<3, 6>(leaderGuid);
@@ -3101,7 +3101,7 @@ void Group::SetRaidMarker(uint8 id, Player* who, uint64 targetGuid, bool update 
 void Group::SendRaidMarkerUpdate()
 {
     WorldPacket data(SMSG_RAID_MARKERS_CHANGED, 4 + 1 + 1 + 5 * (4 + 4 + 4 + 4));
-    data << uint8(0);
+    data << uint8(IsHomeGroup() ? 0 : 1);
     uint32 mask = 0;
     uint8 count = 0;
     for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)

@@ -4667,6 +4667,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 12292: // Bloodbath
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     break;
+                case 3411: // Intervene
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_RAID;
+                    break;
                 default:
                     break;
             }

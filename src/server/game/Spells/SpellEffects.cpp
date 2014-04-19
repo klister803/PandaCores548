@@ -3252,6 +3252,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id);
                     break;
                 case SUMMON_TYPE_TOTEM:
+                case SUMMON_TYPE_BANNER:
                 {
                     summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id);
                     if (!summon || !summon->isTotem())
@@ -3260,6 +3261,15 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     
                     switch (m_spellInfo->Id)
                     {
+                        case 114192: // Mocking Banner
+                        case 114203: // Demoralizing Banner
+                        case 114207: // Skull Banner
+                        {
+                            uint32 perc = 30;
+
+                            damage = m_caster->CountPctFromMaxHealth(perc);
+                            break;
+                        }
                         case 16190:  // Mana Tide Totem
                         case 108280: // Healing Tide Totem
                         case 108270: // Stone Bulwark Totem
@@ -5180,6 +5190,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 143011:                                // Celestial Cloth
                 case 143255:                                // Balanced Trillium Ingot
                 case 143626:                                // Celestial Cloth and Its Uses
+                case 143646:                                // Balanced Trillium Ingot and Its Uses
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
