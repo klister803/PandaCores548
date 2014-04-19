@@ -3747,6 +3747,26 @@ void Player::RemoveSpecializationSpells()
         removeSpell(*itr);
 }
 
+void Player::RemoveNotActiveSpecializationSpells()
+{
+    std::list<uint32> spellToRemove;
+    uint32 specializationId = GetSpecializationId(GetActiveSpec());
+
+    PlayerSpellMap spellMap = GetSpellMap();
+    for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
+    {
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
+        if (spell && !spell->SpecializationIdList.empty())
+        {
+            if (spell->SpecializationIdList.find(specializationId) == spell->SpecializationIdList.end())
+                spellToRemove.push_back(itr->first);
+        }
+    }
+
+    for (std::list<uint32>::iterator itr = spellToRemove.begin(); itr != spellToRemove.end(); ++itr)
+        removeSpell(*itr);
+}
+
 void Player::InitStatsForLevel(bool reapplyMods)
 {
     if (reapplyMods)                                        //reapply stats values only on .reset stats (level) command
@@ -18996,6 +19016,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     if (GmTicket* ticket = sTicketMgr->GetTicketByPlayer(GetGUID()))
         if (!ticket->IsClosed() && ticket->IsCompleted())
             ticket->SendResponse(GetSession());
+
+    // Clean bug Specialization Spells
+    RemoveNotActiveSpecializationSpells();
 
     return true;
 }

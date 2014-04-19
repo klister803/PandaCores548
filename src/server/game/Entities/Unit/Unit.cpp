@@ -7037,6 +7037,40 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                // Taste for Blood
+                case 56636:
+                {
+                    uint32 stack = 1;
+                    if (procSpell && procSpell->Id == 12294)
+                        stack = 2;
+                    else if (!(procEx & PROC_EX_DODGE))
+                        return false;
+
+                    triggered_spell_id = 60503;
+                    Aura* aura = GetAura(triggered_spell_id);
+                    if (!aura)
+                    {
+                        if(aura = AddAura(triggered_spell_id, this))
+                            stack += aura->GetStackAmount() - 1;
+                    }
+                    else
+                    {
+                        if(stack == 1)
+                            stack += aura->GetStackAmount();
+                        else
+                            stack += aura->GetStackAmount() + 1;
+                    }
+                    if (aura)
+                    {
+                        if(stack > aura->GetSpellInfo()->StackAmount)
+                            stack = aura->GetSpellInfo()->StackAmount;
+
+                        aura->SetStackAmount(stack);
+                        aura->RefreshSpellMods();
+                        aura->RefreshTimers();
+                    }
+                    return true;
+                }
                 // Sweeping Strikes
                 case 12328:
                 {
@@ -12370,6 +12404,8 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         {
             if (victim)
             {
+                crit_chance += GetUnitCriticalChance(attackType, victim);
+                crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
                 // Custom crit by class
                 switch (spellProto->SpellFamilyName)
                 {
@@ -12431,8 +12467,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         break;
                     }
                 }
-                crit_chance += GetUnitCriticalChance(attackType, victim);
-                crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
             break;
         }

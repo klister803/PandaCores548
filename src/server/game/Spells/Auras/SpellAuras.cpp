@@ -907,6 +907,11 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
 {
     if (IsUsingCharges())
     {
+        if(GetId() == 60503)
+        {
+            ModStackAmount(num);
+            return false;
+        }
         int32 charges = m_procCharges + num;
         int32 maxCharges = CalcMaxCharges();
 
