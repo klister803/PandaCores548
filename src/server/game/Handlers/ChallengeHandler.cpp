@@ -113,8 +113,8 @@ void WorldSession::HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& r
     data.WriteBits(5, 23);                              //numRewards 
     data.FlushBits();
     {
-        data << uint32(500790);                         //completionTime
-        data.AppendPackedTime(sWorld->GetGameTime());   //completionDate
+        data << uint32(500790);                         //Record Time
+        data.AppendPackedTime(sWorld->GetGameTime());   //completionTime
         data << uint32(960);
         //for(int32 i = 0; i < 4; ++i)
         {
@@ -125,7 +125,7 @@ void WorldSession::HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& r
             data << uint16(269);
         }
         data << uint32(CHALLENGE_MEDAL_PLAT);           //medal
-        data << uint32(1012790);                        //completionTime
+        data << uint32(1012790);                        //Last Record Time
     }
     SendPacket(&data);
 }
