@@ -5638,7 +5638,7 @@ void Unit::SendAttackStateUpdate(uint32 HitInfo, Unit* target, uint8 /*SwingType
     SendAttackStateUpdate(&dmgInfo);
 }
 
-bool Unit::HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
 {
     SpellInfo const* hasteSpell = triggeredByAura->GetSpellInfo();
 
@@ -5661,7 +5661,7 @@ bool Unit::HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         return false;
     }
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
 
     if (basepoints0)
@@ -5669,13 +5669,13 @@ bool Unit::HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
 
-bool Unit::HandleSpellCritChanceAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleSpellCritChanceAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
 {
     SpellInfo const* triggeredByAuraSpell = triggeredByAura->GetSpellInfo();
 
@@ -5702,7 +5702,7 @@ bool Unit::HandleSpellCritChanceAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
     if (!target || (target != this && !target->isAlive()))
         return false;
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
 
     if (basepoints0)
@@ -5710,13 +5710,13 @@ bool Unit::HandleSpellCritChanceAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
 
-bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 /*procEx*/, double cooldown)
 {
     // Get triggered aura spell info
     SpellInfo const* spellProto = triggeredByAura->GetSpellInfo();
@@ -5813,7 +5813,7 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, uint32 /*damage*/, AuraEffe
 }
 
 //victim may be NULL
-bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown)
+bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown)
 {
     SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
     uint32 effIndex = triggeredByAura->GetEffIndex();
@@ -5835,7 +5835,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
             cooldown_spell_id = abs(itr->spell_trigger);
-            if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
+            if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
                 return false;
 
             if (!(itr->effectmask & (1<<effIndex)))
@@ -6211,8 +6211,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             }
         }
 
-        if (cooldown && GetTypeId() == TYPEID_PLAYER)
-            ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, time(NULL) + cooldown);
+        if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, getPreciseTime() + cooldown);
         if(check)
             return true;
     }
@@ -6692,7 +6692,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     for (std::vector<uint32>::iterator itr = RandomSpells.begin(); itr != RandomSpells.end(); ++itr)
                     {
                         if (!ToPlayer()->HasSpellCooldown(*itr))
-                            ToPlayer()->AddSpellCooldown(*itr, 0, getPreciseTime() + (double)cooldown);
+                            ToPlayer()->AddSpellCooldown(*itr, 0, getPreciseTime() + cooldown);
                     }
                     break;
                 }
@@ -6738,7 +6738,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     for (std::vector<uint32>::iterator itr = RandomSpells.begin(); itr != RandomSpells.end(); ++itr)
                     {
                         if (!ToPlayer()->HasSpellCooldown(*itr))
-                            ToPlayer()->AddSpellCooldown(*itr, 0, getPreciseTime() + (double)cooldown);
+                            ToPlayer()->AddSpellCooldown(*itr, 0, getPreciseTime() + cooldown);
                     }
                     break;
                 }
@@ -7710,19 +7710,19 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                             {
                                 Unit * getComdoTarget = ObjectAccessor::GetUnit(*rogue, rogue->GetComboTarget());
                                 rogue->CastSpell(getComdoTarget, 51699, true);
-                                rogue->AddSpellCooldown(51699, NULL, getPreciseTime() + (double)cooldown);
+                                rogue->AddSpellCooldown(51699, NULL, getPreciseTime() + cooldown);
                                 break;
                             }
                             if (rogue->GetSelectedUnit() && !rogue->GetSelectedUnit()->IsFriendlyTo(rogue))
                             {
                                 rogue->CastSpell(rogue->GetSelectedUnit(), 51699, true);
-                                rogue->AddSpellCooldown(51699, NULL, getPreciseTime() + (double)cooldown);
+                                rogue->AddSpellCooldown(51699, NULL, getPreciseTime() + cooldown);
                                 break;
                             } 
                             if (target && !target->IsFriendlyTo(rogue))
                             {
                                 rogue->CastSpell(target, 51699, true);
-                                rogue->AddSpellCooldown(51699, NULL, getPreciseTime() + (double)cooldown);
+                                rogue->AddSpellCooldown(51699, NULL, getPreciseTime() + cooldown);
                                 break;
                             }
                         }
@@ -8355,7 +8355,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         return false;
 
                     // custom cooldown processing case
-                    if (cooldown && player->HasSpellCooldown(dummySpell->Id))
+                    if (G3D::fuzzyGt(cooldown, 0.0) && player->HasSpellCooldown(dummySpell->Id))
                         return false;
 
                     if (triggeredByAura->GetBase() && castItem->GetGUID() != triggeredByAura->GetBase()->GetCastItemGUID())
@@ -8401,8 +8401,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         triggered_spell_id = 33750;
 
                     // apply cooldown before cast to prevent processing itself
-                    if (cooldown)
-                        player->AddSpellCooldown(dummySpell->Id, 0, getPreciseTime() + (double)cooldown);
+                    if (G3D::fuzzyGt(cooldown, 0.0))
+                        player->AddSpellCooldown(dummySpell->Id, 0, getPreciseTime() + cooldown);
 
                     // Attack Twice
                     for (uint32 i = 0; i < 3; ++i)
@@ -8895,7 +8895,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
     if (cooldown_spell_id == 0)
         cooldown_spell_id = triggered_spell_id;
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
         return false;
 
     if (basepoints0)
@@ -8903,13 +8903,13 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura, originalCaster);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
 
-bool Unit::HandleObsModEnergyAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleObsModEnergyAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
 {
     SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
     //uint32 effIndex = triggeredByAura->GetEffIndex();
@@ -8941,18 +8941,18 @@ bool Unit::HandleObsModEnergyAuraProc(Unit* victim, uint32 /*damage*/, AuraEffec
         return false;
     }
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
     if (basepoints0)
         CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
     return true;
 }
-bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 procEx, uint32 cooldown)
+bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 procEx, double cooldown)
 {
     SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
     //uint32 effIndex = triggeredByAura->GetEffIndex();
@@ -8999,7 +8999,7 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffe
         return false;
     }
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
 
     if (basepoints0)
@@ -9007,15 +9007,15 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffe
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
 
 // Used in case when access to whole aura is needed
 // All procs should be handled like this...
-bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, Aura* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown, bool * handled)
+bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, Aura* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown, bool * handled)
 {
     SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
 
@@ -9213,11 +9213,11 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, Aura* triggeredByAura
                 case 49222:
                 {
                     *handled = true;
-                    if (cooldown && GetTypeId() == TYPEID_PLAYER)
+                    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
                     {
                         if (ToPlayer()->HasSpellCooldown(100000))
                             return false;
-                        ToPlayer()->AddSpellCooldown(100000, 0, getPreciseTime() + (double)cooldown);
+                        ToPlayer()->AddSpellCooldown(100000, 0, getPreciseTime() + cooldown);
                     }
                     return true;
                 }
@@ -9261,7 +9261,7 @@ bool Unit::HandleAuraProc(Unit* victim, uint32 /*damage*/, Aura* triggeredByAura
     return false;
 }
 
-bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlags, uint32 procEx, uint32 cooldown)
+bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlags, uint32 procEx, double cooldown)
 {
     // Get triggered aura spell info
     SpellInfo const* auraSpellInfo = triggeredByAura->GetSpellInfo();
@@ -9386,7 +9386,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                         {
                             trigger_spell_id = 114214;
                             basepoints0 = CalculatePct(this->GetMaxHealth(), 20);
-                            cooldown = 90;
+                            cooldown = 90.0;
                         }
                         break;
                     }
@@ -10342,7 +10342,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
         }
     }
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(trigger_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(trigger_spell_id))
         return false;
 
     // try detect target manually if not set
@@ -10356,13 +10356,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
     else
         CastSpell(target, trigger_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
         ToPlayer()->AddSpellCooldown(trigger_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
 
-bool Unit::HandleOverrideClassScriptAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 cooldown)
+bool Unit::HandleOverrideClassScriptAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, double cooldown)
 {
     int32 scriptId = triggeredByAura->GetMiscValue();
 
@@ -10412,13 +10412,13 @@ bool Unit::HandleOverrideClassScriptAuraProc(Unit* victim, uint32 /*damage*/, Au
         return false;
     }
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
 
     CastSpell(victim, triggered_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
@@ -16709,8 +16709,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         bool prepare = i->aura->CallScriptPrepareProcHandlers(aurApp, eventInfo);
 
         // For players set spell cooldown if need
-        uint32 cooldown = uint32(spellInfo->procTimeRec / 1000);
-        if (prepare && GetTypeId() == TYPEID_PLAYER && i->spellProcEvent && i->spellProcEvent->cooldown)
+        double cooldown = spellInfo->procTimeRec / 1000.0;
+        if (prepare && GetTypeId() == TYPEID_PLAYER && i->spellProcEvent && G3D::fuzzyGt(i->spellProcEvent->cooldown, 0.0))
             cooldown = i->spellProcEvent->cooldown;
 
         // Note: must SetCantProc(false) before return
@@ -21082,7 +21082,7 @@ void Unit::SendTeleportPacket(Position &oldPos)
     SendMessageToSet(&data, true);
 }
 
-bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
 {
     SpellInfo const* triggeredByAuraSpell = triggeredByAura->GetSpellInfo();
 
@@ -21124,7 +21124,7 @@ bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, uint32 /*damage*/, AuraE
         return false;
     }
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
 
     if (basepoints0)
@@ -21132,13 +21132,13 @@ bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, uint32 /*damage*/, AuraE
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
 
-bool Unit::HandleSpellModAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleSpellModAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
 {
     SpellInfo const* triggeredByAuraSpell = triggeredByAura->GetSpellInfo();
 
@@ -21174,7 +21174,7 @@ bool Unit::HandleSpellModAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* t
         return false;
     }
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
 
     if (basepoints0)
@@ -21182,13 +21182,13 @@ bool Unit::HandleSpellModAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* t
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
 
-bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
+bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, uint32 /*damage*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
 {
     SpellInfo const* triggeredByAuraSpell = triggeredByAura->GetSpellInfo();
 
@@ -21222,7 +21222,7 @@ bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
         return false;
     }
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
         return false;
 
     if (basepoints0)
@@ -21230,8 +21230,8 @@ bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura);
 
-    if (cooldown && GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + (double)cooldown);
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }

@@ -1880,7 +1880,7 @@ void SpellMgr::LoadSpellProcEvents()
         spe.procEx          = fields[8].GetUInt32();
         spe.ppmRate         = fields[9].GetFloat();
         spe.customChance    = fields[10].GetFloat();
-        spe.cooldown        = fields[11].GetUInt32();
+        spe.cooldown        = fields[11].GetFloat();
         spe.effectMask        = fields[12].GetUInt32();
 
         mSpellProcEventMap[entry].push_back(spe);

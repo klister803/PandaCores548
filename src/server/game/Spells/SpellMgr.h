@@ -310,7 +310,7 @@ struct SpellProcEventEntry
     uint32      procEx;                                     // proc Extend info (see ProcFlagsEx)
     float       ppmRate;                                    // for melee (ranged?) damage spells - proc rate per minute. if zero, falls back to flat chance from Spell.dbc
     float       customChance;                               // Owerride chance (in most cases for debug only)
-    uint32      cooldown;                                   // hidden cooldown used for some spell proc events, applied to _triggered_spell_
+    double      cooldown;                                   // hidden cooldown used for some spell proc events, applied to _triggered_spell_
     uint32      effectMask;                                 // Effect Mask for aply to effect
 };
 
