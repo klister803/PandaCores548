@@ -8285,3 +8285,17 @@ void AuraEffect::HandleAuraMastery(AuraApplication const* aurApp, uint8 mode, bo
 
     target->UpdateMasteryAuras();
 }
+
+void AuraEffect::HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+    if (!target)
+        return;
+
+    target->RecalculateSpellCategoryCharges(GetMiscValue());
+    target->SendSpellChargeData();
+}
+
