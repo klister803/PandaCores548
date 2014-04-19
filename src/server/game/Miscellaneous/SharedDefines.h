@@ -4062,7 +4062,7 @@ enum SummonType
     SUMMON_TYPE_UNK15       = 15,
     SUMMON_TYPE_UNK16       = 16,
     SUMMON_TYPE_UNK17       = 17,
-    SUMMON_TYPE_UNK18       = 18,
+    SUMMON_TYPE_BANNER      = 18,
 };
 
 enum EventId
