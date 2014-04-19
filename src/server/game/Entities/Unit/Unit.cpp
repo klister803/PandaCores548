@@ -8497,15 +8497,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     {
                         if (ToPlayer()->HasSpellCooldown(16166))
                         {
-                            uint32 newCooldownDelay = ToPlayer()->GetSpellCooldownDelay(16166);
-                            if (newCooldownDelay < 3)
-                                newCooldownDelay = 0;
-                            else
-                                newCooldownDelay -= 2;
-                            ToPlayer()->AddSpellCooldown(16166, 0, uint32(time(NULL) + newCooldownDelay));
-
-                            ObjectGuid guid = GetObjectGuid();
-                            ToPlayer()->SendModifyCooldown(16166, -2000);
+                            ToPlayer()->ModifySpellCooldown(16166, -2 * IN_MILLISECONDS);
                             return true;
                         }
                     }

@@ -141,11 +141,7 @@ class spell_pal_unbreakable_spirit : public SpellScriptLoader
                         newCooldownDelay -= lessCooldown;
 
                         if (newCooldownDelay > maxCooldownReduction)
-                        {
-                            _player->AddSpellCooldown(PALADIN_SPELL_DIVINE_SHIELD, 0, uint32(time(NULL) + newCooldownDelay / IN_MILLISECONDS));
-
-                            _player->SendModifyCooldown(PALADIN_SPELL_DIVINE_SHIELD, -lessCooldown);
-                        }
+                            _player->ModifySpellCooldown(PALADIN_SPELL_DIVINE_SHIELD, -lessCooldown);
                     }
                     if (_player->HasSpellCooldown(PALADIN_SPELL_LAY_ON_HANDS))
                     {
@@ -157,11 +153,7 @@ class spell_pal_unbreakable_spirit : public SpellScriptLoader
                         newCooldownDelay -= lessCooldown;
 
                         if (newCooldownDelay > maxCooldownReduction)
-                        {
-                            _player->AddSpellCooldown(PALADIN_SPELL_LAY_ON_HANDS, 0, uint32(time(NULL) + newCooldownDelay / IN_MILLISECONDS));
-
-                            _player->SendModifyCooldown(PALADIN_SPELL_LAY_ON_HANDS, -lessCooldown);
-                        }
+                            player->ModifySpellCooldown(PALADIN_SPELL_LAY_ON_HANDS, -lessCooldown);
                     }
                     if (_player->HasSpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION))
                     {
@@ -173,11 +165,7 @@ class spell_pal_unbreakable_spirit : public SpellScriptLoader
                         newCooldownDelay -= lessCooldown;
 
                         if (newCooldownDelay > maxCooldownReduction)
-                        {
-                            _player->AddSpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION, 0, uint32(time(NULL) + newCooldownDelay / IN_MILLISECONDS));
-
-                            _player->SendModifyCooldown(PALADIN_SPELL_DIVINE_PROTECTION, -lessCooldown);
-                        }
+                            player->ModifySpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION, -lessCooldown);
                     }
                 }
             }
