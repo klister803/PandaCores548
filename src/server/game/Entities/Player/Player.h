@@ -2055,13 +2055,12 @@ class Player : public Unit, public GridObject<Player>
         }
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
-        void SpellCooldownReduction(uint32 spell_id, time_t end_time);
-        void ChangeSpellCooldown(uint32 spell_id, float second);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
         void RemoveSpellCategoryCooldown(uint32 cat, bool update = false);
         void SendClearCooldown(uint32 spell_id, Unit* target);
+        void ModifySpellCooldown(uint32 spell_id, int32 delta);
 
         GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
 

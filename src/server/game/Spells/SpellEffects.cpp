@@ -922,14 +922,14 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             player->RemoveSpellCooldown(spellid, true);
                         else
                         {
-                            float delay = float(itr->bp0 / 1000);
-                            if(delay > -1.0f)
+                            int32 delay = itr->bp0;
+                            if (delay > -1 * IN_MILLISECONDS)
                             {
-                                if(roll_chance_i(50))
-                                    player->ChangeSpellCooldown(spellid, -1.0f);
+                                if (roll_chance_i(50))
+                                    player->ModifySpellCooldown(spellid, -1 * IN_MILLISECONDS);
                             }
                             else
-                                player->ChangeSpellCooldown(spellid, delay);
+                                player->ModifySpellCooldown(spellid, delay);
                         }
                     }
                     check = true;

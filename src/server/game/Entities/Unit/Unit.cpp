@@ -5999,14 +5999,14 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                             if(itr->aura && procSpell && itr->aura != procSpell->Id)
                                 continue;
 
-                            float delay = float(itr->bp0 / 1000);
-                            if(delay > -1.0f)
+                            int32 delay = itr->bp0;
+                            if (delay > -1 * IN_MILLISECONDS)
                             {
-                                if(roll_chance_i(50))
-                                    player->ChangeSpellCooldown(spellid, -1);
+                                if (roll_chance_i(50))
+                                    player->ModifySpellCooldown(spellid, -1 * IN_MILLISECONDS);
                             }
                             else
-                                player->ChangeSpellCooldown(spellid, delay);
+                                player->ModifySpellCooldown(spellid, delay);
                         }
                     }
                     check = true;
@@ -7733,12 +7733,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 {
                     if (Player * plr = ToPlayer())
                     {
-                        float ChangeCooldown = plr->GetComboPoints() * -2;
+                        int32 ChangeCooldown = plr->GetComboPoints() * -2 * IN_MILLISECONDS;
 
-                        plr->ChangeSpellCooldown(51690, ChangeCooldown);  // Killing Spree
-                        plr->ChangeSpellCooldown(13750, ChangeCooldown);  // Adrenaline Rush
-                        plr->ChangeSpellCooldown(2983, ChangeCooldown);   // Sprint
-                        plr->ChangeSpellCooldown(121471, ChangeCooldown); // Shadow Blades
+                        plr->ModifySpellCooldown(51690, ChangeCooldown);  // Killing Spree
+                        plr->ModifySpellCooldown(13750, ChangeCooldown);  // Adrenaline Rush
+                        plr->ModifySpellCooldown(2983, ChangeCooldown);   // Sprint
+                        plr->ModifySpellCooldown(121471, ChangeCooldown); // Shadow Blades
                     }
                     break;
                 }

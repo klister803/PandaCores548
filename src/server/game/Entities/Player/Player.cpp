@@ -23770,35 +23770,6 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, time_t end_time)
     m_spellCooldowns[spellid] = sc;
 }
 
-void Player::SpellCooldownReduction(uint32 spellid, time_t end_time)
-{
-    uint32 newCooldownDelay = GetSpellCooldownDelay(spellid);
-    if (newCooldownDelay < end_time)
-        newCooldownDelay = 0;
-    else
-        newCooldownDelay -= end_time;
-
-    AddSpellCooldown(spellid, 0, uint32(time(NULL) + newCooldownDelay));
-
-    SendModifyCooldown(spellid, -int32(end_time));
-}
-
-void Player::ChangeSpellCooldown(uint32 spellid, float second)
-{
-    if(!this)
-        return;
-    if(!HasSpellCooldown(spellid))
-        return;
-
-    int32 newCooldownDelay = GetSpellCooldownDelay(spellid) + second;
-
-    RemoveSpellCooldown(spellid, false);
-    if(newCooldownDelay > 0)
-        AddSpellCooldown(spellid, 0, time(NULL) + newCooldownDelay);
-
-    SendModifyCooldown(spellid, second * IN_MILLISECONDS);
-}
-
 void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
 {
     // start cooldowns at server side, if any
@@ -24461,17 +24432,18 @@ void Player::ClearComboPoints()
 
     SendComboPoints();
 
+    // omfg hack
     int32 chancekd = 0;
-    if(HasAura(79095))
-        chancekd = -1;
-    if(HasAura(79096))
-        chancekd = -2;
-    if(chancekd != 0)
+    if (HasAura(79095))
+        chancekd = -1000;
+    else if (HasAura(79096))
+        chancekd = -2000;
+    if (chancekd != 0)
     {
-        ChangeSpellCooldown(51690, chancekd);
-        ChangeSpellCooldown(13750, chancekd);
-        ChangeSpellCooldown(2983, chancekd);
-        ChangeSpellCooldown(73981, chancekd);
+        ModifySpellCooldown(51690, chancekd);
+        ModifySpellCooldown(13750, chancekd);
+        ModifySpellCooldown(2983, chancekd);
+        ModifySpellCooldown(73981, chancekd);
     }
 
     if (Unit* target = ObjectAccessor::GetUnit(*this, m_comboTarget))
@@ -29078,3 +29050,23 @@ PetSlot Player::GetMaxCurentPetSlot() const
 
     return PET_SLOT_WARLOCK_PET_LAST;
 }
+
+void Player::ModifySpellCooldown(uint32 spell_id, int32 delta)
+{
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
+    if (!spellInfo)
+        return;
+
+    uint32 cooldown = GetSpellCooldownDelay(spell_id);
+    if (cooldown == 0 && delta < 0)
+        return;
+
+    int32 result = int32(cooldown * IN_MILLISECONDS) + delta;
+    if (result < 0)
+        result = 0;
+
+    AddSpellCooldown(spell_id, 0, uint32(time(NULL) + uint32(result / IN_MILLISECONDS)));
+
+    SendModifyCooldown(spell_id, result > 0 ? delta : -int32(cooldown) * IN_MILLISECONDS);
+}
+
