@@ -3350,6 +3350,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 81269: // Efflorescence
+                    spellInfo->Effects[0].ScalingMultiplier = 1.5309f;
+                    break;
                 case 132464: // Chi Wave (Pos)
                     spellInfo->SpellFamilyName = SPELLFAMILY_MONK;
                     break;
@@ -4652,13 +4655,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
                     spellInfo->Effects[0].ApplyAuraName = 0;
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_START_PERIODIC_AT_APPLY;
-                    break;
-                case 81262: // Swiftmend
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_HEAL;
-                    spellInfo->Effects[0].TargetB = TARGET_DEST_DYNOBJ_ALLY;
-                    spellInfo->Effects[0].Amplitude = 2000;
-                    spellInfo->Effects[1].Effect = 0;
-                    spellInfo->Effects[1].ApplyAuraName = 0;
                     break;
                 case 73920: // Healing Rain
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;

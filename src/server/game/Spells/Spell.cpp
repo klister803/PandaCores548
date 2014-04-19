@@ -1283,13 +1283,24 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                 }
                 break;
             case SPELLFAMILY_DRUID:
-                if (m_spellInfo->SpellFamilyFlags[1] == 0x04000000) // Wild Growth
+            {
+                switch (m_spellInfo->Id)
                 {
-                    maxSize = m_caster->HasAura(62970) ? 6 : 5; // Glyph of Wild Growth
-                    power = POWER_HEALTH;
+                    case 48438: // Wild Growth
+                    {
+                        maxSize = m_caster->HasAura(62970) ? 6 : 5; // Glyph of Wild Growth
+                        power = POWER_HEALTH;
+                        break;
+                    }
+                    case 81269: // Efflorescence
+                    {
+                        maxSize = 3;
+                        power = POWER_HEALTH;
+                        break;
+                    }
+                    default:
+                        break;
                 }
-                else
-                    break;
 
                 // Remove targets outside caster's raid
                 for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)
@@ -1298,6 +1309,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                     else
                         ++itr;
                 break;
+            }
             default:
                 break;
         }

@@ -2051,41 +2051,6 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
         }
 };
 
-// Swiftmend - 81262
-class spell_dru_swiftmend : public SpellScriptLoader
-{
-    public:
-        spell_dru_swiftmend() : SpellScriptLoader("spell_dru_swiftmend") { }
-
-        class spell_dru_swiftmend_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_swiftmend_AuraScript);
-
-            void CheckTargetsList(std::list<Unit*>& unitList)
-            {
-                for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end();)
-                {
-                    if ((*itr)->GetHealthPct() != 100)
-                        ++itr;
-                    else
-                        unitList.erase(itr++);
-                }
-                if (unitList.size() > 3)
-                    unitList.resize(3);
-            }
-
-            void Register()
-            {
-                DoCheckTargetsList += AuraCheckTargetsListFn(spell_dru_swiftmend_AuraScript::CheckTargetsList);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_swiftmend_AuraScript();
-        }
-};
-
 // Astral Communion - 127663
 class spell_dru_astral_communion : public SpellScriptLoader
 {
@@ -3232,7 +3197,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
     new spell_dru_wild_mushroom();
-    new spell_dru_swiftmend();
     new spell_dru_astral_communion();
     new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();
