@@ -569,7 +569,7 @@ enum Opcodes
     CMSG_VOID_STORAGE_TRANSFER                        = 0x1AEF, // 5.4.1 17538
     CMSG_VOID_STORAGE_UNLOCK                          = 0x13E5, // 5.4.1 17538
     CMSG_VOID_SWAP_ITEM                               = 0x13EC, // 5.4.1 17538
-    CMSG_WARDEN_DATA                                  = 0x309,  // 5.0.5 16048
+    CMSG_WARDEN_DATA                                  = 0x05E8, // 5.4.1 17538
     CMSG_WARGAME_ACCEPT                               = 0x0DE1, // 5.4.1 17538
     CMSG_WARGAME_START                                = 0x10E0, // 5.4.1 17538
     CMSG_WHO                                          = 0x1568, // 5.4.1 17538
