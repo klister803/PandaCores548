@@ -372,7 +372,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             {
                 if (movementFlags & (MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY))
                     movementFlags &= ~(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_FALLING_SLOW);
-                movementFlags &= ~MOVEMENTFLAG_ROOT;
+                if ((movementFlagsExtra & MOVEMENTFLAG2_INTERPOLATED_TURNING) == 0)
+                    movementFlags &= ~MOVEMENTFLAG_FALLING;
             }
         }
 
