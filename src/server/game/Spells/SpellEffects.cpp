@@ -5190,6 +5190,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 143011:                                // Celestial Cloth
                 case 143255:                                // Balanced Trillium Ingot
                 case 143626:                                // Celestial Cloth and Its Uses
+                case 143646:                                // Balanced Trillium Ingot and Its Uses
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;

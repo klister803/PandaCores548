@@ -1140,7 +1140,7 @@ bool SpellInfo::IsExplicitDiscovery() const
         || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM
         || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2)
         && Effects[1].Effect == SPELL_EFFECT_SCRIPT_EFFECT)
-        || Id == 64323 || Id == 143626;
+        || Effects[0].Effect == SPELL_EFFECT_SCRIPT_EFFECT;
 }
 
 bool SpellInfo::IsLootCrafting() const
