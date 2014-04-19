@@ -85,6 +85,11 @@ enum eGameObjects
     GO_AMANI_GATE         = 218673,
     GO_HORRIDON_EX_DOOR   = 218666,
     //
+    //Council of Elders
+    GO_COUNCIL_LENT_DOOR  = 218655,
+    GO_COUNCIL_RENT_DOOR  = 218656,
+    GO_COUNCIL_EX_DOOR    = 218657,
+    //
 };
 
 //This is triggers entry (maybe needed, but not need spawn)

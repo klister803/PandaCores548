@@ -25,6 +25,7 @@ public:
         uint64 horridonpredoorGuid;
         uint64 horridonentdoorGuid;
         uint64 horridonexdoorGuid;
+        uint64 councilexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -50,7 +51,9 @@ public:
         uint64 leishenGuid;
         uint64 radenGuid;
 
+        std::vector <uint64> councilGuids;
         std::vector <uint64> mogufontsGuids;
+        std::vector <uint64> councilentdoorGuids;
         
         void Initialize()
         {
@@ -66,6 +69,7 @@ public:
             horridonpredoorGuid = 0;
             horridonentdoorGuid = 0;
             horridonexdoorGuid  = 0;
+            councilexdoorGuid   = 0;
            
             //Creature
             stormcallerGuid     = 0;
@@ -91,7 +95,9 @@ public:
             leishenGuid         = 0;
             radenGuid           = 0;
 
+            councilGuids.clear();
             mogufontsGuids.clear();
+            councilentdoorGuids.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -116,15 +122,19 @@ public:
             //Council of Elders
             case NPC_FROST_KING_MALAKK:
                 mallakGuid = creature->GetGUID();
+                councilGuids.push_back(creature->GetGUID());
                 break;
             case NPC_PRINCESS_MARLI:
                 marliGuid = creature->GetGUID();
+                councilGuids.push_back(creature->GetGUID());
                 break;  
             case NPC_KAZRAJIN:  
                 kazrajinGuid = creature->GetGUID();
+                councilGuids.push_back(creature->GetGUID());
                 break;
             case NPC_SUL_SANDCRAWLER: 
                 sulGuid = creature->GetGUID();
+                councilGuids.push_back(creature->GetGUID());
                 break;
             //
             case NPC_TORTOS: 
@@ -213,6 +223,15 @@ public:
             case GO_HORRIDON_EX_DOOR:
                 horridonexdoorGuid = go->GetGUID();
                 break;
+            case GO_COUNCIL_LENT_DOOR:
+                councilentdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_COUNCIL_RENT_DOOR:
+                councilentdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_COUNCIL_EX_DOOR:
+                councilexdoorGuid = go->GetGUID();
+                break;
             default:
                 break;
             }
@@ -257,6 +276,53 @@ public:
                     case DONE:
                         HandleGameObject(horridonentdoorGuid, true);
                         //HandleGameObject(horridonexdoorGuid, true);
+                        break;
+                    }
+                }
+                break;
+            case DATA_COUNCIL_OF_ELDERS:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        //Reset all council
+                        for (std::vector<uint64>::const_iterator guid = councilGuids.begin(); guid != councilGuids.end(); guid++)
+                        {
+                            if (Creature* council = instance->GetCreature(*guid))
+                            {
+                                if (council->isAlive() && council->isInCombat())
+                                    council->AI()->EnterEvadeMode();
+                                else if (!council->isAlive())
+                                {
+                                    council->Respawn();
+                                    council->GetMotionMaster()->MoveTargetedHome();
+                                }
+                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, council);
+                            }
+                        }
+
+                        for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
+                        break;
+                    case IN_PROGRESS:
+                        //Call all council 
+                        for (std::vector<uint64>::const_iterator guid = councilGuids.begin(); guid != councilGuids.end(); guid++)
+                        {
+                            if (Creature* council = instance->GetCreature(*guid))
+                            {
+                                if (council->isAlive() && !council->isInCombat())
+                                    council->AI()->DoZoneInCombat(council, 150.0f);
+                                SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, council);
+                            }
+                        }
+
+                        for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, false);
+                        break;
+                    case DONE:
+                        for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
+                        //HandleGameObject(councilexdoorGuid, true);
                         break;
                     }
                 }

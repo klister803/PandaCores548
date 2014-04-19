@@ -23,6 +23,36 @@ enum eSpells
 {
 };
 
+uint32 councilentry[4] =
+{
+    NPC_FROST_KING_MALAKK,
+    NPC_PRINCESS_MARLI,
+    NPC_KAZRAJIN,
+    NPC_SUL_SANDCRAWLER,
+};
+
+void CheckDone(InstanceScript* instance, Creature* caller, uint32 callerEntry)
+{
+    if (caller && instance)
+    {
+        if (Creature* council = caller->GetCreature(*caller, instance->GetData64(callerEntry)))
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, council);
+    }
+
+    uint8 donecount = 0;
+    for (uint8 n = 0; n < 4; n++)
+    {
+        if (Creature* pcouncil = caller->GetCreature(*caller, instance->GetData64(councilentry[n])))
+        {
+            if (!pcouncil->isAlive())
+                donecount++;
+        }
+    }
+
+    if (donecount == 4)
+        instance->SetBossState(DATA_COUNCIL_OF_ELDERS, DONE);
+}
+
 class boss_council_of_elders : public CreatureScript
 {
     public:
@@ -39,10 +69,14 @@ class boss_council_of_elders : public CreatureScript
 
             void Reset()
             {
+                if (instance)
+                    instance->SetBossState(DATA_COUNCIL_OF_ELDERS, NOT_STARTED);
             }
 
             void EnterCombat(Unit* who)
             {
+                if (instance)
+                    instance->SetBossState(DATA_COUNCIL_OF_ELDERS, IN_PROGRESS);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -55,6 +89,7 @@ class boss_council_of_elders : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
+                CheckDone(instance, me, me->GetEntry());
             }
 
             void UpdateAI(const uint32 diff)
