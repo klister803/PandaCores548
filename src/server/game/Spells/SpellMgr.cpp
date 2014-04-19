@@ -4666,6 +4666,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 3411: // Intervene
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_RAID;
                     break;
+                case 1543: // Flare. Hack from wait to fix areatrigger
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 94528;
+                    break;
                 default:
                     break;
             }
