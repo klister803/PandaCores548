@@ -4672,9 +4672,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 1543: // Flare. Hack from wait to fix areatrigger
                     spellInfo->Effects[0].TriggerSpell = 94528;
                     break;
-                case 64382: // Shattering Throw
-                    spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
-                    break;
                 default:
                     break;
             }
