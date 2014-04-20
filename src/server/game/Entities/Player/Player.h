@@ -2045,13 +2045,13 @@ class Player : public Unit, public GridObject<Player>
         bool HasSpellCooldown(uint32 spell_id) const
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
-            return itr != m_spellCooldowns.end() && G3D::fuzzyGt(itr->second.end, getPreciseTime());
+            return itr != m_spellCooldowns.end() && itr->second.end > getPreciseTime();
         }
         double GetSpellCooldownDelay(uint32 spell_id) const
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
-            double t = getPreciseTime();;
-            return uint32(itr != m_spellCooldowns.end() && G3D::fuzzyGt(itr->second.end, t) ? itr->second.end - t : 0.0);
+            double t = getPreciseTime();
+            return uint32(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
         }
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
