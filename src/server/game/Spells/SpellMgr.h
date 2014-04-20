@@ -328,7 +328,7 @@ struct SpellProcEntry
     uint32      attributesMask;                             // bitmask, see ProcAttributes
     float       ratePerMinute;                              // if nonzero - chance to proc is equal to value * aura caster's weapon speed / 60
     float       chance;                                     // if nonzero - owerwrite procChance field for given Spell.dbc entry, defines chance of proc to occur, not used if perMinuteRate set
-    uint32      cooldown;                                   // if nonzero - cooldown in secs for aura proc, applied to aura
+    float       cooldown;                                   // if nonzero - cooldown in secs for aura proc, applied to aura
     uint32      charges;                                    // if nonzero - owerwrite procCharges field for given Spell.dbc entry, defines how many times proc can occur before aura remove, 0 - infinite
     uint32      modcharges;                                 // if nonzero - procCharges field for given Spell.dbc entry, defines how many times proc can occur before aura remove, 0 - infinite
 };
