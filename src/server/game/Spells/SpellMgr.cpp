@@ -3350,6 +3350,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 85288: // Raging Blow
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+                    break;
                 case 81269: // Efflorescence
                     spellInfo->Effects[0].ScalingMultiplier = 1.5309f;
                     break;
