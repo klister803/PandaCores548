@@ -739,7 +739,7 @@ class spell_rog_paralytic_poison : public SpellScriptLoader
                     {
                         if (Aura* paralyticPoison = target->GetAura(ROGUE_SPELL_PARALYTIC_POISON_DEBUFF))
                         {
-                            if (paralyticPoison->GetStackAmount() == 5 && !target->HasAura(ROGUE_SPELL_TOTAL_PARALYSIS))
+                            if (paralyticPoison->GetStackAmount() == 4 && !target->HasAura(ROGUE_SPELL_TOTAL_PARALYSIS))
                             {
                                 _player->CastSpell(target, ROGUE_SPELL_TOTAL_PARALYSIS, true);
                                 target->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON_DEBUFF);
