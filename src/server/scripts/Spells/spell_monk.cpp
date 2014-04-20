@@ -518,7 +518,7 @@ class spell_monk_power_strikes : public SpellScriptLoader
                                     if (_player->GetPower(POWER_CHI) < _player->GetMaxPower(POWER_CHI))
                                     {
                                         _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 1, POWER_CHI);
-                                        _player->AddSpellCooldown(SPELL_MONK_POWER_STRIKES_TALENT, 0, time(NULL) + 20);
+                                        _player->AddSpellCooldown(SPELL_MONK_POWER_STRIKES_TALENT, 0, getPreciseTime() + 20.0);
                                     }
                                     else
                                         _player->CastSpell(_player, SPELL_MONK_CREATE_CHI_SPHERE, true);
@@ -575,7 +575,7 @@ class spell_monk_crackling_jade_lightning : public SpellScriptLoader
                         if (!_player->HasSpellCooldown(SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP))
                         {
                             _player->CastSpell(GetTarget(), SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP, true);
-                            _player->AddSpellCooldown(SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP, 0, time(NULL) + 8);
+                            _player->AddSpellCooldown(SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP, 0, getPreciseTime() + 8.0);
                         }
                     }
                 }
@@ -1308,7 +1308,7 @@ class spell_monk_healing_elixirs : public SpellScriptLoader
                         {
                             _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, true);
                             // This effect cannot occur more than once per 18s
-                            _player->AddSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, 0, time(NULL) + 18);
+                            _player->AddSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, 0, getPreciseTime() + 18.0);
                         }
                     }
                 }
@@ -1509,7 +1509,7 @@ class spell_monk_spear_hand_strike : public SpellScriptLoader
                         if (target->isInFront(_player))
                         {
                             _player->CastSpell(target, SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE, true);
-                            _player->AddSpellCooldown(116705, 0, time(NULL) + 15);
+                            _player->AddSpellCooldown(116705, 0, getPreciseTime() + 18.0);
                         }
                     }
                 }
@@ -1750,7 +1750,7 @@ class spell_monk_keg_smash : public SpellScriptLoader
                             _player->CastSpell(target, SPELL_MONK_WEAKENED_BLOWS, true);
                             _player->CastSpell(_player, SPELL_MONK_KEG_SMASH_ENERGIZE, true);
                             // Prevent to receive 2 CHI more than once time per cast
-                            _player->AddSpellCooldown(SPELL_MONK_KEG_SMASH_ENERGIZE, 0, time(NULL) + 1);
+                            _player->AddSpellCooldown(SPELL_MONK_KEG_SMASH_ENERGIZE, 0, getPreciseTime() + 1.0);
                             _player->CastSpell(target, SPELL_MONK_DIZZYING_HAZE, true);
                         }
                     }

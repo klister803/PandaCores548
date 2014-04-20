@@ -883,7 +883,8 @@ class boss_yoggsaron : public CreatureScript
                             {
                                 Map::PlayerList const &players = pInstance->instance->GetPlayers();
                                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                                    DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());                                me->AddAura(SPELL_SHADOW_BEACON, pImmortal);
+                                    DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());
+                                me->AddAura(SPELL_SHADOW_BEACON, pImmortal);
                             }
                             events.ScheduleEvent(EVENT_SHADOW_BEACON, 45000, 0, PHASE_3);
                             break;
@@ -2111,7 +2112,7 @@ class spell_hodir_protective_gaze : public SpellScriptLoader
                     return;
 
                 target->CastSpell(target, 64175, true);
-                target->AddSpellCooldown(64174, 0, time(NULL) + urand(20,25));
+                target->AddSpellCooldown(64174, 0, getPreciseTime() + (double)urand(20,25));
 
                 uint32 health10 = target->CountPctFromMaxHealth(10);
 

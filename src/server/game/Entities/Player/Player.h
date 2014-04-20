@@ -175,7 +175,7 @@ typedef std::list<uint64> WhisperListContainer;
 
 struct SpellCooldown
 {
-    time_t end;
+    double end;
     uint16 itemid;
 };
 
@@ -2045,16 +2045,16 @@ class Player : public Unit, public GridObject<Player>
         bool HasSpellCooldown(uint32 spell_id) const
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
-            return itr != m_spellCooldowns.end() && itr->second.end > time(NULL);
+            return itr != m_spellCooldowns.end() && itr->second.end > getPreciseTime();
         }
-        uint32 GetSpellCooldownDelay(uint32 spell_id) const
+        double GetSpellCooldownDelay(uint32 spell_id) const
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
-            time_t t = time(NULL);
-            return uint32(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0);
+            double t = getPreciseTime();
+            return uint32(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
         }
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
-        void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
+        void AddSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);

@@ -5026,7 +5026,7 @@ void Player::_LoadSpellCooldowns(PreparedQueryResult result)
             if (db_time <= curTime)
                 continue;
 
-            AddSpellCooldown(spell_id, item_id, db_time);
+            AddSpellCooldown(spell_id, item_id, (double)db_time);
 
             sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "Player (GUID: %u) spell %u, item %u cooldown loaded (%u secs).", GetGUIDLow(), spell_id, item_id, uint32(db_time-curTime));
         }
@@ -22918,7 +22918,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 
     data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
-    time_t curTime = time(NULL);
+    double curTime = getPreciseTime();
     uint32 count = 0;
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
@@ -22939,11 +22939,11 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
         if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
             continue;
 
-        if ((idSchoolMask & spellInfo->GetSchoolMask()) && GetSpellCooldownDelay(unSpellId) < unTimeMs/IN_MILLISECONDS)
+        if ((idSchoolMask & spellInfo->GetSchoolMask()) && GetSpellCooldownDelay(unSpellId) < unTimeMs * 1.0 / IN_MILLISECONDS)
         {
             data << uint32(unTimeMs);                       // in m.secs
             data << uint32(unSpellId);
-            AddSpellCooldown(unSpellId, 0, curTime + unTimeMs/IN_MILLISECONDS);
+            AddSpellCooldown(unSpellId, 0, curTime + unTimeMs * 1.0 /IN_MILLISECONDS);
             ++count;
         }
     }
@@ -23643,8 +23643,8 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
 {
     // init cooldown values
     uint32 cat   = 0;
-    int32 rec    = -1;
-    int32 catrec = -1;
+    double rec    = -1;
+    double catrec = -1;
 
     // some special item spells without correct cooldown in SpellInfo
     // cooldown information stored in item prototype
@@ -23668,38 +23668,38 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     }
 
     // if no cooldown found above then base at DBC data
-    if (rec < 0 && catrec < 0)
+    if (rec < 0.0 && catrec < 0.0)
     {
         cat = spellInfo->Category;
         rec = spellInfo->RecoveryTime;
         catrec = spellInfo->CategoryRecoveryTime;
     }
 
-    time_t curTime = time(NULL);
+    double curTime = getPreciseTime();
 
-    time_t catrecTime;
-    time_t recTime;
+    double catrecTime;
+    double recTime;
 
     // overwrite time for selected category
     if (infinityCooldown)
     {
         // use +MONTH as infinity mark for spell cooldown (will checked as MONTH/2 at save ans skipped)
         // but not allow ignore until reset or re-login
-        catrecTime = catrec > 0 ? curTime+infinityCooldownDelay : 0;
-        recTime    = rec    > 0 ? curTime+infinityCooldownDelay : catrecTime;
+        catrecTime = catrec > 0 ? curTime + infinityCooldownDelay : 0;
+        recTime    = rec    > 0 ? curTime + infinityCooldownDelay : catrecTime;
     }
     else
     {
         // shoot spells used equipped item cooldown values already assigned in GetAttackTime(RANGED_ATTACK)
         // prevent 0 cooldowns set by another way
-        if (rec <= 0 && catrec <= 0 && (cat == 76 || (spellInfo->IsAutoRepeatRangedSpell() && spellInfo->Id != 75)))
+        if (G3D::fuzzyLe(rec, 0.0) && G3D::fuzzyLe(catrec, 0.0) && (cat == 76 || (spellInfo->IsAutoRepeatRangedSpell() && spellInfo->Id != 75)))
             rec = GetAttackTime(RANGED_ATTACK);
 
         // Now we have cooldown data (if found any), time to apply mods
-        if (rec > 0)
+        if (G3D::fuzzyGt(rec, 0.0))
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, rec, spell);
 
-        if (catrec > 0 && !(spellInfo->AttributesEx6 & SPELL_ATTR6_IGNORE_CATEGORY_COOLDOWN_MODS))
+        if (G3D::fuzzyGt(catrec, 0.0) && !(spellInfo->AttributesEx6 & SPELL_ATTR6_IGNORE_CATEGORY_COOLDOWN_MODS))
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, catrec, spell);
 
         // Apply SPELL_AURA_MOD_SPELL_CATEGORY_COOLDOWN modifiers
@@ -23717,15 +23717,15 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         }
 
         // replace negative cooldowns by 0
-        if (rec < 0) rec = 0;
-        if (catrec < 0) catrec = 0;
+        if (G3D::fuzzyLt(rec, 0.0)) rec = 0.0;
+        if (G3D::fuzzyLt(catrec, 0.0)) catrec = 0.0;
 
         // no cooldown after applying spell mods
-        if (rec == 0 && catrec == 0)
+        if (G3D::fuzzyEq(rec, 0.0) && G3D::fuzzyEq(catrec, 0.0))
             return;
 
-        catrecTime = catrec ? curTime+catrec/IN_MILLISECONDS : 0;
-        recTime    = rec ? curTime+rec/IN_MILLISECONDS : catrecTime;
+        catrecTime = G3D::fuzzyGt(catrec, 0.0) ? curTime + catrec / IN_MILLISECONDS : 0.0;
+        recTime = G3D::fuzzyGt(rec, 0.0) ? curTime + rec / IN_MILLISECONDS : catrecTime;
     }
 
     // New MoP skill cooldown
@@ -23738,15 +23738,15 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         ltm->tm_hour = 0;
         ltm->tm_min = 0;
         ltm->tm_sec = 0;
-        recTime = mktime(ltm);
+        recTime = (double)mktime(ltm);
     }
 
     // self spell cooldown
-    if (recTime > 0)
+    if (G3D::fuzzyGt(recTime, 0.0))
         AddSpellCooldown(spellInfo->Id, itemId, recTime);
 
     // category spells
-    if (cat && catrec > 0)
+    if (cat && G3D::fuzzyGt(catrec, 0.0))
     {
         SpellCategoryStore::const_iterator i_scstore = sSpellCategoryStore.find(cat);
         if (i_scstore != sSpellCategoryStore.end())
@@ -23762,7 +23762,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     }
 }
 
-void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, time_t end_time)
+void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
 {
     SpellCooldown sc;
     sc.end = end_time;
@@ -24795,7 +24795,7 @@ void Player::ApplyEquipCooldown(Item* pItem)
         if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE)
             continue;
 
-        AddSpellCooldown(spellData.SpellId, pItem->GetEntry(), time(NULL) + 30);
+        AddSpellCooldown(spellData.SpellId, pItem->GetEntry(), getPreciseTime() + 30.0);
 
         //! 5.4.1
         WorldPacket data(SMSG_ITEM_COOLDOWN, 12);
@@ -29057,16 +29057,16 @@ void Player::ModifySpellCooldown(uint32 spell_id, int32 delta)
     if (!spellInfo)
         return;
 
-    uint32 cooldown = GetSpellCooldownDelay(spell_id);
-    if (cooldown == 0 && delta < 0)
+    double cooldown = GetSpellCooldownDelay(spell_id);
+    if (G3D::fuzzyEq(cooldown, 0.0) && delta < 0)
         return;
 
-    int32 result = int32(cooldown * IN_MILLISECONDS) + delta;
-    if (result < 0)
+    double result = cooldown * IN_MILLISECONDS + delta;
+    if (G3D::fuzzyLt(result, 0.0))
         result = 0;
 
-    AddSpellCooldown(spell_id, 0, uint32(time(NULL) + uint32(result / IN_MILLISECONDS)));
+    AddSpellCooldown(spell_id, 0, getPreciseTime() + result / IN_MILLISECONDS);
 
-    SendModifyCooldown(spell_id, result > 0 ? delta : -int32(cooldown) * IN_MILLISECONDS);
+    SendModifyCooldown(spell_id, G3D::fuzzyGt(result, 0.0) ? delta : -int32(cooldown * IN_MILLISECONDS));
 }
 

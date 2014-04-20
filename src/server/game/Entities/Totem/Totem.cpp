@@ -157,7 +157,6 @@ void Totem::UnSummon(uint32 msTime)
             {
                 if (_player->HasSpellCooldown(spellId))
                 {
-                    uint32 newCooldownDelay = _player->GetSpellCooldownDelay(spellId);
                     uint32 totalCooldown = sSpellMgr->GetSpellInfo(spellId)->RecoveryTime;
                     int32 lessCooldown = CalculatePct(totalCooldown, int32(pct));
 

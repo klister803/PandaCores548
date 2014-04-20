@@ -1352,7 +1352,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             if ((m_spellInfo->Id == 107270 || m_spellInfo->Id == 117640) && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
             {
                 m_caster->CastSpell(m_caster, 129881, true);
-                m_caster->ToPlayer()->AddSpellCooldown(129881, 0, time(NULL) + 3);
+                m_caster->ToPlayer()->AddSpellCooldown(129881, 0, getPreciseTime() + 3.0);
             }
         }
 
@@ -3013,7 +3013,7 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
                     unit->CastSpell(unit, i->effect, true, 0, 0, m_caster->GetGUID());
 
                 if(i->cooldown != 0 && unit->GetTypeId() == TYPEID_PLAYER)
-                    unit->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
+                    unit->ToPlayer()->AddSpellCooldown(i->effect, 0, getPreciseTime() + (double)i->cooldown);
             }
         }
     }
@@ -3595,7 +3595,7 @@ void Spell::cast(bool skipCheck)
                         m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
 
                     if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
-                        m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
+                        m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, getPreciseTime() + (double)i->cooldown);
                 }
         }
     }
