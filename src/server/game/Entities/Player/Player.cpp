@@ -11072,6 +11072,24 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
     SendBGWeekendWorldStates();
 }
 
+void Player::SendInitWorldTimers()
+{
+    WorldPacket data(SMSG_WORLD_STATE_TIMER_START_INIT, 11);
+    uint32 bpos = data.bitwpos();                           // Place Holder
+
+    data.WriteBits(0, 21);                                  // count of uint64 blocks
+    data.FlushBits();
+    size_t countPos = data.wpos();
+
+    if (InstanceScript* instance = GetInstanceScript())
+        instance->FillInitialWorldTimers(data);
+
+    uint16 length = (data.wpos() - countPos) / 8;
+    data.PutBits<uint32>(bpos, length, 21);
+
+    GetSession()->SendPacket(&data);
+}
+
 void Player::SendBGWeekendWorldStates()
 {
     for (uint32 i = 1; i < sBattlemasterListStore.GetNumRows(); ++i)
@@ -24679,10 +24697,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetSession()->SendPacket(&data);
 
     // send timers if already start challenge for example
-    data.Initialize(SMSG_WORLD_STATE_TIMER_START_INIT, 3);
-    data.WriteBits(0, 21);
-    data.FlushBits();
-    GetSession()->SendPacket(&data);
+    SendInitWorldTimers();
 
     SendDeathRuneUpdate();
     GetSession()->SendStablePet(0);
@@ -29104,7 +29119,6 @@ void Player::ModifySpellCooldown(uint32 spell_id, int32 delta)
 
     SendModifyCooldown(spell_id, G3D::fuzzyGt(result, 0.0) ? delta : -int32(cooldown * IN_MILLISECONDS));
 }
-
 bool Player::CanSpeakLanguage(uint32 lang_id) const
 {
     LanguageDesc const* langDesc = GetLanguageDescByID(lang_id);

@@ -26,6 +26,8 @@
 #include "Log.h"
 #include "LFGMgr.h"
 
+#define CHALLENGE_START 5
+
 void InstanceScript::SaveToDB()
 {
     std::string data = GetSaveData();
@@ -555,4 +557,54 @@ void InstanceScript::UpdatePhasing()
     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
         if (Player* player = itr->getSource())
             player->GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
+}
+
+void InstanceScript::BroadcastPacket(WorldPacket& data) const
+{
+    Map::PlayerList const& players = instance->GetPlayers();
+    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+        if (Player* player = itr->getSource())
+            player->GetSession()->SendPacket(&data);
+}
+
+void InstanceScript::Update(uint32 diff)
+{
+    if (challenge_start_timer)
+    {
+        if (challenge_start_timer > diff)
+            challenge_start_timer -= diff;
+        else
+        {
+            challenge_start_timer = 0;
+            challenge_timer = getMSTime();
+
+            WorldPacket data(SMSG_WORLD_STATE_TIMER_START, 8);
+            data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+            data << uint32(0);                      //time elapsed in sec
+            BroadcastPacket(data);
+        }
+    }
+}
+
+void InstanceScript::StartChallenge()
+{
+    // Check if dungeon support challenge
+
+    // Set Timer For Start challenge
+    challenge_start_timer = CHALLENGE_START * IN_MILLISECONDS;
+
+    WorldPacket data(SMSG_START_TIMER, 12);
+    data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+    data << uint32(CHALLENGE_START);
+    data << uint32(CHALLENGE_START);
+    BroadcastPacket(data);
+}
+
+void InstanceScript::FillInitialWorldTimers(WorldPacket& data)
+{
+    if (challenge_timer)
+    {
+        data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+        data << uint32((getMSTime() - challenge_timer)/IN_MILLISECONDS);    //time elapsed in sec
+    }
 }
