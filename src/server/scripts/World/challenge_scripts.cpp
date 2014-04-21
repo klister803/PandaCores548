@@ -29,14 +29,14 @@ public:
         player->GetSession()->SendPacket(&data);
 
         data.Initialize(SMSG_START_TIMER, 12);
-        data << uint32(1);
+        data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
         data << uint32(5);
         data << uint32(5);
         player->GetSession()->SendPacket(&data);
 
         data.Initialize(SMSG_WORLD_STATE_TIMER_START, 8);
+        data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
         data << uint32(0);
-        data << uint32(1);
         player->GetSession()->SendPacket(&data);
 
         player->PlayerTalkClass->ClearMenus();

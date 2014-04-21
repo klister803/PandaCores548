@@ -24678,6 +24678,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetBattlePetMgr().BuildBattlePetJournal(&data);
     GetSession()->SendPacket(&data);
 
+    // send timers if already start challenge for example
     data.Initialize(SMSG_WORLD_STATE_TIMER_START_INIT, 3);
     data.WriteBits(0, 21);
     data.FlushBits();

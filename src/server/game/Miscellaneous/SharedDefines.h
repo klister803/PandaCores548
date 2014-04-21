@@ -4562,4 +4562,11 @@ enum ChallengeMode
     CHALLENGE_MEDAL_PLAT    = 4, //--as of 7/2/2013 only used for endless proving grounds
     NUM_CHALLENGE_MEDALS    = 3,
 };
+
+enum ChallengeTimerType
+{
+    LE_WORLD_ELAPSED_TIMER_TYPE_PROVING_GROUND  = 0,
+    LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE  = 1,
+    LE_WORLD_ELAPSED_TIMER_TYPE_NONE            = 2
+};
 #endif
