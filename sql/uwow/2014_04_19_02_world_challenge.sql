@@ -9,3 +9,5 @@ INSERT INTO `gossip_menu` (`entry`, `text_id`) VALUES
 DELETE FROM `gossip_menu_option` WHERE (`menu_id`=13872 AND `id`=0);
 INSERT INTO `gossip_menu_option` (`menu_id`, `id`, option_id, `option_icon`, `option_text`, `box_coded`, `box_money`, `box_text`) VALUES
 (13872, 0, 1, 0, 'Да, вступить в состязание.', 0, 0, ''); -- 211674
+
+UPDATE `gameobject_template` SET  `ScriptName` =  'go_challenge' WHERE `entry` =211674;

@@ -617,6 +617,7 @@ enum Opcodes
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0x000,  // 5.0.5 16048 deprecated
+    SMSG_CHALLENGE_UNK                                = 0x009F, // 5.4.1 17538 SMSG_ITEM_SEND_PASSIVE on wpp
     SMSG_CHALLENGE_MODE_COMPLETION_INFO               = 0x002C, // 5.4.1 17538
     SMSG_CHALLENGE_MODE_REWARD_INFO                   = 0x099C, // 5.4.1 17538
     SMSG_CHALLENGE_MODE_REQUEST_LEADERS_RESULT        = 0x019D, // 5.4.1 17538
@@ -1457,7 +1458,8 @@ enum Opcodes
     SMSG_WHO                                          = 0x053C, // 5.4.1 17538
     SMSG_WHOIS                                        = 0x943,  // 5.0.5 16048
     SMSG_WORLD_SERVER_INFO                            = 0x0427, // 5.4.1 17538
-    SMSG_WORLD_STATE_TIMER_START                      = 0x011F, // 5.4.1 17538
+    SMSG_WORLD_STATE_TIMER_START_INIT                 = 0x011F, // 5.4.1 17538
+    SMSG_WORLD_STATE_TIMER_START                      = 0x05AC, // 5.4.1 17538
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x05AC, // 5.4.1 17538
     SMSG_XP_GAIN_ABORTED                              = 0xB76,  // 5.0.5 16048
     SMSG_ZONE_UNDER_ATTACK                            = 0x148D, // 5.4.1 17538

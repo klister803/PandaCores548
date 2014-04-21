@@ -17,9 +17,29 @@
 
 #include "ScriptMgr.h"
 
+class go_challenge : public GameObjectScript
+{
+public:
+    go_challenge() : GameObjectScript("go_challenge") { }
 
+    bool OnGossipSelect(Player* player, GameObject* go, uint32 /*sender*/, uint32 /*action*/)
+    {
+
+        WorldPacket data(SMSG_CHALLENGE_UNK);
+        player->GetSession()->SendPacket(&data);
+
+        data.Initialize(SMSG_START_TIMER, 12);
+        data << uint32(1);
+        data << uint32(5);
+        data << uint32(5);
+        player->GetSession()->SendPacket(&data);
+
+        player->PlayerTalkClass->ClearMenus();
+        return true;
+    }
+};
 
 void AddSC_challenge_scripts()
 {
-
+    new go_challenge();
 }
