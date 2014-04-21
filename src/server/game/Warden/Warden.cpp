@@ -84,7 +84,7 @@ void Warden::RequestModule()
     // Encrypt with warden RC4 key.
     EncryptData((uint8*)&request, sizeof(WardenModuleUse));
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, 57);
+    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse) + 4);
     pkt << uint32(sizeof(WardenModuleUse));
     pkt.append((uint8*)&request, sizeof(WardenModuleUse));
     _session->SendPacket(&pkt);
