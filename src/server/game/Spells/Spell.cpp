@@ -3532,7 +3532,7 @@ void Spell::cast(bool skipCheck)
 
     CallScriptAfterCastHandlers();
 
-    if (!m_missed)
+    //if (!m_missed)
     {
         if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
         {
