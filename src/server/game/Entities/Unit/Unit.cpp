@@ -9740,17 +9740,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             break;
         }
-        // Burden of Guilt
-        case 110301:
-        {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->Id != 20271)
-                return false;
-
-            break;
-        }
         // Selfless Healer
         case 85804:
         {
