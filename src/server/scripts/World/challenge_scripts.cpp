@@ -34,6 +34,11 @@ public:
         data << uint32(5);
         player->GetSession()->SendPacket(&data);
 
+        data.Initialize(SMSG_WORLD_STATE_TIMER_START, 8);
+        data << uint32(0);
+        data << uint32(1);
+        player->GetSession()->SendPacket(&data);
+
         player->PlayerTalkClass->ClearMenus();
         return true;
     }
