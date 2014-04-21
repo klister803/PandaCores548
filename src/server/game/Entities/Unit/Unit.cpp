@@ -14209,14 +14209,6 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
                 manaTea->SetScriptData(0, -dVal);
         }
     }
-    else if (power == POWER_HOLY_POWER)
-    {
-        if (dVal < 0)
-        {
-            if (Aura* unbreakableSpirit = this->GetAura(114154))
-                unbreakableSpirit->SetScriptData(0, -dVal);
-        }
-    }
 
     int32 curPower = GetPower(power);
 
