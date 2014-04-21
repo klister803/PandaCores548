@@ -4546,9 +4546,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Hack these until proc flags of CC auras are implemented
                 case 339:       // Entangling Roots
                 case 19975:     // Entangling Roots
+                case 20066:     // Repentance
                 case 51514:     // Hex
                 case 102359:    // Mass Entanglement
                 case 104239:    // Horror (Soulburn)
+                case 105421:    // Blinding Light
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 112965:    // Fingers of Frost
