@@ -12695,6 +12695,16 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
         AddPct(heal, (100 * (holyPower + 1)));
     }
+    // Light of Dawn
+    else if (spellProto->Id == 85222 && GetTypeId() == TYPEID_PLAYER)
+    {
+        int32 holyPower = GetPower(POWER_HOLY_POWER);
+
+        if (holyPower > 2)
+            holyPower = 2;
+
+        AddPct(heal, (100 * holyPower));
+    }
 
     return uint32(std::max(heal, 0.0f));
 }
