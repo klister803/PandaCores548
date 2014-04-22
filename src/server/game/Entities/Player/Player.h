@@ -2993,7 +2993,7 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         /***              CHALLENGE SYSTEM                     ***/
         /*********************************************************/
-        void ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal);
+        void ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal, uint32 recTime);
 
     protected:
         // Gamemaster whisper whitelist

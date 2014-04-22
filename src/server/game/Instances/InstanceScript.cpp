@@ -577,7 +577,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                             for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                                 if (Player* player = i->getSource())
                                     if (!source || player->IsAtGroupRewardDistance(source))
-                                        player->ChallangeReward(mode, medal);
+                                        player->ChallangeReward(mode, medal, getMSTime() - challenge_timer);
                     }
                 }
             }

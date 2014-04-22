@@ -51,7 +51,7 @@ void WorldSession::HandleChallengeModeRequestOpcode(WorldPacket& recvPacket)
         {
             data.WriteGuidBytes<2>(guid);
             data << uint32(realmID);
-            data << uint32(262);                  //count
+            data << uint32(262);                  //specID
             data.WriteGuidBytes< 4, 7, 6, 3, 5, 1>(guid);
             data << uint32(realmID);
             data.WriteGuidBytes<0>(guid);

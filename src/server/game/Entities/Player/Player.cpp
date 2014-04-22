@@ -29120,7 +29120,7 @@ void Player::ModifySpellCooldown(uint32 spell_id, int32 delta)
     SendModifyCooldown(spell_id, G3D::fuzzyGt(result, 0.0) ? delta : -int32(cooldown * IN_MILLISECONDS));
 }
 
-void Player::ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal)
+void Player::ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal, uint32 recordTime)
 {
 
 }bool Player::CanSpeakLanguage(uint32 lang_id) const
