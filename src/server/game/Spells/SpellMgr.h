@@ -617,6 +617,7 @@ struct SpellTriggered
     float bp2;
     int32 effectmask;
     int32 aura;
+    int32 chance;
 };
 
 struct SpellMountList

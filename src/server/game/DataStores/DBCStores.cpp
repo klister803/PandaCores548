@@ -52,6 +52,7 @@ static UNORDERED_MAP<uint32, std::list<uint32> > sModifierTreeEntryList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sSpellProcsPerMinuteModEntryList;
 static UNORDERED_MAP<uint32, uint32 > sAchievementEntryParentList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sItemSpecsList;
+static UNORDERED_MAP<uint32, uint32 > sRevertLearnSpellList;
 
 typedef std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> WMOAreaInfoByTripple;
 
@@ -674,6 +675,9 @@ void LoadDBCStores(const std::string& dataPath)
                 sSpellEffectDiffMap[spellEffect->EffectSpellId].effects[MAKE_PAIR16(spellEffect->EffectIndex, spellEffect->EffectDifficulty)] = spellEffect;
             else
                 sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectIndex] = spellEffect;
+
+            if(spellEffect->Effect == SPELL_EFFECT_LEARN_SPELL)
+                sRevertLearnSpellList[spellEffect->EffectTriggerSpell] = spellEffect->EffectSpellId;
         }
     }
 
@@ -863,6 +867,14 @@ uint32 GetsAchievementEntryByTreeList(uint32 criteriaTree)
 {
     UNORDERED_MAP<uint32, uint32 >::const_iterator itr = sAchievementEntryParentList.find(criteriaTree);
     if(itr != sAchievementEntryParentList.end())
+        return itr->second;
+    return 0;
+}
+
+uint32 GetLearnSpell(uint32 trigerSpell)
+{
+    UNORDERED_MAP<uint32, uint32 >::const_iterator itr = sRevertLearnSpellList.find(trigerSpell);
+    if(itr != sRevertLearnSpellList.end())
         return itr->second;
     return 0;
 }

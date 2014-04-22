@@ -5841,6 +5841,17 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
+            if(itr->chance != 0)
+            {
+                if(itr->chance > 100) // chance get from amount
+                {
+                    if(!roll_chance_i(triggerAmount))
+                        continue;
+                }
+                else if(!roll_chance_i(itr->chance))
+                    continue;
+            }
+
             if(itr->target == 1 || itr->target == 6 || !target) //get target self
                 target = this;
             if(itr->target == 3 && ToPlayer()) //get target owner
@@ -7040,8 +7051,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 // Taste for Blood
                 case 56636:
                 {
+                    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(dummySpell->Id))
+                        return false;
+
                     uint32 stack = 1;
-                    if (procSpell && procSpell->Id == 12294)
+                    if (procSpell && procSpell->Id == 12294 && (procEx & (PROC_EX_NORMAL_HIT|PROC_EX_CRITICAL_HIT)))
                         stack = 2;
                     else if (!(procEx & PROC_EX_DODGE))
                         return false;
@@ -7054,12 +7068,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                             stack += aura->GetStackAmount() - 1;
                     }
                     else
-                    {
-                        if(stack == 1)
-                            stack += aura->GetStackAmount();
-                        else
-                            stack += aura->GetStackAmount() + 1;
-                    }
+                        stack += aura->GetStackAmount();
                     if (aura)
                     {
                         if(stack > aura->GetSpellInfo()->StackAmount)
@@ -7069,6 +7078,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         aura->RefreshSpellMods();
                         aura->RefreshTimers();
                     }
+                    if (cooldown && GetTypeId() == TYPEID_PLAYER)
+                        ToPlayer()->AddSpellCooldown(dummySpell->Id, 0, time(NULL) + cooldown);
                     return true;
                 }
                 // Sweeping Strikes

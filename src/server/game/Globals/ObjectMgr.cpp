@@ -8017,6 +8017,15 @@ void ObjectMgr::AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, 
         return;
     }
 
+    if(uint32 learnSpell = GetLearnSpell(spell))
+    {
+        if(SpellInfo const* spellinfoNew = sSpellMgr->GetSpellInfo(learnSpell))
+        {
+            spell = learnSpell;
+            spellinfo = spellinfoNew;
+        }
+    }
+
     if (!SpellMgr::IsSpellValid(spellinfo))
     {
         sLog->outError(LOG_FILTER_SQL, "Table `npc_trainer` contains an entry (Entry: %u) for a broken spell (Spell: %u), ignoring", entry, spell);

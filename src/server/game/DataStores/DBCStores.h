@@ -28,6 +28,7 @@
 typedef std::list<uint32> SimpleFactionsList;
 SimpleFactionsList const* GetFactionTeamList(uint32 faction);
 std::list<uint32> GetItemSpecsList(uint32 ItemID);
+uint32 GetLearnSpell(uint32 trigerSpell);
 
 std::list<uint32> const* GetCriteriaTreeList(uint32 parent);
 std::list<uint32> const* GetModifierTreeList(uint32 parent);
