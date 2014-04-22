@@ -4425,6 +4425,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 136769: //Horridon charge
                     spellInfo->Effects[0].TriggerSpell = 0;
                     break;
+                //Council of Elders
+                //Mallak
+                case 136991: //bitting cold tr ef 
+                    spellInfo->Effects[0].TargetB = 30;
+                    break;
+                //Kazrajin
+                case 137122: //Reckless charge (point dmg)
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[1].TargetA = 22;
+                    spellInfo->Effects[1].TargetB = 15;
+                    break;
 
                 //World Boss
                 //Sha of Anger
