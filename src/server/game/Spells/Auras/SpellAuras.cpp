@@ -447,6 +447,8 @@ m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false)
     m_duration = m_maxDuration;
     m_procCharges = CalcMaxCharges(caster);
     m_isUsingCharges = m_procCharges != 0;
+    if(caster && caster->ToPlayer())
+        m_casterLevel = uint16(caster->ToPlayer()->GetAverageItemLevel());
     // m_casterLevel = cast item level/caster level, caster level should be saved to db, confirmed with sniffs
 }
 
