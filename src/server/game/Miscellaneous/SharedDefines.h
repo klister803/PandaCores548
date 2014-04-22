@@ -1846,18 +1846,18 @@ enum Targets
 enum SpellMissInfo
 {
     SPELL_MISS_NONE                    = 0,
-    SPELL_MISS_MISS                    = 1,
-    SPELL_MISS_RESIST                  = 2,
-    SPELL_MISS_DODGE                   = 3,
-    SPELL_MISS_PARRY                   = 4,
-    SPELL_MISS_BLOCK                   = 5,
-    SPELL_MISS_EVADE                   = 6,
-    SPELL_MISS_IMMUNE                  = 7,
-    SPELL_MISS_IMMUNE2                 = 8, // one of these 2 is MISS_TEMPIMMUNE
-    SPELL_MISS_DEFLECT                 = 9,
-    SPELL_MISS_ABSORB                  = 10,
-    SPELL_MISS_REFLECT                 = 11,
-    SPELL_MISS_MISFIRED                = 12,
+    SPELL_MISS_MISS                    = 1,  // hitmask = 1
+    SPELL_MISS_RESIST                  = 2,  // hitmask = 2
+    SPELL_MISS_DODGE                   = 3,  // hitmask = 4
+    SPELL_MISS_PARRY                   = 4,  // hitmask = 8
+    SPELL_MISS_BLOCK                   = 5,  // hitmask = 16
+    SPELL_MISS_EVADE                   = 6,  // hitmask = 32
+    SPELL_MISS_IMMUNE                  = 7,  // hitmask = 64
+    SPELL_MISS_IMMUNE2                 = 8,  // one of these 2 is MISS_TEMPIMMUNE,  hitmask = 128
+    SPELL_MISS_DEFLECT                 = 9,  // hitmask = 256
+    SPELL_MISS_ABSORB                  = 10, // hitmask = 512
+    SPELL_MISS_REFLECT                 = 11, // hitmask = 1024
+    SPELL_MISS_MISFIRED                = 12, // hitmask = 2048
 };
 
 enum SpellHitType
