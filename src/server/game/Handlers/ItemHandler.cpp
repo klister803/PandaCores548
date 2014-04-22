@@ -583,15 +583,18 @@ void WorldSession::HandleReadItem(WorldPacket& recvData)
         if (msg == EQUIP_ERR_OK)
         {
             data.Initialize(SMSG_READ_ITEM_OK, 8);
+            data << pItem->GetGUID();
             sLog->outInfo(LOG_FILTER_NETWORKIO, "STORAGE: Item page sent");
         }
         else
         {
-            data.Initialize(SMSG_READ_ITEM_FAILED, 8);
+            data.Initialize(SMSG_READ_ITEM_FAILED, 8 + 1);
+            data << pItem->GetGUID();
+            data << uint8(2);
             sLog->outInfo(LOG_FILTER_NETWORKIO, "STORAGE: Unable to read item");
             _player->SendEquipError(msg, pItem, NULL);
         }
-        data << pItem->GetGUID();
+
         SendPacket(&data);
     }
     else
@@ -1024,7 +1027,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             }
 
             // reputation discount
-            int32 price = vendorItem->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice/* * discountMod*/)) : 0;
+            int32 price = vendorItem->IsGoldRequired(itemTemplate) ? uint32(itemTemplate->BuyPrice/* * discountMod*/) : 0;
 
             //if (int32 priceMod = _player->GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
                  //price -= CalculatePct(price, priceMod);
@@ -2083,12 +2086,21 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    if (!item->GetReforgableStat(ItemModType(stats->SourceStat)) || item->GetReforgableStat(ItemModType(stats->FinalStat))) // Cheating, you cant reforge to a stat that the item already has, nor reforge from a stat that the item does not have
+    // prevent cheating with same refore entry
+    if (item->GetReforge() == reforgeEntry)
     {
         SendReforgeResult(false);
         return;
     }
 
+    // prevent cheating, you cant reforge to a stat that the item already has, nor reforge from a stat that the item does not have
+    if (!item->GetReforgableStat(ItemModType(stats->SourceStat)) || item->GetReforgableStat(ItemModType(stats->FinalStat))) 
+    {
+        SendReforgeResult(false);
+        return;
+    }
+
+    // prevent cheating with money
     if (!player->HasEnoughMoney(uint64(item->GetSpecialPrice()))) // cheating
     {
         SendReforgeResult(false);
@@ -2103,6 +2115,9 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
     }*/
 
     player->ModifyMoney(-int64(item->GetSpecialPrice()));
+
+    if (item->IsEquipped())
+        player->ApplyReforgeEnchantment(item, false);
 
     item->SetReforge(reforgeEntry);
     item->SetState(ITEM_CHANGED, player);

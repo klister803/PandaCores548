@@ -931,13 +931,18 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     Dispel = _categorie ? _categorie->Dispel : 0;
     Mechanic = _categorie ? _categorie->Mechanic : 0;
     StartRecoveryCategory = _categorie ? _categorie->StartRecoveryCategory : 0;
+    ChargeRecoveryCategory = _categorie ? _categorie->ChargeRecoveryCategory : 0;
     DmgClass = _categorie ? _categorie->DmgClass : 0;
     PreventionType = _categorie ? _categorie->PreventionType : 0;
 
-    if (SpellCategoryEntry const* categoryInfo = sSpellCategoryStores.LookupEntry(Category))
-    	CategoryFlags = categoryInfo->Flags;
-    else
-    	CategoryFlags = 0;
+    // SpellCategoryEntry
+    SpellCategoryEntry const* categoryInfo = sSpellCategoryStores.LookupEntry(Category);
+    CategoryFlags = categoryInfo ? categoryInfo->Flags : 0;
+
+    // SpellCategoryEntry
+    categoryInfo = sSpellCategoryStores.LookupEntry(ChargeRecoveryCategory);
+    CategoryCharges = categoryInfo ? categoryInfo->chargeCount : 0;
+    CategoryChargeRecoveryTime = categoryInfo ? categoryInfo->chargeRegenTime : 0;
 
     // SpellClassOptionsEntry
     SpellClassOptionsEntry const* _class = GetSpellClassOptions();
@@ -1121,21 +1126,29 @@ bool SpellInfo::IsMountOrCompanions() const
     return false;
 }
 
+bool SpellInfo::HasDynAuraEffect() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+            return true;
+    return false;
+}
+
 bool SpellInfo::IsExplicitDiscovery() const
 {
     return ((Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM
         || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM
         || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2)
         && Effects[1].Effect == SPELL_EFFECT_SCRIPT_EFFECT)
-        || Id == 64323 || Id == 143626;
+        || Effects[0].Effect == SPELL_EFFECT_SCRIPT_EFFECT;
 }
 
 bool SpellInfo::IsLootCrafting() const
 {
-    return (Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM ||
+    return Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM ||
         // different random cards from Inscription (121==Virtuoso Inking Set category) r without explicit item
-        (Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2 &&
-        (TotemCategory[0] != 0 || Effects[0].ItemType == 0)));
+        Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2 &&
+        (TotemCategory[0] != 0 || Effects[0].ItemType == 0);
 }
 
 bool SpellInfo::IsQuestTame() const
@@ -1206,17 +1219,6 @@ bool SpellInfo::IsAbilityLearnedWithProfession() const
         if (pAbility->req_skill_value > 0)
             return true;
     }
-
-    return false;
-}
-
-bool SpellInfo::IsAbilityOfSkillType(uint32 skillType) const
-{
-    SkillLineAbilityMapBounds bounds = sSpellMgr->GetSkillLineAbilityMapBounds(Id);
-
-    for (SkillLineAbilityMap::const_iterator _spell_idx = bounds.first; _spell_idx != bounds.second; ++_spell_idx)
-        if (_spell_idx->second->skillId == uint32(skillType))
-            return true;
 
     return false;
 }

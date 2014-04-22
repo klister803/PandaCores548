@@ -66,7 +66,7 @@ enum WardenCheckType
 struct WardenModuleUse
 {
     uint8 Command;
-    uint8 ModuleId[16];
+    uint8 ModuleId[32];
     uint8 ModuleKey[16];
     uint32 Size;
 };
@@ -92,7 +92,7 @@ struct WardenHashRequest
 
 struct ClientWardenModule
 {
-    uint8 Id[16];
+    uint8 Id[32];
     uint8 Key[16];
     uint32 CompressedSize;
     uint8* CompressedData;

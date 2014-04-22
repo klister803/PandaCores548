@@ -62,7 +62,8 @@ void Warden::SendModuleToClient()
         pos += burstSize;
 
         EncryptData((uint8*)&packet, burstSize + 3);
-        WorldPacket pkt1(SMSG_WARDEN_DATA, burstSize + 3);
+        WorldPacket pkt1(SMSG_WARDEN_DATA, burstSize + 3 + 4);
+        pkt1 << uint32(burstSize + 3);
         pkt1.append((uint8*)&packet, burstSize + 3);
         _session->SendPacket(&pkt1);
     }
@@ -76,14 +77,15 @@ void Warden::RequestModule()
     WardenModuleUse request;
     request.Command = WARDEN_SMSG_MODULE_USE;
 
-    memcpy(request.ModuleId, _module->Id, 16);
+    memcpy(request.ModuleId, _module->Id, 32);
     memcpy(request.ModuleKey, _module->Key, 16);
     request.Size = _module->CompressedSize;
 
     // Encrypt with warden RC4 key.
     EncryptData((uint8*)&request, sizeof(WardenModuleUse));
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse));
+    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse) + 4);
+    pkt << uint32(sizeof(WardenModuleUse));
     pkt.append((uint8*)&request, sizeof(WardenModuleUse));
     _session->SendPacket(&pkt);
 }
@@ -204,7 +206,9 @@ std::string Warden::Penalty(WardenCheck* check /*= NULL*/)
 
 void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
 {
-    _warden->DecryptData(const_cast<uint8*>(recvData.contents()), recvData.size());
+    uint32 cryptedSize;
+    recvData >> cryptedSize;
+    _warden->DecryptData(const_cast<uint8*>(recvData.contents() + sizeof(uint32)), cryptedSize);
     uint8 opcode;
     recvData >> opcode;
     sLog->outDebug(LOG_FILTER_WARDEN, "Got packet, opcode %02X, size %u", opcode, uint32(recvData.size()));
@@ -226,7 +230,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
             break;
         case WARDEN_CMSG_HASH_RESULT:
             _warden->HandleHashResult(recvData);
-            _warden->InitializeModule();
+            //_warden->InitializeModule();
             break;
         case WARDEN_CMSG_MODULE_FAILED:
             sLog->outDebug(LOG_FILTER_WARDEN, "NYI WARDEN_CMSG_MODULE_FAILED received!");

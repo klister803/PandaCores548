@@ -1797,7 +1797,7 @@ struct SkillLineEntry
     uint32 spellIcon;                                       // 4	m_spellIconID
     //DBCString alternateVerb;                              // 5	m_alternateVerb_lang
     uint32 canLink;                                         // 6	m_canLink (prof. with recipes)
-    //uint32 Unknown;                                       // 7	5.0.1
+    uint32 parentSkillId;                                   // 7	5.0.1
     //uint32                                                // 8    5.4.1
 };
 
@@ -2017,13 +2017,18 @@ struct SpellCategoriesEntry
     uint32    Mechanic;                                     // 3        m_mechanic
     uint32    PreventionType;                               // 154      m_preventionType
     uint32    StartRecoveryCategory;                        // 145      m_startRecoveryCategory
+    uint32    ChargeRecoveryCategory;                       //
 };
 
 // SpellCategory.dbc
 struct SpellCategoryEntry
 {
-	uint32 CategoryId;
-	uint32 Flags;
+    uint32 CategoryId;
+    uint32 Flags;
+    //uint32
+    //char* categoryName;
+    uint32 chargeCount;
+    uint32 chargeRegenTime;
 };
 
 typedef std::set<uint32> SpellCategorySet;

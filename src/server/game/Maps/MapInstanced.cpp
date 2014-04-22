@@ -21,6 +21,7 @@
 #include "MapManager.h"
 #include "Battleground.h"
 #include "VMapFactory.h"
+#include "MMapFactory.h"
 #include "InstanceSaveMgr.h"
 #include "World.h"
 #include "Group.h"
@@ -209,7 +210,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save,
     if(entry->maxPlayers == 40)
         difficulty = MAN40_DIFFICULTY;
 
-    sLog->outDebug(LOG_FILTER_MAPS, "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save?"":"new ", InstanceId, GetId(), difficulty?"heroic":"normal");
+    sLog->outDebug(LOG_FILTER_MAPS, "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %u", save?"":"new ", InstanceId, GetId(), difficulty);
 
     InstanceMap* map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, this);
     ASSERT(map->IsDungeon());
@@ -263,6 +264,7 @@ bool MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
     if (m_InstancedMaps.size() <= 1 && sWorld->getBoolConfig(CONFIG_GRID_UNLOAD))
     {
         VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(itr->second->GetId());
+        MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(itr->second->GetId());
         // in that case, unload grids of the base map, too
         // so in the next map creation, (EnsureGridCreated actually) VMaps will be reloaded
         Map::UnloadAll();

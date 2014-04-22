@@ -69,7 +69,8 @@ void Totem::InitStats(uint32 duration)
         m_owner->ToPlayer()->SendDirectMessage(&data);
 
         // set display id depending on caster's race
-        SetDisplayId(m_owner->GetModelForTotem(PlayerTotemType(m_Properties->Id)));
+        if (uint32 display = m_owner->GetModelForTotem(PlayerTotemType(m_Properties->Id)))
+            SetDisplayId(display);
 
         // Totemic Encirclement
         if (m_owner->HasAura(58057)
@@ -157,15 +158,10 @@ void Totem::UnSummon(uint32 msTime)
             {
                 if (_player->HasSpellCooldown(spellId))
                 {
-                    uint32 newCooldownDelay = _player->GetSpellCooldownDelay(spellId);
                     uint32 totalCooldown = sSpellMgr->GetSpellInfo(spellId)->RecoveryTime;
                     int32 lessCooldown = CalculatePct(totalCooldown, int32(pct));
 
-                    newCooldownDelay -= lessCooldown;
-
-                    _player->AddSpellCooldown(spellId, 0, uint32(time(NULL) + newCooldownDelay));
-
-                    _player->SendModifyCooldown(spellId, -lessCooldown);
+                    _player->ModifySpellCooldown(spellId, -lessCooldown);
                 }
             }
         }

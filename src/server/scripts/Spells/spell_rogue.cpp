@@ -92,7 +92,7 @@ class spell_rog_cheat_death : public SpellScriptLoader
                         return;
 
                     target->CastSpell(target, ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, true);
-                    target->ToPlayer()->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, 0, time(NULL) + 90);
+                    target->ToPlayer()->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, 0, getPreciseTime() + 90.0);
 
                     uint32 health10 = target->CountPctFromMaxHealth(10);
 
@@ -739,7 +739,7 @@ class spell_rog_paralytic_poison : public SpellScriptLoader
                     {
                         if (Aura* paralyticPoison = target->GetAura(ROGUE_SPELL_PARALYTIC_POISON_DEBUFF))
                         {
-                            if (paralyticPoison->GetStackAmount() == 5 && !target->HasAura(ROGUE_SPELL_TOTAL_PARALYSIS))
+                            if (paralyticPoison->GetStackAmount() == 4 && !target->HasAura(ROGUE_SPELL_TOTAL_PARALYSIS))
                             {
                                 _player->CastSpell(target, ROGUE_SPELL_TOTAL_PARALYSIS, true);
                                 target->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON_DEBUFF);
@@ -885,58 +885,6 @@ class spell_rog_poisons : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_rog_poisons_SpellScript();
-        }
-};
-
-// Preparation - 14185
-class spell_rog_preparation : public SpellScriptLoader
-{
-    public:
-        spell_rog_preparation() : SpellScriptLoader("spell_rog_preparation") { }
-
-        class spell_rog_preparation_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_preparation_SpellScript);
-
-            bool Load()
-            {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                Player* caster = GetCaster()->ToPlayer();
-
-                //immediately finishes the cooldown on certain Rogue abilities
-                const SpellCooldowns& cm = caster->GetSpellCooldownMap();
-                for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
-                {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
-
-                    if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
-                    {
-                        if (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT ||   // Vanish, Evasion, Sprint
-                            spellInfo->Id == 31224 ||
-                            spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE)          // Dismantle
-                            caster->RemoveSpellCooldown((itr++)->first, true);
-                        else
-                            ++itr;
-                    }
-                    else
-                        ++itr;
-                }
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Preparation
-                OnEffectHitTarget += SpellEffectFn(spell_rog_preparation_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_preparation_SpellScript();
         }
 };
 
@@ -1161,7 +1109,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_paralytic_poison();
     new spell_rog_shiv();
     new spell_rog_poisons();
-    new spell_rog_preparation();
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
     new spell_rog_eviscerate();

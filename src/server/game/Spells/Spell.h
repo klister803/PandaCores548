@@ -745,6 +745,7 @@ class Spell
         SpellInfo const* m_triggeredByAuraSpell;
 
         bool m_skipCheck;
+        bool m_missed;
         uint32 m_auraScaleMask;
 
         EffectExecuteData * m_effectExecuteData[MAX_SPELL_EFFECTS];

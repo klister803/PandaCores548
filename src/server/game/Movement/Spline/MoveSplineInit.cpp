@@ -56,7 +56,7 @@ namespace Movement
         return MOVE_RUN;
     }
 
-    void MoveSplineInit::Launch()
+    int32 MoveSplineInit::Launch()
     {
         MoveSpline& move_spline = *unit.movespline;
 
@@ -78,7 +78,7 @@ namespace Movement
 
         // should i do the things that user should do? - no.
         if (args.path.empty())
-            return;
+            return 0;
 
         // correct first vertex
         args.path[0] = real_position;
@@ -97,7 +97,7 @@ namespace Movement
             args.velocity = unit.GetSpeed(SelectSpeedType(moveFlags));
 
         if (!args.Validate())
-            return;
+            return 0;
 
         if (moveFlags & MOVEMENTFLAG_ROOT)
             moveFlags &= ~MOVEMENTFLAG_MASK_MOVING;
@@ -113,6 +113,8 @@ namespace Movement
         //ToDo: more reseach.
         if(unit.GetUInt32Value(UNIT_NPC_EMOTESTATE))
             unit.SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
+
+        return move_spline.Duration();
     }
 
     void MoveSplineInit::Stop(bool force)
@@ -172,12 +174,21 @@ namespace Movement
         args.flags.EnableFacingAngle();
     }
 
-    void MoveSplineInit::MoveTo(Vector3 const& dest)
+    void MoveSplineInit::MoveTo(Vector3 const& dest, bool generatePath, bool forceDestination)
     {
-        args.path_Idx_offset = 0;
-        args.path.resize(2);
-        TransportPathTransform transform(unit, args.TransformForTransport);
-        args.path[1] = transform(dest);
+        if (generatePath)
+        {
+            PathFinderMovementGenerator path(&unit);
+            path.calculate(dest.x, dest.y, dest.z, forceDestination);
+            MovebyPath(path.getPath());
+        }
+        else
+        {
+            args.path_Idx_offset = 0;
+            args.path.resize(2);
+            TransportPathTransform transform(unit, args.TransformForTransport);
+            args.path[1] = transform(dest);
+        }
     }
 
     void MoveSplineInit::SetFall()
@@ -190,10 +201,17 @@ namespace Movement
     {
         if (_transformForTransport)
         {
-            float unused = 0.0f;
-            if (TransportBase* transport = _owner.GetDirectTransport())
+            if (Unit* vehicle = _owner.GetVehicleBase())
+            {
+                input.x -= vehicle->GetPositionX();
+                input.y -= vehicle->GetPositionY();
+                input.z -= vehicle->GetPositionZMinusOffset();
+            }
+            else if (Transport* transport = _owner.GetTransport())
+            {
+                float unused = 0.0f;
                 transport->CalculatePassengerOffset(input.x, input.y, input.z, unused);
-
+            }
         }
 
         return input;

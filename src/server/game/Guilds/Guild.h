@@ -321,18 +321,53 @@ typedef std::vector <GuildBankRightsAndSlots> GuildBankRightsAndSlotsVec;
 
 typedef std::set <uint8> SlotIds;
 
+#define MAX_GUILD_PROFESSIONS 2
+#define KNOW_RECIPES_MASK_SIZE 300
+
 class Guild
 {
 private:
+
+    struct KnownRecipes
+    {
+        KnownRecipes() { Clear(); }
+
+        void Clear() { memset(recipesMask, 0, sizeof(recipesMask)); }
+        bool IsEmpty() const;
+
+        void GenerateMask(uint32 skillId, std::set<uint32> const& spells);
+        std::string GetMaskForSave() const;
+        void LoadFromString(std::string const& str);
+
+        uint8 recipesMask[KNOW_RECIPES_MASK_SIZE];
+    };
+
     // Class representing guild member
     class Member
     {
+        friend class Guild;
+
         struct RemainingValue
         {
             RemainingValue() : value(0), resetTime(0) { }
 
             uint32 value;
             uint32 resetTime;
+        };
+
+        struct ProfessionInfo
+        {
+            ProfessionInfo(uint32 _skillId, uint32 _skillValue, uint32 _skillRank) :
+                skillId(_skillId), skillValue(_skillValue), skillRank(_skillRank) { }
+
+            ProfessionInfo() : skillId(0), skillValue(0), skillRank(0) { }
+            uint32 skillId;
+            uint32 skillValue;
+            uint32 skillRank;
+
+            void GenerateRecipesMask(std::set<uint32> const& spells) { knownRecipes.GenerateMask(skillId, spells); }
+
+            KnownRecipes knownRecipes;
         };
 
     public:
@@ -356,7 +391,9 @@ private:
             memset(m_bankWithdraw, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(int32));
         }
         void SetStats(Player* player);
-        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender);
+        void SaveStatsToDB(SQLTransaction* trans);
+        void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints,
+            uint32 profId1, uint32 profValue1, uint8 profRank1, std::string const& recipesMask1, uint32 profId2, uint32 profValue2, uint8 profRank2, std::string const& recipesMask2);
         bool CheckStats() const;
 
         void SetPublicNote(std::string const& publicNote);
@@ -395,6 +432,7 @@ private:
         uint64 GetWeekActivity() const { return m_weekActivity; }
         uint32 GetTotalReputation() const { return m_totalReputation; }
         uint32 GetWeekReputation() const { return m_weekReputation; }
+        ProfessionInfo const& GetProfessionInfo(uint32 index) const { return m_professionInfo[index]; }
 
         bool IsOnline() { return (m_flags & GUILDMEMBER_STATUS_ONLINE); }
 
@@ -443,6 +481,7 @@ private:
         uint64 m_weekActivity;
         uint32 m_totalReputation;
         uint32 m_weekReputation;
+        ProfessionInfo m_professionInfo[MAX_GUILD_PROFESSIONS];
     };
 
     // News Log class
@@ -748,6 +787,8 @@ private:
     typedef std::vector<BankTab*> BankTabs;
 
 public:
+    typedef UNORDERED_MAP<uint32, KnownRecipes> KnownRecipesMap;
+
     static void SendCommandResult(WorldSession* session, GuildCommandType type, GuildCommandError errCode, const std::string& param = "");
     static void SendSaveEmblemResult(WorldSession* session, GuildEmblemError errCode);
 
@@ -757,7 +798,7 @@ public:
     bool Create(Player* pLeader, const std::string& name);
     void Disband();
 
-    void SaveToDB();
+    void SaveToDB(bool withMembers);
 
     // Getters
     uint32 GetId() const { return m_id; }
@@ -875,6 +916,12 @@ public:
     void SendGuildEventTabTextChanged(uint32 tabId, WorldSession* session = NULL);
     void SendGuildEventBankSlotChanged();
 
+    KnownRecipesMap const& GetGuildRecipes() const { return _guildRecipes; }
+    KnownRecipes& GetGuildRecipes(uint32 skillId) { return _guildRecipes[skillId]; }
+    void UpdateGuildRecipes(uint32 skillId = 0);
+    void SendGuildMembersForRecipeResponse(WorldSession* session, uint32 skillId, uint32 spellId);
+    void SendGuildMemberRecipesResponse(WorldSession* session, ObjectGuid playerGuid, uint32 skillId);
+
 protected:
     uint32 m_id;
     std::string m_name;
@@ -901,6 +948,7 @@ protected:
     uint32 _level;
     uint64 _experience;
     uint64 _todayExperience;
+    KnownRecipesMap _guildRecipes;
 
 private:
     inline uint32 _GetRanksSize() const { return uint32(m_ranks.size()); }

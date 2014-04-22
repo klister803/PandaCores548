@@ -32,10 +32,10 @@ void PointMovementGenerator<T>::Initialize(T &unit)
     if (!unit.IsStopped())
         unit.StopMoving();
 
-    unit.AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
+    unit.AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
     i_recalculateSpeed = false;
     Movement::MoveSplineInit init(unit);
-    init.MoveTo(i_x, i_y, i_z);
+    init.MoveTo(i_x, i_y, i_z, m_generatePath);
     if (speed > 0.0f)
         init.SetVelocity(speed);
     init.Launch();
@@ -59,7 +59,7 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 & /*diff*/)
     {
         i_recalculateSpeed = false;
         Movement::MoveSplineInit init(unit);
-        init.MoveTo(i_x, i_y, i_z);
+        init.MoveTo(i_x, i_y, i_z, m_generatePath);
         if (speed > 0.0f) // Default value for point motion type is 0.0, if 0.0 spline will use GetSpeed on unit
             init.SetVelocity(speed);
         init.Launch();
@@ -71,10 +71,12 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 & /*diff*/)
 template<class T>
 void PointMovementGenerator<T>::Finalize(T &unit)
 {
-    unit.ClearUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
+    unit.ClearUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 
     if (unit.movespline->Finalized())
         MovementInform(unit);
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
 }
 
 template<class T>
@@ -95,24 +97,6 @@ template <> void PointMovementGenerator<Creature>::MovementInform(Creature &unit
 {
     if (unit.AI())
         unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
-}
-
-enum specialSpells
-{
-    MONK_CLASH                  = 126452,
-    MONK_CLASH_IMPACT           = 126451,
-};
-
-template <> void PointMovementGenerator<Player>::MovementInform(Player& unit)
-{
-    switch (id)
-    {
-        case MONK_CLASH:
-            unit.CastSpell(&unit, MONK_CLASH_IMPACT, true);
-            break;
-        default:
-            break;
-    }
 }
 
 template void PointMovementGenerator<Player>::Initialize(Player&);
@@ -139,19 +123,65 @@ bool EffectMovementGenerator::Update(Unit &unit, const uint32&)
 
 void EffectMovementGenerator::Finalize(Unit &unit)
 {
-    MovementInform(unit);
+    if (unit.GetTypeId() != TYPEID_UNIT)
+        return;
+
+    if (((Creature&)unit).AI())
+        ((Creature&)unit).AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
 }
 
-void EffectMovementGenerator::MovementInform(Unit &unit)
+//----- Charge Movement Generator
+void ChargeMovementGenerator::_setTargetLocation(Unit &unit)
 {
-    if (unit.GetTypeId() == TYPEID_UNIT)
-    {
-        Creature* creature = unit.ToCreature();
+    //sLog->outError("ChargeMovementGenerator GetDestination (X: %f Y: %f Z: %f)", i_x, i_y, i_z);
 
-        if (creature->AI())
-            creature->AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
-    }
-    else if (unit.GetTypeId() == TYPEID_PLAYER)
-    {
-    }
+    if(!i_path)
+        i_path = new PathFinderMovementGenerator(&unit);
+
+    i_path->calculate(i_x, i_y, i_z, false);
+
+    if (i_path->getPathType() & PATHFIND_NOPATH)
+        return;
+
+    if (i_path->GetTotalLength() > 40)
+        return;
+
+    i_targetReached = false;
+    i_recalculateTravel = false;
+
+    Movement::MoveSplineInit init(unit);
+    if (i_path->getPathType() & PATHFIND_NOPATH || unit.GetTransGUID())
+        init.MoveTo(i_x, i_y, i_z);
+    else
+        init.MovebyPath(i_path->getPath());
+    if (speed > 0.0f)
+        init.SetVelocity(speed);
+    init.Launch();
+}
+
+bool ChargeMovementGenerator::Update(Unit &unit, const uint32&)
+{
+    return !unit.movespline->Finalized();
+}
+
+void ChargeMovementGenerator::Initialize(Unit &unit)
+{
+    if (!unit.IsStopped())
+        unit.StopMoving();
+
+    unit.AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
+    _setTargetLocation(unit);
+}
+
+void ChargeMovementGenerator::Finalize(Unit &unit)
+{
+    if (unit.GetTypeId() != TYPEID_UNIT)
+        return;
+
+    if (((Creature&)unit).AI())
+        ((Creature&)unit).AI()->MovementInform(POINT_MOTION_TYPE, m_Id);
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
 }

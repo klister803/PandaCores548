@@ -56,6 +56,7 @@ public:
 
     void BuildBattlePetJournal(WorldPacket *data);
     void GetBattlePetList(PetBattleDataList &petBattleList) const;
+    void SendClosePetBattle(Player * plr);
     Player* GetPlayer() const { return m_player; }
 
 private:

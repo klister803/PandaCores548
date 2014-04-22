@@ -33,11 +33,12 @@ enum eCreatures
     NPC_STORMBRINGER      = 70445,
 
     //Npc
-    NPC_LIGHTNING_BALL    = 69232,
+    NPC_LIGHTNING_BALL    = 69232, 
 
     //Bosses
     NPC_JINROKH           = 69465,
     NPC_HORRIDON          = 68476,
+    NPC_JALAK             = 69374,
     //Council of Elders
     NPC_FROST_KING_MALAKK = 69131,
     NPC_PRINCESS_MARLI    = 69132,
@@ -83,6 +84,11 @@ enum eGameObjects
     GO_DRAKKARI_GATE      = 218671,
     GO_AMANI_GATE         = 218673,
     GO_HORRIDON_EX_DOOR   = 218666,
+    //
+    //Council of Elders
+    GO_COUNCIL_LENT_DOOR  = 218655,
+    GO_COUNCIL_RENT_DOOR  = 218656,
+    GO_COUNCIL_EX_DOOR    = 218657,
     //
 };
 

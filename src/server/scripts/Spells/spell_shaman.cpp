@@ -420,7 +420,7 @@ class spell_sha_echo_of_the_elements : public SpellScriptLoader
                         return;
 
                     _player->CastSpell(target, spellId, true);
-                    _player->AddSpellCooldown(108283, 0, time(NULL) + 1); // This prevent from multiple procs
+                    _player->AddSpellCooldown(108283, 0, getPreciseTime() + 1.0); // This prevent from multiple procs
                 }
             }
 
@@ -909,7 +909,7 @@ class spell_sha_fulmination : public SpellScriptLoader
                 if (lsCharges <= 1)
                     return;
 
-                uint8 usedCharges = lsCharges - 1;
+                uint8 usedCharges = lsCharges - 2;
 
                 SpellEntry const* spellInfo = sSpellStore.LookupEntry(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
                 int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
@@ -1494,12 +1494,12 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                         if (hitTargets >= 4)
                                             continue;
 
-                                        uint32 cooldownDelay = _player->GetSpellCooldownDelay(SPELL_SHA_FLAME_SHOCK);
+                                        double cooldownDelay = _player->GetSpellCooldownDelay(SPELL_SHA_FLAME_SHOCK);
                                         if (_player->HasSpellCooldown(SPELL_SHA_FLAME_SHOCK))
                                             _player->RemoveSpellCooldown(SPELL_SHA_FLAME_SHOCK, true);
 
                                         _player->CastSpell(unit, SPELL_SHA_FLAME_SHOCK, true);
-                                        _player->AddSpellCooldown(SPELL_SHA_FLAME_SHOCK, 0, time(NULL) + cooldownDelay);
+                                        _player->AddSpellCooldown(SPELL_SHA_FLAME_SHOCK, 0, getPreciseTime() + (double)cooldownDelay);
                                         hitTargets++;
                                     }
                                 }

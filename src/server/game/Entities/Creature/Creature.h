@@ -279,7 +279,7 @@ struct EquipmentInfo
 };
 
 // Benchmarked: Faster than std::map (insert/find)
-typedef UNORDERED_MAP<uint16, EquipmentInfo> EquipmentInfoContainer;
+typedef UNORDERED_MAP<uint32, EquipmentInfo> EquipmentInfoContainer;
 
 // from `creature` table
 struct CreatureData

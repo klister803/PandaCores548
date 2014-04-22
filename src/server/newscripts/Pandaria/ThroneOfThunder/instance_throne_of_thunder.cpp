@@ -13,9 +13,7 @@ public:
     struct instance_throne_of_thunder_InstanceMapScript : public InstanceScript
     {
         instance_throne_of_thunder_InstanceMapScript(Map* map) : InstanceScript(map) {}
-
-        uint32 SLGSS_timer;
-
+        
         //GameObjects
         uint64 jinrokhpredoorGuid;
         uint64 jinrokhentdoorGuid;
@@ -25,11 +23,16 @@ public:
         uint64 mogufont_sl_Guid;
         uint64 jinrokhexdoorGuid;
         uint64 horridonpredoorGuid;
+        uint64 horridonentdoorGuid;
+        uint64 horridonexdoorGuid;
+        uint64 councilexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
         uint64 jinrokhGuid;
+        uint64 stormbringerGuid;
         uint64 horridonGuid;
+        uint64 jalakGuid;
         uint64 mallakGuid;
         uint64 marliGuid;
         uint64 kazrajinGuid;
@@ -48,13 +51,13 @@ public:
         uint64 leishenGuid;
         uint64 radenGuid;
 
+        std::vector <uint64> councilGuids;
         std::vector <uint64> mogufontsGuids;
+        std::vector <uint64> councilentdoorGuids;
         
         void Initialize()
         {
             SetBossNumber(14);
-
-            SLGSS_timer        = 3000;
 
             //GameObject
             jinrokhentdoorGuid  = 0;
@@ -64,11 +67,16 @@ public:
             mogufont_sl_Guid    = 0;
             jinrokhexdoorGuid   = 0;
             horridonpredoorGuid = 0;
+            horridonentdoorGuid = 0;
+            horridonexdoorGuid  = 0;
+            councilexdoorGuid   = 0;
            
             //Creature
             stormcallerGuid     = 0;
             jinrokhGuid         = 0;
+            stormbringerGuid    = 0;
             horridonGuid        = 0;
+            jalakGuid           = 0;
             mallakGuid          = 0;
             marliGuid           = 0;
             kazrajinGuid        = 0;
@@ -87,7 +95,9 @@ public:
             leishenGuid         = 0;
             radenGuid           = 0;
 
+            councilGuids.clear();
             mogufontsGuids.clear();
+            councilentdoorGuids.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -100,21 +110,31 @@ public:
             case NPC_JINROKH:
                 jinrokhGuid = creature->GetGUID();
                 break;
+            case NPC_STORMBRINGER:
+                stormbringerGuid = creature->GetGUID();
+                break;
             case NPC_HORRIDON: 
                 horridonGuid = creature->GetGUID();
+                break;
+            case NPC_JALAK:
+                jalakGuid = creature->GetGUID();
                 break;
             //Council of Elders
             case NPC_FROST_KING_MALAKK:
                 mallakGuid = creature->GetGUID();
+                councilGuids.push_back(creature->GetGUID());
                 break;
             case NPC_PRINCESS_MARLI:
                 marliGuid = creature->GetGUID();
+                councilGuids.push_back(creature->GetGUID());
                 break;  
             case NPC_KAZRAJIN:  
                 kazrajinGuid = creature->GetGUID();
+                councilGuids.push_back(creature->GetGUID());
                 break;
             case NPC_SUL_SANDCRAWLER: 
                 sulGuid = creature->GetGUID();
+                councilGuids.push_back(creature->GetGUID());
                 break;
             //
             case NPC_TORTOS: 
@@ -197,6 +217,21 @@ public:
             case GO_HORRIDON_PRE_DOOR:
                 horridonpredoorGuid = go->GetGUID();
                 break;
+            case GO_HORRIDON_ENT_DOOR:
+                horridonentdoorGuid = go->GetGUID();
+                break;
+            case GO_HORRIDON_EX_DOOR:
+                horridonexdoorGuid = go->GetGUID();
+                break;
+            case GO_COUNCIL_LENT_DOOR:
+                councilentdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_COUNCIL_RENT_DOOR:
+                councilentdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_COUNCIL_EX_DOOR:
+                councilexdoorGuid = go->GetGUID();
+                break;
             default:
                 break;
             }
@@ -223,7 +258,71 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(jinrokhentdoorGuid, true);
-                        //HandleGameObject(jinrokhexdoorGuid, true); next boss not ready
+                        HandleGameObject(jinrokhexdoorGuid, true); 
+                        break;
+                    }
+                }
+                break;
+            case DATA_HORRIDON:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(horridonentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(horridonentdoorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(horridonentdoorGuid, true);
+                        HandleGameObject(horridonexdoorGuid, true);
+                        break;
+                    }
+                }
+                break;
+            case DATA_COUNCIL_OF_ELDERS:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        //Reset all council
+                        for (std::vector<uint64>::const_iterator guid = councilGuids.begin(); guid != councilGuids.end(); guid++)
+                        {
+                            if (Creature* council = instance->GetCreature(*guid))
+                            {
+                                if (council->isAlive() && council->isInCombat())
+                                    council->AI()->EnterEvadeMode();
+                                else if (!council->isAlive())
+                                {
+                                    council->Respawn();
+                                    council->GetMotionMaster()->MoveTargetedHome();
+                                }
+                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, council);
+                            }
+                        }
+
+                        for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
+                        break;
+                    case IN_PROGRESS:
+                        //Call all council 
+                        for (std::vector<uint64>::const_iterator guid = councilGuids.begin(); guid != councilGuids.end(); guid++)
+                        {
+                            if (Creature* council = instance->GetCreature(*guid))
+                            {
+                                if (council->isAlive() && !council->isInCombat())
+                                    council->AI()->DoZoneInCombat(council, 150.0f);
+                                SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, council);
+                            }
+                        }
+
+                        for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, false);
+                        break;
+                    case DONE:
+                        for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
+                        //HandleGameObject(councilexdoorGuid, true);
                         break;
                     }
                 }
@@ -231,7 +330,6 @@ public:
             default:
                 break;
             }
-
             return true;
         }
 
@@ -250,6 +348,8 @@ public:
                 return jinrokhGuid;
             case NPC_HORRIDON: 
                 return horridonGuid;
+            case NPC_JALAK:
+                return jalakGuid;
             //Council of Elders
             case NPC_FROST_KING_MALAKK:
                 return mallakGuid;
@@ -311,30 +411,7 @@ public:
                 }
             }
         }
-
-        void Update(uint32 diff)
-        {
-            if (SLGSS_timer)
-            {
-                if (SLGSS_timer <= diff)
-                {
-                    SLGSS_timer = 0;
-                    SLGSS_Check();
-                }
-                else
-                    SLGSS_timer -= diff;
-            }
-        }
-
-        void SLGSS_Check()
-        {
-            if (Creature* sc = instance->GetCreature(stormcallerGuid))
-            {
-                if (!sc->isAlive())
-                    HandleGameObject(jinrokhpredoorGuid, true);
-            }
-        }
-
+        
         bool IsWipe()
         {
             Map::PlayerList const& PlayerList = instance->GetPlayers();

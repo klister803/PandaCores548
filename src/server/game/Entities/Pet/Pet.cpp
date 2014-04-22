@@ -310,7 +310,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     {
         uint32 savedhealth = fields[9].GetUInt32();
         uint32 savedmana = fields[10].GetUInt32();
-        if (!savedhealth && getPetType() == HUNTER_PET)
+        if (!stampeded && !savedhealth && getPetType() == HUNTER_PET)
             setDeathState(JUST_DIED);
         else if (owner && owner->getClass() != CLASS_WARLOCK && !IsPetGhoul())
         {
@@ -319,7 +319,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         }
         else if (!IsPetGhoul())
         {
-            SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
+            if (!stampeded)
+                SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
             SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
             SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
         }
@@ -612,7 +613,7 @@ void Pet::Update(uint32 diff)
 
             if (isControlled())
             {
-                if (owner->GetPetGUID() != GetGUID() && !HasAura(130201)) // Stampede
+                if (owner->GetPetGUID() != GetGUID() && !m_Stampeded) // Stampede
                 {
                     sLog->outError(LOG_FILTER_PETS, "Pet %u is not pet of owner %s, removed", GetEntry(), m_owner->GetName());
                     Remove(getPetType() == HUNTER_PET ? PET_SLOT_DELETED : PET_SLOT_ACTUAL_PET_SLOT);
@@ -1285,12 +1286,10 @@ void Pet::_LoadSpellCooldowns()
 
         data.WriteGuidMask<4, 7, 6>(guid);
         size_t count_pos = data.bitwpos();
-        data.WriteBits(1, 21);
+        data.WriteBits(0, 21);
         data.WriteGuidMask<2, 3, 1, 0>(guid);
         data.WriteBit(1);
         data.WriteGuidMask<5>(guid);
-
-        data.FlushBits();
 
         data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
@@ -1311,8 +1310,8 @@ void Pet::_LoadSpellCooldowns()
             if (db_time <= curTime)
                 continue;
 
-            data << uint32(spell_id);
             data << uint32(uint32(db_time-curTime)*IN_MILLISECONDS);
+            data << uint32(spell_id);
 
             _AddCreatureSpellCooldown(spell_id, db_time);
 
@@ -1320,6 +1319,7 @@ void Pet::_LoadSpellCooldowns()
         }
         while (result->NextRow());
 
+        data.FlushBits();
         data.PutBits(count_pos, count, 21);
 
         if (!m_CreatureSpellCooldowns.empty() && GetOwner())
@@ -1628,7 +1628,7 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
             // can be in case spell loading but learned at some previous spell loading
             itr->second.state = PETSPELL_UNCHANGED;
 
-            if (active == ACT_ENABLED)
+            if (active == ACT_ENABLED && !m_Stampeded)
                 ToggleAutocast(spellInfo, true);
             else if (active == ACT_DISABLED)
                 ToggleAutocast(spellInfo, false);

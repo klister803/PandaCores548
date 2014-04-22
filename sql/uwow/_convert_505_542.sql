@@ -100,3 +100,25 @@ DELETE FROM `character_spell` WHERE spell IN (103826,103827,103828,55694,29838,1
 TRUNCATE TABLE character_talent;
 UPDATE characters SET speccount = 1, activespec = 0;
 
+ALTER TABLE `characters` ADD `transfer` tinyint(3) NOT NULL DEFAULT '0';
+ALTER TABLE `characters` ADD KEY `transfer` ( `transfer` );
+
+-- Warlock
+DELETE FROM `character_pet` WHERE `slot` > 24 AND `slot` < 36;
+-- Stamped
+DELETE FROM `character_pet` WHERE `slot` > 35 AND `slot` < 41;
+-- Other
+DELETE FROM `character_pet` WHERE `slot` = 100;
+DELETE FROM pet_aura WHERE guid not in (select id from character_pet);
+DELETE FROM pet_aura_effect WHERE guid not in (select id from character_pet);
+DELETE FROM pet_spell WHERE guid not in (select id from character_pet);
+DELETE FROM pet_spell_cooldown WHERE guid not in (select id from character_pet);
+
+ALTER TABLE  `characters` CHANGE  `petslotused`  `petslot` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+UPDATE `characters` SET `petslot` = 0;
+
+ALTER TABLE  `characters` CHANGE  `currentpetslot`  `currentpetnumber` INT( 11 ) NOT NULL;
+update `characters` set `currentpetnumber` = 0;
+
+ALTER TABLE `character_pet` DROP `slot`;
+

@@ -622,6 +622,9 @@ class WorldSession
         void HandleGuildRequestPartyState(WorldPacket& recvPacket);
         void HandleGuildRequestMaxDailyXP(WorldPacket& recvPacket);
         void HandleAutoDeclineGuildInvites(WorldPacket& recvPacket);
+        void HandleGuildQueryGuildRecipesOpcode(WorldPacket& recvPacket);
+        void HandleGuildQueryGuildMembersForRecipe(WorldPacket& recvPacket);
+        void HandleGuildQueryGuildMembersRecipes(WorldPacket& recvPacket);
 
         void HandleGuildFinderAddRecruit(WorldPacket& recvPacket);
         void HandleGuildFinderBrowse(WorldPacket& recvPacket);
@@ -1023,6 +1026,12 @@ class WorldSession
         void HandleCemeteryListOpcode(WorldPacket& recvPacket);
         void HandlerCategoryCooldownOpocde(WorldPacket& recvPacket);
         void HandleClearRaidMarkerOpcode(WorldPacket& recvPacket);
+        void HandleQueryPlayerRecipes(WorldPacket& recvPacket);
+
+        // Challenge Mode
+        void HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvPacket);
+        void HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& recvPacket);
+        void HandleChallengeModeRequestOpcode(WorldPacket& recvPacket);
 
     private:
         void InitializeQueryCallbackParameters();
@@ -1118,5 +1127,22 @@ class WorldSession
 
         z_stream_s* _compressionStream;
 };
+
+class PacketSendEvent : public BasicEvent
+{
+    Player* m_owner;
+    WorldPacket* m_packet;
+    uint32 m_delay;
+public:
+    explicit PacketSendEvent(Player* owner, WorldPacket* data, uint32 delay) : m_owner(owner), m_packet(data), m_delay(delay) { }
+    explicit PacketSendEvent(Player* me, WorldPacket& data, uint32 delay);
+
+    ~PacketSendEvent();
+
+    virtual bool Execute(uint64 , uint32);
+
+    void Schedule();
+};
+
 #endif
 /// @}

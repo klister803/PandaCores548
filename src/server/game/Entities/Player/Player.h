@@ -166,44 +166,30 @@ struct PlayerCurrency
     CurrencyTypesEntry const * currencyEntry;
 };
 
-struct PlayerArchaelogy
-{
-    uint32 pointId;
-    uint32 count;
-    bool active;
-    time_t resetTime;
-};
-
-struct PlayerArchProject
-{
-    uint32 projectId;
-    uint32 RaceID;
-};
-
-struct PlayerArchProjectHistory
-{
-    uint32 projectId;
-    uint32 count;
-    time_t TimeCreated;
-};
-
 typedef UNORDERED_MAP<uint32, PlayerTalent*> PlayerTalentMap;
 typedef UNORDERED_MAP<uint32, PlayerSpell*> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
 typedef UNORDERED_MAP<uint32, PlayerCurrency> PlayerCurrenciesMap;
-typedef UNORDERED_MAP<uint32, PlayerArchaelogy> PlayerArchaelogyMap;
-typedef UNORDERED_MAP<uint32, PlayerArchProject> PlayerArchProjectMap;
-typedef UNORDERED_MAP<uint32, PlayerArchProjectHistory> PlayerArchProjectHistoryMap;
 
 typedef std::list<uint64> WhisperListContainer;
 
 struct SpellCooldown
 {
-    time_t end;
+    double end;
     uint16 itemid;
 };
 
+struct SpellChargeData
+{
+    uint8 charges;
+    uint8 maxCharges;
+
+    SpellCategoryEntry const* categoryEntry;
+    uint32 timer;
+};
+
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
+typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
 typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
@@ -1995,6 +1981,7 @@ class Player : public Unit, public GridObject<Player>
         void InitTalentForLevel();
         void InitSpellForLevel();
         void RemoveSpecializationSpells();
+        void RemoveNotActiveSpecializationSpells();
         void BuildPlayerTalentsInfoData(WorldPacket* data);
         void SendTalentsInfoData(bool pet);
         bool LearnTalent(uint32 talentId);
@@ -2044,6 +2031,7 @@ class Player : public Unit, public GridObject<Player>
         SpellCooldowns const& GetSpellCooldownMap() const { return m_spellCooldowns; }
 
         void AddSpellMod(SpellModifier* mod, bool apply);
+        void SendSpellMods();
         bool IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod, Spell* spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell = NULL);
         void RemoveSpellMods(Spell* spell);
@@ -2057,23 +2045,22 @@ class Player : public Unit, public GridObject<Player>
         bool HasSpellCooldown(uint32 spell_id) const
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
-            return itr != m_spellCooldowns.end() && itr->second.end > time(NULL);
+            return itr != m_spellCooldowns.end() && itr->second.end > getPreciseTime();
         }
-        uint32 GetSpellCooldownDelay(uint32 spell_id) const
+        double GetSpellCooldownDelay(uint32 spell_id) const
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
-            time_t t = time(NULL);
-            return uint32(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0);
+            double t = getPreciseTime();
+            return uint32(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
         }
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
-        void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
-        void SpellCooldownReduction(uint32 spell_id, time_t end_time);
-        void ChangeSpellCooldown(uint32 spell_id, float second);
+        void AddSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
         void RemoveSpellCategoryCooldown(uint32 cat, bool update = false);
         void SendClearCooldown(uint32 spell_id, Unit* target);
+        void ModifySpellCooldown(uint32 spell_id, int32 delta);
 
         GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
 
@@ -2082,6 +2069,15 @@ class Player : public Unit, public GridObject<Player>
         void RemoveAllSpellCooldown();
         void _LoadSpellCooldowns(PreparedQueryResult result);
         void _SaveSpellCooldowns(SQLTransaction& trans);
+
+        bool HasChargesForSpell(SpellInfo const* spellInfo) const;
+        uint8 GetMaxSpellCategoryCharges(SpellCategoryEntry const* categoryEntry) const;
+        uint8 GetMaxSpellCategoryCharges(uint32 category) const;
+        void TakeSpellCharge(SpellInfo const* spellInfo);
+        void UpdateSpellCharges(uint32 diff);
+        void RecalculateSpellCategoryCharges(uint32 category);
+        void RestoreSpellCategoryCharges(uint32 categoryId = 0);
+
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
 
@@ -2286,6 +2282,7 @@ class Player : public Unit, public GridObject<Player>
                     if (specialization->classId == getClass() && specialization->tabId == 0)
                         return specialization->entry;
             }
+            return 0;
         }
 
         uint64 GetLootGUID() const { return m_lootGuid; }
@@ -2491,10 +2488,12 @@ class Player : public Unit, public GridObject<Player>
         void SendInitWorldStates(uint32 zone, uint32 area);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
         void SendDirectMessage(WorldPacket* data);
+        void ScheduleMessageSend(WorldPacket* data, uint32 delay);
         void SendBGWeekendWorldStates();
 
         void SendAurasForTarget(Unit* target);
-        void SendCooldownAtLogin();
+        void SendInitialCooldowns();
+        void SendSpellChargeData();
         void SendCategoryCooldownMods();
         void SendModifyCooldown(uint32 spellId, int32 value);
 
@@ -3357,6 +3356,7 @@ class Player : public Unit, public GridObject<Player>
         BattlePetMgr   m_battlePetMgr;
 
         SpellCooldowns m_spellCooldowns;
+        SpellChargeDataMap m_spellChargeData;
 
         uint32 m_ChampioningFaction;
         uint32 m_ChampioningFactionDungeonLevel;

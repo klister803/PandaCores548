@@ -814,7 +814,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
                     if (result)
-                        if (!changenth(line, 41, "1"))       // characters.at_login set to "rename on login"
+                        if (!changenth(line, 41, "129"))       // characters.at_login set to "rename on login"
                             return DUMP_FILE_BROKEN;
                 }
                 else if (!changenth(line, 3, name.c_str())) // characters.name

@@ -820,7 +820,7 @@ void WorldSession::SendAccountDataTimes(uint32 mask, bool ready)
     data.WriteBit(!ready);
     data.FlushBits();
     SendPacket(&data);
-    //SendTimeZoneInformation();
+    SendTimeZoneInformation();
 }
 
 // ToDo: add confing. Are we need it?
@@ -1453,3 +1453,20 @@ void WorldSession::InitWarden(BigNumber* k, std::string os)
         // _warden->Init(this, k);
     }
 }
+
+PacketSendEvent::~PacketSendEvent()
+{
+    delete m_packet;
+}
+
+bool PacketSendEvent::Execute(uint64 , uint32)
+{
+    m_owner->SendDirectMessage(m_packet);
+    return true;
+}
+
+void PacketSendEvent::Schedule()
+{
+    m_owner->m_Events.AddEvent(this, m_owner->m_Events.CalculateTime(m_delay));
+}
+

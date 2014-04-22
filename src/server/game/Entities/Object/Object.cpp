@@ -114,11 +114,7 @@ Object::~Object()
     delete [] _changedFields;
 
     for(size_t i = 0; i < m_dynamicTab.size(); ++i)
-    {
         delete [] m_dynamicTab[i];
-        delete [] m_dynamicChange[i];
-    }
-
 }
 
 void Object::_InitValues()
@@ -132,7 +128,7 @@ void Object::_InitValues()
     for(size_t i = 0; i < m_dynamicTab.size(); ++i)
     {
         memset(m_dynamicTab[i], 0, 32*sizeof(uint32));
-        memset(m_dynamicChange[i], 0, 32*sizeof(bool));
+        m_dynamicChange[i] = false;
     }
 
     m_objectUpdated = false;
@@ -368,11 +364,18 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         ObjectGuid guid = GetGUID();
         uint32 movementFlags = self->m_movementInfo.GetMovementFlags();
         uint16 movementFlagsExtra = self->m_movementInfo.GetExtraMovementFlags();
-        if (GetTypeId() == TYPEID_UNIT)
-            movementFlags &= MOVEMENTFLAG_MASK_CREATURE_ALLOWED;
-        else
-            if (movementFlags & (MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY))
-                movementFlags &= ~(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_FALLING_SLOW);
+        // these break update packet
+        {
+            if (GetTypeId() == TYPEID_UNIT)
+                movementFlags &= MOVEMENTFLAG_MASK_CREATURE_ALLOWED;
+            else
+            {
+                if (movementFlags & (MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY))
+                    movementFlags &= ~(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_FALLING_SLOW);
+                if ((movementFlagsExtra & MOVEMENTFLAG2_INTERPOLATED_TURNING) == 0)
+                    movementFlags &= ~MOVEMENTFLAG_FALLING;
+            }
+        }
 
         ObjectGuid transGuid = self->m_movementInfo.t_guid;
 
@@ -829,7 +832,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 // send in current format (float as float, uint32 as uint32)
                 if (index == OBJECT_FIELD_DYNAMIC_FLAGS)
                 {
-                    if (IsActivateToQuest)
+                    if (IsActivateToQuest || ToGameObject()->isDynActive())
                     {
                         switch (ToGameObject()->GetGoType())
                         {
@@ -898,7 +901,8 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
 void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Player* target) const
 {
     // Crashfix, prevent use of bag with dynamic field
-    if (isType(TYPEMAST_BAG))
+    if (isType(TYPEMAST_BAG) || 
+        (updatetype == UPDATETYPE_VALUES && GetTypeId() == TYPEID_PLAYER && this != target))
     {
         *data << uint8(0);
         return;
@@ -909,27 +913,16 @@ void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Playe
     dynamicFieldsMask.resize(m_dynamicTab.size());
 
     for (size_t i = 0; i < m_dynamicTab.size(); ++i)
-        dynamicFieldsMask[i] = 0;
-
-    for (size_t i = 0; i < m_dynamicChange.size(); ++i)
     {
+        dynamicFieldsMask[i] = 0;
         for (int index = 0; index < 32; ++index)
         {
-            if (updatetype == UPDATETYPE_CREATE_OBJECT || updatetype == UPDATETYPE_CREATE_OBJECT2)
+            if ((updatetype == UPDATETYPE_CREATE_OBJECT || updatetype == UPDATETYPE_CREATE_OBJECT2) ||
+                updatetype == UPDATETYPE_VALUES && m_dynamicChange[i])
             {
+                dynamicTabMask |= 1 << i;
                 if (m_dynamicTab[i][index] != 0)
-                {
-                    dynamicTabMask |= 1 << i;
                     dynamicFieldsMask[i] |= 1 << index;
-                }
-            }
-            else if (updatetype == UPDATETYPE_VALUES)
-            {
-                if (m_dynamicChange[i][index])
-                {
-                    dynamicTabMask |= 1 << i;
-                    dynamicFieldsMask[i] |= 1 << index;
-                }
             }
         }
     }
@@ -943,13 +936,16 @@ void Object::_BuildDynamicValuesUpdate(uint8 updatetype, ByteBuffer *data, Playe
         {
             if (dynamicTabMask & (1 << i))
             {
-                *data << uint8(1);          // count of dynamic field masks
-                *data << uint32(dynamicFieldsMask[i]);
-
-                for (int index = 0; index < 32; ++index)
+                *data << uint8(bool(dynamicFieldsMask[i]));      // count of dynamic field masks
+                if (dynamicFieldsMask[i])
                 {
-                    if (dynamicFieldsMask[i] & (1 << index))
-                        *data << uint32(m_dynamicTab[i][index]);
+                    *data << uint32(dynamicFieldsMask[i]);
+
+                    for (int index = 0; index < 32; ++index)
+                    {
+                        if (dynamicFieldsMask[i] & (1 << index))
+                            *data << uint32(m_dynamicTab[i][index]);
+                    }
                 }
             }
         }
@@ -963,7 +959,7 @@ void Object::ClearUpdateMask(bool remove)
     if (m_objectUpdated)
     {
         for(size_t i = 0; i < m_dynamicTab.size(); i++)
-            memset(m_dynamicChange[i], 0, 32*sizeof(bool));
+            m_dynamicChange[i] = false;
 
         if (remove)
             sObjectAccessor->RemoveUpdateObject(this);
@@ -1405,12 +1401,17 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
 
 void Object::SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value)
 {
-    ASSERT(tab < m_dynamicTab.size() && index < 32);
+    //ASSERT(tab < m_dynamicTab.size() && index < 32);
+    if(!(tab < m_dynamicTab.size() && index < 32))
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "Object::SetDynamicUInt32Value: ASSERT FAILED index %u, tab %u, m_dynamicTab.size() %u", index, tab, m_dynamicTab.size());
+        return;
+    }
 
     if (m_dynamicTab[tab][index] != value)
     {
         m_dynamicTab[tab][index] = value;
-        m_dynamicChange[tab][index] = true;
+        m_dynamicChange[tab] = true;
         if (m_inWorld && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
@@ -1910,6 +1911,13 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
     {
         case TYPEID_UNIT:
         {
+            Unit* victim = ToCreature()->getVictim();
+            if (victim)
+            {
+                // anyway creature move to victim for thinly Z distance (shun some VMAP wrong ground calculating)
+                if (fabs(GetPositionZ() - victim->GetPositionZ()) < 5.0f)
+                    return;
+            }
             // non fly unit don't must be in air
             // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
             if (!ToCreature()->CanFly())
@@ -2563,6 +2571,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                         mask = UNIT_MASK_GUARDIAN;
                         break;
                     case SUMMON_TYPE_TOTEM:
+                    case SUMMON_TYPE_BANNER:
                         mask = UNIT_MASK_TOTEM;
                         break;
                     case SUMMON_TYPE_VEHICLE:

@@ -162,6 +162,50 @@ struct ItemExtendedCostEntry
     }
 };
 
+struct BattlePetAbility
+{
+    uint32 ID;                  // 0
+    uint32 Type;                // 1
+    //uint32 someFlags;         // 2
+    //uint32 unk;               // 3
+    //uint32 unk;               // 4
+    //uint32 unk;               // 5
+    //string name               // 6
+    //string description        // 7
+};
+
+struct BattlePetAbilityEffect
+{
+    uint32 ID;                  // 0
+    uint32 AbilityID;           // 1
+    //uint32 unk;               // 2
+    //uint32 AuraID?;           // 3
+    //uint32 unk;               // 4
+    //uint32 effectNumber;      // 5
+    //uint32 unk;               // 6
+    //uint32 hitChance;         // 7
+    //uint32 unk;               // 8
+    //uint32 unk;               // 9
+    //uint32 unk;               // 10
+    //uint32 unk;               // 11
+};
+
+struct BattlePetAbilityState
+{
+    uint32 EffectID;            // 0
+    uint32 AbilityID;           // 1
+    uint32 stateID;             // 2
+    //uint32 unk;               // 3
+};
+
+struct BattlePetState
+{
+    uint32 ID;                  // 0
+    //uint32 unk;               // 1
+    //string name;              // 2
+    //uint32 unk;               // 3
+};
+
 struct BattlePetSpeciesEntry
 {
     uint32 ID;                  // 0
@@ -254,6 +298,20 @@ struct ItemUpgradeData
     }
 
     ItemUpgradeEntry const* upgrade[MAX_ITEM_UPDGRADES];
+};
+
+struct MapChallengeModeEntry
+{
+    uint32 id;                  // 0
+    uint32 map;                 // 1
+    uint32 unk1;                // 2
+    uint32 unk2;                // 3
+    uint32 season;              // 4
+    uint32 bronze;              // 5
+    uint32 silver;              // 6
+    uint32 gold;                // 7
+    uint32 unk3;                // 8
+    uint32 unk4;                // 9
 };
 
 // GCC has alternative #pragma pack(N) syntax and old gcc version does not support pack(push, N), also any gcc version does not support it at some platform

@@ -542,13 +542,57 @@ void Guild::Member::SetStats(Player* player)
     m_accountId = player->GetSession()->GetAccountId();
     m_achievementPoints = player->GetAchievementPoints();
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_MEMBERS_ACHIVPOINTS);
-    stmt->setUInt8 (0, m_achievementPoints);
-    stmt->setUInt32(1, player->GetGUIDLow());
-    CharacterDatabase.Execute(stmt);
+    for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+    {
+        uint32 id = player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i);
+        m_professionInfo[i] = ProfessionInfo(id, player->GetSkillValue(id), player->GetSkillStep(id));
+    }
+
+    std::set<uint32> profSpells[MAX_GUILD_PROFESSIONS];
+    PlayerSpellMap const& spellMap = player->GetSpellMap();
+    for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
+    {
+        if (itr->second->state == PLAYERSPELL_REMOVED)
+            continue;
+
+        if (!itr->second->active || itr->second->disabled)
+            continue;
+
+        for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+        {
+            if (IsPartOfSkillLine(m_professionInfo[i].skillId, itr->first))
+                profSpells[i].insert(itr->first);
+        }
+    }
+
+    for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+        m_professionInfo[i].GenerateRecipesMask(profSpells[i]);
 }
 
-void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender)
+void Guild::Member::SaveStatsToDB(SQLTransaction* trans)
+{
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_MEMBER_STATS);
+    stmt->setUInt64(0, m_weekReputation);
+    stmt->setUInt64(1, m_weekActivity);
+    stmt->setUInt64(2, m_totalActivity);
+    stmt->setUInt32(3, m_achievementPoints);
+    for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+    {
+        stmt->setInt32(4 + i * 4, m_professionInfo[i].skillId);
+        stmt->setInt32(5 + i * 4, m_professionInfo[i].skillValue);
+        stmt->setInt8(6 + i * 4, m_professionInfo[i].skillRank);
+        stmt->setString(7 + i * 4, m_professionInfo[i].knownRecipes.GetMaskForSave());
+    }
+    stmt->setUInt32(12, GUID_LOPART(GetGUID()));
+
+    if (trans)
+        (*trans)->Append(stmt);
+    else
+        CharacterDatabase.Execute(stmt);
+}
+
+void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints,
+                             uint32 profId1, uint32 profValue1, uint8 profRank1, std::string const& recipesMask1, uint32 profId2, uint32 profValue2, uint8 profRank2, std::string const& recipesMask2)
 {
     m_name      = name;
     m_level     = level;
@@ -557,6 +601,12 @@ void Guild::Member::SetStats(const std::string& name, uint8 level, uint8 _class,
     m_gender    = gender;
     m_accountId = accountId;
     m_totalReputation = reputation;
+    m_achievementPoints = achPoints;
+
+    m_professionInfo[0] = ProfessionInfo(profId1, profValue1, profRank1);
+    m_professionInfo[0].knownRecipes.LoadFromString(recipesMask1);
+    m_professionInfo[1] = ProfessionInfo(profId2, profValue2, profRank2);
+    m_professionInfo[1].knownRecipes.LoadFromString(recipesMask2);
 }
 
 void Guild::Member::SetPublicNote(const std::string& publicNote)
@@ -631,12 +681,21 @@ bool Guild::Member::LoadFromDB(Field* fields)
              fields[26].GetUInt16(),                        // characters.zone
              fields[27].GetUInt32(),                        // characters.account
              fields[29].GetUInt32(),                        // character_reputation.standing
-             fields[34].GetUInt8());                        // characters.gender
+             fields[34].GetUInt8(),                         // characters.gender
+             fields[33].GetUInt32(),                        // achievement points
+             fields[35].GetUInt32(),                        // prof id 1
+             fields[36].GetUInt32(),                        // prof value 1
+             fields[37].GetUInt8(),                         // prof rank 1
+             fields[38].GetString(),                        // prof recipes mask 1
+             fields[39].GetUInt32(),                        // prof id 2
+             fields[40].GetUInt32(),                        // prof value 2
+             fields[41].GetUInt8(),                         // prof rank 2
+             fields[32].GetString()                         // prof recipes mask 2
+             );
     m_logoutTime    = fields[28].GetUInt32();               // characters.logout_time
     m_totalActivity = fields[30].GetUInt64();
     m_weekActivity = fields[31].GetUInt64();
     m_weekReputation = fields[32].GetUInt32();
-    m_achievementPoints = fields[33].GetUInt32();
 
     if (!CheckStats())
         return false;
@@ -1233,7 +1292,7 @@ void Guild::Disband()
     sGuildMgr->RemoveGuild(m_id);
 }
 
-void Guild::SaveToDB()
+void Guild::SaveToDB(bool withMembers)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
@@ -1245,6 +1304,20 @@ void Guild::SaveToDB()
     trans->Append(stmt);
 
     m_achievementMgr.SaveToDB(trans);
+
+    if (withMembers)
+    {
+        for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+        {
+            if (Player* player = sObjectAccessor->FindPlayer(itr->second->GetGUID()))
+            {
+                itr->second->SetStats(player);
+                itr->second->SaveStatsToDB(&trans);
+            }
+        }
+
+        UpdateGuildRecipes();
+    }
 
     CharacterDatabase.CommitTransaction(trans);
 }
@@ -1305,13 +1378,8 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
 
         data << uint8(flags);
         data.WriteGuidBytes<3>(guid);
-        for (uint8 i = 0; i < 2; ++i)
-        {
-            if (uint32 id = (player ? player->GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1 + i) : 0))
-                data << uint32(player->GetSkillStep(id)) << uint32(player->GetSkillValue(id)) << uint32(id);
-            else
-                data << uint32(0) << uint32(0) << uint32(0);
-        }
+        for (uint8 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+            data << uint32(member->GetProfessionInfo(i).skillRank) << uint32(member->GetProfessionInfo(i).skillValue) << uint32(member->GetProfessionInfo(i).skillId);
         data.WriteGuidBytes<1>(guid);
         data << uint32(player ? player->GetAchievementPoints() : member->GetAchievementPoints());// player->GetAchievementMgr().GetCompletedAchievementsAmount()
         data.WriteGuidBytes<6>(guid);
@@ -1706,6 +1774,7 @@ void Guild::HandleAcceptMember(WorldSession* session)
         _LogEvent(GUILD_EVENT_LOG_JOIN_GUILD, player->GetGUIDLow());
         SendGuildEventJoinMember(player->GetGUID(), player->GetName());
         sGuildFinderMgr->RemoveMembershipRequest(player->GetGUIDLow(), GUID_LOPART(this->GetGUID()));
+        UpdateGuildRecipes();
     }
 }
 
@@ -1726,12 +1795,13 @@ void Guild::HandleLeaveMember(WorldSession* session)
     }
     else
     {
+        SendGuildEventRemoveMember(player->GetGUID(), player->GetName());
+        SendCommandResult(session, GUILD_QUIT_S, ERR_PLAYER_NO_MORE_IN_GUILD, m_name);
+
         DeleteMember(player->GetGUID(), false, false);
 
         _LogEvent(GUILD_EVENT_LOG_LEAVE_GUILD, player->GetGUIDLow());
-        SendGuildEventRemoveMember(player->GetGUID(), player->GetName());
-
-        SendCommandResult(session, GUILD_QUIT_S, ERR_PLAYER_NO_MORE_IN_GUILD, m_name);
+        UpdateGuildRecipes();
     }
 }
 
@@ -1997,12 +2067,14 @@ void Guild::HandleMemberLogout(WorldSession* session)
     if (Member* member = GetMember(player->GetGUID()))
     {
         member->SetStats(player);
+        UpdateGuildRecipes();
         member->UpdateLogoutTime();
+        member->SaveStatsToDB(NULL);
     }
 
     SendGuildEventOnline(player->GetGUID(), player->GetName(), false);
 
-    SaveToDB();
+    SaveToDB(false);
 }
 
 void Guild::HandleDisband(WorldSession* session)
@@ -2470,7 +2542,7 @@ void Guild::BroadcastAddonToGuild(WorldSession* session, bool officerOnly, const
     if (session && session->GetPlayer() && _HasRankRight(session->GetPlayer(), officerOnly ? GR_RIGHT_OFFCHATSPEAK : GR_RIGHT_GCHATSPEAK))
     {
         WorldPacket data;
-        ChatHandler::FillMessageData(&data, session, officerOnly ? CHAT_MSG_OFFICER : CHAT_MSG_GUILD, CHAT_MSG_ADDON, NULL, 0, msg.c_str(), NULL, prefix.c_str());
+        ChatHandler::FillMessageData(&data, session, officerOnly ? CHAT_MSG_OFFICER : CHAT_MSG_GUILD, LANG_ADDON, NULL, 0, msg.c_str(), NULL, prefix.c_str());
         for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
             if (Player* player = itr->second->FindPlayer())
                 if (player->GetSession() && _HasRankRight(player, officerOnly ? GR_RIGHT_OFFCHATLISTEN : GR_RIGHT_GCHATLISTEN) &&
@@ -2538,7 +2610,8 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
                 fields[3].GetUInt16(),
                 fields[4].GetUInt32(),
                 fields[5].GetUInt32(),
-                fields[6].GetUInt8());
+                fields[6].GetUInt8(),
+                0, 0, 0, 0, "", 0, 0, 0, "");     // ach points and professions set on first login
 
             ok = member->CheckStats();
         }
@@ -3280,16 +3353,6 @@ void Guild::GiveXP(uint32 xp, Player* source)
     _experience += xp;
     _todayExperience += xp;
 
-    if (Member* member = GetMember(source->GetGUID()))
-    {
-        member->AddActivity(xp);
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPDATE_GUILD_MEMBER_ACTIV);
-        stmt->setUInt64(0, member->GetWeekActivity());
-        stmt->setUInt64(1, member->GetTotalActivity());
-        stmt->setUInt32(2, source->GetGUIDLow());
-        CharacterDatabase.Execute(stmt);
-    }
-
     if (!xp)
         return;
 
@@ -3354,11 +3417,6 @@ void Guild::Member::RepEarned(Player* player, uint32 value)
     player->GetReputationMgr().ModifyReputation(entry, int32(value));
 
     SendGuildReputationWeeklyCap(player->GetSession(), GetWeekReputation());
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPDATE_GUILD_MEMBER_REP);
-    stmt->setUInt64(0, m_weekReputation);
-    stmt->setUInt32(1, player->GetGUIDLow());
-    CharacterDatabase.Execute(stmt);
 }
 
 void Guild::Member::SendGuildReputationWeeklyCap(WorldSession* session, uint32 reputation) const
@@ -3649,4 +3707,154 @@ void Guild::SendGuildEventBankSlotChanged()
 {
     WorldPacket data(SMSG_GUILD_EVENT_GUILDBANKBAGSLOTS_CHANGED, 0);
     BroadcastPacket(&data);
+}
+
+void Guild::KnownRecipes::GenerateMask(uint32 skillId, std::set<uint32> const& spells)
+{
+    Clear();
+
+    uint32 index = 0;
+    for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
+    {
+        SkillLineAbilityEntry const* entry = sSkillLineAbilityStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        if (entry->skillId != skillId)
+            continue;
+
+        ++index;
+        if (spells.find(entry->spellId) == spells.end())
+            continue;
+
+        if (index / 8 > KNOW_RECIPES_MASK_SIZE)
+            break;
+
+        recipesMask[index / 8] |= 1 << (index % 8);
+    }
+}
+
+std::string Guild::KnownRecipes::GetMaskForSave() const
+{
+    std::stringstream ss;
+    for (uint32 i = 0; i < KNOW_RECIPES_MASK_SIZE; ++i)
+        ss << uint32(recipesMask[i]) << " ";
+
+    return ss.str();
+}
+
+void Guild::KnownRecipes::LoadFromString(std::string const& str)
+{
+    Clear();
+
+    Tokenizer tok(str, ' ');
+    for (uint32 i = 0; i < tok.size(); ++i)
+        recipesMask[i] = atoi(tok[i]);
+}
+
+bool Guild::KnownRecipes::IsEmpty() const
+{
+    for (uint32 i = 0; i < KNOW_RECIPES_MASK_SIZE; ++i)
+        if (recipesMask[i])
+            return false;
+
+    return true;
+}
+
+void Guild::UpdateGuildRecipes(uint32 skillId)
+{
+    if (skillId)
+        _guildRecipes[skillId].Clear();
+    else
+        _guildRecipes.clear();
+
+    for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+        {
+            Guild::Member::ProfessionInfo const& info = itr->second->GetProfessionInfo(i);
+
+            if (info.skillId && (!skillId || info.skillId == skillId))
+                for (uint32 j = 0; j < KNOW_RECIPES_MASK_SIZE; ++j)
+                    _guildRecipes[info.skillId].recipesMask[j] |= info.knownRecipes.recipesMask[j];
+        }
+    }
+}
+
+void Guild::SendGuildMembersForRecipeResponse(WorldSession* session, uint32 skillId, uint32 spellId)
+{
+    uint32 index = 0;
+    bool found = false;
+    for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
+    {
+        SkillLineAbilityEntry const* entry = sSkillLineAbilityStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        if (entry->skillId != skillId)
+            continue;
+
+        ++index;
+        if (entry->spellId == spellId)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    if (!found || index / 8 > KNOW_RECIPES_MASK_SIZE)
+        return;
+
+    std::set<uint64> guids;
+    for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+        {
+            Member::ProfessionInfo const& info = itr->second->GetProfessionInfo(i);
+            if (info.skillId != skillId)
+                continue;
+
+            if (info.knownRecipes.recipesMask[index / 8] & (1 << (index % 8)))
+                guids.insert(itr->second->GetGUID());
+        }
+    }
+
+    WorldPacket* data = new WorldPacket(SMSG_GUILD_MEMBERS_FOR_RECIPE, 4 + 4 + 3 + guids.size() * 9);
+    *data << uint32(skillId);
+    *data << uint32(spellId);
+    data->WriteBits(guids.size(), 24);
+    for (std::set<uint64>::const_iterator itr = guids.begin(); itr != guids.end(); ++itr)
+        data->WriteGuidMask<2, 0, 1, 6, 7, 5, 3, 4>(*itr);
+    for (std::set<uint64>::const_iterator itr = guids.begin(); itr != guids.end(); ++itr)
+        data->WriteGuidBytes<1, 2, 7, 4, 6, 3, 5, 0>(*itr);
+
+    session->GetPlayer()->ScheduleMessageSend(data, 500);
+}
+
+void Guild::SendGuildMemberRecipesResponse(WorldSession* session, ObjectGuid playerGuid, uint32 skillId)
+{
+    Member* member = GetMember(playerGuid);
+    if (!member)
+        return;
+
+    for (uint32 i = 0; i < MAX_GUILD_PROFESSIONS; ++i)
+    {
+        Member::ProfessionInfo const& info = member->GetProfessionInfo(i);
+        if (info.skillId == skillId)
+        {
+            WorldPacket* data = new WorldPacket(SMSG_GUILD_MEMBER_RECIPES, 8 + 1 + 4 * 3 + 300);
+            data->WriteGuidMask<0, 7, 5, 2, 4, 1, 6, 3>(playerGuid);
+
+            *data << uint32(info.skillValue);
+            data->WriteGuidBytes<7, 1, 6>(playerGuid);
+            data->append(info.knownRecipes.recipesMask, KNOW_RECIPES_MASK_SIZE);
+            *data << uint32(info.skillRank);
+            data->WriteGuidBytes<4, 0>(playerGuid);
+            *data << uint32(info.skillId);
+            data->WriteGuidBytes<5, 3, 2>(playerGuid);
+
+            session->GetPlayer()->ScheduleMessageSend(data, 500);
+            return;
+        }
+    }
 }

@@ -911,7 +911,7 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
     memset(holes, 0, sizeof(holes));
     bool hasHoles = false;
 
-    /*for (int i = 0; i < ADT_CELLS_PER_GRID; ++i)
+    for (int i = 0; i < ADT_CELLS_PER_GRID; ++i)
     {
         for (int j = 0; j < ADT_CELLS_PER_GRID; ++j)
         {
@@ -922,7 +922,7 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
             if (!hasHoles && cell->holes != 0)
                 hasHoles = true;
         }
-    }*/
+    }
 
     if (hasHoles)
         map.holesSize = sizeof(holes);

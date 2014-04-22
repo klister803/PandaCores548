@@ -1214,6 +1214,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     if (!pCurrChar->IsStandState() && !pCurrChar->HasUnitState(UNIT_STATE_STUNNED))
         pCurrChar->SetStandState(UNIT_STAND_STATE_STAND);
 
+    // added ONLY for testing - unlock battle pet test round for all - without spell
+    if (!pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED))
+        pCurrChar->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED);
+
     m_playerLoading = false;
 
     sScriptMgr->OnPlayerLogin(pCurrChar);
@@ -1582,7 +1586,7 @@ void WorldSession::HandleAlterAppearance(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_ALTER_APPEARANCE");
 
     uint32 Hair, Color, FacialHair, SkinColor;
-    recvData >> FacialHair >> Color >> SkinColor >> Hair;
+    recvData >> Color >> SkinColor >> FacialHair >> Hair;
 
     BarberShopStyleEntry const* bs_hair = sBarberShopStyleStore.LookupEntry(Hair);
 

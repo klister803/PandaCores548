@@ -679,6 +679,10 @@ SpellValue const* SpellScript::GetSpellValue()
 
 bool AuraScript::_Validate(SpellInfo const* entry)
 {
+    for (std::list<CheckTargetsListHandler>::iterator itr = DoCheckTargetsList.begin(); itr != DoCheckTargetsList.end();  ++itr)
+        if (!entry->HasDynAuraEffect())
+            sLog->outError(LOG_FILTER_TSCR, "Spell `%u` of script `%s` does not have area aura effect - handler bound to hook `DoCheckTargetsList` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
+    
     for (std::list<CheckAreaTargetHandler>::iterator itr = DoCheckAreaTarget.begin(); itr != DoCheckAreaTarget.end();  ++itr)
         if (!entry->HasAreaAuraEffect())
             sLog->outError(LOG_FILTER_TSCR, "Spell `%u` of script `%s` does not have area aura effect - handler bound to hook `DoCheckAreaTarget` of AuraScript won't be executed", entry->Id, m_scriptName->c_str());
@@ -769,6 +773,16 @@ bool AuraScript::_Validate(SpellInfo const* entry)
 
 
     return _SpellScript::_Validate(entry);
+}
+
+AuraScript::CheckTargetsListHandler::CheckTargetsListHandler(AuraCheckTargetsListFnType _pHandlerScript)
+{
+    pHandlerScript = _pHandlerScript;
+}
+
+void AuraScript::CheckTargetsListHandler::Call(AuraScript* auraScript, std::list<Unit*>& _unitTargets)
+{
+    (auraScript->*pHandlerScript)(_unitTargets);
 }
 
 AuraScript::CheckAreaTargetHandler::CheckAreaTargetHandler(AuraCheckAreaTargetFnType _pHandlerScript)

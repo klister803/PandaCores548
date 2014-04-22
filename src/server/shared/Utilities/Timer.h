@@ -42,6 +42,12 @@ inline uint32 GetMSTimeDiffToNow(uint32 oldMSTime)
     return getMSTimeDiff(oldMSTime, getMSTime());
 }
 
+inline double getPreciseTime()
+{
+    ACE_Time_Value const time = ACE_OS::gettimeofday();
+    return time.sec() + time.usec() / 1000000.0;
+}
+
 struct IntervalTimer
 {
     public:

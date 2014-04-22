@@ -740,3 +740,83 @@ void WorldSession::HandleGuildNewsUpdateStickyOpcode(WorldPacket& recvPacket)
         }
     }
 }
+
+void WorldSession::HandleGuildQueryGuildRecipesOpcode(WorldPacket& recvPacket)
+{
+    ObjectGuid guildGuid;
+    recvPacket.ReadGuidMask<6, 7, 1, 2, 5, 0, 3, 4>(guildGuid);
+    recvPacket.ReadGuidBytes<1, 6, 5, 4, 0, 7, 3, 2>(guildGuid);
+
+    Guild* guild = _player->GetGuild();
+    if (!guild)
+        return;
+
+    Guild::KnownRecipesMap const& recipesMap = guild->GetGuildRecipes();
+
+    WorldPacket* data = new WorldPacket(SMSG_GUILD_RECIPES, 2 + recipesMap.size() * (300 + 4));
+    uint32 bitpos = data->bitwpos();
+    uint32 count = 0;
+    data->WriteBits(count, 15);
+
+    for (Guild::KnownRecipesMap::const_iterator itr = recipesMap.begin(); itr != recipesMap.end(); ++itr)
+    {
+        if (itr->second.IsEmpty())
+            continue;
+
+        *data << uint32(itr->first);
+        data->append(itr->second.recipesMask, KNOW_RECIPES_MASK_SIZE);
+        ++count;
+    }
+
+    data->FlushBits();
+    data->PutBits(bitpos, count, 15);
+
+    _player->ScheduleMessageSend(data, 500);
+}
+
+void WorldSession::HandleGuildQueryGuildMembersForRecipe(WorldPacket& recvPacket)
+{
+    uint32 skillId, spellId;
+    ObjectGuid guildGuid;
+
+    recvPacket.read_skip<uint32>(); // unk
+    recvPacket >> skillId;
+    recvPacket >> spellId;
+
+    recvPacket.ReadGuidMask<1, 4, 3, 7, 2, 0, 5, 6>(guildGuid);
+    recvPacket.ReadGuidBytes<4, 1, 6, 2, 3, 0, 5, 7>(guildGuid);
+
+    if (Guild* guild = _player->GetGuild())
+        guild->SendGuildMembersForRecipeResponse(this, skillId, spellId);
+}
+
+void WorldSession::HandleGuildQueryGuildMembersRecipes(WorldPacket& recvPacket)
+{
+    ObjectGuid playerGuid, guildGuid;
+    uint32 skillId;
+
+    recvPacket >> skillId;
+    recvPacket.ReadGuidMask<0, 4>(guildGuid);
+    recvPacket.ReadGuidMask<4, 0>(playerGuid);
+    recvPacket.ReadGuidMask<6, 5, 1>(guildGuid);
+    recvPacket.ReadGuidMask<5, 1, 3, 2>(playerGuid);
+    recvPacket.ReadGuidMask<2, 7, 3>(guildGuid);
+    recvPacket.ReadGuidMask<7, 6>(playerGuid);
+
+    recvPacket.ReadGuidBytes<2>(guildGuid);
+    recvPacket.ReadGuidBytes<0>(playerGuid);
+    recvPacket.ReadGuidBytes<1>(guildGuid);
+    recvPacket.ReadGuidBytes<7, 5>(playerGuid);
+    recvPacket.ReadGuidBytes<4, 5, 7, 3>(guildGuid);
+    recvPacket.ReadGuidBytes<4>(playerGuid);
+    recvPacket.ReadGuidBytes<6>(guildGuid);
+    recvPacket.ReadGuidBytes<3>(playerGuid);
+    recvPacket.ReadGuidBytes<0>(guildGuid);
+    recvPacket.ReadGuidBytes<2, 6, 1>(playerGuid);
+
+    Guild* guild = _player->GetGuild();
+    if (!guild || !guild->IsMember(playerGuid))
+        return;
+
+    guild->SendGuildMemberRecipesResponse(this, playerGuid, skillId);
+}

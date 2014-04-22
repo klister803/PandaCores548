@@ -1912,7 +1912,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode(WorldPacket & recvData)
     uint32 mode;
     recvData >> mode;
 
-    if (mode >= MAX_DUNGEON_DIFFICULTY)
+    if (mode >= MAX_DUNGEON_DIFFICULTY && mode != CHALLENGE_MODE_DIFFICULTY)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::HandleSetDungeonDifficultyOpcode: player %d sent an invalid instance mode %d!", _player->GetGUIDLow(), mode);
         return;
@@ -2297,7 +2297,8 @@ void WorldSession::HandleViolenceLevel(WorldPacket& recvPacket)
 void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvData)
 {
     sLog->outError(LOG_FILTER_NETWORKIO, "Received CMSG_OBJECT_UPDATE_FAILED from player %s (%u). Not patched client - kick him", GetPlayerName().c_str(), GetGuidLow());
-    KickPlayer();
+    //KickPlayer();
+    recvData.rfinish();
     /*ObjectGuid guid;
 
     recvData.ReadGuidMask<2, 3, 5, 0, 4, 7, 6, 1>(guid);

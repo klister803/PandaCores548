@@ -110,7 +110,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
         case SPELLFAMILY_WARRIOR:
         {
             // Hamstring and Piercing Howl - limit duration to 10s in PvP
-            if (spellproto->SpellFamilyFlags[0] & 0x2 || spellproto->Id == 12323)
+            if (spellproto->SpellFamilyFlags[0] & 0x2 || spellproto->Id == 12323 || spellproto->Id == 137637)
                 return DIMINISHING_LIMITONLY;
             // Charge Stun (own diminishing)
             else if (spellproto->SpellFamilyFlags[0] & 0x01000000)
@@ -1470,8 +1470,8 @@ void SpellMgr::LoadSpellLearnSpells()
 
     mSpellLearnSpells.clear();                              // need for reload case
 
-    //                                                  0      1        2
-    QueryResult result = WorldDatabase.Query("SELECT entry, SpellID, Active FROM spell_learn_spell");
+    //                                                  0      1        2       3
+    QueryResult result = WorldDatabase.Query("SELECT entry, SpellID, Active, ReqSpell FROM spell_learn_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell learn spells. DB table `spell_learn_spell` is empty.");
@@ -1488,6 +1488,7 @@ void SpellMgr::LoadSpellLearnSpells()
         SpellLearnSpellNode node;
         node.spell       = fields[1].GetUInt32();
         node.active      = fields[2].GetBool();
+        node.reqSpell    = fields[3].GetUInt32();
         node.autoLearned = false;
 
         if (!GetSpellInfo(spell_id))
@@ -1497,7 +1498,7 @@ void SpellMgr::LoadSpellLearnSpells()
             continue;
         }
 
-        if (!GetSpellInfo(node.spell))
+        if (!GetSpellInfo(node.spell) || node.reqSpell && !GetSpellInfo(node.reqSpell))
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_learn_spell` learning not existed spell %u", spell_id, node.spell);
             WorldDatabase.PExecute("DELETE FROM `spell_learn_spell` WHERE entry = %u", spell_id);
@@ -1879,7 +1880,7 @@ void SpellMgr::LoadSpellProcEvents()
         spe.procEx          = fields[8].GetUInt32();
         spe.ppmRate         = fields[9].GetFloat();
         spe.customChance    = fields[10].GetFloat();
-        spe.cooldown        = fields[11].GetUInt32();
+        spe.cooldown        = fields[11].GetFloat();
         spe.effectMask        = fields[12].GetUInt32();
 
         mSpellProcEventMap[entry].push_back(spe);
@@ -2517,8 +2518,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTriggeredMap.clear();    // need for reload case
     mSpellTriggeredDummyMap.clear();    // need for reload case
 
-    //                                                    0           1             2           3         4          5          6      7      8         9          10
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger`");
+    //                                                    0           1             2           3         4          5          6      7      8         9          10       11
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2541,6 +2542,7 @@ void SpellMgr::LoadSpellTriggered()
         float bp2 = fields[8].GetFloat();
         int32 effectmask = fields[9].GetInt32();
         int32 aura = fields[10].GetInt32();
+        int32 chance = fields[11].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2568,14 +2570,15 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.bp2 = bp2;
         temptrigger.effectmask = effectmask;
         temptrigger.aura = aura;
+        temptrigger.chance = chance;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
         ++count;
     } while (result->NextRow());
 
 
-    //                                        0             1             2         3         4          5          6      7      8         9          10
-    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura` FROM `spell_trigger_dummy`");
+    //                                        0             1             2         3         4          5          6      7      8         9          10       11
+    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance` FROM `spell_trigger_dummy`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2597,6 +2600,7 @@ void SpellMgr::LoadSpellTriggered()
         float bp2 = fields[8].GetFloat();
         int32 effectmask = fields[9].GetInt32();
         int32 aura = fields[10].GetInt32();
+        int32 chance = fields[11].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2618,6 +2622,7 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.bp2 = bp2;
         temptrigger.effectmask = effectmask;
         temptrigger.aura = aura;
+        temptrigger.chance = chance;
         mSpellTriggeredDummyMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -3349,6 +3354,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 85288: // Raging Blow
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+                    break;
+                case 81269: // Efflorescence
+                    spellInfo->Effects[0].ScalingMultiplier = 1.5309f;
+                    break;
                 case 132464: // Chi Wave (Pos)
                     spellInfo->SpellFamilyName = SPELLFAMILY_MONK;
                     break;
@@ -4398,13 +4409,34 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 15;
                     break;
-                //
+                //Minibosses
                 case 139900: //Stormcloud
                     spellInfo->Effects[0].TargetA = 1;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
                 case 139901: //Stormcloud tr ef - dmg
                     spellInfo->Effects[0].TargetB = 15;
+                    break;
+                //Horridon
+                case 136740: //Double swipe tr ef
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(4);
+                    break;
+                case 136769: //Horridon charge
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
+                //Council of Elders
+                //Mallak
+                case 136991: //bitting cold tr ef 
+                    spellInfo->Effects[0].TargetB = 30;
+                    break;
+                //Kazrajin
+                case 137122: //Reckless charge (point dmg)
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[1].TargetA = 22;
+                    spellInfo->Effects[1].TargetB = 15;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
                     break;
 
                 //World Boss
@@ -4534,6 +4566,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 51514:     // Hex
                 case 102359:    // Mass Entanglement
                 case 104239:    // Horror (Soulburn)
+                case 105421:    // Blinding Light
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 112965:    // Fingers of Frost
@@ -4638,6 +4671,34 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].BasePoints = 1;
                     //! periodic tick remove aura. WTF?
                     spellInfo->Effects[EFFECT_1].Amplitude = 0;
+                    break;
+                case 774: // Rejuvenation
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
+                    spellInfo->Effects[0].ApplyAuraName = 0;
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_START_PERIODIC_AT_APPLY;
+                    break;
+                case 73920: // Healing Rain
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
+                    spellInfo->Effects[1].BasePoints = 0;
+                    break;
+                case 12292: // Bloodbath
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    break;
+                case 3411: // Intervene
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_RAID;
+                    break;
+                case 1543: // Flare. Hack from wait to fix areatrigger
+                    spellInfo->Effects[0].TriggerSpell = 94528;
+                    break;
+                case 498: // Divine Protection
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
+                    break;
+                case 131086: // Bladestorm (Protection buff) DND
+                    spellInfo->Effects[EFFECT_0].BasePoints = 50;
+                    break;
+                case 20066: // Repentance
+                    spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
+                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 default:
                     break;

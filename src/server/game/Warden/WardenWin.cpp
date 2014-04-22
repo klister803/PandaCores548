@@ -33,6 +33,7 @@
 #include "WardenModuleWin.h"
 #include "WardenCheckMgr.h"
 #include "AccountMgr.h"
+#include "SHA2.h"
 
 WardenWin::WardenWin() : Warden()
 {
@@ -46,6 +47,9 @@ void WardenWin::Init(WorldSession* session, BigNumber *k)
 {
     _session = session;
     // Generate Warden Key
+    // TEST - session key from 5.4.7.18019
+    //k->SetHexStr("05EC9A527BD351928B3F3CB8367AA30B9172FB5C74210354ACD8D8E4AA22478D1F0A40E54854AEA0");
+    // END TEST
     SHA1Randx WK(k->AsByteArray(), k->GetNumBytes());
     WK.Generate(_inputKey, 16);
     WK.Generate(_outputKey, 16);
@@ -63,7 +67,8 @@ void WardenWin::Init(WorldSession* session, BigNumber *k)
     _module = GetModuleForClient();
 
     sLog->outDebug(LOG_FILTER_WARDEN, "Module Key: %s", ByteArrayToHexStr(_module->Key, 16).c_str());
-    sLog->outDebug(LOG_FILTER_WARDEN, "Module ID: %s", ByteArrayToHexStr(_module->Id, 16).c_str());
+    sLog->outDebug(LOG_FILTER_WARDEN, "Module ID: %s", ByteArrayToHexStr(_module->Id, 32).c_str());
+
     RequestModule();
 }
 
@@ -79,11 +84,14 @@ ClientWardenModule* WardenWin::GetModuleForClient()
     memcpy(mod->CompressedData, Module.Module, length);
     memcpy(mod->Key, Module.ModuleKey, 16);
 
-    // md5 hash
-    MD5_CTX ctx;
-    MD5_Init(&ctx);
-    MD5_Update(&ctx, mod->CompressedData, length);
-    MD5_Final((uint8*)&mod->Id, &ctx);
+    // SHA-2 hash
+    SHA256Hash sha;
+    sha.Initialize();
+    sha.UpdateData(mod->CompressedData, length);
+    sha.Finalize();
+
+    for (uint8 i = 0; i < 32; i++)
+        mod->Id[i] = sha.GetDigest()[i];
 
     return mod;
 }
@@ -145,6 +153,7 @@ void WardenWin::RequestHash()
     EncryptData((uint8*)&Request, sizeof(WardenHashRequest));
 
     WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenHashRequest));
+    pkt << uint32(sizeof(WardenHashRequest));
     pkt.append((uint8*)&Request, sizeof(WardenHashRequest));
     _session->SendPacket(&pkt);
 }
@@ -313,6 +322,7 @@ void WardenWin::RequestData()
     EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
 
     WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
+    pkt << uint32(buff.size());
     pkt.append(buff);
     _session->SendPacket(&pkt);
 

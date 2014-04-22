@@ -952,7 +952,7 @@ void ObjectMgr::LoadEquipmentTemplates()
     {
         Field* fields = result->Fetch();
 
-        uint16 entry = fields[0].GetUInt16();
+        uint32 entry = fields[0].GetUInt32();
 
         EquipmentInfo& equipmentInfo = _equipmentInfoStore[entry];
 
@@ -1089,6 +1089,12 @@ void ObjectMgr::LoadCreatureModelInfo()
 
         uint32 modelId = fields[0].GetUInt32();
 
+        if (!sCreatureDisplayInfoStore.LookupEntry(modelId))
+        {
+            sLog->outError(LOG_FILTER_SQL, "Table `creature_model_info` has model for not existed display id (%u).", modelId);
+            continue;
+        }
+
         CreatureModelInfo& modelInfo = _creatureModelStore[modelId];
 
         modelInfo.bounding_radius      = fields[1].GetFloat();
@@ -1097,9 +1103,6 @@ void ObjectMgr::LoadCreatureModelInfo()
         modelInfo.modelid_other_gender = fields[4].GetUInt32();
 
         // Checks
-
-        if (!sCreatureDisplayInfoStore.LookupEntry(modelId))
-            sLog->outError(LOG_FILTER_SQL, "Table `creature_model_info` has model for not existed display id (%u).", modelId);
 
         if (modelInfo.gender > GENDER_NONE)
         {
@@ -1365,7 +1368,6 @@ void ObjectMgr::LoadCreatures()
     if (!result)
     {
         sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 creatures. DB table `creature` is empty.");
-
         return;
     }
 
@@ -8013,6 +8015,15 @@ void ObjectMgr::AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, 
     {
         sLog->outError(LOG_FILTER_SQL, "Table `npc_trainer` contains an entry (Entry: %u) for a non-existing spell (Spell: %u), ignoring", entry, spell);
         return;
+    }
+
+    if(uint32 learnSpell = GetLearnSpell(spell))
+    {
+        if(SpellInfo const* spellinfoNew = sSpellMgr->GetSpellInfo(learnSpell))
+        {
+            spell = learnSpell;
+            spellinfo = spellinfoNew;
+        }
     }
 
     if (!SpellMgr::IsSpellValid(spellinfo))

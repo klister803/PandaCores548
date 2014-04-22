@@ -221,8 +221,10 @@ class Group
         bool isLFGGroup()  const;
         bool isRaidGroup() const;
         bool isBGGroup()   const;
+        bool isArenaGroup()const;
         bool isBFGroup()   const;
         bool IsCreated()   const;
+        inline bool IsHomeGroup() const { return !isLFGGroup() && (!isBGGroup() || isArenaGroup()) && !isBFGroup(); }
         uint64 GetLeaderGUID() const;
         uint64 GetGUID() const;
         uint32 GetLowGUID() const;

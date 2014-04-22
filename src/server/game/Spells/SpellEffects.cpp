@@ -923,14 +923,14 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             player->RemoveSpellCooldown(spellid, true);
                         else
                         {
-                            float delay = float(itr->bp0 / 1000);
-                            if(delay > -1.0f)
+                            int32 delay = itr->bp0;
+                            if (delay > -1 * IN_MILLISECONDS)
                             {
-                                if(roll_chance_i(50))
-                                    player->ChangeSpellCooldown(spellid, -1.0f);
+                                if (roll_chance_i(50))
+                                    player->ModifySpellCooldown(spellid, -1 * IN_MILLISECONDS);
                             }
                             else
-                                player->ChangeSpellCooldown(spellid, delay);
+                                player->ModifySpellCooldown(spellid, delay);
                         }
                     }
                     check = true;
@@ -1074,11 +1074,17 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         {
                             if (Player* _player = owner->ToPlayer())
                             {
-                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4); //visual cd
-                                data << uint64(_player->GetGUID());
-                                data << uint8(0x0);
-                                data << uint32(m_spellInfo->Id);
+                                ObjectGuid guid = _player->GetGUID();
+                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4); //visual cd
+                                data.WriteGuidMask<4, 7, 6>(guid);
+                                data.WriteBits(1, 21);
+                                data.WriteGuidMask<2, 3, 1, 0>(guid);
+                                data.WriteBit(1);
+                                data.WriteGuidMask<5>(guid);
+
+                                data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
                                 data << uint32(spellInfo->RecoveryTime);
+                                data << uint32(m_spellInfo->Id);
                                 _player->GetSession()->SendPacket(&data);
                             }
                         }
@@ -1097,11 +1103,17 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         {
                             if (Player* _player = owner->ToPlayer())
                             {
-                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4); //visual cd
-                                data << uint64(_player->GetGUID());
-                                data << uint8(0x0);
-                                data << uint32(m_spellInfo->Id);
+                                ObjectGuid guid = _player->GetGUID();
+                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4); //visual cd
+                                data.WriteGuidMask<4, 7, 6>(guid);
+                                data.WriteBits(1, 21);
+                                data.WriteGuidMask<2, 3, 1, 0>(guid);
+                                data.WriteBit(1);
+                                data.WriteGuidMask<5>(guid);
+
+                                data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
                                 data << uint32(spellInfo->RecoveryTime);
+                                data << uint32(m_spellInfo->Id);
                                 _player->GetSession()->SendPacket(&data);
                             }
                         }
@@ -1801,16 +1813,26 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
         return;
 
     // Init dest coordinates
-    float x, y, z;
+    float x, y, z, o;
     destTarget->GetPosition(x, y, z);
+
+    if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_DEST_TARGET_BACK)
+    {
+        Unit* pTarget = NULL;
+        if (m_targets.GetUnitTarget() && m_targets.GetUnitTarget() != m_caster)
+            pTarget = m_targets.GetUnitTarget();
+        else if (m_caster->getVictim())
+            pTarget = m_caster->getVictim();
+        else if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            pTarget = ObjectAccessor::GetUnit(*m_caster, m_caster->ToPlayer()->GetSelection());
+
+        o = pTarget ? pTarget->GetOrientation() : m_caster->GetOrientation();
+    }
 
     float speedXY, speedZ;
     CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
     // Death Grip and Wild Charge (no form)
-    if (m_spellInfo->Id == 49575 || m_spellInfo->Id == 102401)
-        m_caster->GetMotionMaster()->CustomJump(x, y, z, speedXY, speedZ);
-    else
-        m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
+    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, m_spellInfo->Id, o);
 }
 
 void Spell::CalculateJumpSpeeds(uint8 i, float dist, float & speedXY, float & speedZ)
@@ -2546,7 +2568,7 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && IsPartOfSkillLine(SKILL_ARCHAEOLOGY, m_spellInfo->Id))
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -2575,7 +2597,7 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsAbilityOfSkillType(SKILL_ARCHAEOLOGY))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && IsPartOfSkillLine(SKILL_ARCHAEOLOGY, m_spellInfo->Id))
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -2600,7 +2622,10 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
                 player->DestroyItemCount(item_id, 1, true);
         }
         else
+        {
             player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);    // create some random items
+            player->UpdateCraftSkill(m_spellInfo->Id);
+        }
     }
 
     ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
@@ -3240,6 +3265,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id);
                     break;
                 case SUMMON_TYPE_TOTEM:
+                case SUMMON_TYPE_BANNER:
                 {
                     summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id);
                     if (!summon || !summon->isTotem())
@@ -3248,6 +3274,15 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     
                     switch (m_spellInfo->Id)
                     {
+                        case 114192: // Mocking Banner
+                        case 114203: // Demoralizing Banner
+                        case 114207: // Skull Banner
+                        {
+                            uint32 perc = 30;
+
+                            damage = m_caster->CountPctFromMaxHealth(perc);
+                            break;
+                        }
                         case 16190:  // Mana Tide Totem
                         case 108280: // Healing Tide Totem
                         case 108270: // Stone Bulwark Totem
@@ -3465,7 +3500,8 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     {
         if (LastDispelEff && m_removeCooldown)
             if (Player* player = m_caster->ToPlayer())
-                player->RemoveSpellCooldown(m_spellInfo->Id, true);
+                if (m_spellInfo->RecoveryTime <= 8000)
+                    player->RemoveSpellCooldown(m_spellInfo->Id, true);
         return;
     }
     
@@ -3999,27 +4035,38 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     {
         switch(petentry)
         {
-            case 17252:
+            case 17252: //Felguard
                 slot = PET_SLOT_WARLOCK_PET_FIRST;
                 break;
-            case 1863:
+            case 1863:  //Succubus
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 1);
                 break;
-            case 1860:
+            case 1860:  //Voidwalker
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 2);
                 break;
-            case 417:
+            case 417:   //Felhunter
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 3);
                 break;
-            case 416:
+            case 416:   //Imp
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 4);
                 break;
-            case 510:
+            case 58959: //Fel Imp
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 5);
                 break;
-            case 26125:
+            case 58960: //Voidlord
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 6);
                 break;
+            case 58963: //Shivarra
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 7);
+                break;
+            case 58964: //Observer
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 8);
+                break;
+            case 58965: //Wrathguard
+                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 9);
+                break;
+            case 510:   //Water Elemental
+            case 26125: //Risen Ally
             default:
                 slot = PET_SLOT_UNK_SLOT;
                 break;
@@ -5156,6 +5203,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 143011:                                // Celestial Cloth
                 case 143255:                                // Balanced Trillium Ingot
                 case 143626:                                // Celestial Cloth and Its Uses
+                case 143646:                                // Balanced Trillium Ingot and Its Uses
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
@@ -6212,7 +6260,8 @@ void Spell::EffectCharge(SpellEffIndex /*effIndex*/)
         unitTarget->GetContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
         unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetObjectSize(), angle);
 
-        m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ + unitTarget->GetObjectSize());
+        if(!m_caster->GetMotionMaster()->SpellMoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ + unitTarget->GetObjectSize(), SPEED_CHARGE, EVENT_CHARGE, this))
+            return;
 
         switch (m_spellInfo->Id)
         {
@@ -6249,16 +6298,10 @@ void Spell::EffectChargeDest(SpellEffIndex /*effIndex*/)
         destTarget->GetPosition(&pos);
         float angle = m_caster->GetRelativeAngle(pos.GetPositionX(), pos.GetPositionY());
         float dist = m_caster->GetDistance(pos);
-
-        // Custom MoP Script
-        // Hack Fix - Collision on charge for Clash
-        if (m_spellInfo->Id == 126452)
-            dist /= 2;
-
-
         m_caster->GetFirstCollisionPosition(pos, dist, angle);
 
-        m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, 42.0f, m_spellValue->EffectBasePoints[0] > 0 ? m_spellInfo->Id : 1003);
+        if(!m_caster->GetMotionMaster()->SpellMoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+            return;
     }
 }
 
@@ -7141,11 +7184,28 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
     float radius = 5.0f;
     int32 duration = m_spellInfo->GetDuration();
+    uint32 spell1 = 0;
+    uint32 spell2 = 0;
 
     switch (m_spellInfo->Id)
     {
         case 81283: // Fungal Growth
             numGuardians = 1;
+            break;
+        case 111898:   //Grimoire: Felguard
+            spell2 = 89766;
+            break;
+        case 111897:   //Grimoire: Felhunter
+            spell2 = 19647;
+            break;
+        case 111896:   //Grimoire: Succubus
+            spell1 = 6358;
+            break;
+        case 111895:   //Grimoire: Voidwalker
+            spell1 = 17735;
+            break;
+        case 111859:   //Grimoire: Imp
+            spell1 = 3110;
             break;
         default:
             break;
@@ -7153,6 +7213,34 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+
+    // Grimoire of Service. May move it or create by script? But PatAI better ;)
+    if (spell1 || spell2)
+    {
+        if (Player * player = caster->ToPlayer())
+        {
+            float x, y, z;
+            caster->GetClosePoint(x, y, z, caster->GetObjectSize());
+            if(Pet* pet = player->SummonPet(entry, x, y, z, caster->GetOrientation(), SUMMON_PET, duration, PET_SLOT_OTHER_PET, true))
+            {
+                pet->SetReactState(REACT_AGGRESSIVE);
+                if (Unit * target = player->GetSelectedUnit())
+                {
+                    pet->ToCreature()->AI()->AttackStart(target);
+                    if (spell2)
+                        pet->CastSpell(target, spell2, true);
+                }
+
+                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spell1))
+                    pet->ToggleAutocast(sInfo, true);
+
+                if (m_spellInfo->Id == 111859)  //Singe Magic for imp
+                    if (SpellInfo const* sInfo2 = sSpellMgr->GetSpellInfo(89808))
+                        pet->ToggleAutocast(sInfo2, true);
+            }
+        }
+        return;
+    }
 
     //TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Map* map = caster->GetMap();

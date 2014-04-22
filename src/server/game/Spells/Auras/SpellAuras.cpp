@@ -447,6 +447,8 @@ m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false)
     m_duration = m_maxDuration;
     m_procCharges = CalcMaxCharges(caster);
     m_isUsingCharges = m_procCharges != 0;
+    if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && castItem)
+        m_casterLevel = castItem->GetLevel();
     // m_casterLevel = cast item level/caster level, caster level should be saved to db, confirmed with sniffs
 }
 
@@ -907,6 +909,11 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
 {
     if (IsUsingCharges())
     {
+        if(GetId() == 60503)
+        {
+            ModStackAmount(num);
+            return false;
+        }
         int32 charges = m_procCharges + num;
         int32 maxCharges = CalcMaxCharges();
 
@@ -1103,7 +1110,9 @@ void Aura::UnregisterSingleTarget()
     // TODO: find a better way to do this.
     if (!caster)
         caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
-    ASSERT(caster);
+    //ASSERT(caster);
+    if(!caster)
+        return;
     caster->GetSingleCastAuras().remove(this);
     SetIsSingleTarget(false);
 }
@@ -1273,7 +1282,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             caster->AddAura(itr->effect, target);
 
                         if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
-                            target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
+                            target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
                     }
                 }
             }
@@ -1337,7 +1346,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 target->CastSpell(target, itr->effect, true, NULL, NULL, GetCasterGUID());
 
                             if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
-                                target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
+                                target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
                         }
                     }
                 }
@@ -1406,7 +1415,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             triggeredAura->ModStackAmount(GetStackAmount() - triggeredAura->GetStackAmount());
 
                     if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
-                        target->ToPlayer()->AddSpellCooldown(itr->effect, 0, time(NULL) + itr->cooldown);
+                        target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
                 }
         }
     }
@@ -2251,6 +2260,18 @@ void Aura::LoadScripts()
     }
 }
 
+void Aura::CallScriptCheckTargetsListHandlers(std::list<Unit*>& unitTargets)
+{
+    for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_CHECK_TARGETS_LIST);
+        std::list<AuraScript::CheckTargetsListHandler>::iterator hookItrEnd = (*scritr)->DoCheckTargetsList.end(), hookItr = (*scritr)->DoCheckTargetsList.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr, unitTargets);
+        (*scritr)->_FinishScriptCall();
+    }
+}
+
 bool Aura::CallScriptCheckAreaTargetHandlers(Unit* target)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
@@ -2934,6 +2955,7 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
             }
         }
 
+        CallScriptCheckTargetsListHandlers(targetList);
         for (UnitList::iterator itr = targetList.begin(); itr!= targetList.end();++itr)
         {
             std::map<Unit*, uint32>::iterator existing = targets.find(*itr);

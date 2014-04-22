@@ -399,7 +399,7 @@ class Object
         bool m_objectUpdated;
 
         std::vector<uint32*> m_dynamicTab;
-        std::vector<bool*> m_dynamicChange;
+        std::vector<bool> m_dynamicChange;
 
     private:
         bool m_inWorld;

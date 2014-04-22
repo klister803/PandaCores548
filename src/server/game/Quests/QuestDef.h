@@ -156,6 +156,7 @@ enum __QuestFlags
     //QUEST_FLAGS_UNK2           = 0x00400000,
     //QUEST_FLAGS_UNK3           = 0x00800000,                // Found in quest 14069
     //QUEST_FLAGS_UNK4           = 0x01000000,
+    QUEST_FLAG_TRACKING_QUEST  = 0x02000000,
 
     // ... 4.x added flags up to 0x80000000 - all unknown for now
 };

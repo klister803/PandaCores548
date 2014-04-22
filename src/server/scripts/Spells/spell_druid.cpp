@@ -52,8 +52,6 @@ enum DruidSpells
     SPELL_DRUID_ASTRAL_COMMUNION            = 127663,
     SPELL_DRUID_SUNFIRE                     = 93402,
     SPELL_DRUID_MOONFIRE                    = 8921,
-    SPELL_DRUID_SWIFTMEND                   = 81262,
-    SPELL_DRUID_SWIFTMEND_TICK              = 81269,
     DRUID_NPC_WILD_MUSHROOM                 = 47649,
     DRUID_SPELL_FUNGAL_GROWTH_SUMMON        = 81283,
     DRUID_SPELL_MUSHROOM_BIRTH_VISUAL       = 94081,
@@ -1441,13 +1439,13 @@ class spell_dru_lifebloom : public SpellScriptLoader
 
                     GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
 
-                    _plr->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
+                    _plr->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, getPreciseTime() + 1.0);
 
                     return;
                 }
 
                 GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
-                GetCaster()->ToPlayer()->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, time(NULL) + 1);
+                GetCaster()->ToPlayer()->AddSpellCooldown(SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, 0, getPreciseTime() + 1.0);
             }
 
             void HandleDispel(DispelInfo* dispelInfo)
@@ -2053,35 +2051,6 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
         }
 };
 
-// Swiftmend - 81262
-class spell_dru_swiftmend : public SpellScriptLoader
-{
-    public:
-        spell_dru_swiftmend() : SpellScriptLoader("spell_dru_swiftmend") { }
-
-        class spell_dru_swiftmend_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_swiftmend_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if(Unit* caster = GetCaster())
-                    if (DynamicObject* dynObj = caster->GetDynObject(SPELL_DRUID_SWIFTMEND))
-                        caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_SWIFTMEND_TICK, true);
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_swiftmend_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_swiftmend_AuraScript();
-        }
-};
-
 // Astral Communion - 127663
 class spell_dru_astral_communion : public SpellScriptLoader
 {
@@ -2356,6 +2325,9 @@ class spell_dru_innervate : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
+                        if (target->ToCreature() && target->GetMap()->IsDungeon()) //Evade crash(Tsulong)
+                            return;
+
                         int32 mana = target->GetMaxPower(POWER_MANA) / 10;
 
                         if (target->GetGUID() == _player->GetGUID())
@@ -3225,7 +3197,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
     new spell_dru_wild_mushroom();
-    new spell_dru_swiftmend();
     new spell_dru_astral_communion();
     new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();

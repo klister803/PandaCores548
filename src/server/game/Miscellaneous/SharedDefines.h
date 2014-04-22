@@ -19,6 +19,7 @@
 #ifndef TRINITY_SHAREDDEFINES_H
 #define TRINITY_SHAREDDEFINES_H
 
+#include "DetourNavMesh.h"
 #include "Define.h"
 #include <cassert>
 
@@ -771,7 +772,7 @@ enum SpellAttr11
 {
     SPELL_ATTR11_UNK0                             = 0x00000001, // 0
     SPELL_ATTR11_UNK1                             = 0x00000002, // 1    Decrease speed
-    SPELL_ATTR11_UNK2                             = 0x00000004, // 2    Stat buffs
+    SPELL_ATTR11_SEND_ITEM_LEVEL                  = 0x00000004, // 2    Stat buffs
     SPELL_ATTR11_UNK3                             = 0x00000008, // 3    Spirit of Redemption
     SPELL_ATTR11_UNK4                             = 0x00000010, // 4
     SPELL_ATTR11_UNK5                             = 0x00000020, // 5
@@ -3955,7 +3956,7 @@ enum ChatMsg
     CHAT_MSG_INSTANCE_LEADER        = 0x43,
 };
 
-#define MAX_CHAT_MSG_TYPE 0x34
+#define MAX_CHAT_MSG_TYPE (CHAT_MSG_INSTANCE_LEADER + 1)
 
 enum ChatLinkColors
 {
@@ -4063,7 +4064,7 @@ enum SummonType
     SUMMON_TYPE_UNK15       = 15,
     SUMMON_TYPE_UNK16       = 16,
     SUMMON_TYPE_UNK17       = 17,
-    SUMMON_TYPE_UNK18       = 18,
+    SUMMON_TYPE_BANNER      = 18,
 };
 
 enum EventId
@@ -4525,4 +4526,42 @@ enum VoidTransferError
     VOID_TRANSFER_ERROR_TRANSFER_UNKNOWN  = 9
 };
 
+#define MMAP_MAGIC 0x4d4d4150   // 'MMAP'
+#define MMAP_VERSION 3
+
+struct MmapTileHeader
+{
+    uint32 mmapMagic;
+    uint32 dtVersion;
+    uint32 mmapVersion;
+    uint32 size;
+    bool usesLiquids : 1;
+
+    MmapTileHeader() : mmapMagic(MMAP_MAGIC), dtVersion(DT_NAVMESH_VERSION),
+        mmapVersion(MMAP_VERSION), size(0), usesLiquids(true) {}
+};
+
+enum NavTerrain
+{
+    NAV_EMPTY   = 0x00,
+    NAV_GROUND  = 0x01,
+    NAV_MAGMA   = 0x02,
+    NAV_SLIME   = 0x04,
+    NAV_WATER   = 0x08,
+    NAV_UNUSED1 = 0x10,
+    NAV_UNUSED2 = 0x20,
+    NAV_UNUSED3 = 0x40,
+    NAV_UNUSED4 = 0x80
+    // we only have 8 bits
+};
+
+enum ChallengeMode
+{
+    CHALLENGE_MEDAL_NONE    = 0,
+    CHALLENGE_MEDAL_BRONZE  = 1,
+    CHALLENGE_MEDAL_SILVER  = 2,
+    CHALLENGE_MEDAL_GOLD    = 3,
+    CHALLENGE_MEDAL_PLAT    = 4, //--as of 7/2/2013 only used for endless proving grounds
+    NUM_CHALLENGE_MEDALS    = 3,
+};
 #endif

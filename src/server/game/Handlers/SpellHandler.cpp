@@ -320,6 +320,13 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         return;
     }
 
+    //Citron-infused bandages, hack fix
+    if (pItem->GetEntry() == 82787 && pUser->GetMap()->IsDungeon())
+    {
+        pUser->SendEquipError(EQUIP_ERR_CLIENT_LOCKED_OUT, pItem, NULL);
+        return;
+    }
+
     // don't allow items banned in arena
     if (proto->Flags & ITEM_PROTO_FLAG_NOT_USEABLE_IN_ARENA && pUser->InArena())
     {

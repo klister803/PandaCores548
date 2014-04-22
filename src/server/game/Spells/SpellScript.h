@@ -428,6 +428,7 @@ enum AuraScriptHookType
     AURA_SCRIPT_HOOK_CHECK_AREA_TARGET,
     AURA_SCRIPT_HOOK_DISPEL,
     AURA_SCRIPT_HOOK_AFTER_DISPEL,
+    AURA_SCRIPT_HOOK_CHECK_TARGETS_LIST,
     // Spell Proc Hooks
     AURA_SCRIPT_HOOK_CHECK_PROC,
     AURA_SCRIPT_HOOK_PREPARE_PROC,
@@ -450,6 +451,7 @@ class AuraScript : public _SpellScript
     public:
 
     #define AURASCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) \
+        typedef void(CLASSNAME::*AuraCheckTargetsListFnType)(std::list<Unit*> &); \
         typedef bool(CLASSNAME::*AuraCheckAreaTargetFnType)(Unit* target); \
         typedef void(CLASSNAME::*AuraDispelFnType)(DispelInfo* dispelInfo); \
         typedef void(CLASSNAME::*AuraEffectApplicationModeFnType)(AuraEffect const*, AuraEffectHandleModes); \
@@ -466,6 +468,15 @@ class AuraScript : public _SpellScript
 
         AURASCRIPT_FUNCTION_TYPE_DEFINES(AuraScript)
 
+        class CheckTargetsListHandler
+        {
+            public:
+                CheckTargetsListHandler(AuraCheckTargetsListFnType pHandlerScript);
+                void Call(AuraScript* auraScript, std::list<Unit*>& unitTargets);
+            private:
+                AuraCheckTargetsListFnType pHandlerScript;
+        };
+        
         class CheckAreaTargetHandler
         {
             public:
@@ -588,6 +599,7 @@ class AuraScript : public _SpellScript
         };
 
         #define AURASCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME) \
+        class CheckTargetsListFunction : public AuraScript::CheckTargetsListHandler { public: CheckTargetsListFunction(AuraCheckTargetsListFnType _pHandlerScript) : AuraScript::CheckTargetsListHandler((AuraScript::AuraCheckTargetsListFnType)_pHandlerScript) {} }; \
         class CheckAreaTargetFunction : public AuraScript::CheckAreaTargetHandler { public: CheckAreaTargetFunction(AuraCheckAreaTargetFnType _pHandlerScript) : AuraScript::CheckAreaTargetHandler((AuraScript::AuraCheckAreaTargetFnType)_pHandlerScript) {} }; \
         class AuraDispelFunction : public AuraScript::AuraDispelHandler { public: AuraDispelFunction(AuraDispelFnType _pHandlerScript) : AuraScript::AuraDispelHandler((AuraScript::AuraDispelFnType)_pHandlerScript) {} }; \
         class EffectPeriodicHandlerFunction : public AuraScript::EffectPeriodicHandler { public: EffectPeriodicHandlerFunction(AuraEffectPeriodicFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : AuraScript::EffectPeriodicHandler((AuraScript::AuraEffectPeriodicFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
@@ -641,6 +653,9 @@ class AuraScript : public _SpellScript
         // where function is: bool function (Unit* target);
         HookList<CheckAreaTargetHandler> DoCheckAreaTarget;
         #define AuraCheckAreaTargetFn(F) CheckAreaTargetFunction(&F)
+        
+        HookList<CheckTargetsListHandler> DoCheckTargetsList;
+        #define AuraCheckTargetsListFn(F) CheckTargetsListFunction(&F)
 
         // executed when aura is dispelled by a unit
         // example: OnDispel += AuraDispelFn(class::function);

@@ -447,7 +447,7 @@ class spell_warl_archimondes_vengeance_cooldown : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (!_player->HasSpellCooldown(WARLOCK_ARCHIMONDES_VENGEANCE_PASSIVE))
-                            _player->AddSpellCooldown(WARLOCK_ARCHIMONDES_VENGEANCE_PASSIVE, 0, time(NULL) + 120);
+                            _player->AddSpellCooldown(WARLOCK_ARCHIMONDES_VENGEANCE_PASSIVE, 0, getPreciseTime() + 120.0);
             }
 
             void Register()
@@ -1168,7 +1168,7 @@ class spell_warl_soul_swap : public SpellScriptLoader
                             caster->RemoveAura(WARLOCK_SOUL_SWAP_AURA);
 
                             if (caster->HasAura(56226) && caster->ToPlayer()) // Glyph of Soul Swap
-                                caster->ToPlayer()->AddSpellCooldown(86121, 0, time(NULL) + 30);
+                                caster->ToPlayer()->AddSpellCooldown(86121, 0, getPreciseTime() + 30.0);
                         }
                     }
                 }
@@ -1732,7 +1732,7 @@ class spell_warl_harvest_life : public SpellScriptLoader
                     {
                         _player->CastCustomSpell(_player, WARLOCK_HARVEST_LIFE_HEAL, &basepoints, NULL, NULL, true);
                         // prevent the heal to proc off for each targets
-                        _player->AddSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL, 0, time(NULL) + 1);
+                        _player->AddSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL, 0, getPreciseTime() + 1.0);
                     }
 
                     _player->EnergizeBySpell(_player, aurEff->GetSpellInfo()->Id, 4, POWER_DEMONIC_FURY);
@@ -1770,7 +1770,7 @@ class spell_warl_fear : public SpellScriptLoader
                         if (_player->HasAura(WARLOCK_GLYPH_OF_FEAR))
                         {
                             _player->CastSpell(target, WARLOCK_GLYPH_OF_FEAR_EFFECT, true);
-                            _player->AddSpellCooldown(5782, 0, time(NULL) + 5);
+                            _player->AddSpellCooldown(5782, 0, getPreciseTime() + 1.0);
                         }
                         else
                             _player->CastSpell(target, WARLOCK_FEAR_EFFECT, true);

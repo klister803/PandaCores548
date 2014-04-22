@@ -1,0 +1,1 @@
+delete from spell_script_names where spell = 114154;

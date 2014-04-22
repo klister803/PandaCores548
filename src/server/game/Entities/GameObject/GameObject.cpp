@@ -61,6 +61,7 @@ GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new Game
     m_lootRecipientGroup = 0;
     m_groupLootTimer = 0;
     lootingGroupLowGUID = 0;
+    m_isDynActive = false;
 }
 
 GameObject::~GameObject()
@@ -686,7 +687,6 @@ void GameObject::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     data.go_state = GetGoState();
     data.spawnMask = spawnMask;
     data.artKit = GetGoArtKit();
-    data.isActive = isActiveObject();
 
     // Update in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
@@ -787,7 +787,7 @@ bool GameObject::LoadGameObjectFromDB(uint32 guid, Map* map, bool addToMap)
 
     m_goData = data;
 
-    setActive(data->isActive);
+    setDynActive(data->isActive);
 
     if (addToMap && !GetMap()->AddToMap(this))
         return false;

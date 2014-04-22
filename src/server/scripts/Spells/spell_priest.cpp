@@ -805,39 +805,12 @@ class spell_pri_train_of_thought : public SpellScriptLoader
                             if (GetSpellInfo()->Id == 585)
                             {
                                 if (_player->HasSpellCooldown(PRIEST_SPELL_PENANCE))
-                                {
-                                    float newCooldownDelay = _player->GetSpellCooldownDelay(PRIEST_SPELL_PENANCE) * IN_MILLISECONDS;
-
-                                    if (newCooldownDelay > 500.0f)
-                                        newCooldownDelay -= 500.0f;
-
-                                    if (newCooldownDelay > 0)
-                                    {
-                                        _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + (newCooldownDelay / IN_MILLISECONDS)));
-
-                                        _player->SendModifyCooldown(PRIEST_SPELL_PENANCE, -500);
-                                    }
-                                    else
-                                    {
-                                        _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + 0));
-
-                                        _player->SendModifyCooldown(PRIEST_SPELL_PENANCE, -newCooldownDelay);
-                                    }
-                                }
+                                    _player->ModifySpellCooldown(PRIEST_SPELL_PENANCE, -500);
                             }
                             else if (GetSpellInfo()->Id == 2060)
                             {
                                 if (_player->HasSpellCooldown(PRIEST_INNER_FOCUS))
-                                {
-                                    uint32 newCooldownDelay = _player->GetSpellCooldownDelay(PRIEST_INNER_FOCUS);
-
-                                    if (newCooldownDelay > 5)
-                                        newCooldownDelay -= 5;
-
-                                    _player->AddSpellCooldown(PRIEST_INNER_FOCUS, 0, uint32(time(NULL) + newCooldownDelay));
-
-                                    _player->SendModifyCooldown(PRIEST_INNER_FOCUS, -5000);
-                                }
+                                    _player->ModifySpellCooldown(PRIEST_SPELL_PENANCE, -5 * IN_MILLISECONDS);
                             }
                         }
                     }
@@ -879,7 +852,7 @@ class spell_pri_rapture : public SpellScriptLoader
                         if (caster->ToPlayer() && !caster->ToPlayer()->HasSpellCooldown(PRIEST_RAPTURE_ENERGIZE))
                         {
                             caster->EnergizeBySpell(caster, PRIEST_RAPTURE_ENERGIZE, bp, POWER_MANA);
-                            caster->ToPlayer()->AddSpellCooldown(PRIEST_RAPTURE_ENERGIZE, 0, time(NULL) + 12);
+                            caster->ToPlayer()->AddSpellCooldown(PRIEST_RAPTURE_ENERGIZE, 0, getPreciseTime() + 12.0);
                         }
                     }
                 }

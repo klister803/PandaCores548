@@ -467,7 +467,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_PROC_SPELL_CHARGE
     &AuraEffect::HandleAuraGlide,                                 //409 SPELL_AURA_GLIDE
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
-    &AuraEffect::HandleNoImmediateEffect,                         //411 SPELL_AURA_MOD_CHARGES implemented in Spell::cast
+    &AuraEffect::HandleAuraModCharges,                            //411 SPELL_AURA_MOD_CHARGES
     &AuraEffect::HandleModPowerRegen,                             //412 SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN
     &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_413
     &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_414
@@ -609,7 +609,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
 
     float DoneActualBenefit = 0.0f;
-    bool  CalculateBenefit  = true;
 
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION) && !amount)
     {
@@ -651,99 +650,15 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             break;
         case SPELL_AURA_SCHOOL_ABSORB:
         {
-            bool addPvPpowerbonus = true;
             m_canBeRecalculated = false;
-            CalculateBenefit = false;
 
             if (!caster)
                 break;
 
-            switch (GetSpellInfo()->SpellFamilyName)
-            {
-                case SPELLFAMILY_MONK:
-                    // Life Cocoon
-                    if (GetSpellInfo()->Id == 116849)
-                    {
-                        // +550% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 5.50f;
-                    }
-                    break;
-                case SPELLFAMILY_MAGE:
-                {
-                    switch (m_spellInfo->Id)
-                    {
-                        case 11426: // Ice Barrier
-                        {
-                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.3f;
-                            break;
-                        }
-                        default:
-                            break;
-                    }
-                    break;
-                }
-                case SPELLFAMILY_WARLOCK:
-                    // Twilight Ward
-                    if (m_spellInfo->Id == 6229 || m_spellInfo->Id == 104048 || m_spellInfo->Id == 131623 || m_spellInfo->Id == 131624)
-                    {
-                        // +300% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.0f;
-                    }
-                    break;
-                case SPELLFAMILY_PRIEST:
-                {    
-                    switch (m_spellInfo->Id)
-                    {
-                        case 17:     // Power Word : Shield
-                        case 123258:
-                        {
-                            DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 1.871f;
-                            break;
-                        }
-                        case 114908: // Spirit Shell
-                        case 47753:  // Divine Aegis
-                        {
-                            addPvPpowerbonus = false;
-                            break;
-                        }
-                        default:
-                            break;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
+            amount = caster->CalcAbsorb(GetBase()->GetUnitOwner(), m_spellInfo, amount);
 
-            amount += (int32)DoneActualBenefit;
-
-            if (amount <= 0 || !addPvPpowerbonus)
-                break;
-
-            if (Player* player = caster->ToPlayer())
-            {
-                if (Unit* target = GetBase()->GetUnitOwner())
-                {
-                    if (target->GetTypeId() != TYPEID_PLAYER)
-                        break;
-
-                    float PowerPvP = player->GetFloatValue(PLAYER_PVP_POWER_HEALING);
-                    AddPct(amount, PowerPvP);
-                }
-            }
             break;
         }
-        case SPELL_AURA_MANA_SHIELD:
-            m_canBeRecalculated = false;
-            if (!caster)
-                break;
-            // Mana Shield
-            if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_MAGE && GetSpellInfo()->SpellFamilyFlags[0] & 0x8000 && m_spellInfo->SpellFamilyFlags[2] & 0x8)
-            {
-                // +80.7% from +spd bonus
-                DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.807f;
-            }
-            break;
         case SPELL_AURA_MOD_HEALING_PCT:
         {
             if (!caster)
@@ -1408,7 +1323,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
     }
     
-    if (DoneActualBenefit != 0.0f && CalculateBenefit)
+    if (DoneActualBenefit != 0.0f)
     {
         DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellInfo());
         amount += (int32)DoneActualBenefit;
@@ -3737,6 +3652,11 @@ void AuraEffect::HandleModConfuse(AuraApplication const* aurApp, uint8 mode, boo
 
     Unit* target = aurApp->GetTarget();
 
+    if(apply)
+        target->SetTimeForSpline(GetBase()->GetDuration());
+    else
+        target->SetTimeForSpline(0);
+
     target->SetControlled(apply, UNIT_STATE_CONFUSED);
 }
 
@@ -3746,6 +3666,11 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
         return;
 
     Unit* target = aurApp->GetTarget();
+
+    if(apply)
+        target->SetTimeForSpline(GetBase()->GetDuration());
+    else
+        target->SetTimeForSpline(0);
 
     target->SetControlled(apply, UNIT_STATE_FLEEING);
 }
@@ -6720,6 +6645,12 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
         {
             switch (GetSpellInfo()->Id)
             {
+                case 81262: // Efflorescence
+                {
+                    if (DynamicObject* dynObj = caster->GetDynObject(81262))
+                        caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), 81269, true);
+                    break;
+                }
                 // Frenzied Regeneration
                 case 22842:
                 {
@@ -8354,3 +8285,17 @@ void AuraEffect::HandleAuraMastery(AuraApplication const* aurApp, uint8 mode, bo
 
     target->UpdateMasteryAuras();
 }
+
+void AuraEffect::HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+    if (!target)
+        return;
+
+    target->RecalculateSpellCategoryCharges(GetMiscValue());
+    target->SendSpellChargeData();
+}
+

@@ -405,6 +405,7 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
 {
     m_customError = SPELL_CUSTOM_ERROR_NONE;
     m_skipCheck = skipCheck;
+    m_missed = false;
     m_selfContainer = NULL;
     m_referencedFromCurrentSpell = false;
     m_executedCurrently = false;
@@ -636,6 +637,8 @@ void Spell::SelectSpellTargets()
     uint32 processedAreaEffectsMask = 0;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
+        if (m_missed)
+            break;
         // not call for empty effect.
         // Also some spells use not used effect targets for store targets for dummy effect in triggered spells
         if (!m_spellInfo->GetEffect(i, m_diffMode).IsEffect())
@@ -660,6 +663,19 @@ void Spell::SelectSpellTargets()
 
         if (m_targets.HasDst())
             AddDestTarget(*m_targets.GetDst(), i);
+
+        uint32 targethit = 0;
+        bool hastarget = false;
+        for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+        {
+            hastarget = true;
+
+            if (ihit->missCondition == SPELL_MISS_NONE)
+                targethit++;
+        }
+
+        if (!targethit && hastarget)
+            m_missed = true;
 
         if (m_spellInfo->IsChanneled())
         {
@@ -1267,13 +1283,24 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                 }
                 break;
             case SPELLFAMILY_DRUID:
-                if (m_spellInfo->SpellFamilyFlags[1] == 0x04000000) // Wild Growth
+            {
+                switch (m_spellInfo->Id)
                 {
-                    maxSize = m_caster->HasAura(62970) ? 6 : 5; // Glyph of Wild Growth
-                    power = POWER_HEALTH;
+                    case 48438: // Wild Growth
+                    {
+                        maxSize = m_caster->HasAura(62970) ? 6 : 5; // Glyph of Wild Growth
+                        power = POWER_HEALTH;
+                        break;
+                    }
+                    case 81269: // Efflorescence
+                    {
+                        maxSize = 3;
+                        power = POWER_HEALTH;
+                        break;
+                    }
+                    default:
+                        break;
                 }
-                else
-                    break;
 
                 // Remove targets outside caster's raid
                 for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)
@@ -1282,6 +1309,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                     else
                         ++itr;
                 break;
+            }
             default:
                 break;
         }
@@ -1324,7 +1352,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             if ((m_spellInfo->Id == 107270 || m_spellInfo->Id == 117640) && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
             {
                 m_caster->CastSpell(m_caster, 129881, true);
-                m_caster->ToPlayer()->AddSpellCooldown(129881, 0, time(NULL) + 3);
+                m_caster->ToPlayer()->AddSpellCooldown(129881, 0, getPreciseTime() + 3.0);
             }
         }
 
@@ -2985,7 +3013,7 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
                     unit->CastSpell(unit, i->effect, true, 0, 0, m_caster->GetGUID());
 
                 if(i->cooldown != 0 && unit->GetTypeId() == TYPEID_PLAYER)
-                    unit->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
+                    unit->ToPlayer()->AddSpellCooldown(i->effect, 0, getPreciseTime() + (double)i->cooldown);
             }
         }
     }
@@ -3308,6 +3336,18 @@ void Spell::cancel()
 
 void Spell::cast(bool skipCheck)
 {
+    if (!m_caster->CheckAndIncreaseCastCounter())
+    {
+        if (m_triggeredByAuraSpell)
+            sLog->outError(LOG_FILTER_GENERAL, "Spell %u triggered by aura spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
+        else
+            sLog->outError(LOG_FILTER_GENERAL, "Spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
+
+        SendCastResult(SPELL_FAILED_ERROR);
+        finish(false);
+        return;
+    }
+
     volatile uint32 spellid = m_spellInfo->Id;
     // update pointers base at GUIDs to prevent access to non-existed already object
     UpdatePointers();
@@ -3316,6 +3356,7 @@ void Spell::cast(bool skipCheck)
     if (m_targets.GetObjectTargetGUID() && !m_targets.GetObjectTarget())
     {
         cancel();
+        m_caster->DecreaseCastCounter();
         return;
     }
 
@@ -3366,6 +3407,7 @@ void Spell::cast(bool skipCheck)
             }
             finish(false);
             SetExecutedCurrently(false);
+            m_caster->DecreaseCastCounter();
             return;
         }
 
@@ -3389,6 +3431,7 @@ void Spell::cast(bool skipCheck)
                         m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
                         finish(false);
                         SetExecutedCurrently(false);
+                        m_caster->DecreaseCastCounter();
                         return;
                     }
                 }
@@ -3412,6 +3455,7 @@ void Spell::cast(bool skipCheck)
         }
         finish(false);
         SetExecutedCurrently(false);
+        m_caster->DecreaseCastCounter();
         return;
     }
 
@@ -3423,16 +3467,18 @@ void Spell::cast(bool skipCheck)
     // set to real guid to be sent later to the client
     m_targets.UpdateTradeSlotItem();
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (Player* plrCaster = m_caster->ToPlayer())
     {
         if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_ITEM) && m_CastItem)
         {
-            m_caster->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM, m_CastItem->GetEntry());
-            m_caster->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM2, m_CastItem->GetEntry());
-            m_caster->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM, m_CastItem->GetEntry());
+            plrCaster->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM, m_CastItem->GetEntry());
+            plrCaster->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM2, m_CastItem->GetEntry());
+            plrCaster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM, m_CastItem->GetEntry());
         }
 
-        m_caster->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, m_spellInfo->Id);
+        plrCaster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, m_spellInfo->Id);
+
+        plrCaster->TakeSpellCharge(m_spellInfo);
     }
 
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
@@ -3486,69 +3532,72 @@ void Spell::cast(bool skipCheck)
 
     CallScriptAfterCastHandlers();
 
-    if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
+    //if (!m_missed)
     {
-        for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
-            if (i->effect < 0)
-            {
-                if(i->learnspell)
+        if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
+        {
+            for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+                if (i->effect < 0)
                 {
-                    if(Player* _lplayer = m_caster->ToPlayer())
-                        _lplayer->removeSpell(-(i->effect));
+                    if(i->learnspell)
+                    {
+                        if(Player* _lplayer = m_caster->ToPlayer())
+                            _lplayer->removeSpell(-(i->effect));
+                    }
+                    else
+                        m_caster->RemoveAurasDueToSpell(-(i->effect));
                 }
                 else
-                    m_caster->RemoveAurasDueToSpell(-(i->effect));
-            }
-            else
-            {
-                if (i->type2 == 3)
                 {
-                    if (Unit* owner = m_caster->GetOwner())
+                    if (i->type2 == 3)
                     {
-                        if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
+                        if (Unit* owner = m_caster->GetOwner())
+                        {
+                            if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
+                                continue;
+                            if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
+                                continue;
+                        }
+                        else continue;
+                    }
+                    else if(i->type2 == 2)
+                    {
+                        if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
                             continue;
-                        if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
+                        if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
                             continue;
                     }
-                    else continue;
-                }
-                else if(i->type2 == 2)
-                {
-                    if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
+                    else if(i->type2 && m_targets.GetUnitTarget())
+                    {
+                        if(i->hastalent != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent))
+                            continue;
+                        if(i->hastalent2 != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent2))
+                            continue;
+                    }
+                    else
+                    {
+                        if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
+                            continue;
+                        if(i->hastalent2 != 0 && !m_caster->HasAura(i->hastalent2))
+                            continue;
+                    }
+                    if(i->chance != 0 && !roll_chance_i(i->chance))
                         continue;
-                    if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
+                    if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->HasSpellCooldown(i->effect))
                         continue;
-                }
-                else if(i->type2 && m_targets.GetUnitTarget())
-                {
-                    if(i->hastalent != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent))
-                        continue;
-                    if(i->hastalent2 != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent2))
-                        continue;
-                }
-                else
-                {
-                    if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
-                        continue;
-                    if(i->hastalent2 != 0 && !m_caster->HasAura(i->hastalent2))
-                        continue;
-                }
-                if(i->chance != 0 && !roll_chance_i(i->chance))
-                    continue;
-                if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->HasSpellCooldown(i->effect))
-                    continue;
 
-                if(i->learnspell)
-                {
-                    if(Player* _lplayer = m_caster->ToPlayer())
-                        _lplayer->learnSpell(i->effect, false);
-                }
-                else
-                    m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
+                    if(i->learnspell)
+                    {
+                        if(Player* _lplayer = m_caster->ToPlayer())
+                            _lplayer->learnSpell(i->effect, false);
+                    }
+                    else
+                        m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
 
-                if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
-                    m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, time(NULL) + i->cooldown);
-            }
+                    if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
+                        m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, getPreciseTime() + (double)i->cooldown);
+                }
+        }
     }
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -3560,6 +3609,7 @@ void Spell::cast(bool skipCheck)
     }
 
     SetExecutedCurrently(false);
+    m_caster->DecreaseCastCounter();
 }
 
 void Spell::handle_immediate()
@@ -5390,23 +5440,39 @@ void Spell::TakePower()
         return;
 
     Powers powerType = Powers(power.powerType);
+    int32  ifMissedPowerCost = m_powerCost;
     bool hit = true;
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (powerType == POWER_RAGE || powerType == POWER_ENERGY || powerType == POWER_RUNES)
-            if (uint64 targetGUID = m_targets.GetUnitTargetGUID())
-                for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-                    if (ihit->targetGUID == targetGUID)
+        if (uint64 targetGUID = m_targets.GetUnitTargetGUID())
+            for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+                if (ihit->targetGUID == targetGUID)
+                {
+                    if (ihit->missCondition != SPELL_MISS_NONE && ihit->missCondition != SPELL_MISS_IMMUNE)
                     {
-                        if (ihit->missCondition != SPELL_MISS_NONE)
+                        switch (powerType)
                         {
-                            hit = false;
-                            //lower spell cost on fail (by talent aura)
-                            if (Player* modOwner = m_caster->ToPlayer()->GetSpellModOwner())
-                                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_SPELL_COST_REFUND_ON_FAIL, m_powerCost);
+                        case POWER_CHI:
+                        case POWER_HOLY_POWER:
+                        case POWER_SHADOW_ORB:
+                        case POWER_SOUL_SHARDS:
+                            ifMissedPowerCost = 0;
+                            break;
+                        case POWER_ENERGY:
+                        case POWER_RAGE:
+                        case POWER_RUNES:
+                            ifMissedPowerCost = CalculatePct(m_powerCost, 20);
+                            break;
+                        default:
+                            break;
                         }
-                        break;
+                        hit = false;
+                        //lower spell cost on fail (by talent aura)
+                        if (Player* modOwner = m_caster->ToPlayer()->GetSpellModOwner())
+                            modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_SPELL_COST_REFUND_ON_FAIL, m_powerCost);
                     }
+                    break;
+                }
     }
 
     if (powerType == POWER_RUNES)
@@ -5434,7 +5500,7 @@ void Spell::TakePower()
     if (hit)
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
-        m_caster->ModifyPower(powerType, -irand(0, m_powerCost/4));
+        m_caster->ModifyPower(powerType, -ifMissedPowerCost);
 }
 
 void Spell::TakeAmmo()
@@ -5636,7 +5702,7 @@ void Spell::TakeReagents()
         p_caster->DestroyItemCount(itemid, itemcount, true);
     }
     if(m_spellInfo->ReagentCurrency != 0)
-        p_caster->ModifyCurrency(m_spellInfo->ReagentCurrency, -m_spellInfo->ReagentCurrencyCount);
+        p_caster->ModifyCurrency(m_spellInfo->ReagentCurrency, -int32(m_spellInfo->ReagentCurrencyCount));
 }
 
 void Spell::HandleThreatSpells()
@@ -5791,13 +5857,17 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_SPELL_IN_PROGRESS;
         }
 
-        if (m_caster->ToPlayer()->HasSpellCooldown(m_spellInfo->Id))
+        Player* playerCaster = m_caster->ToPlayer();
+        if (playerCaster->HasSpellCooldown(m_spellInfo->Id))
         {
             if (m_triggeredByAuraSpell)
                 return SPELL_FAILED_DONT_REPORT;
             else
                 return SPELL_FAILED_NOT_READY;
         }
+
+        if (!playerCaster->HasChargesForSpell(m_spellInfo))
+            return m_triggeredByAuraSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NO_CHARGES_REMAIN;
     }
 
     if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL && !m_caster->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_ALLOW_CHEAT_SPELLS))
@@ -7921,7 +7991,7 @@ SpellEvent::~SpellEvent()
     {
         sLog->outError(LOG_FILTER_SPELLS_AURAS, "~SpellEvent: %s %u tried to delete non-deletable spell %u. Was not deleted, causes memory leak.",
             (m_Spell->GetCaster()->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature"), m_Spell->GetCaster()->GetGUIDLow(), m_Spell->m_spellInfo->Id);
-        ASSERT(false);
+        //ASSERT(false);
     }
 }
 
