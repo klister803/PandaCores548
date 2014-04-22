@@ -2309,48 +2309,6 @@ class spell_dru_stampeding_roar : public SpellScriptLoader
         }
 };
 
-// Innervate - 29166
-class spell_dru_innervate : public SpellScriptLoader
-{
-    public:
-        spell_dru_innervate() : SpellScriptLoader("spell_dru_innervate") { }
-
-        class spell_dru_innervate_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_innervate_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (target->ToCreature() && target->GetMap()->IsDungeon()) //Evade crash(Tsulong)
-                            return;
-
-                        int32 mana = target->GetMaxPower(POWER_MANA) / 10;
-
-                        if (target->GetGUID() == _player->GetGUID())
-                            mana *= 2;
-
-                        if (Aura* innervate = target->GetAura(29166))
-                            innervate->GetEffect(0)->ChangeAmount(mana / 10);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_innervate_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_innervate_SpellScript();
-        }
-};
-
 // Lacerate - 33745
 class spell_dru_lacerate : public SpellScriptLoader
 {
@@ -3203,7 +3161,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_frenzied_regeneration();
     new spell_dru_stampeding_roar_speed();
     new spell_dru_stampeding_roar();
-    new spell_dru_innervate();
     new spell_dru_lacerate();
     new spell_dru_faerie_fire();
     new spell_dru_teleport_moonglade();

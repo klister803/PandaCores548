@@ -187,17 +187,29 @@ class boss_jalak : public CreatureScript
                     }
                 }
             }
-            
+
+            void EnterCombat(Unit* who)
+            {
+                events.ScheduleEvent(EVENT_BESTIAL_CRY, 5000);
+            }
+
+            void MovementInform(uint32 type, uint32 pointId)
+            {
+                if (type != POINT_MOTION_TYPE && type != EFFECT_MOTION_TYPE)
+                    return;
+
+                if (pointId == 0)
+                {
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                }
+            }
+
             void DoAction(int32 const action)
             {
                 if (action == ACTION_INTRO)
-                {
-                    me->GetMotionMaster()->MoveJump(5433.32f, 5745.32f, 129.6066f, 25.0f, 25.0f);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 100.0f);
-                    events.ScheduleEvent(EVENT_BESTIAL_CRY, 5000);
-                }
+                    me->GetMotionMaster()->MoveJump(5433.32f, 5745.32f, 129.6066f, 25.0f, 25.0f, 0);
             }
 
             void JustDied(Unit* /*killer*/)

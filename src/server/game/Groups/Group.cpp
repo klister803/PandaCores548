@@ -2631,6 +2631,11 @@ bool Group::isBGGroup() const
     return m_bgGroup != NULL;
 }
 
+bool Group::isArenaGroup() const
+{
+    return m_bgGroup && m_bgGroup->isArena();
+}
+
 bool Group::isBFGroup() const
 {
     return m_bfGroup != NULL;

@@ -5841,6 +5841,17 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
+            if(itr->chance != 0)
+            {
+                if(itr->chance > 100) // chance get from amount
+                {
+                    if(!roll_chance_i(triggerAmount))
+                        continue;
+                }
+                else if(!roll_chance_i(itr->chance))
+                    continue;
+            }
+
             if(itr->target == 1 || itr->target == 6 || !target) //get target self
                 target = this;
             if(itr->target == 3 && ToPlayer()) //get target owner
@@ -7040,8 +7051,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 // Taste for Blood
                 case 56636:
                 {
+                    if (cooldown && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(dummySpell->Id))
+                        return false;
+
                     uint32 stack = 1;
-                    if (procSpell && procSpell->Id == 12294)
+                    if (procSpell && procSpell->Id == 12294 && (procEx & (PROC_EX_NORMAL_HIT|PROC_EX_CRITICAL_HIT)))
                         stack = 2;
                     else if (!(procEx & PROC_EX_DODGE))
                         return false;
@@ -7054,12 +7068,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                             stack += aura->GetStackAmount() - 1;
                     }
                     else
-                    {
-                        if(stack == 1)
-                            stack += aura->GetStackAmount();
-                        else
-                            stack += aura->GetStackAmount() + 1;
-                    }
+                        stack += aura->GetStackAmount();
                     if (aura)
                     {
                         if(stack > aura->GetSpellInfo()->StackAmount)
@@ -7069,6 +7078,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         aura->RefreshSpellMods();
                         aura->RefreshTimers();
                     }
+                    if (cooldown && GetTypeId() == TYPEID_PLAYER)
+                        ToPlayer()->AddSpellCooldown(dummySpell->Id, 0, time(NULL) + cooldown);
                     return true;
                 }
                 // Sweeping Strikes
@@ -8093,29 +8104,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         default:
                             return false;
                     }
-                    break;
-                }
-                // Seal of Truth (damage calc on apply aura)
-                case 31801:
-                {
-                    if (effIndex != 0)                       // effect 2 used by seal unleashing code
-                        return false;
-
-                    // At melee attack or Hammer of the Righteous spell damage considered as melee attack
-                    bool stacker = !procSpell || procSpell->Id == 53595;
-                    // spells with SPELL_DAMAGE_CLASS_MELEE excluding Judgements
-                    bool damager = procSpell && procSpell->EquippedItemClass != -1;
-
-                    if (!stacker && !damager)
-                        return false;
-
-                    triggered_spell_id = 31803;
-
-                    // Deals additionnal 12% weapon damage
-                    CastSpell(victim, 42463, true);
-
-                    if (!stacker)
-                        return false;
                     break;
                 }
                 // Paladin Tier 6 Trinket (Ashtongue Talisman of Zeal)
@@ -9736,17 +9724,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                 return false;
 
             if (!(procEx & PROC_EX_CRITICAL_HIT))
-                return false;
-
-            break;
-        }
-        // Burden of Guilt
-        case 110301:
-        {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->Id != 20271)
                 return false;
 
             break;
@@ -12729,6 +12706,16 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
         AddPct(heal, (100 * (holyPower + 1)));
     }
+    // Light of Dawn
+    else if (spellProto->Id == 85222 && GetTypeId() == TYPEID_PLAYER)
+    {
+        int32 holyPower = GetPower(POWER_HOLY_POWER);
+
+        if (holyPower > 2)
+            holyPower = 2;
+
+        AddPct(heal, (100 * holyPower));
+    }
 
     return uint32(std::max(heal, 0.0f));
 }
@@ -14218,14 +14205,6 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
                 tigereyeBrew->SetScriptData(0, -dVal);
             else if (Aura* manaTea = this->GetAura(123766))
                 manaTea->SetScriptData(0, -dVal);
-        }
-    }
-    else if (power == POWER_HOLY_POWER)
-    {
-        if (dVal < 0)
-        {
-            if (Aura* unbreakableSpirit = this->GetAura(114154))
-                unbreakableSpirit->SetScriptData(0, -dVal);
         }
     }
 

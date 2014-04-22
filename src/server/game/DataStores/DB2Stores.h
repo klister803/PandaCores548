@@ -37,6 +37,7 @@ extern DB2Storage <SpellReagentsEntry>            sSpellReagentsStore;
 extern DB2Storage <ItemUpgradeEntry>              sItemUpgradeStore;
 extern DB2Storage <RuleSetItemUpgradeEntry>       sRuleSetItemUpgradeEntryStore;
 extern DB2Storage <GameObjectsEntry>              sGameObjectsStore;
+extern DB2Storage <MapChallengeModeEntry>         sMapChallengeModeStore;
 
 void LoadDB2Stores(const std::string& dataPath);
 

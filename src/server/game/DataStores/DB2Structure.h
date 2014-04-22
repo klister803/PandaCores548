@@ -300,6 +300,20 @@ struct ItemUpgradeData
     ItemUpgradeEntry const* upgrade[MAX_ITEM_UPDGRADES];
 };
 
+struct MapChallengeModeEntry
+{
+    uint32 id;                  // 0
+    uint32 map;                 // 1
+    uint32 unk1;                // 2
+    uint32 unk2;                // 3
+    uint32 season;              // 4
+    uint32 bronze;              // 5
+    uint32 silver;              // 6
+    uint32 gold;                // 7
+    uint32 unk3;                // 8
+    uint32 unk4;                // 9
+};
+
 // GCC has alternative #pragma pack(N) syntax and old gcc version does not support pack(push, N), also any gcc version does not support it at some platform
 #if defined(__GNUC__)
 #pragma pack()

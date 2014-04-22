@@ -105,83 +105,6 @@ class spell_pal_glyph_of_avenging_wrath : public SpellScriptLoader
         }
 };
 
-// Unbreakable Spirit - 114154
-class spell_pal_unbreakable_spirit : public SpellScriptLoader
-{
-    public:
-        spell_pal_unbreakable_spirit() : SpellScriptLoader("spell_pal_unbreakable_spirit") { }
-
-        class spell_pal_unbreakable_spirit_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_pal_unbreakable_spirit_AuraScript);
-
-            uint32 holyPowerConsumed;
-
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                holyPowerConsumed = 0;
-            }
-
-            void SetData(uint32 type, uint32 data)
-            {
-                if (!GetCaster())
-                    return;
-
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    holyPowerConsumed = data;
-
-                    if (_player->HasSpellCooldown(PALADIN_SPELL_DIVINE_SHIELD))
-                    {
-                        double newCooldownDelay = _player->GetSpellCooldownDelay(PALADIN_SPELL_DIVINE_SHIELD) * IN_MILLISECONDS;
-                        uint32 totalCooldown = sSpellMgr->GetSpellInfo(PALADIN_SPELL_DIVINE_SHIELD)->RecoveryTime;
-                        int32 lessCooldown = CalculatePct(totalCooldown, holyPowerConsumed);
-                        uint32 maxCooldownReduction = CalculatePct(totalCooldown, 50); // Maximum 50% cooldown reduction
-
-                        newCooldownDelay -= lessCooldown;
-
-                        if (newCooldownDelay > maxCooldownReduction)
-                            _player->ModifySpellCooldown(PALADIN_SPELL_DIVINE_SHIELD, -lessCooldown);
-                    }
-                    if (_player->HasSpellCooldown(PALADIN_SPELL_LAY_ON_HANDS))
-                    {
-                        double newCooldownDelay = _player->GetSpellCooldownDelay(PALADIN_SPELL_LAY_ON_HANDS) * IN_MILLISECONDS;
-                        uint32 totalCooldown = sSpellMgr->GetSpellInfo(PALADIN_SPELL_LAY_ON_HANDS)->CategoryRecoveryTime;
-                        int32 lessCooldown = CalculatePct(totalCooldown, holyPowerConsumed);
-                        uint32 maxCooldownReduction = CalculatePct(totalCooldown, 50); // Maximum 50% cooldown reduction
-
-                        newCooldownDelay -= lessCooldown;
-
-                        if (newCooldownDelay > maxCooldownReduction)
-                            _player->ModifySpellCooldown(PALADIN_SPELL_LAY_ON_HANDS, -lessCooldown);
-                    }
-                    if (_player->HasSpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION))
-                    {
-                        double newCooldownDelay = _player->GetSpellCooldownDelay(PALADIN_SPELL_DIVINE_PROTECTION) * IN_MILLISECONDS;
-                        uint32 totalCooldown = sSpellMgr->GetSpellInfo(PALADIN_SPELL_DIVINE_PROTECTION)->RecoveryTime;
-                        int32 lessCooldown = CalculatePct(totalCooldown, holyPowerConsumed);
-                        uint32 maxCooldownReduction = CalculatePct(totalCooldown, 50); // Maximum 50% cooldown reduction
-
-                        newCooldownDelay -= lessCooldown;
-
-                        if (newCooldownDelay > maxCooldownReduction)
-                            _player->ModifySpellCooldown(PALADIN_SPELL_DIVINE_PROTECTION, -lessCooldown);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_pal_unbreakable_spirit_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_pal_unbreakable_spirit_AuraScript();
-        }
-};
-
 // Shield of the Righteous - 53600
 class spell_pal_shield_of_the_righteous : public SpellScriptLoader
 {
@@ -460,35 +383,6 @@ class spell_pal_art_of_war : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pal_art_of_war_SpellScript();
-        }
-};
-
-// Seal of Insight - 20167
-class spell_pal_seal_of_insight : public SpellScriptLoader
-{
-    public:
-        spell_pal_seal_of_insight() : SpellScriptLoader("spell_pal_seal_of_insight") { }
-
-        class spell_pal_seal_of_insight_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_seal_of_insight_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.04), POWER_MANA);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pal_seal_of_insight_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_seal_of_insight_SpellScript();
         }
 };
 
@@ -1193,10 +1087,51 @@ class spell_pal_righteous_defense : public SpellScriptLoader
         }
 };
 
+// Light of Dawn - 85222
+class spell_pal_light_of_dawn : public SpellScriptLoader
+{
+    public:
+        spell_pal_light_of_dawn() : SpellScriptLoader("spell_pal_light_of_dawn") { }
+
+        class spell_pal_light_of_dawn_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_light_of_dawn_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(_player))
+                            unitTarget = _player;
+
+                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+
+                        if (holyPower > 2)
+                            holyPower = 2;
+                        
+                        if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                            _player->ModifyPower(POWER_HOLY_POWER, -holyPower);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_pal_light_of_dawn_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_light_of_dawn_SpellScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
-    new spell_pal_unbreakable_spirit();
     new spell_pal_shield_of_the_righteous();
     new spell_pal_eternal_flame();
     new spell_pal_selfless_healer();
@@ -1205,7 +1140,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_sacred_shield_absorb();
     new spell_pal_emancipate();
     new spell_pal_art_of_war();
-    new spell_pal_seal_of_insight();
     new spell_pal_blinding_light();
     new spell_pal_hand_of_protection();
     new spell_pal_divine_shield();
@@ -1223,4 +1157,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_divine_storm();
     new spell_pal_lay_on_hands();
     new spell_pal_righteous_defense();
+    new spell_pal_light_of_dawn();
 }

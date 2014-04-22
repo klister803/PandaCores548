@@ -4553,4 +4553,13 @@ enum NavTerrain
     // we only have 8 bits
 };
 
+enum ChallengeMode
+{
+    CHALLENGE_MEDAL_NONE    = 0,
+    CHALLENGE_MEDAL_BRONZE  = 1,
+    CHALLENGE_MEDAL_SILVER  = 2,
+    CHALLENGE_MEDAL_GOLD    = 3,
+    CHALLENGE_MEDAL_PLAT    = 4, //--as of 7/2/2013 only used for endless proving grounds
+    NUM_CHALLENGE_MEDALS    = 3,
+};
 #endif

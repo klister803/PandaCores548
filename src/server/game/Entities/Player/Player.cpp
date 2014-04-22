@@ -18453,10 +18453,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     uint32 mapId = fields[15].GetUInt16();
     uint32 instanceId = fields[52].GetUInt32();
 
-    uint32 dungeonDiff = fields[39].GetUInt8() & 0x0F;
-    if (dungeonDiff >= MAX_DUNGEON_DIFFICULTY || !dungeonDiff)
+    uint32 dungeonDiff = fields[39].GetUInt32() & 0xFFFF;
+    if (dungeonDiff != CHALLENGE_MODE_DIFFICULTY && dungeonDiff >= MAX_DUNGEON_DIFFICULTY || !dungeonDiff)
         dungeonDiff = REGULAR_DIFFICULTY;
-    uint32 raidDiff = (fields[39].GetUInt8() >> 4) & 0x0F;
+    uint32 raidDiff = (fields[39].GetUInt32() >> 16) & 0xFFFF;
     if (raidDiff >= MAX_RAID_DIFFICULTY)
         raidDiff = MAN10_DIFFICULTY;
     SetDungeonDifficulty(Difficulty(dungeonDiff));          // may be changed in _LoadGroup
@@ -20439,7 +20439,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FLAGS));
         stmt->setUInt16(index++, (uint16)GetMapId());
         stmt->setUInt32(index++, (uint32)GetInstanceId());
-        stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
+        stmt->setUInt32(index++, (uint16(GetDungeonDifficulty()) | uint16(GetRaidDifficulty()) << 16));
         stmt->setFloat(index++, finiteAlways(GetPositionX()));
         stmt->setFloat(index++, finiteAlways(GetPositionY()));
         stmt->setFloat(index++, finiteAlways(GetPositionZ()));
@@ -20565,7 +20565,7 @@ void Player::SaveToDB(bool create /*=false*/)
         {
             stmt->setUInt16(index++, (uint16)GetMapId());
             stmt->setUInt32(index++, (uint32)GetInstanceId());
-            stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
+            stmt->setUInt32(index++, (uint16(GetDungeonDifficulty()) | uint16(GetRaidDifficulty()) << 16));
             stmt->setFloat(index++, finiteAlways(GetPositionX()));
             stmt->setFloat(index++, finiteAlways(GetPositionY()));
             stmt->setFloat(index++, finiteAlways(GetPositionZ()));
@@ -20575,7 +20575,7 @@ void Player::SaveToDB(bool create /*=false*/)
         {
             stmt->setUInt16(index++, (uint16)GetTeleportDest().GetMapId());
             stmt->setUInt32(index++, (uint32)0);
-            stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
+            stmt->setUInt32(index++, (uint16(GetDungeonDifficulty()) | uint16(GetRaidDifficulty()) << 16));
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionX()));
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionY()));
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionZ()));
@@ -24644,7 +24644,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetBattlePetMgr().BuildBattlePetJournal(&data);
     GetSession()->SendPacket(&data);
 
-    data.Initialize(SMSG_WORLD_STATE_TIMER_START, 3);
+    data.Initialize(SMSG_WORLD_STATE_TIMER_START_INIT, 3);
     data.WriteBits(0, 21);
     data.FlushBits();
     GetSession()->SendPacket(&data);
