@@ -3819,16 +3819,16 @@ void Guild::SendGuildMembersForRecipeResponse(WorldSession* session, uint32 skil
         }
     }
 
-    WorldPacket data(SMSG_GUILD_MEMBERS_FOR_RECIPE, 4 + 4 + 3 + guids.size() * 9);
-    data << uint32(skillId);
-    data << uint32(spellId);
-    data.WriteBits(guids.size(), 24);
+    WorldPacket* data = new WorldPacket(SMSG_GUILD_MEMBERS_FOR_RECIPE, 4 + 4 + 3 + guids.size() * 9);
+    *data << uint32(skillId);
+    *data << uint32(spellId);
+    data->WriteBits(guids.size(), 24);
     for (std::set<uint64>::const_iterator itr = guids.begin(); itr != guids.end(); ++itr)
-        data.WriteGuidMask<2, 0, 1, 6, 7, 5, 3, 4>(*itr);
+        data->WriteGuidMask<2, 0, 1, 6, 7, 5, 3, 4>(*itr);
     for (std::set<uint64>::const_iterator itr = guids.begin(); itr != guids.end(); ++itr)
-        data.WriteGuidBytes<1, 2, 7, 4, 6, 3, 5, 0>(*itr);
+        data->WriteGuidBytes<1, 2, 7, 4, 6, 3, 5, 0>(*itr);
 
-    session->SendPacket(&data);
+    session->GetPlayer()->ScheduleMessageSend(data, 500);
 }
 
 void Guild::SendGuildMemberRecipesResponse(WorldSession* session, ObjectGuid playerGuid, uint32 skillId)
@@ -3842,18 +3842,18 @@ void Guild::SendGuildMemberRecipesResponse(WorldSession* session, ObjectGuid pla
         Member::ProfessionInfo const& info = member->GetProfessionInfo(i);
         if (info.skillId == skillId)
         {
-            WorldPacket data(SMSG_GUILD_MEMBER_RECIPES, 8 + 1 + 4 * 3 + 300);
-            data.WriteGuidMask<0, 7, 5, 2, 4, 1, 6, 3>(playerGuid);
+            WorldPacket* data = new WorldPacket(SMSG_GUILD_MEMBER_RECIPES, 8 + 1 + 4 * 3 + 300);
+            data->WriteGuidMask<0, 7, 5, 2, 4, 1, 6, 3>(playerGuid);
 
-            data << uint32(info.skillValue);
-            data.WriteGuidBytes<7, 1, 6>(playerGuid);
-            data.append(info.knownRecipes.recipesMask, KNOW_RECIPES_MASK_SIZE);
-            data << uint32(info.skillRank);
-            data.WriteGuidBytes<4, 0>(playerGuid);
-            data << uint32(info.skillId);
-            data.WriteGuidBytes<5, 3, 2>(playerGuid);
+            *data << uint32(info.skillValue);
+            data->WriteGuidBytes<7, 1, 6>(playerGuid);
+            data->append(info.knownRecipes.recipesMask, KNOW_RECIPES_MASK_SIZE);
+            *data << uint32(info.skillRank);
+            data->WriteGuidBytes<4, 0>(playerGuid);
+            *data << uint32(info.skillId);
+            data->WriteGuidBytes<5, 3, 2>(playerGuid);
 
-            session->SendPacket(&data);
+            session->GetPlayer()->ScheduleMessageSend(data, 500);
             return;
         }
     }

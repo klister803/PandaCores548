@@ -7637,6 +7637,12 @@ void Player::SendDirectMessage(WorldPacket* data)
     m_session->SendPacket(data);
 }
 
+void Player::ScheduleMessageSend(WorldPacket* data, uint32 delay)
+{
+    PacketSendEvent* e = new PacketSendEvent(this, data, delay);
+    e->Schedule();
+}
+
 void Player::SendCinematicStart(uint32 CinematicSequenceId)
 {
     //! 5.4.1

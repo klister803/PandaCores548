@@ -753,25 +753,25 @@ void WorldSession::HandleGuildQueryGuildRecipesOpcode(WorldPacket& recvPacket)
 
     Guild::KnownRecipesMap const& recipesMap = guild->GetGuildRecipes();
 
-    WorldPacket data(SMSG_GUILD_RECIPES, 2 + recipesMap.size() * (300 + 4));
-    uint32 bitpos = data.bitwpos();
+    WorldPacket* data = new WorldPacket(SMSG_GUILD_RECIPES, 2 + recipesMap.size() * (300 + 4));
+    uint32 bitpos = data->bitwpos();
     uint32 count = 0;
-    data.WriteBits(count, 15);
+    data->WriteBits(count, 15);
 
     for (Guild::KnownRecipesMap::const_iterator itr = recipesMap.begin(); itr != recipesMap.end(); ++itr)
     {
         if (itr->second.IsEmpty())
             continue;
 
-        data << uint32(itr->first);
-        data.append(itr->second.recipesMask, KNOW_RECIPES_MASK_SIZE);
+        *data << uint32(itr->first);
+        data->append(itr->second.recipesMask, KNOW_RECIPES_MASK_SIZE);
         ++count;
     }
 
-    data.FlushBits();
-    data.PutBits(bitpos, count, 15);
+    data->FlushBits();
+    data->PutBits(bitpos, count, 15);
 
-    SendPacket(&data);
+    _player->ScheduleMessageSend(data, 500);
 }
 
 void WorldSession::HandleGuildQueryGuildMembersForRecipe(WorldPacket& recvPacket)
