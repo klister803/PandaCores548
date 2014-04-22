@@ -2989,6 +2989,12 @@ class Player : public Unit, public GridObject<Player>
 
         Bracket* getBracket(BracketType slot) const;
         void SendPvpRatedStats();
+
+        /*********************************************************/
+        /***              CHALLENGE SYSTEM                     ***/
+        /*********************************************************/
+        void ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal);
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;

@@ -90,8 +90,8 @@ void WorldSession::HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvP
 
                 //count14_d0::dword8
                 {
-                    dataBuffer << uint32(396);              //Currency Reward ID
-                    dataBuffer << uint32(10500 + (i*2000)); //Reward Count
+                    dataBuffer << uint32(CURRENCY_TYPE_VALOR_POINTS);              //Currency Reward ID
+                    dataBuffer << uint32(10500 + (i*2000));                        //Reward Count
                 }
                 dataBuffer << uint32(198450);   //best time in seconds.
             }

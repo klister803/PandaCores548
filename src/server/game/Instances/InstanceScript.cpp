@@ -531,7 +531,11 @@ bool InstanceScript::IsWipe()
 
 void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source)
 {
-    DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), instance->GetDifficulty());
+    Difficulty diff = instance->GetDifficulty();
+    if (challenge_timer)
+        diff = HEROIC_DIFFICULTY;
+
+    DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), diff);
     if (!encounters)
         return;
 
@@ -549,6 +553,33 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                         if (Player* player = i->getSource())
                             if (!source || player->IsAtGroupRewardDistance(source))
                                 sLFGMgr->RewardDungeonDoneFor(dungeonId, player);
+
+                // Challenge reward
+                if (uint32 time = GetChallengeProgresTime())
+                {
+                    MapChallengeModeEntryMap::iterator itr = sMapChallengeModeEntrybyMap.find(instance->GetId());
+                    if (itr != sMapChallengeModeEntrybyMap.end())
+                    {
+                        ChallengeMode medal = CHALLENGE_MEDAL_NONE;
+                        MapChallengeModeEntry const* mode = itr->second;
+
+                        // Calculate reward medal
+                        if (mode->gold > time)
+                            medal = CHALLENGE_MEDAL_GOLD;
+                        else if (mode->silver > time)
+                            medal = CHALLENGE_MEDAL_SILVER;
+                        else if (mode->bronze > time)
+                            medal = CHALLENGE_MEDAL_BRONZE;
+                        else
+                            return;
+
+                        if (!players.isEmpty())
+                            for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                                if (Player* player = i->getSource())
+                                    if (!source || player->IsAtGroupRewardDistance(source))
+                                        player->ChallangeReward(mode, medal);
+                    }
+                }
             }
             return;
         }
@@ -633,7 +664,12 @@ void InstanceScript::StartChallenge()
     if (challenge_timer)
         return;
 
+    if (instance->IsRaid() || !instance->isChallenge())
+        return;
+
     // Check if dungeon support challenge
+    if (sMapChallengeModeEntrybyMap.find(instance->GetId()) == sMapChallengeModeEntrybyMap.end())
+        return;
 
     // Set Timer For Start challenge
     _events.ScheduleEvent(EVENT_START_CHALLENGE, CHALLENGE_START * IN_MILLISECONDS);

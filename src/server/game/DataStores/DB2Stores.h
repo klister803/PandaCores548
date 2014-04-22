@@ -48,4 +48,7 @@ extern ItemUpgradeDataMap sItemUpgradeDataMap;
 typedef UNORDERED_MAP<uint32, BattlePetSpeciesEntry const*> BattlePetSpeciesBySpellIdMap;
 extern BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 
+typedef UNORDERED_MAP<uint32, MapChallengeModeEntry const*> MapChallengeModeEntryMap;
+extern MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
+
 #endif
