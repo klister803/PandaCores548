@@ -28,6 +28,12 @@
 
 #define CHALLENGE_START 5
 
+enum events
+{
+    EVENT_START_CHALLENGE = 1,
+    EVENT_SAVE_CHALLENGE
+};
+
 void InstanceScript::SaveToDB()
 {
     std::string data = GetSaveData();
@@ -570,19 +576,35 @@ void InstanceScript::BroadcastPacket(WorldPacket& data) const
 
 void InstanceScript::Update(uint32 diff)
 {
-    if (challenge_start_timer)
-    {
-        if (challenge_start_timer > diff)
-            challenge_start_timer -= diff;
-        else
-        {
-            challenge_start_timer = 0;
-            challenge_timer = getMSTime();
+    _events.Update(diff);
 
-            WorldPacket data(SMSG_WORLD_STATE_TIMER_START, 8);
-            data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
-            data << uint32(0);                      //time elapsed in sec
-            BroadcastPacket(data);
+    while (uint32 eventId = _events.ExecuteEvent())
+    {
+        switch (eventId)
+        {
+            case EVENT_START_CHALLENGE:
+            {
+                challenge_timer = getMSTime();
+
+                WorldPacket data(SMSG_WORLD_STATE_TIMER_START, 8);
+                data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+                data << uint32(0);                      //time elapsed in sec
+                BroadcastPacket(data);
+
+                // ToDo: despawn challenge gates
+
+                // save challenge progress every min
+                _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+                break;
+            }
+            case EVENT_SAVE_CHALLENGE:
+            {
+                SaveToDB();
+                _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+                break;
+            }
+            default:
+                break;
         }
     }
 }
@@ -599,15 +621,22 @@ void InstanceScript::SetChallengeProgresInSec(uint32 timer)
 {
     if (!timer)
         return;
+
     challenge_timer = getMSTime() - (timer*IN_MILLISECONDS);
+
+    // start save progress event
+    _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
 }
 
 void InstanceScript::StartChallenge()
 {
+    if (challenge_timer)
+        return;
+
     // Check if dungeon support challenge
 
     // Set Timer For Start challenge
-    challenge_start_timer = CHALLENGE_START * IN_MILLISECONDS;
+    _events.ScheduleEvent(EVENT_START_CHALLENGE, CHALLENGE_START * IN_MILLISECONDS);
 
     WorldPacket data(SMSG_START_TIMER, 12);
     data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);

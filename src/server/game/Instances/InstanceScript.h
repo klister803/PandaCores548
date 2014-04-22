@@ -22,6 +22,7 @@
 #include "ZoneScript.h"
 #include "World.h"
 #include "ObjectMgr.h"
+#include "CreatureAIImpl.h"
 //#include "GameObject.h"
 //#include "Map.h"
 
@@ -100,8 +101,7 @@ typedef std::map<uint32 /*entry*/, MinionInfo> MinionInfoMap;
 class InstanceScript : public ZoneScript
 {
     public:
-        explicit InstanceScript(Map* map) : instance(map), completedEncounters(0), challenge_start_timer(0),
-        challenge_timer(0){}
+        explicit InstanceScript(Map* map) : instance(map), completedEncounters(0), challenge_timer(0){}
 
         virtual ~InstanceScript() {}
 
@@ -276,7 +276,7 @@ class InstanceScript : public ZoneScript
         MinionInfoMap minions;
         uint32 completedEncounters;         // completed encounter mask, bit indexes are DungeonEncounter.dbc boss numbers, used for packets
         uint32 ResurectCount;
-        uint32 challenge_start_timer;       // timer for start challenge
         uint32 challenge_timer;             // time in ms of start challenge.
+        EventMap _events;
 };
 #endif
