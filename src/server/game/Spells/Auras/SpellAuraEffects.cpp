@@ -4401,7 +4401,7 @@ void AuraEffect::HandleAuraModEffectImmunity(AuraApplication const* aurApp, uint
             if (target->ToPlayer()->InBattleground())
             {
                 if (Battleground* bg = target->ToPlayer()->GetBattleground())
-                    bg->EventPlayerDroppedFlag(target->ToPlayer());
+                        bg->EventPlayerDroppedFlag(target->ToPlayer());
             }
             else
                 sOutdoorPvPMgr->HandleDropFlag((Player*)target, GetSpellInfo()->Id);

@@ -235,6 +235,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 
     const_cast<WorldPacket*>(packet)->FlushBits();
 
+
 #ifdef TRINITY_DEBUG
     // Code for network use statistic
     static uint64 sendPacketCount = 0;

@@ -1282,6 +1282,13 @@ void WorldSession::HandleSpellClick(WorldPacket& recvData)
     if (!unit->IsInWorld())
         return;
 
+    // flags in Deepwind Gorge
+    if (unit->GetEntry() == 53194)
+    {
+        _player->CastSpell(unit, unit->GetInt32Value(UNIT_FIELD_INTERACT_SPELL_ID));
+        return;
+    }
+
     unit->HandleSpellClick(_player);
 }
 

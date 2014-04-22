@@ -768,7 +768,8 @@ enum Opcodes
     SMSG_BATTLEGROUND_INFO_THROTTLED                  = 0x1127, // 5.4.1 17538
     SMSG_BATTLEGROUND_PLAYER_JOINED                   = 0x1414, // 5.4.1 17538
     SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0x1404, // 5.4.1 17538
-    SMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0x000,  // 5.0.5 16048 Deprecated
+    SMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0x059C, // 5.4.1 17538
+    SMSG_BATTLEGROUND_POINTS                          = 0x0587, // 5.4.1 17538
     SMSG_BINDER_CONFIRM                               = 0x080F, // 5.4.1 17538
     SMSG_BINDPOINTUPDATE                              = 0x0517, // 5.4.1 17538
     SMSG_BINDZONEREPLY                                = 0x000,  // Not found in 4.3.4

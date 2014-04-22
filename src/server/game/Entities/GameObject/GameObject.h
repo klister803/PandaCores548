@@ -414,6 +414,21 @@ struct GameObjectTemplate
             uint32 startOpen;                               // 1
             uint32 autoClose;                               // 2
         } trapDoor;
+        // used as cart on bg Deepwind Gorge
+        // 36
+        struct
+        {
+            uint32 unk0;
+            uint32 spellId;
+            uint32 unk2;
+            uint32 unk3;
+            uint32 unk4;
+            uint32 unk5;
+            uint32 unk6;
+            uint32 unk7;
+            uint32 unk8;
+            uint32 unk9;
+        } type36;
 
         // not use for specific field access (only for output with loop by all filed), also this determinate max union size
         struct

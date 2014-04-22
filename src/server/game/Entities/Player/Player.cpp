@@ -10576,6 +10576,11 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 // and some more ... unknown
             }
             break;
+        case 6665:
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_DG)
+                bg->FillInitialWorldStates(data);
+
+            break;
         // any of these needs change! the client remembers the prev setting!
         // ON EVERY ZONE LEAVE, RESET THE OLD ZONE'S WORLD STATE, BUT AT LEAST THE UI STUFF!
         case 3483:                                          // Hellfire Peninsula
@@ -15671,6 +15676,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 case GOSSIP_OPTION_PETITIONER:
                 case GOSSIP_OPTION_TABARDDESIGNER:
                 case GOSSIP_OPTION_AUCTIONEER:
+//                case 17:
                     break;                                  // no checks
                 case GOSSIP_OPTION_OUTDOORPVP:
                     if (!sOutdoorPvPMgr->CanTalkTo(this, creature, itr->second))
