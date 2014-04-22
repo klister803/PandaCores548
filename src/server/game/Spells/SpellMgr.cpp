@@ -4436,6 +4436,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 15;
                     spellInfo->Effects[1].TargetA = 22;
                     spellInfo->Effects[1].TargetB = 15;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
                     break;
 
                 //World Boss
