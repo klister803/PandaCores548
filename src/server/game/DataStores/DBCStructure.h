@@ -1575,6 +1575,14 @@ struct MapEntry
     {
         return MapID == 0 || MapID == 1 || MapID == 530 || MapID == 571;
     }
+
+    bool isSupportDifficultMode(uint32 difficulty) const
+    {
+        if (IsRaid() && difficulty >= MAX_RAID_DIFFICULTY ||
+            difficulty >= MAX_DUNGEON_DIFFICULTY && difficulty != CHALLENGE_MODE_DIFFICULTY)
+            return false;
+        return true;
+    }
 };
 
 struct MapDifficultyEntry

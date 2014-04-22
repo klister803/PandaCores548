@@ -36,8 +36,9 @@ void InstanceScript::SaveToDB()
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_INSTANCE_DATA);
     stmt->setUInt32(0, GetCompletedEncounterMask());
-    stmt->setString(1, data);
-    stmt->setUInt32(2, instance->GetInstanceId());
+    stmt->setUInt32(1, GetChallengeProgresTime());
+    stmt->setString(2, data);
+    stmt->setUInt32(3, instance->GetInstanceId());
     CharacterDatabase.Execute(stmt);
 }
 
@@ -584,6 +585,21 @@ void InstanceScript::Update(uint32 diff)
             BroadcastPacket(data);
         }
     }
+}
+
+uint32 InstanceScript::GetChallengeProgresTime()
+{
+    if (!challenge_timer)
+        return 0;
+
+    return (getMSTime() - challenge_timer)/IN_MILLISECONDS;
+}
+
+void InstanceScript::SetChallengeProgresInSec(uint32 timer)
+{
+    if (!timer)
+        return;
+    challenge_timer = getMSTime() - (timer*IN_MILLISECONDS);
 }
 
 void InstanceScript::StartChallenge()

@@ -86,7 +86,7 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
         return NULL;
     }
 
-    if (difficulty >= (entry->IsRaid() ? MAX_RAID_DIFFICULTY : MAX_DUNGEON_DIFFICULTY))
+    if (!entry->isSupportDifficultMode(difficulty))
     {
         sLog->outError(LOG_FILTER_GENERAL, "InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d, wrong dificalty %u!", mapId, instanceId, difficulty);
         return NULL;
@@ -168,7 +168,7 @@ void InstanceSave::SaveToDB()
     // save instance data too
     std::string data;
     uint32 completedEncounters = 0;
-
+    uint32 challenge = 0;
     Map* map = sMapMgr->FindMap(GetMapId(), m_instanceid);
     if (map)
     {
@@ -177,10 +177,19 @@ void InstanceSave::SaveToDB()
         {
             data = instanceScript->GetSaveData();
             completedEncounters = instanceScript->GetCompletedEncounterMask();
+            challenge = instanceScript->GetChallengeProgresTime();
         }
     }
 
-    CharacterDatabase.PExecute("INSERT INTO instance (id, map, resettime, difficulty, completedEncounters, data) VALUES ('%u', '%u', '%u', '%u', '%u', '%s')", m_instanceid, GetMapId(), uint32(GetResetTimeForDB()), uint8(GetDifficulty()), completedEncounters, data.c_str());
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_INSTANCE_SAVE);
+    stmt->setUInt32(0, m_instanceid);
+    stmt->setUInt16(1, GetMapId());
+    stmt->setUInt32(2, uint32(GetResetTimeForDB()));
+    stmt->setUInt8(3, uint8(GetDifficulty()));
+    stmt->setUInt32(4, challenge);
+    stmt->setUInt32(5, completedEncounters);
+    stmt->setString(6, data);
+    CharacterDatabase.Execute(stmt);
 }
 
 time_t InstanceSave::GetResetTimeForDB()

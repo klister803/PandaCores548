@@ -255,6 +255,8 @@ class InstanceScript : public ZoneScript
         // Challenge
         void FillInitialWorldTimers(WorldPacket& data);
         void StartChallenge();
+        uint32 GetChallengeProgresTime();
+        void SetChallengeProgresInSec(uint32 timer);
 
     protected:
         void LoadDoorData(DoorData const* data);
