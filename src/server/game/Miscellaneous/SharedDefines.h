@@ -772,7 +772,7 @@ enum SpellAttr11
 {
     SPELL_ATTR11_UNK0                             = 0x00000001, // 0
     SPELL_ATTR11_UNK1                             = 0x00000002, // 1    Decrease speed
-    SPELL_ATTR11_UNK2                             = 0x00000004, // 2    Stat buffs
+    SPELL_ATTR11_SEND_ITEM_LEVEL                  = 0x00000004, // 2    Stat buffs
     SPELL_ATTR11_UNK3                             = 0x00000008, // 3    Spirit of Redemption
     SPELL_ATTR11_UNK4                             = 0x00000010, // 4
     SPELL_ATTR11_UNK5                             = 0x00000020, // 5
