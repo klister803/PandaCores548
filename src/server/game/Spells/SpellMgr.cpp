@@ -4563,7 +4563,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Hack these until proc flags of CC auras are implemented
                 case 339:       // Entangling Roots
                 case 19975:     // Entangling Roots
-                case 20066:     // Repentance
                 case 51514:     // Hex
                 case 102359:    // Mass Entanglement
                 case 104239:    // Horror (Soulburn)
@@ -4696,6 +4695,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 131086: // Bladestorm (Protection buff) DND
                     spellInfo->Effects[EFFECT_0].BasePoints = 50;
+                    break;
+                case 20066: // Repentance
+                    spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
+                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 default:
                     break;
