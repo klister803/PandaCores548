@@ -1658,6 +1658,24 @@ void GameObject::Use(Unit* user)
             player->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR+info->barberChair.chairheight);
             return;
         }
+        case GAMEOBJECT_TYPE_UNK36:     //36
+        {
+            GameObjectTemplate const* goInfo = GetGOInfo();
+            if (goInfo->type36.spellId)
+                CastSpell(user, goInfo->type36.spellId);
+
+            if (user->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player* player = user->ToPlayer();
+                if (Battleground* bg = player->GetBattleground())
+                {
+                    SetLootState(GO_JUST_DEACTIVATED);
+                    bg->EventPlayerUsedGO(player, this);
+                }
+            }
+
+            return;
+        }
         default:
             if (GetGoType() >= MAX_GAMEOBJECT_TYPE)
                 sLog->outError(LOG_FILTER_GENERAL, "GameObject::Use(): unit (type: %u, guid: %u, name: %s) tries to use object (guid: %u, entry: %u, name: %s) of unknown type (%u)",

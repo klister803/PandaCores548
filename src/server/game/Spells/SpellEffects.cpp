@@ -48,6 +48,7 @@
 #include "BattlegroundEY.h"
 #include "BattlegroundWS.h"
 #include "BattlegroundTP.h"
+#include "BattlegroundDG.h"
 #include "OutdoorPvPMgr.h"
 #include "Language.h"
 #include "SocialMgr.h"
@@ -1263,6 +1264,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     }
                     else
                         unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, m_caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID));
+                    break;
+                }
+                case 97383: // Capturing
+                {
+                    m_caster->CastSpell(unitTarget, 97388);
+                    break;
+                }
+                case 97388: // 97388
+                {
+                    if (m_caster->ToPlayer() && m_caster->ToPlayer()->GetBattleground() && m_caster->ToPlayer()->GetBattleground()->GetTypeID() == BATTLEGROUND_DG)
+                        ((BattlegroundDG*)(m_caster->ToPlayer()->GetBattleground()))->HandlePointCapturing(m_caster->ToPlayer(), unitTarget->ToCreature());
+
                     break;
                 }
                 default:

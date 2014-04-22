@@ -275,7 +275,7 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(horridonentdoorGuid, true);
-                        //HandleGameObject(horridonexdoorGuid, true);
+                        HandleGameObject(horridonexdoorGuid, true);
                         break;
                     }
                 }
@@ -330,7 +330,6 @@ public:
             default:
                 break;
             }
-
             return true;
         }
 

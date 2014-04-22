@@ -235,6 +235,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 
     const_cast<WorldPacket*>(packet)->FlushBits();
 
+
 #ifdef TRINITY_DEBUG
     // Code for network use statistic
     static uint64 sendPacketCount = 0;
@@ -1452,3 +1453,20 @@ void WorldSession::InitWarden(BigNumber* k, std::string os)
         // _warden->Init(this, k);
     }
 }
+
+PacketSendEvent::~PacketSendEvent()
+{
+    delete m_packet;
+}
+
+bool PacketSendEvent::Execute(uint64 , uint32)
+{
+    m_owner->SendDirectMessage(m_packet);
+    return true;
+}
+
+void PacketSendEvent::Schedule()
+{
+    m_owner->m_Events.AddEvent(this, m_owner->m_Events.CalculateTime(m_delay));
+}
+

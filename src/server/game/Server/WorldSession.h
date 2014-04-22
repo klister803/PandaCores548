@@ -1127,5 +1127,22 @@ class WorldSession
 
         z_stream_s* _compressionStream;
 };
+
+class PacketSendEvent : public BasicEvent
+{
+    Player* m_owner;
+    WorldPacket* m_packet;
+    uint32 m_delay;
+public:
+    explicit PacketSendEvent(Player* owner, WorldPacket* data, uint32 delay) : m_owner(owner), m_packet(data), m_delay(delay) { }
+    explicit PacketSendEvent(Player* me, WorldPacket& data, uint32 delay);
+
+    ~PacketSendEvent();
+
+    virtual bool Execute(uint64 , uint32);
+
+    void Schedule();
+};
+
 #endif
 /// @}

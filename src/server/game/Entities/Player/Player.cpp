@@ -7637,6 +7637,12 @@ void Player::SendDirectMessage(WorldPacket* data)
     m_session->SendPacket(data);
 }
 
+void Player::ScheduleMessageSend(WorldPacket* data, uint32 delay)
+{
+    PacketSendEvent* e = new PacketSendEvent(this, data, delay);
+    e->Schedule();
+}
+
 void Player::SendCinematicStart(uint32 CinematicSequenceId)
 {
     //! 5.4.1
@@ -10719,6 +10725,11 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 FillInitialWorldState(data, 0xc0d, 0x17b);     // 38 3085 unk
                 // and some more ... unknown
             }
+            break;
+        case 6665:
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_DG)
+                bg->FillInitialWorldStates(data);
+
             break;
         // any of these needs change! the client remembers the prev setting!
         // ON EVERY ZONE LEAVE, RESET THE OLD ZONE'S WORLD STATE, BUT AT LEAST THE UI STUFF!
@@ -15813,6 +15824,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 case GOSSIP_OPTION_PETITIONER:
                 case GOSSIP_OPTION_TABARDDESIGNER:
                 case GOSSIP_OPTION_AUCTIONEER:
+//                case 17:
                     break;                                  // no checks
                 case GOSSIP_OPTION_OUTDOORPVP:
                     if (!sOutdoorPvPMgr->CanTalkTo(this, creature, itr->second))
@@ -29069,4 +29081,3 @@ void Player::ModifySpellCooldown(uint32 spell_id, int32 delta)
 
     SendModifyCooldown(spell_id, G3D::fuzzyGt(result, 0.0) ? delta : -int32(cooldown * IN_MILLISECONDS));
 }
-

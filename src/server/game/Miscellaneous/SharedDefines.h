@@ -772,7 +772,7 @@ enum SpellAttr11
 {
     SPELL_ATTR11_UNK0                             = 0x00000001, // 0
     SPELL_ATTR11_UNK1                             = 0x00000002, // 1    Decrease speed
-    SPELL_ATTR11_UNK2                             = 0x00000004, // 2    Stat buffs
+    SPELL_ATTR11_SEND_ITEM_LEVEL                  = 0x00000004, // 2    Stat buffs
     SPELL_ATTR11_UNK3                             = 0x00000008, // 3    Spirit of Redemption
     SPELL_ATTR11_UNK4                             = 0x00000010, // 4
     SPELL_ATTR11_UNK5                             = 0x00000020, // 5
@@ -1924,10 +1924,12 @@ enum GameobjectTypes
     GAMEOBJECT_TYPE_BARBER_CHAIR           = 32,
     GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING  = 33,
     GAMEOBJECT_TYPE_GUILD_BANK             = 34,
-    GAMEOBJECT_TYPE_TRAPDOOR               = 35
+    GAMEOBJECT_TYPE_TRAPDOOR               = 35,
+    GAMEOBJECT_TYPE_UNK36                  = 36,
+    GAMEOBJECT_TYPE_UNK37                  = 37
 };
 
-#define MAX_GAMEOBJECT_TYPE                  36             // sending to client this or greater value can crash client.
+#define MAX_GAMEOBJECT_TYPE                  38             // sending to client this or greater value can crash client.
 #define MAX_GAMEOBJECT_DATA                  32             // Max number of uint32 vars in gameobject_template data field
 
 enum GameObjectFlags
