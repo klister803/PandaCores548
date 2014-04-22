@@ -21215,8 +21215,15 @@ bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
     return true;
 }
 
-void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c)
+void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c, bool coded)
 {
+    if (coded && c.codedMessage.empty())
+        c.codedMessage = CodeChatMessage(c.message, c.language);
+
+    std::string& message = coded ? c.codedMessage : c.message;
+    if (message.empty())
+        c.language = LANG_UNIVERSAL;
+
     data.Initialize(SMSG_MESSAGECHAT);
 
     data.WriteBit(!c.language);
@@ -21250,8 +21257,8 @@ void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c)
     if (uint32 len = c.channelName.size())
         data.WriteBits(len, 7);
 
-    data.WriteBit(!c.message.size());
-    if (uint32 len = c.message.size())
+    data.WriteBit(!message.size());
+    if (uint32 len = message.size())
         data.WriteBits(len, 12);
 
     data.WriteBit(!c.sourceGuid);
@@ -21281,7 +21288,7 @@ void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c)
 
     data.WriteString(c.channelName);
 
-    data.WriteString(c.message);
+    data.WriteString(message);
 
     data << uint8(c.chatType);
 
@@ -21294,6 +21301,59 @@ void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c)
         data << float(c.float1490);
     if (c.realmId)
         data << uint32(c.realmId);
+}
+
+uint32 GetWordWeight(std::string const& word)
+{
+    uint32 weight = 0;
+    for (uint32 i = 0; i < word.size(); ++i)
+        weight += (uint8)word[i];
+    return weight;
+}
+
+bool isCaps(std::wstring wstr)
+{
+    if (wstr.empty())
+        return false;
+
+    uint32 upperCount = 0;
+    for (uint32 i = 0;i < wstr.size(); ++i)
+        if (std::iswupper(wstr[i]))
+            ++upperCount;
+
+    return upperCount * 2 >= wstr.size();
+}
+
+std::string Trinity::CodeChatMessage(std::string text, uint32 lang_id)
+{
+    LanguageWordsMap const* wordMap = GetLanguageWordMap(lang_id);
+    if (!wordMap)
+        return "";
+
+    std::string convertedMessage;
+
+    Tokenizer t(text, ' ');
+    for (uint32 i = 0; i < t.size(); ++i)
+    {
+        std::string word = t[i];
+        std::wstring wword;
+        if (!Utf8toWStr(word, wword))
+            continue;
+
+        if (wword.empty())
+            continue;
+
+        if (std::vector<std::string> const* wordVector = GetLanguageWordsBySize(lang_id, wword.size()))
+        {
+            std::string replacer = wordVector->at(GetWordWeight(t[i]) % wordVector->size());
+            if (isCaps(wword))
+                std::transform(replacer.begin(), replacer.end(), replacer.begin(), toupper);
+
+            convertedMessage += replacer + " ";
+        }
+    }
+
+    return convertedMessage;
 }
 
 void Unit::SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList)

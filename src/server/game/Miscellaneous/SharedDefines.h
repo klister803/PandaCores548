@@ -895,8 +895,6 @@ enum Language
     LANG_ADDON          = 0xFFFFFFFF                        // used by addons, in 2.4.0 not exist, replaced by messagetype?
 };
 
-#define LANGUAGES_COUNT   24
-
 enum TeamId
 {
     TEAM_ALLIANCE = 0,

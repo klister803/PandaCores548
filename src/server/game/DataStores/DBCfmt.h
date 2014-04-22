@@ -109,6 +109,7 @@ const char ItemSetEntryfmt[]="dsiiiiiiiiiixxxxxxxiiiiiiiiiiiiiiiiii";
 const char ItemSpecEntryfmt[]="nii";
 const std::string CustomItemSpecEntryfmt="ppp";
 const std::string CustomItemSpecEntryIndex = "Id";
+const char LanguageWordsEntryfmt[]="dis";
 const char LFGDungeonEntryfmt[]="nxiiiiiiiiixxixixiiiixxxxxxxx";
 const char LiquidTypefmt[]="nxxixixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char LockEntryfmt[]="niiiiiiiiiiiiiiiiiiiiiiiixxxxxxxx";

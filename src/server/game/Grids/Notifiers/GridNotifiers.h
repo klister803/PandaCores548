@@ -152,6 +152,29 @@ namespace Trinity
         }
     };
 
+    struct ChatMessageDistDeliverer
+    {
+        WorldObject* i_source;
+        uint32 i_phaseMask;
+        float i_distSq;
+        uint32 team;
+        Player const* skipped_receiver;
+        ChatData& i_c;
+        ChatMessageDistDeliverer(WorldObject* src, ChatData& c, float dist, bool own_team_only = false, Player const* skipped = NULL)
+            : i_source(src), i_phaseMask(src->GetPhaseMask()), i_distSq(dist * dist),
+            team((own_team_only && src->GetTypeId() == TYPEID_PLAYER) ? ((Player*)src)->GetTeam() : 0),
+            skipped_receiver(skipped), i_c(c)
+        {
+        }
+
+        void Visit(PlayerMapType &m);
+        void Visit(CreatureMapType &m);
+        void Visit(DynamicObjectMapType &m);
+        template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
+
+        void SendPacket(Player* player);
+    };
+
     struct ObjectUpdater
     {
         uint32 i_timeDiff;

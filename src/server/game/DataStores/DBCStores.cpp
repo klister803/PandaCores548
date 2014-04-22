@@ -147,13 +147,16 @@ DBCStorage <ItemDamageEntry>              sItemDamageTwoHandStore(ItemDamagefmt)
 DBCStorage <ItemDamageEntry>              sItemDamageTwoHandCasterStore(ItemDamagefmt);
 DBCStorage <ItemDamageEntry>              sItemDamageWandStore(ItemDamagefmt);
 DBCStorage <ItemDisenchantLootEntry>      sItemDisenchantLootStore(ItemDisenchantLootfmt);
-//DBCStorage <ItemDisplayInfoEntry> sItemDisplayInfoStore(ItemDisplayTemplateEntryfmt); -- not used currently
-DBCStorage <ItemLimitCategoryEntry> sItemLimitCategoryStore(ItemLimitCategoryEntryfmt);
-DBCStorage <ItemRandomPropertiesEntry> sItemRandomPropertiesStore(ItemRandomPropertiesfmt);
-DBCStorage <ItemRandomSuffixEntry> sItemRandomSuffixStore(ItemRandomSuffixfmt);
-DBCStorage <ItemSetEntry> sItemSetStore(ItemSetEntryfmt);
-DBCStorage <ItemSpecEntry> sItemSpecStore(ItemSpecEntryfmt);
+//DBCStorage <ItemDisplayInfoEntry>       sItemDisplayInfoStore(ItemDisplayTemplateEntryfmt); -- not used currently
+DBCStorage <ItemLimitCategoryEntry>       sItemLimitCategoryStore(ItemLimitCategoryEntryfmt);
+DBCStorage <ItemRandomPropertiesEntry>    sItemRandomPropertiesStore(ItemRandomPropertiesfmt);
+DBCStorage <ItemRandomSuffixEntry>        sItemRandomSuffixStore(ItemRandomSuffixfmt);
+DBCStorage <ItemSetEntry>                 sItemSetStore(ItemSetEntryfmt);
+DBCStorage <ItemSpecEntry>                sItemSpecStore(ItemSpecEntryfmt);
+//std::map<uint32, 
 
+DBCStorage <LanguageWordsEntry>           sLanguageWordsStore(LanguageWordsEntryfmt);
+std::map<uint32 /*lang id*/, LanguageWordsMap> sLanguageWordsMapStore;
 DBCStorage <LFGDungeonEntry> sLFGDungeonStore(LFGDungeonEntryfmt);
 DBCStorage <LiquidTypeEntry> sLiquidTypeStore(LiquidTypefmt);
 DBCStorage <LockEntry> sLockStore(LockEntryfmt);
@@ -495,6 +498,15 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemDamageWandStore,         dbcPath, "ItemDamageWand.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemDisenchantLootStore,     dbcPath, "ItemDisenchantLoot.dbc");
 
+    LoadDBC(availableDbcLocales, bad_dbc_files, sLanguageWordsStore,          dbcPath, "LanguageWords.dbc");
+    for (uint32 i = 0; i < sLanguageWordsStore.GetNumRows(); ++i)
+    {
+        LanguageWordsEntry const* entry = sLanguageWordsStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        sLanguageWordsMapStore[entry->langId][strlen(entry->word)].push_back(entry->word);
+    }
     LoadDBC(availableDbcLocales, bad_dbc_files, sLFGDungeonStore,             dbcPath, "LfgDungeons.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sLiquidTypeStore,             dbcPath, "LiquidType.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sLockStore,                   dbcPath, "Lock.dbc");//14545
@@ -1386,5 +1398,21 @@ ResearchSiteEntry const* GetResearchSiteEntryById(uint32 id)
         return NULL;
 
     return itr->second.entry;
+}
+
+LanguageWordsMap const* GetLanguageWordMap(uint32 lang_id)
+{
+    std::map<uint32, LanguageWordsMap>::const_iterator itr = sLanguageWordsMapStore.find(lang_id);
+    return itr != sLanguageWordsMapStore.end() ? &itr->second : NULL;
+}
+
+std::vector<std::string> const* GetLanguageWordsBySize(uint32 lang_id, uint32 size)
+{
+    LanguageWordsMap const* wordMap = GetLanguageWordMap(lang_id);
+    if (!wordMap)
+        return NULL;
+
+    std::map<uint32, std::vector<std::string> >::const_iterator itr = wordMap->find(size);
+    return itr != wordMap->end() ? &itr->second : NULL;
 }
 

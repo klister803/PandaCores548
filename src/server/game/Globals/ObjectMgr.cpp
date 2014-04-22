@@ -161,7 +161,7 @@ bool normalizePlayerName(std::string& name)
     return true;
 }
 
-LanguageDesc lang_description[LANGUAGES_COUNT] =
+LanguageDesc lang_description[LANGUAGE_DESC_COUNT] =
 {
     { LANG_ADDON,           0, 0                       },
     { LANG_UNIVERSAL,       0, 0                       },
@@ -184,15 +184,14 @@ LanguageDesc lang_description[LANGUAGES_COUNT] =
     { LANG_GOBLIN_BINARY,   0, 0                       },
     { LANG_WORGEN,      69270, SKILL_LANG_WORGEN       },
     { LANG_GOBLIN,      69269, SKILL_LANG_GOBLIN       },
-	{ LANG_PANDAREN_N,  108127,  SKILL_LANG_PANDAREN_N },
-	{ LANG_PANDAREN_H,  108130,  SKILL_LANG_PANDAREN_A },
-	{ LANG_PANDAREN_A,  108131,  SKILL_LANG_PANDAREN_H }
-
+    { LANG_PANDAREN_N,  108127,  SKILL_LANG_PANDAREN_N },
+    { LANG_PANDAREN_H,  108130,  SKILL_LANG_PANDAREN_A },
+    { LANG_PANDAREN_A,  108131,  SKILL_LANG_PANDAREN_H },
 };
 
 LanguageDesc const* GetLanguageDescByID(uint32 lang)
 {
-    for (uint8 i = 0; i < LANGUAGES_COUNT; ++i)
+    for (uint8 i = 0; i < LANGUAGE_DESC_COUNT; ++i)
     {
         if (uint32(lang_description[i].lang_id) == lang)
             return &lang_description[i];

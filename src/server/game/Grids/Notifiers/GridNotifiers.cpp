@@ -194,6 +194,93 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
     }
 }
 
+void ChatMessageDistDeliverer::Visit(PlayerMapType &m)
+{
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        Player* target = iter->getSource();
+        if (!target->InSamePhase(i_phaseMask))
+            continue;
+
+        if (target->GetExactDist2dSq(i_source) > i_distSq)
+            continue;
+
+        // Send packet to all who are sharing the player's vision
+        if (!target->GetSharedVisionList().empty())
+        {
+            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
+            for (; i != target->GetSharedVisionList().end(); ++i)
+                if ((*i)->m_seer == target)
+                    SendPacket(*i);
+        }
+
+        if (target->m_seer == target || target->GetVehicle())
+            SendPacket(target);
+    }
+}
+
+void ChatMessageDistDeliverer::Visit(CreatureMapType &m)
+{
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        Creature* target = iter->getSource();
+        if (!target->InSamePhase(i_phaseMask))
+            continue;
+
+        if (target->GetExactDist2dSq(i_source) > i_distSq)
+            continue;
+
+        // Send packet to all who are sharing the creature's vision
+        if (!target->GetSharedVisionList().empty())
+        {
+            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
+            for (; i != target->GetSharedVisionList().end(); ++i)
+                if ((*i)->m_seer == target)
+                    SendPacket(*i);
+        }
+    }
+}
+
+void ChatMessageDistDeliverer::Visit(DynamicObjectMapType &m)
+{
+    for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        DynamicObject* target = iter->getSource();
+        if (!target->InSamePhase(i_phaseMask))
+            continue;
+
+        if (target->GetExactDist2dSq(i_source) > i_distSq)
+            continue;
+
+        if (IS_PLAYER_GUID(target->GetCasterGUID()))
+        {
+            // Send packet back to the caster if the caster has vision of dynamic object
+            Player* caster = (Player*)target->GetCaster();
+            if (caster && caster->m_seer == target)
+                SendPacket(caster);
+        }
+    }
+}
+
+void ChatMessageDistDeliverer::SendPacket(Player* player)
+{
+    // never send packet to self
+    if (player == i_source || (team && player->GetTeam() != team) || skipped_receiver == player)
+        return;
+
+    if (!player->HaveAtClient(i_source))
+        return;
+
+    if (WorldSession* session = player->GetSession())
+    {
+        WorldPacket packet;
+        LanguageDesc const* langDesc = GetLanguageDescByID(i_c.language);
+        bool shouldCode = i_c.language != LANG_ADDON && (i_c.chatType == CHAT_MSG_SAY || i_c.chatType == CHAT_MSG_YELL) && !player->CanSpeakLanguage(i_c.language) && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT);
+        Trinity::BuildChatPacket(packet, i_c, shouldCode);
+        session->SendPacket(&packet);
+    }
+}
+
 /*
 void
 MessageDistDeliverer::VisitObject(Player* player)

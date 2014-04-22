@@ -2554,6 +2554,7 @@ namespace Trinity
         std::string sourceName;
         std::string channelName;
         std::string message;
+        std::string codedMessage;
 
         uint32 realmId;
         uint16 chatTag;
@@ -2563,7 +2564,8 @@ namespace Trinity
         float float1490;
     };
 
-    void BuildChatPacket(WorldPacket& data, ChatData& c);
+    void BuildChatPacket(WorldPacket& data, ChatData& c, bool coded = false);
+    std::string CodeChatMessage(std::string text, uint32 lang_id);
 }
 
 namespace Trinity
