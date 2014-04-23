@@ -3432,7 +3432,9 @@ void Guild::SendGuildXP(WorldSession* session) const
     Member const* member = GetMember(session->GetGuidLow());
 
     WorldPacket data(SMSG_GUILD_XP, 40);
-    data << uint64(sGuildMgr->GetXPForGuildLevel(GetLevel()) - GetExperience());    // XP missing for next level
+    uint64 xpMissing = sGuildMgr->GetXPForGuildLevel(GetLevel()) >= GetExperience() ?
+        sGuildMgr->GetXPForGuildLevel(GetLevel()) : GetExperience();    // XP missing for next level
+    data << uint64(xpMissing);
     data << uint64(GetTodayExperience());
     data << uint64(GetTodayExperience());
     data << uint64(GetExperience());
@@ -3456,10 +3458,10 @@ void Guild::ResetWeek()
 
 void Guild::GuildNewsLog::AddNewEvent(GuildNews eventType, time_t date, uint64 playerGuid, uint32 flags, uint32 data)
 {
-    uint32 id = _newsLog.size();
+    uint32 id = GetNewId();
     GuildNewsEntry& log = _newsLog[id];
     log.EventType = eventType;
-    log.PlayerGuid = playerGuid;
+    log.PlayerGuid = GUID_LOPART(playerGuid);
     log.Data = data;
     log.Flags = flags;
     log.Date = date;
@@ -3468,7 +3470,7 @@ void Guild::GuildNewsLog::AddNewEvent(GuildNews eventType, time_t date, uint64 p
     stmt->setUInt32(0, GetGuild()->GetId());
     stmt->setUInt32(1, id);
     stmt->setUInt32(2, log.EventType);
-    stmt->setUInt64(3, log.PlayerGuid);
+    stmt->setUInt32(3, log.PlayerGuid);
     stmt->setUInt32(4, log.Data);
     stmt->setUInt32(5, log.Flags);
     stmt->setUInt32(6, uint32(log.Date));
@@ -3489,20 +3491,33 @@ void Guild::GuildNewsLog::LoadFromDB(PreparedQueryResult result)
         uint32 id = fields[0].GetInt32();
         GuildNewsEntry& log = _newsLog[id];
         log.EventType = GuildNews(fields[1].GetInt32());
-        log.PlayerGuid = fields[2].GetInt64();
+        log.PlayerGuid = fields[2].GetInt32();
         log.Data = fields[3].GetInt32();
         log.Flags = fields[4].GetInt32();
         log.Date = time_t(fields[5].GetInt32());
     }
     while (result->NextRow());
+
+    Shrink();
+}
+
+void Guild::GuildNewsLog::Shrink()
+{
+    while (_newsLog.size() > MAX_GUILD_NEWS_ENTRIES)
+        _newsLog.erase(_newsLog.begin());
+}
+
+uint32 Guild::GuildNewsLog::GetNewId() const
+{
+    return !_newsLog.empty() ? _newsLog.rbegin()->first : 0;
 }
 
 void Guild::GuildNewsLog::BuildNewsData(uint32 id, GuildNewsEntry& guildNew, WorldPacket& data)
 {
     data.Initialize(SMSG_GUILD_NEWS_UPDATE, (21 + _newsLog.size() * (26 + 8)) / 8 + (8 + 6 * 4) * _newsLog.size());
-    data.WriteBits(1, 21);
+    data.WriteBits(1, 19);
 
-    ObjectGuid guid = guildNew.PlayerGuid;
+    ObjectGuid guid = MAKE_NEW_GUID(guildNew.PlayerGuid, 0, HIGHGUID_PLAYER);
 
     data.WriteGuidMask<5, 2, 0, 3>(guid);
     data.WriteBits(0, 24); // Not yet implemented used for guild achievements
@@ -3527,7 +3542,7 @@ void Guild::GuildNewsLog::BuildNewsData(WorldPacket& data)
 
     for (GuildNewsLogMap::const_iterator it = _newsLog.begin(); it != _newsLog.end(); it++)
     {
-        ObjectGuid guid = it->second.PlayerGuid;
+        ObjectGuid guid = MAKE_NEW_GUID(it->second.PlayerGuid, 0, HIGHGUID_PLAYER);
 
         data.WriteGuidMask<5, 2, 0, 3>(guid);
         data.WriteBits(0, 24); // Not yet implemented used for guild achievements
@@ -3536,7 +3551,7 @@ void Guild::GuildNewsLog::BuildNewsData(WorldPacket& data)
 
     for (GuildNewsLogMap::const_iterator it = _newsLog.begin(); it != _newsLog.end(); it++)
     {
-        ObjectGuid guid = it->second.PlayerGuid;
+        ObjectGuid guid = MAKE_NEW_GUID(it->second.PlayerGuid, 0, HIGHGUID_PLAYER);
 
         data << uint32(secsToTimeBitFields(it->second.Date));
         data.WriteGuidBytes<1>(guid);
