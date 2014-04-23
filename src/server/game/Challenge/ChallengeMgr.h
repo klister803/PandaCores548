@@ -45,8 +45,7 @@ struct Challenge
 
 typedef UNORDERED_MAP<uint16/*map*/, Challenge *> ChallengeByMap;
 typedef UNORDERED_MAP<uint32/*id*/, Challenge *> ChallengeMap;
-typedef std::set<Challenge *> ChallengeList;
-typedef UNORDERED_MAP<uint64/*MemberGUID*/, ChallengeList> ChallengesOfMember;
+typedef UNORDERED_MAP<uint64/*MemberGUID*/, ChallengeByMap> ChallengesOfMember;
 typedef UNORDERED_MAP<uint32/*guild*/, ChallengeByMap> GuildBestRecord;
 
 class ChallengeMgr
@@ -63,11 +62,19 @@ class ChallengeMgr
         uint32 GenerateChallengeID() { return ++challengeGUID; }
         void CheckBestMapId(Challenge *c);
         void CheckBestGuildMapId(Challenge *c);
+        void CheckBestMemberMapId(uint64 guid, Challenge *c);
 
         void GroupReward(Map *instance, uint32 recordTime, ChallengeMode medal);
 
         Challenge * BestServerChallenge(uint16 map);
         Challenge * BestGuildChallenge(uint32 guildId, uint16 map);
+        ChallengeByMap * BestForMember(uint64 guid)
+        {
+            ChallengesOfMember::iterator itr = m_ChallengesOfMember.find(guid);
+            if (itr == m_ChallengesOfMember.end())
+                return NULL;
+            return &itr->second;
+        }
 
     protected:
         uint32 challengeGUID;

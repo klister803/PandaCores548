@@ -48,6 +48,12 @@ void ChallengeMgr::CheckBestGuildMapId(Challenge *c)
         m_GuildBest[c->guildId][c->mapID] = c;
 }
 
+void ChallengeMgr::CheckBestMemberMapId(uint64 guid, Challenge *c)
+{
+    if (!m_ChallengesOfMember[guid][c->mapID] || m_ChallengesOfMember[guid][c->mapID]->recordTime > c->recordTime)
+        m_ChallengesOfMember[guid][c->mapID] = c;
+}
+
 void ChallengeMgr::SaveChallengeToDB(Challenge *c)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -118,7 +124,7 @@ void ChallengeMgr::LoadFromDB()
             continue;
         }
         itr->second->member.insert(member);
-        m_ChallengesOfMember[member.guid].insert(itr->second);
+        CheckBestMemberMapId(member.guid, itr->second);
     }while (result->NextRow());
 }
 
@@ -149,7 +155,7 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
                 guildCounter[player->GetGuildId()] += 1;
 
             c->member.insert(member);
-            m_ChallengesOfMember[member.guid].insert(c);
+            CheckBestMemberMapId(member.guid, c);
         }
 
     // Stupid group guild check.

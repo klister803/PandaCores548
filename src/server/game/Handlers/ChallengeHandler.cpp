@@ -153,23 +153,32 @@ void WorldSession::HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& r
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_CHALLENGE_MODE_REQUEST_COMPLETION_INFO");
 
     WorldPacket data(SMSG_CHALLENGE_MODE_COMPLETION_INFO, 100);
-    data.WriteBits(1, 19);
-    data.WriteBits(5, 23);                              //numRewards 
-    data.FlushBits();
+
+    ChallengeByMap * best = sChallengeMgr->BestForMember(_player->GetGUID());
+
+    data.WriteBits(best ? best->size() : 0, 19);
+    if(best)
     {
-        data << uint32(500790);                         //Record Time
-        data.AppendPackedTime(sWorld->GetGameTime());   //completionTime
-        data << uint32(960);
-        //for(int32 i = 0; i < 4; ++i)
+        for(ChallengeByMap::iterator itr = best->begin(); itr != best->end(); ++itr)
+            data.WriteBits(itr->second->member.size(), 23);                  //num membeers 
+
+        data.FlushBits();
+
+        for(ChallengeByMap::iterator itr = best->begin(); itr != best->end(); ++itr)
         {
-            data << uint16(251);
-            data << uint16(105);
-            data << uint16(73);
-            data << uint16(255);
-            data << uint16(269);
+            data << uint32(itr->second->recordTime);                         //Record Time
+            data.AppendPackedTime(itr->second->date);                        //completionTime
+            data << uint32(itr->second->mapID);
+
+            for(ChallengeMemberList::iterator i = itr->second->member.begin(); i != itr->second->member.end(); ++i)
+            {
+                ChallengeMember member = *i;
+                data << uint16(member.specId);
+            }
+            data << uint32(itr->second->medal);                              //medal
+            //ToDo: need create one more holder on challenge mgr with last record. Is it trully need?
+            data << uint32(itr->second->recordTime);                         //Last Record Time
         }
-        data << uint32(CHALLENGE_MEDAL_PLAT);           //medal
-        data << uint32(1012790);                        //Last Record Time
     }
     SendPacket(&data);
 }
