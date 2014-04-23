@@ -1461,6 +1461,7 @@ enum Opcodes
     SMSG_WORLD_SERVER_INFO                            = 0x0427, // 5.4.1 17538
     SMSG_WORLD_STATE_TIMER_START_INIT                 = 0x011F, // 5.4.1 17538
     SMSG_WORLD_STATE_TIMER_START                      = 0x0886, // 5.4.1 17538
+    SMSG_WORLD_STATE_TIMER_STOP                       = 0x1186, // 5.4.1 17538
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x05AC, // 5.4.1 17538
     SMSG_XP_GAIN_ABORTED                              = 0xB76,  // 5.0.5 16048
     SMSG_ZONE_UNDER_ATTACK                            = 0x148D, // 5.4.1 17538

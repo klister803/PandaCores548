@@ -32,7 +32,8 @@
 enum events
 {
     EVENT_START_CHALLENGE = 1,
-    EVENT_SAVE_CHALLENGE
+    EVENT_SAVE_CHALLENGE  = 2,
+    EVENT_CHALLENGE_STOP  = 3,
 };
 
 void InstanceScript::SaveToDB()
@@ -575,6 +576,8 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                             return;
 
                         sChallengeMgr->GroupReward(instance, getMSTime() - challenge_timer, medal);
+
+                        _events.ScheduleEvent(EVENT_CHALLENGE_STOP, 1000);
                     }
                 }
             }
@@ -629,6 +632,17 @@ void InstanceScript::Update(uint32 diff)
             {
                 SaveToDB();
                 _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+                break;
+            }
+            case EVENT_CHALLENGE_STOP:
+            {
+                _events.CancelEvent(EVENT_SAVE_CHALLENGE);
+
+                WorldPacket data(SMSG_WORLD_STATE_TIMER_STOP, 5);
+                data.WriteBit(1);
+                data.FlushBits();
+                data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+                BroadcastPacket(data);
                 break;
             }
             default:
