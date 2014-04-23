@@ -23631,13 +23631,14 @@ void Player::UpdateHomebindTime(uint32 time)
     else
     {
         // instance is invalid, start homebind timer
-        m_HomebindTimer = 60000;
+        m_HomebindTimer = 0;
         // send message to player
         WorldPacket data(SMSG_RAID_GROUP_ONLY, 4+4);
         data << uint32(m_HomebindTimer);
         data << uint32(1);
         GetSession()->SendPacket(&data);
         sLog->outDebug(LOG_FILTER_MAPS, "PLAYER: Player '%s' (GUID: %u) will be teleported to homebind in 60 seconds", GetName(), GetGUIDLow());
+        RepopAtGraveyard();
     }
 }
 
@@ -25344,6 +25345,9 @@ void Player::UpdateForQuestWorldObjects()
 
 void Player::UpdateForRaidMarkers(Group* group)
 {
+    if(!GetMap())
+        return;
+
     UpdateData udata(GetMapId());
 
     for (uint8 i = 0; i < RAID_MARKER_COUNT; ++i)
