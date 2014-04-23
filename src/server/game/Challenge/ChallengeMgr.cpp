@@ -60,10 +60,11 @@ void ChallengeMgr::SaveChallengeToDB(Challenge *c)
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHALLENGE);
     stmt->setUInt32(0, c->Id);
-    stmt->setUInt16(1, c->mapID);
-    stmt->setUInt32(2, c->recordTime);
-    stmt->setUInt32(3, c->date);
-    stmt->setUInt8(4, c->medal);
+    stmt->setUInt32(1, c->guildId);
+    stmt->setUInt16(2, c->mapID);
+    stmt->setUInt32(3, c->recordTime);
+    stmt->setUInt32(4, c->date);
+    stmt->setUInt8(5, c->medal);
     trans->Append(stmt);
 
     for(ChallengeMemberList::const_iterator itr = c->member.begin(); itr != c->member.end(); ++itr)
