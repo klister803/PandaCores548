@@ -37,10 +37,10 @@ BattlegroundDG::BattlegroundDG()
     m_goldUpdate = GOLD_UPDATE;
 
     // need change
-    StartMessageIds[BG_STARTING_EVENT_FIRST]  = LANG_BG_WS_START_TWO_MINUTES;
-    StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_BG_WS_START_ONE_MINUTE;
-    StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_WS_START_HALF_MINUTE;
-    StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_BG_WS_HAS_BEGUN;
+    StartMessageIds[BG_STARTING_EVENT_FIRST]  = LANG_BG_DG_START_TWO_MINUTES;
+    StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_BG_DG_START_ONE_MINUTE;
+    StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_DG_START_HALF_MINUTE;
+    StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_BG_DG_START_HAS_BEGUN;
 
     for (uint8 i = 0; i < BG_TEAMS_COUNT; ++i)
         m_gold[i] = 0;
@@ -456,6 +456,9 @@ void BattlegroundDG::Point::UpdateState(PointStates state)
             m_point->AddAura(BG_DG_AURA_ALLIANCE_CONTEST, m_point);
             m_prevAura = BG_DG_AURA_ALLIANCE_CONTEST;
             m_timer = CAPTURE_TIME;
+
+            GetBg()->PlaySoundToAll(m_state == POINT_STATE_NEUTRAL ? BG_DG_SOUND_NODE_CLAIMED : BG_DG_SOUND_NODE_ASSAULTED_ALLIANCE);
+
             break;
         }
         case POINT_STATE_CONTESTED_HORDE:
@@ -463,18 +466,27 @@ void BattlegroundDG::Point::UpdateState(PointStates state)
             m_point->AddAura(BG_DG_AURA_HORDE_CONTEST, m_point);
             m_prevAura = BG_DG_AURA_HORDE_CONTEST;
             m_timer = CAPTURE_TIME;
+
+            GetBg()->PlaySoundToAll(m_state == POINT_STATE_NEUTRAL ? BG_DG_SOUND_NODE_CLAIMED : BG_DG_SOUND_NODE_ASSAULTED_HORDE);
+
             break;
         }
         case POINT_STATE_CAPTURED_ALLIANCE:
         {
             m_point->AddAura(BG_DG_AURA_ALLIANCE_CATURED, m_point);
             m_prevAura = BG_DG_AURA_ALLIANCE_CATURED;
+
+            GetBg()->PlaySoundToAll(BG_DG_SOUND_NODE_CAPTURED_ALLIANCE);
+
             break;
         }
         case POINT_STATE_CAPTURED_HORDE:
         {
             m_point->AddAura(BG_DG_AURA_HORDE_CAPTURED, m_point);
             m_prevAura = BG_DG_AURA_HORDE_CAPTURED;
+
+            GetBg()->PlaySoundToAll(BG_DG_SOUND_NODE_CAPTURED_HORDE);
+
             break;
         }
         case POINT_STATE_NEUTRAL:
@@ -682,6 +694,7 @@ void BattlegroundDG::Cart::ToggleCaptured(Player *player)
         cartEntry = 71073;
         flagStateField = 7904;
         cartAuraId = BG_DG_AURA_CART_HORDE;
+        GetBg()->PlaySoundToAll(BG_DG_SOUND_NODE_ASSAULTED_ALLIANCE);
     }
     else
     {
@@ -689,6 +702,8 @@ void BattlegroundDG::Cart::ToggleCaptured(Player *player)
         cartEntry = 71071;
         flagStateField = 7887;
         cartAuraId = BG_DG_AURA_CART_ALLIANCE;
+
+        GetBg()->PlaySoundToAll(BG_DG_SOUND_NODE_ASSAULTED_HORDE);
     }
 
     player->CastSpell(player, summonSpellId);
@@ -749,6 +764,8 @@ void BattlegroundDG::Cart::CartDelivered()
     GetBg()->ModGold(player->GetTeamId(), m_stolenGold);
     m_stolenGold = 0;
     UnbindCartFromPlayer();
+
+    GetBg()->PlaySoundToAll(player->GetTeamId() == TEAM_ALLIANCE ? BG_DG_SOUND_NODE_CAPTURED_ALLIANCE : BG_DG_SOUND_NODE_CAPTURED_HORDE);
 }
 
 void BattlegroundDG::Cart::UnbindCartFromPlayer()
