@@ -168,6 +168,17 @@ class spell_pal_eternal_flame : public SpellScriptLoader
                             if (eternalFlame->GetEffect(1))
                                 eternalFlame->GetEffect(1)->ChangeAmount(eternalFlame->GetEffect(1)->GetAmount() * (holyPower + 1));
 
+                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
+                        {
+                            Aura* aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player);
+
+                            if (aura)
+                            {
+                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * (holyPower + 1));
+                                aura->SetNeedClientUpdateForTargets();
+                            }
+                        }
+                        
                         if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
                             _player->ModifyPower(POWER_HOLY_POWER, -holyPower);
                     }
