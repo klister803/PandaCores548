@@ -23,7 +23,10 @@
 struct ChallengeMember
 {
     uint64 guid;
-    uint32 specId;
+    uint16 specId;
+
+    bool operator < (const ChallengeMember& i) const { return guid > i.guid; }
+    bool operator == (const ChallengeMember& i) const { return guid == i.guid; }
 };
 
 typedef std::set<ChallengeMember> ChallengeMemberList;
@@ -31,27 +34,35 @@ typedef std::set<ChallengeMember> ChallengeMemberList;
 struct Challenge
 {
     uint32 Id;              // challenge id
-    uint32 mapID;
+    uint16 mapID;
     uint32 recordTime;      // time taken for complite challenge
-    uint32 Date;            // time when recorde done
-    uint32 Medal;
+    uint32 date;            // time when recorde done
+    uint8 medal;
 
     ChallengeMemberList member;
 };
 
-class CalendarMgr
+typedef UNORDERED_MAP<uint16/*map*/, Challenge *> ChallengeByMap;
+typedef UNORDERED_MAP<uint32/*id*/, Challenge *> ChallengeMap;
+typedef std::set<Challenge *> ChallengeList;
+typedef UNORDERED_MAP<uint64/*MemberGUID*/, ChallengeList> ChallengesOfMember;
+
+class ChallengeMgr
 {
         friend class ACE_Singleton<ChallengeMgr, ACE_Null_Mutex>;
 
-        ChallengeMgr() : challengeID(0){};
-        ~ChallengeMgr(){};
+        ChallengeMgr() : challengeGUID(0){};
+        ~ChallengeMgr();
 
     public:
         void LoadFromDB();
-        void GenerateChallengeID() { return ++challengeID; }
+        uint32 GenerateChallengeID() { return ++challengeGUID; }
 
     protected:
-        uint32 challengeID;
+        uint32 challengeGUID;
+        ChallengeMap m_ChallengeMap;
+        ChallengesOfMember m_ChallengesOfMember;
+        ChallengeByMap m_BestForMap;
 };
 
 #define sChallengeMgr ACE_Singleton<ChallengeMgr, ACE_Null_Mutex>::instance()
