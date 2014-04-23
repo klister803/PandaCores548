@@ -39,6 +39,15 @@ void ChallengeMgr::CheckBestMapId(Challenge *c)
         m_BestForMap[c->mapID] = c;
 }
 
+void ChallengeMgr::CheckBestGuildMapId(Challenge *c)
+{
+    if (!c->guildId)
+        return;
+
+    if (!m_GuildBest[c->guildId][c->mapID] || m_GuildBest[c->guildId][c->mapID]->recordTime > c->recordTime)
+        m_GuildBest[c->guildId][c->mapID] = c;
+}
+
 void ChallengeMgr::SaveChallengeToDB(Challenge *c)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -64,7 +73,7 @@ void ChallengeMgr::SaveChallengeToDB(Challenge *c)
 
 void ChallengeMgr::LoadFromDB()
 {
-    QueryResult result = CharacterDatabase.Query("SELECT `id`, `mapID`, `recordTime`, `date`, `medal` FROM `challenge`");
+    QueryResult result = CharacterDatabase.Query("SELECT `id`, `guildId`, `mapID`, `recordTime`, `date`, `medal` FROM `challenge`");
 
     if (!result)
         return;
@@ -78,13 +87,15 @@ void ChallengeMgr::LoadFromDB()
 
         Challenge *c = new Challenge;
         c->Id = fields[0].GetUInt32();
-        c->mapID = fields[1].GetUInt16();
-        c->recordTime = fields[2].GetUInt32();
-        c->date = fields[3].GetUInt32();
-        c->medal = fields[4].GetUInt8();
+        c->guildId = fields[1].GetUInt32();
+        c->mapID = fields[2].GetUInt16();
+        c->recordTime = fields[3].GetUInt32();
+        c->date = fields[4].GetUInt32();
+        c->medal = fields[5].GetUInt8();
 
         m_ChallengeMap[c->Id] = c;
         CheckBestMapId(c);
+        CheckBestGuildMapId(c);
 
         // sync guid generator
         if (c->Id >= challengeGUID)
@@ -126,6 +137,7 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
     c->date = time(NULL);
     c->medal = medal;
 
+    std::map<uint32/*guild*/, uint32> guildCounter;
     for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
         if (Player* player = i->getSource())
         {
@@ -133,12 +145,24 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
             member.guid = player->GetGUID();
             member.specId = player->GetActiveSpec();
 
+            if (player->GetGuildId())
+                guildCounter[player->GetGuildId()] += 1;
+
             c->member.insert(member);
             m_ChallengesOfMember[member.guid].insert(c);
         }
 
+    // Stupid group guild check.
+    for(std::map<uint32/*guild*/, uint32>::const_iterator itr = guildCounter.begin(); itr != guildCounter.end(); ++itr)
+    {
+        //only full guild group could be defined
+        if(itr->second == 5)
+            c->guildId = itr->first;
+    }
+
     m_ChallengeMap[c->Id] = c;
     CheckBestMapId(c);
+    CheckBestGuildMapId(c);
 
     SaveChallengeToDB(c);
 }

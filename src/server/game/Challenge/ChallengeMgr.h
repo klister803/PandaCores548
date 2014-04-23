@@ -34,6 +34,7 @@ typedef std::set<ChallengeMember> ChallengeMemberList;
 struct Challenge
 {
     uint32 Id;              // challenge id
+    uint32 guildId;            // is it guild group
     uint16 mapID;
     uint32 recordTime;      // time taken for complite challenge
     uint32 date;            // time when recorde done
@@ -46,6 +47,7 @@ typedef UNORDERED_MAP<uint16/*map*/, Challenge *> ChallengeByMap;
 typedef UNORDERED_MAP<uint32/*id*/, Challenge *> ChallengeMap;
 typedef std::set<Challenge *> ChallengeList;
 typedef UNORDERED_MAP<uint64/*MemberGUID*/, ChallengeList> ChallengesOfMember;
+typedef UNORDERED_MAP<uint32/*guild*/, ChallengeMap> GuildBestRecord;
 
 class ChallengeMgr
 {
@@ -60,6 +62,7 @@ class ChallengeMgr
 
         uint32 GenerateChallengeID() { return ++challengeGUID; }
         void CheckBestMapId(Challenge *c);
+        void CheckBestGuildMapId(Challenge *c);
 
         void GroupReward(Map *instance, uint32 recordTime, ChallengeMode medal);
     protected:
@@ -67,6 +70,7 @@ class ChallengeMgr
         ChallengeMap m_ChallengeMap;
         ChallengesOfMember m_ChallengesOfMember;
         ChallengeByMap m_BestForMap;
+        GuildBestRecord m_GuildBest;
 };
 
 #define sChallengeMgr ACE_Singleton<ChallengeMgr, ACE_Null_Mutex>::instance()
