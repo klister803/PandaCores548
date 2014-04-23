@@ -3534,12 +3534,7 @@ void Spell::cast(bool skipCheck)
 
     CallScriptAfterCastHandlers();
 
-<<<<<<< HEAD
-
     if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
-=======
-    //if (!m_missed)
->>>>>>> ba69ef9f787433120d88c834bfff3bbd15cb6e97
     {
         for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
