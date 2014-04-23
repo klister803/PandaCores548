@@ -166,3 +166,28 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
 
     SaveChallengeToDB(c);
 }
+
+Challenge * ChallengeMgr::BestServerChallenge(uint16 map)
+{
+    ChallengeByMap::iterator itr = m_BestForMap.find(map);
+    if (itr == m_BestForMap.end())
+        return NULL;
+
+    return itr->second;
+}
+
+Challenge * ChallengeMgr::BestGuildChallenge(uint32 guildId, uint16 map)
+{
+    if (!guildId)
+        return NULL;
+
+    GuildBestRecord::iterator itr = m_GuildBest.find(guildId);
+    if (itr == m_GuildBest.end())
+        return NULL;
+
+    ChallengeByMap::iterator itr2 = itr->second.find(map);
+    if (itr2 == itr->second.end())
+        return NULL;
+
+    return itr2->second;
+}

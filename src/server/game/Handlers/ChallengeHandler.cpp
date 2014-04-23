@@ -37,32 +37,75 @@ void WorldSession::HandleChallengeModeRequestOpcode(WorldPacket& recvPacket)
 
     ObjectGuid guid = _player->GetGUID();
 
+    Challenge * bestServer = sChallengeMgr->BestServerChallenge(mapID);
+    Challenge * bestGuild = sChallengeMgr->BestGuildChallenge(_player->GetGuildId(), mapID);
+
     WorldPacket data(SMSG_CHALLENGE_MODE_REQUEST_LEADERS_RESULT);
-    data.WriteBits(0, 19);  //guild
-    data.WriteBits(1, 19);  //server
-    //
+    data.WriteBits(bestGuild ? 1 : 0, 19);      //guild
+    data.WriteBits(bestServer ? 1 : 0, 19);      //server
+
+    if (bestGuild)
     {
-        data.WriteBits(1, 20);
-        data.WriteGuidMask<6, 0, 2, 3, 1, 4, 7, 5>(guid);
+        data.WriteBits(bestGuild->member.size(), 20);
+        for(ChallengeMemberList::iterator itr = bestGuild->member.begin(); itr != bestGuild->member.end(); ++itr)
+        {
+            ChallengeMember member = *itr;
+            data.WriteGuidMask<5, 1, 4, 2, 6, 3, 0, 7>(member.guid);
+        }
     }
+
+    if (bestServer)
+    {
+        data.WriteBits(bestServer->member.size(), 20);
+        for(ChallengeMemberList::iterator itr = bestServer->member.begin(); itr != bestServer->member.end(); ++itr)
+        {
+            ChallengeMember member = *itr;
+            data.WriteGuidMask<6, 0, 2, 3, 1, 4, 7, 5>(member.guid);
+        }
+    }
+
 
     data.FlushBits();
 
+    if (bestServer)
     {
+        for(ChallengeMemberList::iterator itr = bestServer->member.begin(); itr != bestServer->member.end(); ++itr)
         {
-            data.WriteGuidBytes<2>(guid);
+            ChallengeMember member = *itr;
+            data.WriteGuidBytes<2>(member.guid);
             data << uint32(realmID);
-            data << uint32(262);                  //specID
-            data.WriteGuidBytes< 4, 7, 6, 3, 5, 1>(guid);
+            data << uint32(member.specId);
+            data.WriteGuidBytes<4, 7, 6, 3, 5, 1>(member.guid);
             data << uint32(realmID);
-            data.WriteGuidBytes<0>(guid);
+            data.WriteGuidBytes<0>(member.guid);
         }
-        data << uint32(246155);                 // 246155
+        data << uint32(0);                      // 246155
         data << uint32(realmID);                // 50659408
         data << uint32(3);                      // seasonID
-        data.AppendPackedTime(sWorld->GetGameTime());
-        data << uint32(624653);         //recorde time on ms
+        data.AppendPackedTime(bestServer->date);
+        data << uint32(bestServer->recordTime);  //recorde time on ms
     }
+
+    if (bestGuild)
+    {
+        data << uint32(3);                      // seasonID
+        data << uint32(0);                      // 246155
+        for(ChallengeMemberList::iterator itr = bestGuild->member.begin(); itr != bestGuild->member.end(); ++itr)
+        {
+            ChallengeMember member = *itr;
+
+            data.WriteGuidBytes<7, 0>(member.guid);
+            data << uint32(realmID);
+            data.WriteGuidBytes<4, 1, 3, 5, 2>(member.guid);
+            data << uint32(member.specId);
+            data << uint32(realmID);
+            data.WriteGuidBytes<6>(member.guid);
+        }
+        data.AppendPackedTime(bestServer->date);
+        data << uint32(realmID);                // 50659408
+        data << uint32(bestServer->recordTime);  //recorde time on ms
+    }
+
     data << uint32(getMSTime());
     data << mapID;
     data << uint32(624653);
