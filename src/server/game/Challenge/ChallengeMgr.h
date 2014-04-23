@@ -56,8 +56,12 @@ class ChallengeMgr
 
     public:
         void LoadFromDB();
-        uint32 GenerateChallengeID() { return ++challengeGUID; }
+        void SaveChallengeToDB(Challenge *c);
 
+        uint32 GenerateChallengeID() { return ++challengeGUID; }
+        void CheckBestMapId(Challenge *c);
+
+        void GroupReward(Map *instance, uint32 recordTime, ChallengeMode medal);
     protected:
         uint32 challengeGUID;
         ChallengeMap m_ChallengeMap;

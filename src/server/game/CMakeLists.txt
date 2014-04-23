@@ -69,6 +69,7 @@ set(game_STAT_SRCS
   ${sources_Battlegrounds}
   ${sources_BattlePet}
   ${sources_Calendar}
+  ${sources_Challenge}
   ${sources_Chat}
   ${sources_Combat}
   ${sources_Conditions}
@@ -143,6 +144,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Battlegrounds/Zones
   ${CMAKE_CURRENT_SOURCE_DIR}/BattlePet
   ${CMAKE_CURRENT_SOURCE_DIR}/Calendar
+  ${CMAKE_CURRENT_SOURCE_DIR}/Challenge
   ${CMAKE_CURRENT_SOURCE_DIR}/Chat
   ${CMAKE_CURRENT_SOURCE_DIR}/Chat/Channels
   ${CMAKE_CURRENT_SOURCE_DIR}/Combat

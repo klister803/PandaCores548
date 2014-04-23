@@ -624,4 +624,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     PREPARE_STATEMENT(CHAR_LOAD_BOUTIQUE_METIER,    "SELECT skill, value FROM store_metier WHERE guid = ?",                                         CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_DEL_BOUTIQUE_METIER,     "DELETE FROM store_metier WHERE guid = ? AND skill = ? AND value = ?",                          CONNECTION_ASYNC);
+
+    // Challenge
+    PREPARE_STATEMENT(CHAR_INS_CHALLENGE,           "INSERT INTO challenge (`id`, `mapID`, `recordTime`, `date`, `medal`) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_INS_CHALLENGE_MEMBER,    "INSERT INTO challenge_member (`id`, `member`, `specID`) VALUES (?, ?, ?)", CONNECTION_ASYNC)
 }

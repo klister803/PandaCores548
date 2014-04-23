@@ -33,6 +33,35 @@ ChallengeMgr::~ChallengeMgr()
     m_BestForMap.clear();
 }
 
+void ChallengeMgr::CheckBestMapId(Challenge *c)
+{
+    if (!m_BestForMap[c->mapID] || m_BestForMap[c->mapID]->recordTime > c->recordTime)
+        m_BestForMap[c->mapID] = c;
+}
+
+void ChallengeMgr::SaveChallengeToDB(Challenge *c)
+{
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHALLENGE);
+    stmt->setUInt32(0, c->Id);
+    stmt->setUInt16(1, c->mapID);
+    stmt->setUInt32(2, c->recordTime);
+    stmt->setUInt32(3, c->date);
+    stmt->setUInt8(4, c->medal);
+    trans->Append(stmt);
+
+    for(ChallengeMemberList::const_iterator itr = c->member.begin(); itr != c->member.end(); ++itr)
+    {
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHALLENGE_MEMBER);
+        stmt->setUInt32(0, c->Id);
+        stmt->setUInt64(1, (*itr).guid);
+        stmt->setUInt16(2, (*itr).specId);
+    }
+
+    CharacterDatabase.CommitTransaction(trans);
+}
+
 void ChallengeMgr::LoadFromDB()
 {
     QueryResult result = CharacterDatabase.Query("SELECT `id`, `mapID`, `recordTime`, `date`, `medal` FROM `challenge`");
@@ -55,8 +84,11 @@ void ChallengeMgr::LoadFromDB()
         c->medal = fields[4].GetUInt8();
 
         m_ChallengeMap[c->Id] = c;
-        if (!m_BestForMap[c->mapID] || m_BestForMap[c->mapID]->recordTime > c->recordTime)
-            m_BestForMap[c->mapID] = c;
+        CheckBestMapId(c);
+
+        // sync guid generator
+        if (c->Id >= challengeGUID)
+            challengeGUID = ++c->Id;
 
     }while (result->NextRow());
 
@@ -77,4 +109,36 @@ void ChallengeMgr::LoadFromDB()
         itr->second->member.insert(member);
         m_ChallengesOfMember[member.guid].insert(itr->second);
     }while (result->NextRow());
+}
+
+void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode medal)
+{
+    Map::PlayerList const& players = instance->GetPlayers();
+    if (players.isEmpty() || medal == CHALLENGE_MEDAL_NONE)
+        return;
+
+    uint32 challengeID = GenerateChallengeID();
+
+    Challenge *c = new Challenge;
+    c->Id = challengeID;
+    c->mapID = instance->GetId();
+    c->recordTime = recordTime;
+    c->date = time(NULL);
+    c->medal = medal;
+
+    for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+        if (Player* player = i->getSource())
+        {
+            ChallengeMember member;
+            member.guid = player->GetGUID();
+            member.specId = player->GetActiveSpec();
+
+            c->member.insert(member);
+            m_ChallengesOfMember[member.guid].insert(c);
+        }
+
+    m_ChallengeMap[c->Id] = c;
+    CheckBestMapId(c);
+
+    SaveChallengeToDB(c);
 }

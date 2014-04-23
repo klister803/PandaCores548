@@ -25,6 +25,7 @@
 #include "CreatureAI.h"
 #include "Log.h"
 #include "LFGMgr.h"
+#include "ChallengeMgr.h"
 
 #define CHALLENGE_START 5
 
@@ -573,11 +574,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                         else
                             return;
 
-                        if (!players.isEmpty())
-                            for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
-                                if (Player* player = i->getSource())
-                                    if (!source || player->IsAtGroupRewardDistance(source))
-                                        player->ChallangeReward(mode, medal, getMSTime() - challenge_timer);
+                        sChallengeMgr->GroupReward(instance, getMSTime() - challenge_timer, medal);
                     }
                 }
             }

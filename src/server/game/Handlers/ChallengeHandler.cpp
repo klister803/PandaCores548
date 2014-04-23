@@ -26,6 +26,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "WorldSession.h"
+#include "ChallengeMgr.h"
 
 void WorldSession::HandleChallengeModeRequestOpcode(WorldPacket& recvPacket)
 {
