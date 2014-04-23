@@ -993,6 +993,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         {
             switch (m_spellInfo->Id)
             {
+                case 104993: // Jade Spirit
+                {
+                    if (caster->GetHealthPct() > 25 && m_effIndex == EFFECT_1)
+                        amount = 0;
+
+                    break;
+                }
+                case 120032: // Dancing Steel
+                {
+                    int32 str = caster->GetStat(STAT_STRENGTH);
+                    int32 agi = caster->GetStat(STAT_AGILITY);
+                    
+                    switch (m_effIndex)
+                    {
+                        case EFFECT_0: if (str > agi) amount = 0; break;
+                        case EFFECT_1: if (str < agi) amount = 0; break;
+                    }
+                    break;
+                }
                 case 108300: // Killer Instinct
                 {
                     if (caster)

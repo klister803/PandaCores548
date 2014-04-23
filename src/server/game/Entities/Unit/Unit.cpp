@@ -6234,6 +6234,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 120033: // Jade Spirit (Passive)
+                case 142536: // Spirit of Conquest (Passive)
+                {
+                    triggered_spell_id = 104993;
+                    break;
+                }
+                case 142531: // Bloody Dancing Steel
+                case 118333: // Dancing Steel
+                {
+                    triggered_spell_id = 120032;
+                    break;
+                }
                 case 134732: // Battle Fatigue
                 {
                     if (Unit * owner = victim->GetOwner())
