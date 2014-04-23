@@ -5025,8 +5025,8 @@ void ObjectMgr::LoadInstanceEncounters()
 {
     uint32 oldMSTime = getMSTime();
 
-    //                                                 0         1            2                3
-    QueryResult result = WorldDatabase.Query("SELECT entry, creditType, creditEntry, lastEncounterDungeon FROM instance_encounters");
+    //                                                 0         1            2                3                4
+    QueryResult result = WorldDatabase.Query("SELECT entry, creditType, creditEntry, lastEncounterDungeon, difficulty FROM instance_encounters");
     if (!result)
     {
         sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 instance encounters, table is empty!");
@@ -5043,6 +5043,8 @@ void ObjectMgr::LoadInstanceEncounters()
         uint8 creditType = fields[1].GetUInt8();
         uint32 creditEntry = fields[2].GetUInt32();
         uint32 lastEncounterDungeon = fields[3].GetUInt16();
+        int32 DungeonDifficult = fields[4].GetInt32();
+
         DungeonEncounterEntry const* dungeonEncounter = sDungeonEncounterStore.LookupEntry(entry);
         if (!dungeonEncounter)
         {
@@ -5093,8 +5095,26 @@ void ObjectMgr::LoadInstanceEncounters()
                 continue;
         }
 
-        DungeonEncounterList& encounters = _dungeonEncounterStore[MAKE_PAIR32(dungeonEncounter->mapId, dungeonEncounter->difficulty)];
-        encounters.push_back(new DungeonEncounter(dungeonEncounter, EncounterCreditType(creditType), creditEntry, lastEncounterDungeon));
+        if (dungeonEncounter->difficulty > 0 && dungeonEncounter->difficulty != DungeonDifficult)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Table `instance_encounters` overvrite dificult from dbc for encounter %u. DBC %i, DB %i", entry, dungeonEncounter->difficulty, DungeonDifficult);
+            DungeonDifficult = dungeonEncounter->difficulty;
+        }
+
+        if (DungeonDifficult > 0)
+        {
+            DungeonEncounterList& encounters = _dungeonEncounterStore[MAKE_PAIR32(dungeonEncounter->mapId, DungeonDifficult)];
+            encounters.push_back(new DungeonEncounter(dungeonEncounter, EncounterCreditType(creditType), creditEntry, lastEncounterDungeon));
+        }else
+        {
+            //all
+            for (int32 i = 0; i < MAX_DIFFICULTY; ++i)
+            {
+                DungeonEncounterList& encounters = _dungeonEncounterStore[MAKE_PAIR32(dungeonEncounter->mapId, Difficulty(i))];
+                encounters.push_back(new DungeonEncounter(dungeonEncounter, EncounterCreditType(creditType), creditEntry, lastEncounterDungeon));
+            }
+        }
+
         ++count;
     } while (result->NextRow());
 
