@@ -83,6 +83,7 @@
 #include "BattlefieldMgr.h"
 #include "BracketMgr.h"
 #include "PlayerDump.h"
+#include "ChallengeMgr.h"
 
 ACE_Atomic_Op<ACE_Thread_Mutex, bool> World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1827,6 +1828,9 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Autobroadcasts...");
     LoadAutobroadcasts();
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading challenge save...");
+    sChallengeMgr->LoadFromDB();
 
     ///- Load and initialize scripts
     sObjectMgr->LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate

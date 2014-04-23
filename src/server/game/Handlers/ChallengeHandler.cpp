@@ -79,7 +79,7 @@ void WorldSession::HandleChallengeModeRequestOpcode(WorldPacket& recvPacket)
             data << uint32(realmID);
             data.WriteGuidBytes<0>(member.guid);
         }
-        data << uint32(0);                      // 246155
+        data << uint32(bestServer->guildId);    // 246155
         data << uint32(realmID);                // 50659408
         data << uint32(3);                      // seasonID
         data.AppendPackedTime(bestServer->date);
@@ -89,7 +89,7 @@ void WorldSession::HandleChallengeModeRequestOpcode(WorldPacket& recvPacket)
     if (bestGuild)
     {
         data << uint32(3);                      // seasonID
-        data << uint32(0);                      // 246155
+        data << uint32(bestGuild->guildId);     // 246155
         for(ChallengeMemberList::iterator itr = bestGuild->member.begin(); itr != bestGuild->member.end(); ++itr)
         {
             ChallengeMember member = *itr;
