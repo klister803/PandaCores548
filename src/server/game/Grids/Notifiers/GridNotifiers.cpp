@@ -273,11 +273,48 @@ void ChatMessageDistDeliverer::SendPacket(Player* player)
 
     if (WorldSession* session = player->GetSession())
     {
-        WorldPacket packet;
         LanguageDesc const* langDesc = GetLanguageDescByID(i_c.language);
-        bool shouldCode = i_c.language != LANG_ADDON && (i_c.chatType == CHAT_MSG_SAY || i_c.chatType == CHAT_MSG_YELL) && !player->CanSpeakLanguage(i_c.language) && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT);
-        Trinity::BuildChatPacket(packet, i_c, shouldCode);
-        session->SendPacket(&packet);
+        bool needCoded = false;
+        bool needEmpty = false;
+        if (i_c.language != LANG_ADDON && (i_c.chatType == CHAT_MSG_SAY || i_c.chatType == CHAT_MSG_YELL))
+        {
+            needCoded = !player->CanSpeakLanguage(i_c.language) && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT);
+
+            if (i_source->GetTypeId() == TYPEID_PLAYER)
+                if (Battleground* bg = player->GetBattleground())
+                    needEmpty = bg->GetPlayerTeam(i_source->GetGUID()) != bg->GetPlayerTeam(player->GetGUID());
+        }
+
+        if (needEmpty)
+        {
+            if (!i_emptyMessage)
+            {
+                i_emptyMessage = new WorldPacket();
+                Trinity::BuildChatPacket(*i_emptyMessage, i_c, needCoded, needEmpty);
+            }
+
+            session->SendPacket(i_emptyMessage);
+        }
+        else if (needCoded)
+        {
+            if (!i_codedMessage)
+            {
+                i_codedMessage = new WorldPacket();
+                Trinity::BuildChatPacket(*i_codedMessage, i_c, needCoded, needEmpty);
+            }
+
+            session->SendPacket(i_codedMessage);
+        }
+        else
+        {
+            if (!i_normalMessage)
+            {
+                i_normalMessage = new WorldPacket();
+                Trinity::BuildChatPacket(*i_normalMessage, i_c, needCoded, needEmpty);
+            }
+
+            session->SendPacket(i_normalMessage);
+        }
     }
 }
 

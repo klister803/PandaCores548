@@ -160,11 +160,21 @@ namespace Trinity
         uint32 team;
         Player const* skipped_receiver;
         ChatData& i_c;
+        WorldPacket* i_normalMessage;
+        WorldPacket* i_codedMessage;
+        WorldPacket* i_emptyMessage;
         ChatMessageDistDeliverer(WorldObject* src, ChatData& c, float dist, bool own_team_only = false, Player const* skipped = NULL)
             : i_source(src), i_phaseMask(src->GetPhaseMask()), i_distSq(dist * dist),
             team((own_team_only && src->GetTypeId() == TYPEID_PLAYER) ? ((Player*)src)->GetTeam() : 0),
-            skipped_receiver(skipped), i_c(c)
+            skipped_receiver(skipped), i_c(c), i_normalMessage(NULL), i_codedMessage(NULL), i_emptyMessage(NULL)
         {
+        }
+
+        ~ChatMessageDistDeliverer()
+        {
+            delete i_normalMessage;
+            delete i_codedMessage;
+            delete i_emptyMessage;
         }
 
         void Visit(PlayerMapType &m);

@@ -21215,18 +21215,25 @@ bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, uint32 /*damage*/, AuraEf
     return true;
 }
 
-void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c, bool coded)
+void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c, bool coded, bool empty)
 {
-    if (coded && c.codedMessage.empty())
+    std::string message = c.message;
+    uint8 langId = c.language;
+    if (empty)
+        message = "";
+    else if (coded && !c.hasCoded)
+    {
+        c.hasCoded = true;
         c.codedMessage = CodeChatMessage(c.message, c.language);
+        message = c.codedMessage;
+    }
 
-    std::string& message = coded ? c.codedMessage : c.message;
     if (message.empty())
-        c.language = LANG_UNIVERSAL;
+        langId = LANG_UNIVERSAL;
 
     data.Initialize(SMSG_MESSAGECHAT);
 
-    data.WriteBit(!c.language);
+    data.WriteBit(!langId);
     data.WriteBit(!c.sourceName.size());
 
     data.WriteBit(!c.groupGuid);
@@ -21281,8 +21288,8 @@ void Trinity::BuildChatPacket(WorldPacket& data, ChatData& c, bool coded)
 
     data.WriteGuidBytes<5, 7, 3, 0, 4, 6, 1, 2>(c.guildGuid);
 
-    if (c.language)
-        data << uint8(c.language);
+    if (langId)
+        data << uint8(langId);
 
     data.WriteGuidBytes<7, 4, 0, 6, 3, 2, 5, 1>(c.sourceGuid);
 
@@ -21317,7 +21324,7 @@ bool isCaps(std::wstring wstr)
         return false;
 
     uint32 upperCount = 0;
-    for (uint32 i = 0;i < wstr.size(); ++i)
+    for (uint32 i = 0; i < wstr.size(); ++i)
         if (std::iswupper(wstr[i]))
             ++upperCount;
 
