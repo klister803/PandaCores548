@@ -139,7 +139,8 @@ void BattlegroundDG::RemovePlayer(Player* player, uint64 /*guid*/, uint32 /*team
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
 
-    EventPlayerDroppedFlag(player);
+    if(player)
+        EventPlayerDroppedFlag(player);
 }
 
 void BattlegroundDG::HandleKillPlayer(Player* player, Player* killer)
@@ -151,7 +152,8 @@ void BattlegroundDG::HandleKillPlayer(Player* player, Player* killer)
         if (m_carts[i]->TakePlayerWhoDroppedFlag() == player->GetGUID())
             UpdatePlayerScore(killer, SCORE_UPDATE_CARTS_DEFENDED, 1);
 
-    EventPlayerDroppedFlag(player);
+    if(player)
+        EventPlayerDroppedFlag(player);
 
     Battleground::HandleKillPlayer(player, killer);
 }

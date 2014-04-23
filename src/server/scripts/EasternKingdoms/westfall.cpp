@@ -292,6 +292,7 @@ public:
         {
             time = 30000;
             booltest = true;
+            if(me->ToTempSummon() && me->ToTempSummon()->GetSummoner())
             if(Player* invocer = me->ToTempSummon()->GetSummoner()->ToPlayer()) 
             {               
                 GetCreatureListWithEntryInGrid(clodoList, me, NPC_HOMELESS_STORMWIND_CITIZEN, 15.0f);
