@@ -772,7 +772,7 @@ enum SpellAttr11
 {
     SPELL_ATTR11_UNK0                             = 0x00000001, // 0
     SPELL_ATTR11_UNK1                             = 0x00000002, // 1    Decrease speed
-    SPELL_ATTR11_UNK2                             = 0x00000004, // 2    Stat buffs
+    SPELL_ATTR11_SEND_ITEM_LEVEL                  = 0x00000004, // 2    Stat buffs
     SPELL_ATTR11_UNK3                             = 0x00000008, // 3    Spirit of Redemption
     SPELL_ATTR11_UNK4                             = 0x00000010, // 4
     SPELL_ATTR11_UNK5                             = 0x00000020, // 5
@@ -894,8 +894,6 @@ enum Language
     LANG_RIKKITUN       = 168,
     LANG_ADDON          = 0xFFFFFFFF                        // used by addons, in 2.4.0 not exist, replaced by messagetype?
 };
-
-#define LANGUAGES_COUNT   24
 
 enum TeamId
 {
@@ -1846,18 +1844,18 @@ enum Targets
 enum SpellMissInfo
 {
     SPELL_MISS_NONE                    = 0,
-    SPELL_MISS_MISS                    = 1,
-    SPELL_MISS_RESIST                  = 2,
-    SPELL_MISS_DODGE                   = 3,
-    SPELL_MISS_PARRY                   = 4,
-    SPELL_MISS_BLOCK                   = 5,
-    SPELL_MISS_EVADE                   = 6,
-    SPELL_MISS_IMMUNE                  = 7,
-    SPELL_MISS_IMMUNE2                 = 8, // one of these 2 is MISS_TEMPIMMUNE
-    SPELL_MISS_DEFLECT                 = 9,
-    SPELL_MISS_ABSORB                  = 10,
-    SPELL_MISS_REFLECT                 = 11,
-    SPELL_MISS_MISFIRED                = 12,
+    SPELL_MISS_MISS                    = 1,  // hitmask = 1
+    SPELL_MISS_RESIST                  = 2,  // hitmask = 2
+    SPELL_MISS_DODGE                   = 3,  // hitmask = 4
+    SPELL_MISS_PARRY                   = 4,  // hitmask = 8
+    SPELL_MISS_BLOCK                   = 5,  // hitmask = 16
+    SPELL_MISS_EVADE                   = 6,  // hitmask = 32
+    SPELL_MISS_IMMUNE                  = 7,  // hitmask = 64
+    SPELL_MISS_IMMUNE2                 = 8,  // one of these 2 is MISS_TEMPIMMUNE,  hitmask = 128
+    SPELL_MISS_DEFLECT                 = 9,  // hitmask = 256
+    SPELL_MISS_ABSORB                  = 10, // hitmask = 512
+    SPELL_MISS_REFLECT                 = 11, // hitmask = 1024
+    SPELL_MISS_MISFIRED                = 12, // hitmask = 2048
 };
 
 enum SpellHitType
@@ -1924,10 +1922,12 @@ enum GameobjectTypes
     GAMEOBJECT_TYPE_BARBER_CHAIR           = 32,
     GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING  = 33,
     GAMEOBJECT_TYPE_GUILD_BANK             = 34,
-    GAMEOBJECT_TYPE_TRAPDOOR               = 35
+    GAMEOBJECT_TYPE_TRAPDOOR               = 35,
+    GAMEOBJECT_TYPE_UNK36                  = 36,
+    GAMEOBJECT_TYPE_UNK37                  = 37
 };
 
-#define MAX_GAMEOBJECT_TYPE                  36             // sending to client this or greater value can crash client.
+#define MAX_GAMEOBJECT_TYPE                  38             // sending to client this or greater value can crash client.
 #define MAX_GAMEOBJECT_DATA                  32             // Max number of uint32 vars in gameobject_template data field
 
 enum GameObjectFlags
@@ -4561,5 +4561,12 @@ enum ChallengeMode
     CHALLENGE_MEDAL_GOLD    = 3,
     CHALLENGE_MEDAL_PLAT    = 4, //--as of 7/2/2013 only used for endless proving grounds
     NUM_CHALLENGE_MEDALS    = 3,
+};
+
+enum ChallengeTimerType
+{
+    LE_WORLD_ELAPSED_TIMER_TYPE_PROVING_GROUND  = 0,
+    LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE  = 1,
+    LE_WORLD_ELAPSED_TIMER_TYPE_NONE            = 2
 };
 #endif

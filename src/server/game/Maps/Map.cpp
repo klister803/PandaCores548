@@ -2532,6 +2532,7 @@ void InstanceMap::CreateInstanceData(bool load)
             Field* fields = result->Fetch();
             std::string data = fields[0].GetString();
             i_data->SetCompletedEncountersMask(fields[1].GetUInt32());
+            i_data->SetChallengeProgresInSec(fields[2].GetUInt32());
             if (data != "")
             {
                 #ifdef TRINITY_DEBUG

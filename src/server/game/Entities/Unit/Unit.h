@@ -2540,6 +2540,7 @@ namespace Trinity
             achievementId = 0;
             language = 0;
             float1490 = 0.0f;
+            hasCoded = false;
         }
 
         bool byte1494;
@@ -2554,6 +2555,7 @@ namespace Trinity
         std::string sourceName;
         std::string channelName;
         std::string message;
+        std::string codedMessage;
 
         uint32 realmId;
         uint16 chatTag;
@@ -2561,9 +2563,12 @@ namespace Trinity
         uint32 achievementId;
         uint8 language;
         float float1490;
+
+        bool hasCoded;
     };
 
-    void BuildChatPacket(WorldPacket& data, ChatData& c);
+    void BuildChatPacket(WorldPacket& data, ChatData& c, bool coded = false, bool empty = false);
+    std::string CodeChatMessage(std::string text, uint32 lang_id);
 }
 
 namespace Trinity

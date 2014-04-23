@@ -651,10 +651,13 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
 {
     if (!what)
         return;
+    Player* player = ObjectAccessor::FindPlayer(p);
+    if (player)
+        lang = player->GetTeam() == HORDE ? LANG_ORCISH : LANG_COMMON;
+
     if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
         lang = LANG_UNIVERSAL;
 
-    Player* player = ObjectAccessor::FindPlayer(p);
 
     if (!IsOn(p))
     {

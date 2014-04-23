@@ -43,6 +43,7 @@ std::list<uint32> sGameObjectsList;
 
 ItemUpgradeDataMap sItemUpgradeDataMap;
 BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
+MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 
 uint32 DB2FilesCount = 0;
 
@@ -117,6 +118,14 @@ void LoadDB2Stores(const std::string& dataPath)
     LoadDB2(bad_db2_files, sGameObjectsStore,       db2Path, "GameObjects.db2");
     LoadDB2(bad_db2_files, sMapChallengeModeStore,  db2Path, "MapChallengeMode.db2");
     
+    for (uint32 i = 0; i < sMapChallengeModeStore.GetNumRows(); ++i)
+    {
+        MapChallengeModeEntry const* entry = sMapChallengeModeStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        sMapChallengeModeEntrybyMap[entry->map] = entry;
+    }
 
     for (uint32 i = 0; i < sQuestPackageItemStore.GetNumRows(); ++i)
     {

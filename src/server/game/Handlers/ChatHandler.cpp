@@ -148,25 +148,11 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             recvData.rfinish();
             return;
         }
-        if (langDesc->skill_id != 0 && !sender->HasSkill(langDesc->skill_id))
+        if (!sender->CanSpeakLanguage(lang))
         {
-            // also check SPELL_AURA_COMPREHEND_LANGUAGE (client offers option to speak in that language)
-            Unit::AuraEffectList const& langAuras = sender->GetAuraEffectsByType(SPELL_AURA_COMPREHEND_LANGUAGE);
-            bool foundAura = false;
-            for (Unit::AuraEffectList::const_iterator i = langAuras.begin(); i != langAuras.end(); ++i)
-            {
-                if ((*i)->GetMiscValue() == int32(lang))
-                {
-                    foundAura = true;
-                    break;
-                }
-            }
-            if (!foundAura)
-            {
-                SendNotification(LANG_NOT_LEARNED_LANGUAGE);
-                recvData.rfinish();
-                return;
-            }
+            SendNotification(LANG_NOT_LEARNED_LANGUAGE);
+            recvData.rfinish();
+            return;
         }
 
         if (lang == LANG_ADDON)

@@ -24,23 +24,16 @@ public:
 
     bool OnGossipSelect(Player* player, GameObject* go, uint32 /*sender*/, uint32 /*action*/)
     {
-
-        WorldPacket data(SMSG_CHALLENGE_UNK);
-        player->GetSession()->SendPacket(&data);
-
-        data.Initialize(SMSG_START_TIMER, 12);
-        data << uint32(1);
-        data << uint32(5);
-        data << uint32(5);
-        player->GetSession()->SendPacket(&data);
-
-        data.Initialize(SMSG_WORLD_STATE_TIMER_START, 8);
-        data << uint32(0);
-        data << uint32(1);
-        player->GetSession()->SendPacket(&data);
+        if (InstanceScript* instance = player->GetInstanceScript())
+        {
+            //WorldPacket data(SMSG_CHALLENGE_UNK);
+            //player->GetSession()->SendPacket(&data);
+            instance->StartChallenge();
+        }
 
         player->PlayerTalkClass->ClearMenus();
-        return true;
+        player->CLOSE_GOSSIP_MENU();
+        return false;
     }
 };
 

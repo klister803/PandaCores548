@@ -405,7 +405,7 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
 {
     m_customError = SPELL_CUSTOM_ERROR_NONE;
     m_skipCheck = skipCheck;
-    m_missed = false;
+    m_spellMissMask = 0;
     m_selfContainer = NULL;
     m_referencedFromCurrentSpell = false;
     m_executedCurrently = false;
@@ -637,7 +637,7 @@ void Spell::SelectSpellTargets()
     uint32 processedAreaEffectsMask = 0;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (m_missed)
+        if (m_spellMissMask)
             break;
         // not call for empty effect.
         // Also some spells use not used effect targets for store targets for dummy effect in triggered spells
@@ -663,19 +663,21 @@ void Spell::SelectSpellTargets()
 
         if (m_targets.HasDst())
             AddDestTarget(*m_targets.GetDst(), i);
-
-        uint32 targethit = 0;
+        
         bool hastarget = false;
         for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
         {
-            hastarget = true;
-
             if (ihit->missCondition == SPELL_MISS_NONE)
-                targethit++;
-        }
+            {
+                hastarget = true;
+                m_spellMissMask = 0;
+                continue;
+            }
 
-        if (!targethit && hastarget)
-            m_missed = true;
+            if (!hastarget)
+                for (int32 i = 0; i < ihit->missCondition; ++i)
+                    m_spellMissMask = i < 1 ? 1: m_spellMissMask * 2;
+        }
 
         if (m_spellInfo->IsChanneled())
         {
@@ -3532,71 +3534,74 @@ void Spell::cast(bool skipCheck)
 
     CallScriptAfterCastHandlers();
 
-    //if (!m_missed)
+    if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
     {
-        if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
+        for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
-            for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
-                if (i->effect < 0)
+            if (m_spellMissMask)
+                if (!(m_spellMissMask & i->hitmask))
+                    continue;
+
+            if (i->effect < 0)
+            {
+                if(i->learnspell)
                 {
-                    if(i->learnspell)
+                    if(Player* _lplayer = m_caster->ToPlayer())
+                        _lplayer->removeSpell(-(i->effect));
+                }
+                else
+                    m_caster->RemoveAurasDueToSpell(-(i->effect));
+            }
+            else
+            {
+                if (i->type2 == 3)
+                {
+                    if (Unit* owner = m_caster->GetOwner())
                     {
-                        if(Player* _lplayer = m_caster->ToPlayer())
-                            _lplayer->removeSpell(-(i->effect));
+                        if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
+                            continue;
+                        if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
+                            continue;
                     }
-                    else
-                        m_caster->RemoveAurasDueToSpell(-(i->effect));
+                    else continue;
+                }
+                else if(i->type2 == 2)
+                {
+                    if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
+                        continue;
+                    if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
+                        continue;
+                }
+                else if(i->type2 && m_targets.GetUnitTarget())
+                {
+                    if(i->hastalent != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent))
+                        continue;
+                    if(i->hastalent2 != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent2))
+                        continue;
                 }
                 else
                 {
-                    if (i->type2 == 3)
-                    {
-                        if (Unit* owner = m_caster->GetOwner())
-                        {
-                            if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
-                                continue;
-                            if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
-                                continue;
-                        }
-                        else continue;
-                    }
-                    else if(i->type2 == 2)
-                    {
-                        if(i->hastalent != 0 && !m_caster->HasSpell(i->hastalent))
-                            continue;
-                        if(i->hastalent2 != 0 && !m_caster->HasSpell(i->hastalent2))
-                            continue;
-                    }
-                    else if(i->type2 && m_targets.GetUnitTarget())
-                    {
-                        if(i->hastalent != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent))
-                            continue;
-                        if(i->hastalent2 != 0 && !m_targets.GetUnitTarget()->HasAura(i->hastalent2))
-                            continue;
-                    }
-                    else
-                    {
-                        if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
-                            continue;
-                        if(i->hastalent2 != 0 && !m_caster->HasAura(i->hastalent2))
-                            continue;
-                    }
-                    if(i->chance != 0 && !roll_chance_i(i->chance))
+                    if(i->hastalent != 0 && !m_caster->HasAura(i->hastalent))
                         continue;
-                    if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->HasSpellCooldown(i->effect))
+                    if(i->hastalent2 != 0 && !m_caster->HasAura(i->hastalent2))
                         continue;
-
-                    if(i->learnspell)
-                    {
-                        if(Player* _lplayer = m_caster->ToPlayer())
-                            _lplayer->learnSpell(i->effect, false);
-                    }
-                    else
-                        m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
-
-                    if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
-                        m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, getPreciseTime() + (double)i->cooldown);
                 }
+                if(i->chance != 0 && !roll_chance_i(i->chance))
+                    continue;
+                if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->HasSpellCooldown(i->effect))
+                    continue;
+
+                if(i->learnspell)
+                {
+                    if(Player* _lplayer = m_caster->ToPlayer())
+                        _lplayer->learnSpell(i->effect, false);
+                }
+                else
+                    m_caster->CastSpell(m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, i->effect, true);
+
+                if(i->cooldown != 0 && m_caster->GetTypeId() == TYPEID_PLAYER)
+                    m_caster->ToPlayer()->AddSpellCooldown(i->effect, 0, getPreciseTime() + (double)i->cooldown);
+            }
         }
     }
 

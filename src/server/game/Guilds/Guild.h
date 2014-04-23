@@ -323,6 +323,7 @@ typedef std::set <uint8> SlotIds;
 
 #define MAX_GUILD_PROFESSIONS 2
 #define KNOW_RECIPES_MASK_SIZE 300
+#define MAX_GUILD_NEWS_ENTRIES 100
 
 class Guild
 {
@@ -502,6 +503,8 @@ private:
             return NULL;
         }
         Guild* GetGuild() const { return _guild; }
+        void Shrink();
+        uint32 GetNewId() const;
 
     private:
         Guild* _guild;

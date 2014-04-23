@@ -17,6 +17,7 @@ file(GLOB_RECURSE sources_Battlefield Battlefield/*.cpp Battlefield/*.h)
 file(GLOB_RECURSE sources_Battlegrounds Battlegrounds/*.cpp Battlegrounds/*.h)
 file(GLOB_RECURSE sources_BattlePet BattlePet/*.cpp BattlePet/*.h)
 file(GLOB_RECURSE sources_Calendar Calendar/*.cpp Calendar/*.h)
+file(GLOB_RECURSE sources_Challenge Challenge/*.cpp Challenge/*.h)
 file(GLOB_RECURSE sources_Chat Chat/*.cpp Chat/*.h)
 file(GLOB_RECURSE sources_Combat Combat/*.cpp Combat/*.h)
 file(GLOB_RECURSE sources_Conditions Conditions/*.cpp Conditions/*.h)
@@ -68,6 +69,7 @@ set(game_STAT_SRCS
   ${sources_Battlegrounds}
   ${sources_BattlePet}
   ${sources_Calendar}
+  ${sources_Challenge}
   ${sources_Chat}
   ${sources_Combat}
   ${sources_Conditions}
@@ -142,6 +144,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Battlegrounds/Zones
   ${CMAKE_CURRENT_SOURCE_DIR}/BattlePet
   ${CMAKE_CURRENT_SOURCE_DIR}/Calendar
+  ${CMAKE_CURRENT_SOURCE_DIR}/Challenge
   ${CMAKE_CURRENT_SOURCE_DIR}/Chat
   ${CMAKE_CURRENT_SOURCE_DIR}/Chat/Channels
   ${CMAKE_CURRENT_SOURCE_DIR}/Combat

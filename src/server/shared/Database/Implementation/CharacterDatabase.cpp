@@ -264,7 +264,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SEL_GUILD_ACHIEVEMENT_CRITERIA, "SELECT criteria, counter, date, completedGuid FROM guild_achievement_progress WHERE guildId = ?", CONNECTION_SYNCH)
     PREPARE_STATEMENT(CHAR_UPD_GUILD_EXPERIENCE, "UPDATE guild SET level = ?, experience = ?, todayExperience = ? WHERE guildId = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_UPD_GUILD_RESET_TODAY_EXPERIENCE, "UPDATE guild SET todayExperience = 0", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_LOAD_GUILD_NEWS, "SELECT id, eventType, playerGuid, data, flags, date FROM guild_news_log WHERE guild = ? ORDER BY guild ASC, id ASC", CONNECTION_SYNCH);
+    PREPARE_STATEMENT(CHAR_LOAD_GUILD_NEWS, "SELECT id, eventType, playerGuid, data, flags, date FROM guild_news_log WHERE guild = ? ORDER BY id DESC LIMIT 100", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SAVE_GUILD_NEWS, "INSERT INTO guild_news_log (guild, id, eventType, playerGuid, data, flags, date) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 
     // Archaelogy
@@ -315,8 +315,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_DEL_TUTORIALS, "DELETE FROM account_tutorial WHERE accountId = ?", CONNECTION_ASYNC)
 
     // Instance saves
-    PREPARE_STATEMENT(CHAR_INS_INSTANCE_SAVE, "INSERT INTO instance (id, map, resettime, difficulty, completedEncounters, data) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
-    PREPARE_STATEMENT(CHAR_UPD_INSTANCE_DATA, "UPDATE instance SET completedEncounters=?, data=? WHERE id=?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_INS_INSTANCE_SAVE, "INSERT INTO instance (id, map, resettime, difficulty, challenge, completedEncounters, data) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_UPD_INSTANCE_DATA, "UPDATE instance SET completedEncounters=?, challenge=?, data=? WHERE id=?", CONNECTION_ASYNC)
 
     // Game event saves
     PREPARE_STATEMENT(CHAR_DEL_GAME_EVENT_SAVE, "DELETE FROM game_event_save WHERE eventEntry = ?", CONNECTION_ASYNC)
@@ -471,7 +471,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SEL_POOL_QUEST_SAVE, "SELECT quest_id FROM pool_quest_save WHERE pool_id = ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_AT_LOGIN, "SELECT at_login FROM characters WHERE guid = ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SEL_CHAR_CLASS_LVL_AT_LOGIN, "SELECT race, class, level, at_login, knownTitles  FROM characters WHERE guid = ?", CONNECTION_SYNCH);
-    PREPARE_STATEMENT(CHAR_SEL_INSTANCE, "SELECT data, completedEncounters FROM instance WHERE map = ? AND id = ?", CONNECTION_SYNCH);
+    PREPARE_STATEMENT(CHAR_SEL_INSTANCE, "SELECT data, completedEncounters, challenge FROM instance WHERE map = ? AND id = ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SEL_PET_SPELL_LIST, "SELECT DISTINCT pet_spell.spell FROM pet_spell, character_pet WHERE character_pet.owner = ? AND character_pet.id = pet_spell.guid AND character_pet.id <> ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SEL_CHAR_PET, "SELECT id FROM character_pet WHERE owner = ? AND id <> ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SEL_CHAR_PETS, "SELECT id FROM character_pet WHERE owner = ?", CONNECTION_SYNCH);
@@ -624,4 +624,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     PREPARE_STATEMENT(CHAR_LOAD_BOUTIQUE_METIER,    "SELECT skill, value FROM store_metier WHERE guid = ?",                                         CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_DEL_BOUTIQUE_METIER,     "DELETE FROM store_metier WHERE guid = ? AND skill = ? AND value = ?",                          CONNECTION_ASYNC);
+
+    // Challenge
+    PREPARE_STATEMENT(CHAR_INS_CHALLENGE,           "INSERT INTO challenge (`id`, `guildId`, `mapID`, `recordTime`, `date`, `medal`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_INS_CHALLENGE_MEMBER,    "INSERT INTO challenge_member (`id`, `member`, `specID`) VALUES (?, ?, ?)", CONNECTION_ASYNC)
 }

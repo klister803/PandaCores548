@@ -3559,12 +3559,14 @@ void World::Transfer()
                     stmt->setUInt32(8, transferId);
                     LoginDatabase.Execute(stmt);
                     if(transferId)
-                        LoginDatabase.PQuery("UPDATE `transfer_requests` SET `guid` = '%u' WHERE `id` = '%u'", newguid, transferId);
+                        LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u', `guid` = '%u' WHERE `id` = '%u'", dumpState, newguid, transferId);
                 }
             }
             else
             {
                 LoginDatabase.PQuery("UPDATE `transferts` SET `error` = '%u', `nb_attempt` = `nb_attempt` + 1 WHERE `id` = '%u'", dumpState, transaction);
+                if(transferId)
+                    LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u' WHERE `id` = '%u'", dumpState, transferId);
                 continue;
             }
         }

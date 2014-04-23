@@ -579,6 +579,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         if (Player* playerCaster = caster->ToPlayer())
             castItem = playerCaster->GetItemByGuid(itemGUID);
 
+    //Old trinket not modify amount
+    if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && !(m_spellInfo->AttributesEx8 & SPELL_ATTR8_AURA_SEND_AMOUNT))
+        return m_baseAmount;
+
     // default amount calculation
     amount = m_spellInfo->GetEffect(m_effIndex, m_diffMode).CalcValue(caster, &m_baseAmount, GetBase()->GetOwner()->ToUnit(), castItem);
 
@@ -4336,7 +4340,7 @@ void AuraEffect::HandleAuraModEffectImmunity(AuraApplication const* aurApp, uint
             if (target->ToPlayer()->InBattleground())
             {
                 if (Battleground* bg = target->ToPlayer()->GetBattleground())
-                    bg->EventPlayerDroppedFlag(target->ToPlayer());
+                        bg->EventPlayerDroppedFlag(target->ToPlayer());
             }
             else
                 sOutdoorPvPMgr->HandleDropFlag((Player*)target, GetSpellInfo()->Id);

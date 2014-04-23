@@ -22,6 +22,7 @@
 #include "ZoneScript.h"
 #include "World.h"
 #include "ObjectMgr.h"
+#include "CreatureAIImpl.h"
 //#include "GameObject.h"
 //#include "Map.h"
 
@@ -100,7 +101,7 @@ typedef std::map<uint32 /*entry*/, MinionInfo> MinionInfoMap;
 class InstanceScript : public ZoneScript
 {
     public:
-        explicit InstanceScript(Map* map) : instance(map), completedEncounters(0) {}
+        explicit InstanceScript(Map* map) : instance(map), completedEncounters(0), challenge_timer(0){}
 
         virtual ~InstanceScript() {}
 
@@ -117,7 +118,7 @@ class InstanceScript : public ZoneScript
 
         void SaveToDB();
 
-        virtual void Update(uint32 /*diff*/) {}
+        virtual void Update(uint32 /*diff*/);
 
         //Used by the map's CanEnter function.
         //This is to prevent players from entering during boss encounters.
@@ -249,6 +250,14 @@ class InstanceScript : public ZoneScript
         }
         void LoadDoorDataBase(std::vector<DoorData> const* data);
 
+        void BroadcastPacket(WorldPacket& data) const;
+
+        // Challenge
+        void FillInitialWorldTimers(WorldPacket& data);
+        void StartChallenge();
+        uint32 GetChallengeProgresTime();
+        void SetChallengeProgresInSec(uint32 timer);
+
     protected:
         void LoadDoorData(DoorData const* data);
         void LoadMinionData(MinionData const* data);
@@ -265,7 +274,9 @@ class InstanceScript : public ZoneScript
         std::vector<BossInfo> bosses;
         DoorInfoMap doors;
         MinionInfoMap minions;
-        uint32 completedEncounters; // completed encounter mask, bit indexes are DungeonEncounter.dbc boss numbers, used for packets
+        uint32 completedEncounters;         // completed encounter mask, bit indexes are DungeonEncounter.dbc boss numbers, used for packets
         uint32 ResurectCount;
+        uint32 challenge_timer;             // time in ms of start challenge.
+        EventMap _events;
 };
 #endif

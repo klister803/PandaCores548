@@ -1434,6 +1434,12 @@ struct ItemSpecEntry
     uint32      m_specID;                                   // 2,       m_specID
 };
 
+struct LanguageWordsEntry
+{
+    //uint32 Id;                                            // 0
+    uint32 langId;                                          // 1
+    char* word;                                             // 2
+};
 struct LFGDungeonEntry
 {
     uint32  ID;                                             // 0
@@ -1568,6 +1574,14 @@ struct MapEntry
     bool IsContinent() const
     {
         return MapID == 0 || MapID == 1 || MapID == 530 || MapID == 571;
+    }
+
+    bool isSupportDifficultMode(uint32 difficulty) const
+    {
+        if (IsRaid() && difficulty >= MAX_RAID_DIFFICULTY ||
+            !IsRaid() && difficulty >= MAX_DUNGEON_DIFFICULTY && difficulty != CHALLENGE_MODE_DIFFICULTY)
+            return false;
+        return true;
     }
 };
 
@@ -2695,5 +2709,9 @@ struct ResearchSiteData
 
 typedef std::map<uint32 /*site_id*/, ResearchSiteData> ResearchSiteDataMap;
 ResearchSiteEntry const* GetResearchSiteEntryById(uint32 id);
+
+typedef std::map<uint32 /*word length*/, std::vector<std::string> > LanguageWordsMap;
+LanguageWordsMap const* GetLanguageWordMap(uint32 lang_id);
+std::vector<std::string> const* GetLanguageWordsBySize(uint32 lang_id, uint32 size);
 
 #endif

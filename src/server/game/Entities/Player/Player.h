@@ -1401,6 +1401,7 @@ class Player : public Unit, public GridObject<Player>
         void Whisper(const std::string& text, const uint32 language, uint64 receiver);
         void WhisperAddon(const std::string& text, const std::string& prefix, Player* receiver);
         void BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std::string& text, uint32 language, const char* addonPrefix = NULL) const;
+        void BuildPlayerChatData(Trinity::ChatData& c, uint8 msgtype, const std::string& text, uint32 language, const char* addonPrefix = NULL) const;
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
@@ -2329,6 +2330,7 @@ class Player : public Unit, public GridObject<Player>
         void SendMessageToSetInRange(WorldPacket* data, float fist, bool self);// overwrite Object::SendMessageToSetInRange
         void SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only);
         void SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr);
+        void SendChatMessageToSetInRange(Trinity::ChatData& c, float dist, bool self, bool own_team_only);
 
         Corpse* GetCorpse() const;
         void SpawnCorpseBones();
@@ -2485,9 +2487,11 @@ class Player : public Unit, public GridObject<Player>
         void SetEquipmentSet(uint32 index, EquipmentSet eqset);
         void DeleteEquipmentSet(uint64 setGuid);
 
+        void SendInitWorldTimers();
         void SendInitWorldStates(uint32 zone, uint32 area);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
         void SendDirectMessage(WorldPacket* data);
+        void ScheduleMessageSend(WorldPacket* data, uint32 delay);
         void SendBGWeekendWorldStates();
 
         void SendAurasForTarget(Unit* target);
@@ -2974,6 +2978,7 @@ class Player : public Unit, public GridObject<Player>
 
         void CheckSpellAreaOnQuestStatusChange(uint32 quest_id);
 
+        bool CanSpeakLanguage(uint32 lang_id) const;
 
         /*********************************************************/
         /***              BATTLE PET SYSTEM                    ***/
@@ -2984,6 +2989,12 @@ class Player : public Unit, public GridObject<Player>
 
         Bracket* getBracket(BracketType slot) const;
         void SendPvpRatedStats();
+
+        /*********************************************************/
+        /***              CHALLENGE SYSTEM                     ***/
+        /*********************************************************/
+        void ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal, uint32 recTime);
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;

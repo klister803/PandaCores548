@@ -7618,6 +7618,22 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
     VisitNearbyWorldObject(dist, notifier);
 }
 
+void Player::SendChatMessageToSetInRange(Trinity::ChatData& c, float dist, bool self, bool own_team_only)
+{
+    if (!IsInWorld())
+        return;
+
+    if (self)
+    {
+        WorldPacket data;
+        Trinity::BuildChatPacket(data, c, false);
+        GetSession()->SendPacket(&data);
+    }
+
+    Trinity::ChatMessageDistDeliverer notifier(this, c, dist, own_team_only);
+    VisitNearbyWorldObject(dist, notifier);
+}
+
 void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 {
     if (!IsInWorld())
@@ -7635,6 +7651,12 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 void Player::SendDirectMessage(WorldPacket* data)
 {
     m_session->SendPacket(data);
+}
+
+void Player::ScheduleMessageSend(WorldPacket* data, uint32 delay)
+{
+    PacketSendEvent* e = new PacketSendEvent(this, data, delay);
+    e->Schedule();
 }
 
 void Player::SendCinematicStart(uint32 CinematicSequenceId)
@@ -10720,6 +10742,11 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 // and some more ... unknown
             }
             break;
+        case 6665:
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_DG)
+                bg->FillInitialWorldStates(data);
+
+            break;
         // any of these needs change! the client remembers the prev setting!
         // ON EVERY ZONE LEAVE, RESET THE OLD ZONE'S WORLD STATE, BUT AT LEAST THE UI STUFF!
         case 3483:                                          // Hellfire Peninsula
@@ -11043,6 +11070,24 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
 
     GetSession()->SendPacket(&data);
     SendBGWeekendWorldStates();
+}
+
+void Player::SendInitWorldTimers()
+{
+    WorldPacket data(SMSG_WORLD_STATE_TIMER_START_INIT, 11);
+    uint32 bpos = data.bitwpos();                           // Place Holder
+
+    data.WriteBits(0, 21);                                  // count of uint64 blocks
+    data.FlushBits();
+    size_t countPos = data.wpos();
+
+    if (InstanceScript* instance = GetInstanceScript())
+        instance->FillInitialWorldTimers(data);
+
+    uint16 length = (data.wpos() - countPos) / 8;
+    data.PutBits<uint32>(bpos, length, 21);
+
+    GetSession()->SendPacket(&data);
 }
 
 void Player::SendBGWeekendWorldStates()
@@ -15813,6 +15858,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 case GOSSIP_OPTION_PETITIONER:
                 case GOSSIP_OPTION_TABARDDESIGNER:
                 case GOSSIP_OPTION_AUCTIONEER:
+//                case 17:
                     break;                                  // no checks
                 case GOSSIP_OPTION_OUTDOORPVP:
                     if (!sOutdoorPvPMgr->CanTalkTo(this, creature, itr->second))
@@ -21802,6 +21848,13 @@ void Player::StopCastingCharm()
 inline void Player::BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std::string& text, uint32 language, const char* addonPrefix /*= NULL*/) const
 {
     Trinity::ChatData c;
+    BuildPlayerChatData(c, msgtype, text, language, addonPrefix);
+
+    Trinity::BuildChatPacket(*data, c);
+}
+
+inline void Player::BuildPlayerChatData(Trinity::ChatData& c, uint8 msgtype, const std::string& text, uint32 language, const char* addonPrefix /*= NULL*/) const
+{
     c.sourceGuid = GetGUID();
     c.targetGuid = GetGUID();
     c.message = text;
@@ -21809,8 +21862,6 @@ inline void Player::BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std:
     c.chatTag = GetChatTag();
     c.chatType = msgtype;
     c.language = language;
-
-    Trinity::BuildChatPacket(*data, c);
 }
 
 void Player::Say(const std::string& text, const uint32 language)
@@ -21818,9 +21869,10 @@ void Player::Say(const std::string& text, const uint32 language)
     std::string _text(text);
     sScriptMgr->OnPlayerChat(this, CHAT_MSG_SAY, language, _text);
 
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildPlayerChat(&data, CHAT_MSG_SAY, _text, language);
-    SendMessageToSetInRange(&data, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY), true);
+
+    Trinity::ChatData c;
+    BuildPlayerChatData(c, CHAT_MSG_SAY, _text, language);
+    SendChatMessageToSetInRange(c, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY), true, false);
 }
 
 void Player::Yell(const std::string& text, const uint32 language)
@@ -21828,9 +21880,9 @@ void Player::Yell(const std::string& text, const uint32 language)
     std::string _text(text);
     sScriptMgr->OnPlayerChat(this, CHAT_MSG_YELL, language, _text);
 
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildPlayerChat(&data, CHAT_MSG_YELL, _text, language);
-    SendMessageToSetInRange(&data, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL), true);
+    Trinity::ChatData c;
+    BuildPlayerChatData(c, CHAT_MSG_YELL, _text, language);
+    SendChatMessageToSetInRange(c, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL), true, false);
 }
 
 void Player::TextEmote(const std::string& text)
@@ -24644,10 +24696,8 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetBattlePetMgr().BuildBattlePetJournal(&data);
     GetSession()->SendPacket(&data);
 
-    data.Initialize(SMSG_WORLD_STATE_TIMER_START_INIT, 3);
-    data.WriteBits(0, 21);
-    data.FlushBits();
-    GetSession()->SendPacket(&data);
+    // send timers if already start challenge for example
+    SendInitWorldTimers();
 
     SendDeathRuneUpdate();
     GetSession()->SendStablePet(0);
@@ -29070,3 +29120,28 @@ void Player::ModifySpellCooldown(uint32 spell_id, int32 delta)
     SendModifyCooldown(spell_id, G3D::fuzzyGt(result, 0.0) ? delta : -int32(cooldown * IN_MILLISECONDS));
 }
 
+void Player::ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal, uint32 recordTime)
+{
+
+}bool Player::CanSpeakLanguage(uint32 lang_id) const
+{
+    LanguageDesc const* langDesc = GetLanguageDescByID(lang_id);
+    if (!langDesc)
+        return false;
+
+    if (isGameMaster())
+        return true;
+
+    if (langDesc->skill_id != 0 && !HasSkill(langDesc->skill_id))
+    {
+        // also check SPELL_AURA_COMPREHEND_LANGUAGE (client offers option to speak in that language)
+        Unit::AuraEffectList const& langAuras = GetAuraEffectsByType(SPELL_AURA_COMPREHEND_LANGUAGE);
+        for (Unit::AuraEffectList::const_iterator i = langAuras.begin(); i != langAuras.end(); ++i)
+            if ((*i)->GetMiscValue() == int32(langDesc->lang_id))
+                return true;
+
+        return false;
+    }
+
+    return true;
+}

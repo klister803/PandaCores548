@@ -25,6 +25,15 @@
 #include "CreatureAI.h"
 #include "Log.h"
 #include "LFGMgr.h"
+#include "ChallengeMgr.h"
+
+#define CHALLENGE_START 5
+
+enum events
+{
+    EVENT_START_CHALLENGE = 1,
+    EVENT_SAVE_CHALLENGE
+};
 
 void InstanceScript::SaveToDB()
 {
@@ -34,8 +43,9 @@ void InstanceScript::SaveToDB()
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_INSTANCE_DATA);
     stmt->setUInt32(0, GetCompletedEncounterMask());
-    stmt->setString(1, data);
-    stmt->setUInt32(2, instance->GetInstanceId());
+    stmt->setUInt32(1, GetChallengeProgresTime());
+    stmt->setString(2, data);
+    stmt->setUInt32(3, instance->GetInstanceId());
     CharacterDatabase.Execute(stmt);
 }
 
@@ -522,7 +532,11 @@ bool InstanceScript::IsWipe()
 
 void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source)
 {
-    DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), instance->GetDifficulty());
+    Difficulty diff = instance->GetDifficulty();
+    if (challenge_timer)
+        diff = HEROIC_DIFFICULTY;
+
+    DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), diff);
     if (!encounters)
         return;
 
@@ -540,6 +554,29 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                         if (Player* player = i->getSource())
                             if (!source || player->IsAtGroupRewardDistance(source))
                                 sLFGMgr->RewardDungeonDoneFor(dungeonId, player);
+
+                // Challenge reward
+                if (uint32 time = GetChallengeProgresTime())
+                {
+                    MapChallengeModeEntryMap::iterator itr = sMapChallengeModeEntrybyMap.find(instance->GetId());
+                    if (itr != sMapChallengeModeEntrybyMap.end())
+                    {
+                        ChallengeMode medal = CHALLENGE_MEDAL_NONE;
+                        MapChallengeModeEntry const* mode = itr->second;
+
+                        // Calculate reward medal
+                        if (mode->gold > time)
+                            medal = CHALLENGE_MEDAL_GOLD;
+                        else if (mode->silver > time)
+                            medal = CHALLENGE_MEDAL_SILVER;
+                        else if (mode->bronze > time)
+                            medal = CHALLENGE_MEDAL_BRONZE;
+                        else
+                            return;
+
+                        sChallengeMgr->GroupReward(instance, getMSTime() - challenge_timer, medal);
+                    }
+                }
             }
             return;
         }
@@ -555,4 +592,97 @@ void InstanceScript::UpdatePhasing()
     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
         if (Player* player = itr->getSource())
             player->GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
+}
+
+void InstanceScript::BroadcastPacket(WorldPacket& data) const
+{
+    Map::PlayerList const& players = instance->GetPlayers();
+    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+        if (Player* player = itr->getSource())
+            player->GetSession()->SendPacket(&data);
+}
+
+void InstanceScript::Update(uint32 diff)
+{
+    _events.Update(diff);
+
+    while (uint32 eventId = _events.ExecuteEvent())
+    {
+        switch (eventId)
+        {
+            case EVENT_START_CHALLENGE:
+            {
+                challenge_timer = getMSTime();
+
+                WorldPacket data(SMSG_WORLD_STATE_TIMER_START, 8);
+                data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+                data << uint32(0);                      //time elapsed in sec
+                BroadcastPacket(data);
+
+                // ToDo: despawn challenge gates
+
+                // save challenge progress every min
+                _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+                break;
+            }
+            case EVENT_SAVE_CHALLENGE:
+            {
+                SaveToDB();
+                _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
+
+uint32 InstanceScript::GetChallengeProgresTime()
+{
+    if (!challenge_timer)
+        return 0;
+
+    return (getMSTime() - challenge_timer)/IN_MILLISECONDS;
+}
+
+void InstanceScript::SetChallengeProgresInSec(uint32 timer)
+{
+    if (!timer)
+        return;
+
+    challenge_timer = getMSTime() - (timer*IN_MILLISECONDS);
+
+    // start save progress event
+    _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+}
+
+void InstanceScript::StartChallenge()
+{
+    if (challenge_timer)
+        return;
+
+    if (instance->IsRaid() || !instance->isChallenge())
+        return;
+
+    // Check if dungeon support challenge
+    if (sMapChallengeModeEntrybyMap.find(instance->GetId()) == sMapChallengeModeEntrybyMap.end())
+        return;
+
+    // Set Timer For Start challenge
+    _events.ScheduleEvent(EVENT_START_CHALLENGE, CHALLENGE_START * IN_MILLISECONDS);
+
+    WorldPacket data(SMSG_START_TIMER, 12);
+    data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+    data << uint32(CHALLENGE_START);
+    data << uint32(CHALLENGE_START);
+    BroadcastPacket(data);
+}
+
+void InstanceScript::FillInitialWorldTimers(WorldPacket& data)
+{
+    if (challenge_timer)
+    {
+        data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+        data << uint32((getMSTime() - challenge_timer)/IN_MILLISECONDS);    //time elapsed in sec
+    }
 }

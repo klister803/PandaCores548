@@ -583,6 +583,7 @@ struct SpellLinked
     int32 target;
     int32 cooldown;
     int32 type2;
+    uint32 hitmask;
     int32 learnspell;
 };
 

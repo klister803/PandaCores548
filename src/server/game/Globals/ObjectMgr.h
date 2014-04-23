@@ -559,7 +559,9 @@ struct LanguageDesc
     uint32   skill_id;
 };
 
-extern LanguageDesc lang_description[LANGUAGES_COUNT];
+
+#define LANGUAGE_DESC_COUNT 24
+extern LanguageDesc lang_description[LANGUAGE_DESC_COUNT];
 LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
 enum EncounterCreditType

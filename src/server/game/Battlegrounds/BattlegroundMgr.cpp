@@ -41,6 +41,7 @@
 #include "BattlegroundSSM.h"
 #include "BattlegroundTTP.h"
 #include "BattlegroundTV.h"
+#include "BattlegroundDG.h"
 #include "Chat.h"
 #include "Map.h"
 #include "MapInstanced.h"
@@ -534,6 +535,13 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                 data->WriteBits(1, 22);
                 buff << uint32(((BattleGroundSSMScore*)itr2->second)->CartsTaken);
                 break;
+            case BATTLEGROUND_DG:
+                data->WriteBits(4, 22);
+                buff << uint32(((BattlegroundDGScore*)itr2->second)->cartsCaptured);
+                buff << uint32(((BattlegroundDGScore*)itr2->second)->cartsDefended);
+                buff << uint32(((BattlegroundDGScore*)itr2->second)->pointsCaptured);
+                buff << uint32(((BattlegroundDGScore*)itr2->second)->pointsDefended);
+                break;
             case BATTLEGROUND_NA:
             case BATTLEGROUND_TV:
             case BATTLEGROUND_TTP:
@@ -877,6 +885,9 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         case BATTLEGROUND_IC:
             bg = new BattlegroundIC(*(BattlegroundIC*)bg_template);
             break;
+        case BATTLEGROUND_DG:
+            bg = new BattlegroundDG(*(BattlegroundDG*)bg_template);
+            break;
         case BATTLEGROUND_RATED_10_VS_10:
             switch (urand(0,2))
             {
@@ -967,6 +978,7 @@ uint32 BattlegroundMgr::CreateBattleground(CreateBattlegroundData& data)
         case BATTLEGROUND_RB: bg = new BattlegroundRB; break;
         case BATTLEGROUND_KT: bg = new BattlegroundKT; break;
         case BATTLEGROUND_SSM: bg = new BattlegroundSSM; break;
+        case BATTLEGROUND_DG: bg = new BattlegroundDG; break;
         default:
             bg = new Battleground;
             break;
@@ -1300,6 +1312,8 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
             return BATTLEGROUND_QUEUE_CTF3;
         case BATTLEGROUND_SSM:
             return BATTLEGROUND_QUEUE_SSM;
+        case BATTLEGROUND_DG:
+            return BATTLEGROUND_QUEUE_DG;
         case BATTLEGROUND_AA:
         case BATTLEGROUND_NA:
         case BATTLEGROUND_RL:
@@ -1354,6 +1368,8 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
             return BATTLEGROUND_SSM;
         case BATTLEGROUND_QUEUE_TV:
             return BATTLEGROUND_TV;
+        case BATTLEGROUND_QUEUE_DG:
+            return BATTLEGROUND_DG;
         case BATTLEGROUND_QUEUE_2v2:
         case BATTLEGROUND_QUEUE_3v3:
         case BATTLEGROUND_QUEUE_5v5:

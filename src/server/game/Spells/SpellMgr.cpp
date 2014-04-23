@@ -2287,8 +2287,8 @@ void SpellMgr::LoadSpellLinked()
 
     mSpellLinkedMap.clear();    // need for reload case
 
-    //                                                0              1             2        3        4          5        6         7        8
-    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, hastalent, hastalent2, chance, cooldown, type2, learnspell FROM spell_linked_spell");
+    //                                                0              1             2        3        4          5        6         7        8       9
+    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, hastalent, hastalent2, chance, cooldown, type2, hitmask, learnspell FROM spell_linked_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked spells. DB table `spell_linked_spell` is empty.");
@@ -2308,7 +2308,8 @@ void SpellMgr::LoadSpellLinked()
         int32 chance = fields[5].GetInt32();
         int32 cooldown = fields[6].GetUInt8();
         int32 type2 = fields[7].GetUInt8();
-        int32 learnspell = fields[8].GetInt32();
+        uint32 hitmask = fields[8].GetUInt32();
+        int32 learnspell = fields[9].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(trigger));
         if (!spellInfo)
@@ -2339,6 +2340,7 @@ void SpellMgr::LoadSpellLinked()
         templink.chance = chance;
         templink.cooldown = cooldown;
         templink.type2 = type2;
+        templink.hitmask = hitmask;
         templink.learnspell = learnspell;
         mSpellLinkedMap[trigger].push_back(templink);
 
@@ -4436,6 +4438,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 15;
                     spellInfo->Effects[1].TargetA = 22;
                     spellInfo->Effects[1].TargetB = 15;
+                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
                     break;
 
                 //World Boss
@@ -4562,7 +4565,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Hack these until proc flags of CC auras are implemented
                 case 339:       // Entangling Roots
                 case 19975:     // Entangling Roots
-                case 20066:     // Repentance
                 case 51514:     // Hex
                 case 102359:    // Mass Entanglement
                 case 104239:    // Horror (Soulburn)
@@ -4695,6 +4697,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 131086: // Bladestorm (Protection buff) DND
                     spellInfo->Effects[EFFECT_0].BasePoints = 50;
+                    break;
+                case 20066: // Repentance
+                    spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
+                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 default:
                     break;
