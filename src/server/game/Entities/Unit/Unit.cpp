@@ -6234,6 +6234,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
         {
             switch (dummySpell->Id)
             {
+                case 104561: // Windsong
+                {
+                    triggered_spell_id = RAND(104423, 104510, 104509);
+                    break;
+                }
+                case 104441: // River's Song
+                {
+                    triggered_spell_id = 116660;
+                    break;
+                }
                 case 120033: // Jade Spirit (Passive)
                 case 142536: // Spirit of Conquest (Passive)
                 {
@@ -7348,6 +7358,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                         triggered_spell_id = 56160;
                         basepoints0 = CalculatePct(amount, triggerAmount);
                     }
+                    break;
+                }
+                case 118314: // Colossus
+                {
+                    triggered_spell_id = 116631;
                     break;
                 }
                 case 89489: // MoA Inner Focus
