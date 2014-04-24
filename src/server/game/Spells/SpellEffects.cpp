@@ -1276,7 +1276,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     if (Player* player = m_caster->ToPlayer())
                     {
                         Battleground* bg = player->GetBattleground();
-                        if (bg->GetTypeID(true) == BATTLEGROUND_DG || bg->GetTypeID() == BATTLEGROUND_DG)
+                        if (bg && (bg->GetTypeID(true) == BATTLEGROUND_DG || bg->GetTypeID() == BATTLEGROUND_DG))
                              ((BattlegroundDG*)bg)->HandlePointCapturing(player, unitTarget->ToCreature());
                     }
 
