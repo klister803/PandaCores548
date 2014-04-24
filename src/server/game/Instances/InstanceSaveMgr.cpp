@@ -462,9 +462,20 @@ void InstanceSaveManager::ResetOrWarnAll(uint32 mapid, Difficulty difficulty)
     // delete them from the DB, even if not loaded
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    trans->PAppend("DELETE FROM character_instance USING character_instance LEFT JOIN instance ON character_instance.instance = id WHERE map = '%u' and difficulty='%u'", mapid, difficulty);
-    trans->PAppend("DELETE FROM group_instance USING group_instance LEFT JOIN instance ON group_instance.instance = id WHERE map = '%u' and difficulty='%u'", mapid, difficulty);
-    trans->PAppend("DELETE FROM instance WHERE map = '%u' and difficulty='%u'", mapid, difficulty);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INSTANCE_BY_MAP_DIFF);
+    stmt->setUInt16(0, uint16(mapid));
+    stmt->setUInt8(1, uint8(difficulty));
+    trans->Append(stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GROUP_INSTANCE_BY_MAP_DIFF);
+    stmt->setUInt16(0, uint16(mapid));
+    stmt->setUInt8(1, uint8(difficulty));
+    trans->Append(stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INSTANCE_BY_MAP_DIFF);
+    stmt->setUInt16(0, uint16(mapid));
+    stmt->setUInt8(1, uint8(difficulty));
+    trans->Append(stmt);
 
     CharacterDatabase.CommitTransaction(trans);
 

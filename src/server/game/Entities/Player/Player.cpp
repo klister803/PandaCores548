@@ -20181,6 +20181,7 @@ void Player::SendRaidInfo()
             if (itr->second.perm)
             {
                 save = itr->second.save;
+                bool isHeroic = save->GetDifficulty() == MAN10_HEROIC_DIFFICULTY || save->GetDifficulty() == MAN25_HEROIC_DIFFICULTY;
                 instanceID = save->GetInstanceId();
                 data.WriteGuidMask<2, 4, 7>(instanceID);
                 data.WriteBit(0);                                       //extended?
@@ -20193,7 +20194,7 @@ void Player::SendRaidInfo()
                 dataBuffer.WriteGuidBytes<7, 5, 0, 4, 1, 3>(instanceID);
                 dataBuffer << uint32(save->GetDifficulty());            // difficulty
                 dataBuffer << uint32(save->GetMapId());                 // map id
-                dataBuffer << uint32(0);                                // Heroic
+                dataBuffer << uint32(isHeroic);                         // Heroic
                 dataBuffer.WriteGuidBytes<6>(instanceID);
                 ++counter;
             }

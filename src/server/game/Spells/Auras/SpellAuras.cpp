@@ -447,8 +447,12 @@ m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false)
     m_duration = m_maxDuration;
     m_procCharges = CalcMaxCharges(caster);
     m_isUsingCharges = m_procCharges != 0;
+    //For scaling trinket
     if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && castItem)
         m_casterLevel = castItem->GetLevel();
+    //For scaling food
+    if((m_spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF) && caster && castItem && caster->getLevel() > castItem->GetTemplate()->RequiredLevel)
+        m_casterLevel = castItem->GetTemplate()->RequiredLevel;
     // m_casterLevel = cast item level/caster level, caster level should be saved to db, confirmed with sniffs
 }
 
