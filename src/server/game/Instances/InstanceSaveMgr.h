@@ -71,7 +71,7 @@ class InstanceSave
 
         /* for normal instances this corresponds to max(creature respawn time) + X hours
            for raid/heroic instances this caches the global respawn time for the map */
-        time_t GetResetTime() const { return m_resetTime; }
+        time_t GetResetTime();
         void SetResetTime(time_t resetTime) { m_resetTime = resetTime; }
         time_t GetResetTimeForDB();
 
@@ -177,12 +177,12 @@ class InstanceSaveManager
         uint32 GetNumInstanceSaves() { return m_instanceSaveById.size(); }
         uint32 GetNumBoundPlayersTotal();
         uint32 GetNumBoundGroupsTotal();
+        void ResetOrWarnAll(uint32 mapid, Difficulty difficulty);
 
     protected:
         static uint16 ResetTimeDelay[];
 
     private:
-        void _ResetOrWarnAll(uint32 mapid, Difficulty difficulty, bool warn, time_t resetTime);
         void _ResetInstance(uint32 mapid, uint32 instanceId);
         void _ResetSave(InstanceSaveHashMap::iterator &itr);
         // used during global instance resets

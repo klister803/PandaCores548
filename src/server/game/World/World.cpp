@@ -124,6 +124,9 @@ World::World()
     m_NextDailyQuestReset = 0;
     m_NextWeeklyQuestReset = 0;
     m_NextCurrencyReset = 0;
+    m_NextInstanceDailyReset = 0;
+    m_NextInstanceHalfWeekReset = 0;
+    m_NextInstanceWeeklyReset = 0;
 
     m_defaultDbcLocale = LOCALE_enUS;
     m_availableDbcLocaleMask = 0;
@@ -520,7 +523,6 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_HONOR_QB] = ConfigMgr::GetFloatDefault("Rate.Honor.QuestBg", 1.0f);
     rate_values[RATE_MINING_AMOUNT] = ConfigMgr::GetFloatDefault("Rate.Mining.Amount", 1.0f);
     rate_values[RATE_MINING_NEXT]   = ConfigMgr::GetFloatDefault("Rate.Mining.Next", 1.0f);
-    rate_values[RATE_INSTANCE_RESET_TIME] = ConfigMgr::GetFloatDefault("Rate.InstanceResetTime", 1.0f);
     rate_values[RATE_TALENT] = ConfigMgr::GetFloatDefault("Rate.Talent", 1.0f);
     if (rate_values[RATE_TALENT] < 0.0f)
     {
@@ -940,7 +942,10 @@ void World::LoadConfigSettings(bool reload)
 
     m_bool_configs[CONFIG_CAST_UNSTUCK] = ConfigMgr::GetBoolDefault("CastUnstuck", true);
     m_int_configs[CONFIG_MAX_SPELL_CASTS_IN_CHAIN]  = ConfigMgr::GetIntDefault("MaxSpellCastsInChain", 10);
-    m_int_configs[CONFIG_INSTANCE_RESET_TIME_HOUR]  = ConfigMgr::GetIntDefault("Instance.ResetTimeHour", 4);
+    m_int_configs[CONFIG_INSTANCE_RESET_TIME_HOUR]  = ConfigMgr::GetIntDefault("Instance.ResetTimeHour", 6);
+    m_int_configs[CONFIG_INSTANCE_DAILY_RESET]  = ConfigMgr::GetIntDefault("Instance.DailyReset", 1);
+    m_int_configs[CONFIG_INSTANCE_HALF_WEEK_RESET]  = ConfigMgr::GetIntDefault("Instance.HalfWeekReset", 3);
+    m_int_configs[CONFIG_INSTANCE_WEEKLY_RESET]  = ConfigMgr::GetIntDefault("Instance.WeeklyReset", 7);
     m_int_configs[CONFIG_INSTANCE_UNLOAD_DELAY] = ConfigMgr::GetIntDefault("Instance.UnloadDelay", 30 * MINUTE * IN_MILLISECONDS);
 
     m_int_configs[CONFIG_MAX_PRIMARY_TRADE_SKILL] = ConfigMgr::GetIntDefault("MaxPrimaryTradeSkill", 2);
@@ -1295,7 +1300,7 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES] = ConfigMgr::GetBoolDefault("DBC.EnforceItemAttributes", true);
 
     // Max instances per hour
-    m_int_configs[CONFIG_MAX_INSTANCES_PER_HOUR] = ConfigMgr::GetIntDefault("AccountInstancesPerHour", 5);
+    m_int_configs[CONFIG_MAX_INSTANCES_PER_HOUR] = ConfigMgr::GetIntDefault("AccountInstancesPerHour", 50);
 
     // AutoBroadcast
     m_bool_configs[CONFIG_AUTOBROADCAST] = ConfigMgr::GetBoolDefault("AutoBroadcast.On", false);
@@ -1963,6 +1968,11 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Calculate next currency reset time...");
     InitCurrencyResetTime();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Calculate next instanse reset time...");
+    InitInstanceDailyResetTime();
+    InitInstanceHalfWeekResetTime();
+    InitInstanceWeeklyResetTime();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Init Auto Restart time..." );
     InitServerAutoRestartTime();
 
@@ -2152,6 +2162,15 @@ void World::Update(uint32 diff)
 
     if (m_gameTime > m_NextCurrencyReset)
         ResetCurrencyWeekCap();
+
+    if (m_gameTime > m_NextInstanceDailyReset)
+        InstanceDailyResetTime();
+
+    if (m_gameTime > m_NextInstanceHalfWeekReset)
+        InstanceHalfWeekResetTime();
+
+    if (m_gameTime > m_NextInstanceWeeklyReset)
+        InstanceWeeklyResetTime();
 
     if (m_gameTime > m_NextServerRestart)
         AutoRestartServer();
@@ -3018,6 +3037,105 @@ void World::InitCurrencyResetTime()
         sWorld->setWorldState(WS_CURRENCY_RESET_TIME, uint64(m_NextCurrencyReset));
 }
 
+void World::InitInstanceDailyResetTime()
+{
+    time_t insttime = uint64(sWorld->getWorldState(WS_INSTANCE_DAILY_RESET_TIME));
+    if (!insttime)
+        m_NextInstanceDailyReset = time_t(time(NULL));         // game time not yet init
+
+    // generate time by config
+    time_t curTime = time(NULL);
+    tm localTm = *localtime(&curTime);
+    localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
+    localTm.tm_min = 0;
+    localTm.tm_sec = 0;
+
+    // Daily reset time
+    time_t nextResetTime = mktime(&localTm);
+
+    // next reset time before current moment
+    if (curTime >= nextResetTime)
+        nextResetTime += getIntConfig(CONFIG_INSTANCE_DAILY_RESET) * DAY;
+
+    // normalize reset time
+    m_NextInstanceDailyReset = insttime < curTime ? nextResetTime - getIntConfig(CONFIG_INSTANCE_DAILY_RESET) * DAY : nextResetTime;
+
+    if (!insttime)
+        sWorld->setWorldState(WS_INSTANCE_DAILY_RESET_TIME, uint64(m_NextInstanceDailyReset));
+}
+
+void World::InitInstanceHalfWeekResetTime()
+{
+    time_t insttime = uint64(sWorld->getWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME));
+    if (!insttime)
+        m_NextInstanceHalfWeekReset = time_t(time(NULL));         // game time not yet init
+
+    // generate time by config
+    time_t curTime = time(NULL);
+    tm localTm = *localtime(&curTime);
+    localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
+    localTm.tm_min = 0;
+    localTm.tm_sec = 0;
+
+    // Daily reset time
+    time_t nextResetTime = mktime(&localTm);
+
+    // next reset time before current moment
+    if (curTime >= nextResetTime)
+        nextResetTime += getIntConfig(CONFIG_INSTANCE_HALF_WEEK_RESET) * DAY;
+
+    // normalize reset time
+    m_NextInstanceHalfWeekReset = insttime < curTime ? nextResetTime - getIntConfig(CONFIG_INSTANCE_HALF_WEEK_RESET) * DAY : nextResetTime;
+
+    if (!insttime)
+        sWorld->setWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME, uint64(m_NextInstanceHalfWeekReset));
+}
+
+void World::InitInstanceWeeklyResetTime()
+{
+    time_t insttime = uint64(sWorld->getWorldState(WS_INSTANCE_WEEKLY_RESET_TIME));
+    if (!insttime)
+        m_NextInstanceWeeklyReset = time_t(time(NULL));         // game time not yet init
+
+    // generate time by config
+    time_t curTime = time(NULL);
+    tm localTm = *localtime(&curTime);
+    localTm.tm_wday = 3;
+    localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
+    localTm.tm_min = 0;
+    localTm.tm_sec = 0;
+
+    // Daily reset time
+    time_t nextResetTime = mktime(&localTm);
+
+    // next reset time before current moment
+    if (curTime >= nextResetTime)
+        nextResetTime += getIntConfig(CONFIG_INSTANCE_WEEKLY_RESET) * DAY;
+
+    // normalize reset time
+    m_NextInstanceWeeklyReset = insttime < curTime ? nextResetTime - getIntConfig(CONFIG_INSTANCE_WEEKLY_RESET) * DAY : nextResetTime;
+
+    if (!insttime)
+        sWorld->setWorldState(WS_INSTANCE_WEEKLY_RESET_TIME, uint64(m_NextInstanceWeeklyReset));
+}
+
+time_t World::getInstanceResetTime(uint32 resetTime)
+{
+    switch(resetTime)
+    {
+        case 86400:
+            return sWorld->getWorldState(WS_INSTANCE_DAILY_RESET_TIME);
+        case 259200:
+            return sWorld->getWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME);
+        case 604800:
+            return sWorld->getWorldState(WS_INSTANCE_WEEKLY_RESET_TIME);
+        default:
+            return time(NULL);
+    }
+
+    return time(NULL);
+}
+
 void World::ResetDailyQuests()
 {
     sLog->outInfo(LOG_FILTER_GENERAL, "Daily quests reset for all characters.");
@@ -3043,6 +3161,54 @@ void World::ResetCurrencyWeekCap()
 
     m_NextCurrencyReset = time_t(m_NextCurrencyReset + DAY * getIntConfig(CONFIG_CURRENCY_RESET_INTERVAL));
     sWorld->setWorldState(WS_CURRENCY_RESET_TIME, uint64(m_NextCurrencyReset));
+}
+
+void World::InstanceDailyResetTime()
+{
+    for (MapDifficultyMap::const_iterator itr = sMapDifficultyMap.begin(); itr != sMapDifficultyMap.end(); ++itr)
+    {
+        uint32 mapid = PAIR32_LOPART(itr->first);
+        Difficulty difficulty = Difficulty(PAIR32_HIPART(itr->first));
+
+        MapDifficulty const* mapDiff = GetMapDifficultyData(mapid, difficulty);
+        if (mapDiff && mapDiff->resetTime == 86400)
+            sInstanceSaveMgr->ResetOrWarnAll(mapid, difficulty);
+    }
+
+    m_NextInstanceDailyReset = time_t(m_NextInstanceDailyReset + DAY * getIntConfig(CONFIG_INSTANCE_DAILY_RESET));
+    sWorld->setWorldState(WS_INSTANCE_DAILY_RESET_TIME, uint64(m_NextInstanceDailyReset));
+}
+
+void World::InstanceHalfWeekResetTime()
+{
+    for (MapDifficultyMap::const_iterator itr = sMapDifficultyMap.begin(); itr != sMapDifficultyMap.end(); ++itr)
+    {
+        uint32 mapid = PAIR32_LOPART(itr->first);
+        Difficulty difficulty = Difficulty(PAIR32_HIPART(itr->first));
+
+        MapDifficulty const* mapDiff = GetMapDifficultyData(mapid, difficulty);
+        if (mapDiff && mapDiff->resetTime == 259200)
+            sInstanceSaveMgr->ResetOrWarnAll(mapid, difficulty);
+    }
+
+    m_NextInstanceHalfWeekReset = time_t(m_NextInstanceHalfWeekReset + DAY * getIntConfig(CONFIG_INSTANCE_DAILY_RESET));
+    sWorld->setWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME, uint64(m_NextInstanceHalfWeekReset));
+}
+
+void World::InstanceWeeklyResetTime()
+{
+    for (MapDifficultyMap::const_iterator itr = sMapDifficultyMap.begin(); itr != sMapDifficultyMap.end(); ++itr)
+    {
+        uint32 mapid = PAIR32_LOPART(itr->first);
+        Difficulty difficulty = Difficulty(PAIR32_HIPART(itr->first));
+
+        MapDifficulty const* mapDiff = GetMapDifficultyData(mapid, difficulty);
+        if (mapDiff && mapDiff->resetTime == 604800)
+            sInstanceSaveMgr->ResetOrWarnAll(mapid, difficulty);
+    }
+
+    m_NextInstanceWeeklyReset = time_t(m_NextInstanceWeeklyReset + DAY * getIntConfig(CONFIG_INSTANCE_DAILY_RESET));
+    sWorld->setWorldState(WS_INSTANCE_WEEKLY_RESET_TIME, uint64(m_NextInstanceWeeklyReset));
 }
 
 void World::LoadDBAllowedSecurityLevel()

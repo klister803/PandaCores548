@@ -259,6 +259,9 @@ enum WorldIntConfigs
     CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL_DIFFERENCE,
     CONFIG_MAX_SPELL_CASTS_IN_CHAIN,
     CONFIG_INSTANCE_RESET_TIME_HOUR,
+    CONFIG_INSTANCE_DAILY_RESET,
+    CONFIG_INSTANCE_HALF_WEEK_RESET,
+    CONFIG_INSTANCE_WEEKLY_RESET,
     CONFIG_INSTANCE_UNLOAD_DELAY,
     CONFIG_MAX_PRIMARY_TRADE_SKILL,
     CONFIG_MIN_PETITION_SIGNS,
@@ -432,7 +435,6 @@ enum Rates
     RATE_MINING_NEXT,
     RATE_TALENT,
     RATE_CORPSE_DECAY_LOOTED,
-    RATE_INSTANCE_RESET_TIME,
     RATE_TARGET_POS_RECALCULATION_RANGE,
     RATE_DURABILITY_LOSS_ON_DEATH,
     RATE_DURABILITY_LOSS_DAMAGE,
@@ -515,9 +517,12 @@ enum RealmZone
 
 enum WorldStates
 {
-    WS_WEEKLY_QUEST_RESET_TIME  = 20002,                      // Next weekly reset time
-    WS_BG_DAILY_RESET_TIME      = 20003,                      // Next daily BG reset time
-    WS_AUTO_SERVER_RESTART_TIME = 20005,                      // Next server restart time
+    WS_WEEKLY_QUEST_RESET_TIME          = 20002,                      // Next weekly reset time
+    WS_BG_DAILY_RESET_TIME              = 20003,                      // Next daily BG reset time
+    WS_AUTO_SERVER_RESTART_TIME         = 20005,                      // Next server restart time
+    WS_INSTANCE_DAILY_RESET_TIME        = 20006,                      // Next daily Instance restart time
+    WS_INSTANCE_HALF_WEEK_RESET_TIME    = 20007,                      // Next daily Instance restart time
+    WS_INSTANCE_WEEKLY_RESET_TIME       = 20008,                      // Next weekly Instance restart time
 };
 
 // DB scripting commands
@@ -843,6 +848,8 @@ class World
             return true;
         }
 
+        time_t getInstanceResetTime(uint32 resetTime);
+
         void DeleteCharName(std::string name) { nameMap.erase(name); }
 
     protected:
@@ -854,12 +861,18 @@ class World
         void InitWeeklyQuestResetTime();
         void InitRandomBGResetTime();
         void InitCurrencyResetTime();
+        void InitInstanceDailyResetTime();
+        void InitInstanceHalfWeekResetTime();
+        void InitInstanceWeeklyResetTime();
         void ResetDailyQuests();
         void ResetWeeklyQuests();
         void ResetRandomBG();
         void ResetCurrencyWeekCap();
         void InitServerAutoRestartTime();
         void AutoRestartServer();
+        void InstanceDailyResetTime();
+        void InstanceHalfWeekResetTime();
+        void InstanceWeeklyResetTime();
     private:
         static ACE_Atomic_Op<ACE_Thread_Mutex, bool> m_stopEvent;
         static uint8 m_ExitCode;
@@ -931,6 +944,9 @@ class World
         time_t m_NextRandomBGReset;
         time_t m_NextCurrencyReset;
         time_t m_NextServerRestart;
+        time_t m_NextInstanceDailyReset;
+        time_t m_NextInstanceHalfWeekReset;
+        time_t m_NextInstanceWeeklyReset;
 
         //Player Queue
         Queue m_QueuedPlayer;

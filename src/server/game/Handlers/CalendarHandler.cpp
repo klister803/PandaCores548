@@ -127,7 +127,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
         for (Player::BoundInstancesMap::const_iterator itr = _player->m_boundInstances[i].begin(); itr != _player->m_boundInstances[i].end(); ++itr)
             if (itr->second.perm)
             {
-                InstanceSave const* save = itr->second.save;
+                InstanceSave* save = itr->second.save;
                 tmpGUID = save->GetInstanceId();    // instance save id as unique instance copy id
                 data.WriteGuidMask<5, 4, 1, 6, 2, 0, 7, 3>(tmpGUID);
 
@@ -210,10 +210,11 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
 
     uint32 counter = 0;
     std::set<uint32> sentMaps;
-    ResetTimeByMapDifficultyMap const& resets = sInstanceSaveMgr->GetResetTimeMap();
-    for (ResetTimeByMapDifficultyMap::const_iterator itr = resets.begin(); itr != resets.end(); ++itr)
+    for (MapDifficultyMap::const_iterator itr = sMapDifficultyMap.begin(); itr != sMapDifficultyMap.end(); ++itr)
     {
-        uint32 mapId = PAIR32_LOPART(itr->first);
+        uint32 map_diff_pair = itr->first;
+        uint32 mapId = PAIR32_LOPART(map_diff_pair);
+        Difficulty difficulty = Difficulty(PAIR32_HIPART(map_diff_pair));
 
         if (sentMaps.find(mapId) != sentMaps.end())
             continue;
@@ -222,10 +223,17 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
         if (!mapEntry || !mapEntry->IsRaid())
             continue;
 
+        time_t timeReset = 0;
+        MapDifficulty const* mapDiff = GetMapDifficultyData(mapId, difficulty);
+        if (mapDiff && mapDiff->resetTime)
+            timeReset = sWorld->getInstanceResetTime(mapDiff->resetTime);
+        else
+            continue;
+
         sentMaps.insert(mapId);
 
         data << uint32(mapId);
-        data << uint32(itr->second - cur_time);
+        data << uint32(timeReset - cur_time);
         data << uint32(mapEntry->unk_time);
         ++counter;
     }
@@ -942,7 +950,7 @@ void WorldSession::SendCalendarCommandResult(CalendarError err, char const* para
     SendPacket(&data);
 }
 
-void WorldSession::SendCalendarRaidLockout(InstanceSave const* save, bool add)
+void WorldSession::SendCalendarRaidLockout(InstanceSave* save, bool add)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", add ? "SMSG_CALENDAR_RAID_LOCKOUT_ADDED" : "SMSG_CALENDAR_RAID_LOCKOUT_REMOVED");
     time_t currTime = time(NULL);
@@ -961,7 +969,7 @@ void WorldSession::SendCalendarRaidLockout(InstanceSave const* save, bool add)
     SendPacket(&data);
 }
 
-void WorldSession::SendCalendarRaidLockoutUpdated(InstanceSave const* save)
+void WorldSession::SendCalendarRaidLockoutUpdated(InstanceSave* save)
 {
     if (!save)
         return;
