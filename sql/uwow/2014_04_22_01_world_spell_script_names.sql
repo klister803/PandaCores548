@@ -1,1 +1,1 @@
-delete from spell_scrip_names where spell = 20167;
+delete from spell_scrip_names where spell_id = 20167;

@@ -3979,7 +3979,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 113002:// Spell Reflection (Symbiosis)
                 case 124430:// Divine Insight (Shadow)
                 case 81292: // Glyph of Mind Spike
-                case 114250:// Selfless Healer
                 case 90174: // Divine Purpose
                 case 89485: // Inner Focus
                 case 131567:// Holy Spark
@@ -4701,6 +4700,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 20066: // Repentance
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
+                    break;
+                case 114250:// Selfless Healer
+                    spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
                     break;
                 default:
                     break;

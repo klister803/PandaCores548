@@ -197,46 +197,6 @@ class spell_pal_eternal_flame : public SpellScriptLoader
         }
 };
 
-// Selfless healer - 85804
-// Called by flash of light - 19750
-class spell_pal_selfless_healer : public SpellScriptLoader
-{
-    public:
-        spell_pal_selfless_healer() : SpellScriptLoader("spell_pal_selfless_healer") { }
-
-        class spell_pal_selfless_healer_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_selfless_healer_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(PALADIN_SPELL_SELFLESS_HEALER_STACK))
-                        {
-                            int32 charges = _player->GetAura(PALADIN_SPELL_SELFLESS_HEALER_STACK)->GetStackAmount();
-
-                            if (_player->IsValidAssistTarget(target) && target != _player)
-                                SetHitHeal(int32(GetHitHeal() + ((GetHitHeal() * 0.35f) * charges)));
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pal_selfless_healer_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_selfless_healer_SpellScript();
-        }
-};
-
 // Called by Flash of Light - 19750 and Divine Light - 82326
 // Tower of Radiance - 85512
 class spell_pal_tower_of_radiance : public SpellScriptLoader
@@ -1145,7 +1105,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_glyph_of_avenging_wrath();
     new spell_pal_shield_of_the_righteous();
     new spell_pal_eternal_flame();
-    new spell_pal_selfless_healer();
     new spell_pal_tower_of_radiance();
     new spell_pal_sacred_shield();
     new spell_pal_sacred_shield_absorb();
