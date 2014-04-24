@@ -36,7 +36,6 @@ BattlegroundDG::BattlegroundDG()
     m_flagsUpdTimer = FLAGS_UPDATE;
     m_goldUpdate = GOLD_UPDATE;
 
-    // need change
     StartMessageIds[BG_STARTING_EVENT_FIRST]  = LANG_BG_DG_START_TWO_MINUTES;
     StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_BG_DG_START_ONE_MINUTE;
     StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_DG_START_HALF_MINUTE;

@@ -1271,10 +1271,14 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     m_caster->CastSpell(unitTarget, 97388);
                     break;
                 }
-                case 97388: // 97388
+                case 97388: // Capturing
                 {
-                    if (m_caster->ToPlayer() && m_caster->ToPlayer()->GetBattleground() && m_caster->ToPlayer()->GetBattleground()->GetTypeID() == BATTLEGROUND_DG)
-                        ((BattlegroundDG*)(m_caster->ToPlayer()->GetBattleground()))->HandlePointCapturing(m_caster->ToPlayer(), unitTarget->ToCreature());
+                    if (Player* player = m_caster->ToPlayer())
+                    {
+                        Battleground* bg = player->GetBattleground();
+                        if (bg->GetTypeID(true) == BATTLEGROUND_DG || bg->GetTypeID() == BATTLEGROUND_DG)
+                             ((BattlegroundDG*)bg)->HandlePointCapturing(player, unitTarget->ToCreature());
+                    }
 
                     break;
                 }
