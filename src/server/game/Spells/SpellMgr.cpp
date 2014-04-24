@@ -4702,7 +4702,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 114250:// Selfless Healer
+                    spellInfo->ProcCharges = 1;
                     spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                    spellInfo->Effects[1].SpellClassMask[2] = 0x00000600;
                     break;
                 default:
                     break;
