@@ -276,7 +276,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //203 SPELL_EFFECT_203
     &Spell::EffectNULL,                                     //204 SPELL_EFFECT_204
     &Spell::EffectNULL,                                     //205 SPELL_EFFECT_205
-    &Spell::EffectNULL,                                     //206 SPELL_EFFECT_206
+    &Spell::EffectNULL,                                     //206 SPELL_EFFECT_CREATE_ITEM_3
     &Spell::EffectNULL,                                     //207 SPELL_EFFECT_207
     &Spell::EffectNULL,                                     //208 SPELL_EFFECT_208
 };
@@ -2253,20 +2253,6 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                 addhealth += damageAmount;
                 break;
             }
-            case 19750: // Selfless Healer - Increases heal of Flash of Light if it heals an other player than you
-            {
-                if (caster->HasAura(114250))
-                {
-                    int32 charges = 0;
-
-                    if (Aura* selflessHealer = caster->GetAura(114250))
-                        charges = selflessHealer->GetStackAmount();
-
-                    if (charges && unitTarget->GetGUID() != caster->GetGUID())
-                        AddPct(addhealth, (35 * charges));
-                }
-                break;
-            }
             case 67489: // Runic Healing Injector (heal increased by 25% for engineers - 3.2.0 patch change)
             {
                 if (Player* player = m_caster->ToPlayer())
@@ -2296,6 +2282,23 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, addhealth, HEAL);
 
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL);
+
+        switch (m_spellInfo->Id)
+        {
+            case 19750: // Selfless Healer - Increases heal of Flash of Light if it heals an other player than you
+            {
+                if (Aura* selflessHealer = caster->GetAura(114250))
+                {
+                    int32 perc = selflessHealer->GetStackAmount() * 20;
+                    if (perc && unitTarget->GetGUID() != caster->GetGUID())
+                        AddPct(addhealth, perc);
+                    selflessHealer->Remove();
+                }
+                break;
+            }
+            default:
+                break;
+        }
 
         // Remove Grievous bite if fully healed
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))

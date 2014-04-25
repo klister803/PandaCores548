@@ -150,50 +150,98 @@ class spell_pal_eternal_flame : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_eternal_flame_SpellScript);
 
-            void HandleAfterHit()
+            void HandleScript()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if(Unit* caster = GetCaster())
+                if(Player* _player = caster->ToPlayer())
                 {
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(_player))
-                            unitTarget = _player;
+                    int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+                    if (holyPower > 2)
+                        holyPower = 2;
 
-                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+                    int32 _amount = GetHitHeal() * (holyPower + 1);
 
-                        if (holyPower > 2)
-                            holyPower = 2;
+                    SetHitHeal(int32(_amount));
 
-                        if (Aura* eternalFlame = unitTarget->GetAura(GetSpellInfo()->Id, _player->GetGUID()))
-                            if (eternalFlame->GetEffect(1))
-                                eternalFlame->GetEffect(1)->ChangeAmount(eternalFlame->GetEffect(1)->GetAmount() * (holyPower + 1));
-
-                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
-                        {
-                            Aura* aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player);
-
-                            if (aura)
-                            {
-                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * (holyPower + 1));
-                                aura->SetNeedClientUpdateForTargets();
-                            }
-                        }
-                        
-                        if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
-                            _player->ModifyPower(POWER_HOLY_POWER, -holyPower);
-                    }
+                    if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                        _player->ModifyPower(POWER_HOLY_POWER, -holyPower);
                 }
             }
 
             void Register()
             {
-                AfterHit += SpellHitFn(spell_pal_eternal_flame_SpellScript::HandleAfterHit);
+                OnHit += SpellHitFn(spell_pal_eternal_flame_SpellScript::HandleScript);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
             return new spell_pal_eternal_flame_SpellScript();
+        }
+
+        class spell_pal_eternal_flame_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_eternal_flame_AuraScript);
+
+            bool Load()
+            {
+                savePower = 0;
+                return true;
+            }
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                if(Unit* caster = GetCaster())
+                    if(Player* _player = caster->ToPlayer())
+                    {
+                        savePower = _player->GetPower(POWER_HOLY_POWER) + 1;
+                        if (savePower > 3)
+                            savePower = 3;
+
+                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
+                        {
+                            if (Aura* aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player))
+                            {
+                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * savePower);
+                                aura->SetNeedClientUpdateForTargets();
+                            }
+                        }
+                    }
+            }
+
+            void HandleTick(AuraEffect const* /*aurEff*/, int32& amount)
+            {
+                if(Unit* caster = GetCaster())
+                    if(Player* _player = caster->ToPlayer())
+                    {
+                        amount *= savePower;
+
+                        Unit* _target = GetUnitOwner();
+                        if (_target)
+                        {
+                            if(_target == (Unit*)_player)
+                                amount *= 1.5;
+                        }
+                        else
+                        {
+                            _target = caster;
+                            amount *= 1.5;
+                        }
+                    }
+            }
+
+            int32 savePower;
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_eternal_flame_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
+                DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_pal_eternal_flame_AuraScript::HandleTick, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_eternal_flame_AuraScript();
         }
 };
 
@@ -1100,6 +1148,66 @@ class spell_pal_light_of_dawn : public SpellScriptLoader
         }
 };
 
+// spell 114250 - Selfless Healer
+class spell_pal_selfless_healer : public SpellScriptLoader
+{
+    public:
+        spell_pal_selfless_healer() : SpellScriptLoader("spell_pal_selfless_healer") { }
+
+        class spell_pal_selfless_healerAuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_selfless_healerAuraScript);
+
+            void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* target = GetTarget())
+                    if(GetStackAmount() >= 3)
+                        target->CastSpell(target, 128863, false); // visaul effect
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_pal_selfless_healerAuraScript::OnStackChange, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        // function which creates AuraScript
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_selfless_healerAuraScript();
+        }
+};
+
+// Hand of Purity - 114039
+class spell_pal_hand_of_purity : public SpellScriptLoader
+{
+    public:
+        spell_pal_hand_of_purity() : SpellScriptLoader("spell_pal_hand_of_purity") { }
+
+        class spell_pal_hand_of_purity_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_hand_of_purity_AuraScript);
+
+            void Absorb(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            {
+                PreventDefaultAction();
+
+                if(dmgInfo.GetDamageType() == DOT)
+                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), aurEff->GetAmount());
+            }
+
+            void Register()
+            {
+                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_pal_hand_of_purity_AuraScript::Absorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_hand_of_purity_AuraScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
@@ -1128,4 +1236,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_lay_on_hands();
     new spell_pal_righteous_defense();
     new spell_pal_light_of_dawn();
+    new spell_pal_selfless_healer();
+    new spell_pal_hand_of_purity();
 }

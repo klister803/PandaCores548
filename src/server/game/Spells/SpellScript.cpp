@@ -864,6 +864,17 @@ void AuraScript::EffectCalcAmountHandler::Call(AuraScript* auraScript, AuraEffec
     (auraScript->*pEffectHandlerScript)(aurEff, amount, canBeRecalculated);
 }
 
+AuraScript::EffectChangeTickDamageHandler::EffectChangeTickDamageHandler(AuraEffectChangeTickDamageFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
+    : AuraScript::EffectBase(_effIndex, _effName)
+{
+    pEffectHandlerScript = _pEffectHandlerScript;
+}
+
+void AuraScript::EffectChangeTickDamageHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, int32& amount)
+{
+    (auraScript->*pEffectHandlerScript)(aurEff, amount);
+}
+
 AuraScript::EffectCalcPeriodicHandler::EffectCalcPeriodicHandler(AuraEffectCalcPeriodicFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
     : AuraScript::EffectBase(_effIndex, _effName)
 {

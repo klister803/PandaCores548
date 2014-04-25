@@ -12037,10 +12037,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 DoneTotalMod *= (100.0f + spellProto->Effects[2].CalcValue()) / 100.0f;
         }
 
-        // apply spellmod to Done damage (flat and pct)
-        if (Player* modOwner = GetSpellModOwner())
-            modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, DoneTotalMod);
-
         if (fillIn)
         {
             fillIn->SetSpellTotalDamage(DoneTotal);
@@ -12049,6 +12045,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     }
 
     float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
+
+    // apply spellmod to Done damage (flat and pct)
+    if (Player* modOwner = GetSpellModOwner())
+        modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, tmpDamage);
 
     return uint32(std::max(tmpDamage, 0.0f));
 }
@@ -12722,16 +12722,6 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         // Bastion of Glory : +50% of power if target is player
         if (victim && victim->GetGUID() == GetGUID() && HasAura(114637))
             heal *= 1.5f;
-    }
-    // Eternal Flame
-    else if (spellProto->Id == 114163 && GetTypeId() == TYPEID_PLAYER)
-    {
-        int32 holyPower = GetPower(POWER_HOLY_POWER);
-
-        if (holyPower > 2)
-            holyPower = 2;
-
-        AddPct(heal, (100 * (holyPower + 1)));
     }
     // Light of Dawn
     else if (spellProto->Id == 85222 && GetTypeId() == TYPEID_PLAYER)

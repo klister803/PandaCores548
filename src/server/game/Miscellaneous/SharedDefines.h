@@ -1123,7 +1123,7 @@ enum SpellEffects
     SPELL_EFFECT_203                                = 203,
     SPELL_EFFECT_UPGRADE_BATTLE_PET                 = 204,
     SPELL_EFFECT_205                                = 205, // Launch PvE/PvP Choice
-    SPELL_EFFECT_206                                = 206,
+    SPELL_EFFECT_CREATE_ITEM_3                      = 206, // Create item from Timeless Isle
     SPELL_EFFECT_207                                = 207, // 0 spells
     SPELL_EFFECT_208                                = 208, // Test Reputation Set
     TOTAL_SPELL_EFFECTS                             = 209

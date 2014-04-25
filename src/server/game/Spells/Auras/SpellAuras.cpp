@@ -2446,6 +2446,21 @@ void Aura::CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32 & 
     }
 }
 
+void Aura::CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, int32 & amount)
+{
+    for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_EFFECT_CALC_AMOUNT);
+        std::list<AuraScript::EffectChangeTickDamageHandler>::iterator effEndItr = (*scritr)->DoEffectChangeTickDamage.end(), effItr = (*scritr)->DoEffectChangeTickDamage.begin();
+        for (; effItr != effEndItr; ++effItr)
+        {
+            if ((*effItr).IsEffectAffected(m_spellInfo, aurEff->GetEffIndex()))
+                (*effItr).Call(*scritr, aurEff, amount);
+        }
+        (*scritr)->_FinishScriptCall();
+    }
+}
+
 void Aura::CallScriptEffectCalcPeriodicHandlers(AuraEffect const* aurEff, bool & isPeriodic, int32 & amplitude)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
