@@ -66,6 +66,7 @@ class boss_horridon : public CreatureScript
             {
                 _Reset();
                 jalakintro = false;
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 Jalak_Reset();
             }
@@ -110,7 +111,16 @@ class boss_horridon : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
-                _JustDied();
+                if (instance)
+                {
+                    if (Creature* jalak = me->GetCreature(*me, instance->GetData64(NPC_JALAK)))
+                    {
+                        if (jalak->isAlive())
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        else
+                            instance->SetBossState(DATA_HORRIDON, DONE);
+                    }
+                }
             }
 
             void UpdateAI(const uint32 diff)
@@ -217,7 +227,15 @@ class boss_jalak : public CreatureScript
                 if (instance)
                 {
                     if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
-                        horridon->AddAura(SPELL_RAMPAGE, horridon);
+                    {
+                        if (horridon->isAlive())
+                            horridon->AddAura(SPELL_RAMPAGE, horridon);
+                        else
+                        {
+                            horridon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            instance->SetBossState(DATA_HORRIDON, DONE);
+                        }
+                    }
                 }
             }
 
