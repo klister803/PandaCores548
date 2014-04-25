@@ -1469,6 +1469,7 @@ enum Opcodes
     SMSG_SET_MOVEFLAG2_0x1000                         = 0x0386, // 5.4.1 17538
     SMSG_UNSET_MOVEFLAG2_0x1000                       = 0x07A4, // 5.4.1 17538
     SMSG_SPELL_0x00E9                                 = 0x00E9, // 5.4.1 17538
+    SMSG_SPELL_PENDING_TARGET_CAST                    = 0x098D, // 5.4.1 17538
 };
 
 /// Player state
