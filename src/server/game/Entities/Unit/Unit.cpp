@@ -9766,17 +9766,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
 
             break;
         }
-        // Divine Purpose
-        case 86172:
-        {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->PowerType != POWER_HOLY_POWER)
-                return false;
-
-            break;
-        }
         // Adaptation
         case 126046:
         {
