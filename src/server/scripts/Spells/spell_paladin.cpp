@@ -276,7 +276,7 @@ class spell_pal_tower_of_radiance : public SpellScriptLoader
         }
 };
 
-// Sacred shield - 20925
+// Sacred shield - 20925, 148039
 class spell_pal_sacred_shield : public SpellScriptLoader
 {
     public:
@@ -288,9 +288,22 @@ class spell_pal_sacred_shield : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if (Unit* _player = GetCaster())
+                if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetTarget())
-                            _player->CastSpell(target, PALADIN_SPELL_SACRED_SHIELD, true);
+                    {
+                        int32 amount = 0;
+                        switch(_player->GetSpecializationId(_player->GetActiveSpec()))
+                        {
+                            case SPEC_PALADIN_HOLY:
+                            case SPEC_PALADIN_RETRIBUTION:
+                                amount = int32(343 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
+                                break;
+                            case SPEC_PALADIN_PROTECTION:
+                                amount = int32(240 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 0.819f);
+                                break;
+                        }
+                        _player->CastCustomSpell(target, PALADIN_SPELL_SACRED_SHIELD, &amount, NULL, NULL, true, NULL, aurEff);
+                    }
             }
 
             void Register()
@@ -302,34 +315,6 @@ class spell_pal_sacred_shield : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_pal_sacred_shield_AuraScript();
-        }
-};
-
-// Sacred shield absorb - 65148
-class spell_pal_sacred_shield_absorb : public SpellScriptLoader
-{
-    public:
-        spell_pal_sacred_shield_absorb() : SpellScriptLoader("spell_pal_sacred_shield_absorb") { }
-
-        class spell_pal_sacred_shield_absorb_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_pal_sacred_shield_absorb_AuraScript);
-
-            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
-            {
-                if (GetCaster())
-                    amount = int32(30 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_sacred_shield_absorb_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_pal_sacred_shield_absorb_AuraScript();
         }
 };
 
@@ -1188,23 +1173,172 @@ class spell_pal_hand_of_purity : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pal_hand_of_purity_AuraScript);
 
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                // Set absorbtion amount to unlimited
+                amount = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+            }
+
             void Absorb(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 PreventDefaultAction();
-
                 if(dmgInfo.GetDamageType() == DOT)
-                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), aurEff->GetAmount());
+                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), GetSpellInfo()->Effects[EFFECT_0].BasePoints);
+                else
+                    absorbAmount = 0;
             }
 
             void Register()
             {
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_pal_hand_of_purity_AuraScript::Absorb, EFFECT_0);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_hand_of_purity_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_pal_hand_of_purity_AuraScript::Absorb, EFFECT_0);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
             return new spell_pal_hand_of_purity_AuraScript();
+        }
+};
+
+// Stay of Execution - 114917
+class spell_pal_stay_of_execution : public SpellScriptLoader
+{
+    public:
+        spell_pal_stay_of_execution() : SpellScriptLoader("spell_pal_stay_of_execution") { }
+
+        class spell_pal_stay_of_execution_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_stay_of_execution_AuraScript);
+
+            bool Load()
+            {
+                saveAmount = 0;
+                saveTick = 0;
+                return true;
+            }
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    saveAmount = int32((caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
+                    amount = saveAmount;
+                }
+            }
+
+            void HandleTick(AuraEffect const* aurEff, int32& amount)
+            {
+                if(aurEff->GetTotalTicks() == aurEff->GetTickNumber())
+                    amount *= 9;
+                else if(aurEff->GetTickNumber() == 20)
+                {
+                    amount += int32((saveTick + 1) * 0.025f * amount);
+                    amount *= 5; // 500% for next tick
+                }
+                else
+                    amount += int32(aurEff->GetTickNumber() * 0.025f * amount);
+                saveTick = aurEff->GetTickNumber();
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
+                    {
+                        const_cast<AuraEffect*>(aurEff)->SetTickNumber(20);
+                        aurEff->HandlePeriodicHealAurasTick(caster,caster);
+                    }
+                }
+            }
+
+            int32 saveAmount;
+            int32 saveTick;
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_stay_of_execution_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+                DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_pal_stay_of_execution_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_pal_stay_of_execution_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_stay_of_execution_AuraScript();
+        }
+};
+
+// Execution Sentence - 114916
+class spell_pal_execution_sentence_damage : public SpellScriptLoader
+{
+    public:
+        spell_pal_execution_sentence_damage() : SpellScriptLoader("spell_pal_execution_sentence_damage") { }
+
+        class spell_pal_execution_sentence_damage_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_execution_sentence_damage_AuraScript);
+
+            bool Load()
+            {
+                saveAmount = 0;
+                saveTick = 0;
+                return true;
+            }
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    saveAmount = int32((caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
+                    amount = saveAmount;
+                }
+            }
+
+            void HandleTick(AuraEffect const* aurEff, int32& amount)
+            {
+                if(aurEff->GetTotalTicks() == aurEff->GetTickNumber())
+                    amount *= 9;
+                else if(aurEff->GetTickNumber() == 20)
+                {
+                    amount += int32((saveTick + 1) * 0.025f * amount);
+                    amount *= 5; // 500% for next tick
+                }
+                else
+                    amount += int32(aurEff->GetTickNumber() * 0.025f * amount);
+                saveTick = aurEff->GetTickNumber();
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                if (Unit* target = GetTarget())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
+                    {
+                        const_cast<AuraEffect*>(aurEff)->SetTickNumber(20);
+                        aurEff->HandlePeriodicDamageAurasTick(target,caster);
+                    }
+                }
+            }
+
+            int32 saveAmount;
+            int32 saveTick;
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_execution_sentence_damage_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_pal_execution_sentence_damage_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                OnEffectRemove += AuraEffectRemoveFn(spell_pal_execution_sentence_damage_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_execution_sentence_damage_AuraScript();
         }
 };
 
@@ -1215,7 +1349,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_eternal_flame();
     new spell_pal_tower_of_radiance();
     new spell_pal_sacred_shield();
-    new spell_pal_sacred_shield_absorb();
     new spell_pal_emancipate();
     new spell_pal_art_of_war();
     new spell_pal_blinding_light();
@@ -1238,4 +1371,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_light_of_dawn();
     new spell_pal_selfless_healer();
     new spell_pal_hand_of_purity();
+    new spell_pal_stay_of_execution();
+    new spell_pal_execution_sentence_damage();
 }

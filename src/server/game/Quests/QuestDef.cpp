@@ -122,7 +122,7 @@ Quest::Quest(Field* questRecord)
     }
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-        RequiredIdCount[i] = questRecord[index++].GetUInt16();
+        RequiredIdCount[i] = questRecord[index++].GetUInt32();
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
         RequirementType[i] = questRecord[index++].GetUInt8();
@@ -139,7 +139,7 @@ Quest::Quest(Field* questRecord)
         RewardCurrencyId[i] = questRecord[index++].GetUInt16();
 
     for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-        RewardCurrencyCount[i] = questRecord[index++].GetUInt8();
+        RewardCurrencyCount[i] = questRecord[index++].GetUInt32();
 
     QuestGiverTextWindow    = questRecord[index++].GetString();
     QuestGiverTargetName    = questRecord[index++].GetString();
