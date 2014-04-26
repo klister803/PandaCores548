@@ -4468,6 +4468,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     spellInfo->Effects[EFFECT_2].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     break;
+                //Nalak
+                case 136340: //Stormcloud
+                    spellInfo->Effects[0].TargetA = 6;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
+                case 136345: //Stormcloud tr ef
+                    spellInfo->Effects[0].TargetB = 30;
+                    break;
 
                 // Dalaran arena knockback
                 case 61698:

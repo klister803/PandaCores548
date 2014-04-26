@@ -12,6 +12,7 @@ set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
   Pandaria/boss_sha_of_anger.cpp
   Pandaria/boss_galion.cpp
+  Pandaria/boss_oondasta.cpp
 
   Pandaria/MogushanPalace/instance_mogu_shan_palace.cpp
   Pandaria/MogushanPalace/boss_trial_of_the_king.cpp
