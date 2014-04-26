@@ -12712,6 +12712,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     {
         int32 holyPower = GetPower(POWER_HOLY_POWER);
 
+        // Divine Purpose
+        if (HasAura(90174))
+            holyPower = 2;
+        
         if (holyPower > 2)
             holyPower = 2;
 
