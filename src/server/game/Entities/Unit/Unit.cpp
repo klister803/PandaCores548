@@ -11702,14 +11702,12 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     float DoneTotalMod = 1.0f;
     float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
+    float tmpDamage = 0.0f;
 
     if (use)
     {
         if (use->spellTotalDamage)
-            DoneTotal = *(use->spellTotalDamage);
-
-        if (use->damageMod)
-            DoneTotalMod = *(use->damageMod);
+            tmpDamage = *(use->spellTotalDamage);
     }
     else
     {
@@ -12026,18 +12024,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 DoneTotalMod *= (100.0f + spellProto->Effects[2].CalcValue()) / 100.0f;
         }
 
+        tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
+
+        // apply spellmod to Done damage (flat and pct)
+        if (Player* modOwner = GetSpellModOwner())
+            modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, tmpDamage);
+
         if (fillIn)
-        {
-            fillIn->SetSpellTotalDamage(DoneTotal);
-            fillIn->SetDamageMod(DoneTotalMod);
-        }
+            fillIn->SetSpellTotalDamage(tmpDamage);
     }
-
-    float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
-
-    // apply spellmod to Done damage (flat and pct)
-    if (Player* modOwner = GetSpellModOwner())
-        modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, tmpDamage);
 
     return uint32(std::max(tmpDamage, 0.0f));
 }
