@@ -4709,6 +4709,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
+                case 53651: // Beacon of Light Trigger
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;                    
+                    break;
+                case 53563: // Beacon of Light
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+                    break;
                 default:
                     break;
             }
