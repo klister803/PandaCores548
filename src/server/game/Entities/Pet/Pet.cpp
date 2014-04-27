@@ -427,6 +427,10 @@ void Pet::SavePetToDB(PetSlot mode)
     if (!owner || owner->getClass() == CLASS_SHAMAN)
         return;
 
+    // In some cases pet could get 0 id (stabped case)
+    if (!m_charmInfo->GetPetNumber())
+        return;
+
     PetSlot curentSlot = owner->GetSlotForPetId(owner->m_currentPetNumber);
 
     if(mode == PET_SLOT_ACTUAL_PET_SLOT)
