@@ -3567,7 +3567,8 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     if (m_spellInfo->Id == 475 && m_caster->HasAura(115700))
         m_caster->CastSpell(m_caster, 115701, true);
 
-    m_caster->ProcDamageAndSpell(unitTarget, PROC_FLAG_DONE_DISPEL_SPELL, PROC_FLAG_TAKEN_DISPEL_SPELL, PROC_EX_NORMAL_HIT, 1, BASE_ATTACK, m_spellInfo);
+    DamageInfo dmgInfoProc = DamageInfo(m_caster, unitTarget, 1, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+    m_caster->ProcDamageAndSpell(unitTarget, PROC_FLAG_DONE_DISPEL_SPELL, PROC_FLAG_TAKEN_DISPEL_SPELL, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
 
     std::list<uint32> spellSuccess;
 
@@ -5464,7 +5465,8 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
         }
     }
 
-    m_caster->ProcDamageAndSpell(m_caster, PROC_FLAG_ADD_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NORMAL_HIT, damage, BASE_ATTACK, m_spellInfo);
+    DamageInfo dmgInfoProc = DamageInfo(m_caster, m_caster, 0, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+    m_caster->ProcDamageAndSpell(m_caster, PROC_FLAG_ADD_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
     m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
 }
 

@@ -2249,7 +2249,10 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     {
         // process reflect removal (not delayed)
         if (!targetInfo.timeDelay)
-            m_caster->ProcDamageAndSpell(target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, m_spellInfo);
+        {
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, target, 1, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+            m_caster->ProcDamageAndSpell(target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
+        }
 
         // Calculate reflected spell result on caster
         targetInfo.reflectResult = m_caster->SpellHitResult(m_caster, m_spellInfo, m_canReflect, effectMask);
@@ -2561,7 +2564,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
-            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+        {
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, unitTarget, addhealth, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+        }
     }
     // Do damage and triggers
     else if (m_damage > 0)
@@ -2582,12 +2588,14 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
+            DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+
             //proc for pet
             if(caster->isPet() && procAttackerowner && procVictimowner)
                 if(Unit* owner = caster->GetOwner())
-                    owner->ProcDamageAndSpell(unitTarget, procAttackerowner, procVictimowner, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+                    owner->ProcDamageAndSpell(unitTarget, procAttackerowner, procVictimowner, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
 
-            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
             if (caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
                (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
@@ -2606,7 +2614,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         procEx |= createProcExtendMask(&damageInfo, missInfo);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
-            caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+        {
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 0, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+            caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+        }
 
         // Failed Pickpocket, reveal rogue
         if (missInfo == SPELL_MISS_RESIST && m_spellInfo->AttributesCu & SPELL_ATTR0_CU_PICKPOCKET && unitTarget->GetTypeId() == TYPEID_UNIT)
@@ -2619,7 +2630,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
     // process reflect removal (delayed)
     if (missInfo == SPELL_MISS_REFLECT && target->timeDelay)
-        caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, m_spellInfo);
+    {
+        DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+        caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
+    }
 
     if (missInfo != SPELL_MISS_EVADE && m_caster->IsValidAttackTarget(unit) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
     {
@@ -3799,7 +3813,8 @@ void Spell::_handle_immediate_phase()
             procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
 
         // Proc the spells that have DEST target
-        m_originalCaster->ProcDamageAndSpell(NULL, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, 0, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
+        DamageInfo dmgInfoProc = DamageInfo(m_caster, NULL, 0, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+        m_originalCaster->ProcDamageAndSpell(NULL, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
     }
 }
 
@@ -3810,7 +3825,8 @@ void Spell::_handle_finish_phase()
         // Take for real after all targets are processed
         if (m_needComboPoints)
         {
-            m_caster->ProcDamageAndSpell(m_caster, PROC_FLAG_GET_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NORMAL_HIT, 0, BASE_ATTACK, m_spellInfo);
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, m_caster, 0, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+            m_caster->ProcDamageAndSpell(m_caster, PROC_FLAG_GET_COMBOPOINTS, PROC_FLAG_NONE, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
             m_caster->m_movedPlayer->ClearComboPoints();
 
             // Anticipation

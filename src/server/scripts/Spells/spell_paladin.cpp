@@ -122,7 +122,10 @@ class spell_pal_shield_of_the_righteous : public SpellScriptLoader
                     if (Unit* unitTarget = GetHitUnit())
                     {
                         // -30% damage taken for 3s
-                        _player->CastSpell(_player, PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC, true);
+                        if (Aura* spellShield = _player->GetAura(PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC))
+                            spellShield->SetDuration(spellShield->GetDuration() + 3000);
+                        else
+                            _player->CastSpell(_player, PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC, true);
                         _player->CastSpell(_player, PALADIN_SPELL_BASTION_OF_GLORY, true);
                     }
                 }
@@ -256,17 +259,25 @@ class spell_pal_tower_of_radiance : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_tower_of_radiance_SpellScript);
 
-            void HandleOnHit()
+            void HandleHeal(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (target->HasAura(PALADIN_SPELL_BEACON_OF_LIGHT, _player->GetGUID()))
-                            _player->EnergizeBySpell(_player, PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE, 1, POWER_HOLY_POWER);
+                        {
+                            if(_player->HasAura(105809) && _player->HasAura(85512))
+                            {
+                                _player->EnergizeBySpell(_player, PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE, 3, POWER_HOLY_POWER);
+                                SetHitHeal(GetHitHeal() * 1.3f);
+                            }
+                            else
+                                _player->EnergizeBySpell(_player, PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE, 1, POWER_HOLY_POWER);
+                        }
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_pal_tower_of_radiance_SpellScript::HandleOnHit);
+                OnEffectHitTarget += SpellEffectFn(spell_pal_tower_of_radiance_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
             }
         };
 

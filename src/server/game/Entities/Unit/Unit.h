@@ -902,6 +902,7 @@ struct CleanDamage
 };
 
 struct CalcDamageInfo;
+struct SpellNonMeleeDamage;
 
 class DamageInfo
 {
@@ -919,6 +920,7 @@ private:
 public:
     explicit DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType);
     explicit DamageInfo(CalcDamageInfo& dmgInfo);
+    explicit DamageInfo(SpellNonMeleeDamage& dmgInfo);
 
     void ModifyDamage(int32 amount);
     void AbsorbDamage(uint32 amount);
@@ -1550,8 +1552,8 @@ class Unit : public WorldObject
         void Kill(Unit* victim, bool durabilityLoss = true, SpellInfo const* spellProto = NULL);
         int32 DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto = NULL);
 
-        void ProcDamageAndSpell(Unit* victim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellInfo const* procSpell = NULL, SpellInfo const* procAura = NULL);
-        void ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const* procSpell, uint32 damage, SpellInfo const* procAura = NULL);
+        void ProcDamageAndSpell(Unit* victim, uint32 procAttacker, uint32 procVictim, uint32 procEx, DamageInfo* dmgInfoProc, WeaponAttackType attType = BASE_ATTACK, SpellInfo const* procSpell = NULL, SpellInfo const* procAura = NULL);
+        void ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const* procSpell, DamageInfo* dmgInfoProc, SpellInfo const* procAura = NULL);
 
         void GetProcAurasTriggeredOnEvent(std::list<AuraApplication*>& aurasTriggeringProc, std::list<AuraApplication*>* procAuras, ProcEventInfo eventInfo);
         void TriggerAurasProcOnEvent(CalcDamageInfo& damageInfo);
@@ -2462,20 +2464,20 @@ class Unit : public WorldObject
         void DisableSpline();
     private:
         bool IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect);
-        bool HandleAuraProcOnPowerAmount(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleSpellCritChanceAuraProc(Unit* victim, uint32 damage, AuraEffect* triggredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleObsModEnergyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleAuraProc(Unit* victim, uint32 damage, Aura* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown, bool * handled);
-        bool HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleOverrideClassScriptAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, double cooldown);
+        bool HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleHasteAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleSpellCritChanceAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleObsModEnergyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleModDamagePctTakenAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleAuraProc(Unit* victim, DamageInfo* dmgInfoProc, Aura* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown, bool * handled);
+        bool HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleOverrideClassScriptAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, double cooldown);
         bool HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura);
         bool HandleAuraRaidProcFromCharge(AuraEffect* triggeredByAura);
-        bool HandleCastWhileWalkingAuraProc(Unit* victim, uint32 damage, AuraEffect* triggredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleSpellModAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
-        bool HandleIgnoreAurastateAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleCastWhileWalkingAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleSpellModAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleIgnoreAurastateAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleVengeanceProc(Unit* pVictim, int32 damage, int32 triggerAmount);
 
         void UpdateSplineMovement(uint32 t_diff);
