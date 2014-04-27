@@ -846,7 +846,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
     sScriptMgr->OnPlayerDelete(guid);
     sWorld->DeleteCharacterNameData(GUID_LOPART(guid));
 
-    if (!sLog->ShouldLog(LOG_FILTER_PLAYER_DUMP, LOG_LEVEL_INFO)) // optimize GetPlayerDump call
+    if (sLog->ShouldLog(LOG_FILTER_PLAYER_DUMP, LOG_LEVEL_INFO)) // optimize GetPlayerDump call
     {
         std::string dump;
         if (PlayerDumpWriter().GetDump(GUID_LOPART(guid), dump))

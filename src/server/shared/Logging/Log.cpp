@@ -354,8 +354,9 @@ bool Log::ShouldLog(LogFilterType type, LogLevel level) const
         return loggerLevel && loggerLevel <= level;
     }
 
-    if (type != LOG_FILTER_GENERAL)
-        return ShouldLog(LOG_FILTER_GENERAL, level);
+    //WTF? Why we should alow all log data check this?
+    //if (type != LOG_FILTER_GENERAL)
+    //    return ShouldLog(LOG_FILTER_GENERAL, level);
 
     return false;
 }
