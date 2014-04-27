@@ -151,7 +151,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if (petnumber)                          //     0    1       2       3       4   5       6           7   8           9       10         11       12          13          14          15
         result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND id = '%u' LIMIT 1", ownerid, petnumber);
     else if (petentry)  //non hunter pets
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND entry = '%u' LIMIT 1", ownerid, petentry);
+        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u' AND id > 0 AND entry = '%u' LIMIT 1", ownerid, petentry);
 
     if (!result)
     {
