@@ -832,6 +832,10 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
             break;
     }
 
+    //hack on start DK
+    if (GetMapId() == 609)
+        m_corpseDelay /= 3;
+
     LoadCreaturesAddon();
 
     //! Need to be called after LoadCreaturesAddon - MOVEMENTFLAG_HOVER is set there
