@@ -3928,7 +3928,7 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
             if (!apply)
             {
                 target->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
-                target->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
+                target->GetMotionMaster()->MoveFall();
             }else
                 target->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
 

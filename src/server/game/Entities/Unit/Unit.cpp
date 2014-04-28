@@ -13514,7 +13514,6 @@ void Unit::Dismount()
     if (!IsMounted())
         return;
 
-    RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING);
     SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);
     m_onMount = false;
 
