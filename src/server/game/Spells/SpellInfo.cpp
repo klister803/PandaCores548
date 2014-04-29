@@ -489,7 +489,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                 {
                     float cof = 0.0f;
 
-                    switch (m_castItem->GetTemplate()->ItemLevel)
+                    switch (m_castItem->GetLevel())
                     {
                         case 580: cof = 197.482f; break;
                         case 576: cof = 186.605f; break;
