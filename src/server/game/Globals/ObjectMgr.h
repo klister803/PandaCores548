@@ -938,6 +938,17 @@ class ObjectMgr
         void LoadResearchSiteToZoneData();
         void LoadDigSitePositions();
 
+        void LoadBannedAddons();
+
+        BannedAddon const* GetBannedAddon(uint32 Id)
+        {
+            BannedAddonDataMap::const_iterator itr = sBannedAddonDataMap.find(Id);
+            if (itr != sBannedAddonDataMap.end())
+                return &itr->second;
+            return NULL;
+        }
+        BannedAddonDataMap const* GetBannedAddons() { return &sBannedAddonDataMap; }
+
         PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
         SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }
 

@@ -1953,6 +1953,10 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Warden Action Overrides...");
     sWardenCheckMgr->LoadWardenOverrides();
 
+    // Banned addons
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Banned Addons...");
+    sObjectMgr->LoadBannedAddons();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Deleting expired bans...");
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");      // One-time query
 

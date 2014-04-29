@@ -47,6 +47,7 @@
 #include "DB2Structure.h"
 #include "DB2Stores.h"
 #include "Configuration/Config.h"
+#include <openssl/md5.h>
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -9344,4 +9345,39 @@ void ObjectMgr::LoadDigSitePositions()
         sResearchSiteDataMap.erase(*itr);
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u dig site positions.", counter);
+}
+
+void ObjectMgr::LoadBannedAddons()
+{
+    QueryResult result = CharacterDatabase.Query("SELECT Id, Name, Version, UNIX_TIMESTAMP(Timestamp) FROM banned_addons");
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 banned addons. DB table `banned_addons` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 Id = fields[0].GetUInt32();
+        std::string name = fields[1].GetString();
+        std::string version = fields[2].GetString();
+        uint32 timestamp = uint32(fields[3].GetUInt64());
+
+        BannedAddon ba;
+        MD5(reinterpret_cast<uint8 const*>(name.c_str()), name.length(), ba.MD5_name);
+        MD5(reinterpret_cast<uint8 const*>(version.c_str()), version.length(), ba.MD5_version);
+        ba.timestamp = timestamp;
+
+        sBannedAddonDataMap[Id] = ba;
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u banned addons.", count);
 }

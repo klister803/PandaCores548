@@ -967,12 +967,12 @@ struct DungeonEncounterEntry
     uint32 id;                                              // 0        unique id
     uint32 mapId;                                           // 1        map id
     uint32 difficulty;                                      // 2        instance mode
-    //uint32 unk0;                                          // 3
+    //uint32 orderIndex;                                    // 3
     uint32 encounterIndex;                                  // 4        encounter index for creating completed mask
     char* encounterName;                                    // 5        encounter name
-    //uint32                                                // 6
-    //uint32                                                // 7
-    //uint32                                                // 8       5.4.1
+    //uint32 creatureDisplayID;                             // 6
+    //uint32 spellIconID;                                   // 7
+    //uint32 flags;                                         // 8
 };
 
 struct DurabilityCostsEntry
@@ -2599,6 +2599,15 @@ struct VectorArray
 typedef UNORDERED_MAP<uint32, VectorArray> NameGenVectorArraysMap;
 
 // Structures not used for casting to loaded DBC data and not required then packing
+struct BannedAddon
+{
+    uint8 MD5_name[16];
+    uint8 MD5_version[16];
+    uint32 timestamp;
+};
+
+typedef std::map<uint32 /*index*/, BannedAddon> BannedAddonDataMap;
+
 struct MapDifficulty
 {
     MapDifficulty() : resetTime(0), maxPlayers(0), hasErrorMessage(false) {}

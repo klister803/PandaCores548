@@ -894,7 +894,6 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
     }
 
     uLongf uSize = size;
-
     uint32 pos = data.rpos();
 
     ByteBuffer addonInfo;
@@ -908,20 +907,19 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
         for (uint32 i = 0; i < addonsCount; ++i)
         {
             std::string addonName;
-            uint8 enabled;
-            uint32 crc, unk1;
+            uint8 hasPubKey;
+            uint32 CRC, urlCRC;
 
             // check next addon data format correctness
             if (addonInfo.rpos() + 1 > addonInfo.size())
                 return;
 
             addonInfo >> addonName;
+            addonInfo >> hasPubKey >> CRC >> urlCRC;
 
-            addonInfo >> enabled >> crc >> unk1;
+            sLog->outInfo(LOG_FILTER_GENERAL, "ADDON: Name: %s, hasPubKey: 0x%x, CRC: 0x%x, urlCRC: 0x%x", addonName.c_str(), hasPubKey, CRC, urlCRC);
 
-            sLog->outInfo(LOG_FILTER_GENERAL, "ADDON: Name: %s, Enabled: 0x%x, CRC: 0x%x, Unknown2: 0x%x", addonName.c_str(), enabled, crc, unk1);
-
-            AddonInfo addon(addonName, enabled, crc, 2, true);
+            AddonInfo addon(addonName, hasPubKey, CRC, 2, true);
 
             SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
             if (savedAddon)
@@ -939,7 +937,6 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
             else
             {
                 AddonMgr::SaveAddon(addon);
-
                 sLog->outInfo(LOG_FILTER_GENERAL, "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
             }
 
@@ -947,9 +944,9 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
             m_addonsList.push_back(addon);
         }
 
-        uint32 currentTime;
-        addonInfo >> currentTime;
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "ADDON: CurrentTime: %u", currentTime);
+        uint32 latestBannedAddonTimeStamp;
+        addonInfo >> latestBannedAddonTimeStamp;
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "ADDON: latestBannedAddonTimeStamp: %u", latestBannedAddonTimeStamp);
 
         if (addonInfo.rpos() != addonInfo.size())
             sLog->outDebug(LOG_FILTER_NETWORKIO, "packet under-read!");
@@ -980,14 +977,15 @@ void WorldSession::SendAddonsInfo()
         0x0D, 0x36, 0xEA, 0x01, 0xE0, 0xAA, 0x91, 0x20, 0x54, 0xF0, 0x72, 0xD8, 0x1E, 0xC7, 0x89, 0xD2
     };
 
-    WorldPacket data(SMSG_ADDON_INFO, 4);
-    data.WriteBits(0, 18);                      // banned count
-    data.WriteBits(m_addonsList.size(), 23);    // addons count
+    WorldPacket data(SMSG_ADDON_INFO, 8);
+    data.WriteBits(sObjectMgr->GetBannedAddons()->size(), 18);  // banned addons count
+    data.WriteBits(m_addonsList.size(), 23);                    // addons count
 
     ByteBuffer buffer;
+    ByteBuffer buffer1;
     for (AddonsList::iterator itr = m_addonsList.begin(); itr != m_addonsList.end(); ++itr)
     {
-        bool bit0 = true;//itr->UsePublicKeyOrCRC;
+        bool bit0 = true; //itr->UsePublicKeyOrCRC;
         bool bit1 = itr->CRC != STANDARD_ADDON_CRC;
         bool bit2 = false;
 
@@ -1274,28 +1272,40 @@ void WorldSession::SendAddonsInfo()
         buffer << uint8(itr->State);
     }
 
-    /*if (bannedAddons)
+    for (BannedAddonDataMap::iterator itr = sBannedAddonDataMap.begin(); itr != sBannedAddonDataMap.end(); ++itr)
     {
-        foreach(bannedAddon)
-        {
-            for (int i = 0; i < 4; ++i)
-            {
-                buffer << uint32(0);
-                buffer << uint32(0);
-            }
+        uint32 index = itr->first;
+        BannedAddon const * ba = sObjectMgr->GetBannedAddon(index);
 
-            buffer << uint32(0);
-            buffer << uint32(0);
-            buffer << uint32(0);
+        for (uint8 i = 0; i < 16; i += 4)
+        {
+            // md5 name
+            buffer1 << uint8(ba->MD5_name[i]);
+            buffer1 << uint8(ba->MD5_name[i+1]);
+            buffer1 << uint8(ba->MD5_name[i+2]);
+            buffer1 << uint8(ba->MD5_name[i+3]);
+
+            // md5 version
+            buffer1 << uint8(ba->MD5_version[i]);
+            buffer1 << uint8(ba->MD5_version[i+1]);
+            buffer1 << uint8(ba->MD5_version[i+2]);
+            buffer1 << uint8(ba->MD5_version[i+3]);
         }
-    }*/
+
+        buffer1 << uint32(1);                 // state, low bit must be 1, client checks (state & 1)
+        buffer1 << uint32(ba->timestamp);
+        buffer1 << uint32(index);
+    }
 
     data.FlushBits();
+
     if (!buffer.empty())
         data.append(buffer);
 
-    m_addonsList.clear();
+    if (!buffer1.empty())
+        data.append(buffer1);
 
+    m_addonsList.clear();
     SendPacket(&data);
 }
 
