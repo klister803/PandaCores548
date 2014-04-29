@@ -1892,19 +1892,35 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
         case 66550: // teleport outside (Isle of Conquest)
             if (Player* target = unitTarget->ToPlayer())
             {
+                destTarget->m_mapId = 628;
+
                 if (target->GetTeamId() == TEAM_ALLIANCE)
+                {
                     m_targets.SetDst(442.24f, -835.25f, 44.30f, 0.06f, 628);
+                    destTarget->Relocate(442.24f, -835.25f, 44.30f, 0.06f);
+                }
                 else
+                {
                     m_targets.SetDst(1120.43f, -762.11f, 47.92f, 2.94f, 628);
+                    destTarget->Relocate(1120.43f, -762.11f, 47.92f, 2.94f);
+                }
             }
             break;
         case 66551: // teleport inside (Isle of Conquest)
             if (Player* target = unitTarget->ToPlayer())
             {
+                destTarget->m_mapId = 628;
+
                 if (target->GetTeamId() == TEAM_ALLIANCE)
+                {
                     m_targets.SetDst(389.57f, -832.38f, 48.65f, 3.00f, 628);
+                    destTarget->Relocate(389.57f, -832.38f, 48.65f, 3.00f);
+                }
                 else
+                {
                     m_targets.SetDst(1174.85f, -763.24f, 48.72f, 6.26f, 628);
+                    destTarget->Relocate(1174.85f, -763.24f, 48.72f, 6.26f);
+                }
             }
             break;
     }

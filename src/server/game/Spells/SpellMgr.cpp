@@ -4361,8 +4361,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 124845: //Calamity
                     spellInfo->Effects[EFFECT_1].Effect = 0;
                     break;
-
-
+                case 66289: // Glaive
+                case 67439: // Boulder
+                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);//30yards
+                    break;
                 //Terrace of Endless Spring
                 //Protectors of Endless
                 case 117052: //Sha Corruption
