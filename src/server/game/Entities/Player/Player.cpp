@@ -25309,7 +25309,7 @@ void Player::UpdateForQuestWorldObjects()
         if (IS_GAMEOBJECT_GUID(*itr))
         {
             if (GameObject* obj = HashMapHolder<GameObject>::Find(*itr))
-                obj->BuildValuesUpdateBlockForPlayer(&udata, this);
+                obj->BuildCreateUpdateBlockForPlayer(&udata, this);
         }
         else if (IS_CRE_OR_VEH_GUID(*itr))
         {
