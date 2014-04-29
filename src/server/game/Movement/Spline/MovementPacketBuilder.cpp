@@ -131,7 +131,7 @@ namespace Movement
 
     void WriteCatmullRomCyclicPath(const Spline<int32>& spline, WorldPacket& data)
     {
-        uint32 count = spline.getPointCount() - 3;
+        uint32 count = spline.getPointCount() - 2;
         data << spline.getPoint(1); // fake point, client will erase it from the spline after first cycle done
         data.append<Vector3>(&spline.getPoint(1), count);
     }
