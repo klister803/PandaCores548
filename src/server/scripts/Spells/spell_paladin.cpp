@@ -201,6 +201,9 @@ class spell_pal_eternal_flame : public SpellScriptLoader
                         if (savePower > 3)
                             savePower = 3;
 
+                        if (_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                            savePower = 3;
+
                         if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
                         {
                             if (Aura* aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player))
@@ -544,7 +547,8 @@ class spell_pal_inquisition : public SpellScriptLoader
                         if (newDuration > maxDuration)
                             inquisition->SetMaxDuration(newDuration);
 
-                        _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
+                        if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
                     }
                 }
             }

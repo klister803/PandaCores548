@@ -3979,7 +3979,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 113002:// Spell Reflection (Symbiosis)
                 case 124430:// Divine Insight (Shadow)
                 case 81292: // Glyph of Mind Spike
-                case 90174: // Divine Purpose
                 case 89485: // Inner Focus
                 case 131567:// Holy Spark
                     spellInfo->ProcCharges = 1;
