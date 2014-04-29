@@ -1060,6 +1060,95 @@ public:
 };
 
 /*######
+## npc_eye_of_acherus
+######*/
+
+class npc_eye_of_acherus : public CreatureScript
+{
+public:
+    npc_eye_of_acherus() : CreatureScript("npc_eye_of_acherus") { }
+
+    CreatureAI* GetAI(Creature* _Creature) const
+    {
+        return new npc_eye_of_acherusAI(_Creature);
+    }
+
+    struct npc_eye_of_acherusAI : public ScriptedAI
+    {
+        npc_eye_of_acherusAI(Creature* c) : ScriptedAI(c)
+        {
+            me->setActive(true);
+            me->SetLevel(55); //else one hack
+            StartTimer = 1000;
+            Active = false;
+        }
+
+        uint32 StartTimer;
+        bool Active;
+
+        void Reset(){}
+        void AttackStart(Unit *) {}
+        void MoveInLineOfSight(Unit*) {}
+        void OnCharmed(bool /*apply*/)
+        {
+            //NOT DISABLE AI!
+        }
+
+        void JustDied(Unit*u)
+        {
+            if(!me || me->GetTypeId() != TYPEID_UNIT)
+                return;
+
+            Unit *target = me->GetCharmer();
+
+            if(!target || target->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            target->RemoveAurasDueToSpell(51852);
+            me->RemoveCharmedBy(NULL);
+
+            //me->DespawnOrUnsummon();
+        }
+
+        void MovementInform(uint32 uiType, uint32 uiPointId)
+        {
+            if (uiType != POINT_MOTION_TYPE && uiPointId == 0)
+                return;
+
+                char * text = "The Eye of Acherus is in your control";
+                me->MonsterTextEmote(text, me->GetGUID(), true);
+                me->CastSpell(me, 51890, true);
+                //me->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
+                //me->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if(me->isCharmed())
+            {
+                if (StartTimer < uiDiff && !Active)
+                {
+                    //me->CastSpell(me, 70889, true);
+                    //me->CastSpell(me, 51892, true);
+                    //me->SetPhaseMask(3, false);
+                    char * text = "The Eye of Acherus launches towards its destination";
+                    me->MonsterTextEmote(text, me->GetGUID(), true);
+                    me->SetSpeed(MOVE_FLIGHT, 6.4f,true);
+                    me->AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
+                    me->GetMotionMaster()->MovePoint(0, 1750.8276f, -5873.788f, 147.2266f);
+                    Active = true;
+                }
+                else StartTimer -= uiDiff;
+            }
+            /*else
+            {
+                me->DespawnOrUnsummon();
+            }*/
+        }
+    };
+};
+
+/*######
 ## go_inconspicuous_mine_car
 ######*/
 
@@ -1110,5 +1199,6 @@ void AddSC_the_scarlet_enclave_c1()
     new npc_scarlet_ghoul();
     new npc_scarlet_miner();
     new npc_scarlet_miner_cart();
+    new npc_eye_of_acherus();
     new go_inconspicuous_mine_car();
 }
