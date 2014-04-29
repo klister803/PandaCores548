@@ -75,6 +75,7 @@ public:
             { "areatrigger_tavern",           SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerTavernCommand,          "", NULL },
             { "areatrigger_teleport",         SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerTeleportCommand,        "", NULL },
             { "bad_word",                     SEC_ADMINISTRATOR, true,  &HandleReloadBadWordCommand,                    "", NULL },
+            { "banned_addons",                SEC_ADMINISTRATOR, true,  &HandleReloadBannedAddonsCommand,               "", NULL },
             { "autobroadcast",                SEC_ADMINISTRATOR, true,  &HandleReloadAutobroadcastCommand,              "", NULL },
             { "command",                      SEC_ADMINISTRATOR, true,  &HandleReloadCommandCommand,                    "", NULL },
             { "conditions",                   SEC_ADMINISTRATOR, true,  &HandleReloadConditions,                        "", NULL },
@@ -1345,6 +1346,14 @@ public:
         sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Re-Loading Bad Words...");
         sWordFilterMgr->LoadBadWords();
         handler->SendGlobalGMSysMessage("DB table `bad_word` reloaded.");
+        return true;
+    }
+
+    static bool HandleReloadBannedAddonsCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Re-Loading Banned Addons...");
+        sObjectMgr->LoadBannedAddons();
+        handler->SendGlobalGMSysMessage("DB table `banned_addons` reloaded.");
         return true;
     }
 
