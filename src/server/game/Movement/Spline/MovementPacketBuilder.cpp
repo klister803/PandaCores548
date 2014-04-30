@@ -125,15 +125,28 @@ namespace Movement
 
     void WriteCatmullRomPath(const Spline<int32>& spline, WorldPacket& data)
     {
-        uint32 count = spline.getPointCount() - 3;
-        data.append<Vector3>(&spline.getPoint(2), count);
+        //Full size is -2 (one from start, and one from end) so itr size -1 and start from 1.
+        uint32 count = spline.getPointCount()-1;
+
+        //data.append<Vector3>(&spline.getPoint(1), count);         //LK style, I can't find how it put to bufer, but logic is wrong.
+        for (uint32 i = 1; i < count; ++i)
+        {
+            data << spline.getPoint(i);
+            //const Vector3& v = spline.getPoint(i);
+            //data << v.x << v.y << v.z;
+            //sLog->outU(">>>>> patch%i || %f-%f-%f", i, v.x, v.y, v.z);
+        }
     }
 
     void WriteCatmullRomCyclicPath(const Spline<int32>& spline, WorldPacket& data)
     {
+        // Full size is -3 (one from start, and two from end) so itr size -2 and start from 1
+        // but need fake point, start from 0
+        // fake point, client will erase it from the spline after first cycle done
+        // --->>> Full size with fake 2, start from 0, itr -2
         uint32 count = spline.getPointCount() - 2;
-        data << spline.getPoint(1); // fake point, client will erase it from the spline after first cycle done
-        data.append<Vector3>(&spline.getPoint(1), count);
+        for (uint32 i = 1; i < count; ++i)
+            data << spline.getPoint(i);
     }
 
     void PacketBuilder::WriteMonsterMove(const MoveSpline& move_spline, WorldPacket& data, Unit& unit)
@@ -193,7 +206,7 @@ namespace Movement
             if (splineflags.cyclic)
                 data.WriteBits(spline.getPointCount() - 2, 20);
             else
-                data.WriteBits(spline.getPointCount() - 3, 20);
+                data.WriteBits(spline.getPointCount() - 2, 20);
         }
         else
             data.WriteBits(1, 20);
@@ -219,9 +232,8 @@ namespace Movement
         }
         else
         {
-            uint32 last_idx = spline.getPointCount() - 2;
-            const Vector3 * real_path = &spline.getPoint(1);
-            data << real_path[last_idx]; // destination
+            uint32 last_idx = spline.getPointCount() - 1;
+            data << spline.getPoint(last_idx); // destination
         }
 
         data << uint32(unit.movespline->GetId());
