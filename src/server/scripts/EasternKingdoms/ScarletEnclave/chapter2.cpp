@@ -78,21 +78,26 @@ public:
             {
                 if (CAST_PLR(caster)->GetQuestStatus(12720) == QUEST_STATUS_INCOMPLETE)
                 {
-                    uiPlayerGUID = caster->GetGUID();
-                    uiSpeech_timer = 1000;
-                    uiSpeech_counter = 1;
-                    me->setFaction(caster->getFaction());
-                    me->CombatStop(true);
-                    me->GetMotionMaster()->MoveIdle();
-                    me->SetReactState(REACT_PASSIVE);
-                    DoCastAOE(58111, true);
-
-                    DoScriptText(RAND(SAY_PERSUADE1, SAY_PERSUADE2, SAY_PERSUADE3,
-                                      SAY_PERSUADE4, SAY_PERSUADE5, SAY_PERSUADE6,
-                                      SAY_PERSUADE7), caster);
-
-                    DoScriptText(RAND(SAY_CRUSADER1, SAY_CRUSADER2, SAY_CRUSADER3,
-                                      SAY_CRUSADER4, SAY_CRUSADER5, SAY_CRUSADER6), me);
+                    if (roll_chance_i(5))
+                    {
+                        uiPlayerGUID = caster->GetGUID();
+                        uiSpeech_timer = 1000;
+                        uiSpeech_counter = 1;
+                        me->setFaction(caster->getFaction());
+                        me->CombatStop(true);
+                        me->GetMotionMaster()->MoveIdle();
+                        me->SetReactState(REACT_PASSIVE);
+                        DoCastAOE(58111, true);
+                    }else if (roll_chance_i(20))
+                    {
+                        DoScriptText(RAND(SAY_PERSUADE1, SAY_PERSUADE2, SAY_PERSUADE3,
+                                          SAY_PERSUADE4, SAY_PERSUADE5, SAY_PERSUADE6,
+                                          SAY_PERSUADE7), caster);
+                    }else if (roll_chance_i(40)) 
+                    {
+                        DoScriptText(RAND(SAY_CRUSADER1, SAY_CRUSADER2, SAY_CRUSADER3,
+                                          SAY_CRUSADER4, SAY_CRUSADER5, SAY_CRUSADER6), me);
+                    }
                 }
             }
         }
