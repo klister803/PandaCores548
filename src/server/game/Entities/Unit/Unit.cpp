@@ -9814,17 +9814,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
 
             break;
         }
-        // Daybreak
-        case 88821:
-        {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->Id != 82327)
-                return false;
-
-            break;
-        }
         // Sudden Doom
         case 49530:
         {
