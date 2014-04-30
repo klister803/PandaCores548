@@ -153,20 +153,18 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     recvPacket.ReadGuidBytes<1, 6, 5>(itemGUID);
     if (hasDst)
     {
-        bool transport = dstTransportGuid != 0;
-
         recvPacket.ReadGuidBytes<4, 6, 7, 1, 3, 0>(dstTransportGuid);
-        if (transport)
+        if (dstTransportGuid)
             recvPacket >> targets.m_dst._transportOffset.m_positionX;
         else
             recvPacket >> targets.m_dst._position.m_positionX;
         recvPacket.ReadGuidBytes<2>(dstTransportGuid);
-        if (transport)
+        if (dstTransportGuid)
             recvPacket >> targets.m_dst._transportOffset.m_positionZ;
         else
             recvPacket >> targets.m_dst._position.m_positionZ;
         recvPacket.ReadGuidBytes<5>(dstTransportGuid);
-        if (transport)
+        if (dstTransportGuid)
             recvPacket >> targets.m_dst._transportOffset.m_positionY;
         else
             recvPacket >> targets.m_dst._position.m_positionY;
@@ -231,18 +229,17 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     if (hasSrc)
     {
-        bool transport = srcTransportGuid != 0;
-        if (transport)
+        if (srcTransportGuid)
             recvPacket >> targets.m_src._transportOffset.m_positionZ;
         else
             recvPacket >> targets.m_src._position.m_positionZ;
         recvPacket.ReadGuidBytes<2, 3, 4>(srcTransportGuid);
-        if (transport)
+        if (srcTransportGuid)
             recvPacket >> targets.m_src._transportOffset.m_positionY;
         else
             recvPacket >> targets.m_src._position.m_positionY;
         recvPacket.ReadGuidBytes<5, 1, 6, 7, 0>(srcTransportGuid);
-        if (transport)
+        if (srcTransportGuid)
             recvPacket >> targets.m_src._transportOffset.m_positionX;
         else
             recvPacket >> targets.m_src._position.m_positionX;
@@ -688,23 +685,21 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     if (hasDst)
     {
-        bool transport = dstTransportGuid != 0;
-
-        if (transport)
+        if (dstTransportGuid)
             recvPacket >> targets.m_dst._transportOffset.m_positionZ;
         else
             recvPacket >> targets.m_dst._position.m_positionZ;
 
         recvPacket.ReadGuidBytes<1, 3, 7, 6, 0, 2>(dstTransportGuid);
 
-        if (transport)
+        if (dstTransportGuid)
             recvPacket >> targets.m_dst._transportOffset.m_positionY;
         else
             recvPacket >> targets.m_dst._position.m_positionY;
 
         recvPacket.ReadGuidBytes<5>(dstTransportGuid);
 
-        if (transport)
+        if (dstTransportGuid)
             recvPacket >> targets.m_dst._transportOffset.m_positionX;
         else
             recvPacket >> targets.m_dst._position.m_positionX;
@@ -715,23 +710,21 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
     if (hasSrc)
     {
-        bool transport = srcTransportGuid != 0;
-
-        if (transport)
+        if (srcTransportGuid)
             recvPacket >> targets.m_src._transportOffset.m_positionX;
         else
             recvPacket >> targets.m_src._position.m_positionX;
 
         recvPacket.ReadGuidBytes<5, 7, 0, 4>(srcTransportGuid);
 
-        if (transport)
+        if (srcTransportGuid)
             recvPacket >> targets.m_src._transportOffset.m_positionZ;
         else
             recvPacket >> targets.m_src._position.m_positionZ;
 
         recvPacket.ReadGuidBytes<2, 1, 3>(srcTransportGuid);
 
-        if (transport)
+        if (srcTransportGuid)
             recvPacket >> targets.m_src._transportOffset.m_positionY;
         else
             recvPacket >> targets.m_src._position.m_positionY;

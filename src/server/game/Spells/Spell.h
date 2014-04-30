@@ -131,26 +131,6 @@ class SpellCastTargets
         SpellCastTargets();
         ~SpellCastTargets();
 
-        void Initialize(uint32 flags, uint64 target, uint64 itemTarget, uint64 dest, WorldLocation destPos, uint64 src, WorldLocation srcPos, std::string targetStr= NULL)
-        {
-            m_targetMask = flags;
-            m_objectTargetGUID = target;
-            m_itemTargetGUID = itemTarget;
-
-            // dest
-            m_dst._transportGUID = dest;
-            m_dst._position = destPos;
-            if (dest)
-                m_dst._transportOffset = destPos;
-
-            // src
-            m_src._transportGUID = src;
-            m_src._position = srcPos;
-            if (src)
-                m_src._transportOffset = srcPos;
-            m_strTarget = targetStr;
-        }
-
         uint32 GetTargetMask() const { return m_targetMask; }
         void SetTargetMask(uint32 newMask) { m_targetMask = newMask; }
 

@@ -859,18 +859,15 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     uint8 castFlags = 0;
     uint32 spellId = 0;
     uint32 glyphIndex = 0;
-    uint32 targetMask = 0;
     uint32 targetStringLength = 0;
-    float elevation = 0.0f;
-    float missileSpeed = 0.0f;
     ObjectGuid CasterGUID = 0;
     ObjectGuid targetGuid = 0;
     ObjectGuid itemTargetGuid = 0;
     ObjectGuid destTransportGuid = 0;
     ObjectGuid srcTransportGuid = 0;
-    WorldLocation srcPos;
-    WorldLocation destPos;
-    std::string targetString;
+
+    // client provided targets
+    SpellCastTargets targets;
 
     // Movement data
     MovementInfo movementInfo;
@@ -978,7 +975,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     if (hasTargetMask)
-        targetMask = recvPacket.ReadBits(20);
+        targets.SetTargetMask(recvPacket.ReadBits(20));
 
     if (hasTargetString)
         targetStringLength = recvPacket.ReadBits(7);
@@ -1075,22 +1072,29 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     if (hasDestLocation)
-    {
-        float x, y, z;
-        
+    {       
         recvPacket.ReadByteSeq(destTransportGuid[1]);
         recvPacket.ReadByteSeq(destTransportGuid[0]);
         recvPacket.ReadByteSeq(destTransportGuid[5]);
-        recvPacket >> x;
-        recvPacket >> z;
+        if (destTransportGuid)
+            recvPacket >> targets.m_dst._transportOffset.m_positionX;
+        else
+            recvPacket >> targets.m_dst._position.m_positionX;
+        if (destTransportGuid)
+            recvPacket >> targets.m_dst._transportOffset.m_positionZ;
+        else
+            recvPacket >> targets.m_dst._position.m_positionZ;
         recvPacket.ReadByteSeq(destTransportGuid[4]);
         recvPacket.ReadByteSeq(destTransportGuid[7]);
         recvPacket.ReadByteSeq(destTransportGuid[2]);
         recvPacket.ReadByteSeq(destTransportGuid[3]);
-        recvPacket >> y;
+        if (destTransportGuid)
+            recvPacket >> targets.m_dst._transportOffset.m_positionY;
+        else
+            recvPacket >> targets.m_dst._position.m_positionY;
         recvPacket.ReadByteSeq(destTransportGuid[6]);
 
-        destPos.Relocate(x, y, z);
+        targets.m_dst._transportGUID = destTransportGuid;
     }
 
     uint8 bytesOrder2[8] = { 6, 5, 4, 0, 7, 3, 1, 2  };
@@ -1098,39 +1102,50 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
 
     if (hasSrcLocation)
     {
-        float x, y, z;
-        recvPacket >> x;
+        if (srcTransportGuid)
+            recvPacket >> targets.m_src._transportOffset.m_positionX;
+        else
+            recvPacket >> targets.m_src._position.m_positionX;
         recvPacket.ReadByteSeq(srcTransportGuid[7]);
         recvPacket.ReadByteSeq(srcTransportGuid[1]);
         recvPacket.ReadByteSeq(srcTransportGuid[3]);
         recvPacket.ReadByteSeq(srcTransportGuid[4]);
-        recvPacket >> z;
+        if (srcTransportGuid)
+            recvPacket >> targets.m_src._transportOffset.m_positionZ;
+        else
+            recvPacket >> targets.m_src._position.m_positionZ;
         recvPacket.ReadByteSeq(srcTransportGuid[0]);
         recvPacket.ReadByteSeq(srcTransportGuid[6]);
-        recvPacket >> y;
+        if (srcTransportGuid)
+            recvPacket >> targets.m_src._transportOffset.m_positionY;
+        else
+            recvPacket >> targets.m_src._position.m_positionY;
         recvPacket.ReadByteSeq(srcTransportGuid[5]);
         recvPacket.ReadByteSeq(srcTransportGuid[2]);
         
-        srcPos.Relocate(x, y, z);
+        targets.m_src._transportGUID = srcTransportGuid;
     }
 
     if (hasTargetString)
-        targetString = recvPacket.ReadString(targetStringLength);
+        targets.m_strTarget = recvPacket.ReadString(targetStringLength);
 
     if (hasCastCount)
         recvPacket >> castCount;
 
     if (hasElevation)
-        recvPacket >> elevation;
+        recvPacket >> targets.m_elevation;
 
     if (hasSpellId)
         recvPacket >> spellId;
 
     if (hasMissileSpeed)
-        recvPacket >> missileSpeed;
+        recvPacket >> targets.m_speed;
 
     if (hasGlyphIndex)
         recvPacket >> glyphIndex;
+
+    targets.m_itemTargetGUID = itemTargetGuid;
+    targets.m_objectTargetGUID = targetGuid;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_PET_CAST_SPELL, castCount: %u, spellId %u, castFlags %u", castCount, spellId, castFlags);
 
@@ -1145,6 +1160,8 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
         sLog->outError(LOG_FILTER_NETWORKIO, "HandlePetCastSpellOpcode: Pet %u isn't pet of player %s .", uint32(GUID_LOPART(CasterGUID)), GetPlayer()->GetName());
         return;
     }
+
+    targets.Update(caster);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1163,29 +1180,6 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     // do not cast not learned spells
     if (!caster->HasSpell(spellId) || spellInfo->IsPassive())
         return;
-
-    // client provided targets
-    SpellCastTargets targets;
-    //HandleClientCastFlags(recvPacket, castFlags, targets);
-
-    // Build SpellCastTargets
-    /*uint32 targetFlags = 0;
-
-    if (itemTarget)
-        targetFlags |= TARGET_FLAG_ITEM;
-
-    if (IS_UNIT_GUID(targetGuid))
-        targetFlags |= TARGET_FLAG_UNIT;
-
-    if (IS_GAMEOBJECT_GUID(targetGuid))
-        targetFlags |= TARGET_FLAG_GAMEOBJECT;*/
-
-    // TODO : TARGET_FLAG_TRADE_ITEM, TARGET_FLAG_SOURCE_LOCATION, TARGET_FLAG_DEST_LOCATION, TARGET_FLAG_UNIT_MINIPET, TARGET_FLAG_CORPSE_ENEMY, TARGET_FLAG_CORPSE_ALLY
-
-    targets.Initialize(targetMask, targetGuid, itemTargetGuid, destTransportGuid, destPos, srcTransportGuid, srcPos, targetString);
-    targets.SetElevation(elevation);
-    targets.SetSpeed(missileSpeed);
-    targets.Update(caster);
 
     caster->ClearUnitState(UNIT_STATE_FOLLOW);
 
