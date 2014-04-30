@@ -580,8 +580,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             castItem = playerCaster->GetItemByGuid(itemGUID);
 
     //Old trinket not modify amount
-    if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && !(m_spellInfo->AttributesEx8 & SPELL_ATTR8_AURA_SEND_AMOUNT) && !(m_spellInfo->Attributes & (SPELL_ATTR0_PASSIVE | SPELL_ATTR0_HIDDEN_CLIENTSIDE)))
-        return m_baseAmount;
+//     if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && !(m_spellInfo->AttributesEx8 & SPELL_ATTR8_AURA_SEND_AMOUNT) && !(m_spellInfo->Attributes & (SPELL_ATTR0_PASSIVE | SPELL_ATTR0_HIDDEN_CLIENTSIDE)))
+//         return m_baseAmount;
 
     // default amount calculation
     amount = m_spellInfo->GetEffect(m_effIndex, m_diffMode).CalcValue(caster, &m_baseAmount, GetBase()->GetOwner()->ToUnit(), castItem);
