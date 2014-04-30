@@ -4441,7 +4441,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
                     break;
 
-                //World Boss
+                //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
                     spellInfo->Effects[EFFECT_0].TargetA = 22;
@@ -4476,6 +4476,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 136345: //Stormcloud tr ef
                     spellInfo->Effects[0].TargetB = 30;
+                    break;
+                case 136341: //Static shield
+                    spellInfo->Effects[1].TriggerSpell = 0;
                     break;
 
                 // Dalaran arena knockback
