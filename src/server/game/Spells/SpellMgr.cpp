@@ -3356,6 +3356,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 74434: // Soulburn
+                    spellInfo->Effects[1].BasePoints = -100;
+                    spellInfo->Effects[1].SpellClassMask[0] |= 33024;
+                    break;
                 case 85288: // Raging Blow
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;

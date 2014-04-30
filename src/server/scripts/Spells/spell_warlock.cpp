@@ -1569,7 +1569,7 @@ class spell_warl_fel_flame : public SpellScriptLoader
         }
 };
 
-// Drain Life - 689
+// Drain Life - 689, 89420
 class spell_warl_drain_life : public SpellScriptLoader
 {
     public:
@@ -1587,15 +1587,11 @@ class spell_warl_drain_life : public SpellScriptLoader
                     if (!_player)
                         return;
 
-                    // Restoring 2% of the caster's total health every 1s
-                    int32 basepoints = _player->GetMaxHealth() / 50;
-
                     // In Demonology spec : Generates 10 Demonic Fury per second
                     if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
                         _player->EnergizeBySpell(_player, 689, 10, POWER_DEMONIC_FURY);
-                    // Soulburn : Increase heal by 50%
-                    if (_player->HasAura(WARLOCK_SOULBURN_AURA))
-                        basepoints = int32(basepoints * 1.5f);
+
+                    int32 basepoints = _player->CountPctFromMaxHealth(GetSpellInfo()->Effects[1].BasePoints);
 
                     _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
                 }
