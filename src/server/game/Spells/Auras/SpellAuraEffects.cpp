@@ -4653,9 +4653,7 @@ void AuraEffect::HandleAuraModExpertise(AuraApplication const* aurApp, uint8 mod
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    target->ToPlayer()->UpdateExpertise(BASE_ATTACK);
-    target->ToPlayer()->UpdateExpertise(OFF_ATTACK);
-    target->ToPlayer()->UpdateExpertise(RANGED_ATTACK);
+    target->ToPlayer()->UpdateExpertise();
 }
 
 /********************************/

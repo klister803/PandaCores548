@@ -6896,11 +6896,8 @@ void Player::UpdateRating(CombatRating cr)
             break;
         case CR_EXPERTISE:
             if (affectStats)
-            {
-                UpdateExpertise(BASE_ATTACK);
-                UpdateExpertise(OFF_ATTACK);
-                UpdateExpertise(RANGED_ATTACK);
-            }
+                UpdateExpertise();
+            break;
         case CR_MASTERY:                                    // Implemented in Player::UpdateMasteryPercentage
             UpdateMasteryAuras();
             break;
@@ -13431,13 +13428,8 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
 
         ApplyEquipCooldown(pItem);
 
-         // update expertise and armor penetration - passive auras may need it
-
-        if (slot == EQUIPMENT_SLOT_MAINHAND)
-            UpdateExpertise(BASE_ATTACK);
-
-        else if (slot == EQUIPMENT_SLOT_OFFHAND)
-            UpdateExpertise(OFF_ATTACK);
+        // update expertise and armor penetration - passive auras may need it
+        UpdateExpertise();
     }
     else
     {
@@ -13664,16 +13656,14 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update)
                             pItem->ClearEnchantment(PROP_ENCHANTMENT_SLOT_0);
                             pItem->ClearEnchantment(PROP_ENCHANTMENT_SLOT_1);
                         }
-
-                        UpdateExpertise(BASE_ATTACK);
                     }
-                    else if (slot == EQUIPMENT_SLOT_OFFHAND)
-                        UpdateExpertise(OFF_ATTACK);
                 }
             }
 
             m_items[slot] = NULL;
             SetUInt64Value(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2), 0);
+
+            UpdateExpertise();
 
             if (slot < EQUIPMENT_SLOT_END)
                 SetVisibleItemSlot(slot, NULL);
@@ -13788,10 +13778,7 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
                 // remove item dependent auras and casts (only weapon and armor slots)
                 RemoveItemDependentAurasAndCasts(pItem);
 
-                if (slot == EQUIPMENT_SLOT_MAINHAND)
-                    UpdateExpertise(BASE_ATTACK);
-                else if (slot == EQUIPMENT_SLOT_OFFHAND)
-                    UpdateExpertise(OFF_ATTACK);
+                UpdateExpertise();
 
                 // equipment visual show
                 SetVisibleItemSlot(slot, NULL);

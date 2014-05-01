@@ -257,9 +257,7 @@ bool Player::UpdateAllStats()
     UpdateDodgePercentage();
     UpdateSpellDamageAndHealingBonus();
     UpdateManaRegen();
-    UpdateExpertise(BASE_ATTACK);
-    UpdateExpertise(OFF_ATTACK);
-    UpdateExpertise(RANGED_ATTACK);
+    UpdateExpertise();
     for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
         UpdateResistances(i);
 
@@ -740,32 +738,46 @@ void Player::UpdateAllSpellCritChances()
         UpdateSpellCritChance(i);
 }
 
-void Player::UpdateExpertise(WeaponAttackType attack)
+void Player::UpdateExpertise()
 {
-    float expertise = GetRatingBonusValue(CR_EXPERTISE);
-
-    Item* weapon = GetWeaponForAttack(attack, true);
-
-    AuraEffectList const& expAuras = GetAuraEffectsByType(SPELL_AURA_MOD_EXPERTISE);
-    for (AuraEffectList::const_iterator itr = expAuras.begin(); itr != expAuras.end(); ++itr)
+    bool first = true;
+    for (uint8 i = BASE_ATTACK; i < MAX_ATTACK; ++i)
     {
-        // item neutral spell
-        if ((*itr)->GetSpellInfo()->EquippedItemClass == -1)
-            expertise += (*itr)->GetAmount();
-        // item dependent spell
-        else if (weapon && weapon->IsFitToSpellRequirements((*itr)->GetSpellInfo()))
-            expertise += (*itr)->GetAmount();
-    }
+        if (getClass() == CLASS_HUNTER)
+        {
+            if (i != RANGED_ATTACK)
+                continue;
+        }
+        else
+        {
+            if (i == RANGED_ATTACK)
+                continue;
+        }
+            
+        float expertise = GetRatingBonusValue(CR_EXPERTISE);
+        Item* weapon = GetWeaponForAttack(WeaponAttackType(i), true);
 
-    if (expertise < 0)
-        expertise = 0.0f;
+        AuraEffectList const& expAuras = GetAuraEffectsByType(SPELL_AURA_MOD_EXPERTISE);
+        for (AuraEffectList::const_iterator itr = expAuras.begin(); itr != expAuras.end(); ++itr)
+        {
+            // item neutral spell
+            if ((*itr)->GetSpellInfo()->EquippedItemClass == -1)
+                expertise += (*itr)->GetAmount();
+            // item dependent spell
+            else if (weapon && weapon->IsFitToSpellRequirements((*itr)->GetSpellInfo()))
+                expertise += (*itr)->GetAmount();
+        }
 
-    switch (attack)
-    {
-        case BASE_ATTACK: SetFloatValue(PLAYER_EXPERTISE, expertise);          break;
-        case OFF_ATTACK:  SetFloatValue(PLAYER_OFFHAND_EXPERTISE, expertise);  break;
-        case RANGED_ATTACK: SetFloatValue(PLAYER_RANGED_EXPERTISE, expertise); break;
-        default: break;
+        if (expertise < 0)
+            expertise = 0.0f;
+
+        if (first || expertise > m_expertise)
+        {
+            m_expertise = expertise;
+            first = false;
+        }
+
+        SetFloatValue(PLAYER_EXPERTISE + i, expertise);
     }
 }
 

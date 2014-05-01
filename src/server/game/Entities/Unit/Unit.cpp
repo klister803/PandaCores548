@@ -249,6 +249,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modMeleeHitChance = 0.0f;
     m_modRangedHitChance = 0.0f;
     m_modSpellHitChance = 0.0f;
+    m_expertise = 0.0f;
     m_baseSpellCritChance = 5;
     m_anti_JupmSpeed = 0.0f;                // Jump cpeed
     m_anti_JupmTime = 0;                // Jump Time
@@ -2866,7 +2867,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
 
     int32 HitChance = modHitChance * 100;
     // Increase hit chance from attacker SPELL_AURA_MOD_SPELL_HIT_CHANCE and attacker ratings
-    HitChance += int32(m_modSpellHitChance * 100.0f);
+    HitChance += int32((m_modSpellHitChance + m_expertise) * 100.0f);
 
     if (HitChance < 100)
         HitChance = 100;
