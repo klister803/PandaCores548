@@ -29,7 +29,12 @@
 void UnitAI::AttackStart(Unit* victim)
 {
     if (victim && me->Attack(victim, true))
-        me->GetMotionMaster()->MoveChase(victim);
+    {
+        if (me->ToCreature() && me->GetEntry() == 69099) //World Boss Nalak
+            me->GetMotionMaster()->MoveCharge(victim->GetPositionX(), victim->GetPositionY(), victim->GetPositionZ() + 18.0f);
+        else
+            me->GetMotionMaster()->MoveChase(victim);
+    }
 }
 
 void UnitAI::AttackStartCaster(Unit* victim, float dist)

@@ -26,7 +26,12 @@ public:
 
     struct boss_nalakAI : public CreatureAI
     {
-        boss_nalakAI(Creature* creature) : CreatureAI(creature){}
+        boss_nalakAI(Creature* creature) : CreatureAI(creature)
+        {
+            me->SetCanFly(true);
+            me->SetDisableGravity(true);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+        }
 
         EventMap events;
 
@@ -44,11 +49,15 @@ public:
           //events.ScheduleEvent(EVENT_LIGHTNING_TETHER, 35000); not work
             events.ScheduleEvent(EVENT_STORMCLOUD,       24000);
         }
-
+        
         void UpdateAI(const uint32 diff)
         {
             if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
+
+            if (me->getVictim())
+                if (!me->IsWithinMeleeRange(me->getVictim()))
+                    me->GetMotionMaster()->MoveCharge(me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ() + 18.0f, 15.0f);
 
             events.Update(diff);
 
