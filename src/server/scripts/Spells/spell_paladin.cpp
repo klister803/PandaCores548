@@ -162,6 +162,9 @@ class spell_pal_eternal_flame : public SpellScriptLoader
                     if (holyPower > 2)
                         holyPower = 2;
 
+                    if (_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                        holyPower = 2;
+
                     int32 _amount = GetHitHeal() * (holyPower + 1);
 
                     SetHitHeal(int32(_amount));
@@ -536,6 +539,9 @@ class spell_pal_inquisition : public SpellScriptLoader
                     if (Aura* inquisition = _player->GetAura(PALADIN_SPELL_INQUISITION))
                     {
                         int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+
+                        if (_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                            holyPower = 2;
 
                         if (holyPower > 2)
                             holyPower = 2;
