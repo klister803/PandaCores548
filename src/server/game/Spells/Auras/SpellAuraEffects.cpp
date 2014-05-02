@@ -7137,9 +7137,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
 
             // Every tick, Malefic Grasp deals instantly 50% of tick-damage for each affliction effects on the target
             // Corruption ...
-            if (Aura* corruption = target->GetAura(172, caster->GetGUID()))
+            if (Aura* corruption = target->GetAura(146739, caster->GetGUID()))
             {
-                afflictionSpell = sSpellMgr->GetSpellInfo(172);
+                afflictionSpell = sSpellMgr->GetSpellInfo(146739);
                 afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                 afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
                 afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
