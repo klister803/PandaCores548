@@ -2520,8 +2520,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTriggeredMap.clear();    // need for reload case
     mSpellTriggeredDummyMap.clear();    // need for reload case
 
-    //                                                    0           1             2           3         4          5          6      7      8         9          10       11
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance` FROM `spell_trigger`");
+    //                                                    0           1             2           3         4          5          6      7      8         9          10       11        12
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2545,6 +2545,7 @@ void SpellMgr::LoadSpellTriggered()
         int32 effectmask = fields[9].GetInt32();
         int32 aura = fields[10].GetInt32();
         int32 chance = fields[11].GetInt32();
+        int32 group = fields[12].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2573,14 +2574,15 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.effectmask = effectmask;
         temptrigger.aura = aura;
         temptrigger.chance = chance;
+        temptrigger.group = group;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
         ++count;
     } while (result->NextRow());
 
 
-    //                                        0             1             2         3         4          5          6      7      8         9          10       11
-    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance` FROM `spell_trigger_dummy`");
+    //                                        0             1             2         3         4          5          6      7      8         9          10       11        12
+    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group` FROM `spell_trigger_dummy`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2603,6 +2605,7 @@ void SpellMgr::LoadSpellTriggered()
         int32 effectmask = fields[9].GetInt32();
         int32 aura = fields[10].GetInt32();
         int32 chance = fields[11].GetInt32();
+        int32 group = fields[12].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2625,6 +2628,7 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.effectmask = effectmask;
         temptrigger.aura = aura;
         temptrigger.chance = chance;
+        temptrigger.group = group;
         mSpellTriggeredDummyMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -3647,10 +3651,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 // Custom MoP Script
                 case 82691: // Ring of Frost
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
-                    spellInfo->Effects[EFFECT_0].TargetB = 0;
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                     break;
                 case 76577: // Smoke Bomb
                     spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -4010,6 +4012,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 131736:// Unstable Affliction (Malefic Grasp)
                 case 132566:// Seed of Corruption (Malefic Grasp)
                 case 131737:// Agony (Malefic Grasp)
+                case 148022:// Icicle
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
                 case 131116:// Allow to use Raging Blow

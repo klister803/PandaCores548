@@ -22524,7 +22524,7 @@ void Player::RemoveSpellMods(Spell* spell)
             ++itr;
 
             // spellmods without aura set cannot be charged
-            if (!mod->ownerAura || !mod->ownerAura->IsUsingCharges())
+            if (!mod->ownerAura || !mod->ownerAura->IsUsingCharges() || mod->ownerAura->GetSpellInfo()->ProcFlags != 0)
                 continue;
 
             // check if mod affected this spell
@@ -22535,20 +22535,22 @@ void Player::RemoveSpellMods(Spell* spell)
             // remove from list
             spell->m_appliedMods.erase(iterMod);
 
-            if (!(mod->ownerAura->GetId() == 117828 && spell->GetSpellInfo()->Id == 116858))
-                if (mod->ownerAura)
-                if (mod->ownerAura->DropCharge(AURA_REMOVE_BY_EXPIRE))
-                    itr = m_spellMods[i].begin();
+            if (mod->ownerAura->DropCharge(AURA_REMOVE_BY_EXPIRE))
+                itr = m_spellMods[i].begin();
         }
     }
 }
 
 void Player::DropModCharge(SpellModifier* mod, Spell* spell)
 {
+
     // don't handle spells with proc_event entry defined
     // this is a temporary workaround, because all spellmods should be handled like that
-    if (sSpellMgr->GetSpellProcEvent(mod->spellId))
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(mod->spellId);
+    if(!spellInfo || spellInfo->ProcFlags != 0)
         return;
+
+
 
     if (spell && mod->ownerAura && mod->charges > 0)
     {

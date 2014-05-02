@@ -476,7 +476,7 @@ enum AuraType
     SPELL_AURA_416                                          = 416,  // SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE or SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE
     SPELL_AURA_417                                          = 417,  // SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE or SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE
     SPELL_AURA_MOD_MAX_POWER                                = 418,
-    SPELL_AURA_419                                          = 419,
+    SPELL_AURA_MOD_ADD_ENERGY_PERCENT                       = 419,
     SPELL_AURA_MOD_BATTLE_PET_XP_GAIN                       = 420,
     SPELL_AURA_421                                          = 421,  // healing done related
     SPELL_AURA_MOD_ABSORBTION_PERCENT                       = 422,

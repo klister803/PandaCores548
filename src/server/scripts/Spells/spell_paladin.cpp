@@ -153,7 +153,7 @@ class spell_pal_eternal_flame : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_eternal_flame_SpellScript);
 
-            void HandleScript()
+            void HandleHeal(SpellEffIndex /*effIndex*/)
             {
                 if(Unit* caster = GetCaster())
                 if(Player* _player = caster->ToPlayer())
@@ -167,6 +167,18 @@ class spell_pal_eternal_flame : public SpellScriptLoader
 
                     int32 _amount = GetHitHeal() * (holyPower + 1);
 
+                    Unit* target = GetHitUnit();
+
+                    if (!target || caster->GetGUID() == target->GetGUID())
+                        if (Aura* aurabp = caster->GetAura(114637))
+                        {
+                            int32 percent = aurabp->GetStackAmount() * 10;
+                            if (Aura* mastery = caster->GetAura(76671))
+                                percent += mastery->GetEffect(0)->GetAmount();
+
+                            AddPct(_amount, percent);
+                        }
+
                     SetHitHeal(int32(_amount));
 
                     if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
@@ -176,7 +188,7 @@ class spell_pal_eternal_flame : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_pal_eternal_flame_SpellScript::HandleScript);
+                OnEffectHitTarget += SpellEffectFn(spell_pal_eternal_flame_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
             }
         };
 
@@ -643,46 +655,133 @@ class spell_pal_lights_hammer : public SpellScriptLoader
         }
 };
 
-// called by Holy Prism (damage) - 114852 or Holy Prism (heal) - 114871
+// called by Holy Prism (heal) - 114871
 // Holy Prism visual for other targets
-class spell_pal_holy_prism_visual : public SpellScriptLoader
+class spell_pal_holy_prism_heal : public SpellScriptLoader
 {
     public:
-        spell_pal_holy_prism_visual() : SpellScriptLoader("spell_pal_holy_prism_visual") { }
+        spell_pal_holy_prism_heal() : SpellScriptLoader("spell_pal_holy_prism_heal") { }
 
-        class spell_pal_holy_prism_visual_SpellScript : public SpellScript
+        class spell_pal_holy_prism_heal_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_pal_holy_prism_visual_SpellScript);
+            PrepareSpellScript(spell_pal_holy_prism_heal_SpellScript);
 
-            void HandleOnHit()
+            std::list<WorldObject*> targetList;
+            Unit* unitTarget;
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* target = GetHitUnit())
+                    if (unitTarget)
+                        unitTarget->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
+            }
+
+            void HandleHeal(SpellEffIndex /*effIndex*/)
+            {
+                unitTarget = GetHitUnit();
+            }
+
+            void FilterEnemy(std::list<WorldObject*>& unitList)
+            {
+                if (Unit* caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    for (std::list<WorldObject*>::iterator itr = unitList.begin(); itr != unitList.end();)
                     {
-                        if (_player->IsValidAttackTarget(target))
-                        {
-                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
-                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
-                        }
+                        if (caster->IsValidAttackTarget((*itr)->ToUnit()))
+                            ++itr;
                         else
-                        {
-                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2, true);
-                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2, true);
-                        }
+                            unitList.erase(itr++);
                     }
                 }
+
+                if(unitList.size() > 5)
+                    Trinity::Containers::RandomResizeList(unitList, 5);
+                targetList = unitList;
+            }
+
+            void FilterScript(std::list<WorldObject*>& unitList)
+            {
+                unitList.clear();
+                unitList = targetList;
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_pal_holy_prism_visual_SpellScript::HandleOnHit);
+                OnEffectHitTarget += SpellEffectFn(spell_pal_holy_prism_heal_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
+                OnEffectHitTarget += SpellEffectFn(spell_pal_holy_prism_heal_SpellScript::HandleDamage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_holy_prism_heal_SpellScript::FilterEnemy, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_holy_prism_heal_SpellScript::FilterScript, EFFECT_2, TARGET_UNIT_DEST_AREA_ENTRY);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
-            return new spell_pal_holy_prism_visual_SpellScript();
+            return new spell_pal_holy_prism_heal_SpellScript();
+        }
+};
+
+// called by Holy Prism (damage) - 114852
+// Holy Prism visual for other targets
+class spell_pal_holy_prism_damage : public SpellScriptLoader
+{
+    public:
+        spell_pal_holy_prism_damage() : SpellScriptLoader("spell_pal_holy_prism_damage") { }
+
+        class spell_pal_holy_prism_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_holy_prism_damage_SpellScript);
+
+            std::list<WorldObject*> targetList;
+            Unit* unitTarget;
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                unitTarget = GetHitUnit();
+            }
+
+            void HandleHeal(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* target = GetHitUnit())
+                    if (unitTarget)
+                        unitTarget->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2, true);
+            }
+
+            void FilterEnemy(std::list<WorldObject*>& unitList)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    for (std::list<WorldObject*>::iterator itr = unitList.begin(); itr != unitList.end();)
+                    {
+                        if (caster->IsValidAttackTarget((*itr)->ToUnit()))
+                            unitList.erase(itr++);
+                        else
+                            ++itr;
+                    }
+                }
+
+                if(unitList.size() > 5)
+                    Trinity::Containers::RandomResizeList(unitList, 5);
+                targetList = unitList;
+            }
+
+            void FilterScript(std::list<WorldObject*>& unitList)
+            {
+                unitList.clear();
+                unitList = targetList;
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_pal_holy_prism_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+                OnEffectHitTarget += SpellEffectFn(spell_pal_holy_prism_damage_SpellScript::HandleHeal, EFFECT_1, SPELL_EFFECT_HEAL);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_holy_prism_damage_SpellScript::FilterEnemy, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_holy_prism_damage_SpellScript::FilterScript, EFFECT_2, TARGET_UNIT_DEST_AREA_ENTRY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_holy_prism_damage_SpellScript();
         }
 };
 
@@ -1270,7 +1369,7 @@ class spell_pal_stay_of_execution : public SpellScriptLoader
                     if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
                     {
                         const_cast<AuraEffect*>(aurEff)->SetTickNumber(20);
-                        aurEff->HandlePeriodicHealAurasTick(caster,caster);
+                        aurEff->HandlePeriodicHealAurasTick(caster, caster, (SpellEffIndex) aurEff->GetEffIndex());
                     }
                 }
             }
@@ -1341,7 +1440,7 @@ class spell_pal_execution_sentence_damage : public SpellScriptLoader
                     if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
                     {
                         const_cast<AuraEffect*>(aurEff)->SetTickNumber(20);
-                        aurEff->HandlePeriodicDamageAurasTick(target,caster);
+                        aurEff->HandlePeriodicDamageAurasTick(target, caster, (SpellEffIndex) aurEff->GetEffIndex());
                     }
                 }
             }
@@ -1363,6 +1462,42 @@ class spell_pal_execution_sentence_damage : public SpellScriptLoader
         }
 };
 
+// for glyhp 146955 - 64364 Devotion Aura
+class spell_pal_devotion_aura : public SpellScriptLoader
+{
+    public:
+        spell_pal_devotion_aura() : SpellScriptLoader("spell_pal_devotion_aura") { }
+
+        class spell_pal_devotion_aura_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_devotion_aura_SpellScript);
+
+            void FilterScript(std::list<WorldObject*>& unitList)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(146955))
+                    {
+                        unitList.clear();
+                        unitList.push_back(caster);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_devotion_aura_SpellScript::FilterScript, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_devotion_aura_SpellScript::FilterScript, EFFECT_1, TARGET_UNIT_CASTER_AREA_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_devotion_aura_SpellScript::FilterScript, EFFECT_2, TARGET_UNIT_CASTER_AREA_RAID);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_devotion_aura_SpellScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
@@ -1378,7 +1513,8 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_inquisition();
     new spell_pal_execution_sentence();
     new spell_pal_lights_hammer();
-    new spell_pal_holy_prism_visual();
+    new spell_pal_holy_prism_heal();
+    new spell_pal_holy_prism_damage();
     new spell_pal_holy_prism_effect();
     new spell_pal_holy_prism();
     new spell_pal_consecration();
@@ -1394,4 +1530,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_hand_of_purity();
     new spell_pal_stay_of_execution();
     new spell_pal_execution_sentence_damage();
+    new spell_pal_devotion_aura();
 }

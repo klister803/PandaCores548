@@ -445,24 +445,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         damage = (m_caster->getLevel() - 60) * 4 + 60;
                         break;
                     }
-                    // Ancient Fury
-                    case 86704:
-                    {
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                        {
-                            if (Aura* aura = m_caster->GetAura(86700))
-                            {
-                                uint8 stacks = aura->GetStackAmount();
-                                damage = stacks * (damage + 0.1f * m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()));
-                                damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, damage, SPELL_DIRECT_DAMAGE);
-                                uint32 count = 0;
-                                for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-                                    ++count;
-                                damage /= count;
-                            }
-                        }
-                        break;
-                    }
                 }
                 break;
             }
@@ -681,6 +663,13 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
+                    case 31707: // Waterbolt
+                    {
+                        if (Unit* owner = m_caster->GetOwner())
+                            if (AuraEffect const* aurEff = owner->GetAuraEffect(76613, EFFECT_0))
+                                AddPct(damage, aurEff->GetAmount());
+                        break;
+                    }
                     case 113092: // Frost Bomb
                     {
                         float pct;
@@ -702,6 +691,24 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
+                    // Ancient Fury
+                    case 86704:
+                    {
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            if (Aura* aura = m_caster->GetAura(86700))
+                            {
+                                uint8 stacks = aura->GetStackAmount();
+                                damage = stacks * (damage + 0.1f * m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()));
+                                damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, damage, SPELL_DIRECT_DAMAGE, effIndex);
+                                uint32 count = 0;
+                                for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+                                    ++count;
+                                damage /= count;
+                            }
+                        }
+                        break;
+                    }
                     case 114871: // Holy Prism (for Friend)
                     case 114852: // Holy Prism (for Enemy)
                     {
@@ -786,8 +793,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         if (m_originalCaster && damage > 0 && apply_direct_bonus)
         {
-            damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
-            damage = unitTarget->SpellDamageBonusTaken(m_originalCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+            damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effIndex);
+            damage = unitTarget->SpellDamageBonusTaken(m_originalCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effIndex);
         }
 
         m_damage += damage;
@@ -814,6 +821,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         Unit* triggerCaster = m_caster;
         int32 basepoints0 = damage;
         int32 triggered_spell_id = damage;
+        std::list<int32> groupList;
 
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
@@ -824,6 +832,16 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
+
+            if(itr->group != 0 && !groupList.empty())
+            {
+                bool groupFind = false;
+                for (std::list<int32>::const_iterator group_itr = groupList.begin(); group_itr != groupList.end(); ++group_itr)
+                    if((*group_itr) == itr->group)
+                        groupFind = true;
+                if(groupFind)
+                    continue;
+            }
 
             if(itr->target == 1) //get target caster
                 triggerTarget = triggerCaster;
@@ -867,7 +885,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_BP_CUSTOM: //1
@@ -880,7 +897,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_MANA_COST: //2
@@ -896,7 +912,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_DAM_HEALTH: //3
@@ -911,7 +926,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_COOLDOWN: //4
@@ -934,7 +948,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         }
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_UPDATE_DUR: //5
@@ -942,7 +955,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     if(Aura* aura = triggerTarget->GetAura(abs(spell_trigger), triggerCaster->GetGUID()))
                         aura->RefreshDuration();
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_GET_DUR_AURA: //6
@@ -960,7 +972,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         }
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_NEED_COMBOPOINTS: //7
@@ -977,7 +988,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         }
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_UPDATE_DUR_TO_MAX: //8
@@ -1000,7 +1010,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_MAX_MANA: //10
@@ -1010,7 +1019,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     triggered_spell_id = abs(spell_trigger);
                     triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_BASE_MANA: //11
@@ -1020,7 +1028,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     triggered_spell_id = abs(spell_trigger);
                     triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_CUR_MANA: //12
@@ -1030,7 +1037,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     triggered_spell_id = abs(spell_trigger);
                     triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_CHECK_PROCK: //13
@@ -1045,7 +1051,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     }
 
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_DUMMY: //14
@@ -1091,7 +1096,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     }
                     triggerCaster->CastSpell(triggerTarget, triggered_spell_id, false);
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_CAST_DEST: //15
@@ -1123,10 +1127,11 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         triggerCaster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
                     }
                     check = true;
-                    continue;
                 }
                 break;
             }
+            if(itr->group != 0 && check)
+                groupList.push_back(itr->group);
         }
         if(check)
             return;
@@ -2118,8 +2123,8 @@ void Spell::EffectPowerDrain(SpellEffIndex effIndex)
         return;
 
     // add spell damage bonus
-    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE);
-    damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE);
+    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
+    damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
 
     int32 newDamage = -(unitTarget->ModifyPower(powerType, -damage));
 
@@ -2293,11 +2298,11 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         }
         // Death Pact - return pct of max health to caster
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
-            addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, int32(caster->CountPctFromMaxHealth(damage)), HEAL);
+            addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, int32(caster->CountPctFromMaxHealth(damage)), HEAL, effIndex);
         else
-            addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, addhealth, HEAL);
+            addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, addhealth, HEAL, effIndex);
 
-        addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL);
+        addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL, effIndex);
 
         switch (m_spellInfo->Id)
         {
@@ -2374,7 +2379,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
     }
 }
 
-void Spell::EffectHealPct(SpellEffIndex /*effIndex*/)
+void Spell::EffectHealPct(SpellEffIndex effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -2421,13 +2426,13 @@ void Spell::EffectHealPct(SpellEffIndex /*effIndex*/)
 
     uint32 heal = uint32(damage);
 
-    heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(heal), HEAL);
-    heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL);
+    heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(heal), HEAL, effIndex);
+    heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL, effIndex);
 
     m_healing += heal;
 }
 
-void Spell::EffectHealMechanical(SpellEffIndex /*effIndex*/)
+void Spell::EffectHealMechanical(SpellEffIndex effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -2439,9 +2444,9 @@ void Spell::EffectHealMechanical(SpellEffIndex /*effIndex*/)
     if (!m_originalCaster)
         return;
 
-    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, uint32(damage), HEAL);
+    uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, uint32(damage), HEAL, effIndex);
 
-    m_healing += unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL);
+    m_healing += unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL, effIndex);
 }
 
 void Spell::EffectHealthLeech(SpellEffIndex effIndex)
@@ -2452,8 +2457,8 @@ void Spell::EffectHealthLeech(SpellEffIndex effIndex)
     if (!unitTarget || !unitTarget->isAlive() || damage < 0)
         return;
 
-    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE);
-    damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE);
+    damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
+    damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "HealthLeech :%i", damage);
 
@@ -2465,8 +2470,8 @@ void Spell::EffectHealthLeech(SpellEffIndex effIndex)
 
     if (m_caster->isAlive())
     {
-        healthGain = m_caster->SpellHealingBonusDone(m_caster, m_spellInfo, healthGain, HEAL);
-        healthGain = m_caster->SpellHealingBonusTaken(m_caster, m_spellInfo, healthGain, HEAL);
+        healthGain = m_caster->SpellHealingBonusDone(m_caster, m_spellInfo, healthGain, HEAL, effIndex);
+        healthGain = m_caster->SpellHealingBonusTaken(m_caster, m_spellInfo, healthGain, HEAL, effIndex);
 
         m_caster->HealBySpell(m_caster, m_spellInfo, uint32(healthGain));
     }
@@ -2722,6 +2727,11 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     int level_diff = 0;
     switch (m_spellInfo->Id)
     {
+        case 138248: // Holy Power
+        {
+            damage += m_caster->HasAura(105809) ? 2: 0;
+            break;
+        }
         case 105427: // Judgments of the Wise
         {
             damage += m_caster->HasAura(114232) ? 1: 0;

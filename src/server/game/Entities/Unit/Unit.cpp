@@ -1724,8 +1724,8 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
 
             if (Unit* caster = (*dmgShieldItr)->GetCaster())
             {
-                damage = caster->SpellDamageBonusDone(this, i_spellProto, damage, SPELL_DIRECT_DAMAGE);
-                damage = this->SpellDamageBonusTaken(caster, i_spellProto, damage, SPELL_DIRECT_DAMAGE);
+                damage = caster->SpellDamageBonusDone(this, i_spellProto, damage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) (*dmgShieldItr)->GetEffIndex());
+                damage = this->SpellDamageBonusTaken(caster, i_spellProto, damage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) (*dmgShieldItr)->GetEffIndex());
             }
 
             // No Unit::CalcAbsorbResist here - opcode doesn't send that data - this damage is probably not affected by that
@@ -5838,6 +5838,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggered(dummySpell->Id))
     {
         bool check = false;
+        std::list<int32> groupList;
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
             cooldown_spell_id = abs(itr->spell_trigger);
@@ -5855,6 +5856,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         continue;
                 }
                 else if(!roll_chance_i(itr->chance))
+                    continue;
+            }
+
+            if(itr->group != 0 && !groupList.empty())
+            {
+                bool groupFind = false;
+                for (std::list<int32>::const_iterator group_itr = groupList.begin(); group_itr != groupList.end(); ++group_itr)
+                    if((*group_itr) == itr->group)
+                        groupFind = true;
+                if(groupFind)
                     continue;
             }
 
@@ -5921,7 +5932,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_BP_CUSTOM: //1
@@ -5944,7 +5954,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_MANA_COST: //2
@@ -5972,7 +5981,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_DAM_HEALTH: //3
@@ -5992,14 +6000,13 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         basepoints0 *= bp0;
 
                     triggered_spell_id = abs(itr->spell_trigger);
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
                     {
                         if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_COOLDOWN: //4
@@ -6027,7 +6034,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         }
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_UPDATE_DUR: //5
@@ -6035,7 +6041,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
                         aura->RefreshDuration();
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_GET_DUR_AURA: //6
@@ -6053,7 +6058,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         }
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_NEED_COMBOPOINTS: //7
@@ -6085,7 +6089,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         }
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_UPDATE_DUR_TO_MAX: //8
@@ -6093,7 +6096,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
                         aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration(), true);
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_FROM_DAMGE: //9
@@ -6118,7 +6120,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_MAX_MANA: //10
@@ -6138,7 +6139,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     triggered_spell_id = abs(itr->spell_trigger);
                     target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_BASE_MANA: //11
@@ -6158,7 +6158,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     triggered_spell_id = abs(itr->spell_trigger);
                     target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_PERC_CUR_MANA: //12
@@ -6178,7 +6177,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     triggered_spell_id = abs(itr->spell_trigger);
                     target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_CHECK_PROCK: //13
@@ -6194,7 +6192,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         _caster->CastSpell(target, triggered_spell_id, true);
 
                     check = true;
-                    continue;
                 }
                 break;
                 case SPELL_TRIGGER_CHECK_DAMAGE: //16
@@ -6222,10 +6219,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     triggeredByAura->SetAmount(triggerAmount - damage);
 
                     check = true;
-                    continue;
                 }
                 break;
             }
+            if(itr->group != 0 && check)
+                groupList.push_back(itr->group);
         }
 
         if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
@@ -9795,7 +9793,8 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             
             if (!(procSpell->GetAllEffectsMechanicMask() & ((1 << MECHANIC_ROOT) | (1 << MECHANIC_STUN) | (1 << MECHANIC_FEAR))))
                 return false;
-                
+
+            target = this;
             break;
         }
         // Infusion of Light
@@ -11657,7 +11656,7 @@ void Unit::EnergizeBySpell(Unit* victim, uint32 spellID, int32 damage, Powers po
     victim->getHostileRefManager().threatAssist(this, float(damage) * 0.5f, spellInfo);
 }
 
-uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack, DotaStatsDump *fillIn, DotaStatsDump *use)
+uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffIndex effIndex, uint32 stack, DotaStatsDump *fillIn, DotaStatsDump *use)
 {
     if (!spellProto || !victim || damagetype == DIRECT_DAMAGE)
         return pdamage;
@@ -11689,7 +11688,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // For totems get damage bonus from owner
     if (GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem())
         if (Unit* owner = GetOwner())
-            return owner->SpellDamageBonusDone(victim, spellProto, pdamage, damagetype);
+            return owner->SpellDamageBonusDone(victim, spellProto, pdamage, damagetype, effIndex);
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
@@ -11938,6 +11937,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
 
         // Check for table values
+        float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
         float coeff = 0;
         SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
         if (bonus)
@@ -11969,10 +11969,38 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 }
             }
         }
+        else
+        {
+            coeff = dbccoeff;
+            if (damagetype == DOT)
+            {
+                if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
+                {
+                    WeaponAttackType attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
+                    float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
+                    if (ToPlayer() && ToPlayer()->getClass() == CLASS_MONK)
+                        attType = BASE_ATTACK;
+                    APbonus += GetTotalAttackPowerValue(attType);
+                    DoneTotal += int32(coeff * stack * ApCoeffMod * APbonus);
+                }
+            }
+            else
+            {
+                if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
+                {
+                    WeaponAttackType attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
+                    float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
+                    if (spellProto && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
+                        attType = BASE_ATTACK;
+                    APbonus += GetTotalAttackPowerValue(attType);
+                    DoneTotal += int32(coeff * stack * ApCoeffMod * APbonus);
+                }
+            }
+        }
         // Default calculation
         if (DoneAdvertisedBenefit)
         {
-            if (!bonus || coeff < 0)
+            if ((!bonus && !dbccoeff) || coeff < 0)
                 coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
 
             float factorMod = CalculateLevelPenalty(spellProto) * stack;
@@ -12030,7 +12058,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
-uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack)
+uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffIndex effIndex, uint32 stack)
 {
     if (!spellProto || damagetype == DIRECT_DAMAGE)
         return pdamage;
@@ -12079,15 +12107,18 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     int32 TakenAdvertisedBenefit = SpellBaseDamageBonusTaken(spellProto->GetSchoolMask());
 
     // Check for table values
+    float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
     float coeff = 0;
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
     if (bonus)
         coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
+    else
+        coeff = dbccoeff;
 
     // Default calculation
     if (TakenAdvertisedBenefit)
     {
-        if (!bonus || coeff < 0)
+        if ((!bonus && !dbccoeff) || coeff < 0)
             coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
 
         float factorMod = CalculateLevelPenalty(spellProto) * stack;
@@ -12531,12 +12562,16 @@ uint32 Unit::SpellCriticalHealingBonus(SpellInfo const* /*spellProto*/, uint32 d
     return damage;
 }
 
-uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack)
+uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 healamount, DamageEffectType damagetype, SpellEffIndex effIndex, uint32 stack)
 {
     // For totems get healing bonus from owner (statue isn't totem in fact)
     if (GetTypeId() == TYPEID_UNIT && isTotem())
         if (Unit* owner = GetOwner())
-            return owner->SpellHealingBonusDone(victim, spellProto, healamount, damagetype, stack);
+            return owner->SpellHealingBonusDone(victim, spellProto, healamount, damagetype, effIndex, stack);
+
+    // Some spells don't benefit from done mods
+    if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
+        return healamount;
 
     // No bonus healing for potion spells
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
@@ -12621,6 +12656,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // Check for table values
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
+    float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
     float coeff = 0;
     float factorMod = 1.0f;
     if (bonus)
@@ -12641,15 +12677,27 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     }
     else
     {
+        coeff = dbccoeff;
+        if (damagetype == DOT)
+        {
+            if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
+                DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(
+                    (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass !=SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK));
+        }
+        else
+        {
+            if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
+                DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(BASE_ATTACK));
+        }
         // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
-        if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
+        if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE && !dbccoeff)
             return healamount;
     }
 
     // Default calculation
     if (DoneAdvertisedBenefit)
     {
-        if (!bonus || coeff < 0)
+        if ((!bonus && !dbccoeff) || coeff < 0)
             coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
 
         factorMod *= CalculateLevelPenalty(spellProto) * stack;
@@ -12697,8 +12745,14 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         heal *= (holyPower+1);
 
         // Bastion of Glory : +50% of power if target is player
-        if (victim && victim->GetGUID() == GetGUID() && HasAura(114637))
-            heal *= 1.5f;
+        if (victim && victim->GetGUID() == GetGUID())
+            if (Aura* aurabp = GetAura(114637))
+            {
+                int32 percent = aurabp->GetStackAmount() * 10;
+                if (Aura* masteryA = GetAura(76671))
+                    percent += masteryA->GetEffect(0)->GetAmount();
+                AddPct(heal, percent);
+            }
     }
     // Light of Dawn
     else if (spellProto->Id == 85222 && GetTypeId() == TYPEID_PLAYER)
@@ -12718,9 +12772,13 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     return uint32(std::max(heal, 0.0f));
 }
 
-uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack)
+uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 healamount, DamageEffectType damagetype, SpellEffIndex effIndex, uint32 stack)
 {
     float TakenTotalMod = 1.0f;
+
+    // Some spells don't benefit from done mods
+    if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
+        return healamount;
 
     // No bonus for Eminence (statue) and Eminence
     if (spellProto->Id == 117895 || spellProto->Id == 126890)
@@ -12787,12 +12845,14 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
 
     // Check for table values
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
+    float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
     float coeff = 0;
     float factorMod = 1.0f;
     if (bonus)
         coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
     else
     {
+        coeff = dbccoeff;
         // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
         if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
         {
@@ -12804,7 +12864,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     // Default calculation
     if (TakenAdvertisedBenefit)
     {
-        if (!bonus || coeff < 0)
+        if ((!bonus && !dbccoeff) || coeff < 0)
             coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
 
         factorMod *= CalculateLevelPenalty(spellProto) * int32(stack);
@@ -12929,7 +12989,7 @@ int32 Unit::SpellBaseHealingBonusDone(SpellSchoolMask schoolMask)
         for (AuraEffectList::const_iterator i = mHealingDoneOfStatPercent.begin(); i != mHealingDoneOfStatPercent.end(); ++i)
         {
             // stat used dependent from misc value (stat index)
-            Stats usedStat = Stats((*i)->GetSpellInfo()->GetEffect((*i)->GetEffIndex(), GetSpawnMode()).MiscValue);
+            Stats usedStat = Stats((*i)->GetMiscValue());
             AdvertisedBenefit += int32(CalculatePct(GetStat(usedStat), (*i)->GetAmount()));
         }
 
@@ -16857,8 +16917,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: doing %u damage from spell id %u (triggered by %s aura of spell %u)", triggeredByAura->GetAmount(), spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
                         SpellNonMeleeDamage damageInfo(this, target, spellInfo->Id, spellInfo->SchoolMask);
-                        uint32 newDamage = SpellDamageBonusDone(target, spellInfo, triggeredByAura->GetAmount(), SPELL_DIRECT_DAMAGE);
-                        newDamage = target->SpellDamageBonusTaken(this, spellInfo, newDamage, SPELL_DIRECT_DAMAGE);
+                        uint32 newDamage = SpellDamageBonusDone(target, spellInfo, triggeredByAura->GetAmount(), SPELL_DIRECT_DAMAGE, (SpellEffIndex) effIndex);
+                        newDamage = target->SpellDamageBonusTaken(this, spellInfo, newDamage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) effIndex);
                         CalculateSpellDamageTaken(&damageInfo, newDamage, spellInfo);
                         DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
                         SendSpellNonMeleeDamageLog(&damageInfo);

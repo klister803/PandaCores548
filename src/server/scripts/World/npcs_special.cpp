@@ -3655,6 +3655,7 @@ class npc_frozen_orb : public CreatureScript
         struct npc_frozen_orbAI : public ScriptedAI
         {
             uint32 frozenOrbTimer;
+            float x,y,z;
 
             npc_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
             {
@@ -3666,9 +3667,33 @@ class npc_frozen_orb : public CreatureScript
                     if (owner->HasAura(44544))
                         owner->CastSpell(owner, 126084, true);
                     owner->CastSpell(owner, 44544, true);
+
+                    float distance = 100.0f;
+                    owner->GetNearPoint2D(x, y, distance, owner->GetOrientation());
+                    z = me->GetMap()->GetHeight(x,y, me->GetPositionZ(), true, MAX_FALL_DISTANCE);
+                    if(!me->IsWithinLOS(x, y, z))
+                    {
+                        for (uint8 j = 0; distance > 5.0f; ++j)
+                        {
+                            distance -= 5.0f;
+                            owner->GetNearPoint2D(x, y, distance, owner->GetOrientation());
+                            z = me->GetMap()->GetHeight(x,y, me->GetPositionZ(), true, MAX_FALL_DISTANCE);
+                            if(me->IsWithinLOS(x, y, z))
+                                break;
+                        }
+                    }
+                    me->GetMotionMaster()->MovePoint(0, x, y, z);
                 }
 
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 frozenOrbTimer = 1000;
+            }
+
+            void Reset()
+            {
+                me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
 
             void UpdateAI(const uint32 diff)
@@ -3685,6 +3710,17 @@ class npc_frozen_orb : public CreatureScript
                             owner->ToPlayer()->RemoveSpellCooldown(84721);
 
                     owner->CastSpell(me, 84721, true);
+
+                    UnitList targets;
+                    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 10.0f);
+                    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
+                    me->VisitNearbyObject(10.0f, searcher);
+                    for (UnitList::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                    {
+                        me->SetSpeed(MOVE_WALK, 0.2f);
+                        me->SetSpeed(MOVE_RUN, 0.2f);
+                        break;
+                    }
                     frozenOrbTimer = 1000;
                 }
                 else
@@ -4237,60 +4273,6 @@ class npc_ring_of_frost : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            }
-
-            void Reset()
-            {
-                me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            }
-
-            void InitializeAI()
-            {
-                ScriptedAI::InitializeAI();
-                Unit * owner = me->GetOwner();
-                if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-
-                std::list<Creature*> templist;
-                me->GetCreatureListWithEntryInGrid(templist, me->GetEntry(), 200.0f);
-                if (!templist.empty())
-                    for (std::list<Creature*>::const_iterator itr = templist.begin(); itr != templist.end(); ++itr)
-                        if ((*itr)->GetOwner() == me->GetOwner() && *itr != me)
-                            (*itr)->DisappearAndDie();
-            }
-
-            void CheckIfMoveInRing(Unit *who)
-            {
-                if (who->isAlive() && me->IsInRange(who, 2.0f, 4.7f) && me->IsWithinLOSInMap(who))
-                {
-                    if (!who->HasAura(82691))
-                    {
-                        if (!who->HasAura(91264))
-                        {
-                            me->CastSpell(who, 82691, true);
-                            me->CastSpell(who, 91264, true);
-                        }
-                    }
-                    else me->CastSpell(who, 91264, true);
-                }
-            }
-
-            void UpdateAI(const uint32 diff)
-            {
-                // Find all the enemies
-                std::list<Unit*> targets;
-                Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 5.0f);
-                Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
-                me->VisitNearbyObject(5.0f, searcher);
-                for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
-                    if (!(*iter)->isTotem())
-                        CheckIfMoveInRing(*iter);
             }
         };
 

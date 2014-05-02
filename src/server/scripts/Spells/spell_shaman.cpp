@@ -913,7 +913,7 @@ class spell_sha_fulmination : public SpellScriptLoader
 
                 SpellEntry const* spellInfo = sSpellStore.LookupEntry(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
                 int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
-                uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE);
+                uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE, EFFECT_1);
 
                 caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
                 lightningShield->SetCharges(lsCharges - usedCharges);

@@ -619,6 +619,7 @@ struct SpellTriggered
     int32 effectmask;
     int32 aura;
     int32 chance;
+    int32 group;
 };
 
 struct SpellMountList

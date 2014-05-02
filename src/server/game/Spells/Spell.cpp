@@ -5789,17 +5789,16 @@ void Spell::HandleHolyPower(Player* caster)
     if (!caster)
         return;
 
-    // Templar's Verdict - Don't remove power twice
-    if (m_spellInfo->Id == 85256)
-        return;
-
-    // Word of Glory - Don't remove power twice
-    if (m_spellInfo->Id == 85673)
-        return;
-
-    // Shield of the Righteous - Don't remove power twice
-    if (m_spellInfo->Id == 53600)
-        return;
+    switch(m_spellInfo->Id)
+    {
+        case 85256:// Templar's Verdict - Don't remove power twice
+        case 85673:// Word of Glory - Don't remove power twice
+        case 53600:// Shield of the Righteous - Don't remove power twice
+        case 114163:// Eternal Flame - Don't remove power twice
+            return;
+        default:
+            break;
+    }
 
     bool hit = true;
     Player* modOwner = caster->GetSpellModOwner();

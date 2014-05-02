@@ -262,12 +262,10 @@ class spell_mage_cauterize : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_cauterize_AuraScript);
 
-            uint32 absorbChance;
             uint32 healtPct;
 
             bool Load()
             {
-                absorbChance = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
                 healtPct = GetSpellInfo()->Effects[EFFECT_1].CalcValue(GetCaster());
                 return GetUnitOwner()->ToPlayer();
             }
@@ -279,7 +277,7 @@ class spell_mage_cauterize : public SpellScriptLoader
 
             void Absorb(AuraEffect* /*AuraEffect**/, DamageInfo& dmgInfo, uint32& absorbAmount)
             {
-                Unit* target = GetTarget();
+                Unit* target = GetCaster();
 
                 if (dmgInfo.GetDamage() < target->GetHealth())
                     return;
@@ -287,10 +285,7 @@ class spell_mage_cauterize : public SpellScriptLoader
                 if (target->ToPlayer()->HasSpellCooldown(SPELL_MAGE_CAUTERIZE))
                     return;
 
-                if (!roll_chance_i(absorbChance))
-                    return;
-
-                int bp1 = target->CountPctFromMaxHealth(healtPct);
+                int32 bp1 = target->CountPctFromMaxHealth(healtPct);
                 target->CastCustomSpell(target, SPELL_MAGE_CAUTERIZE, NULL, &bp1, NULL, true);
                 target->ToPlayer()->AddSpellCooldown(SPELL_MAGE_CAUTERIZE, 0, getPreciseTime() + 60);
 
@@ -917,9 +912,8 @@ class spell_mage_combustion : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         _player->CastSpell(target, SPELL_MAGE_COMBUSTION_IMPACT, true);
-
-                        if (_player->HasSpellCooldown(SPELL_MAGE_INFERNO_BLAST))
-                            _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST, true);
+                        _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST, true);
+                        _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 
                         int32 combustionBp = 0;
 
@@ -932,7 +926,7 @@ class spell_mage_combustion : public SpellScriptLoader
                             if (!(*i)->GetAmplitude())
                                 continue;
 
-                            combustionBp += _player->SpellDamageBonusDone(target, (*i)->GetSpellInfo(), (*i)->GetAmount(), DOT) * 1000 / (*i)->GetAmplitude();
+                            combustionBp += _player->SpellDamageBonusDone(target, (*i)->GetSpellInfo(), (*i)->GetAmount(), DOT, EFFECT_1) * 1000 / (*i)->GetAmplitude();
                         }
 
                         if (combustionBp)
@@ -1424,22 +1418,12 @@ class spell_mage_cold_snap : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-
-                Player* caster = GetCaster()->ToPlayer();
                 // immediately finishes the cooldown on Frost spells
-                const SpellCooldowns& cm = caster->GetSpellCooldownMap();
-                for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
+                if(Player* caster = GetCaster()->ToPlayer())
                 {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
-
-                    if ( spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_MAGE &&
-                        (spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST) &&
-                        spellInfo->Id != SPELL_MAGE_COLD_SNAP && spellInfo->GetRecoveryTime() > 0)
-                    {
-                        caster->RemoveSpellCooldown((itr++)->first, true);
-                    }
-                    else
-                        ++itr;
+                    caster->RemoveSpellCooldown(120, true);
+                    caster->RemoveSpellCooldown(122, true);
+                    caster->RemoveSpellCooldown(45438, true);
                 }
             }
 
@@ -1633,8 +1617,8 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
             void Register()
             {
-                AfterEffectApply += AuraEffectApplyFn(spell_mage_living_bomb_AuraScript::AfterApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_mage_living_bomb_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectApply += AuraEffectApplyFn(spell_mage_living_bomb_AuraScript::AfterApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_mage_living_bomb_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1895,6 +1879,271 @@ class spell_mage_arcane_blast : public SpellScriptLoader
         }
 };
 
+// Ring of Frost - 82691
+class spell_mage_ring_of_frost : public SpellScriptLoader
+{
+    public:
+        spell_mage_ring_of_frost() : SpellScriptLoader("spell_mage_ring_of_frost") { }
+
+        class spell_mage_ring_of_frost_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_ring_of_frost_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (Unit* caster = GetCaster())
+                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                {
+                    if (Unit* target = (*itr)->ToUnit())
+                    {
+                        if(target->IsImmunedToSpell(GetSpellInfo()))
+                        {
+                            targets.erase(itr++);
+                            continue;
+                        }
+                        DiminishingLevels m_diminishLevel = target->GetDiminishing(DIMINISHING_DISORIENT);
+                        Position const* pos = GetExplTargetDest();
+                        if(m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
+                            target->AddAura(91264, target);
+                        else if (target->GetDistance2d(pos->GetPositionX(), pos->GetPositionY()) < 3.5f)
+                        {
+                            targets.erase(itr++);
+                            continue;
+                        }
+                        else if (!target->HasAura(82691) && !target->HasAura(91264))
+                        {
+                            ++itr;
+                            continue;
+                        }
+                    }
+                    targets.erase(itr++);
+                }
+                if(targets.size() > 10)
+                    Trinity::Containers::RandomResizeList(targets, 10);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_ring_of_frost_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_ring_of_frost_SpellScript();
+        }
+
+        class spell_mage_ring_of_frost_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_ring_of_frost_AuraScript);
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* target = GetTarget())
+                    target->AddAura(91264, target);
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_mage_ring_of_frost_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_ring_of_frost_AuraScript();
+        }
+};
+
+// Ring of Frost - 136511
+class spell_mage_ring_of_frost_tick : public SpellScriptLoader
+{
+    public:
+        spell_mage_ring_of_frost_tick() : SpellScriptLoader("spell_mage_ring_of_frost_tick") { }
+
+        class spell_mage_ring_of_frost_tick_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_ring_of_frost_tick_AuraScript);
+
+            bool Load()
+            {
+                find = false;
+                return true;
+            }
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                PreventDefaultAction();
+                if (Unit* caster = GetCaster())
+                {
+                    if (!find)
+                    {
+                        if (Creature* mob = caster->FindNearestCreature(44199, 100.0f))
+                        {
+                            mob->GetPosition(x, y, z);
+                            find = true;
+                        }
+                    }
+                    if (find)
+                    {
+                        caster->CastSpell(x, y, z, 82691, true);
+                    }
+                }
+            }
+
+            float x, y, z;
+            bool find;
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_ring_of_frost_tick_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_ring_of_frost_tick_AuraScript();
+        }
+};
+
+// Icicle - 148023 (periodic dummy)
+class spell_mage_icicle : public SpellScriptLoader
+{
+    public:
+        spell_mage_icicle() : SpellScriptLoader("spell_mage_icicle") { }
+
+        class spell_mage_icicle_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_icicle_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if(target)
+                if (Unit* caster = GetCaster())
+                {
+                    switch(aurEff->GetTickNumber())
+                    {
+                        case 1:
+                        {
+                            if (Aura* icicle = caster->GetAura(148012))
+                            {
+                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                caster->CastSpell(target, 148017, true);
+                                caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
+                                icicle->Remove();
+                            }
+                            break;
+                        }
+                        case 2:
+                        {
+                            if (Aura* icicle = caster->GetAura(148013))
+                            {
+                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                caster->CastSpell(target, 148018, true);
+                                caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
+                                icicle->Remove();
+                            }
+                            break;
+                        }
+                        case 3:
+                        {
+                            if (Aura* icicle = caster->GetAura(148014))
+                            {
+                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                caster->CastSpell(target, 148019, true);
+                                caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
+                                icicle->Remove();
+                            }
+                            break;
+                        }
+                        case 4:
+                        {
+                            if (Aura* icicle = caster->GetAura(148015))
+                            {
+                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                caster->CastSpell(target, 148020, true);
+                                caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
+                                icicle->Remove();
+                            }
+                            break;
+                        }
+                        case 5:
+                        {
+                            if (Aura* icicle = caster->GetAura(148016))
+                            {
+                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                caster->CastSpell(target, 148021, true);
+                                caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
+                                icicle->Remove();
+                            }
+                            break;
+                        }
+                        default:
+                            GetAura()->Remove();
+                            break;
+                    }
+                }
+            }
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                target = NULL;
+                if(Unit* caster = GetCaster())
+                    if (Player* _player = caster->ToPlayer())
+                        target = _player->GetSelectedUnit();
+            }
+
+            Unit* target;
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_icicle_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectApply += AuraEffectApplyFn(spell_mage_icicle_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_icicle_AuraScript();
+        }
+};
+
+//Illusion glyph - 131784
+class spell_mage_illusion : public SpellScriptLoader
+{
+    public:
+        spell_mage_illusion() : SpellScriptLoader("spell_mage_illusion") { }
+
+        class spell_mage_illusion_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_illusion_SpellScript)
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if(Unit* target = _player->GetSelectedUnit())
+                    {
+                        if (target->GetTypeId() == TYPEID_PLAYER && target != GetCaster())
+                        {
+                            target->CastSpell(_player, 80396, true);
+                            return;
+                        }
+                    }
+                    _player->CastSpell(_player, 94632, true);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_illusion_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_illusion_SpellScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -1932,4 +2181,8 @@ void AddSC_mage_spell_scripts()
     new spell_mage_rune_of_power();
     new spell_elem_invisibility();
     new spell_mage_arcane_blast();
+    new spell_mage_ring_of_frost();
+    new spell_mage_ring_of_frost_tick();
+    new spell_mage_icicle();
+    new spell_mage_illusion();
 }
