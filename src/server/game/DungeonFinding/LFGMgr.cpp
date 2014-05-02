@@ -2314,20 +2314,30 @@ HolidayIds LFGMgr::GetDungeonSeason(uint32 dungeonId)
 
     switch (dungeonId)
     {
-    case 285:
-        holiday = HOLIDAY_HALLOWS_END;
-        break;
-    case 286:
-        holiday = HOLIDAY_FIRE_FESTIVAL;
-        break;
-    case 287:
-        holiday = HOLIDAY_BREWFEST;
-        break;
-    case 288:
-        holiday = HOLIDAY_LOVE_IS_IN_THE_AIR;
-        break;
-    default:
-        break;
+        case 285:   // The Headless Horseman
+            holiday = HOLIDAY_HALLOWS_END;
+            break;
+        case 286:   // The Frost Lord Ahune
+            holiday = HOLIDAY_FIRE_FESTIVAL;
+            break;
+        case 287:   // Coren Direbrew
+            holiday = HOLIDAY_BREWFEST;
+            break;
+        case 288:   // The Crown Chemical Co.
+            holiday = HOLIDAY_LOVE_IS_IN_THE_AIR;
+            break;
+        // pre-cata event dungeons
+        case 296:   // Grand Ambassador Flamelash
+        case 297:   // Crown Princess Theradras
+        case 298:   // Kai'ju Gahz'rilla
+        case 299:   // Prince Sarsarun
+        case 306:   // Kai'ju Gahz'rilla
+        case 308:   // Grand Ambassador Flamelash
+        case 309:   // Crown Princess Theradras
+        case 310:   // Prince Sarsarun
+            holiday = HolidayIds(-1);   // return non-existant id
+        default:
+            break;
     }
 
     return holiday;
