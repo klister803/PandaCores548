@@ -17109,9 +17109,15 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     }
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
                     case SPELL_AURA_ADD_PCT_MODIFIER:
+                    {
+                        if(triggeredByAura->GetMiscValue() == SPELLMOD_CASTING_TIME && procSpell)
+                            if(SpellCastTimesEntry const* CastTimeEntry = procSpell->CastTimeEntry)
+                                if(!CastTimeEntry->CastTime && !procSpell->IsChanneled())
+                                    break;
                         if (HandleSpellModAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
                         break;
+                    }
                     case SPELL_AURA_ABILITY_IGNORE_AURASTATE:
                         if (HandleIgnoreAurastateAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
