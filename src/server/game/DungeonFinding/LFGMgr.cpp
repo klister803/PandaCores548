@@ -653,14 +653,20 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
         }
     }
     const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*dungeons.begin() & 0xFFFFFF);
+
     uint8 type = LFG_TYPE_DUNGEON;
-    uint8 maxGroupSize = 5;
-    if (entry != NULL)
-        type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
-    if (type == LFG_TYPE_RAID)
+    if (entry)
+        type = entry->subType;
+
+    uint8 maxGroupSize;
+    if (entry)
+        maxGroupSize = entry->GetMaxGroupSize();
+    else if (type == LFG_TYPE_RAID)
         maxGroupSize = 25;
-    if (type == LFG_TYPE_SCENARIO)
+    else if (type == LFG_TYPE_SCENARIO)
         maxGroupSize = 3;
+    else
+        maxGroupSize = 5;
 
     // Check player or group member restrictions
     if (player->InBattleground() || player->InArena() || player->InBattlegroundQueue())
@@ -810,7 +816,7 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
         const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*dungeons.begin() & 0xFFFFFF);
         if (entry != NULL)
         {
-            pqInfo->type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
+            pqInfo->type = entry->subType;
             pqInfo->dps = entry->dpsNeeded;
             pqInfo->healers = entry->healerNeeded;
             pqInfo->tanks = entry->tankNeeded;
@@ -1302,7 +1308,7 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
             check_roles = roleCheck->roles;
             const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*roleCheck->dungeons.begin() & 0xFFFFFF);
             if (entry != NULL)
-                roleCheck->state = CheckGroupRoles(check_roles, entry->type == LFG_TYPE_DUNGEON ? entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON : LFG_TYPE_RAID)
+                roleCheck->state = CheckGroupRoles(check_roles, LfgType(entry->subType))
                     ? LFG_ROLECHECK_FINISHED : LFG_ROLECHECK_WRONG_ROLES;
         }
     }
@@ -1355,7 +1361,7 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
         const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*roleCheck->dungeons.begin() & 0xFFFFFF);
         if (entry != NULL)
         {
-            pqInfo->type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
+            pqInfo->type = entry->subType;
             pqInfo->dps = entry->dpsNeeded;
             pqInfo->healers = entry->healerNeeded;
             pqInfo->tanks = entry->tankNeeded;

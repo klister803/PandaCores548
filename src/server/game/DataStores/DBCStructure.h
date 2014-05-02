@@ -1466,11 +1466,11 @@ struct LFGDungeonEntry
     uint32 tankNeeded;                                      // 18
     uint32 healerNeeded;                                    // 19
     uint32 dpsNeeded;                                       // 20
-    //uint32 minTankNeeded;                                 // 21
-    //uint32 minHealerNeeded;                               // 22
-    //uint32 minDpsNeeded;                                  // 23   5.4.1
+    uint32 minTankNeeded;                                   // 21
+    uint32 minHealerNeeded;                                 // 22
+    uint32 minDpsNeeded;                                    // 23   5.4.1
     uint32 scenarioId;                                      // 24   5.4.1
-    //uint32 subType;                                       // 25   5.4.1
+    uint32 subType;                                         // 25   5.4.1
     //uint32 bonusRepAmt;                                   // 26   5.4.1
     //uint32 mentorCharLevel;                               // 27   5.4.1
     //uint32 mentorItemLevel;                               // 28   5.4.1
@@ -1478,6 +1478,8 @@ struct LFGDungeonEntry
     // Helpers
     uint32 Entry() const { return ID + (type << 24); }
     bool isScenario() const { return scenarioId != 0; }
+    uint32 GetMinGroupSize() const { return minTankNeeded + minHealerNeeded + minDpsNeeded; }
+    uint32 GetMaxGroupSize() const { return tankNeeded + healerNeeded + dpsNeeded; }
 };
 
 
