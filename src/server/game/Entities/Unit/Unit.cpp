@@ -9793,7 +9793,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             if (GetTypeId() != TYPEID_PLAYER)
                 return false;
             
-            if (!(procSpell->GetAllEffectsMechanicMask() & ((1 << MECHANIC_DISARM) | (1 << MECHANIC_STUN) | (1 << MECHANIC_FEAR))))
+            if (!(procSpell->GetAllEffectsMechanicMask() & ((1 << MECHANIC_ROOT) | (1 << MECHANIC_STUN) | (1 << MECHANIC_FEAR))))
                 return false;
                 
             break;
