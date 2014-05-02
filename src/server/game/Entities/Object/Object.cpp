@@ -2704,20 +2704,30 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     Pet* pet = new Pet(this, petType);
 
     bool currentPet = (slotID != PET_SLOT_UNK_SLOT);
-    if (pet->GetOwner() && pet->GetOwner()->getClass() != CLASS_HUNTER)
+    if (getClass() != CLASS_HUNTER)
         currentPet = false;
 
     //summoned pets always non-curent!
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, currentPet, slotID, stampeded))
+    if (petType == SUMMON_PET)
     {
-        if (pet->GetOwner() && pet->GetOwner()->getClass() == CLASS_WARLOCK)
-            if (pet->GetOwner()->HasAura(108503))
-                pet->GetOwner()->RemoveAura(108503);
+        // This check done in LoadPetFromDB, but we should not continue this function if pet not alowed
+        if (!CanSummonPet(entry))
+        {
+            delete pet;
+            return NULL;
+        }
 
-        if (duration > 0)
-            pet->SetDuration(duration);
+        if (pet->LoadPetFromDB(this, entry, 0, currentPet, slotID, stampeded))
+        {
+            if (getClass() == CLASS_WARLOCK)
+                if (HasAura(108503))
+                    RemoveAura(108503);
 
-        return pet;
+            if (duration > 0)
+                pet->SetDuration(duration);
+
+            return pet;
+        }
     }
 
     if (stampeded)
@@ -2765,6 +2775,11 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
             pet->SetFullHealth();
             pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped in this case
+            if (getClass() == CLASS_WARLOCK)
+            {
+                pet->SetClass(CLASS_ROGUE);
+                pet->setPowerType(POWER_ENERGY); // Warlock's pets have energy
+            }
             break;
         default:
             break;
@@ -2780,16 +2795,21 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     {
         case SUMMON_PET:
             pet->InitPetCreateSpells();
+            pet->SynchronizeLevelWithOwner();
+            pet->LearnPetPassives();
+            pet->InitLevelupSpellsForLevel();
+            pet->CastPetAuras(true);
             pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
             PetSpellInitialize();
+            SendTalentsInfoData(true);
             break;
         default:
             break;
     }
 
-    if (pet->GetOwner() && pet->GetOwner()->getClass() == CLASS_WARLOCK)
-        if (pet->GetOwner()->HasAura(108503))
-            pet->GetOwner()->RemoveAura(108503);
+    if (getClass() == CLASS_WARLOCK)
+        if (HasAura(108503))
+            RemoveAura(108503);
 
     if (duration > 0)
         pet->SetDuration(duration);

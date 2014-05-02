@@ -96,17 +96,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 {
     m_loading = true;
 
-    // Hack for water elemental
-    // Pet should be saved for all specs, but can be summoned only by frost mages
-    if (owner->ToPlayer())
-    {
-        if (owner->getClass() == CLASS_MAGE && owner->ToPlayer()->GetSpecializationId(owner->ToPlayer()->GetActiveSpec()) != SPEC_MAGE_FROST)
-        {
-            m_loading = false;
-            return false;
-        }
-    }
-
     //ASSERT(slotID != PET_SLOT_UNK_SLOT);
 
     PetSlot curentSlot = owner->GetSlotForPetId(owner->m_currentPetNumber);
@@ -169,21 +158,12 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         return false;
     }
 
-    if (petentry == 26125) // Raise Dead
+    // Double call if use Player::SummonPet
+    // But this option for check through Player::LoadPet
+    if (!owner->CanSummonPet(petentry))
     {
-        if (owner->getClass() == CLASS_DEATH_KNIGHT && owner->ToPlayer()->GetSpecializationId(owner->ToPlayer()->GetActiveSpec()) != SPEC_DK_UNHOLY)
-        {
-            m_loading = false;
-            return false;
-        }
-    }
-    else if (petentry == 17252) // Summon Felguard
-    {
-        if (owner->getClass() == CLASS_WARLOCK && owner->ToPlayer()->GetSpecializationId(owner->ToPlayer()->GetActiveSpec()) != SPEC_WARLOCK_DEMONOLOGY)
-        {
-            m_loading = false;
-            return false;
-        }
+        m_loading = false;
+        return false;
     }
 
     uint32 summon_spell_id = fields[13].GetUInt32();

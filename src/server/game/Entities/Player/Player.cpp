@@ -29093,6 +29093,29 @@ PetSlot Player::GetMaxCurentPetSlot() const
     return PET_SLOT_WARLOCK_PET_LAST;
 }
 
+bool Player::CanSummonPet(uint32 entry) const
+{
+    bool check = true;
+    switch(entry)
+    {
+        case ENTRY_GHOUL:         // Raise Dead
+            if (getClass() == CLASS_DEATH_KNIGHT && GetSpecializationId(GetActiveSpec()) != SPEC_DK_UNHOLY)
+                check = false;
+            break;
+        case ENTRY_FELGUARD:
+            if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) != SPEC_WARLOCK_DEMONOLOGY)
+                check = false;
+            break;
+        case ENTRY_WATER_ELEMENTAL:
+            if (getClass() == CLASS_MAGE && GetSpecializationId(GetActiveSpec()) != SPEC_MAGE_FROST)
+                check = false;
+            break;
+        default:
+            break;
+    }
+    return check;
+}
+
 void Player::ModifySpellCooldown(uint32 spell_id, int32 delta)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
@@ -29115,7 +29138,9 @@ void Player::ModifySpellCooldown(uint32 spell_id, int32 delta)
 void Player::ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal, uint32 recordTime)
 {
 
-}bool Player::CanSpeakLanguage(uint32 lang_id) const
+}
+
+bool Player::CanSpeakLanguage(uint32 lang_id) const
 {
     LanguageDesc const* langDesc = GetLanguageDescByID(lang_id);
     if (!langDesc)

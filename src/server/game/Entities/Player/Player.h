@@ -2724,6 +2724,7 @@ class Player : public Unit, public GridObject<Player>
         PetSlot GetSlotForPetId(uint32 petID);
         PetSlot GetMaxCurentPetSlot() const;
 
+        bool CanSummonPet(uint32 entry) const;
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
         ClientGUIDs m_clientGUIDs;
