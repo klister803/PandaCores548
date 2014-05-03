@@ -168,6 +168,7 @@ class spell_hun_glyph_of_marked_for_die : public SpellScriptLoader
 };
 
 // Stampede - 121818
+#define STAMPED_COUNT 5
 class spell_hun_stampede : public SpellScriptLoader
 {
     public:
@@ -181,48 +182,36 @@ class spell_hun_stampede : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    //if (Unit* target = GetHitUnit())
+                    Unit* target = GetHitUnit();
+                    WorldLocation * loc = GetHitDest();
+                    //if (target)
                     {
-                        uint32 currentSlot = _player->GetSlotForPetId(_player->m_currentPetNumber);
-                        if (_player->HasAura(HUNTER_SPELL_GLYPH_OF_STAMPEDE))
+                        uint32 count = 0;
+                        PetSlot slot = PET_SLOT_HUNTER_FIRST;
+                        bool gliph = _player->HasAura(HUNTER_SPELL_GLYPH_OF_STAMPEDE);
+                        PetSlot currentSlot = _player->GetSlotForPetId(_player->m_currentPetNumber);
+                        for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
                         {
-                            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
-                            {
-                                if (i != currentSlot)
-                                {
-                                    float x, y, z;
-                                    _player->GetClosePoint(x, y, z, _player->GetObjectSize());
-                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PET_SLOT_OTHER_PET, true))
+                            if (gliph)
+                                slot = currentSlot;
+                            else if (_player->getPetIdBySlot(i))
+                                slot = PetSlot(i);
+                            else
+                                continue;
+
+                            //The pets will appear directly on the hunter's target, to avoid loss of damage.
+                            float x, y, z;
+                            _player->GetRandomPoint(*loc, 5.0f, x, y, z);
+
+                              if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), slot, true))
                                     {
                                         pet->SetReactState(REACT_AGGRESSIVE);
                                         pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
                                         pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                        ++count;
+                                        if (count >= STAMPED_COUNT)
+                                            break;
                                     }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
-                            {
-                                if (i != currentSlot)
-                                {
-                                    float x, y, z;
-                                    _player->GetClosePoint(x, y, z, _player->GetObjectSize());
-                                    if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PET_SLOT_OTHER_PET, true))
-                                    {
-                                        pet->SetReactState(REACT_AGGRESSIVE);
-                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
-                                    }
-                                    else if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), PetSlot(currentSlot + 36)))
-                                    {
-                                        pet->SetReactState(REACT_AGGRESSIVE);
-                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
-                                    }
-                                }
-                            }
                         }
                     }
                 }
