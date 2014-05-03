@@ -7112,26 +7112,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     // ignore non positive values (can be result apply spellmods to aura damage
     uint32 damage = std::max(GetAmount(), 0);
 
-    switch (m_spellInfo->Id)
-    {
-        case 120699: // Lynx Rush
-        {
-            if (Unit * hunter = caster->GetOwner())
-            {
-                int32 amount = hunter->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.038f;
-                amount *= GetBase()->GetStackAmount();
-
-                if (Guardian * pet = caster->ToPet())
-                    amount += pet->GetBonusDamage();
-
-                damage += amount;
-            }
-            break;
-        }
-        default:
-            break;
-    }
-
     if (GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
     {
         damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount(), NULL, m_dotaStatsDump);

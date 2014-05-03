@@ -11665,19 +11665,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
         return pdamage;
 
-    // small exception for Crimson Tempest, can't find any general rule
-    // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 96172) // Hand of Light
-        return pdamage;
-
     // small exception for Improved Serpent Sting, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 83077 || spellProto->Id == 124051) // Improved Serpent Sting and Archimonde's Vengeance
+    if (spellProto->Id == 83077) // Improved Serpent Sting and Archimonde's Vengeance
         return pdamage;
 
     // small exception for Hemorrhage, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 89775 || spellProto->Id == 108451) // Hemorrhage and Soul Link damage
+    if (spellProto->Id == 89775) // Hemorrhage and Soul Link damage
         return pdamage;
 
     // small exception for Echo of Light, can't find any general rule
@@ -11703,7 +11698,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     }
     else
     {
-
         // Apply PowerPvP damage bonus
         DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
 
@@ -11969,7 +11963,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 }
             }
         }
-        else
+        else if(dbccoeff)
         {
             coeff = dbccoeff;
             if (damagetype == DOT)
@@ -12001,9 +11995,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         if (DoneAdvertisedBenefit)
         {
             if ((!bonus && !dbccoeff) || coeff < 0)
-                coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
+                coeff = CalculateDefaultCoefficient(spellProto, damagetype);
 
-            float factorMod = CalculateLevelPenalty(spellProto) * stack;
+            float factorMod = CalculateLevelPenalty(spellProto);
 
             if (Player* modOwner = GetSpellModOwner())
             {
@@ -12011,7 +12005,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
                 coeff /= 100.0f;
             }
-            DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod);
+            DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod * stack);
         }
 
         if (getPowerType() == POWER_MANA)
@@ -12675,7 +12669,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                 DoneTotal += int32(bonus->ap_bonus * stack * GetTotalAttackPowerValue(BASE_ATTACK));
         }
     }
-    else
+    else if(dbccoeff)
     {
         coeff = dbccoeff;
         if (damagetype == DOT)
@@ -12689,8 +12683,11 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
             if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(BASE_ATTACK));
         }
+    }
+    else
+    {
         // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
-        if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE && !dbccoeff)
+        if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
             return healamount;
     }
 
