@@ -346,6 +346,8 @@ class Group
         uint8 GetGroupType() const { return m_groupType; }
 
         uint32 GetAverageMMR(BracketType bracket) const;
+        ItemQualities GetThreshold() const { return m_lootThreshold; }
+
     protected:
         bool _setMembersGroup(uint64 guid, uint8 group);
         void _homebindIfInstance(Player* player);

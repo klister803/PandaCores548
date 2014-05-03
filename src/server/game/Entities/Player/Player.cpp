@@ -10097,6 +10097,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
     Loot* loot = 0;
     PermissionTypes permission = ALL_PERMISSION;
+    ItemQualities groupThreshold = ITEM_QUALITY_POOR;
 
     sLog->outDebug(LOG_FILTER_LOOT, "Player::SendLoot guid %u, loot_type %u", guid, loot_type);
     if (IS_GAMEOBJECT_GUID(guid))
@@ -10172,6 +10173,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             {
                 if (Group* group = GetGroup())
                 {
+                    groupThreshold = group->GetThreshold();
                     switch (group->GetLootMethod())
                     {
                         case GROUP_LOOT:
@@ -10197,6 +10199,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
         {
             if (Group* group = GetGroup())
             {
+                groupThreshold = group->GetThreshold();
                 switch (group->GetLootMethod())
                 {
                     case MASTER_LOOT:
@@ -10339,6 +10342,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
                 if (Group* group = recipient->GetGroup())
                 {
+                    groupThreshold = group->GetThreshold();
                     switch (group->GetLootMethod())
                     {
                         case GROUP_LOOT:
@@ -10369,6 +10373,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             {
                 if (Group* group = GetGroup())
                 {
+                    groupThreshold = group->GetThreshold();
                     if (group == recipient->GetGroup())
                     {
                         switch (group->GetLootMethod())
@@ -10417,7 +10422,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
     //! 5.4.1
     WorldPacket data(SMSG_LOOT_RESPONSE);
-    data << LootView(*loot, this, loot_type, guid, permission, pool);
+    data << LootView(*loot, this, loot_type, guid, permission, groupThreshold, pool);
 
     SendDirectMessage(&data);
 

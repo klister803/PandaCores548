@@ -324,7 +324,7 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
             return false;
         }
 
-        if (maxcount < mincountOrRef)                       // wrong max count
+        if (int(maxcount) < mincountOrRef)                       // wrong max count
         {
             sLog->outError(LOG_FILTER_SQL, "Table '%s' entry %d item %d: max count (%u) less that min count (%i) - skipped", store.GetName(), entry, itemid, int32(maxcount), mincountOrRef);
             return false;
@@ -355,7 +355,7 @@ LootItem::LootItem(LootStoreItem const& li, Loot* loot)
     conditions  = li.conditions;
     currency    = type == LOOT_ITEM_TYPE_CURRENCY;
     count       = urand(li.mincountOrRef, li.maxcount);     // constructor called for mincountOrRef > 0 only
-
+    quality     = ITEM_QUALITY_POOR;
     needs_quest = li.needs_quest;
 
     is_looted = 0;
@@ -398,6 +398,7 @@ LootItem::LootItem(LootStoreItem const& li, Loot* loot)
         }
         randomSuffix = proto && proto->RandomSuffix ? GenerateEnchSuffixFactor(proto) : 0;
         randomPropertyId = Item::GenerateItemRandomPropertyId(itemid);
+        quality = proto ? ItemQualities(proto->Quality) : ITEM_QUALITY_POOR;
     }
 }
 
@@ -1044,7 +1045,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                 {
                     bitBuffer.WriteBit(0);
                     bitBuffer.WriteBits(0, 2);
-                    bitBuffer.WriteBits(slot_type, 3);
+                    bitBuffer.WriteBits((lv.permission == MASTER_PERMISSION && lv.threshold > l.items[i].quality) ? LOOT_SLOT_TYPE_OWNER : slot_type, 3);
                     bitBuffer.WriteBit(!i);
                     bitBuffer.WriteBit(1);
                     
