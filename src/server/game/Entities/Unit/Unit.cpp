@@ -11976,7 +11976,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         else if(dbccoeff)
         {
             coeff = dbccoeff;
-            if (damagetype == DOT)
+            /*if (damagetype == DOT)
             {
                 if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 {
@@ -11999,7 +11999,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                     APbonus += GetTotalAttackPowerValue(attType);
                     DoneTotal += int32(coeff * stack * ApCoeffMod * APbonus);
                 }
-            }
+            }*/
         }
         // Default calculation
         if (DoneAdvertisedBenefit)
@@ -12123,9 +12123,9 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     if (TakenAdvertisedBenefit)
     {
         if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
+            coeff = CalculateDefaultCoefficient(spellProto, damagetype);
 
-        float factorMod = CalculateLevelPenalty(spellProto) * stack;
+        float factorMod = CalculateLevelPenalty(spellProto);
         // level penalty still applied on Taken bonus - is it blizzlike?
         if (Player* modOwner = GetSpellModOwner())
         {
@@ -12133,7 +12133,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
             modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
             coeff /= 100.0f;
         }
-        TakenTotal+= int32(TakenAdvertisedBenefit * coeff * factorMod);
+        TakenTotal+= int32(TakenAdvertisedBenefit * coeff * factorMod * stack);
     }
 
     float tmpDamage = 0.0f;
@@ -12682,7 +12682,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     else if(dbccoeff)
     {
         coeff = dbccoeff;
-        if (damagetype == DOT)
+        /*if (damagetype == DOT)
         {
             if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(
@@ -12692,7 +12692,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         {
             if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(BASE_ATTACK));
-        }
+        }*/
     }
     else
     {
@@ -12705,9 +12705,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (DoneAdvertisedBenefit)
     {
         if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
+            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
 
-        factorMod *= CalculateLevelPenalty(spellProto) * stack;
+        factorMod *= CalculateLevelPenalty(spellProto);
 
         if (Player* modOwner = GetSpellModOwner())
         {
@@ -12716,7 +12716,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
             coeff /= 100.0f;
         }
 
-        DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod);
+        DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod * stack);
     }
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -12872,9 +12872,9 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     if (TakenAdvertisedBenefit)
     {
         if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
+            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
 
-        factorMod *= CalculateLevelPenalty(spellProto) * int32(stack);
+        factorMod *= CalculateLevelPenalty(spellProto);
         if (Player* modOwner = GetSpellModOwner())
         {
             coeff *= 100.0f;
@@ -12882,7 +12882,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
             coeff /= 100.0f;
         }
 
-        TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod);
+        TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod * stack);
     }
 
     AuraEffectList const& mHealingGet= GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_RECEIVED);
