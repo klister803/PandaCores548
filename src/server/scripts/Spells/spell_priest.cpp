@@ -1699,46 +1699,6 @@ class spell_pri_void_shift : public SpellScriptLoader
         }
 };
 
-// 32379 - Shadow Word : Death
-class spell_pri_shadow_orb : public SpellScriptLoader
-{
-    public:
-        spell_pri_shadow_orb() : SpellScriptLoader("spell_pri_shadow_orb") { }
-
-        class spell_pri_shadow_orb_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_shadow_orb_SpellScript);
-
-            void HandleDamage()
-            {
-                if(Unit* caster = GetCaster())
-                {
-                    int32 damage = GetFinalHitDamage();
-
-                    // Pain and Suffering reduces damage
-                    if (AuraEffect* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_PAIN_AND_SUFFERING, EFFECT_1))
-                        AddPct(damage, aurEff->GetAmount());
-
-                    // Item - Priest T13 Shadow 2P Bonus (Shadow Word: Death)
-                    if (AuraEffect *auraEff = caster->GetAuraEffect(105843, 1))
-                        AddPct(damage, -auraEff->GetAmount());
-
-                    caster->CastCustomSpell(caster, PRIEST_SHADOW_WORD_DEATH, &damage, 0, 0, true);
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_pri_shadow_orb_SpellScript::HandleDamage);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_shadow_orb_SpellScript();
-        }
-};
-
 // Psychic Horror - 64044
 class spell_pri_psychic_horror : public SpellScriptLoader
 {
@@ -2386,7 +2346,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_inner_fire_or_will();
     new spell_pri_leap_of_faith();
     new spell_pri_void_shift();
-    new spell_pri_shadow_orb();
     new spell_pri_psychic_horror();
     new spell_pri_guardian_spirit();
     new spell_pri_penance();
