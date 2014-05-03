@@ -317,22 +317,25 @@ class spell_pal_sacred_shield : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetTarget())
-                    {
-                        int32 amount = 0;
-                        switch(_player->GetSpecializationId(_player->GetActiveSpec()))
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                        if (Unit* target = GetTarget())
                         {
-                            case SPEC_PALADIN_HOLY:
-                            case SPEC_PALADIN_RETRIBUTION:
-                                amount = int32(343 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
-                                break;
-                            case SPEC_PALADIN_PROTECTION:
-                                amount = int32(240 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 0.819f);
-                                break;
+                            int32 amount = 0;
+                            switch(_player->GetSpecializationId(_player->GetActiveSpec()))
+                            {
+                                case SPEC_PALADIN_HOLY:
+                                case SPEC_PALADIN_RETRIBUTION:
+                                    amount = int32(343 + caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
+                                    break;
+                                case SPEC_PALADIN_PROTECTION:
+                                    amount = int32(240 + caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 0.819f);
+                                    break;
+                            }
+                            _player->CastCustomSpell(target, PALADIN_SPELL_SACRED_SHIELD, &amount, NULL, NULL, true, NULL, aurEff);
                         }
-                        _player->CastCustomSpell(target, PALADIN_SPELL_SACRED_SHIELD, &amount, NULL, NULL, true, NULL, aurEff);
-                    }
+                }
             }
 
             void Register()
