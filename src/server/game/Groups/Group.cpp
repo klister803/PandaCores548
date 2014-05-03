@@ -1435,7 +1435,6 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
 
     ByteBuffer dataBuffer(GetMembersCount()*8);
     ObjectGuid guid_looted = pLootedObject->GetGUID();
-
     WorldPacket data(SMSG_LOOT_MASTER_LIST, 12 + GetMembersCount()*8);
     data.WriteGuidMask<5, 4, 6, 1, 0>(guid_looted);
     uint32 pos = data.bitwpos();
@@ -1449,7 +1448,8 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
 
         if (looter->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
         {
-            ObjectGuid guid = looter->GetGUID();
+            //HardHack! Plr should have off-like hiGuid
+            ObjectGuid guid = MAKE_NEW_GUID(looter->GetGUIDLow(), 0, HIGHGUID_PLAYER_MOP);
 
             data.WriteGuidMask<0, 6, 3, 1, 5, 7, 4, 2>(guid);
             dataBuffer.WriteGuidBytes<6, 7, 2, 0, 5, 3, 1, 4>(guid);
@@ -1826,7 +1826,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     //! 5.4.1
     WorldPacket data(SMSG_PARTY_UPDATE, 60 * GetMembersCount() + 41);
 
-    data << uint32(m_counter++);
+    data << uint32(++m_counter);
     data << uint8(0);                                                   // unk
     data << uint8(IsHomeGroup() ? 0 : 1);                               // 0 - home group, 1 - instance group
     data << uint8(m_groupType);                                         // group type (flags in 3.3)
