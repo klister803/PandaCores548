@@ -11038,7 +11038,17 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
         // Can only have one pet. If a new one is summoned, dismiss the old one.
         if (minion->IsGuardianPet())
         {
-            if (Guardian* oldPet = GetGuardianPet())
+            Guardian* oldPet = NULL;
+            for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+            {
+                if ((*itr)->GetGUID() == GetPetGUID())
+                {
+                    oldPet = (Guardian*)*itr;
+                    break;
+                }
+            }
+            //if (Guardian* oldPet = GetGuardianPet())
+            if (oldPet)
             {
                 if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()) && !stampeded)
                 {
