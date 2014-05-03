@@ -3360,6 +3360,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 108371: // Harvest Life
+                    spellInfo->Effects[0].MiscValue = SPELLMOD_DOT;
+                    break;
                 case 74434: // Soulburn
                     spellInfo->Effects[1].BasePoints = -100;
                     spellInfo->Effects[1].SpellClassMask[0] |= 33024;
