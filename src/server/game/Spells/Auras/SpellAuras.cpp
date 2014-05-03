@@ -880,9 +880,6 @@ void Aura::RefreshDuration(bool /*recalculate*/)
 
 void Aura::RefreshTimers()
 {
-    if((GetSpellInfo()->AttributesEx8 & SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER))
-        return;
-
     m_maxDuration = CalcMaxDuration();
 
     RefreshDuration(false);
@@ -1004,7 +1001,7 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
     // Update stack amount
     SetStackAmount(stackAmount);
 
-    if (refresh && !(m_spellInfo->AttributesEx8 & SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER))
+    if (refresh)
     {
         RefreshSpellMods();
         RefreshTimers();
