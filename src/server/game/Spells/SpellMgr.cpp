@@ -4486,7 +4486,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 30;
                     break;
                 case 136341: //Static shield
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     spellInfo->Effects[1].TriggerSpell = 0;
+                    break;
+                case 136343: //Static Shield tr ef dmg
+                    spellInfo->Effects[0].TargetA = 6;
+                    spellInfo->Effects[0].TargetB = 0;
                     break;
 
                 // Dalaran arena knockback
