@@ -7227,8 +7227,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                         basepoints0 = CalculatePct(damage, triggerAmount) + hasabsorb;
 
-                        if (basepoints0 > (int32)GetMaxHealth())
-                            basepoints0 = GetMaxHealth();
+                        if (basepoints0 > (int32)CountPctFromMaxHealth(15))
+                            basepoints0 = CountPctFromMaxHealth(15);
                     } 
                     break;
                 }
