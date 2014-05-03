@@ -1166,9 +1166,6 @@ class spell_warl_soul_swap : public SpellScriptLoader
                         {
                             caster->ApplySoulSwapDOT(target);
                             caster->RemoveAura(WARLOCK_SOUL_SWAP_AURA);
-
-                            if (caster->HasAura(56226) && caster->ToPlayer()) // Glyph of Soul Swap
-                                caster->ToPlayer()->AddSpellCooldown(86121, 0, getPreciseTime() + 30.0);
                         }
                     }
                 }
