@@ -6499,6 +6499,11 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 146184: // Wrath
+                {
+                    caster->CastCustomSpell(target, 146202, &m_amount, 0, 0, true, 0, this);
+                    break;
+                }
                 case 118694: // Spirit Bond
                 {
                     if (!target->isPet())
