@@ -1026,16 +1026,14 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                             if (target->HasAura(SPELL_MAGE_COMBUSTION_DOT, _player->GetGUID()))
                             {
                                 int32 combustionBp = 0;
-                                if (unit->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
-                                {
-                                    combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
-                                    combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT);
-                                }
                                 if (unit->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
                                     combustionBp += unit->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
                                 if (combustionBp)
+                                {
+                                    //combustionBp = int32(combustionBp / targetList.size());
                                     _player->CastCustomSpell(unit, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
+                                }
                             }
                             // 4 : Living Bomb
                             if (_player->HasAura(89926))

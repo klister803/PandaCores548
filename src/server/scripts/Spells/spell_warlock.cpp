@@ -153,6 +153,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
                     // EFFECT_8 : +50% on EFFECT_4 and EFFECT_5 of Drain Soul -> Always set to 0
                     // EFFECT_9 : Always set to 0
                     // EFFECT_10 : Always set to 0
+                    // EFFECT_11 : Duration for HB
                     switch(aurEff->GetEffIndex())
                     {
                         case EFFECT_3:

@@ -409,6 +409,8 @@ public:
     int32  ScalingClass;
     float  CoefBase;
     int32  CoefLevelBase;
+    int32  MaxScalingLevel;
+    int32  ScalesFromItemLevel;
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
     SpellEffectInfoMap EffectsMap;
     uint32 ExplicitTargetMask;

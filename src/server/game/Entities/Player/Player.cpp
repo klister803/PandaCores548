@@ -22298,6 +22298,11 @@ bool Player::IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod
     if (mod->op == SPELLMOD_DURATION && spellInfo->GetDuration() == -1)
         return false;
 
+    // check item type request
+    if(SpellInfo const* affectSpell = sSpellMgr->GetSpellInfo(mod->spellId))
+        if (!HasItemFitToSpellRequirements(affectSpell))
+            return false;
+
     return spellInfo->IsAffectedBySpellMod(mod);
 }
 

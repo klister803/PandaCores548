@@ -1245,7 +1245,10 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
         case SPELL_AURA_POWER_BURN:
         case SPELL_AURA_PERIODIC_DUMMY:
         case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
-            m_isPeriodic = true;
+            if(GetBase()->GetMaxDuration())
+                m_isPeriodic = true;
+            else
+                m_isPeriodic = false;
             break;
         default:
             break;

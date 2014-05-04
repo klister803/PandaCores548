@@ -2248,8 +2248,8 @@ struct SpellScalingEntry
     int32     ScalingClass;                                 // 4        (index * 100) + charLevel - 1 => gtSpellScaling.dbc
     float     CoefBase;                                     // 5
     uint32    CoefLevelBase;                                // 6
-    //uin32   m_maxScalingLevel                             // 7
-    //uint32  m_scalesFromItemLevel                         // 8
+    uint32    MaxScalingLevel;                              // 7
+    uint32    ScalesFromItemLevel;                          // 8
 };
 
 struct SpellDurationEntry

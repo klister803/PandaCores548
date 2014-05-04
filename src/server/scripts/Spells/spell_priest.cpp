@@ -997,11 +997,6 @@ class spell_pri_devouring_plague : public SpellScriptLoader
 
                             // Instant damage equal to amount of shadow orb
                             SetHitDamage(int32(GetHitDamage() * currentPower / 3));
-
-                            // Periodic damage equal to amount of shadow orb
-                            if (Aura* devouringPlague = target->GetAura(GetSpellInfo()->Id, _player->GetGUID()))
-                                if (devouringPlague->GetEffect(1))
-                                    devouringPlague->GetEffect(1)->SetAmount(devouringPlague->GetEffect(1)->GetAmount() * currentPower);
                         }
                     }
                 }
@@ -1032,9 +1027,15 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                     caster->CastCustomSpell(caster, PRIEST_DEVOURING_PLAGUE_HEAL, &orbCount, 0, 0, true);
             }
 
+            void HandleTick(AuraEffect const* aurEff, int32& amount)
+            {
+                amount *= orbCount;
+            }
+
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_devouring_plague_AuraScript::OnPereodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+                DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_pri_devouring_plague_AuraScript::HandleTick, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
             }
         };
 

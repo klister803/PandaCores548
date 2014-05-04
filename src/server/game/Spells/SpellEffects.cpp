@@ -798,6 +798,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
         }
 
         m_damage += damage;
+
+        switch (m_spellInfo->Id)
+        {
+            case 116858: // Chaos Bolt - nerf res
+                if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    m_damage -= int32(m_damage * 0.25f);
+                break;
+        }
     }
 }
 

@@ -450,10 +450,15 @@ m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false)
     //For scaling trinket
     if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && castItem)
         m_casterLevel = castItem->GetLevel();
-    //For scaling food
-    if((m_spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF) && caster && castItem && caster->getLevel() > castItem->GetTemplate()->RequiredLevel)
-        m_casterLevel = castItem->GetTemplate()->RequiredLevel;
-    // m_casterLevel = cast item level/caster level, caster level should be saved to db, confirmed with sniffs
+
+    if(SpellScalingEntry const* _scaling = m_spellInfo->GetSpellScaling())
+        if(_scaling->ScalesFromItemLevel && castItem)
+            m_casterLevel = castItem->GetLevel();
+
+    //For scaling max level
+    if(SpellScalingEntry const* _scaling = m_spellInfo->GetSpellScaling())
+        if(_scaling->MaxScalingLevel && caster && caster->getLevel() > _scaling->MaxScalingLevel)
+            m_casterLevel = _scaling->MaxScalingLevel;
 }
 
 void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount)
