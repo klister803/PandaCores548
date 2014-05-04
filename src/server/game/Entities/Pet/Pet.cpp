@@ -187,8 +187,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     }
 
     uint32 pet_number = fields[0].GetUInt32();
-    if(stampeded)
-        pet_number = sObjectMgr->GeneratePetNumber();
 
     if (current && owner->IsPetNeedBeTemporaryUnsummoned())
     {
@@ -391,7 +389,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
 void Pet::SavePetToDB(PetSlot mode)
 {
-    if (!GetEntry())
+    if (!GetEntry() || m_Stampeded)
         return;
 
     // save only fully controlled creature
