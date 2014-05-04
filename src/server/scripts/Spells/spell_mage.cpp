@@ -2008,8 +2008,9 @@ class spell_mage_icicle : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if(target)
                 if (Unit* caster = GetCaster())
+                if (Player* _player = caster->ToPlayer())
+                if (Unit* target = _player->GetSelectedUnit())
                 {
                     switch(aurEff->GetTickNumber())
                     {
@@ -2075,19 +2076,9 @@ class spell_mage_icicle : public SpellScriptLoader
                 }
             }
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                target = NULL;
-                if(Unit* caster = GetCaster())
-                    if (Player* _player = caster->ToPlayer())
-                        target = _player->GetSelectedUnit();
-            }
-
-            Unit* target;
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_icicle_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-                OnEffectApply += AuraEffectApplyFn(spell_mage_icicle_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
