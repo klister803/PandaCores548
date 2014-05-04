@@ -80,7 +80,7 @@ inline uint64 MAKE_NEW_GUID(uint64 l, uint64 e, uint64 h)
     if (!l)
         return 0;
 
-    return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_CORPSE || h == HIGHGUID_INSTANCE_SAVE) ? 48 : 52)));
+    return uint64(uint64(l) | (uint64(e) << (h == HIGHGUID_PET ? 24 : 32)) | (uint64(h) << ((h == HIGHGUID_CORPSE || h == HIGHGUID_INSTANCE_SAVE) ? 48 : 52)));
 }
 //#define MAKE_NEW_GUID(l, e, h)   uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_GUILD || h == HIGHGUID_CORPSE) ? 48 : 52)))
 
