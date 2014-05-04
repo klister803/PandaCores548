@@ -2026,8 +2026,8 @@ void Player::Update(uint32 p_time)
     UpdateSpellCharges(p_time);
 
     Pet* pet = GetPet();
-    if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange()) && !pet->isPossessed())
-        RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT, true);
+    if (pet && (HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange())) && !pet->isPossessed())
+        UnsummonPetTemporaryIfAny();
 
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
