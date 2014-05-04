@@ -917,17 +917,8 @@ class spell_mage_combustion : public SpellScriptLoader
 
                         int32 combustionBp = 0;
 
-                        Unit::AuraEffectList const& aurasPereodic = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
-                        for (Unit::AuraEffectList::const_iterator i = aurasPereodic.begin(); i !=  aurasPereodic.end(); ++i)
-                        {
-                            if ((*i)->GetCasterGUID() != _player->GetGUID() || (*i)->GetSpellInfo()->SchoolMask != SPELL_SCHOOL_MASK_FIRE)
-                                continue;
-
-                            if (!(*i)->GetAmplitude())
-                                continue;
-
-                            combustionBp += _player->SpellDamageBonusDone(target, (*i)->GetSpellInfo(), (*i)->GetAmount(), DOT, EFFECT_1) * 1000 / (*i)->GetAmplitude();
-                        }
+                        if (Aura* combustionaura = target->GetAura(SPELL_MAGE_IGNITE))
+                            combustionBp += CalculatePct((combustionaura->GetEffect(EFFECT_0)->GetAmount() / 2), 20);
 
                         if (combustionBp)
                             _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
