@@ -499,6 +499,27 @@ enum ItemLimitCategoryMode
     ITEM_LIMIT_CATEGORY_MODE_EQUIP      = 1                       // limit applied to amount equipped items (including used gems)
 };
 
+enum LfgSubType
+{
+    LFG_SUBTYPE_NONE                             = 0,
+    LFG_SUBTYPE_DUNGEON                          = 1,
+    LFG_SUBTYPE_RAID                             = 2,
+    LFG_SUBTYPE_SCENARIO                         = 3,
+    LFG_SUBTYPE_FLEX                             = 4,
+};
+
+enum LfgType
+{
+    LFG_TYPE_NONE                                = 0,       // Internal use only
+    LFG_TYPE_DUNGEON                             = 1,
+    LFG_TYPE_RAID                                = 2,
+    LFG_TYPE_QUEST                               = 3,       // not exist in dbc
+    LFG_TYPE_ZONE                                = 4,
+    LFG_TYPE_HEROIC                              = 5,       // not exist in dbc
+    LFG_TYPE_RANDOM                              = 6,
+    LFG_TYPE_SCENARIO                            = 7
+};
+
 enum MountFlags
 {
     MOUNT_FLAG_CAN_PITCH                = 0x4,                    // client checks MOVEMENTFLAG2_FULL_SPEED_PITCHING

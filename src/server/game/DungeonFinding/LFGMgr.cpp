@@ -1696,7 +1696,7 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
             {
                 grp = new Group();
                 grp->Create(player);
-                grp->ConvertToLFG();
+                grp->ConvertToLFG(dungeon);
                 uint64 gguid = grp->GetGUID();
                 SetState(gguid, LFG_STATE_PROPOSAL);
                 sGroupMgr->AddGroup(grp);

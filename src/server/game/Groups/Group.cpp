@@ -241,8 +241,11 @@ void Group::ChangeFlagEveryoneAssistant(bool apply)
     this->SendUpdate();
 }
 
-void Group::ConvertToLFG()
+void Group::ConvertToLFG(LFGDungeonEntry const* dungeon)
 {
+    if (dungeon->subType == LFG_SUBTYPE_FLEX || dungeon->subType == LFG_SUBTYPE_RAID)
+        ConvertToRaid(false);
+
     m_groupType = GroupType(m_groupType | GROUPTYPE_LFG | GROUPTYPE_UNK1);
     m_lootMethod = NEED_BEFORE_GREED;
     if (!isBGGroup() && !isBFGroup())
@@ -258,13 +261,13 @@ void Group::ConvertToLFG()
     SendUpdate();
 }
 
-void Group::ConvertToRaid()
+void Group::ConvertToRaid(bool update)
 {
     m_groupType = GroupType(m_groupType | GROUPTYPE_RAID);
 
     _initRaidSubGroupsCounter();
 
-    if (!isBGGroup() && !isBFGroup())
+    if (update && !isBGGroup() && !isBFGroup())
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GROUP_TYPE);
 
@@ -274,7 +277,8 @@ void Group::ConvertToRaid()
         CharacterDatabase.Execute(stmt);
     }
 
-    SendUpdate();
+    if (update)
+        SendUpdate();
 
     // update quest related GO states (quest activity dependent from raid membership)
     for (member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
@@ -1894,10 +1898,10 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
         //! ToDo
     }
 
-    // Insrt member data colected before
+    // Insert member data colected before
     data.append(dataBuffer);
 
-    if (true)                                                           // HasLooterGuid                                      
+    if (true)                                                           // HasLooterGuid
     {
         data << uint8(m_lootThreshold);                                 // loot threshold
         data.WriteGuidBytes<5, 4>(looterGuid);
@@ -1907,7 +1911,6 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 
     data.WriteGuidBytes<2>(guid);
 
-    //! ToDo: check it. 80% it's true
     if (sendDifficultyInfo)
     {
         data << uint32(m_raidDifficulty);
@@ -1932,7 +1935,7 @@ void Group::SendEmptyParty(Player *player)
 
     WorldPacket data(SMSG_PARTY_UPDATE, 60);
 
-    data << uint32(m_counter++);
+    data << uint32(++m_counter);
     data << uint8(0);                                                   // unk
     data << uint8(IsHomeGroup() ? 0 : 1);
     data << uint8(0);                                                   // group type (flags in 3.3)

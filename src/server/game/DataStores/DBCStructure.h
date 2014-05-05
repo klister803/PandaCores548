@@ -1477,7 +1477,7 @@ struct LFGDungeonEntry
 
     // Helpers
     uint32 Entry() const { return ID + (type << 24); }
-    bool isScenario() const { return scenarioId != 0; }
+    bool isScenario() const { return subType == LFG_SUBTYPE_SCENARIO; }
     uint32 GetMinGroupSize() const { return minTankNeeded + minHealerNeeded + minDpsNeeded; }
     uint32 GetMaxGroupSize() const { return tankNeeded + healerNeeded + dpsNeeded; }
 };
