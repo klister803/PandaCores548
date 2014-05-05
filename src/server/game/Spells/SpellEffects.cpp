@@ -798,6 +798,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
         }
 
         m_damage += damage;
+
+        switch (m_spellInfo->Id)
+        {
+            case 116858: // Chaos Bolt - nerf res
+                if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    m_damage -= int32(m_damage * 0.25f);
+                break;
+        }
     }
 }
 
@@ -2306,6 +2314,14 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 89653: // Drain Life
+            {
+                if (Aura * aura = caster->GetAura(108371))
+                {
+                    AddPct(addhealth, aura->GetSpellInfo()->Effects[1].BasePoints);
+                }
+                break;
+            }
             case 19750: // Selfless Healer - Increases heal of Flash of Light if it heals an other player than you
             {
                 if (Aura* selflessHealer = caster->GetAura(114250))

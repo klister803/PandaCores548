@@ -960,6 +960,8 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ScalingClass = _scaling ? _scaling->ScalingClass : 0;
     CoefBase = _scaling ? _scaling->CoefBase : 0;
     CoefLevelBase = _scaling ? _scaling->CoefLevelBase : 0;
+    MaxScalingLevel = _scaling ? _scaling->MaxScalingLevel : 0;
+    ScalesFromItemLevel = _scaling ? _scaling->ScalesFromItemLevel : 0;
 
     // SpellAuraOptionsEntry
     SpellAuraOptionsEntry const* _options = GetSpellAuraOptions();

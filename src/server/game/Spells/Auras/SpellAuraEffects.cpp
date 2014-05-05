@@ -1245,7 +1245,10 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
         case SPELL_AURA_POWER_BURN:
         case SPELL_AURA_PERIODIC_DUMMY:
         case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
-            m_isPeriodic = true;
+            if(GetBase()->GetMaxDuration())
+                m_isPeriodic = true;
+            else
+                m_isPeriodic = false;
             break;
         default:
             break;
@@ -6499,6 +6502,11 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 146184: // Wrath
+                {
+                    caster->CastCustomSpell(target, 146202, &m_amount, 0, 0, true, 0, this);
+                    break;
+                }
                 case 118694: // Spirit Bond
                 {
                     if (!target->isPet())
@@ -7112,26 +7120,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     // ignore non positive values (can be result apply spellmods to aura damage
     uint32 damage = std::max(GetAmount(), 0);
 
-    switch (m_spellInfo->Id)
-    {
-        case 120699: // Lynx Rush
-        {
-            if (Unit * hunter = caster->GetOwner())
-            {
-                int32 amount = hunter->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.038f;
-                amount *= GetBase()->GetStackAmount();
-
-                if (Guardian * pet = caster->ToPet())
-                    amount += pet->GetBonusDamage();
-
-                damage += amount;
-            }
-            break;
-        }
-        default:
-            break;
-    }
-
     if (GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
     {
         damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount(), NULL, m_dotaStatsDump);
@@ -7210,9 +7198,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
                 // ... and deals instantly 100% of tick-damage for each affliction effects on the target
                 // Corruption ...
-                if (Aura* corruption = target->GetAura(172, caster->GetGUID()))
+                if (Aura* corruption = target->GetAura(146739, caster->GetGUID()))
                 {
-                    afflictionSpell = sSpellMgr->GetSpellInfo(172);
+                    afflictionSpell = sSpellMgr->GetSpellInfo(146739);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
                     afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT, effIndex);
 

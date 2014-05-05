@@ -36,6 +36,7 @@ enum HighGuid
     HIGHGUID_ITEM           = 0x400,                       // blizz 4000
     HIGHGUID_CONTAINER      = 0x400,                       // blizz 4000
     HIGHGUID_PLAYER         = 0x000,                       // blizz 0018
+    HIGHGUID_PLAYER_MOP     = 0x078,
     HIGHGUID_GAMEOBJECT     = 0xF11,                       // blizz F110
     HIGHGUID_TRANSPORT      = 0xF12,                       // blizz F120 (for GAMEOBJECT_TYPE_TRANSPORT)
     HIGHGUID_UNIT           = 0xF13,                       // blizz F130
@@ -79,7 +80,7 @@ inline uint64 MAKE_NEW_GUID(uint64 l, uint64 e, uint64 h)
     if (!l)
         return 0;
 
-    return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_CORPSE || h == HIGHGUID_INSTANCE_SAVE) ? 48 : 52)));
+    return uint64(uint64(l) | (uint64(e) << (h == HIGHGUID_PET ? 24 : 32)) | (uint64(h) << ((h == HIGHGUID_CORPSE || h == HIGHGUID_INSTANCE_SAVE) ? 48 : 52)));
 }
 //#define MAKE_NEW_GUID(l, e, h)   uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_GUILD || h == HIGHGUID_CORPSE) ? 48 : 52)))
 

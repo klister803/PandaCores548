@@ -3360,6 +3360,13 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 146202: // Wrath
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(39);
+                    break;
+                case 108371: // Harvest Life
+                    spellInfo->Effects[0].MiscValue = SPELLMOD_DOT;
+                    break;
                 case 74434: // Soulburn
                     spellInfo->Effects[1].BasePoints = -100;
                     spellInfo->Effects[1].SpellClassMask[0] |= 33024;
@@ -4487,7 +4494,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 30;
                     break;
                 case 136341: //Static shield
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     spellInfo->Effects[1].TriggerSpell = 0;
+                    break;
+                case 136343: //Static Shield tr ef dmg
+                    spellInfo->Effects[0].TargetA = 6;
+                    spellInfo->Effects[0].TargetB = 0;
                     break;
 
                 // Dalaran arena knockback

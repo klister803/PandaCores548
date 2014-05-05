@@ -7227,8 +7227,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                         basepoints0 = CalculatePct(damage, triggerAmount) + hasabsorb;
 
-                        if (basepoints0 > (int32)GetMaxHealth())
-                            basepoints0 = GetMaxHealth();
+                        if (basepoints0 > (int32)CountPctFromMaxHealth(15))
+                            basepoints0 = CountPctFromMaxHealth(15);
                     } 
                     break;
                 }
@@ -11038,7 +11038,17 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
         // Can only have one pet. If a new one is summoned, dismiss the old one.
         if (minion->IsGuardianPet())
         {
-            if (Guardian* oldPet = GetGuardianPet())
+            Guardian* oldPet = NULL;
+            for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+            {
+                if ((*itr)->GetGUID() == GetPetGUID())
+                {
+                    oldPet = (Guardian*)*itr;
+                    break;
+                }
+            }
+            //if (Guardian* oldPet = GetGuardianPet())
+            if (oldPet)
             {
                 if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()) && !stampeded)
                 {
@@ -11665,19 +11675,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
         return pdamage;
 
-    // small exception for Crimson Tempest, can't find any general rule
-    // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 96172) // Hand of Light
-        return pdamage;
-
     // small exception for Improved Serpent Sting, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 83077 || spellProto->Id == 124051) // Improved Serpent Sting and Archimonde's Vengeance
+    if (spellProto->Id == 83077) // Improved Serpent Sting and Archimonde's Vengeance
         return pdamage;
 
     // small exception for Hemorrhage, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 89775 || spellProto->Id == 108451) // Hemorrhage and Soul Link damage
+    if (spellProto->Id == 89775) // Hemorrhage and Soul Link damage
         return pdamage;
 
     // small exception for Echo of Light, can't find any general rule
@@ -11703,7 +11708,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     }
     else
     {
-
         // Apply PowerPvP damage bonus
         DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
 
@@ -11969,10 +11973,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 }
             }
         }
-        else
+        else if(dbccoeff)
         {
             coeff = dbccoeff;
-            if (damagetype == DOT)
+            /*if (damagetype == DOT)
             {
                 if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 {
@@ -11995,15 +11999,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                     APbonus += GetTotalAttackPowerValue(attType);
                     DoneTotal += int32(coeff * stack * ApCoeffMod * APbonus);
                 }
-            }
+            }*/
         }
         // Default calculation
         if (DoneAdvertisedBenefit)
         {
             if ((!bonus && !dbccoeff) || coeff < 0)
-                coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
+                coeff = CalculateDefaultCoefficient(spellProto, damagetype);
 
-            float factorMod = CalculateLevelPenalty(spellProto) * stack;
+            float factorMod = CalculateLevelPenalty(spellProto);
 
             if (Player* modOwner = GetSpellModOwner())
             {
@@ -12011,7 +12015,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
                 coeff /= 100.0f;
             }
-            DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod);
+            DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod * stack);
         }
 
         if (getPowerType() == POWER_MANA)
@@ -12119,9 +12123,9 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     if (TakenAdvertisedBenefit)
     {
         if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack);
+            coeff = CalculateDefaultCoefficient(spellProto, damagetype);
 
-        float factorMod = CalculateLevelPenalty(spellProto) * stack;
+        float factorMod = CalculateLevelPenalty(spellProto);
         // level penalty still applied on Taken bonus - is it blizzlike?
         if (Player* modOwner = GetSpellModOwner())
         {
@@ -12129,7 +12133,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
             modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
             coeff /= 100.0f;
         }
-        TakenTotal+= int32(TakenAdvertisedBenefit * coeff * factorMod);
+        TakenTotal+= int32(TakenAdvertisedBenefit * coeff * factorMod * stack);
     }
 
     float tmpDamage = 0.0f;
@@ -12675,10 +12679,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                 DoneTotal += int32(bonus->ap_bonus * stack * GetTotalAttackPowerValue(BASE_ATTACK));
         }
     }
-    else
+    else if(dbccoeff)
     {
         coeff = dbccoeff;
-        if (damagetype == DOT)
+        /*if (damagetype == DOT)
         {
             if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(
@@ -12688,9 +12692,12 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         {
             if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(BASE_ATTACK));
-        }
+        }*/
+    }
+    else
+    {
         // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
-        if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE && !dbccoeff)
+        if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
             return healamount;
     }
 
@@ -12698,9 +12705,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (DoneAdvertisedBenefit)
     {
         if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
+            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
 
-        factorMod *= CalculateLevelPenalty(spellProto) * stack;
+        factorMod *= CalculateLevelPenalty(spellProto);
 
         if (Player* modOwner = GetSpellModOwner())
         {
@@ -12709,7 +12716,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
             coeff /= 100.0f;
         }
 
-        DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod);
+        DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod * stack);
     }
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -12865,9 +12872,9 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     if (TakenAdvertisedBenefit)
     {
         if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * int32(stack) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
+            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
 
-        factorMod *= CalculateLevelPenalty(spellProto) * int32(stack);
+        factorMod *= CalculateLevelPenalty(spellProto);
         if (Player* modOwner = GetSpellModOwner())
         {
             coeff *= 100.0f;
@@ -12875,7 +12882,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
             coeff /= 100.0f;
         }
 
-        TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod);
+        TakenTotal += int32(TakenAdvertisedBenefit * coeff * factorMod * stack);
     }
 
     AuraEffectList const& mHealingGet= GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_RECEIVED);
@@ -15940,11 +15947,11 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_SHADOW_ORB:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PRIEST && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_PRIEST_SHADOW) ? 3 : 0);
         case POWER_BURNING_EMBERS:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 30 : 0);
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 40 : 0);
         case POWER_DEMONIC_FURY:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY) ? 1000 : 0);
         case POWER_SOUL_SHARDS:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION) ? 300 : 0);
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION) ? 400 : 0);
         case POWER_ECLIPSE:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_DRUID && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_DROOD_BALANCE) ? 100 : 0); // Should be -100 to 100 this needs the power to be int32 instead of uint32
         case POWER_HOLY_POWER:
@@ -21073,8 +21080,6 @@ void Unit::WriteMovementUpdate(WorldPacket &data) const
 
 void Unit::RemoveSoulSwapDOT(Unit* target)
 {
-   bool keepDOT = HasAura(56226); // Glyph of Soul Swap
-
     _SoulSwapDOTList.clear();
 
     AuraEffectList const mPeriodic = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
@@ -21088,8 +21093,6 @@ void Unit::RemoveSoulSwapDOT(Unit* target)
             continue;
 
         _SoulSwapDOTList.push_back((*iter)->GetId());
-        if (!keepDOT)
-            target->RemoveAura((*iter)->GetId(), (*iter)->GetCasterGUID());
     }
 }
 

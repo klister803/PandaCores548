@@ -157,6 +157,7 @@ struct LootItem
     uint8   type;                                           // 0 = item, 1 = currency
     uint32  randomSuffix;
     int32   randomPropertyId;
+    ItemQualities quality;
     std::list<Condition*> conditions;                               // additional loot condition
     AllowedLooterSet allowedGUIDs;
     uint32  count;
@@ -405,11 +406,12 @@ struct LootView
     Loot &loot;
     Player* viewer;
     PermissionTypes permission;
+    ItemQualities threshold;
     uint8 _loot_type;
     uint8 pool;
     ObjectGuid _guid;
-    LootView(Loot &_loot, Player* _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION, uint8 _pool = 1)
-        : loot(_loot), viewer(_viewer), _loot_type(loot_type), _guid(ObjectGuid(guid)), permission(_permission), pool(_pool) {}
+    LootView(Loot &_loot, Player* _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION, ItemQualities t = ITEM_QUALITY_POOR, uint8 _pool = 1)
+        : loot(_loot), viewer(_viewer), _loot_type(loot_type), _guid(ObjectGuid(guid)), permission(_permission), threshold(t), pool(_pool) {}
 };
 
 extern LootStore LootTemplates_Creature;

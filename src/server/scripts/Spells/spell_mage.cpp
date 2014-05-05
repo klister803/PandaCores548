@@ -917,17 +917,8 @@ class spell_mage_combustion : public SpellScriptLoader
 
                         int32 combustionBp = 0;
 
-                        Unit::AuraEffectList const& aurasPereodic = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
-                        for (Unit::AuraEffectList::const_iterator i = aurasPereodic.begin(); i !=  aurasPereodic.end(); ++i)
-                        {
-                            if ((*i)->GetCasterGUID() != _player->GetGUID() || (*i)->GetSpellInfo()->SchoolMask != SPELL_SCHOOL_MASK_FIRE)
-                                continue;
-
-                            if (!(*i)->GetAmplitude())
-                                continue;
-
-                            combustionBp += _player->SpellDamageBonusDone(target, (*i)->GetSpellInfo(), (*i)->GetAmount(), DOT, EFFECT_1) * 1000 / (*i)->GetAmplitude();
-                        }
+                        if (Aura* combustionaura = target->GetAura(SPELL_MAGE_IGNITE))
+                            combustionBp += CalculatePct((combustionaura->GetEffect(EFFECT_0)->GetAmount() / 2), 20);
 
                         if (combustionBp)
                             _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
@@ -1035,16 +1026,14 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                             if (target->HasAura(SPELL_MAGE_COMBUSTION_DOT, _player->GetGUID()))
                             {
                                 int32 combustionBp = 0;
-                                if (unit->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
-                                {
-                                    combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
-                                    combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT);
-                                }
                                 if (unit->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
                                     combustionBp += unit->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
                                 if (combustionBp)
+                                {
+                                    //combustionBp = int32(combustionBp / targetList.size());
                                     _player->CastCustomSpell(unit, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
+                                }
                             }
                             // 4 : Living Bomb
                             if (_player->HasAura(89926))
@@ -2017,8 +2006,9 @@ class spell_mage_icicle : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if(target)
                 if (Unit* caster = GetCaster())
+                if (Player* _player = caster->ToPlayer())
+                if (Unit* target = _player->GetSelectedUnit())
                 {
                     switch(aurEff->GetTickNumber())
                     {
@@ -2084,19 +2074,9 @@ class spell_mage_icicle : public SpellScriptLoader
                 }
             }
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                target = NULL;
-                if(Unit* caster = GetCaster())
-                    if (Player* _player = caster->ToPlayer())
-                        target = _player->GetSelectedUnit();
-            }
-
-            Unit* target;
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_icicle_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-                OnEffectApply += AuraEffectApplyFn(spell_mage_icicle_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
 

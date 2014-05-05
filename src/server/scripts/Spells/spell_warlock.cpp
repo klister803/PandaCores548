@@ -153,6 +153,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
                     // EFFECT_8 : +50% on EFFECT_4 and EFFECT_5 of Drain Soul -> Always set to 0
                     // EFFECT_9 : Always set to 0
                     // EFFECT_10 : Always set to 0
+                    // EFFECT_11 : Duration for HB
                     switch(aurEff->GetEffIndex())
                     {
                         case EFFECT_3:
@@ -1166,9 +1167,6 @@ class spell_warl_soul_swap : public SpellScriptLoader
                         {
                             caster->ApplySoulSwapDOT(target);
                             caster->RemoveAura(WARLOCK_SOUL_SWAP_AURA);
-
-                            if (caster->HasAura(56226) && caster->ToPlayer()) // Glyph of Soul Swap
-                                caster->ToPlayer()->AddSpellCooldown(86121, 0, getPreciseTime() + 30.0);
                         }
                     }
                 }

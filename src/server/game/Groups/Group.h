@@ -259,8 +259,8 @@ class Group
         uint8 GetMemberGroup(uint64 guid) const;
 
         void ChangeFlagEveryoneAssistant(bool apply);
-        void ConvertToLFG();
-        void ConvertToRaid();
+        void ConvertToLFG(LFGDungeonEntry const* dungeon);
+        void ConvertToRaid(bool update = true);
         void ConvertToGroup();
 
         void SetBattlegroundGroup(Battleground* bg);
@@ -346,6 +346,8 @@ class Group
         uint8 GetGroupType() const { return m_groupType; }
 
         uint32 GetAverageMMR(BracketType bracket) const;
+        ItemQualities GetThreshold() const { return m_lootThreshold; }
+
     protected:
         bool _setMembersGroup(uint64 guid, uint8 group);
         void _homebindIfInstance(Player* player);

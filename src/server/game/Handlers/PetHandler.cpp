@@ -459,39 +459,24 @@ void WorldSession::HandlePetNameQuery(WorldPacket & recvData)
     ObjectGuid petGuid;
     ObjectGuid petNumber;
 
-    petGuid[0] = recvData.ReadBit() != 0;
-    petNumber[0] = recvData.ReadBit() != 0;
-    petNumber[5] = recvData.ReadBit() != 0;
-    petNumber[2] = recvData.ReadBit() != 0;
-    petGuid[6] = recvData.ReadBit() != 0;
-    petGuid[4] = recvData.ReadBit() != 0;
-    petNumber[6] = recvData.ReadBit() != 0;
-    petGuid[5] = recvData.ReadBit() != 0;
-    petNumber[1] = recvData.ReadBit() != 0;
-    petGuid[1] = recvData.ReadBit() != 0;
-    petGuid[2] = recvData.ReadBit() != 0;
-    petGuid[3] = recvData.ReadBit() != 0;
-    petNumber[7] = recvData.ReadBit() != 0;
-    petNumber[4] = recvData.ReadBit() != 0;
-    petGuid[7] = recvData.ReadBit() != 0;
-    petNumber[3] = recvData.ReadBit() != 0;
+    recvData.ReadGuidMask<0>(petGuid);
+    recvData.ReadGuidMask<0, 5, 2>(petNumber);
+    recvData.ReadGuidMask<6, 4>(petGuid);
+    recvData.ReadGuidMask<6>(petNumber);
+    recvData.ReadGuidMask<5>(petGuid);
+    recvData.ReadGuidMask<1>(petNumber);
+    recvData.ReadGuidMask<1, 2, 3>(petGuid);
+    recvData.ReadGuidMask<7, 4>(petNumber);
+    recvData.ReadGuidMask<7>(petGuid);
+    recvData.ReadGuidMask<3>(petNumber);
 
-    recvData.ReadByteSeq(petNumber[0]);
-    recvData.ReadByteSeq(petNumber[5]);
-    recvData.ReadByteSeq(petGuid[6]);
-    recvData.ReadByteSeq(petNumber[4]);
-    recvData.ReadByteSeq(petNumber[7]);
-    recvData.ReadByteSeq(petNumber[6]);
-    recvData.ReadByteSeq(petNumber[2]);
-    recvData.ReadByteSeq(petGuid[3]);
-    recvData.ReadByteSeq(petGuid[7]);
-    recvData.ReadByteSeq(petGuid[1]);
-    recvData.ReadByteSeq(petGuid[0]);
-    recvData.ReadByteSeq(petGuid[2]);
-    recvData.ReadByteSeq(petGuid[5]);
-    recvData.ReadByteSeq(petNumber[3]);
-    recvData.ReadByteSeq(petGuid[4]);
-    recvData.ReadByteSeq(petNumber[1]);
+    recvData.ReadGuidBytes<0, 5>(petNumber);
+    recvData.ReadGuidBytes<6>(petGuid);
+    recvData.ReadGuidBytes<4, 7, 6, 2>(petNumber);
+    recvData.ReadGuidBytes<3, 7, 1, 0, 2, 5>(petGuid);
+    recvData.ReadGuidBytes<3>(petNumber);
+    recvData.ReadGuidBytes<4>(petGuid);
+    recvData.ReadGuidBytes<1>(petNumber);
 
     SendPetNameQuery(petGuid, petNumber);
 }

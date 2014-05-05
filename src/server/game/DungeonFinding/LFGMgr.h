@@ -49,19 +49,6 @@ enum LfgFlags
     LFG_FLAG_UNK3                                = 0x8
 };
 
-/// Determines the type of instance
-enum LfgType
-{
-    LFG_TYPE_NONE                                = 0,      // Internal use only
-    LFG_TYPE_DUNGEON                             = 1,
-    LFG_TYPE_RAID                                = 2,
-    LFG_TYPE_QUEST                               = 3,
-    LFG_TYPE_ZONE                                = 4,
-    LFG_TYPE_HEROIC                              = 5,
-    LFG_TYPE_RANDOM                              = 6,
-    LFG_TYPE_SCENARIO                            = 7
-};
-
 /// Proposal states
 enum LfgProposalState
 {

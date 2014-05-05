@@ -879,26 +879,12 @@ class spell_sha_fulmination : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_fulmination_SpellScript)
 
-            bool Validate(SpellEntry const * /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_TRIGGERED) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_INFO))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
+            void HandleDamage(SpellEffIndex eff)
             {
                 // make caster cast a spell on a unit target of effect
                 Unit *target = GetHitUnit();
                 Unit *caster = GetCaster();
                 if (!target || !caster)
-                    return;
-
-                if (!GetHitDamage())
-                    return;
-
-                AuraEffect* fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
-                if (!fulminationAura)
                     return;
 
                 Aura* lightningShield = caster->GetAura(324);
@@ -909,21 +895,23 @@ class spell_sha_fulmination : public SpellScriptLoader
                 if (lsCharges <= 1)
                     return;
 
-                uint8 usedCharges = lsCharges - 2;
+                uint8 usedCharges = lsCharges - 1;
 
-                SpellEntry const* spellInfo = sSpellStore.LookupEntry(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
-                int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
-                uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE, EFFECT_1);
+                if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE))
+                {
+                    int32 basePoints = caster->CalculateSpellDamage(target, spellInfo, 0);
+                    int32 damage = int32((usedCharges - 1) * caster->SpellDamageBonusDone(target, spellInfo, basePoints, SPELL_DIRECT_DAMAGE, EFFECT_0));
 
-                caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
-                lightningShield->SetCharges(lsCharges - usedCharges);
+                    caster->CastCustomSpell(target, SPELL_SHA_FULMINATION_TRIGGERED, &damage, NULL, NULL, true);
+                    lightningShield->SetCharges(lsCharges - usedCharges);
 
-                caster->RemoveAura(SPELL_SHA_FULMINATION_INFO);
+                    caster->RemoveAura(SPELL_SHA_FULMINATION_INFO);
+                }
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_sha_fulmination_SpellScript::HandleOnHit);
+                OnEffectHitTarget += SpellEffectFn(spell_sha_fulmination_SpellScript::HandleDamage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
         };
 
