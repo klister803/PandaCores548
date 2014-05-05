@@ -9928,7 +9928,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             if (!procSpell)
                 return false;
 
-            if (victim->GetHealthPct() > 20.0f)
+            if (victim->GetHealthPct() > 35.0f)
                 return false;
 
             break;

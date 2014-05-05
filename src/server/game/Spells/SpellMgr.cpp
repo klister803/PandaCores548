@@ -3594,6 +3594,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72624: // Ooze Eruption
                 case 72625: // Ooze Eruption
                 case 121129: // Daybreak
+                case 119072: // Holy Wrath
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
