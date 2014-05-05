@@ -6825,9 +6825,8 @@ void Player::UpdateRating(CombatRating cr)
     for (AuraEffectList::const_iterator i = modRatingFromStat.begin(); i != modRatingFromStat.end(); ++i)
         if ((*i)->GetMiscValue() & (1<<cr))
             amount += int32(CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount()));
-
-    if (cr == CR_MASTERY)
-        amount += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_RATING, 33554432);
+    
+    amount += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_RATING, (1 << cr));
 
     if (amount < 0)
         amount = 0;
