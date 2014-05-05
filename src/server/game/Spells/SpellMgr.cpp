@@ -3361,6 +3361,7 @@ void SpellMgr::LoadSpellCustomAttr()
             switch (spellInfo->Id)
             {
                 case 146202: // Wrath
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(39);
                     break;
                 case 108371: // Harvest Life
