@@ -3360,6 +3360,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 146202: // Wrath
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(39);
+                    break;
                 case 108371: // Harvest Life
                     spellInfo->Effects[0].MiscValue = SPELLMOD_DOT;
                     break;
