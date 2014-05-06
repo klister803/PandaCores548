@@ -400,22 +400,22 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
     if (unitTarget && unitTarget->isAlive())
     {
+        // Meteor like spells (divided damage to targets)
+        if (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_SHARE_DAMAGE)
+        {
+            uint32 count = 0;
+            for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+                if (ihit->effectMask & (1<<effIndex))
+                    ++count;
+
+            damage /= count;                    // divide to all targets
+        }
+
         bool apply_direct_bonus = true;
         switch (m_spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
             {
-                // Meteor like spells (divided damage to targets)
-                if (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_SHARE_DAMAGE)
-                {
-                    uint32 count = 0;
-                    for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-                        if (ihit->effectMask & (1<<effIndex))
-                            ++count;
-
-                    damage /= count;                    // divide to all targets
-                }
-
                 switch (m_spellInfo->Id)                     // better way to check unknown
                 {
                     // Consumption
@@ -691,6 +691,18 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
+                    // Exorcism
+                    case 122032:
+                    {
+                        if (Player* _player = m_caster->ToPlayer())
+                        {
+                            if (Unit* target = _player->GetSelectedUnit())
+                                if(target == unitTarget)
+                                    break;
+                        }
+                        damage /= 4;
+                        break;
+                    }
                     // Ancient Fury
                     case 86704:
                     {
@@ -2442,10 +2454,15 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
 
     uint32 heal = uint32(damage);
 
-    heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(heal), HEAL, effIndex);
-    heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL, effIndex);
+    if(damage)
+    {
+        heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(heal), HEAL, effIndex);
+        heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL, effIndex);
+    }
 
     m_healing += heal;
+
+
 }
 
 void Spell::EffectHealMechanical(SpellEffIndex effIndex)
@@ -3620,6 +3637,7 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         unitTarget->RemoveAurasDueToSpellByDispel(itr->first->GetId(), m_spellInfo->Id, itr->first->GetCasterGUID(), m_caster, itr->second);
     }
 
+    m_count_dispeling += spellSuccess.size();
     m_caster->SendDispelLog(unitTarget->GetGUID(), m_spellInfo->Id, spellSuccess, false, false);
 
     // On success dispel

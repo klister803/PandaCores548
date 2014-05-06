@@ -944,23 +944,28 @@ class spell_pal_word_of_glory : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
                     if (Unit* unitTarget = GetHitUnit())
                     {
-                        if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(_player))
-                            unitTarget = _player;
+                        if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(caster))
+                        {
+                            if (caster->HasAura(54938) && !unitTarget->isPet())
+                                caster->CastSpell(unitTarget, 130552, true);
+                            else
+                                caster->CastSpell(caster, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
+                        }
+                        else
+                            caster->CastSpell(unitTarget, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
 
-                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+                        int32 holyPower = caster->GetPower(POWER_HOLY_POWER);
 
                         if (holyPower > 2)
                             holyPower = 2;
 
-                        _player->CastSpell(unitTarget, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
-
-                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
+                        if (caster->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
                         {
-                            Aura* aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player);
+                            Aura* aura = caster->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, caster);
 
                             if (aura)
                             {
@@ -969,8 +974,8 @@ class spell_pal_word_of_glory : public SpellScriptLoader
                             }
                         }
 
-                        if (!_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
-                            _player->ModifyPower(POWER_HOLY_POWER, -holyPower);
+                        if (!caster->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                            caster->ModifyPower(POWER_HOLY_POWER, -holyPower);
                     }
                 }
             }
@@ -1501,6 +1506,179 @@ class spell_pal_devotion_aura : public SpellScriptLoader
         }
 };
 
+// Word of Glory - 130551
+class spell_pal_word_of_glory_heal : public SpellScriptLoader
+{
+    public:
+        spell_pal_word_of_glory_heal() : SpellScriptLoader("spell_pal_word_of_glory_heal") { }
+
+        class spell_pal_word_of_glory_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_word_of_glory_heal_SpellScript);
+
+            void HandleHeal(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    int32 _amount = GetHitHeal();
+                    int32 holyPower = caster->GetPower(POWER_HOLY_POWER) + 1;
+                    if (holyPower > 3)
+                        holyPower = 3;
+
+                    // Divine Purpose
+                    if (caster->HasAura(90174))
+                        holyPower = 3;
+
+                    _amount *= holyPower;
+
+                    // Bastion of Glory : +50% of power if target is player
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (unitTarget->GetGUID() == caster->GetGUID())
+                        {
+                            if (Aura* aurabp = caster->GetAura(114637))
+                            {
+                                int32 percent = aurabp->GetStackAmount() * 10;
+                                if (Aura* masteryA = caster->GetAura(76671))
+                                    percent += masteryA->GetEffect(0)->GetAmount();
+                                AddPct(_amount, percent);
+                            }
+                        }
+                    }
+                    SetHitHeal(_amount);
+                }
+            }
+
+            void Register()
+            {
+                // add dummy effect spell handler to Blessing of Faith
+                OnEffectHitTarget += SpellEffectFn(spell_pal_word_of_glory_heal_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_word_of_glory_heal_SpellScript();
+        }
+};
+
+// Harsh Word - 130552
+class spell_pal_harsh_word : public SpellScriptLoader
+{
+    public:
+        spell_pal_harsh_word() : SpellScriptLoader("spell_pal_harsh_word") { }
+
+        class spell_pal_harsh_word_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_harsh_word_SpellScript);
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    int32 _amount = GetHitDamage();
+                    int32 holyPower = caster->GetPower(POWER_HOLY_POWER) + 1;
+                    if (holyPower > 3)
+                        holyPower = 3;
+
+                    // Divine Purpose
+                    if (caster->HasAura(90174))
+                        holyPower = 3;
+
+                    _amount = int32(_amount * holyPower * 1.5f);
+
+                    // Bastion of Glory : +50% of power if target is player
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (unitTarget->GetGUID() == caster->GetGUID())
+                        {
+                            if (Aura* aurabp = caster->GetAura(114637))
+                            {
+                                int32 percent = aurabp->GetStackAmount() * 10;
+                                if (Aura* masteryA = caster->GetAura(76671))
+                                    percent += masteryA->GetEffect(0)->GetAmount();
+                                AddPct(_amount, percent);
+                            }
+                        }
+                    }
+                    SetHitDamage(_amount);
+                }
+            }
+
+            void Register()
+            {
+                // add dummy effect spell handler to Blessing of Faith
+                OnEffectHitTarget += SpellEffectFn(spell_pal_harsh_word_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_harsh_word_SpellScript();
+        }
+};
+
+// for glyhp 115738 and 54935 - 119072 Holy Wrath
+class spell_pal_holy_wrath : public SpellScriptLoader
+{
+    public:
+        spell_pal_holy_wrath() : SpellScriptLoader("spell_pal_holy_wrath") { }
+
+        class spell_pal_holy_wrath_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_holy_wrath_SpellScript);
+
+            void FilterScript(std::list<WorldObject*>& unitList)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(115738))
+                    {
+                        if (Player* _player = caster->ToPlayer())
+                            if (Unit* target = _player->GetSelectedUnit())
+                            {
+                                unitList.clear();
+                                unitList.push_back(target);
+                                return;
+                            }
+                        if(unitList.size() > 1)
+                            Trinity::Containers::RandomResizeList(unitList, 1);
+                    }
+                }
+            }
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(54935))
+                    {
+                        int32 _amount = GetHitDamage();
+                        if (Unit* unitTarget = GetHitUnit())
+                        {
+                            if(unitTarget->HealthBelowPct(20))
+                            {
+                                AddPct(_amount, 50);
+                                SetHitDamage(_amount);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_holy_wrath_SpellScript::FilterScript, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnEffectHitTarget += SpellEffectFn(spell_pal_holy_wrath_SpellScript::HandleDamage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_holy_wrath_SpellScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
@@ -1534,4 +1712,7 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_stay_of_execution();
     new spell_pal_execution_sentence_damage();
     new spell_pal_devotion_aura();
+    new spell_pal_word_of_glory_heal();
+    new spell_pal_harsh_word();
+    new spell_pal_holy_wrath();
 }

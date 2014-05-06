@@ -2145,7 +2145,7 @@ class spell_warl_seed_of_corruption_dota : public SpellScriptLoader
                     if(Player* _player = caster->ToPlayer())
                         if(Unit* target = _player->GetSelectedUnit())
                         {
-                            damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, EFFECT_0, GetAura()->GetStackAmount(), NULL, aurEff->GetDotaStats());
+                            damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, EFFECT_0, GetAura()->GetStackAmount());
                             damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT, EFFECT_0, GetAura()->GetStackAmount());
                         }
                 }

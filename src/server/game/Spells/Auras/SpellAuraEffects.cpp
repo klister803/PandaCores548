@@ -501,52 +501,15 @@ m_base(base), m_spellInfo(base->GetSpellInfo()),
 m_baseAmount(baseAmount ? *baseAmount : m_spellInfo->GetEffect(effIndex, m_diffMode).BasePoints),
 m_spellmod(NULL), m_periodicTimer(0), m_tickNumber(0), m_effIndex(effIndex),
 m_canBeRecalculated(true), m_isPeriodic(false),
-m_oldbaseAmount(0),saveTarget(NULL),
-m_diffMode(caster ? caster->GetSpawnMode() : 0),
-  m_dotaStatsDump(NULL)
+m_oldbaseAmount(0), saveTarget(NULL), m_crit_amount(0), m_crit_chance(0.0f),
+m_diffMode(caster ? caster->GetSpawnMode() : 0)
 {
+    m_send_baseAmount = m_baseAmount;
 }
 
 AuraEffect::~AuraEffect()
 {
-    if (m_dotaStatsDump)
-        delete m_dotaStatsDump;
-
     delete m_spellmod;
-}
-
-void AuraEffect::CalculateDotaStatsDump(bool refresh)
-{
-    if (GetAuraType() != SPELL_AURA_PERIODIC_DAMAGE)
-        return;
-
-    if (m_dotaStatsDump)
-    {
-        delete m_dotaStatsDump;
-        m_dotaStatsDump = NULL;
-    }
-
-    Unit* caster = GetCaster();
-    Unit *target = GetBase()->GetOwner()->ToUnit();
-    if (!caster || !target)
-        return;
-
-    m_dotaStatsDump = new DotaStatsDump;
-    uint32 damage = std::max(GetAmount(), 0);
-    caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount(), m_dotaStatsDump);
-    caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_dotaStatsDump);
-
-    switch (m_spellInfo->SpellFamilyName)
-    {
-        case SPELLFAMILY_WARLOCK:
-            if (m_spellInfo->SpellFamilyFlags[0] & 0x2 && refresh)
-                if (m_dotaStatsDump->spellTotalDamage)
-                {
-                    delete m_dotaStatsDump->spellTotalDamage;
-                    m_dotaStatsDump->spellTotalDamage = NULL;
-                }
-            break;
-    }
 }
 
 void AuraEffect::GetTargetList(std::list<Unit*> & targetList) const
@@ -570,7 +533,7 @@ void AuraEffect::GetApplicationList(std::list<AuraApplication*> & applicationLis
     }
 }
 
-int32 AuraEffect::CalculateAmount(Unit* caster)
+int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 {
     int32 amount;
     Item* castItem = NULL;
@@ -579,12 +542,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         if (Player* playerCaster = caster->ToPlayer())
             castItem = playerCaster->GetItemByGuid(itemGUID);
 
-    //Old trinket not modify amount
-//     if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && !(m_spellInfo->AttributesEx8 & SPELL_ATTR8_AURA_SEND_AMOUNT) && !(m_spellInfo->Attributes & (SPELL_ATTR0_PASSIVE | SPELL_ATTR0_HIDDEN_CLIENTSIDE)))
-//         return m_baseAmount;
-
     // default amount calculation
-    amount = m_spellInfo->GetEffect(m_effIndex, m_diffMode).CalcValue(caster, &m_baseAmount, GetBase()->GetOwner()->ToUnit(), castItem);
+    m_send_baseAmount = m_spellInfo->GetEffect(m_effIndex, m_diffMode).CalcValue(caster, &m_baseAmount, GetBase()->GetOwner()->ToUnit(), castItem);
+    amount = m_send_baseAmount;
 
     // check item enchant aura cast
     if (!amount && caster && castItem)
@@ -613,6 +573,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         }
 
     float DoneActualBenefit = 0.0f;
+    Unit* target = GetBase()->GetUnitOwner();
 
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION) && !amount)
     {
@@ -633,7 +594,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             m_canBeRecalculated = false;
             if (!m_spellInfo->ProcFlags)
                 break;
-            amount = int32(GetBase()->GetUnitOwner()->CountPctFromMaxHealth(10));
+            amount = int32(target->CountPctFromMaxHealth(10));
             if (caster)
             {
                 // Glyphs increasing damage cap
@@ -659,7 +620,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             if (!caster)
                 break;
 
-            amount = caster->CalcAbsorb(GetBase()->GetUnitOwner(), m_spellInfo, amount);
+            amount = caster->CalcAbsorb(target, m_spellInfo, amount);
 
             break;
         }
@@ -752,6 +713,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             break;
         }
         case SPELL_AURA_DUMMY:
+        {
             if (!caster)
                 break;
 
@@ -776,10 +738,19 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             // Earth Shield
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellFamilyFlags[1] & 0x400)
             {
-                amount = caster->SpellHealingBonusDone(GetBase()->GetUnitOwner(), GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
-                amount = GetBase()->GetUnitOwner()->SpellHealingBonusTaken(caster, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
+                amount = caster->SpellHealingBonusDone(target, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
+                amount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
             }
+            else if(m_aura_amount)
+                amount = m_aura_amount;
             break;
+        }
+        case SPELL_AURA_PERIODIC_DUMMY:
+        {
+            if(m_aura_amount)
+                amount = m_aura_amount;
+            break;
+        }
         case SPELL_AURA_BYPASS_ARMOR_FOR_CASTER:
         {
             if (!caster)
@@ -789,7 +760,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             {
                 case 91021: // Find Weakness
                 {
-                    if (Unit * target = GetBase()->GetUnitOwner())
+                    if (target)
                     {
                         if (target->GetTypeId() == TYPEID_PLAYER)
                             amount = 50;
@@ -903,19 +874,54 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 default:
                     break;
             }
+            if(target)
+            {
+                amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
+                caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
+                m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
+                amount *= GetBase()->GetStackAmount();
+                m_aura_amount = amount;
+                return amount;
+            }
+            break;
+        }
+        case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+        {
+            if(target)
+            {
+                amount = uint32(target->CountPctFromMaxHealth(amount));
+                caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
+                m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
+                amount *= GetBase()->GetStackAmount();
+                m_aura_amount = amount;
+                return amount;
+            }
+            break;
+        }
+        case SPELL_AURA_PERIODIC_LEECH:
+        {
+            if(target)
+            {
+                amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
+                caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
+                m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
+                amount *= GetBase()->GetStackAmount();
+                m_aura_amount = amount;
+                return amount;
+            }
             break;
         }
         case SPELL_AURA_PERIODIC_ENERGIZE:
             switch (m_spellInfo->Id)
             {
             case 57669: // Replenishment (0.2% from max)
-                amount = CalculatePct(GetBase()->GetUnitOwner()->GetMaxPower(POWER_MANA), amount);
+                amount = CalculatePct(target->GetMaxPower(POWER_MANA), amount);
                 break;
             case 61782: // Infinite Replenishment
-                amount = GetBase()->GetUnitOwner()->GetMaxPower(POWER_MANA) * 0.0025f;
+                amount = target->GetMaxPower(POWER_MANA) * 0.0025f;
                 break;
             case 48391: // Owlkin Frenzy
-                ApplyPct(amount, GetBase()->GetUnitOwner()->GetCreatePowers(POWER_MANA));
+                ApplyPct(amount, target->GetCreatePowers(POWER_MANA));
                 break;
             case 54428: // Divine Plea
                 int32 manaPerc;
@@ -961,6 +967,51 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 default:
                     break;
             }
+            if(target)
+            {
+                amount = caster->SpellHealingBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
+                caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
+                m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
+                amount *= GetBase()->GetStackAmount();
+                m_aura_amount = amount;
+                return amount;
+            }
+            break;
+        }
+        case SPELL_AURA_OBS_MOD_HEALTH:
+        {
+            if (!caster)
+                break;
+
+            if(target)
+            {
+                // Taken mods
+                float TakenTotalMod = 1.0f;
+
+                // Tenacity increase healing % taken
+                if (AuraEffect const* Tenacity = target->GetAuraEffect(58549, 0))
+                    AddPct(TakenTotalMod, Tenacity->GetAmount());
+
+                // Healing taken percent
+                float minval = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+                if (minval)
+                    AddPct(TakenTotalMod, minval);
+
+                float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+                if (maxval)
+                    AddPct(TakenTotalMod, maxval);
+
+                TakenTotalMod = std::max(TakenTotalMod, 0.0f);
+
+                amount = uint32(target->CountPctFromMaxHealth(amount));
+                amount = uint32(amount * TakenTotalMod);
+
+                caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
+                m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
+                amount *= GetBase()->GetStackAmount();
+                m_aura_amount = amount;
+                return amount;
+            }
             break;
         }
         case SPELL_AURA_MOD_THREAT:
@@ -971,12 +1022,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             {
                 // Arcane Shroud
                 case 26400:
-                    level_diff = GetBase()->GetUnitOwner()->getLevel() - 60;
+                    level_diff = target->getLevel() - 60;
                     multiplier = 2;
                     break;
                 // The Eye of Diminution
                 case 28862:
-                    level_diff = GetBase()->GetUnitOwner()->getLevel() - 60;
+                    level_diff = target->getLevel() - 60;
                     multiplier = 1;
                     break;
             }
@@ -987,7 +1038,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         case SPELL_AURA_MOD_INCREASE_HEALTH:
             // Vampiric Blood
             if (GetId() == 55233)
-                amount = GetBase()->GetUnitOwner()->CountPctFromMaxHealth(amount);
+                amount = target->CountPctFromMaxHealth(amount);
             break;
         case SPELL_AURA_MOD_STAT:
         {
@@ -1044,7 +1095,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         case SPELL_AURA_MOD_INCREASE_SPEED:
             // Dash - do not set speed if not in cat form
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellInfo()->SpellFamilyFlags[2] & 0x00000008)
-                amount = GetBase()->GetUnitOwner()->GetShapeshiftForm() == FORM_CAT ? amount : 0;
+                amount = target->GetShapeshiftForm() == FORM_CAT ? amount : 0;
             break;
         case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
         case SPELL_AURA_MOD_HEALING_DONE_PERCENT:
@@ -1690,12 +1741,6 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
            break;
     }
     GetBase()->CallScriptEffectUpdatePeriodicHandlers(this);
-}
-
-bool AuraEffect::IsPeriodicTickCrit(Unit* target, Unit const* caster, DotaStatsDump* use) const
-{
-    ASSERT(caster);
-    return caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, NULL, use);
 }
 
 bool AuraEffect::IsAffectingSpell(SpellInfo const* spell) const
@@ -4266,13 +4311,14 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint
         }
     }
 
+    uint32 count = 0;
     if (apply && GetMiscValue() == SPELL_SCHOOL_MASK_NORMAL)
-        target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
+        count += target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
     // remove all flag auras (they are positive, but they must be removed when you are immune)
     if (GetSpellInfo()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY
         && GetSpellInfo()->AttributesEx2 & SPELL_ATTR2_DAMAGE_REDUCED_SHIELD)
-        target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
+        count += target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
     // TODO: optimalize this cycle - use RemoveAurasWithInterruptFlags call or something else
     if ((apply)
@@ -4290,11 +4336,15 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint
                 && spell->Id != GetId())               //Don't remove self
             {
                 target->RemoveAura(iter);
+                count++;
             }
             else
                 ++iter;
         }
     }
+
+    if(Spell* modSpell = target->FindCurrentSpellBySpellId(GetId()))
+        modSpell->m_count_dispeling += count;
 }
 
 void AuraEffect::HandleAuraModDmgImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -7128,7 +7178,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
     if (GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
     {
-        damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount(), NULL, m_dotaStatsDump);
         damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
 
         // Calculate armor mitigation
@@ -7258,12 +7307,10 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
             }
         }
     }
-    else
-        damage = uint32(target->CountPctFromMaxHealth(damage));
 
-    bool crit = IsPeriodicTickCrit(target, caster, m_dotaStatsDump);
+    bool crit = roll_chance_f(GetCritChance());
     if (crit)
-        damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
+        damage = GetCritAmount();
 
     // If Doom critical tick, a Wild Imp will appear to fight with the Warlock
     if (m_spellInfo->Id == 603 && crit)
@@ -7347,12 +7394,11 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
 
     uint32 damage = std::max(GetAmount(), 0);
 
-    damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
     damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
 
-    bool crit = IsPeriodicTickCrit(target, caster);
+    bool crit = roll_chance_f(GetCritChance());
     if (crit)
-        damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
+        damage = GetCritAmount();
 
     // Calculate armor mitigation
     if (Unit::IsDamageReducedByArmor(GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), m_effIndex))
@@ -7462,30 +7508,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
         if (caster->GetHealthPct() > 35.0f)
             return;
 
-    if (GetAuraType() == SPELL_AURA_OBS_MOD_HEALTH)
-    {
-        // Taken mods
-        float TakenTotalMod = 1.0f;
-
-        // Tenacity increase healing % taken
-        if (AuraEffect const* Tenacity = target->GetAuraEffect(58549, 0))
-            AddPct(TakenTotalMod, Tenacity->GetAmount());
-
-        // Healing taken percent
-        float minval = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-        if (minval)
-            AddPct(TakenTotalMod, minval);
-
-        float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-        if (maxval)
-            AddPct(TakenTotalMod, maxval);
-
-        TakenTotalMod = std::max(TakenTotalMod, 0.0f);
-
-        damage = uint32(target->CountPctFromMaxHealth(damage));
-        damage = uint32(damage * TakenTotalMod);
-    }
-    else
+    if (GetAuraType() == SPELL_AURA_PERIODIC_HEAL)
     {
         // Wild Growth = amount + (6 - 2*doneTicks) * ticks* amount / 100
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellIconID == 2864)
@@ -7500,13 +7523,12 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
             damage += addition;
         }
 
-        damage = caster->SpellHealingBonusDone(target, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
         damage = target->SpellHealingBonusTaken(caster, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
     }
 
-    bool crit = IsPeriodicTickCrit(target, caster);
+    bool crit = roll_chance_f(GetCritChance());
     if (crit)
-        damage = caster->SpellCriticalHealingBonus(m_spellInfo, damage, target);
+        damage = GetCritAmount();
 
     sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "PeriodicTick: %u (TypeId: %u) heal of %u (TypeId: %u) for %u health inflicted by %u",
         GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), damage, GetId());

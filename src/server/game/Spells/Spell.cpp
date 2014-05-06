@@ -414,6 +414,7 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
     m_comboPointGain = 0;
     m_delayStart = 0;
     m_delayAtDamageCount = 0;
+    m_count_dispeling = 0;
     m_diffMode = m_caster->GetMap() ? m_caster->GetMap()->GetSpawnMode() : 0;
 
     m_applyMultiplierMask = 0;
@@ -2551,7 +2552,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Do healing and triggers
     if (m_healing > 0)
     {
-        bool crit = caster->isSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask);
+        float crit_chance = 0.0f;
+        bool crit = caster->isSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask, BASE_ATTACK, crit_chance);
 
         uint32 addhealth = m_healing;
         if (crit)
@@ -8263,7 +8265,8 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
         }
     }
 
-    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
+    float crit_chance = 0.0f;
+    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, crit_chance);
 }
 
 SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& skillId, int32& reqSkillValue, int32& skillValue)
@@ -8654,15 +8657,39 @@ enum GCDLimits
     MAX_GCD = 1500
 };
 
-bool Spell::HasGlobalCooldown() const
+bool Spell::HasGlobalCooldown()
 {
     // Only player or controlled units have global cooldown
     if (m_caster->GetCharmInfo())
         return m_caster->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(m_spellInfo);
-    else if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    else if (m_caster->GetTypeId() == TYPEID_PLAYER && GetGlobalCooldown() > 0)
         return m_caster->ToPlayer()->GetGlobalCooldownMgr().HasGlobalCooldown(m_spellInfo);
     else
         return false;
+}
+
+int32 Spell::GetGlobalCooldown()
+{
+    int32 gcd = m_spellInfo->StartRecoveryTime;
+    if (!gcd)
+        return 0;
+
+     if (m_caster->GetTypeId() == TYPEID_PLAYER)
+          if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_COOLDOWN))
+               return 0;
+
+    // Global cooldown can't leave range 1..1.5 secs
+    // There are some spells (mostly not casted directly by player) that have < 1 sec and > 1.5 sec global cooldowns
+    // but as tests show are not affected by any spell mods.
+    if (m_spellInfo->StartRecoveryTime >= MIN_GCD && m_spellInfo->StartRecoveryTime <= MAX_GCD)
+    {
+        // gcd modifier auras are applied only to own spells and only players have such mods
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_GLOBAL_COOLDOWN, gcd, this);
+
+        return gcd;
+    }
+    return 0;
 }
 
 void Spell::TriggerGlobalCooldown()
@@ -8683,6 +8710,9 @@ void Spell::TriggerGlobalCooldown()
         // gcd modifier auras are applied only to own spells and only players have such mods
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
             m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_GLOBAL_COOLDOWN, gcd, this);
+
+        if(gcd <= 0)
+            return;
 
         uint16 index = m_caster->HasAura(25956) ? UNIT_MOD_HASTE: UNIT_MOD_CAST_SPEED;
 

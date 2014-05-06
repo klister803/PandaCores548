@@ -4201,19 +4201,20 @@ void Unit::RemoveNotOwnSingleTargetAuras(uint32 newPhase)
     }
 }
 
-void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
+uint32 Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
 {
     if (!(m_interruptMask & flag))
-        return;
+        return 0;
 
     if (_haveCCDEffect && flag & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2))
     {
         _delayInterruptFlag = flag;
-        return;
+        return 0;
     }
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "RemoveAurasWithInterruptFlags flag %u except %u, m_interruptMask %u", flag, except, m_interruptMask);
 
+    uint32 count = 0;
     // interrupt auras
     for (AuraApplicationList::iterator iter = m_interruptableAuras.begin(); iter != m_interruptableAuras.end();)
     {
@@ -4224,6 +4225,7 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
         {
             uint32 removedAuras = m_removedAurasCount;
             RemoveAura(aura);
+            count++;
             if (m_removedAurasCount > removedAuras + 1)
                 iter = m_interruptableAuras.begin();
         }
@@ -4239,6 +4241,7 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
             InterruptNonMeleeSpells(false);
 
     UpdateInterruptMask();
+    return count;
 }
 
 void Unit::RemoveAurasWithFamily(SpellFamilyNames family, uint32 familyFlag1, uint32 familyFlag2, uint32 familyFlag3, uint64 casterGUID)
@@ -5995,7 +5998,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         check = true;
                         continue;
                     }
-                    basepoints0 = CalculatePct(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb(), triggerAmount);
+                    basepoints0 = CalculatePct(int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()), triggerAmount);
                     if(bp0)
                         basepoints0 *= bp0;
 
@@ -6218,6 +6221,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     triggeredByAura->SetAmount(triggerAmount - damage);
 
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_UPDATE_DUR_TO_IGNORE_MAX: //21
+                {
+                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                    {
+                        int32 _duration = int32(aura->GetDuration() + int32(triggerAmount * 1000));
+                        aura->SetDuration(_duration, true);
+                        if (_duration > aura->GetMaxDuration())
+                            aura->SetMaxDuration(_duration);
+                    }
                     check = true;
                 }
                 break;
@@ -11666,7 +11681,7 @@ void Unit::EnergizeBySpell(Unit* victim, uint32 spellID, int32 damage, Powers po
     victim->getHostileRefManager().threatAssist(this, float(damage) * 0.5f, spellInfo);
 }
 
-uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffIndex effIndex, uint32 stack, DotaStatsDump *fillIn, DotaStatsDump *use)
+uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffIndex effIndex, uint32 stack)
 {
     if (!spellProto || !victim || damagetype == DIRECT_DAMAGE)
         return pdamage;
@@ -11701,12 +11716,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
     float tmpDamage = 0.0f;
 
-    if (use)
-    {
-        if (use->spellTotalDamage)
-            tmpDamage = *(use->spellTotalDamage);
-    }
-    else
     {
         // Apply PowerPvP damage bonus
         DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
@@ -12054,9 +12063,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         // apply spellmod to Done damage (flat and pct)
         if (Player* modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, tmpDamage);
-
-        if (fillIn)
-            fillIn->SetSpellTotalDamage(tmpDamage);
     }
 
     return uint32(std::max(tmpDamage, 0.0f));
@@ -12240,7 +12246,7 @@ int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask)
     return TakenAdvertisedBenefit;
 }
 
-bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType, DotaStatsDump *fillIn, DotaStatsDump *use) const
+bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType, float &crit_chance) const
 {
     //! Mobs can't crit with spells. Player Totems can
     //! Fire Elemental (from totem) can too - but this part is a hack and needs more research
@@ -12250,8 +12256,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     // not critting spell
     if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT))
         return false;
-
-    float crit_chance = 0.0f;
 
     // Pets have 100% of owner's crit_chance
     if (isPet() && GetOwner())
@@ -12518,12 +12522,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         if ((*i)->GetCasterGUID() == GetGUID() && (*i)->IsAffectingSpell(spellProto))
             crit_chance += (*i)->GetAmount();
 
-    if (fillIn)
-        fillIn->SetCritChance(crit_chance);
-
-    if (use && use->critChance)
-        crit_chance = *(use->critChance);
-
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
     if (roll_chance_f(crit_chance))
         return true;
@@ -12740,29 +12738,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
 
     // Custom MoP Script
-    // Word of Glory - 130551
-    if (spellProto->Id == 130551 && GetTypeId() == TYPEID_PLAYER)
-    {
-        int32 holyPower = GetPower(POWER_HOLY_POWER) > 2 ? 2 : GetPower(POWER_HOLY_POWER);
-
-        // Divine Purpose
-        if (HasAura(90174))
-            holyPower = 2;
-
-        heal *= (holyPower+1);
-
-        // Bastion of Glory : +50% of power if target is player
-        if (victim && victim->GetGUID() == GetGUID())
-            if (Aura* aurabp = GetAura(114637))
-            {
-                int32 percent = aurabp->GetStackAmount() * 10;
-                if (Aura* masteryA = GetAura(76671))
-                    percent += masteryA->GetEffect(0)->GetAmount();
-                AddPct(heal, percent);
-            }
-    }
     // Light of Dawn
-    else if (spellProto->Id == 85222 && GetTypeId() == TYPEID_PLAYER)
+    if (spellProto->Id == 85222 && GetTypeId() == TYPEID_PLAYER)
     {
         int32 holyPower = GetPower(POWER_HOLY_POWER);
 

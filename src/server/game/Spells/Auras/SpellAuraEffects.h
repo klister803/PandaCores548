@@ -23,81 +23,6 @@ class Unit;
 class AuraEffect;
 class Aura;
 
-class DotaStatsDump {
-public:
-    DotaStatsDump()
-    {
-        spellTotalDamage = NULL;
-        damageMod = NULL;
-        critChance = NULL;
-        amplitude = NULL;
-    }
-
-    ~DotaStatsDump()
-    {
-        if (spellTotalDamage)
-            delete spellTotalDamage;
-
-        if (damageMod)
-            delete damageMod;
-
-        if (critChance)
-            delete critChance;
-
-        if (amplitude)
-            delete amplitude;
-    }
-
-    void SetSpellTotalDamage(int32 value)
-    {
-        if (!spellTotalDamage)
-        {
-            spellTotalDamage = new int32;
-            *spellTotalDamage = value;
-        }
-        else
-            *spellTotalDamage = value;
-    }
-
-    void SetDamageMod(float value)
-    {
-        if (!damageMod)
-        {
-            damageMod = new float;
-            *damageMod = value;
-        }
-        else
-            *damageMod = value;
-    }
-
-    void SetCritChance(float value)
-    {
-        if (!critChance)
-        {
-            critChance = new float;
-            *critChance = value;
-        }
-        else
-            *critChance = value;
-    }
-
-    void SetAmplitude(int32 value)
-    {
-        if (!amplitude)
-        {
-            amplitude = new int32;
-            *amplitude = value;
-        }
-        else
-            *amplitude = value;
-    }
-
-    int32 *spellTotalDamage;
-    float *damageMod;
-    float *critChance;
-    int32 *amplitude;
-};
-
 #include "SpellAuras.h"
 
 typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uint8 mode, bool apply) const;
@@ -123,6 +48,7 @@ class AuraEffect
         uint32 GetId() const { return m_spellInfo->Id; }
         uint32 GetEffIndex() const { return m_effIndex; }
         int32 GetBaseAmount() const { return m_baseAmount; }
+        int32 GetBaseSendAmount() const { return m_send_baseAmount; }
         int32 GetOldBaseAmount() const { return m_oldbaseAmount; }
         int32 GetAmplitude() const { return m_amplitude; }
 
@@ -130,20 +56,30 @@ class AuraEffect
         int32 GetMiscValue() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).MiscValue; }
         AuraType GetAuraType() const { return (AuraType)m_spellInfo->GetEffect(m_effIndex, m_diffMode).ApplyAuraName; }
         int32 GetAmount() const { return m_amount; }
-        void SetAmount(int32 amount) { m_amount = amount; m_canBeRecalculated = false;}
-        DotaStatsDump* GetDotaStats() const { return m_dotaStatsDump; }
+        void SetAmount(int32 amount)
+        {
+            if (m_amount != amount)
+            {
+                m_amount = amount;
+                GetBase()->SetNeedClientUpdateForTargets();
+            }
+
+            m_canBeRecalculated = false;
+        }
+        int32 GetCritAmount() const { return m_crit_amount; }
+        void SetCritAmount(int32 amount) { m_crit_amount = amount;}
+        float GetCritChance() const { return m_crit_chance; }
+        void SetCritChance(float amount) { m_crit_chance = amount;}
 
         int32 GetPeriodicTimer() const { return m_periodicTimer; }
         void SetPeriodicTimer(int32 periodicTimer) { m_periodicTimer = periodicTimer; }
 
-        void CalculateDotaStatsDump(bool refresh = false);
-
-        int32 CalculateAmount(Unit* caster);
+        int32 CalculateAmount(Unit* caster, int32 &m_aura_amount);
         void CalculatePeriodic(Unit* caster, bool resetPeriodicTimer = true, bool load = false);
         void CalculateSpellMod();
         void ChangeAmount(int32 newAmount, bool mark = true, bool onStackOrReapply = false);
-        void RecalculateAmount() { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(GetCaster()), false); }
-        void RecalculateAmount(Unit* caster) { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(caster), false); }
+        void RecalculateAmount() { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(GetCaster(), GetBase()->m_aura_amount), false); }
+        void RecalculateAmount(Unit* caster) { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(caster, GetBase()->m_aura_amount), false); }
         bool CanBeRecalculated() const { return m_canBeRecalculated; }
         void SetCanBeRecalculated(bool val) { m_canBeRecalculated = val; }
         void HandleEffect(AuraApplication * aurApp, uint8 mode, bool apply);
@@ -179,7 +115,10 @@ class AuraEffect
         int32 const m_baseAmount;
 
         int32 m_amount;
+        int32 m_crit_amount;
+        float m_crit_chance;
         int32 m_oldbaseAmount;
+        int32 m_send_baseAmount;
         Unit* saveTarget;
 
         SpellModifier* m_spellmod;
@@ -192,10 +131,6 @@ class AuraEffect
         bool m_canBeRecalculated;
         bool m_isPeriodic;
         uint8 m_diffMode;
-
-        DotaStatsDump* m_dotaStatsDump;
-    private:
-        bool IsPeriodicTickCrit(Unit* target, Unit const* caster, DotaStatsDump* use = NULL) const;
 
     public:
         // aura effect apply/remove handlers

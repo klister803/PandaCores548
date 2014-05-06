@@ -158,7 +158,7 @@ void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
     ASSERT(aurEff);
     ASSERT(HasEffect(effIndex) == (!apply));
     ASSERT((1<<effIndex) & _effectsToApply);
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraApplication::_HandleEffect: %u, apply: %u: amount: %i", aurEff->GetAuraType(), apply, aurEff->GetAmount());
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraApplication::_HandleEffect: GetId %i, GetAuraType %u, apply: %u: amount: %i, m_send_baseAmount: %i, effIndex: %i", GetBase()->GetId(), aurEff->GetAuraType(), apply, aurEff->GetAmount(), aurEff->GetBaseSendAmount(), effIndex);
 
     if (apply)
     {
@@ -193,12 +193,22 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
 
     if (data.WriteBit(!(flags & AFLAG_CASTER)))
         data.WriteGuidMask<2, 3, 4, 0, 1, 6, 7, 5>(aura->GetCasterGUID());
-    data.WriteBits(0, 22);  // effect count 2
     uint32 count = 0;
+    bool sendEffect = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (AuraEffect const* eff = aura->GetEffect(i))
+    {
+        if(aura->GetSpellInfo()->Effects[i].IsEffect())
+        {
             ++count;
-    data.WriteBits(count, 22);
+            if (AuraEffect const* eff = aura->GetEffect(i))
+            {
+                if(eff->GetAmount() != eff->GetBaseSendAmount())
+                    sendEffect = true;
+            }
+        }
+    }
+    data.WriteBits(sendEffect ? count : 0, 22);  // effect count 2
+    data.WriteBits(count, 22);  // effect count
     data.WriteBit(flags & AFLAG_DURATION);  // has duration
     data.WriteBit(flags & AFLAG_DURATION);  // has max duration
 }
@@ -217,18 +227,71 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
     if (aura->GetMaxDuration() > 0 && !(aura->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_HIDE_DURATION))
         flags |= AFLAG_DURATION;
 
+    bool sendEffect = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (AuraEffect const* eff = aura->GetEffect(i))
-            data << float(eff->GetAmount());
+    {
+        if(aura->GetSpellInfo()->Effects[i].IsEffect())
+        {
+            if (AuraEffect const* eff = aura->GetEffect(i))
+                if(eff->GetAmount() != eff->GetBaseSendAmount())
+                    sendEffect = true;
+        }
+    }
+
+    if(sendEffect)
+    {
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if(aura->GetSpellInfo()->Effects[i].IsEffect())
+            {
+                if (AuraEffect const* eff = aura->GetEffect(i))
+                {
+                    if(eff->GetAmount() != eff->GetBaseSendAmount())
+                        data << float(eff->GetBaseSendAmount());
+                    else
+                        data << float(0.0f);
+                }
+                else
+                    data << float(0.0f);
+            }
+        }
+    }
+    else
+    {
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if(aura->GetSpellInfo()->Effects[i].IsEffect())
+            {
+                if (AuraEffect const* eff = aura->GetEffect(i))
+                    data << float(eff->GetAmount());
+                else
+                    data << float(0.0f);
+            }
+        }
+    }
+
     data << uint16(aura->GetCasterLevel());
     if (!(flags & AFLAG_CASTER))
         data.WriteGuidBytes<0, 6, 1, 4, 5, 3, 2, 7>(aura->GetCasterGUID());
     data << uint8(flags);
     if (flags & AFLAG_DURATION)
         data << uint32(aura->GetMaxDuration());
-    /*
-    if (effectCount2) { }
-    */
+
+    //effect2 send base amount
+    if(sendEffect)
+    {
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if(aura->GetSpellInfo()->Effects[i].IsEffect())
+            {
+                if (AuraEffect const* eff = aura->GetEffect(i))
+                    data << float(eff->GetAmount());
+                else
+                    data << float(0.0f);
+            }
+        }
+    }
+
     // send stack amount for aura which could be stacked (never 0 - causes incorrect display) or charges
     // stack amount has priority over charges (checked on retail with spell 50262)
     data << uint8(aura->GetSpellInfo()->StackAmount ? aura->GetStackAmount() : aura->GetCharges());
@@ -434,7 +497,8 @@ m_spellInfo(spellproto), m_casterGuid(casterGUID ? casterGUID : caster->GetGUID(
 m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
 m_owner(owner), m_timeCla(0), m_updateTargetMapInterval(0),
 m_casterLevel(caster ? caster->getLevel() : m_spellInfo->SpellLevel), m_procCharges(0), m_stackAmount(1),
-m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false)
+m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false), m_aura_amount(0),
+m_diffMode(caster ? caster->GetSpawnMode() : 0)
 {
     SpellPowerEntry power;
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
@@ -471,7 +535,7 @@ void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount)
             m_effects[i] = new AuraEffect(this, i, baseAmount ? baseAmount + i : NULL, caster);
 
             m_effects[i]->CalculatePeriodic(caster, true, false);
-            m_effects[i]->SetAmount(m_effects[i]->CalculateAmount(caster));
+            m_effects[i]->SetAmount(m_effects[i]->CalculateAmount(caster, m_aura_amount));
             m_effects[i]->CalculateSpellMod();
         }
         else
@@ -527,10 +591,6 @@ void Aura::_ApplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp
             caster->ToPlayer()->AddSpellAndCategoryCooldowns(m_spellInfo, castItem ? castItem->GetEntry() : 0, NULL, true);
         }
     }
-
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (AuraEffect* aurEff = GetEffect(i))
-            aurEff->CalculateDotaStatsDump();
 }
 
 void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp)
@@ -870,10 +930,7 @@ void Aura::RefreshDuration(bool /*recalculate*/)
     Unit* caster = GetCaster();
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (HasEffect(i))
-        {
             GetEffect(i)->CalculatePeriodic(caster, false, false);
-            GetEffect(i)->CalculateDotaStatsDump(true);
-        }
 
     SpellPowerEntry power;
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
@@ -963,7 +1020,7 @@ void Aura::SetStackAmount(uint8 stackAmount)
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (HasEffect(i))
-            m_effects[i]->ChangeAmount(m_effects[i]->CalculateAmount(caster), false, true);
+            m_effects[i]->ChangeAmount(m_effects[i]->CalculateAmount(caster, m_aura_amount), false, true);
 
     for (std::list<AuraApplication*>::const_iterator apptItr = applications.begin(); apptItr != applications.end(); ++apptItr)
         if (!(*apptItr)->GetRemoveMode())
@@ -1028,10 +1085,6 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
                     if (SpellModifier* mod = aurEff->GetSpellModifier())
                         mod->charges = GetCharges();
     }
-
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (AuraEffect* aurEff = GetEffect(i))
-            aurEff->CalculateDotaStatsDump();
 
     SetNeedClientUpdateForTargets();
     return false;

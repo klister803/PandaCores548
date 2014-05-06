@@ -502,6 +502,7 @@ class Spell
         SpellCustomErrors m_customError;
         uint8 m_diffMode;
         bool find_target;
+        uint32 m_count_dispeling; // Final count dispell auras
 
         UsedSpellMods m_appliedMods;
 
@@ -537,10 +538,12 @@ class Spell
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
+        uint32 GetCountDispel() const { return m_count_dispeling; }
     protected:
-        bool HasGlobalCooldown() const;
+        bool HasGlobalCooldown();
         void TriggerGlobalCooldown();
         void CancelGlobalCooldown();
+        int32 GetGlobalCooldown();
 
         void SendLoot(uint64 guid, LootType loottype);
 

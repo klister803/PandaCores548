@@ -107,7 +107,7 @@ class Aura
         uint64 GetCasterGUID() const { return m_casterGuid; }
         Unit* GetCaster() const;
         WorldObject* GetOwner() const { return m_owner; }
-        Unit* GetUnitOwner() const { ASSERT(GetType() == UNIT_AURA_TYPE); return (Unit*)m_owner; }
+        Unit* GetUnitOwner() const { if(GetType() == UNIT_AURA_TYPE) return (Unit*)m_owner; else return NULL; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
 
         AuraObjectType GetType() const;
@@ -189,6 +189,7 @@ class Aura
         bool CanBeAppliedOn(Unit* target);
         bool CheckAreaTarget(Unit* target);
         bool CanStackWith(Aura const* existingAura) const;
+        uint8 GetSpawnMode() const { return m_diffMode; }
 
         // Proc system
         // this subsystem is not yet in use - the core of it is functional, but still some research has to be done
@@ -235,6 +236,7 @@ class Aura
         void CallScriptAfterEffectProcHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, ProcEventInfo& eventInfo);
 
         std::list<AuraScript*> m_loadedScripts;
+        int32 m_aura_amount;
     private:
         void _DeleteRemovedApplications();
     protected:
@@ -252,6 +254,7 @@ class Aura
         uint16 m_casterLevel;                                // Aura level (store caster level for correct show level dep amount)
         uint8 m_procCharges;                                // Aura charges (0 for infinite)
         uint8 m_stackAmount;                                // Aura stack amount
+        uint8 m_diffMode;
 
         AuraEffect* m_effects[MAX_SPELL_EFFECTS];
         ApplicationMap m_applications;

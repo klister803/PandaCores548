@@ -102,23 +102,28 @@ enum SpellLinkedType
 
 enum SpellTriggeredType
 {
-    SPELL_TRIGGER_BP                = 0,            // set basepoint to spell from amount
-    SPELL_TRIGGER_BP_CUSTOM         = 1,            // set basepoint to spell custom from BD
-    SPELL_TRIGGER_MANA_COST         = 2,            // set basepoint to spell mana cost
-    SPELL_TRIGGER_DAM_HEALTH        = 3,            // set basepoint to spell damage or heal percent
-    SPELL_TRIGGER_COOLDOWN          = 4,            // Set cooldown for trigger spell
-    SPELL_TRIGGER_UPDATE_DUR        = 5,            // Update duration for select spell
-    SPELL_TRIGGER_GET_DUR_AURA      = 6,            // Get duration from select aura to cast bp
-    SPELL_TRIGGER_NEED_COMBOPOINTS  = 7,            // Proc from spell that need compopoiunts
-    SPELL_TRIGGER_UPDATE_DUR_TO_MAX = 8,            // Update duration for select spell to max duration
-    SPELL_TRIGGER_PERC_FROM_DAMGE   = 9,            // Percent from damage
-    SPELL_TRIGGER_PERC_MAX_MANA     = 10,           // Percent from max mana
-    SPELL_TRIGGER_PERC_BASE_MANA    = 11,           // Percent from base mana
-    SPELL_TRIGGER_PERC_CUR_MANA     = 12,           // Percent from curent mana
-    SPELL_TRIGGER_CHECK_PROCK       = 13,           // Check proc from spell to trigger
-    SPELL_TRIGGER_DUMMY             = 14,           // spell to trigger without option for bp
-    SPELL_TRIGGER_CAST_DEST         = 15,           // spell to trigger without option for bp
-    SPELL_TRIGGER_CHECK_DAMAGE      = 16,           // spell to trigger if damage > amount
+    SPELL_TRIGGER_BP                            = 0,            // set basepoint to spell from amount
+    SPELL_TRIGGER_BP_CUSTOM                     = 1,            // set basepoint to spell custom from BD
+    SPELL_TRIGGER_MANA_COST                     = 2,            // set basepoint to spell mana cost
+    SPELL_TRIGGER_DAM_HEALTH                    = 3,            // set basepoint to spell damage or heal percent
+    SPELL_TRIGGER_COOLDOWN                      = 4,            // Set cooldown for trigger spell
+    SPELL_TRIGGER_UPDATE_DUR                    = 5,            // Update duration for select spell
+    SPELL_TRIGGER_GET_DUR_AURA                  = 6,            // Get duration from select aura to cast bp
+    SPELL_TRIGGER_NEED_COMBOPOINTS              = 7,            // Proc from spell that need compopoiunts
+    SPELL_TRIGGER_UPDATE_DUR_TO_MAX             = 8,            // Update duration for select spell to max duration
+    SPELL_TRIGGER_PERC_FROM_DAMGE               = 9,            // Percent from damage
+    SPELL_TRIGGER_PERC_MAX_MANA                 = 10,           // Percent from max mana
+    SPELL_TRIGGER_PERC_BASE_MANA                = 11,           // Percent from base mana
+    SPELL_TRIGGER_PERC_CUR_MANA                 = 12,           // Percent from curent mana
+    SPELL_TRIGGER_CHECK_PROCK                   = 13,           // Check proc from spell to trigger
+    SPELL_TRIGGER_DUMMY                         = 14,           // spell to trigger without option for bp
+    SPELL_TRIGGER_CAST_DEST                     = 15,           // spell to trigger without option for bp
+    SPELL_TRIGGER_CHECK_DAMAGE                  = 16,           // spell to trigger if damage > amount
+    SPELL_TRIGGER_ADD_STACK                     = 17,           // add spell stack
+    SPELL_TRIGGER_ADD_CHARGES                   = 18,           // add spell charges
+    SPELL_TRIGGER_ADD_CHARGES_STACK             = 19,           // add spell charges and stack
+    SPELL_TRIGGER_CAST_SPELL                    = 20,           // cast spell without option
+    SPELL_TRIGGER_UPDATE_DUR_TO_IGNORE_MAX      = 21,           // Update duration for select spell to ignore max duration
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
