@@ -1028,6 +1028,9 @@ class WorldSession
         void HandleClearRaidMarkerOpcode(WorldPacket& recvPacket);
         void HandleQueryPlayerRecipes(WorldPacket& recvPacket);
 
+        void HandleSaveCUFProfiles(WorldPacket& recvPacket);
+        void SendLoadCUFProfiles();
+
         // Challenge Mode
         void HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvPacket);
         void HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& recvPacket);

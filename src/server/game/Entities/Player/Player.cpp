@@ -962,6 +962,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_groupUpdateDelay = 5000;
 
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
+    memset(_CUFProfiles, 0, MAX_CUF_PROFILES * sizeof(CUFProfile*));
+
     m_PetSlots.resize(PET_SLOT_LAST, 0);
     m_Store = false;
     realmTransferid = 0;
@@ -997,6 +999,9 @@ Player::~Player()
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
+
+    for (uint8 i = 0; i < MAX_CUF_PROFILES; ++i)
+        delete _CUFProfiles[i];
 
     ClearResurrectRequestData();
 
@@ -19043,6 +19048,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_achievementMgr.CheckAllAchievementCriteria(this);
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
+
+    _LoadCUFProfiles(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES));
     
     if(QueryResult PersonnalRateResult = CharacterDatabase.PQuery("SELECT rate FROM character_rates WHERE guid='%u' LIMIT 1", GetGUIDLow()))
         m_PersonnalXpRate = (PersonnalRateResult->Fetch())[0].GetFloat();
@@ -19938,6 +19945,41 @@ void Player::_LoadAccountSpells(PreparedQueryResult result)
     }
 }
 
+void Player::_LoadCUFProfiles(PreparedQueryResult result)
+{
+    if (!result)
+        return;
+
+    do
+    {
+        // SELECT profileId, profileName, frameHeight, frameWidth, sortBy, healthText, options, unk146, unk147, unk148, unk150, unk152, unk154 FROM character_cuf_profiles WHERE guid = ?
+        Field* fields = result->Fetch();
+
+        uint8 id           = fields[0].GetUInt8();
+        std::string name   = fields[1].GetString();
+        uint16 frameHeight = fields[2].GetUInt16();
+        uint16 frameWidth  = fields[3].GetUInt16();
+        uint8 sortBy       = fields[4].GetUInt8();
+        uint8 healthText   = fields[5].GetUInt8();
+        uint32 options = fields[6].GetUInt32();
+        uint8 unk146       = fields[7].GetUInt8();
+        uint8 unk147       = fields[8].GetUInt8();
+        uint8 unk148       = fields[9].GetUInt8();
+        uint16 unk150      = fields[10].GetUInt16();
+        uint16 unk152      = fields[11].GetUInt16();
+        uint16 unk154      = fields[12].GetUInt16();
+
+        if (id > MAX_CUF_PROFILES)
+        {
+            sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadCUFProfiles - Player (GUID: %u, name: %s) has an CUF profile with invalid id (id: %u), max is %i.", GetGUIDLow(), GetName(), id, MAX_CUF_PROFILES);
+            continue;
+        }
+
+        _CUFProfiles[id] = new CUFProfile(name, frameHeight, frameWidth, sortBy, healthText, options, unk146, unk147, unk148, unk150, unk152, unk154);
+    }
+    while (result->NextRow());
+}
+
 void Player::_LoadGroup(PreparedQueryResult result)
 {
     //QueryResult* result = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", GetGUIDLow());
@@ -20752,6 +20794,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveGlyphs(trans);
     _SaveInstanceTimeRestrictions(trans);
     _SaveCurrency(trans);
+    _SaveCUFProfiles(trans);
     _SaveArchaeology(trans);
     _SaveHonor();
 
@@ -21401,6 +21444,39 @@ void Player::_SaveSpells(SQLTransaction& trans)
         {
             itr->second->state = PLAYERSPELL_UNCHANGED;
             ++itr;
+        }
+    }
+}
+
+void Player::_SaveCUFProfiles(SQLTransaction& trans)
+{
+    uint32 playerGuid = GetGUIDLow();
+
+    for (uint8 i = 0; i < MAX_CUF_PROFILES; ++i)
+    {
+        // delete unused profile
+        if (!_CUFProfiles[i])
+            trans->PAppend("DELETE FROM character_cuf_profiles WHERE guid = '%u' and profileId = '%u'", playerGuid, i);
+        else
+        {
+            // REPLACE INTO character_cuf_profiles (guid, profileId, profileName, frameHeight, frameWidth, sortBy, healthText, boolOptions, unk146, unk147, unk148, unk150, unk152, unk154) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CUF_PROFILES);
+            stmt->setUInt32(0, playerGuid);
+            stmt->setUInt8(1, i);
+            stmt->setString(2, _CUFProfiles[i]->profileName);
+            stmt->setUInt16(3, _CUFProfiles[i]->frameHeight);
+            stmt->setUInt16(4, _CUFProfiles[i]->frameWidth);
+            stmt->setUInt8(5, _CUFProfiles[i]->sortBy);
+            stmt->setUInt8(6, _CUFProfiles[i]->showHealthText);
+            stmt->setUInt32(7, _CUFProfiles[i]->options);
+            stmt->setUInt8(8, _CUFProfiles[i]->Unk146);
+            stmt->setUInt8(9, _CUFProfiles[i]->Unk147);
+            stmt->setUInt8(10, _CUFProfiles[i]->Unk148);
+            stmt->setUInt16(11, _CUFProfiles[i]->Unk150);
+            stmt->setUInt16(12, _CUFProfiles[i]->Unk152);
+            stmt->setUInt16(13, _CUFProfiles[i]->Unk154);
+
+            trans->Append(stmt);
         }
     }
 }

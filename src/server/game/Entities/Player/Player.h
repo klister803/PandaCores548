@@ -859,7 +859,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS      = 34,
     PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 35,
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
-    //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 37, //id on TC.
+    PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES            = 37,
     PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 38,
     PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 39,
     MAX_PLAYER_LOGIN_QUERY
@@ -1073,6 +1073,90 @@ struct VoidStorageItem
     uint32 CreatorGuid;
     uint32 ItemRandomPropertyId;
     uint32 ItemSuffixFactor;
+};
+
+#define MAX_CUF_PROFILES 5
+
+enum CUFOptions
+{
+    CUF_OPT_PREDICTED_HEALING        = 0,
+    CUF_OPT_RESOURCE_INDICATOR       = 1,
+    CUF_OPT_THREAT_INDICATOR         = 2,
+    CUF_OPT_CLASS_COLORS             = 3,
+    CUF_OPT_SHOW_PETS                = 4,
+    CUF_OPT_SHOW_MAIN_TANK_ASSIST    = 5,
+    CUF_OPT_SHOW_BORDERS             = 6,
+    CUF_OPT_SHOW_NEG_EFFECTS         = 7,
+    CUF_OPT_ONLY_DISPELLABLE_EFFECTS = 8,
+    CUF_OPT_GROUPS_TOGETHER          = 9,
+    CUF_OPT_GROUPS_TOGETHER_HORIZONT = 10,
+    CUF_OPT_AUTO_IN_GROUPS_2PPL      = 11,
+    CUF_OPT_AUTO_IN_GROUPS_3PPL      = 12,
+    CUF_OPT_AUTO_IN_GROUPS_5PPL      = 13,
+    CUF_OPT_AUTO_IN_GROUPS_10PPL     = 14,
+    CUF_OPT_AUTO_IN_GROUPS_15PPL     = 15,
+    CUF_OPT_AUTO_IN_GROUPS_25PPL     = 16,
+    CUF_OPT_AUTO_IN_GROUPS_40PPL     = 17,
+    CUF_OPT_AUTO_FOR_SPEC_1          = 18,
+    CUF_OPT_AUTO_FOR_SPEC_2          = 19,
+    CUF_OPT_AUTO_IN_PVP              = 20,
+    CUF_OPT_AUTO_IN_PVE              = 21,
+    CUF_OPT_UNK_145                  = 22,
+    CUF_OPT_UNK_156                  = 23,
+    CUF_OPT_UNK_157                  = 24
+};
+
+struct CUFProfile
+{
+    CUFProfile()
+    {
+        profileName = "Default";
+        frameWidth = 0;
+        frameHeight = 0;
+        Unk150 = 0;
+        Unk154 = 0;
+        Unk152 = 0;
+        Unk146 = 0;
+        Unk147 = 0;
+        Unk148 = 0;
+        showHealthText = 0;
+        sortBy = 0;
+        options = 0;
+    }
+    CUFProfile(const std::string& name, uint16 frameHeight, uint16 frameWidth, uint8 sortBy, uint8 healthText, uint32 options,
+        uint8 unk146, uint8 unk147, uint8 unk148, uint16 unk150, uint16 unk152, uint16 unk154)
+    {
+        profileName = name;
+        frameWidth = frameWidth;
+        frameHeight = frameHeight;
+        Unk150 = unk150;
+        Unk154 = unk154;
+        Unk152 = unk152;
+        Unk146 = unk146;
+        Unk147 = unk147;
+        Unk148 = unk148;
+        showHealthText = healthText;
+        sortBy = sortBy;
+        options = options;
+    }
+
+    std::string profileName;
+    uint16 frameWidth, frameHeight, Unk150, Unk154, Unk152;
+    uint8 Unk146, Unk147, Unk148, showHealthText, sortBy;
+    uint32 options;
+
+    void setOptionBit(uint8 index, bool value)
+    {
+        if (!value)
+            options &= ~(1 << index);
+        else
+            options |= (1 << index);
+    }
+
+    uint32 getOptionBit(uint8 index)
+    {
+        return (options & (1 << index));
+    }
 };
 
 class TradeData
@@ -2962,6 +3046,20 @@ class Player : public Unit, public GridObject<Player>
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
 
+        void SaveCUFProfile(uint8 id, CUFProfile * profile) { _CUFProfiles[id] = profile; }
+        CUFProfile * GetCUFProfile(uint8 id) { return _CUFProfiles[id]; }
+        uint8 GetCUFProfilesCount()
+        {
+            uint8 count = 0;
+            for (uint8 i = 0; i < MAX_CUF_PROFILES; ++i)
+            {
+                if (_CUFProfiles[i])
+                    count++;
+            }
+
+            return count;
+        }
+
         uint32 GetLastTargetedGO() { return _lastTargetedGO; }
         void SetLastTargetedGO(uint32 lastTargetedGO) { _lastTargetedGO = lastTargetedGO; }
         void ShowNeutralPlayerFactionSelectUI();
@@ -3078,6 +3176,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadInstanceTimeRestrictions(PreparedQueryResult result);
         void _LoadCurrency(PreparedQueryResult result);
         void _LoadArchaelogy(PreparedQueryResult result);
+        void _LoadCUFProfiles(PreparedQueryResult result);
         void _LoadHonor();
 
         /*********************************************************/
@@ -3104,6 +3203,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveCurrency(SQLTransaction& trans);
         void _SaveArchaelogy(SQLTransaction& trans);
         void _SaveBrackets(SQLTransaction& trans);
+        void _SaveCUFProfiles(SQLTransaction& trans);
         void _SaveHonor();
 
         /*********************************************************/
@@ -3140,6 +3240,7 @@ class Player : public Unit, public GridObject<Player>
         PlayerCurrenciesMap _currencyStorage;
 
         VoidStorageItem* _voidStorageItems[VOID_STORAGE_MAX_SLOT];
+        CUFProfile* _CUFProfiles[MAX_CUF_PROFILES];
 
         std::vector<Item*> m_itemUpdateQueue;
         bool m_itemUpdateQueueBlocked;

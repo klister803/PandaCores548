@@ -628,4 +628,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // Challenge
     PREPARE_STATEMENT(CHAR_INS_CHALLENGE,           "INSERT INTO challenge (`id`, `guildId`, `mapID`, `recordTime`, `date`, `medal`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_INS_CHALLENGE_MEMBER,    "INSERT INTO challenge_member (`id`, `member`, `specID`) VALUES (?, ?, ?)", CONNECTION_ASYNC)
+
+    // CUF
+    PREPARE_STATEMENT(CHAR_SEL_CUF_PROFILES, "SELECT profileId, profileName, frameHeight, frameWidth, sortBy, healthText, someOptions, unk146, unk147, unk148, unk150, unk152, unk154 FROM character_cuf_profiles WHERE guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_REP_CUF_PROFILES, "REPLACE INTO character_cuf_profiles (guid, profileId, profileName, frameHeight, frameWidth, sortBy, healthText, someOptions, unk146, unk147, unk148, unk150, unk152, unk154) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 }
