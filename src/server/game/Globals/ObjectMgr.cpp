@@ -6699,7 +6699,8 @@ uint64 ObjectMgr::GenerateVoidStorageItemId()
 
 void ObjectMgr::LoadCurrencysLoot()
 {
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, type, currencyId, currencyAmount, currencyMaxAmount, lootmode FROM currency_loot");
+    //                                                  0       1       2           3                   4               5       6
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, type, currencyId, currencyAmount, currencyMaxAmount, lootmode, chance FROM currency_loot");
     if (!result)
         return;
 
@@ -6714,6 +6715,7 @@ void ObjectMgr::LoadCurrencysLoot()
         uint32 currencyAmount = field[3].GetUInt32();
         uint32 currencyMaxAmount = field[4].GetUInt32();
         uint32 lootmode = field[5].GetUInt32();
+        float chance = field[6].GetFloat();
 
         if (type < 1)
         {
@@ -6726,7 +6728,10 @@ void ObjectMgr::LoadCurrencysLoot()
             continue;
         }
 
-        CurrencyLoot loot = CurrencyLoot(entry, type, currencyId, currencyAmount, currencyMaxAmount, lootmode);
+        if (chance > 100.0f || !chance)
+            chance = 100.0f;
+
+        CurrencyLoot loot = CurrencyLoot(entry, type, currencyId, currencyAmount, currencyMaxAmount, lootmode, chance);
         _currencysLoot.push_back(loot);
         ++count;
     }

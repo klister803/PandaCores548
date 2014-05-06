@@ -142,9 +142,10 @@ struct CurrencyLoot
     uint32 CurrencyAmount;
     uint32 currencyMaxAmount;
     uint8 lootmode;
+    float chance;
 
-    CurrencyLoot(uint32 _entry, uint8 _type, uint32 _CurrencyId, uint32 _CurrencyAmount, uint32 _CurrencyMaxAmount, uint8 _lootmode) : Entry(_entry), Type(_type), CurrencyId(_CurrencyId),
-    CurrencyAmount(_CurrencyAmount), currencyMaxAmount(_CurrencyMaxAmount), lootmode(_lootmode)
+    CurrencyLoot(uint32 _entry, uint8 _type, uint32 _CurrencyId, uint32 _CurrencyAmount, uint32 _CurrencyMaxAmount, uint8 _lootmode, float _chance) : Entry(_entry), Type(_type), CurrencyId(_CurrencyId),
+    CurrencyAmount(_CurrencyAmount), currencyMaxAmount(_CurrencyMaxAmount), lootmode(_lootmode), chance(_chance)
     {
     }
 };

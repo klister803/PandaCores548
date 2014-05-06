@@ -574,6 +574,10 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
     for (std::list<CurrencyLoot>::iterator i = temp.begin(); i != temp.end(); ++i)
         if(CurrencyTypesEntry const* proto = sCurrencyTypesStore.LookupEntry(i->CurrencyId))
         {
+            float Roll = (float)rand_chance();
+            if (i->chance < 100.0f && i->chance < Roll)
+                continue;
+
             uint32 amount = urand(i->CurrencyAmount, i->currencyMaxAmount) * proto->GetPrecision() * countItem;
             if (m_lootOwner)
                 amount = uint32(0.5f + amount * m_lootOwner->GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_CURRENCY_LOOT, proto->Category));
