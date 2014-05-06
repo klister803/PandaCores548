@@ -784,6 +784,13 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
             victim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2, 0);
         }
 
+        if (victim->isFeared() || victim->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
+        {
+            victim->m_damage_counters[DAMAGE_ON_FEAR_COUNTER][0] += damage;
+            if(CalculatePct(victim->GetMaxHealth(), 11.0f) <= victim->m_damage_counters[DAMAGE_ON_FEAR_COUNTER][0] || true)
+                victim->RemoveAurasWithAttribute(SPELL_ATTR0_BREAKABLE_BY_DAMAGE);
+        }
+
         // We're going to call functions which can modify content of the list during iteration over it's elements
         // Let's copy the list so we can prevent iterator invalidation
         AuraEffectList vCopyDamageCopy(victim->GetAuraEffectsByType(SPELL_AURA_SHARE_DAMAGE_PCT));
@@ -18726,6 +18733,7 @@ void Unit::SetConfused(bool apply)
             if (getVictim())
                 SetTarget(getVictim()->GetGUID());
         }
+        m_damage_counters[DAMAGE_ON_FEAR_COUNTER][0] = 0;
     }
 
     if (GetTypeId() == TYPEID_PLAYER)
