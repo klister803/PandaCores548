@@ -3435,7 +3435,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 115460: // Healing Sphere
                     spellInfo->PreventionType = 1;
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_DEST_AREA_ENTRY;
                     break;
                 case 16213: // Purification
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] &= ~8192;
@@ -4751,9 +4750,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                     spellInfo->Effects[1].BasePoints = 1;
                     spellInfo->Speed = 14.f;
-                    break;
-                case 121536: // Angelic Feather
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_DEST_AREA_ENTRY;
                     break;
                 default:
                     break;
