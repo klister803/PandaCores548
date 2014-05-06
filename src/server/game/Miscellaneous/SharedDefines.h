@@ -1832,7 +1832,7 @@ enum Targets
     TARGET_UNK_135                     = 135,
     TARGET_UNK_136                     = 136,
     TARGET_UNK_137                     = 137,
-    TARGET_UNIT_TARGET_SELECT          = 138,
+    TARGET_DEST_TARGET_SELECT          = 138,
     TARGET_UNK_139                     = 139,
     TARGET_UNK_140                     = 140,
     TARGET_UNK_141                     = 141,

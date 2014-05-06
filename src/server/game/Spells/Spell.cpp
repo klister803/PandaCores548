@@ -1497,6 +1497,10 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
 
     switch (targetType.GetTarget())
     {
+        case TARGET_DEST_TARGET_SELECT:
+            if (Unit* target = m_targets.GetUnitTarget())
+                m_targets.SetDst(*target);
+            return;
         case TARGET_DEST_DYNOBJ_ENEMY:
         case TARGET_DEST_DYNOBJ_ALLY:
         case TARGET_DEST_DYNOBJ_NONE:
