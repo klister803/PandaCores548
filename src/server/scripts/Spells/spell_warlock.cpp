@@ -1217,6 +1217,18 @@ class spell_warl_drain_soul : public SpellScriptLoader
 };
 
 // Demonic Gateway (periodic add charge) - 113901
+enum GeteWay
+{
+    NPC_PURGE_GATE                          = 59271,
+    NPC_GREEN_GATE                          = 59262,
+};
+
+uint32 gw[2][5]=
+{
+    { 113903, 113911, 113912, 113913, 113914 },
+    { 113915, 113916, 113917, 113918, 113919}
+};
+
 class spell_warl_demonic_gateway_charges : public SpellScriptLoader
 {
     public:
@@ -1230,10 +1242,28 @@ class spell_warl_demonic_gateway_charges : public SpellScriptLoader
             {
                 if(aurEff->GetAmount() < 5)
                     if(AuraEffect* aurEff0 = const_cast<AuraEffect*>(aurEff))
+                    {
                         aurEff0->ChangeAmount(aurEff->GetAmount() + 1);
+                        aurEff0->GetBase()->SetNeedClientUpdateForTargets();
+                    }
 
-                if(GetCharges() < 5)
-                    ModCharges(1);
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    for (int32 i = 0; i < MAX_SUMMON_SLOT; ++i)
+                    {
+                        if (GUID_ENPART(_player->m_SummonSlot[i]) == NPC_PURGE_GATE ||
+                            GUID_ENPART(_player->m_SummonSlot[i]) == NPC_GREEN_GATE)
+                        {
+                            if (Creature* gate = _player->GetMap()->GetCreature(_player->m_SummonSlot[i]))
+                            {
+                                uint8 g = GUID_ENPART(_player->m_SummonSlot[i]) == NPC_PURGE_GATE;
+                                for(int32 j = 0; j < aurEff->GetAmount(); ++j)
+                                    if (!gate->HasAura(gw[g][j]))
+                                        gate->CastSpell(gate, gw[g][j], true);
+                            }
+                        }
+                    }
+                }
             }
 
             void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -1251,34 +1281,6 @@ class spell_warl_demonic_gateway_charges : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_warl_demonic_gateway_charges_AuraScript();
-        }
-};
-
-// Demonic Gateway - 111771
-class spell_warl_demonic_gateway : public SpellScriptLoader
-{
-    public:
-        spell_warl_demonic_gateway() : SpellScriptLoader("spell_warl_demonic_gateway") { }
-
-        class spell_warl_demonic_gateway_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_demonic_gateway_SpellScript);
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY, true);
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_warl_demonic_gateway_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_demonic_gateway_SpellScript();
         }
 };
 
@@ -2239,7 +2241,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_soul_swap();
     new spell_warl_drain_soul();
     new spell_warl_demonic_gateway_charges();
-    new spell_warl_demonic_gateway();
     new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
     new spell_warl_fire_and_brimstone();

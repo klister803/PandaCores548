@@ -3895,100 +3895,94 @@ public:
 # new npc_demonic_gateway_green
 ######*/
 
-class npc_demonic_gateway_green : public CreatureScript
+enum gateway_data
 {
-    public:
-        npc_demonic_gateway_green() : CreatureScript("npc_demonic_gateway_green") { }
+    SPELL_DEMONIC_GATEWAY_CHARGES           = 113901,
+    //Add animation to AreaTrigger
+    SPELL_DEMONIC_PORTAL_BIRTH_ANIM_DUMMY   = 143251,
+    //Summon arrea trigger.
+    SPELL_DEMONIC_GATEWAY                   = 113904,
 
-        struct npc_demonic_gateway_greenAI : public Scripted_NoMovementAI
-        {
-            npc_demonic_gateway_greenAI(Creature* creature) : Scripted_NoMovementAI(creature)
-            {
-                me->SetReactState(REACT_PASSIVE);
-            }
-
-            void OnSpellClick(Unit* who)
-            {
-                if (who && who->GetTypeId() == TYPEID_PLAYER)
-                {
-                    if(!who->HasAura(113942))
-                    {
-                        if (me->ToTempSummon())
-                        if (Unit* owner = me->ToTempSummon()->GetSummoner())
-                        {
-                            Player* ownerPlayer = owner->ToPlayer();
-                            Player* whoPlayer = who->ToPlayer();
-                            if(!ownerPlayer || !whoPlayer)
-                                return;
-
-                            if (ownerPlayer->IsGroupVisibleFor(whoPlayer))
-                            if (Aura* aurastack = owner->GetAura(113901))
-                            {
-                                uint32 stacks = aurastack->GetCharges();
-                                if(stacks > 1 && owner->m_SummonSlot[3])
-                                {
-                                    if(Unit* gate = ObjectAccessor::GetUnit(*me, owner->m_SummonSlot[3]))
-                                    {
-                                        aurastack->ModCharges(-1);
-                                        aurastack->GetEffect(0)->ChangeAmount(stacks - 1);
-                                        who->CastSpell(gate, 113896, true);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_demonic_gateway_greenAI(creature);
-        }
+    NPC_PURGE_GATE                          = 59271,
+    NPC_GREEN_GATE                          = 59262,
 };
-/*######
-# new npc_demonic_gateway_purge
-######*/
 
-class npc_demonic_gateway_purge : public CreatureScript
+uint32 DestEntry[2]= { NPC_PURGE_GATE, NPC_GREEN_GATE };
+
+uint32 gwauras[2][5]=
+{
+    { 113903, 113911, 113912, 113913, 113914 },
+    { 113915, 113916, 113917, 113918, 113919}
+};
+
+class npc_demonic_gateway : public CreatureScript
 {
     public:
-        npc_demonic_gateway_purge() : CreatureScript("npc_demonic_gateway_purge") { }
+        npc_demonic_gateway() : CreatureScript("npc_demonic_gateway") { }
 
-        struct npc_demonic_gateway_purgeAI : public Scripted_NoMovementAI
+        struct npc_demonic_gatewayAI : public Scripted_NoMovementAI
         {
-            npc_demonic_gateway_purgeAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            bool gate;
+            npc_demonic_gatewayAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
                 me->SetReactState(REACT_PASSIVE);
             }
 
+            void IsSummonedBy(Unit* summoner)
+            {
+                gate = me->GetEntry() == NPC_PURGE_GATE;
+                me->CastSpell(me, SPELL_DEMONIC_GATEWAY, true);
+                me->CastSpell(me, SPELL_DEMONIC_PORTAL_BIRTH_ANIM_DUMMY, false);
+                if (gate)   //Only Purge gate do check for caster aura.
+                {
+                    if (summoner->HasAura(SPELL_DEMONIC_GATEWAY_CHARGES))
+                        summoner->RemoveAurasDueToSpell(SPELL_DEMONIC_GATEWAY_CHARGES);
+                    summoner->CastSpell(summoner, SPELL_DEMONIC_GATEWAY_CHARGES, false);
+                }
+            }
+
             void OnSpellClick(Unit* who)
             {
-                if (who && who->GetTypeId() == TYPEID_PLAYER)
+                if (!who || !me->ToTempSummon() || who->HasAura(113942))
+                    return;
+                if (Unit* owner = me->ToTempSummon()->GetSummoner())
                 {
-                    if(!who->HasAura(113942))
+                    Player* ownerPlayer = owner->ToPlayer();
+                    Player* whoPlayer = who->ToPlayer();
+                    if(!ownerPlayer || !whoPlayer || !ownerPlayer->IsGroupVisibleFor(whoPlayer))
+                        return;
+                    if (Aura* aurastack = owner->GetAura(SPELL_DEMONIC_GATEWAY_CHARGES))
                     {
-                        if (me->ToTempSummon())
-                        if (Unit* owner = me->ToTempSummon()->GetSummoner())
-                        {
-                            Player* ownerPlayer = owner->ToPlayer();
-                            Player* whoPlayer = who->ToPlayer();
-                            if(!ownerPlayer || !whoPlayer)
-                                return;
+                        uint32 stacks = aurastack->GetEffect(EFFECT_0)->GetAmount();
+                        if (!stacks)
+                            return;
 
-                            if (ownerPlayer->IsGroupVisibleFor(whoPlayer))
-                            if (Aura* aurastack = owner->GetAura(113901))
+                        for (int32 i = 0; i < MAX_SUMMON_SLOT; ++i)
+                        {
+                            if (GUID_ENPART(owner->m_SummonSlot[i]) != DestEntry[gate])
+                                continue;
+                            if(Unit* uGate = ObjectAccessor::GetUnit(*me, owner->m_SummonSlot[i]))
                             {
-                                uint32 stacks = aurastack->GetCharges();
-                                if(stacks > 1 && owner->m_SummonSlot[1])
+                                aurastack->GetEffect(EFFECT_0)->ChangeAmount(stacks - 1);
+                                aurastack->SetNeedClientUpdateForTargets();
+                                who->CastSpell(uGate, gate ? 120729 : 113896, true);
+                                for(int32 j = 5; j >= 0; --j)
                                 {
-                                    if(Unit* gate = ObjectAccessor::GetUnit(*me, owner->m_SummonSlot[1]))
+                                    if (uGate->HasAura(gwauras[!gate][j]))
                                     {
-                                        aurastack->ModCharges(-1);
-                                        aurastack->GetEffect(0)->ChangeAmount(stacks - 1);
-                                        who->CastSpell(gate, 120729, true);
+                                        uGate->RemoveAurasDueToSpell(gwauras[!gate][j]);
+                                        break;
                                     }
                                 }
+                                for(int32 j = 5; j >= 0; --j)
+                                {
+                                    if (me->HasAura(gwauras[gate][j]))
+                                    {
+                                        me->RemoveAurasDueToSpell(gwauras[gate][j]);
+                                        break;
+                                    }
+                                }
+                                break;
                             }
                         }
                     }
@@ -3998,7 +3992,7 @@ class npc_demonic_gateway_purge : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_demonic_gateway_purgeAI(creature);
+            return new npc_demonic_gatewayAI(creature);
         }
 };
 
@@ -4906,8 +4900,7 @@ void AddSC_npcs_special()
     new npc_frozen_orb();
     new npc_guardian_of_ancient_kings();
     new npc_power_word_barrier();
-    new npc_demonic_gateway_green();
-    new npc_demonic_gateway_purge();
+    new npc_demonic_gateway();
     new npc_xuen_the_white_tiger();
     new npc_murder_of_crows();
     new npc_dire_beast();

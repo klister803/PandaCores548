@@ -189,7 +189,21 @@ void TempSummon::InitStats(uint32 duration)
 
     if (owner)
     {
-        if (uint32 slot = m_Properties->Slot)
+        uint32 slot = m_Properties->Slot;
+
+        switch(GetEntry())
+        {
+            case 59271:     //Warlock purge gateway
+                slot = MAX_SUMMON_SLOT - 1;
+                break;
+            case 59262:
+                slot = MAX_SUMMON_SLOT - 2;
+                break;
+            default:
+                break;
+        }
+
+        if (slot)
         {
             if (owner->m_SummonSlot[slot] && owner->m_SummonSlot[slot] != GetGUID())
             {

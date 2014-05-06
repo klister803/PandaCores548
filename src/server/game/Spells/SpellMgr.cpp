@@ -3930,11 +3930,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                     break;
-                case 111771:// Demonic Gateway
-                    spellInfo->Effects[EFFECT_1].Effect = 0;
-                    spellInfo->Effects[EFFECT_1].TriggerSpell = 0;
-                    spellInfo->Effects[EFFECT_2].Effect = 0;
-                    spellInfo->Effects[EFFECT_2].TriggerSpell = 0;
+                case 113901: // Demonic Gateway
+                    spellInfo->ProcCharges = 0;
                     break;
                 case 109259: // Powershot
                     spellInfo->Effects[EFFECT_1].BasePoints = 60;
@@ -4683,9 +4680,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 70860: // Frozen Throne Teleport
                 case 70861: // Sindragosa's Lair Teleport
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DB;
-                    break;
-                case 113901: // Demonic Gateway
-                    spellInfo->ProcCharges = 6;
                     break;
                 case 84964:  // Rayne's Seed
                 case 101847: // Shoe Baby
