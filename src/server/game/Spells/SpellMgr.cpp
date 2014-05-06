@@ -4752,6 +4752,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].BasePoints = 1;
                     spellInfo->Speed = 14.f;
                     break;
+                case 121536: // Angelic Feather
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_DEST_AREA_ENTRY;
+                    break;
                 default:
                     break;
             }
