@@ -1108,37 +1108,12 @@ enum CUFOptions
 
 struct CUFProfile
 {
-    CUFProfile()
-    {
-        profileName = "Default";
-        frameWidth = 0;
-        frameHeight = 0;
-        Unk150 = 0;
-        Unk154 = 0;
-        Unk152 = 0;
-        Unk146 = 0;
-        Unk147 = 0;
-        Unk148 = 0;
-        showHealthText = 0;
-        sortBy = 0;
-        options = 0;
-    }
+    CUFProfile(): profileName("Default"), frameWidth(0), frameHeight(0), Unk150(0), Unk154(0), Unk152(0), Unk146(0),
+        Unk147(0), Unk148(0), showHealthText(0), sortBy(0), options(0) {}
+
     CUFProfile(const std::string& name, uint16 frameHeight, uint16 frameWidth, uint8 sortBy, uint8 healthText, uint32 options,
-        uint8 unk146, uint8 unk147, uint8 unk148, uint16 unk150, uint16 unk152, uint16 unk154)
-    {
-        profileName = name;
-        frameWidth = frameWidth;
-        frameHeight = frameHeight;
-        Unk150 = unk150;
-        Unk154 = unk154;
-        Unk152 = unk152;
-        Unk146 = unk146;
-        Unk147 = unk147;
-        Unk148 = unk148;
-        showHealthText = healthText;
-        sortBy = sortBy;
-        options = options;
-    }
+        uint8 unk146, uint8 unk147, uint8 unk148, uint16 unk150, uint16 unk152, uint16 unk154): profileName(name), frameWidth(frameWidth), 
+        frameHeight(frameHeight), Unk150(unk150), Unk154(unk154), Unk152(unk152), Unk146(unk146), Unk147(unk147), Unk148(unk148), showHealthText(healthText), sortBy(sortBy), options(options) {}
 
     std::string profileName;
     uint16 frameWidth, frameHeight, Unk150, Unk154, Unk152;
