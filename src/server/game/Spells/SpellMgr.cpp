@@ -4750,6 +4750,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetA = TARGET_SRC_CASTER;
                     spellInfo->Effects[1].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                     spellInfo->Effects[1].BasePoints = 1;
+                    spellInfo->Speed = 14.f;
                     break;
                 default:
                     break;
