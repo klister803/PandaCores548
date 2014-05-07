@@ -6113,9 +6113,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         check = true;
                         continue;
                     }
-                    float amount = 0.0f;
+                    float amount = bp0;
 
-                    if (!itr->bp0)
+                    if (!bp0)
                         amount = triggerAmount / 100.0f;
 
                     basepoints0 = CalculatePct(damage, amount);
