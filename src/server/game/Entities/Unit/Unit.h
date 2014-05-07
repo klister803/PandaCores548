@@ -1295,8 +1295,7 @@ enum
     DAMAGE_DONE_COUNTER     = 0,
     DAMAGE_TAKEN_COUNTER    = 1,
     HEALING_DONE_COUNTER    = 2,
-    DAMAGE_ON_FEAR_COUNTER  = 3,
-    MAX_DAMAGE_COUNTERS     = 4,
+    MAX_DAMAGE_COUNTERS     = 3,
 };
 
 class Unit : public WorldObject
