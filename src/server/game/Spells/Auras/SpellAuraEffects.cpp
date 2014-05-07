@@ -6558,6 +6558,11 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 146317: // Restless Spirit
+                {
+                    GetBase()->SetStackAmount(GetBase()->GetStackAmount() - 1);
+                    break;
+                }
                 case 146184: // Wrath
                 {
                     caster->CastCustomSpell(target, 146202, &m_amount, 0, 0, true, 0, this);

@@ -9318,6 +9318,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     Unit*  target = NULL;
     int32  basepoints0 = 0;
     uint32 damage = dmgInfoProc->GetDamage();
+    uint16 stack_for_trigger = 0;
 
     if (triggeredByAura->GetAuraType() == SPELL_AURA_PROC_TRIGGER_SPELL_WITH_VALUE)
         basepoints0 = triggerAmount;
@@ -10205,6 +10206,11 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             target = victim;
             break;
         }
+        case 146317: // Restless Spirit
+        {
+            stack_for_trigger = triggerEntry->StackAmount;
+            break;
+        }
         // Finish movies that add combo
         case 14189: // Seal Fate (Netherblade set)
         case 14157: // Ruthlessness
@@ -10370,6 +10376,10 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
 
     if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
         ToPlayer()->AddSpellCooldown(trigger_spell_id, 0, getPreciseTime() + cooldown);
+
+    if (stack_for_trigger)
+        if (Aura * aura = target->GetAura(trigger_spell_id))
+            aura->SetStackAmount(stack_for_trigger);
 
     return true;
 }
