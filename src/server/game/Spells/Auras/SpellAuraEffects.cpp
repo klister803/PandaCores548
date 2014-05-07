@@ -879,9 +879,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
-                amount *= GetBase()->GetStackAmount();
-                m_aura_amount = amount;
-                return amount;
             }
             break;
         }
@@ -892,9 +889,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 amount = uint32(target->CountPctFromMaxHealth(amount));
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
-                amount *= GetBase()->GetStackAmount();
-                m_aura_amount = amount;
-                return amount;
             }
             break;
         }
@@ -905,9 +899,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
-                amount *= GetBase()->GetStackAmount();
-                m_aura_amount = amount;
-                return amount;
             }
             break;
         }
@@ -972,9 +963,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 amount = caster->SpellHealingBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
-                amount *= GetBase()->GetStackAmount();
-                m_aura_amount = amount;
-                return amount;
             }
             break;
         }
@@ -1008,9 +996,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
-                amount *= GetBase()->GetStackAmount();
-                m_aura_amount = amount;
-                return amount;
             }
             break;
         }
@@ -1270,6 +1255,19 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
     GetBase()->CallScriptEffectCalcAmountHandlers(const_cast<AuraEffect const*>(this), amount, m_canBeRecalculated);
     amount *= GetBase()->GetStackAmount();
+
+    switch (GetAuraType())
+    {
+        // Set amount for aura
+        case SPELL_AURA_OBS_MOD_HEALTH:
+        case SPELL_AURA_PERIODIC_HEAL:
+        case SPELL_AURA_PERIODIC_LEECH:
+        case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+        case SPELL_AURA_PERIODIC_DAMAGE:
+            m_aura_amount = amount;
+            break;
+    }
+
     return amount;
 }
 

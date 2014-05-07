@@ -3852,9 +3852,6 @@ void Spell::_handle_finish_phase()
         // Real add combo points from effects
         if (m_comboPointGain)
             m_caster->m_movedPlayer->GainSpellComboPoints(m_comboPointGain);
-
-        if (m_spellInfo->PowerType == POWER_HOLY_POWER && m_caster->m_movedPlayer->getClass() == CLASS_PALADIN)
-            HandleHolyPower(m_caster->m_movedPlayer);
     }
 
     if (m_caster->m_extraAttacks && GetSpellInfo()->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
@@ -4082,6 +4079,11 @@ void Spell::finish(bool ok)
         if (Item* item = m_caster->ToPlayer()->GetItemByGuid(m_castItemGUID))
             if (item->IsEquipable() && !item->IsEquipped())
                 m_caster->ToPlayer()->ApplyItemEquipSpell(item, false);
+
+    if (m_spellInfo->PowerType == POWER_HOLY_POWER && m_caster->m_movedPlayer->getClass() == CLASS_PALADIN)
+        HandleHolyPower(m_caster->m_movedPlayer);
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::finish Spell: %u", m_spellInfo->Id);
 
     // Hack codes
     switch (m_spellInfo->Id)
@@ -5795,22 +5797,14 @@ void Spell::HandleHolyPower(Player* caster)
     if (!caster)
         return;
 
-    switch(m_spellInfo->Id)
-    {
-        case 85256:// Templar's Verdict - Don't remove power twice
-        case 85673:// Word of Glory - Don't remove power twice
-        case 53600:// Shield of the Righteous - Don't remove power twice
-        case 114163:// Eternal Flame - Don't remove power twice
-            return;
-        default:
-            break;
-    }
-
     bool hit = true;
     Player* modOwner = caster->GetSpellModOwner();
     m_powerCost = caster->GetPower(POWER_HOLY_POWER); // Always use all the holy power we have
     if (!m_powerCost || !modOwner)
         return;
+
+    if(m_powerCost > 2)
+        m_powerCost = 2;
 
     if (uint64 targetGUID = m_targets.GetUnitTargetGUID())
     {
