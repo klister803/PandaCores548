@@ -3129,8 +3129,6 @@ void AuraEffect::HandleAuraModPacify(AuraApplication const* aurApp, uint8 mode, 
         if (target->HasAuraType(SPELL_AURA_MOD_PACIFY) || target->HasAuraType(SPELL_AURA_MOD_PACIFY_SILENCE))
             return;
         target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
-        // Reset Damage Calculation
-        target->m_damage_counters[DAMAGE_ON_FEAR_COUNTER][0] = 0;
     }
 }
 
