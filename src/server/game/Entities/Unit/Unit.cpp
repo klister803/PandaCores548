@@ -6120,7 +6120,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         check = true;
                         continue;
                     }
-                    basepoints0 = CalculatePct(damage, itr->bp0);
+                    float amount = 0.0f;
+
+                    if (!itr->bp0)
+                        amount = triggerAmount / 100.0f;
+
+                    basepoints0 = CalculatePct(damage, amount);
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
