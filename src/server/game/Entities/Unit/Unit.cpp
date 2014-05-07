@@ -5855,8 +5855,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             {
                 if(itr->chance > 100) // chance get from amount
                 {
-                    if(!roll_chance_i(triggerAmount))
-                        continue;
+                    if(triggerAmount > 100)
+                    {
+                        int32 rollchance = urand(0, 1000);
+                        if (rollchance > triggerAmount)
+                            continue;
+                    }
                 }
                 else if(!roll_chance_i(itr->chance))
                     continue;
