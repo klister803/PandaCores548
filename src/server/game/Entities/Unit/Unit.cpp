@@ -11750,7 +11750,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 if ((*i)->GetId() == 76856 && !HasAuraState(AURA_STATE_ENRAGE))
                     continue;
 
-                if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()) && (*i)->GetSpellInfo()->EquippedItemClass != -1)
+                if (ToPlayer() && ToPlayer()->HasItemFitToSpellRequirements((*i)->GetSpellInfo()) && (*i)->GetSpellInfo()->EquippedItemClass != -1 && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                     AddPct(DoneTotalMod, (*i)->GetAmount());
                 else if ((*i)->GetMiscValue() & spellProto->GetSchoolMask())
                 {
