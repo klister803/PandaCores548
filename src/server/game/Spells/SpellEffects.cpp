@@ -670,18 +670,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                                 AddPct(damage, aurEff->GetAmount());
                         break;
                     }
-                    case 113092: // Frost Bomb
-                    {
-                        float pct;
-                        switch (effIndex)
-                        {
-                            case 0: pct = 2.462f; break;
-                            case 1: pct = 1.231f; break;
-                            default:              break;
-                        }
-                        damage += m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * pct;
-                        break;
-                    }
                     default:
                         break;
                 }
