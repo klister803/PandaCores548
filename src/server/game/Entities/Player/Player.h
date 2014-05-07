@@ -3021,7 +3021,7 @@ class Player : public Unit, public GridObject<Player>
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
 
-        void SaveCUFProfile(uint8 id, CUFProfile * profile) { _CUFProfiles[id] = profile; }
+        void SaveCUFProfile(uint8 id, CUFProfile * profile) { delete _CUFProfiles[id]; _CUFProfiles[id] = profile; }
         CUFProfile * GetCUFProfile(uint8 id) { return _CUFProfiles[id]; }
         uint8 GetCUFProfilesCount()
         {
