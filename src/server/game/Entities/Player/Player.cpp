@@ -28435,9 +28435,9 @@ void Player::SendMovementSetWaterWalking(bool apply)
         //! 5.4.1
         data.Initialize(SMSG_MOVE_WATER_WALK, 1 + 4 + 8);
     
+        data << uint32(0);          //! movement counter
         data.WriteGuidMask<0, 7, 1, 5, 6, 2, 3, 4>(guid);
         data.WriteGuidBytes<4, 0, 5, 6, 3, 1, 2, 7>(guid);
-        data << uint32(0);          //! movement counter
     }
     else
     {
