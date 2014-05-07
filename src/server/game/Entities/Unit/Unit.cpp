@@ -787,7 +787,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         if (victim->isFeared() || victim->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
         {
             victim->m_damage_counters[DAMAGE_ON_FEAR_COUNTER][0] += damage;
-            if(CalculatePct(victim->GetMaxHealth(), 11.0f) <= victim->m_damage_counters[DAMAGE_ON_FEAR_COUNTER][0])
+            if(CalculatePct(victim->GetMaxHealth(), 11.0f) <= victim->m_damage_counters[DAMAGE_ON_FEAR_COUNTER][0] || true)
                 victim->RemoveAurasWithAttribute(SPELL_ATTR0_BREAKABLE_BY_DAMAGE);
         }
 
