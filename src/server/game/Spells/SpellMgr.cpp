@@ -4498,7 +4498,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 6;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
-
                 // Dalaran arena knockback
                 case 61698:
                     spellInfo->Attributes = 536871296;

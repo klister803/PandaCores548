@@ -6842,6 +6842,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 {
                     case 115176: // Zen Meditation
                     case 1706:   // Levitate
+                    case 111759: // Levitate Effect
                         break;
                     default:
                     {
