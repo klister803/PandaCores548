@@ -2248,7 +2248,7 @@ class spell_pri_psychic_terror : public SpellScriptLoader
         }
 };
 
-// Divine Star 110745 122128
+// Divine Star 110744 122121
 class spell_pri_divine_star : public SpellScriptLoader
 {
     public:
@@ -2258,84 +2258,65 @@ class spell_pri_divine_star : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pri_divine_star_AuraScript)
 
-            Position pos;
+            Position pos, _ownPos;
             bool check;
-            float distance2d, _angle;
-            Unit* target;
 
             bool Load()
             {
                 pos.Relocate(0, 0, 0, 0);
+                _ownPos.Relocate(0, 0, 0, 0);
                 check = false;
-                distance2d = 0.0f;
-                _angle = 0.0f;
-                target = NULL;
                 return true;
             }
 
+            //--
             void OnPereodic(AuraEffect const* aurEff)
             {
                 PreventDefaultAction();
+                Unit* caster = GetCaster();
+                if (!caster || !check)
+                    return;
 
-                if(Unit* caster = GetCaster())
+                uint32 tick = aurEff->GetTickNumber() - 1;
+
+                if(tick == 5)
                 {
-                    if(check)
-                    {
-                        float x, y, z;
-                        uint32 tick = aurEff->GetTickNumber() - 1;
-                        float _delay = distance2d / 24.0f * 1000.0f;
-                        uint32 _countTick = uint32(_delay / 250);
-                        float distanceintick = (distance2d / _countTick) * tick;
-                        z = pos.GetPositionZ();
-
-                        if(distanceintick > distance2d)
-                            distanceintick = (distance2d * 2) - distanceintick;
-                        if(distanceintick < 0.0f)
-                            return;
-
-                        if(distanceintick == distance2d && target)
-                            target->CastSpell(caster, GetSpellInfo()->Effects[1].TriggerSpell, true);
-
-                        if(distanceintick == 0.0f || distance2d < 6.0f)
-                        {
-                            x = caster->GetPositionX();
-                            y = caster->GetPositionY();
-                            z = caster->GetPositionZ();
-                        }
-                        else
-                            caster->GetNearPoint2D(x, y, distanceintick, _angle);
-
-                        uint32 triggerSpellId = GetSpellInfo()->Effects[0].TriggerSpell;
-                        caster->CastSpell(x, y, z, triggerSpellId, true);
-                    }
+                    //retunr effect
+                    if (Creature* trigger = caster->SummonTrigger(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 0, 1000))
+                        trigger->CastSpell(_ownPos.GetPositionX(), _ownPos.GetPositionY(), _ownPos.GetPositionZ(), GetSpellInfo()->Effects[1].TriggerSpell, true);
                 }
+
+                //uint32 _countTick = uint32(1000.0f / 250);
+                //float _RealDistanceintick = (24.0f / _countTick) * tick;
+                float distanceintick = 6.0f * tick;
+                if(distanceintick > 24.0f)
+                    distanceintick = (24.0f * 2) - distanceintick;
+
+                if(distanceintick < 0.0f)
+                    return;
+
+                // expload at tick
+                float x = _ownPos.GetPositionX() + (caster->GetObjectSize() + distanceintick) * std::cos(_ownPos.GetOrientation());
+                float y = _ownPos.GetPositionY() + (caster->GetObjectSize() + distanceintick) * std::sin(_ownPos.GetOrientation());
+                Trinity::NormalizeMapCoord(x);
+                Trinity::NormalizeMapCoord(y);
+
+                caster->CastSpell(x, y, _ownPos.GetPositionZ(), GetSpellInfo()->Effects[0].TriggerSpell, true);
             }
 
             void HandleApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if(Unit* caster = GetCaster())
-                {
-                    if(Player* _player = caster->ToPlayer())
-                    {
-                        if(target = _player->GetSelectedUnit())
-                        {
-                            check = true;
-                            target->GetPosition(&pos);
-                            distance2d = caster->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
-                            float _delay = distance2d / 24.0f * 1000.0f;
-                            _angle = caster->GetAngle(pos.GetPositionX(), pos.GetPositionY());
-                            GetAura()->SetDuration(uint32(_delay * 2));
-                        }
-                        else
-                        {
-                            check = true;
-                            float x,y;
-                            caster->GetNearPoint2D(x, y, 24.0f, caster->GetOrientation());
-                            pos.Relocate(x, y, caster->GetPositionZ(), caster->GetOrientation());
-                            GetAura()->SetDuration(uint32(1000.0f * 2));
-                        }
-                    }
-                }
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                check = true;
+                float x, y;
+                caster->GetNearPoint2D(x, y, 24.0f, caster->GetOrientation());
+                pos.Relocate(x, y, caster->GetPositionZ(), caster->GetOrientation());
+
+                GetAura()->SetDuration(uint32(1000.0f * 2));
+                _ownPos.Relocate(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), caster->GetOrientation());
             }
 
             void Register()
