@@ -1458,6 +1458,8 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
             data.WriteGuidMask<0, 6, 3, 1, 5, 7, 4, 2>(guid);
             dataBuffer.WriteGuidBytes<6, 7, 2, 0, 5, 3, 1, 4>(guid);
             ++real_count;
+            if (real_count >= 40)
+                break;
         }
     }
 
@@ -1469,12 +1471,8 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
     data.append(dataBuffer);
     data.WriteGuidBytes<7, 0, 3, 2, 1, 4, 5, 6>(guid_looted);
 
-    for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
-    {
-        Player* looter = itr->getSource();
-        if (looter->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
-            looter->GetSession()->SendPacket(&data);
-    }
+    if (Player* player = ObjectAccessor::FindPlayer(GetLooterGuid()))
+        player->GetSession()->SendPacket(&data);
 }
 
 void Group::DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot* loot, LootItem& item, Player* player)
