@@ -673,6 +673,23 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 145983: // Readiness - Rogue Assassination
+                case 145984: // Readiness - Rogue Combat
+                case 145985: // Readiness - Rogue Subtlety
+                case 145964: // Readiness - Hunter Beast Mastery
+                case 145965: // Readiness - Hunter Marksmanship
+                case 145966: // Readiness - Hunter Survival
+                case 145969: // Readiness - Monk Windwalker
+                case 145961: // Readiness - Druid Feral
+                case 145986: // Readiness - Shaman Enhancement
+                {
+                    if (Aura * aura = caster->GetAura(146019))
+                    {
+                        if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                            amount = -(eff->GetAmount());
+                    }
+                    break;
+                }
                 case 114232: // Sanctified Wrath
                 {
                     if (Player* paladin = caster->ToPlayer())
