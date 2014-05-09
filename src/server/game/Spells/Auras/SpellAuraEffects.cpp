@@ -673,6 +673,19 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 145978: // Readiness - Paladin Retribution
+                case 145990: // Readiness - Warrior Arms
+                case 145991: // Readiness - Warrior Fury
+                case 145959: // Readiness - Death Knight Frost
+                case 145960: // Readiness - Death Knight Unholy
+                {
+                    if (Aura * aura = caster->GetAura(145955))
+                    {
+                        if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                            amount = -(eff->GetAmount());
+                    }
+                    break;
+                }
                 case 145983: // Readiness - Rogue Assassination
                 case 145984: // Readiness - Rogue Combat
                 case 145985: // Readiness - Rogue Subtlety
