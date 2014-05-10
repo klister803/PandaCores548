@@ -25103,6 +25103,18 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
         }
     }
 
+    // skill requeare
+    SkillLineAbilityMapBounds bounds = sSpellMgr->GetSkillLineAbilityMapBounds(learned_0);
+    for (SkillLineAbilityMap::const_iterator _spell_idx = bounds.first; _spell_idx != bounds.second; ++_spell_idx)
+    {
+        SkillLineEntry const* pSkill = sSkillLineStore.LookupEntry(_spell_idx->second->skillId);
+        if (!pSkill)
+            continue;
+
+        if (!HasSkill(_spell_idx->second->skillId))
+            return;
+    }
+
     CastSpell(this, spell_id, true);
 }
 
