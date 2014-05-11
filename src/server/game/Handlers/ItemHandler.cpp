@@ -1987,7 +1987,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
         }
         else
         {
-            if (!Item::CanTransmogrifyItemWithItem(itemTransmogrified, itemTransmogrifier))
+            if (!itemTransmogrified || !itemTransmogrifier || !Item::CanTransmogrifyItemWithItem(itemTransmogrified, itemTransmogrifier))
             {
                 sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) failed CanTransmogrifyItemWithItem (%u with %u).", player->GetGUIDLow(), player->GetName(), itemTransmogrified->GetEntry(), itemTransmogrifier->GetEntry());
                 return;
