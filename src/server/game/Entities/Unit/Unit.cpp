@@ -5855,12 +5855,20 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             {
                 if(itr->chance > 100) // chance get from amount
                 {
-                    if(triggerAmount > 100)
-                    {
-                        int32 rollchance = urand(0, 1000);
-                        if (rollchance > triggerAmount)
-                            continue;
-                    }
+                    if(!roll_chance_i(triggerAmount))
+                        continue;
+                }
+                else if(itr->chance == -1) // chance get from amount / 10
+                {
+                    int32 rollchance = urand(0, 1000);
+                    if (rollchance > triggerAmount)
+                        continue;
+                }
+                else if(itr->chance == -2) // chance get from amount / 100
+                {
+                    int32 rollchance = urand(0, 10000);
+                    if (rollchance > triggerAmount)
+                        continue;
                 }
                 else if(!roll_chance_i(itr->chance))
                     continue;
@@ -6262,6 +6270,82 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 146136: // Cleave
+                {
+                    int32 rollchance = urand(0, 10000);
+
+                    if (rollchance > triggerAmount)
+                        return false;
+                        
+                    triggered_spell_id = 146137;
+                        
+                    if (!procSpell)
+                        break;
+
+                    if (procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL)
+                        break;
+                        
+                    if (Player* _player = ToPlayer())
+                    {
+                        uint32 spec = _player->GetSpecializationId(_player->GetActiveSpec());
+
+                        switch (_player->getClass())
+                        {
+                            case CLASS_MAGE:
+                            {
+                                if (spec == SPEC_MAGE_ARCANE)
+                                    triggered_spell_id = 146166;
+                                else
+                                    triggered_spell_id = 146160;
+                                break;
+                            }
+                            case CLASS_DRUID:
+                            {
+                                if (spec == SPEC_DROOD_BALANCE || spec == SPEC_DROOD_RESTORATION)
+                                    triggered_spell_id = 146158;
+                                break;
+                            }
+                            case CLASS_PRIEST:
+                            {
+                                if (spec == SPEC_PRIEST_SHADOW)
+                                    triggered_spell_id = 146159;
+                                else
+                                    triggered_spell_id = 146157;
+                                break;
+                            }
+                            case CLASS_PALADIN:
+                            {
+                                triggered_spell_id = 146157;
+                                break;
+                            }
+                            case CLASS_WARLOCK:
+                            case CLASS_DEATH_KNIGHT:
+                            {
+                                triggered_spell_id = 146159;
+                                break;
+                            }
+                            case CLASS_MONK:
+                            {
+                                triggered_spell_id = 146172;
+                                break;
+                            }
+                            case CLASS_SHAMAN:
+                            {
+                                triggered_spell_id = 146171;
+                                break;
+                            }
+                            case CLASS_HUNTER:
+                            {
+                                triggered_spell_id =  146162;
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        basepoints0 = damage;
+                    }
+                    break;
+                }
                 case 104561: // Windsong
                 {
                     triggered_spell_id = RAND(104423, 104510, 104509);
