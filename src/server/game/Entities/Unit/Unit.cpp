@@ -12797,18 +12797,18 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                 DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(BASE_ATTACK));
         }*/
     }
-    else
-    {
-        // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
-        if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
-            return healamount;
-    }
+//     else
+//     {
+//         // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
+//         if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
+//             return healamount;
+//     }
 
     // Default calculation
     if (DoneAdvertisedBenefit)
     {
-        if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
+//         if ((!bonus && !dbccoeff) || coeff < 0)
+//             coeff = CalculateDefaultCoefficient(spellProto, damagetype) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
 
         factorMod *= CalculateLevelPenalty(spellProto);
 
