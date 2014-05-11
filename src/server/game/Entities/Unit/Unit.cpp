@@ -12004,6 +12004,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         else if(dbccoeff)
         {
             coeff = dbccoeff;
+            //code for bonus AP exist in draenor DBC
             /*if (damagetype == DOT)
             {
                 if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
@@ -12699,6 +12700,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     else if(dbccoeff)
     {
         coeff = dbccoeff;
+        //code for bonus AP exist in draenor DBC
         /*if (damagetype == DOT)
         {
             if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
