@@ -16778,7 +16778,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 if (isNonTriggerAura[aurEff->GetAuraType()])
                     continue;
                 // If not trigger by default and spellProcEvent == NULL - skip
-                if (!isTriggerAura[aurEff->GetAuraType()] && triggerData.spellProcEvent == NULL)
+                if (!isTriggerAura[aurEff->GetAuraType()] && (triggerData.spellProcEvent == NULL || !(triggerData.spellProcEvent->effectMask & (1<<i))))
                     continue;
                 // Some spells must always trigger
                 if (!triggered || isAlwaysTriggeredAura[aurEff->GetAuraType()])
