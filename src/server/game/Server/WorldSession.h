@@ -1036,6 +1036,7 @@ class WorldSession
         void HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& recvPacket);
         void HandleChallengeModeRequestOpcode(WorldPacket& recvPacket);
 
+        void LootCorps(uint64 corpsGUID, WorldObject* lootedBy = NULL);
     private:
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();

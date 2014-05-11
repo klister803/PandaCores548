@@ -2001,17 +2001,43 @@ class spell_hun_fetch : public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* caster = GetCaster())
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Player* _player = caster->ToPlayer();
+                if (!_player)
+                    return;
+
+                Unit* target = _player->GetSelectedUnit();
+                if (!target)
+                    return;
+
+                Creature* corps = target->ToCreature();
+                if (!corps)
+                    return;
+
+                if (!_player->isAllowedToLoot(corps))
                 {
-                    if (Player* _player = caster->ToPlayer())
-                        if(Unit* target = _player->GetSelectedUnit())
-                        if (Pet* pet = _player->GetPet())
-                        {
-                            pet->StopMoving();
-                            pet->GetMotionMaster()->Clear(false);
-                            pet->GetMotionMaster()->MoveFetch(target, PET_FOLLOW_DIST, pet->GetFollowAngle());
-                        }
+                    if (const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(125050))
+                        Spell::SendCastResult(_player, spellInfo, 1, SPELL_FAILED_BAD_TARGETS);
+                    return;
                 }
+
+                if (!target->IsWithinDistInMap(_player, 40.0f))
+                {
+                    if (const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(125050))
+                        Spell::SendCastResult(_player, spellInfo, 1, SPELL_FAILED_OUT_OF_RANGE);
+                    return;
+                }
+
+                Pet* pet = _player->GetPet();
+                if (!pet)
+                    return;
+
+                pet->StopMoving();
+                pet->GetMotionMaster()->Clear(false);
+                pet->GetMotionMaster()->MoveFetch(target, PET_FOLLOW_DIST, pet->GetFollowAngle());
             }
 
             void Register()

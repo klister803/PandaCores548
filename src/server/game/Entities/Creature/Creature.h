@@ -694,10 +694,12 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool lootForBody;
         Player* GetLootRecipient() const;
         Group* GetLootRecipientGroup() const;
+        Unit* GetOtherRecipient() const;
         bool hasLootRecipient() const { return m_lootRecipient || m_lootRecipientGroup; }
         bool isTappedBy(Player const* player) const;                          // return true if the creature is tapped by the player or a member of his party.
 
         void SetLootRecipient (Unit* unit);
+        void SetOtherLootRecipient(uint64 guid);
         void AllLootRemovedFromCorpse();
 
         SpellInfo const* reachWithSpellAttack(Unit* victim);
@@ -838,6 +840,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         static float _GetHealthMod(int32 Rank);
 
         uint64 m_lootRecipient;
+        uint64 m_LootOtherRecipient;                        // Pet lotter for example
         uint32 m_lootRecipientGroup;
 
         /// Timers

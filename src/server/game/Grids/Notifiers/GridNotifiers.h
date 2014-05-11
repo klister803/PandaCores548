@@ -1446,19 +1446,28 @@ namespace Trinity
     class SearchCorpseCreatureCheck
     {
         public:
-            SearchCorpseCreatureCheck(const WorldObject* object, float range) : m_pObject(object), i_range(range) {}
+            SearchCorpseCreatureCheck(const WorldObject* object, float range) : m_pObject(object), i_range(range), m_owner(NULL)
+            {
+                m_owner = const_cast<Player*>(m_pObject->ToPlayer());
+                if (!m_owner)
+                {
+                    if (const Creature *c = m_pObject->ToCreature())
+                        if (const Unit* owner = c->GetOwner())
+                            m_owner = const_cast<Player*>(owner->ToPlayer());
+                }
+            }
             bool operator()(Creature* u)
             {
-                Player* plr = const_cast<Player*>(m_pObject->ToPlayer());
-                if(!plr)
+                if(!m_owner)
                     return false;
 
-                if (u->getDeathState() != CORPSE || !plr->isAllowedToLoot(u) || !u->HasFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
+                if (u->getDeathState() != CORPSE || !m_owner->isAllowedToLoot(u) || !u->HasFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
                     return false;
 
                 return m_pObject->IsWithinDistInMap(u, i_range);
             }
         private:
+            Player* m_owner;
             const WorldObject* m_pObject;
             float i_range;
     };

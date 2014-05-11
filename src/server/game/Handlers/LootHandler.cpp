@@ -95,7 +95,11 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
 
             bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
 
-            if (!lootAllowed || !creature->IsWithinDistInMap(_player, LOOT_DISTANCE))
+            Unit *looter = creature ? creature->GetOtherRecipient() : NULL;
+            if (!looter)
+                looter = player;
+
+            if (!lootAllowed || !creature->IsWithinDistInMap(looter, LOOT_DISTANCE))
             {
                 player->SendLootRelease(lguid);
                 return;
@@ -257,24 +261,40 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
     recvData.ReadGuidMask<7, 5, 4, 2, 0, 1, 6, 3>(guid);
     recvData.ReadGuidBytes<0, 2, 1, 3, 6, 5, 4, 7>(guid);
 
+    LootCorps(guid);
+}
+
+void WorldSession::LootCorps(uint64 corpsGUID, WorldObject* lootedBy)
+{
     // Check possible cheat
     if (!_player->isAlive())
         return;
 
+    WorldObject* _looted = lootedBy ? lootedBy : _player;
+
+    Creature* _creature = _player->GetMap()->GetCreature(corpsGUID);
+    if (!_creature)
+        return;
+
     std::list<Creature*> corpesList;
-    _player->GetCorpseCreatureInGrid(corpesList, LOOT_DISTANCE);
+    _looted->GetCorpseCreatureInGrid(corpesList, LOOT_DISTANCE);
 
     WorldPacket data(SMSG_LOOT_RELEASE);
     data << uint32(corpesList.size()-1);                             //aoe counter
     _player->SendDirectMessage(&data);
 
-    GetPlayer()->SendLoot(guid, LOOT_CORPSE, true);
+    _creature->SetOtherLootRecipient(lootedBy ? lootedBy->GetGUID() : 0);
+    _player->SendLoot(corpsGUID, LOOT_CORPSE, true);
 
     for (std::list<Creature*>::const_iterator itr = corpesList.begin(); itr != corpesList.end(); ++itr)
     {
         if(Creature* creature = (*itr))
-            if(guid != creature->GetGUID())
-                GetPlayer()->SendLoot(creature->GetGUID(), LOOT_CORPSE, true, 1);
+        {
+            creature->SetOtherLootRecipient(lootedBy ? lootedBy->GetGUID() : 0);
+
+            if(corpsGUID != creature->GetGUID())
+                _player->SendLoot(creature->GetGUID(), LOOT_CORPSE, true, 1);
+        }
     }
 
     //clear aoe loot state
@@ -282,8 +302,8 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
         group->ClearAoeSlots();
 
     // interrupt cast
-    if (GetPlayer()->IsNonMeleeSpellCasted(false))
-        GetPlayer()->InterruptNonMeleeSpells(false);
+    if (_player->IsNonMeleeSpellCasted(false))
+        _player->InterruptNonMeleeSpells(false);
 }
 
 void WorldSession::HandleLootReleaseOpcode(WorldPacket& recvData)
@@ -455,10 +475,23 @@ void WorldSession::DoLootRelease(uint64 lguid)
     }
     else
     {
-        Creature* creature = GetPlayer()->GetMap()->GetCreature(lguid);
+        Creature* creature = player->GetMap()->GetCreature(lguid);
 
         bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
-        if (!lootAllowed || !creature->IsWithinDistInMap(_player, LOOT_DISTANCE))
+
+        Unit *looter = creature ? creature->GetOtherRecipient() : NULL;
+        if (!looter)
+            looter = player;
+
+        // Restore Fetch state for pet.
+        if (looter->isPet())
+        {
+            if(Unit* _petowner = looter->GetOwner())
+                if (_petowner == player)
+                    looter->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, looter->GetFollowAngle());
+        }
+
+        if (!lootAllowed || !creature->IsWithinDistInMap(looter, LOOT_DISTANCE))
             return;
 
         loot = &creature->loot;

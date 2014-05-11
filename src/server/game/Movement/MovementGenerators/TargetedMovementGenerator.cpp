@@ -373,28 +373,27 @@ void FetchMovementGenerator<T>::MovementInform(T & /*unit*/)
 template<>
 void FetchMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
-
     if(Unit* _petowner = unit.GetOwner())
     {
         if (Player* _player = _petowner->ToPlayer())
         {
             if(Pet* pet = _player->GetPet())
             {
-                _player->SendLoot(i_target.getTarget()->GetGUID(), LOOT_CORPSE, true, 1);
+                _player->GetSession()->LootCorps(i_target.getTarget()->GetGUID(), pet);
                 pet->CastSpell(i_target.getTarget(), 125056, false);
 
                 pet->AttackStop();
                 pet->InterruptNonMeleeSpells(false);
                 pet->GetMotionMaster()->Clear(false);
-                pet->GetMotionMaster()->MoveFollow(_petowner, PET_FOLLOW_DIST, pet->GetFollowAngle());
-                if (CharmInfo* charmInfo = pet->GetCharmInfo())
-                {
-                    charmInfo->SetCommandState(COMMAND_FOLLOW);
-                    charmInfo->SetIsCommandAttack(false);
-                    charmInfo->SetIsAtStay(false);
-                    charmInfo->SetIsReturning(true);
-                    charmInfo->SetIsFollowing(false);
-                }
+                //pet->GetMotionMaster()->MoveFollow(_petowner, PET_FOLLOW_DIST, pet->GetFollowAngle());
+                //if (CharmInfo* charmInfo = pet->GetCharmInfo())
+                //{
+                //    charmInfo->SetCommandState(COMMAND_FOLLOW);
+                //    charmInfo->SetIsCommandAttack(false);
+                //    charmInfo->SetIsAtStay(false);
+                //    charmInfo->SetIsReturning(true);
+                //    charmInfo->SetIsFollowing(false);
+                //}
             }
         }
     }
