@@ -927,7 +927,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
         {
-            if(target)
+            if(target && caster)
             {
                 amount = uint32(target->CountPctFromMaxHealth(amount));
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
@@ -937,7 +937,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
         case SPELL_AURA_PERIODIC_LEECH:
         {
-            if(target)
+            if(target && caster)
             {
                 amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
@@ -1001,7 +1001,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 default:
                     break;
             }
-            if(target)
+            if(target && caster)
             {
                 amount = caster->SpellHealingBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
@@ -1011,10 +1011,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
         case SPELL_AURA_OBS_MOD_HEALTH:
         {
-            if (!caster)
-                break;
-
-            if(target)
+            if(target && caster)
             {
                 // Taken mods
                 float TakenTotalMod = 1.0f;
