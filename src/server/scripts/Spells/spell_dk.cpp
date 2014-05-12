@@ -560,6 +560,8 @@ class spell_dk_death_strike_heal : public SpellScriptLoader
                             uint8 chg = scentOfBlood->GetStackAmount();
                             uint32 hl = GetHitHeal() * 0.2 * chg;
                             SetHitHeal(GetHitHeal() + hl);
+                            
+                            GetCaster()->RemoveAura(DK_SPELL_SCENT_OF_BLOOD_AURA);
                         }
                     }
                 }
