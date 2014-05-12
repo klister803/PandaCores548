@@ -1391,31 +1391,30 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 }
                 return;
             }
-            // Death Strike
-            if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
-            {
-                if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100))
-                    bp = m_caster->CountPctFromMaxHealth(7);
-                else
-                    bp = (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100);
-
-                // Item - Death Knight T14 Blood 4P bonus
-                if (m_caster->HasAura(123080))
-                    bp *= 1.1f;
-
-                // Glyph of Dark Succor
-                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(101568, 0))
-                    if (bp < int32(m_caster->CountPctFromMaxHealth(aurEff->GetAmount())))
-                        if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
-                            bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
-
-                m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
-                return;
-            }
     }
 
     switch (m_spellInfo->Id)
     {
+        case 49998: // Death Strike
+        {
+            if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100))
+                bp = m_caster->CountPctFromMaxHealth(7);
+            else
+                bp = (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100);
+
+            // Item - Death Knight T14 Blood 4P bonus
+            if (m_caster->HasAura(123080))
+                bp *= 1.1f;
+
+            // Glyph of Dark Succor
+            if (AuraEffect const* aurEff = m_caster->GetAuraEffect(101568, 0))
+                if (bp < int32(m_caster->CountPctFromMaxHealth(aurEff->GetAmount())))
+                    if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
+                        bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
+
+            m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
+            break;
+        }
         case 115098: // Chi Wave (Main)
         {
             int32 bp = 1;
