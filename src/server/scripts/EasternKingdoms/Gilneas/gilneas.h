@@ -60,7 +60,8 @@ enum CreatureIds
     NPC_AFFLICTED_GILNEAN_P8                          = 50471,
     NPC_COMMANDEERED_CANNON                           = 35914,
     NPC_KRENNAN_ARANAS_TREE                           = 35753,
-    NPC_GREYMANE_HORSE_P4                             = 35905
+    NPC_GREYMANE_HORSE_P4                             = 35905,
+    NPC_MOUNTAICE_HOURCE_CREDIT                       = 36560,
 };
 
 enum GameObjectIds

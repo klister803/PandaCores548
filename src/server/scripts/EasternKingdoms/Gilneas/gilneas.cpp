@@ -51,7 +51,7 @@ public:
         }
 
         //Timed events
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             //Out of combat
             if (!me->getVictim())
@@ -115,7 +115,7 @@ public:
                 tSay = DELAY_SAY_GILNEAS_CITY_GUARD_GATE; //Reset timer
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             //Out of combat and
             if (me->GetGUIDLow() == 3486400)
@@ -186,7 +186,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tSeek <= diff)
             {
@@ -267,7 +267,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             //If creature has no target
             if (!UpdateVictim())
@@ -417,7 +417,7 @@ public:
             }
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (!UpdateVictim())
                 return;
@@ -496,7 +496,7 @@ public:
             willCastEnrage = urand(0, 1);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tRun <= diff && onceRun)
             {
@@ -748,7 +748,7 @@ public:
             z = me->m_positionZ;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tRun <= diff && onceRun)
             {
@@ -837,7 +837,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tSeek <= diff)
             {
@@ -909,7 +909,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tSeek <= diff)
             {
@@ -972,7 +972,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tSeek <= diff)
             {
@@ -1022,7 +1022,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tSeek <= diff)
             {
@@ -1124,7 +1124,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (!EventActive)
                 return;
@@ -1191,7 +1191,7 @@ public:
             tAttack = urand(1700, 2400);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
         if (!UpdateVictim())
             {
@@ -1269,7 +1269,7 @@ public:
             willCastEnrage      = urand(0, 1);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (me->GetPositionX() == -1611.40f && me->GetPositionY() == 1498.49f) // I was spawned in location 1
             {
@@ -1399,7 +1399,7 @@ public:
             willCastEnrage      = urand(0, 1);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (me->GetPositionX() == -1732.81f && me->GetPositionY() == 1526.34f) // I was spawned in location 1
             {
@@ -1529,7 +1529,7 @@ public:
             willCastEnrage      = urand(0, 1);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (me->GetPositionX() == -1618.86f && me->GetPositionY() == 1505.68f) // I was spawned in location 1 on NW Rooftop
             {
@@ -1659,7 +1659,7 @@ public:
             willCastEnrage      = urand(0, 1);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (me->GetPositionX() == -1732.81f && me->GetPositionY() == 1526.34f) // I was just spawned
             {
@@ -1762,7 +1762,7 @@ public:
             tEvent      = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (Creature* Lorna = me->FindNearestCreature(NPC_LORNA_CROWLEY_P4, 60.0f, true))
             if (Creature* BadAvery = me->FindNearestCreature(NPC_JOSIAH_AVERY_P4, 80.0f, true))
@@ -1873,7 +1873,7 @@ public:
             Talk        = false;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tPlayerCheck <= diff)
             {
@@ -1917,6 +1917,55 @@ public:
         }
         return true;
     }
+};
+
+
+/*######
+## npc_lorna_crowley
+######*/
+
+// The Hungry Ettin Q14416
+class npc_lorna_crowley : public CreatureScript
+{
+public:
+    npc_lorna_crowley() : CreatureScript("npc_lorna_crowley") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_lorna_crowleyAI(creature);
+    }
+
+    struct npc_lorna_crowleyAI : public ScriptedAI
+    {
+        npc_lorna_crowleyAI(Creature* creature) : ScriptedAI(creature) {}
+
+        void Reset()
+        {
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (!who)
+                return;
+
+            Vehicle *pVehicle = who->GetVehicleKit();
+            if (!pVehicle)
+                return;
+
+            if (!me->IsWithinDistInMap(who, 5.0f))
+                return;
+
+            Unit* rider = pVehicle->GetPassenger(0);
+            if (!rider)
+                return;
+
+            if (Player* player = rider->ToPlayer())
+            {
+                player->KilledMonsterCredit(NPC_MOUNTAICE_HOURCE_CREDIT, 0);
+                who->ToCreature()->DespawnOrUnsummon(1000);
+            }
+        }
+    };
 };
 
 /*######
@@ -2016,7 +2065,7 @@ public:
             DoCast(me, SPELL_SHADOWSTALKER_STEALTH);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tSeek <= diff)
             {
@@ -2101,7 +2150,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tSay <= diff) // Time for next spawn wave
             {
@@ -2161,7 +2210,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if(tYell <= diff)
             {
@@ -2234,7 +2283,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (tSeek <= diff)
             {
@@ -2260,6 +2309,46 @@ public:
             DoMeleeAttackIfReady();
         }
     };
+};
+
+/*######
+## npc_lord_darius_crowley_c2
+######*/
+class npc_lord_darius_crowley_c2: public CreatureScript
+{
+public:
+    npc_lord_darius_crowley_c2() : CreatureScript("npc_lord_darius_crowley_c2") {}
+
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    {
+        //for (int i = 0; i < 30; i++)
+        //    player->KilledMonsterCredit(35582, 0);
+
+        //player->TeleportTo(638, -1533.76f, 1582.44f, 26.54f, 4.05f);
+        player->CastSpell(player, 67766, true);
+        return true;
+    }
+
+    bool OnGossipHello(Player* player, Creature* creature)
+    {
+        if (player->GetQuestStatus(QUEST_SACRIFICES) == QUEST_STATUS_INCOMPLETE)
+            player->ADD_GOSSIP_ITEM(0, "Start event!", GOSSIP_SENDER_MAIN, 100);
+        player->SendPreparedGossip(creature);
+
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
+    {
+        if (action == 100)
+        {
+            player->CLOSE_GOSSIP_MENU();
+            player->CastSpell(player, 67766, true);
+        }
+
+
+        return true;
+    }
 };
 
 /*######
@@ -2400,7 +2489,7 @@ public:
         {
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             npc_escortAI::UpdateAI(diff);
             Player* player = GetPlayerForEscort();
@@ -2462,7 +2551,7 @@ public:
             SayTimer        = 500;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (Creature* krennan = me->FindNearestCreature(NPC_KRENNAN_ARANAS_TREE, 50.0f))
             {
@@ -2536,7 +2625,7 @@ public:
             EventStart      = false;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (!EventStart)
                 return;
@@ -2697,8 +2786,12 @@ public:
 
         void WaypointReached(uint32 i)
         {
+            Vehicle *pVehicle = me->GetVehicleKit();
+            if (!pVehicle)
+                return;
+
             Player* player = GetPlayerForEscort();
-            Creature* crowley = me->FindNearestCreature(NPC_DARIUS_CROWLEY, 5, true);
+            Creature* crowley = (Creature*)pVehicle->GetPassenger(1);
 
             switch(i)
             {
@@ -2743,7 +2836,7 @@ public:
         {
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             npc_escortAI::UpdateAI(diff);
 
@@ -2811,7 +2904,7 @@ public:
             Burning = false;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if(me->HasAura(SPELL_THROW_TORCH))
             {
@@ -2876,7 +2969,7 @@ public:
             }
         }
 
-        void SpellHit(Unit* caster, const SpellInfo* spell)
+        void SpellHit(Unit* caster, SpellInfo const* spell)
         {
             Creature* horse = me->FindNearestCreature(NPC_CROWLEY_HORSE, 100, true);
             if (spell->Id == SPELL_THROW_TORCH)
@@ -2928,7 +3021,7 @@ public:
             me->SetPosition(me->GetCreatureData()->posX,me->GetCreatureData()->posY, me->GetCreatureData()->posZ, me->GetCreatureData()->orientation);
         }
 
-        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+        void SpellHit(Unit* /*caster*/, SpellInfo const* spell)
         {
             if (spell->Id == SPELL_PING_GILNEAN_CROW)
             {
@@ -2941,7 +3034,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (!Move)
                 return;
@@ -2958,6 +3051,81 @@ public:
                 me->DisappearAndDie();
                 me->RemoveCorpse(true);
                 Move = false;
+            }
+        }
+    };
+};
+
+/*
+38615 -> 38540 Captured Riding Bat
+*/
+class npc_captured_riding_bat : public CreatureScript
+{
+public:
+    npc_captured_riding_bat() : CreatureScript("npc_captured_riding_bat") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_captured_riding_batAI (creature);
+    }
+
+    struct npc_captured_riding_batAI : public npc_escortAI
+    {
+        npc_captured_riding_batAI(Creature* creature) : npc_escortAI(creature) {}
+
+        bool PlayerOn;
+
+        void AttackStart(Unit* /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
+        void EnterEvadeMode() {}
+
+        void Reset()
+        {
+             PlayerOn       = false;
+        }
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (who->GetTypeId() == TYPEID_PLAYER)
+            {
+                PlayerOn = true;
+                if (apply)
+                    Start(false, true, who->GetGUID(), NULL, NULL, true);
+            }
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            Player* player = GetPlayerForEscort();
+            switch(i)
+            {
+                case 36:
+                    player->ExitVehicle();
+                    player->SetClientControl(me, 1);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            Player* player = GetPlayerForEscort();
+
+            if (PlayerOn)
+            {
+                player->SetClientControl(me, 0);
+                PlayerOn = false;
             }
         }
     };
@@ -2986,12 +3154,14 @@ void AddSC_gilneas()
     new npc_worgen_alpha_c2();
     new npc_josiah_avery_p2();
     new npc_josiah_avery_trigger();
+    new npc_lorna_crowley();
     new npc_lorna_crowley_p4();
     new npc_gilnean_mastiff();
     new npc_bloodfang_lurker();
     new npc_king_genn_greymane_p4();
     new npc_gilneas_city_guard_p8();
     new npc_afflicted_gilnean_p8();
+    new npc_lord_darius_crowley_c2();
     new npc_lord_darius_crowley_c3();
     new npc_king_genn_greymane_c2();
     new npc_crowley_horse();
@@ -3002,4 +3172,5 @@ void AddSC_gilneas()
     new npc_commandeered_cannon();
     new npc_bloodfang_stalker_c1();
     new npc_gilnean_crow();
+    new npc_captured_riding_bat();
 }
