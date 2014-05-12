@@ -73,24 +73,21 @@ void BuildPartyLockDungeonBlock(WorldPacket& data, const LfgLockPartyMap& lockMa
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
 {
     uint32 numDungeons;
-    uint32 dungeon;
     uint32 roles;
     uint8 length = 0;
     uint8 unk8 = 0;
 
     recvData >> roles;
-    recvData >> unk8;
+    recvData >> unk8;               // 127 only
     for (int i = 0; i < 3; ++i)
         recvData.read_skip<uint32>();
     numDungeons = recvData.ReadBits(22);
-    recvData.ReadBit();
+    recvData.ReadBit();             // 1 only
     length = recvData.ReadBits(8);
     LfgDungeonSet newDungeons;
     for (uint32 i = 0; i < numDungeons; ++i)
-    {
-        recvData >> dungeon;
-        newDungeons.insert(dungeon);       // remove the type from the dungeon entry
-    }
+        newDungeons.insert(recvData.read<uint32>());       // received with dungeon type mask
+
     std::string comment = recvData.ReadString(length);
 
     if (!numDungeons)
@@ -99,21 +96,34 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
         return;
     }
 
-    const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFF);
-    uint8 type = LFG_TYPE_DUNGEON;
-    uint8 maxGroupSize = 5;
-    if (entry != NULL)
-        type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
-    if (type == LFG_TYPE_RAID)
-        maxGroupSize = 25;
-    if (type == LFG_TYPE_SCENARIO)
-        maxGroupSize = 3;
+    if (!sWorld->getBoolConfig(CONFIG_DUNGEON_FINDER_ENABLE))
+        return;
 
-    if (!sWorld->getBoolConfig(CONFIG_DUNGEON_FINDER_ENABLE) ||
+    if (Group* group = _player->GetGroup())
+    for (LfgDungeonSet::const_iterator itr = newDungeons.begin(); itr != newDungeons.end(); ++itr)
+    {
+        LFGDungeonEntry* const entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFF);
+        if (!entry)
+            return;
+
+        // old wtf checks
+        /*
+        uint8 type = LFG_TYPE_DUNGEON;
+        uint8 maxGroupSize = 5;
+        if (entry != NULL)
+            type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
+        if (type == LFG_TYPE_RAID)
+            maxGroupSize = 25;
+        if (type == LFG_TYPE_SCENARIO)
+            maxGroupSize = 3;
+
+        if (!sWorld->getBoolConfig(CONFIG_DUNGEON_FINDER_ENABLE) ||
         (GetPlayer()->GetGroup() && GetPlayer()->GetGroup()->GetLeaderGUID() != GetPlayer()->GetGUID() &&
         (GetPlayer()->GetGroup()->GetMembersCount() == maxGroupSize || !GetPlayer()->GetGroup()->isLFGGroup())))
-    {
-        return;
+        {
+            return;
+        }
+        */
     }
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_JOIN [" UI64FMTD "] roles: %u, Dungeons: %u, Comment: %s", GetPlayer()->GetGUID(), roles, uint8(newDungeons.size()), comment.c_str());

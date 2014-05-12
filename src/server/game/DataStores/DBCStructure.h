@@ -1487,6 +1487,37 @@ struct LFGDungeonEntry
     bool isScenario() const { return subType == LFG_SUBTYPE_SCENARIO; }
     uint32 GetMinGroupSize() const { return minTankNeeded + minHealerNeeded + minDpsNeeded; }
     uint32 GetMaxGroupSize() const { return tankNeeded + healerNeeded + dpsNeeded; }
+    bool IsValidType() const
+    {
+        switch (type)
+        {
+            case LFG_TYPE_DUNGEON:
+            case LFG_TYPE_RAID:
+            case LFG_TYPE_RANDOM:
+                return true;
+            default:
+                break;
+        }
+
+        return false;
+    }
+    LfgType GetInternalType() const
+    {
+        switch (subType)
+        {
+            case LFG_SUBTYPE_DUNGEON:
+                return LFG_TYPE_DUNGEON;
+            case LFG_SUBTYPE_RAID:
+            case LFG_SUBTYPE_FLEX:
+                return LFG_TYPE_RAID;
+            case LFG_SUBTYPE_SCENARIO:
+                return LFG_TYPE_SCENARIO;
+            default:
+                break;
+        }
+
+        return LFG_TYPE_DUNGEON;
+    }
 };
 
 
