@@ -4371,15 +4371,15 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
 
     //! 5.4.1
     WorldPacket data(SMSG_CAST_FAILED, 1+4+4);
-    data.WriteBit(!hasBit2);
     data.WriteBit(!hasBit1);
+    data.WriteBit(!hasBit2);
     data << uint32(result);                                 // problem
     data << uint32(spellInfo->Id);                          // spellId
-    if (hasBit2)
-        data << uint32(result2);
-    data << uint8(cast_count);                              // single cast or multi 2.3 (0/1)
     if (hasBit1)
         data << uint32(result1);
+    data << uint8(cast_count);                              // single cast or multi 2.3 (0/1)
+    if (hasBit2)
+        data << uint32(result2);
     caster->GetSession()->SendPacket(&data);
 }
 
