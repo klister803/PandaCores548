@@ -634,8 +634,8 @@ QuestItemList* Loot::FillFFALoot(Player* player)
 
 QuestItemList* Loot::FillQuestLoot(Player* player)
 {
-    if (items.size() == MAX_NR_LOOT_ITEMS)
-        return NULL;
+    //if (items.size() == MAX_NR_LOOT_ITEMS)
+    //    return NULL;
 
     QuestItemList* ql = new QuestItemList();
 
@@ -656,7 +656,7 @@ QuestItemList* Loot::FillQuestLoot(Player* player)
             if (!player->GetGroup() || (player->GetGroup()->GetLootMethod() != GROUP_LOOT && player->GetGroup()->GetLootMethod() != ROUND_ROBIN))
                 item.is_blocked = true;
 
-            if (items.size() + ql->size() == MAX_NR_LOOT_ITEMS)
+            if (ql->size() == MAX_NR_QUEST_ITEMS)
                 break;
         }
     }
