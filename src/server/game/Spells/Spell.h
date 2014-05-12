@@ -44,7 +44,7 @@ enum SpellCastFlags
     CAST_FLAG_UNKNOWN_4          = 0x00000008,              // ignore AOE visual
     CAST_FLAG_UNKNOWN_5          = 0x00000010,
     CAST_FLAG_PROJECTILE         = 0x00000020,
-    CAST_FLAG_UNKNOWN_7          = 0x00000040,
+    CAST_FLAG_UNKNOWN_7          = 0x00000040,              // goes with trade skill recasts
     CAST_FLAG_UNKNOWN_8          = 0x00000080,
     CAST_FLAG_UNKNOWN_9          = 0x00000100,
     CAST_FLAG_UNKNOWN_10         = 0x00000200,
@@ -56,7 +56,7 @@ enum SpellCastFlags
     CAST_FLAG_UNKNOWN_16         = 0x00008000,
     CAST_FLAG_UNKNOWN_17         = 0x00010000,
     CAST_FLAG_ADJUST_MISSILE     = 0x00020000,
-    CAST_FLAG_UNKNOWN_19         = 0x00040000,
+    CAST_FLAG_UNKNOWN_19         = 0x00040000,              // related to SPELL_AURA_380
     CAST_FLAG_VISUAL_CHAIN       = 0x00080000,
     CAST_FLAG_UNKNOWN_21         = 0x00100000,
     CAST_FLAG_RUNE_LIST          = 0x00200000,

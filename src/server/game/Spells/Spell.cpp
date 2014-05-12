@@ -1506,6 +1506,7 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
         case TARGET_DEST_DYNOBJ_ALLY:
         case TARGET_DEST_DYNOBJ_NONE:
         case TARGET_DEST_DEST:
+        case TARGET_UNK_128:
             return;
         case TARGET_DEST_TRAJ:
             SelectImplicitTrajTargets();
