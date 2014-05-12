@@ -10175,6 +10175,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 return false;
 
             ToPlayer()->AddSpellCooldown(81164, 0, getPreciseTime() + 45.0);
+            ToPlayer()->RemoveSpellCooldown(48982, true);
 
             break;
         }
