@@ -99,7 +99,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
         return;
     }
 
-    const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFFF);
+    const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFF);
     uint8 type = LFG_TYPE_DUNGEON;
     uint8 maxGroupSize = 5;
     if (entry != NULL)

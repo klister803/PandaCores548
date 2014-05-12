@@ -66,7 +66,7 @@ LfgState LfgGroupData::GetState() const
 uint32 LfgGroupData::GetDungeon(bool asId /* = true */) const
 {
     if (asId)
-        return (m_Dungeon & 0x00FFFFFF);
+        return (m_Dungeon & 0xFFFFF);
     else
         return m_Dungeon;
 }
