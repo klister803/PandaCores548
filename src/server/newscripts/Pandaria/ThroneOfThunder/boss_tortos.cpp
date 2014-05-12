@@ -21,6 +21,15 @@
 
 enum eSpells
 {
+    SPELL_FURIOS_STONE_BREATH  = 133939,
+    SPELL_SNAPPING_BITE        = 135251,
+    SPELL_QUAKE_STOMP          = 134920,
+    SPELL_CALL_OF_TORTOS       = 136294,
+    SPELL_ROCKFALL_P_DMG       = 134539,
+};
+
+enum eEvents
+{
 };
 
 class boss_tortos : public CreatureScript
@@ -28,9 +37,9 @@ class boss_tortos : public CreatureScript
     public:
         boss_tortos() : CreatureScript("boss_tortos") {}
 
-        struct boss_tortosAI : public ScriptedAI
+        struct boss_tortosAI : public BossAI
         {
-            boss_tortosAI(Creature* creature) : ScriptedAI(creature)
+            boss_tortosAI(Creature* creature) : BossAI(creature, DATA_TORTOS)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -39,28 +48,25 @@ class boss_tortos : public CreatureScript
 
             void Reset()
             {
+                _Reset();
             }
 
             void EnterCombat(Unit* who)
             {
-            }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-            }
-
-            void DoAction(int32 const action)
-            {
+                _EnterCombat();
             }
 
             void JustDied(Unit* /*killer*/)
             {
+                _JustDied();
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() && me->HasUnitState(UNIT_STATE_CASTING))
                     return;
+
+                events.Update(diff);
 
                 DoMeleeAttackIfReady();
             }
@@ -72,7 +78,40 @@ class boss_tortos : public CreatureScript
         }
 };
 
+class spell_quake_stomp : public SpellScriptLoader
+{
+    public:
+        spell_quake_stomp() : SpellScriptLoader("spell_quake_stomp") { }
+
+        class spell_quake_stomp_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_quake_stomp_SpellScript);
+
+            void DealDamage()
+            {
+                if (GetCaster() && GetHitUnit())
+                {
+                    int32 curdmg = ((GetHitUnit()->GetMaxHealth()/2) + (GetHitUnit()->GetMaxHealth()/10));
+                    
+                    if (curdmg)
+                        SetHitDamage(curdmg);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_quake_stomp_SpellScript::DealDamage);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_quake_stomp_SpellScript();
+        }
+};
+
 void AddSC_boss_tortos()
 {
     new boss_tortos();
+    new spell_quake_stomp();
 }

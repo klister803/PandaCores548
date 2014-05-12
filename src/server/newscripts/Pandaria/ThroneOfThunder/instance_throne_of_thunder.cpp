@@ -26,6 +26,9 @@ public:
         uint64 horridonentdoorGuid;
         uint64 horridonexdoorGuid;
         uint64 councilexdoorGuid;
+        uint64 councilex2doorGuid;
+        uint64 tortosexdoorGuid;
+        uint64 tortosex2doorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -70,6 +73,9 @@ public:
             horridonentdoorGuid = 0;
             horridonexdoorGuid  = 0;
             councilexdoorGuid   = 0;
+            councilex2doorGuid  = 0;
+            tortosexdoorGuid    = 0;
+            tortosex2doorGuid   = 0;
            
             //Creature
             stormcallerGuid     = 0;
@@ -232,6 +238,15 @@ public:
             case GO_COUNCIL_EX_DOOR:
                 councilexdoorGuid = go->GetGUID();
                 break;
+            case GO_COUNCIL_EX2_DOOR:
+                councilex2doorGuid = go->GetGUID();
+                break;
+            case GO_TORTOS_EX_DOOR:
+                tortosexdoorGuid = go->GetGUID();
+                break;
+            case GO_TORTOS_EX2_DOOR:
+                tortosex2doorGuid = go->GetGUID();
+                break;
             default:
                 break;
             }
@@ -323,9 +338,17 @@ public:
                         for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
                             HandleGameObject(*guids, true);
                         //HandleGameObject(councilexdoorGuid, true);
+                        //HandleGameObject(councilex2doorGuid, true);
                         break;
                     }
                 }
+                break;
+            case DATA_TORTOS:
+               /* if (state == DONE)
+                {
+                    HandleGameObject(tortosexdoorGuid, true);
+                    HandleGameObject(tortosex2doorGuid, true);
+                }*/
                 break;
             default:
                 break;
@@ -579,9 +602,58 @@ class npc_stormbringer : public CreatureScript
         }
 };
 
+Position const onbridge    = {6045.42f, 5163.28f, 148.1146f, 1.548f};
+Position const underbridge = {6042.31f, 5088.96f,  -43.152f, 4.654f};
+
+//Te;eport to Tortos, and back
+class npc_teleporter : public CreatureScript
+{
+    public:
+        npc_teleporter() : CreatureScript("npc_teleporter") {}
+
+        struct npc_teleporterAI : public CreatureAI
+        {
+            npc_teleporterAI(Creature* creature) : CreatureAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                me->AddAura(126493, me); //Visual
+            }
+
+            InstanceScript* instance;
+
+            void Reset(){}
+            
+            void OnSpellClick(Unit* clicker)
+            {
+                if (instance)
+                {
+                   if (clicker->GetTypeId() == TYPEID_PLAYER)
+                   {
+                       if (me->GetPositionZ() > 140.0f)
+                           clicker->NearTeleportTo(underbridge.GetPositionX(), underbridge.GetPositionY(), underbridge.GetPositionZ(), underbridge.GetOrientation());
+                       else
+                           clicker->NearTeleportTo(onbridge.GetPositionX(), onbridge.GetPositionY(), onbridge.GetPositionZ(), onbridge.GetOrientation());
+                   }
+                }
+            }
+            
+            void EnterEvadeMode(){}
+
+            void EnterCombat(Unit* who){}
+
+            void UpdateAI(const uint32 diff){}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_teleporterAI(creature);
+        }
+};
+
 void AddSC_instance_throne_of_thunder()
 {
     new instance_throne_of_thunder();
     new npc_storm_caller();
     new npc_stormbringer();
+    new npc_teleporter();
 }

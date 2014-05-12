@@ -89,7 +89,11 @@ enum eGameObjects
     GO_COUNCIL_LENT_DOOR  = 218655,
     GO_COUNCIL_RENT_DOOR  = 218656,
     GO_COUNCIL_EX_DOOR    = 218657,
+    GO_COUNCIL_EX2_DOOR   = 218469,
     //
+    //Tortos
+    GO_TORTOS_EX_DOOR     = 218980,
+    GO_TORTOS_EX2_DOOR    = 218987,
 };
 
 //This is triggers entry (maybe needed, but not need spawn)
