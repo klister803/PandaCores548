@@ -2095,9 +2095,11 @@ struct SpellRangeEntry
 struct SpellEquippedItemsEntry
 {
     //uint32    Id;                                         // 0        m_ID
-    int32     EquippedItemClass;                            // 70       m_equippedItemClass (value)
-    int32     EquippedItemInventoryTypeMask;                // 72       m_equippedItemInvTypes (mask)
-    int32     EquippedItemSubClassMask;                     // 71       m_equippedItemSubclass (mask)
+    //uint32 spellId;                                       // 1
+    //uint32 difficulty;                                    // 2
+    int32     EquippedItemClass;                            // 3        m_equippedItemClass (value)
+    int32     EquippedItemInventoryTypeMask;                // 4        m_equippedItemInvTypes (mask)
+    int32     EquippedItemSubClassMask;                     // 5        m_equippedItemSubclass (mask)
 };
 
 // SpellCooldowns.dbc

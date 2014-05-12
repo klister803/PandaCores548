@@ -1614,20 +1614,28 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
             // ok, this is first not colored socket for item with prismatic socket
         }
 
-        // tried to put normal gem in meta socket
+        // tried to put non-meta gem in meta socket
         if (itemProto->Socket[i].Color == SOCKET_COLOR_META && GemProps[i]->color != SOCKET_COLOR_META)
             return;
 
-        // tried to put meta gem in normal socket
+        // tried to put meta gem in non-meta socket
         if (itemProto->Socket[i].Color != SOCKET_COLOR_META && GemProps[i]->color == SOCKET_COLOR_META)
             return;
 
-        // tried to put normal gem in cogwheel socket
+        // tried to put non-cogwheel gem in cogwheel socket
         if (itemProto->Socket[i].Color == SOCKET_COLOR_COGWHEEL && GemProps[i]->color != SOCKET_COLOR_COGWHEEL)
             return;
 
-        // tried to put cogwheel gem in normal socket
+        // tried to put cogwheel gem in non-cogwheel socket
         if (itemProto->Socket[i].Color != SOCKET_COLOR_COGWHEEL && GemProps[i]->color == SOCKET_COLOR_COGWHEEL)
+            return;
+
+        // tried to put non-sha gem in sha socket
+        if (itemProto->Socket[i].Color == SOCKET_COLOR_SHA && GemProps[i]->color != SOCKET_COLOR_SHA)
+            return;
+
+        // tried to put sha gem in non-sha socket
+        if (itemProto->Socket[i].Color != SOCKET_COLOR_SHA && GemProps[i]->color == SOCKET_COLOR_SHA)
             return;
     }
 
