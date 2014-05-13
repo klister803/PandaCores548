@@ -102,7 +102,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
     if (Group* group = _player->GetGroup())
     for (LfgDungeonSet::const_iterator itr = newDungeons.begin(); itr != newDungeons.end(); ++itr)
     {
-        LFGDungeonEntry* const entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFF);
+        LFGDungeonEntry const * entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFF);
         if (!entry)
             return;
 

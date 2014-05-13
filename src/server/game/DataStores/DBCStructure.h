@@ -1469,7 +1469,7 @@ struct LFGDungeonEntry
     //uint32 orderIndex;                                    // 14
     uint32 groupId;                                         // 15
     //char* descr                                           // 16 Description
-    uint32 grouptype;                                       // 17 random id
+    uint32 random_id;                                       // 17 random id
     uint32 tankNeeded;                                      // 18
     uint32 healerNeeded;                                    // 19
     uint32 dpsNeeded;                                       // 20

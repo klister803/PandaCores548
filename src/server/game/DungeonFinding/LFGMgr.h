@@ -193,7 +193,11 @@ struct LfgReward
 /// Stores player or group queue info
 struct LfgQueueInfo
 {
-    LfgQueueInfo(): joinTime(0), tanks(LFG_TANKS_NEEDED), healers(LFG_HEALERS_NEEDED), dps(LFG_DPS_NEEDED) {};
+    explicit LfgQueueInfo(LfgQueueInfo const& other);
+
+    LfgQueueInfo() : joinTime(0), type(LFG_TYPE_DUNGEON),
+        tanks(LFG_TANKS_NEEDED), healers(LFG_HEALERS_NEEDED), dps(LFG_DPS_NEEDED) { }
+
     time_t joinTime;                                       ///< Player queue join time (to calculate wait times)
     uint8 tanks;                                           ///< Tanks needed
     uint8 healers;                                         ///< Healers needed
@@ -316,7 +320,7 @@ class LFGMgr
         LfgQueueInfo* GetLfgQueueInfo(uint64 guid) const
         {
             LfgQueueInfoMap::const_iterator itr = m_QueueInfoMap.find(guid);
-            if(itr != m_QueueInfoMap.end())
+            if (itr != m_QueueInfoMap.end())
                 return itr->second;
 
             return NULL;
