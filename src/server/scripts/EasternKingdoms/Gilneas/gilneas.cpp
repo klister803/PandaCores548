@@ -2331,6 +2331,7 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
+        player->PrepareGossipMenu(creature, 0 ,true);
         if (player->GetQuestStatus(QUEST_SACRIFICES) == QUEST_STATUS_INCOMPLETE)
             player->ADD_GOSSIP_ITEM(0, "Start event!", GOSSIP_SENDER_MAIN, 100);
         player->SendPreparedGossip(creature);
