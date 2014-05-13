@@ -3463,9 +3463,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     spellInfo->Speed = 25.f;
                     break;
-                case 125831: // Taste for Blood
-                    spellInfo->ProcCharges = 1;
-                    break;
                 case 124465: // Mastery: Vampiric Touch
                     spellInfo->CastTimeMin = 0;
                     spellInfo->CastTimeMax = 0;
@@ -3978,21 +3975,22 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_CASTER;
                     break;
-                case 6770:  // Sap
-                case 6346:  // Fear Ward
-                case 110717:// Fear Ward (Symbiosis)
-                case 48108: // Hot Streak
-                case 57761: // Brain Freeze
-                case 132158:// Nature's Swiftness
-                case 34936: // Backlash
-                //case 50334: // Berserk (bear)
-                case 23920: // Spell Reflection
-                case 114028:// Mass Spell Reflection
-                case 113002:// Spell Reflection (Symbiosis)
-                case 124430:// Divine Insight (Shadow)
-                case 81292: // Glyph of Mind Spike
-                case 89485: // Inner Focus
-                case 131567:// Holy Spark
+                case 6770:   // Sap
+                case 6346:   // Fear Ward
+                case 110717: // Fear Ward (Symbiosis)
+                case 48108:  // Hot Streak
+                case 57761:  // Brain Freeze
+                case 132158: // Nature's Swiftness
+                case 34936:  // Backlash
+                //case 50334:  // Berserk (bear)
+                case 23920:  // Spell Reflection
+                case 114028: // Mass Spell Reflection
+                case 113002: // Spell Reflection (Symbiosis)
+                case 124430: // Divine Insight (Shadow)
+                case 81292:  // Glyph of Mind Spike
+                case 89485:  // Inner Focus
+                case 131567: // Holy Spark
+                case 125831: // Taste for Blood
                     spellInfo->ProcCharges = 1;
                     break;
                 case 110600:// Ice Trap (Symbiosis)

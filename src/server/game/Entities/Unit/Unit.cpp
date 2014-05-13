@@ -16662,10 +16662,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (Aura* aura = GetAura(53257))
             aura->DropCharge();
 
-    // Fix Drop charge for Killing Machine
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))
-        RemoveAura(51124);
-
     // Hack Fix Immolate - Critical strikes generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
         if (roll_chance_i(50))
