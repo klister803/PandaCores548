@@ -4576,7 +4576,7 @@ class npc_bloodworm : public CreatureScript
                 if (Aura* bloodGorged = me->GetAura(BLOODWORM_BLOOD_STACKS))
                 {
                     uint32 stacks = std::min<uint32>(bloodGorged->GetStackAmount(), 10);
-                    int32 damage = stacks *  10;
+                    int32 damage = stacks * (me->GetMaxHealth() * 0.25f);
                     me->CastCustomSpell(me, BLOODWORM_BLOOD_BURST, &damage, NULL, NULL, true);
                     me->DespawnOrUnsummon(500);
                 }
@@ -4589,6 +4589,12 @@ class npc_bloodworm : public CreatureScript
 
             void Reset()
             {
+                if (me->GetOwner())
+                {
+                    me->SetMaxHealth(0.15 * me->GetOwner()->GetHealth());
+                    me->SetHealth(0.15 * me->GetOwner()->GetHealth());
+                }
+                
                 DoCast(me, BLOODWORM_BLOOD_GORGED, true);
 
                 uiBurstTimer = 19000;
