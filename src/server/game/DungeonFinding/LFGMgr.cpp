@@ -2166,7 +2166,7 @@ void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, const 
     data.WriteBits(0, 24);                          // guids size
     data.WriteGuidMask<5>(guid);
 
-    data.WriteBit(0);
+    data.WriteBit(player->GetGroup() != NULL);      // in group
     data.WriteBit(1);
     data.WriteBit(!quit);                           // display or not the lfr button, lfg join ?, 0 for last one
 
