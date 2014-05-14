@@ -23,7 +23,6 @@
 #include "LFGMgr.h"
 #include "ObjectMgr.h"
 #include "GroupMgr.h"
-#include "InstanceScript.h"
 
 void BuildPlayerLockDungeonBlock(ByteBuffer& data, const LfgLockMap& lock)
 {
@@ -135,12 +134,13 @@ void WorldSession::HandleLfgLeaveOpcode(WorldPacket&  recvData)
 
     Group* grp = GetPlayer()->GetGroup();
     uint64 guid = GetPlayer()->GetGUID();
+    uint64 gguid = grp ? grp->GetGUID() : guid;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_LEAVE [" UI64FMTD "] in group: %u", guid, grp ? 1 : 0);
 
     // Check cheating - only leader can leave the queue
     if (!grp || grp->GetLeaderGUID() == GetPlayer()->GetGUID())
-        sLFGMgr->LeaveLfg(GetPlayer(), grp);
+        sLFGMgr->LeaveLfg(gguid);
 }
 
 void WorldSession::HandleLfgProposalResultOpcode(WorldPacket& recvData)
@@ -220,7 +220,7 @@ void WorldSession::HandleLfgSetBootVoteOpcode(WorldPacket& recvData)
 
     uint64 guid = GetPlayer()->GetGUID();
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_SET_BOOT_VOTE [" UI64FMTD "] agree: %u", guid, agree ? 1 : 0);
-    sLFGMgr->UpdateBoot(GetPlayer(), agree);
+    sLFGMgr->UpdateBoot(guid, agree);
 }
 
 void WorldSession::HandleLfgTeleportOpcode(WorldPacket& recvData)
@@ -452,7 +452,7 @@ void WorldSession::SendLfgUpdatePlayer(const LfgUpdateData& updateData)
         case LFG_UPDATETYPE_PROPOSAL_BEGIN:
             extrainfo = true;
             break;
-        case LFG_UPDATETYPE_GROUP_DISBAND:
+        case LFG_UPDATETYPE_GROUP_DISBAND_UNK16:
         case LFG_UPDATETYPE_GROUP_FOUND:
         case LFG_UPDATETYPE_CLEAR_LOCK_LIST:
         case LFG_UPDATETYPE_REMOVED_FROM_QUEUE:
@@ -512,7 +512,7 @@ void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData, uint32 jo
             extrainfo = true;
             join = true;
             break;
-        case LFG_UPDATETYPE_GROUP_DISBAND:
+        case LFG_UPDATETYPE_GROUP_DISBAND_UNK16:
         case LFG_UPDATETYPE_GROUP_FOUND:
             quit = true;
             break;
@@ -794,7 +794,7 @@ void WorldSession::SendLfgBootProposalUpdate(const LfgPlayerBoot& boot)
         }
     }
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_BOOT_PROPOSAL_UPDATE [" UI64FMTD "] inProgress: %u - didVote: %u - agree: %u - victim: [" UI64FMTD "] votes: %u - agrees: %u - left: %u - needed: %u - reason %s",
-        guid, uint8(boot.inProgress), uint8(playerVote != LFG_ANSWER_PENDING), uint8(playerVote == LFG_ANSWER_AGREE), boot.victim, votesNum, agreeNum, secsleft, boot.votedNeeded, boot.reason.c_str());
+        guid, uint8(boot.inProgress), uint8(playerVote != LFG_ANSWER_PENDING), uint8(playerVote == LFG_ANSWER_AGREE), boot.victim, votesNum, agreeNum, secsleft, LFG_GROUP_KICK_VOTES_NEEDED, boot.reason.c_str());
 
     ObjectGuid victimGuid = boot.victim;
 
@@ -807,7 +807,7 @@ void WorldSession::SendLfgBootProposalUpdate(const LfgPlayerBoot& boot)
     data.WriteGuidMask<6>(victimGuid);
     data.WriteBit(!boot.reason.size());
     data.WriteGuidMask<1>(victimGuid);
-    data.WriteBit(boot.inProgress);                       // Vote in progress
+    data.WriteBit(boot.inProgress);                         // Vote in progress
     if (uint32 len = boot.reason.size())
         data.WriteBits(len, 8);
     data.WriteGuidMask<0, 3>(victimGuid);
@@ -815,11 +815,11 @@ void WorldSession::SendLfgBootProposalUpdate(const LfgPlayerBoot& boot)
 
     data.WriteGuidBytes<5, 7>(victimGuid);
     if (boot.reason.size())
-        data.WriteString(boot.reason);                    // Kick reason
+        data.WriteString(boot.reason);                      // Kick reason
     data.WriteGuidBytes<2>(victimGuid);
     data << uint32(votesNum);                               // Total Votes
     data.WriteGuidBytes<6, 4, 3>(victimGuid);
-    data << uint32(boot.votedNeeded);                     // Needed Votes
+    data << uint32(LFG_GROUP_KICK_VOTES_NEEDED);            // Needed Votes
     data.WriteGuidBytes<1>(victimGuid);
     data << uint32(agreeNum);                               // Agree Count
     data.WriteGuidBytes<0>(victimGuid);
@@ -827,75 +827,43 @@ void WorldSession::SendLfgBootProposalUpdate(const LfgPlayerBoot& boot)
     SendPacket(&data);
 }
 
-void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal& proposal)
+void WorldSession::SendLfgUpdateProposal(uint32 proposalId, LfgProposal const& proposal)
 {
     uint64 guid = GetPlayer()->GetGUID();
-    LfgProposalPlayerMap::const_iterator itPlayer = proposal.players.find(guid);
-    if (itPlayer == proposal.players.end())                  // Player MUST be in the proposal
-        return;
+    uint64 gguid = proposal.players.find(guid)->second.group;
+    bool silent = !proposal.isNew && gguid == proposal.group;
+    uint32 dungeonEntry = proposal.dungeonId;
 
-    LfgProposalPlayer* ppPlayer = itPlayer->second;
-    uint32 pLowGroupGuid = ppPlayer->groupLowGuid;
-    uint32 dLowGuid = proposal.groupLowGuid;
-    uint32 dungeonId = proposal.dungeonId;
-    bool isSameDungeon = false;
-    bool isContinue = false;
-    Group* grp = dLowGuid ? sGroupMgr->GetGroupByGUID(dLowGuid) : NULL;
-    uint32 completedEncounters = 0;
-    if (grp)
-    {
-        uint64 gguid = grp->GetGUID();
-        isContinue = grp->isLFGGroup() && sLFGMgr->GetState(gguid) != LFG_STATE_FINISHED_DUNGEON;
-        isSameDungeon = GetPlayer()->GetGroup() == grp && isContinue;
-    }
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_PROPOSAL_UPDATE [" UI64FMTD "] state: %u", GetPlayer()->GetGUID(), proposal.state);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_PROPOSAL_UPDATE [" UI64FMTD "] state: %u", guid, proposal.state);
     WorldPacket data(SMSG_LFG_PROPOSAL_UPDATE, 4 + 1 + 4 + 4 + 1 + 1 + proposal.players.size() * (4 + 1 + 1 + 1 + 1 +1));
 
-    if (!isContinue)                                       // Only show proposal dungeon if it's continue
+    // show random dungeon if player selected random dungeon and it's not lfg group
+    if (!silent)
     {
-        LfgDungeonSet playerDungeons = sLFGMgr->GetSelectedDungeons(guid);
-        if (playerDungeons.size() == 1)
-            dungeonId = *playerDungeons.begin();
+        LfgDungeonSet const& playerDungeons = sLFGMgr->GetSelectedDungeons(guid);
+        if (playerDungeons.find(proposal.dungeonId) == playerDungeons.end())
+            dungeonEntry = (*playerDungeons.begin());
     }
 
-    if (LFGDungeonEntry const* dungeon = sLFGMgr->GetLFGDungeon(dungeonId))
-    {
-        dungeonId = dungeon->Entry();
-
-        // Select a player inside to be get completed encounters from
-        if (grp)
-        {
-            for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
-            {
-                Player* groupMember = itr->getSource();
-                if (groupMember && groupMember->GetMapId() == uint32(dungeon->map))
-                {
-                    if (InstanceScript* instance = groupMember->GetInstanceScript())
-                        completedEncounters = instance->GetCompletedEncounterMask();
-                    break;
-                }
-            }
-        }
-    }
+    if (LFGDungeonEntry const* dungeon = sLFGMgr->GetLFGDungeon(dungeonEntry))
+        dungeonEntry = dungeon->Entry();
 
     ObjectGuid playerGUID = guid;
-    ObjectGuid InstanceSaveGUID = MAKE_NEW_GUID(dungeonId, 0, HIGHGUID_INSTANCE_SAVE);
+    ObjectGuid InstanceSaveGUID = MAKE_NEW_GUID(dungeonEntry, 0, HIGHGUID_INSTANCE_SAVE);
 
-    data << uint32(dungeonId);                              // Dungeon
+    data << uint32(dungeonEntry);                           // Dungeon
     data << uint8(proposal.state);                          // Result states
-    data << uint32(completedEncounters);                    // Bosses killed
+    data << uint32(proposal.encounters);                    // Bosses killed
     data << uint32(time(NULL));                             // Date
     data << uint32(proposalId);                             // Proposal Id
     data << uint32(3);                                      // queue id
     data << uint32(GetPlayer()->GetTeam());                 // group Id?
 
-
     data.WriteGuidMask<5, 7>(InstanceSaveGUID);
     data.WriteGuidMask<2, 4>(playerGUID);
     data.WriteGuidMask<6>(InstanceSaveGUID);
     data.WriteGuidMask<3>(playerGUID);
-    data.WriteBit(isSameDungeon);
+    data.WriteBit(silent);
     data.WriteGuidMask<1, 7, 6, 0>(playerGUID);
     data.WriteGuidMask<0, 2>(InstanceSaveGUID);
     data.WriteGuidMask<5>(playerGUID);
@@ -903,13 +871,15 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal& p
     data.WriteGuidMask<4>(InstanceSaveGUID);
 
     data.WriteBits(proposal.players.size(), 21);
-    for (itPlayer = proposal.players.begin(); itPlayer != proposal.players.end(); ++itPlayer)
+    for (LfgProposalPlayerMap::const_iterator it = proposal.players.begin(); it != proposal.players.end(); ++it)
     {
-        data.WriteBit(itPlayer->second->accept == LFG_ANSWER_AGREE);    // Accepted
-        data.WriteBit(itPlayer->second->accept!= LFG_ANSWER_PENDING);   // responded
-        data.WriteBit(itPlayer->second->groupLowGuid ? itPlayer->second->groupLowGuid == dLowGuid : false);         // In dungeon (silent)
-        data.WriteBit(itPlayer->first == guid);                         // Self player
-        data.WriteBit(itPlayer->second->groupLowGuid ? itPlayer->second->groupLowGuid == pLowGroupGuid : false);    // Same Group than player
+        LfgProposalPlayer const& player = it->second;
+
+        data.WriteBit(player.accept == LFG_ANSWER_AGREE);   // Accepted
+        data.WriteBit(player.accept!= LFG_ANSWER_PENDING);  // responded
+        data.WriteBit(player.group ? player.group == proposal.group : false);   // In dungeon (silent)
+        data.WriteBit(it->first == guid);                   // Self player
+        data.WriteBit(player.group ? player.group == gguid : false);            // Same Group than player
     }
     data.WriteGuidMask<1, 3>(InstanceSaveGUID);
 
@@ -920,8 +890,8 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal& p
     data.WriteGuidBytes<6, 2>(playerGUID);
     data.WriteGuidBytes<0>(InstanceSaveGUID);
     data.WriteGuidBytes<4, 1>(playerGUID);
-    for (itPlayer = proposal.players.begin(); itPlayer != proposal.players.end(); ++itPlayer)
-        data << uint32(itPlayer->second->role);                     // Role
+    for (LfgProposalPlayerMap::const_iterator it = proposal.players.begin(); it != proposal.players.end(); ++it)
+        data << uint32(it->second.role);                    // Role
     data.WriteGuidBytes<0>(playerGUID);
     data.WriteGuidBytes<6, 1, 3>(InstanceSaveGUID);
     data.WriteGuidBytes<5>(playerGUID);
