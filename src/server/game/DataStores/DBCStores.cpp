@@ -158,7 +158,7 @@ DBCStorage <ItemSpecEntry>                sItemSpecStore(ItemSpecEntryfmt);
 
 DBCStorage <LanguageWordsEntry>           sLanguageWordsStore(LanguageWordsEntryfmt);
 std::map<uint32 /*lang id*/, LanguageWordsMap> sLanguageWordsMapStore;
-DBCStorage <LFGDungeonEntry> sLFGDungeonStore(LFGDungeonEntryfmt);
+DBCStorage <LFGDungeonEntryDbc> sLFGDungeonStore(LFGDungeonEntryfmt);
 DBCStorage <LiquidTypeEntry> sLiquidTypeStore(LiquidTypefmt);
 DBCStorage <LockEntry> sLockStore(LockEntryfmt);
 

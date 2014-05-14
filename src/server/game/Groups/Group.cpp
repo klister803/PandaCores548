@@ -243,7 +243,7 @@ void Group::ChangeFlagEveryoneAssistant(bool apply)
 
 void Group::ConvertToLFG(LFGDungeonEntry const* dungeon)
 {
-    if (dungeon->subType == LFG_SUBTYPE_FLEX || dungeon->subType == LFG_SUBTYPE_RAID)
+    if (dungeon->dbc->subType == LFG_SUBTYPE_FLEX || dungeon->dbc->subType == LFG_SUBTYPE_RAID)
         ConvertToRaid(false);
 
     m_groupType = GroupType(m_groupType | GROUPTYPE_LFG | GROUPTYPE_UNK1);
@@ -639,7 +639,7 @@ bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOV
         if (isLFGGroup() && GetMembersCount() == 1)
         {
             Player* Leader = ObjectAccessor::FindPlayer(GetLeaderGUID());
-            LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(sLFGMgr->GetDungeon(GetGUID()));
+            LFGDungeonEntry const* dungeon = sLFGMgr->GetLFGDungeon(sLFGMgr->GetDungeon(GetGUID()));
             if ((Leader && dungeon && Leader->isAlive() && Leader->GetMapId() != uint32(dungeon->map)) || !dungeon)
             {
                 Disband();

@@ -38,6 +38,7 @@ class Unit;
 class WorldObject;
 class WorldPacket;
 class WorldSession;
+struct LFGDungeonEntry;
 
 struct MapEntry;
 

@@ -1450,16 +1450,16 @@ struct LanguageWordsEntry
     char* word;                                             // 2
 };
 
-struct LFGDungeonEntry
+struct LFGDungeonEntryDbc
 {
     uint32  ID;                                             // 0
-    //char*   name;                                         // 1
+    char*   name;                                           // 1
     uint32  minlevel;                                       // 2
     uint32  maxlevel;                                       // 3
     uint32  reclevel;                                       // 4
     uint32  recminlevel;                                    // 5
     uint32  recmaxlevel;                                    // 6
-    int32  map;                                             // 7
+    int32   map;                                            // 7
     uint32  difficulty;                                     // 8
     uint32  flags;                                          // 9
     uint32  type;                                           // 10
