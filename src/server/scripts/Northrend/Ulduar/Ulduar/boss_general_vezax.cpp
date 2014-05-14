@@ -218,7 +218,7 @@ public:
                             std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
                             for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                             {
-                                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                                if(Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
                                 if (me->GetDistance(pTarget) > 15.0f && pTarget->GetTypeId() == TYPEID_PLAYER)
                                 {
                                     me->MonsterTextEmote("Warning Shadow Crash", 0 , true);
