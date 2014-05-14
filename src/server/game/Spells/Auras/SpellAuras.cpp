@@ -195,6 +195,7 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
         data.WriteGuidMask<2, 3, 4, 0, 1, 6, 7, 5>(aura->GetCasterGUID());
     uint32 count = 0;
     bool sendEffect = false;
+    bool absorbEffect = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(aura->GetSpellInfo()->Effects[i].IsEffect())
@@ -202,12 +203,14 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
             ++count;
             if (AuraEffect const* eff = aura->GetEffect(i))
             {
+                if(eff->GetAuraType() == SPELL_AURA_SCHOOL_ABSORB)
+                    absorbEffect = true;
                 if(eff->GetAmount() != eff->GetBaseSendAmount())
                     sendEffect = true;
             }
         }
     }
-    data.WriteBits(sendEffect ? count : 0, 22);  // effect count 2
+    data.WriteBits((sendEffect && !absorbEffect) ? count : 0, 22);  // effect count 2
     data.WriteBits(count, 22);  // effect count
     data.WriteBit(flags & AFLAG_DURATION);  // has duration
     data.WriteBit(flags & AFLAG_DURATION);  // has max duration
@@ -228,17 +231,22 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
         flags |= AFLAG_DURATION;
 
     bool sendEffect = false;
+    bool absorbEffect = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(aura->GetSpellInfo()->Effects[i].IsEffect())
         {
             if (AuraEffect const* eff = aura->GetEffect(i))
+            {
+                if(eff->GetAuraType() == SPELL_AURA_SCHOOL_ABSORB)
+                    absorbEffect = true;
                 if(eff->GetAmount() != eff->GetBaseSendAmount())
                     sendEffect = true;
+            }
         }
     }
 
-    if(sendEffect)
+    if(sendEffect && !absorbEffect)
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
@@ -278,7 +286,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
         data << uint32(aura->GetMaxDuration());
 
     //effect2 send base amount
-    if(sendEffect)
+    if(sendEffect && !absorbEffect)
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {

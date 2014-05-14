@@ -3527,16 +3527,7 @@ Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint3
                 return foundAura;
 
             // try to increase stack amount
-            if (foundAura->GetId() != 980)
-                foundAura->ModStackAmount(1);
-
-            // Agony is refreshed at manual reapply
-            if (foundAura->GetId() == 980)
-            {
-                foundAura->RefreshSpellMods();
-                foundAura->RefreshTimers();
-            }
-
+            foundAura->ModStackAmount(1);
             return foundAura;
         }
     }
@@ -12351,7 +12342,7 @@ int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask)
     return TakenAdvertisedBenefit;
 }
 
-bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType, float &crit_chance) const
+bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType, float &critChance) const
 {
     //! Mobs can't crit with spells. Player Totems can
     //! Fire Elemental (from totem) can too - but this part is a hack and needs more research
@@ -12362,6 +12353,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT))
         return false;
 
+    float crit_chance = 0.0f;
     // Pets have 100% of owner's crit_chance
     if (isPet() && GetOwner())
     {
@@ -12628,6 +12620,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
             crit_chance += (*i)->GetAmount();
 
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
+    critChance = crit_chance;
     if (roll_chance_f(crit_chance))
         return true;
     return false;

@@ -2553,8 +2553,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Do healing and triggers
     if (m_healing > 0)
     {
-        float crit_chance = 0.0f;
-        bool crit = caster->isSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask, BASE_ATTACK, crit_chance);
+        float critChance = 0.0f;
+        bool crit = caster->isSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask, BASE_ATTACK, critChance);
 
         uint32 addhealth = m_healing;
         if (crit)
@@ -8255,8 +8255,8 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
         }
     }
 
-    float crit_chance = 0.0f;
-    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, crit_chance);
+    float critChance = 0.0f;
+    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
 }
 
 SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& skillId, int32& reqSkillValue, int32& skillValue)

@@ -4008,9 +4008,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115268: // Mesmerize (succubus)
                     spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
                     break;
-                case 980:   // Agony
-                    spellInfo->StackAmount = 10;
-                    break;
                 case 131740:// Corruption (Malefic Grasp)
                 case 131736:// Unstable Affliction (Malefic Grasp)
                 case 132566:// Seed of Corruption (Malefic Grasp)
