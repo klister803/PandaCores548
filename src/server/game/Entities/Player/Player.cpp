@@ -1892,6 +1892,12 @@ void Player::Update(uint32 p_time)
             }
         }
     }
+    
+    if (!IsBeingTeleported() && !m_taxi.GetCurrentTaxiPath() && !GetTransport() && isAlive())
+    {
+        if (IsForbiddenMapForLevel(GetMapId(), GetZoneId()))
+            TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+    }
 
     if (m_weaponChangeTimer > 0)
     {
@@ -29264,4 +29270,58 @@ bool Player::CanSpeakLanguage(uint32 lang_id) const
     }
 
     return true;
+}
+
+bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
+{
+    // ignore gamemasters
+    if (isGameMaster())
+        return false;
+
+    switch (mapid)
+    {
+        // Eastern Kingdoms
+        case 0:
+            switch (zone)
+            {
+                case 4922: // Twilight Highlands
+                case 4815: // Vashj'ir: Kelp'thar Forest
+                case 5144: // Vashj'ir: Shimmering Expanse
+                case 5145: // Vashj'ir: Abyssal Depths
+                case 5146: // Vashj'ir
+                    if (getLevel() < 80)
+                        return true;
+                default:
+                    break;
+            }
+            break;
+        // Kalimdor
+        case 1:
+            //      Uldum           Hyjal
+            if (zone == 5034 || zone == 616)
+                if (getLevel() < 80)
+                    return true;
+            break;
+        // Outland
+        case 530:
+            if (getLevel() < 58)
+            {
+                // Nagrand, Terrokar Forest, Netherstorm, Blade's Edge Mountains, Hellfire Peninsula, Zangarmarsh, Shadowmoon Valley
+                if (zone == 3518 || zone == 3519 || zone == 3523 || zone == 3522 || zone == 3483 || zone == 3521 || zone == 3520)
+                    return true;
+            }
+            break;
+        // Northrend
+        case 571:
+            if (getLevel() < 68)
+                return true;
+            break;
+        // Deepholm
+        case 646:
+            if (getLevel() < 80)
+                return true;
+            break;
+    }
+
+    return false;
 }

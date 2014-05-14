@@ -1341,6 +1341,8 @@ class Player : public Unit, public GridObject<Player>
             return TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation(), options);
         }
         bool TeleportToBGEntryPoint();
+        
+        bool IsForbiddenMapForLevel(uint32 mapid, uint32 zone);
 
         void SetSummonPoint(uint32 mapid, float x, float y, float z)
         {
