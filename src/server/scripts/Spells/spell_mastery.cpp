@@ -128,54 +128,6 @@ class spell_mastery_combo_breaker : public SpellScriptLoader
         }
 };
 
-// Called by 45470 - Death Strike (Heal)
-// 77513 - Mastery : Blood Shield
-class spell_mastery_blood_shield : public SpellScriptLoader
-{
-    public:
-        spell_mastery_blood_shield() : SpellScriptLoader("spell_mastery_blood_shield") { }
-
-        class spell_mastery_blood_shield_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mastery_blood_shield_SpellScript);
-
-            void HandleAfterHit()
-            {
-                Unit* caster = GetCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                Unit* target = GetHitUnit();
-                if (!target)
-                    return;
-
-                // Check the Mastery aura while in Blood presence
-                if (target->HasAura(48263))
-                {
-                    if (AuraEffect const* aurEff = target->GetAuraEffect(77513, EFFECT_0))
-                    {
-                        int32 bp = -int32(GetHitDamage() * aurEff->GetAmount() / 100.0f);
-
-                        if (Aura* scentOfBlood = target->GetAura(SPELL_DK_SCENT_OF_BLOOD))
-                            AddPct(bp, scentOfBlood->GetStackAmount() * 20);
-
-                        target->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_mastery_blood_shield_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mastery_blood_shield_SpellScript();
-        }
-};
-
 // Called by 403 - Lightning Bolt, 421 - Chain Lightning, 51505 - Lava Burst and 117014 - Elemental Blast
 // 77222 - Mastery : Elemental Overload
 class spell_mastery_elemental_overload : public SpellScriptLoader
@@ -254,6 +206,5 @@ void AddSC_mastery_spell_scripts()
 {
     new spell_mastery_shield_discipline();
     new spell_mastery_combo_breaker();
-    new spell_mastery_blood_shield();
     new spell_mastery_elemental_overload();
 }

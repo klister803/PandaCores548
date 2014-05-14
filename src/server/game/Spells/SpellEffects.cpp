@@ -2311,6 +2311,20 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL, effIndex);
 
+        // Mastery DeathKnight
+        if (m_spellInfo->Id == 45470 && m_caster->HasAura(48263))
+            if (Aura* aur = m_caster->GetAura(77513))
+            {    
+                int32 bp0 = int32(addhealth * float(aur->GetEffect(0)->GetAmount() / 100.0f));
+                if (Aura* aurShield = m_caster->GetAura(77535))
+                    bp0 += aurShield->GetEffect(0)->GetAmount();
+
+                if (bp0 > int32(m_caster->GetMaxHealth()))
+                    bp0 = int32(m_caster->GetMaxHealth());
+
+                m_caster->CastCustomSpell(m_caster, 77535, &bp0, NULL, NULL, true);
+            }
+        
         switch (m_spellInfo->Id)
         {
             case 89653: // Drain Life
