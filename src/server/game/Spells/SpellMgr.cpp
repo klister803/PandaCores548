@@ -3360,6 +3360,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 2944: // Solace and Insanity
+                    spellInfo->Effects[2].BasePoints = 0;
+                    break;
                 case 146202: // Wrath
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(39);

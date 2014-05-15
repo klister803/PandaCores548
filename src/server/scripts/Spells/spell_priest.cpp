@@ -997,6 +997,12 @@ class spell_pri_devouring_plague : public SpellScriptLoader
 
                             // Instant damage equal to amount of shadow orb
                             SetHitDamage(int32(GetHitDamage() * currentPower / 3));
+
+                            if (Aura* aur = target->GetAura(GetSpellInfo()->Id, _player->GetGUID()))
+                            {
+                                if (AuraEffect* eff = aur->GetEffect(EFFECT_2))
+                                    eff->SetAmount(100 * currentPower / 3);
+                            }
                         }
                     }
                 }

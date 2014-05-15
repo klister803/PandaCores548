@@ -929,6 +929,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
             }
+            if (m_spellInfo->Id == 15407)
+            {
+                if (caster->HasAura(139139))
+                {
+                    if (Aura* aur = target->GetAura(2944, caster->GetGUID()))
+                    {
+                        int32 addBonusPct = aur->GetEffect(EFFECT_2)->GetAmount();
+                        AddPct(amount, addBonusPct);
+                    }
+                }
+            }
             break;
         }
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
