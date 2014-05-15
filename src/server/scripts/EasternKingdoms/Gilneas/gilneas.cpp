@@ -2788,11 +2788,10 @@ public:
         void WaypointReached(uint32 i)
         {
             Vehicle *pVehicle = me->GetVehicleKit();
-            if (!pVehicle)
-                return;
-
             Player* player = GetPlayerForEscort();
             Creature* crowley = (Creature*)pVehicle->GetPassenger(1);
+            if (!pVehicle || !player || crowley)
+                return;
 
             switch(i)
             {
