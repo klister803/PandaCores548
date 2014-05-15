@@ -20,6 +20,7 @@
 
 #include "Battleground.h"
 
+#define FLAG_POS_UPDT_TIME 5000
 
 enum BG_TP_TimerOrScore
 {
@@ -204,6 +205,8 @@ class BattlegroundTP : public Battleground
         /// Called when a player hits an area. (Like when is within distance to capture the flag (mainly used for this))
         void HandleAreaTrigger(Player* Source, uint32 Trigger);
 
+        void SendFlagsPositionsUpdate(bool sendIfEmpty = false);
+
         /* Update Score */
         /// Update score board
         void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
@@ -249,7 +252,7 @@ private:
         uint8 _flagDebuffState;         ///< This maintain the debuff state of the flag carrier. If the flag is on a player for more then X minutes, the player will be cursed with an debuff. (0 - No debuff, 1 - Focus assault, 2 - Brutal assault)
         uint8 _minutesElapsed;          ///< Elapsed time since the beginning of the battleground (It counts as well the beginning time(when the doors are closed))
 
-
+        int32 _flagPosTimer;
 };
 
 #endif

@@ -44,6 +44,8 @@ BattlegroundTP::BattlegroundTP()
     _flagSpellForceTimer = 0;
     _bothFlagsKept = false;
     _flagDebuffState = 0;
+
+    _flagPosTimer = FLAG_POS_UPDT_TIME;
 }
 
 BattlegroundTP::~BattlegroundTP()
@@ -176,6 +178,14 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
                 }
             }
         }
+
+        if (_flagPosTimer < 0)
+        {
+            _flagPosTimer = FLAG_POS_UPDT_TIME;
+            SendFlagsPositionsUpdate();
+        }
+        else
+            _flagPosTimer -= diff;
     }
 }
 
@@ -403,6 +413,50 @@ void BattlegroundTP::HandleAreaTrigger(Player* player, uint32 trigger)
     }
 }
 
+void BattlegroundTP::SendFlagsPositionsUpdate(bool sendIfEmpty)
+{
+    Player* players[2];
+    uint8 count = 0;
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        players[i] = ObjectAccessor::FindPlayer(_flagKeepers[i]);
+        if (players[i])
+            count++;
+    }
+
+    if (!sendIfEmpty && !count)
+        return;
+
+    WorldPacket packet(SMSG_BATTLEGROUND_PLAYER_POSITIONS);
+    packet.WriteBits(count, 20);
+
+    ObjectGuid guids[2];
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        if (!players[i])
+            continue;
+
+        guids[i] = players[i]->GetGUID();
+        packet.WriteGuidMask<6, 5, 4, 0, 2, 3, 7, 1>(guids[i]);
+    }
+
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        if (!players[i])
+            continue;
+
+        Player* player = players[i];
+        packet << player->GetPositionY();
+        packet.WriteGuidBytes<2, 3, 7, 0, 1, 6>(guids[i]);
+        packet << uint8(player->GetTeamId() == TEAM_ALLIANCE ? 1 : 2);
+        packet.WriteGuidBytes<5, 4>(guids[i]);
+        packet << uint8(player->GetTeamId() == TEAM_ALLIANCE ? 3 : 2);
+        packet << player->GetPositionX();
+    }
+
+    SendPacketToAll(&packet);
+}
+
 void BattlegroundTP::UpdatePlayerScore(Player* player, uint32 type, uint32 value, bool doAddHonor)
 {
     /// Find player in map
@@ -503,6 +557,7 @@ void BattlegroundTP::EventPlayerDroppedFlag(Player* source)
 
     /// Send message to all
     SendMessageToAll(team == TEAM_ALLIANCE ? LANG_BG_TP_DROPPED_HF : LANG_BG_TP_DROPPED_AF, team == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_HORDE : CHAT_MSG_BG_SYSTEM_ALLIANCE, source);
+    SendFlagsPositionsUpdate(true);
 }
 
 void BattlegroundTP::EventPlayerClickedOnFlag(Player* source, GameObject* target_obj)
@@ -592,12 +647,14 @@ void BattlegroundTP::EventPlayerClickedOnFlag(Player* source, GameObject* target
     }
 
    source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
+   SendFlagsPositionsUpdate();
 }
 
 void BattlegroundTP::EventPlayerCapturedFlag(Player* source)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
+
 
     uint8 team = source->GetTeamId();
 
@@ -640,6 +697,8 @@ void BattlegroundTP::EventPlayerCapturedFlag(Player* source)
         EndBattleground(team);
     else
         _flagsTimer = BG_TP_FLAG_RESPAWN_TIME;
+
+    SendFlagsPositionsUpdate(true);
 }
 
 void BattlegroundTP::RemovePlayer(Player* player, uint64 guid, uint32 /* team */)
