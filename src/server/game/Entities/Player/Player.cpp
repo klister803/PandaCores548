@@ -29310,6 +29310,11 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
             if (getLevel() < 80)
                 return true;
             break;
+        // Molten Front
+        case 646:
+            if (getLevel() < 85)
+                return true;
+            break;
     }
 
     return false;
