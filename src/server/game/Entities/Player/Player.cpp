@@ -1892,12 +1892,6 @@ void Player::Update(uint32 p_time)
             }
         }
     }
-    
-    if (!IsBeingTeleported() && !m_taxi.GetCurrentTaxiPath() && !GetTransport() && isAlive())
-    {
-        if (IsForbiddenMapForLevel(GetMapId(), GetZoneId()))
-            TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
-    }
 
     if (m_weaponChangeTimer > 0)
     {
@@ -3479,7 +3473,10 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
 
     if (victim && victim->GetTypeId() == TYPEID_UNIT && !victim->ToCreature()->hasLootRecipient())
         return;
-
+    
+    if (IsForbiddenMapForLevel(GetMapId(), GetZoneId()))
+        xp = 0;
+        
     uint8 level = getLevel();
 
     sScriptMgr->OnGivePlayerXP(this, xp, victim);
@@ -29274,10 +29271,6 @@ bool Player::CanSpeakLanguage(uint32 lang_id) const
 
 bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
 {
-    // ignore gamemasters
-    if (isGameMaster())
-        return false;
-
     switch (mapid)
     {
         // Eastern Kingdoms
@@ -29305,11 +29298,7 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
         // Outland
         case 530:
             if (getLevel() < 58)
-            {
-                // Nagrand, Terrokar Forest, Netherstorm, Blade's Edge Mountains, Hellfire Peninsula, Zangarmarsh, Shadowmoon Valley
-                if (zone == 3518 || zone == 3519 || zone == 3523 || zone == 3522 || zone == 3483 || zone == 3521 || zone == 3520)
-                    return true;
-            }
+                return true;
             break;
         // Northrend
         case 571:
