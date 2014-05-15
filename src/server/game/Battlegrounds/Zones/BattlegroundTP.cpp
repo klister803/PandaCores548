@@ -364,7 +364,7 @@ void BattlegroundTP::EndBattleground(uint32 winner)
     UpdateWorldState(BG_TP_FLAG_STATE_HORDE, 1);
     UpdateWorldState(BG_TP_STATE_TIMER_ACTIVE, 0);
 
-    Battleground::EndBattleground(winner);
+    Battleground::EndBattleground((winner == TEAM_ALLIANCE) ? ALLIANCE : HORDE);
 }
 
 void BattlegroundTP::HandleKillPlayer(Player* player, Player* killer)
