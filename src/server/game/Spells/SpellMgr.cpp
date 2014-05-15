@@ -4460,6 +4460,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 133946: //Furios stone breath tr ef dmg(nerf)
                     spellInfo->Effects[0].BasePoints = 34124;
                     break;
+                case 135101: //Drain the weak tr ef dmg
+                    spellInfo->Effects[0].TargetA = 6;
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(2);
+                    break;
 
 
                 //World Bosses

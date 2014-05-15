@@ -32,6 +32,9 @@ enum eSpells
     SPELL_SHELL_BLOCK          = 133971,
     SPELL_SPINNING_SHELL_V     = 133974,
     SPELL_SPINNING_SHELL_DMG   = 134011,
+
+    //Vampiric cave bat
+    SPELL_DRAIN_THE_WEAK_DMG   = 135101,
 };
 
 enum eEvents
@@ -140,6 +143,7 @@ class boss_tortos : public CreatureScript
         }
 };
 
+//67966
 class npc_whirl_turtle : public CreatureScript
 {
     public:
@@ -211,6 +215,44 @@ class npc_whirl_turtle : public CreatureScript
         }
 };
 
+//69352
+class npc_vampiric_cave_bat : public CreatureScript
+{
+    public:
+        npc_vampiric_cave_bat() : CreatureScript("npc_vampiric_cave_bat") {}
+
+        struct npc_vampiric_cave_batAI : public ScriptedAI
+        {
+            npc_vampiric_cave_batAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+
+            void Reset(){}
+
+            void UpdateAI(const uint32 diff)
+            {    
+               if (!UpdateVictim())
+                   return;
+
+               if (me->getVictim())
+               {
+                   if (me->getVictim()->GetHealth() < 350000)
+                       DoSpellAttackIfReady(SPELL_DRAIN_THE_WEAK_DMG);
+                   else
+                       DoMeleeAttackIfReady();
+               }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_vampiric_cave_batAI(creature);
+        }
+};
+
 class spell_quake_stomp : public SpellScriptLoader
 {
     public:
@@ -243,9 +285,41 @@ class spell_quake_stomp : public SpellScriptLoader
         }
 };
 
+class spell_drain_the_weak : public SpellScriptLoader
+{
+    public:
+        spell_drain_the_weak() : SpellScriptLoader("spell_drain_the_weak") { }
+
+        class spell_drain_the_weak_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_drain_the_weak_SpellScript);
+
+            void CalcHeal()
+            {
+                if (GetCaster() && GetHitUnit())
+                {
+                    int32 modheal = (GetHitDamage()*50);
+                    GetCaster()->SetHealth(GetCaster()->GetHealth()+ uint32(modheal));
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_drain_the_weak_SpellScript::CalcHeal);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_drain_the_weak_SpellScript();
+        }
+};
+
 void AddSC_boss_tortos()
 {
     new boss_tortos();
     new npc_whirl_turtle();
+    new npc_vampiric_cave_bat();
     new spell_quake_stomp();
+    new spell_drain_the_weak();
 }
