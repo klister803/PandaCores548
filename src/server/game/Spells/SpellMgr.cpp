@@ -4448,6 +4448,19 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = 15;
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
                     break;
+                //Tortos
+                case 134920: //Quake stomp
+                    spellInfo->Effects[2].TriggerSpell = 0;
+                    break;
+                case 134011: //Spinning shell dmg
+                    spellInfo->Effects[0].TargetA = 6;
+                    spellInfo->Effects[1].TargetA = 6;
+                    spellInfo->Effects[2].TargetA = 6;
+                    break;
+                case 133946: //Furios stone breath tr ef dmg(nerf)
+                    spellInfo->Effects[0].BasePoints = 34124;
+                    break;
+
 
                 //World Bosses
                 //Sha of Anger
@@ -4493,6 +4506,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 6;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
+
                 // Dalaran arena knockback
                 case 61698:
                     spellInfo->Attributes = 536871296;

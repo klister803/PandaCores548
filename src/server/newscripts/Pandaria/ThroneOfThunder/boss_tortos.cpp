@@ -21,15 +21,30 @@
 
 enum eSpells
 {
+    //Tortos
     SPELL_FURIOS_STONE_BREATH  = 133939,
     SPELL_SNAPPING_BITE        = 135251,
     SPELL_QUAKE_STOMP          = 134920,
     SPELL_CALL_OF_TORTOS       = 136294,
     SPELL_ROCKFALL_P_DMG       = 134539,
+
+    //Whirl turtle
+    SPELL_SHELL_BLOCK          = 133971,
+    SPELL_SPINNING_SHELL_V     = 133974,
+    SPELL_SPINNING_SHELL_DMG   = 134011,
 };
 
 enum eEvents
 {
+    //Tortos
+    EVENT_SNAPPING_BITE        = 1, 
+    EVENT_QUAKE_STOMP          = 2, 
+    EVENT_CALL_OF_TORTOS       = 3,
+    EVENT_SUMMON_BATS          = 4,
+    EVENT_STONE_BREATH         = 5,
+
+    //Whirl turtle
+    EVENT_SPINNING_SHELL       = 5,
 };
 
 class boss_tortos : public CreatureScript
@@ -49,11 +64,18 @@ class boss_tortos : public CreatureScript
             void Reset()
             {
                 _Reset();
+                me->setPowerType(POWER_ENERGY);
+                me->SetPower(POWER_ENERGY, 100);
             }
 
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
+                events.ScheduleEvent(EVENT_SUMMON_BATS, 45000);
+                events.ScheduleEvent(EVENT_CALL_OF_TORTOS, 60000);
+                events.ScheduleEvent(EVENT_STONE_BREATH, urand(60000, 70000));
+                events.ScheduleEvent(EVENT_SNAPPING_BITE, urand(8000, 10000));
+                events.ScheduleEvent(EVENT_QUAKE_STOMP,  urand(45000, 50000));
             }
 
             void JustDied(Unit* /*killer*/)
@@ -68,6 +90,46 @@ class boss_tortos : public CreatureScript
 
                 events.Update(diff);
 
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_SNAPPING_BITE:
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_SNAPPING_BITE);
+                        events.ScheduleEvent(EVENT_SNAPPING_BITE, urand(8000, 10000));
+                        break;
+                    case EVENT_QUAKE_STOMP:
+                        DoCastAOE(SPELL_QUAKE_STOMP);
+                        events.ScheduleEvent(EVENT_QUAKE_STOMP,  urand(45000, 50000));
+                        break;
+                    case EVENT_CALL_OF_TORTOS:
+                        DoCastAOE(SPELL_CALL_OF_TORTOS);
+                        for (uint8 n = 0; n < 3; n++)
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                            {
+                                Position pos;
+                                target->GetPosition(&pos);
+                                me->SummonCreature(NPC_WHIRL_TURTLE, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 0.0f);
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_CALL_OF_TORTOS, 60000);
+                        break;
+                    case EVENT_SUMMON_BATS:
+                        for (uint8 n = 0; n < 5; n++)
+                        {
+                            if (Creature* vb = me->SummonCreature(NPC_VAMPIRIC_CAVE_BAT, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
+                                vb->AI()->DoZoneInCombat(vb, 100.0f);
+                        }
+                        events.ScheduleEvent(EVENT_SUMMON_BATS, 45000);
+                        break;
+                    case EVENT_STONE_BREATH:
+                        DoCast(me, SPELL_FURIOS_STONE_BREATH);
+                        events.ScheduleEvent(EVENT_STONE_BREATH, urand(60000, 70000));
+                        break;
+                    }
+                }
                 DoMeleeAttackIfReady();
             }
         };
@@ -75,6 +137,77 @@ class boss_tortos : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_tortosAI(creature);
+        }
+};
+
+class npc_whirl_turtle : public CreatureScript
+{
+    public:
+        npc_whirl_turtle() : CreatureScript("npc_whirl_turtle") {}
+
+        struct npc_whirl_turtleAI : public ScriptedAI
+        {
+            npc_whirl_turtleAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            InstanceScript* pInstance;
+            EventMap events;
+            bool done;
+
+            void Reset()
+            {
+                done = false;
+                me->AddAura(SPELL_SPINNING_SHELL_V, me);
+                me->GetMotionMaster()->MoveRandom(8.0f);
+                events.ScheduleEvent(EVENT_SPINNING_SHELL, 1500);
+            }
+
+            void DamageTaken(Unit* attacker, uint32 &damage)
+            {
+                if (damage >= me->GetHealth())
+                    damage = 0;
+
+                if (HealthBelowPct(10) && !done)
+                {
+                    done = true;
+                    me->GetMotionMaster()->Clear(false);
+                    me->StopMoving();
+                    events.CancelEvent(EVENT_SPINNING_SHELL);
+                    me->RemoveAurasDueToSpell(SPELL_SPINNING_SHELL_V);
+                    me->AddAura(SPELL_SHELL_BLOCK, me);
+                }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {    
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    if (eventId == EVENT_SPINNING_SHELL)
+                    {
+                        if (me->HasAura(SPELL_SPINNING_SHELL_V))
+                        {
+                            std::list<Player*> playerList;
+                            GetPlayerListInGrid(playerList, me, 5.0f);
+                            for (std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                            {
+                                if (Player* pl = *itr)
+                                    DoCast(pl, SPELL_SPINNING_SHELL_DMG);
+                            }
+                            events.ScheduleEvent(EVENT_SPINNING_SHELL, 1500);
+                        }
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_whirl_turtleAI(creature);
         }
 };
 
@@ -113,5 +246,6 @@ class spell_quake_stomp : public SpellScriptLoader
 void AddSC_boss_tortos()
 {
     new boss_tortos();
+    new npc_whirl_turtle();
     new spell_quake_stomp();
 }

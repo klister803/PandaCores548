@@ -337,8 +337,8 @@ public:
                     case DONE:
                         for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
                             HandleGameObject(*guids, true);
-                        //HandleGameObject(councilexdoorGuid, true);
-                        //HandleGameObject(councilex2doorGuid, true);
+                        HandleGameObject(councilexdoorGuid, true);
+                        HandleGameObject(councilex2doorGuid, true);
                         break;
                     }
                 }
