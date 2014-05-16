@@ -2190,8 +2190,11 @@ uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount
     for (AuraEffectList::const_iterator i = mAbsorbReducedDamage.begin(); i != mAbsorbReducedDamage.end(); ++i)
         AddPct(amount, (*i)->GetAmount());
 
-    float PowerPvP = CalcPvPPower(victim, 1.0f, true);
-    amount *= PowerPvP;
+    if (!(spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    {
+        float PowerPvP = CalcPvPPower(victim, 1.0f, true);
+        amount *= PowerPvP;
+    }
 
     return amount;
 }
@@ -11813,7 +11816,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     {
         // Apply PowerPvP damage bonus
-        DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
+        if (!(spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+            DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
 
         // Chaos Bolt - 116858 and Soul Fire - 6353
         // damage is increased by your critical strike chance
@@ -12721,7 +12725,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         }
     }
 
-    DoneTotalMod = CalcPvPPower(victim, DoneTotalMod, true);
+    if (!(spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+        DoneTotalMod = CalcPvPPower(victim, DoneTotalMod, true);
 
     // done scripted mod (take it from owner)
     Unit* owner = GetOwner() ? GetOwner() : this;
@@ -13301,7 +13306,15 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     float DoneTotalMod = 1.0f;
 
     // Apply PowerPvP damage bonus
-    DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
+    if (spellProto)
+    {
+        if (!(spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+            DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
+    }
+    else
+    {
+        DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
+    }
 
     // Sudden Death - 29725
     if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARRIOR_ARMS && HasAura(29725) && (attType == BASE_ATTACK || attType == OFF_ATTACK || spellProto))
