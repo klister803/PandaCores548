@@ -32,6 +32,8 @@ void LfgPlayerData::SetState(LfgState state)
         case LFG_STATE_NONE:
         case LFG_STATE_FINISHED_DUNGEON:
         case LFG_STATE_DUNGEON:
+            m_Roles = 0;
+            m_SelectedDungeons.clear();
             m_OldState = state;
             // No break on purpose
         default:

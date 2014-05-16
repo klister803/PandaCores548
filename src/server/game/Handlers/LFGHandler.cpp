@@ -697,19 +697,19 @@ void WorldSession::SendLfgJoinResult(const LfgJoinResultData& joinData)
 
 void WorldSession::SendLfgQueueStatus(const LfgQueueStatusData& queueData)
 {
+    Player* player = GetPlayer();
+    uint64 guid = player->GetGUID();
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_QUEUE_STATUS [" UI64FMTD "] dungeon: %u - waitTime: %d - avgWaitTime: %d - waitTimeTanks: %d - waitTimeHealer: %d - waitTimeDps: %d - queuedTime: %u - tanks: %u - healers: %u - dps: %u",
-        GetPlayer()->GetGUID(), queueData.dungeonId, queueData.waitTime, queueData.waitTimeAvg, queueData.waitTimeTank, queueData.waitTimeHealer, queueData.waitTimeDps, queueData.queuedTime, queueData.tanks, queueData.healers, queueData.dps);
-    LfgQueueInfo* info = sLFGMgr->GetLfgQueueInfo(GetPlayer()->GetGroup() ? GetPlayer()->GetGroup()->GetGUID() : GetPlayer()->GetGUID());
-    if (!info)
-        return;
+        guid, queueData.dungeonId, queueData.waitTime, queueData.waitTimeAvg, queueData.waitTimeTank, queueData.waitTimeHealer, queueData.waitTimeDps, queueData.queuedTime, queueData.tanks, queueData.healers, queueData.dps);
 
-    ObjectGuid guid = GetPlayer()->GetObjectGuid();
+    LfgQueue &queue = sLFGMgr->GetQueue(player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
+
     WorldPacket data(SMSG_LFG_QUEUE_STATUS, 4 + 4 + 4 + 4 + 4 +4 + 1 + 1 + 1 + 4);
     data.WriteGuidMask<0, 3, 6, 2, 4, 7, 5, 1>(guid);
 
     data.WriteGuidBytes<7>(guid);
     data << uint32(queueData.queuedTime);                   // Player wait time in queue
-    data << uint32(info->joinTime);
+    data << uint32(queue.GetJoinTime(guid));
     data << uint32(3);
     data << int32(queueData.waitTimeTank);                  // Wait Tanks
     data << uint8(queueData.tanks);                         // Tanks needed

@@ -565,7 +565,7 @@ bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOV
 
             player->UpdateForRaidMarkers(this);
 
-            if (method == GROUP_REMOVEMETHOD_KICK)
+            if (method == GROUP_REMOVEMETHOD_KICK || method == GROUP_REMOVEMETHOD_KICK_LFG)
             {
                 WorldPacket data(SMSG_GROUP_UNINVITE, 0);
                 player->GetSession()->SendPacket(&data);
