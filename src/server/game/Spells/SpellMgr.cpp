@@ -3360,7 +3360,7 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 2944: // Solace and Insanity
+                case 2944:  // Solace and Insanity
                     spellInfo->Effects[2].BasePoints = 0;
                     break;
                 case 146202: // Wrath
@@ -3913,6 +3913,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 44461: // Living Bomb
                     spellInfo->MaxAffectedTargets = 3;
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+                    spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 case 23691: // Berzerker Rage Effect
                     spellInfo->Effects[EFFECT_0].BasePoints = 100;
