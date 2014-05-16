@@ -545,7 +545,7 @@ uint8 LfgQueue::GetQueueType(uint64 guid)
 
 LfgQueueData::LfgQueueData(time_t _joinTime, const LfgDungeonSet &_dungeons, const LfgRolesMap &_roles)
 {
-    LFGDungeonEntry const* dungeon = !_dungeons.empty() ? sLFGMgr->GetLFGDungeon(*_dungeons.begin() & 0xFFFFF) : NULL;
+    LFGDungeonData const* dungeon = !_dungeons.empty() ? sLFGMgr->GetLFGDungeon(*_dungeons.begin() & 0xFFFFF) : NULL;
     type = dungeon ? dungeon->internalType : NULL;
     joinTime = _joinTime;
     dungeons = _dungeons;

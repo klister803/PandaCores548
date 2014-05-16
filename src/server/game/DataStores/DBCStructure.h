@@ -1450,7 +1450,7 @@ struct LanguageWordsEntry
     char* word;                                             // 2
 };
 
-struct LFGDungeonEntryDbc
+struct LFGDungeonEntry
 {
     uint32  ID;                                             // 0
     char*   name;                                           // 1

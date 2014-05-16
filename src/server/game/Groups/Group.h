@@ -38,7 +38,7 @@ class Unit;
 class WorldObject;
 class WorldPacket;
 class WorldSession;
-struct LFGDungeonEntry;
+struct LFGDungeonData;
 
 struct MapEntry;
 
@@ -260,7 +260,7 @@ class Group
         uint8 GetMemberGroup(uint64 guid) const;
 
         void ChangeFlagEveryoneAssistant(bool apply);
-        void ConvertToLFG(LFGDungeonEntry const* dungeon);
+        void ConvertToLFG(LFGDungeonData const* dungeon);
         void ConvertToRaid(bool update = true);
         void ConvertToGroup();
 
