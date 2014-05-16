@@ -9742,9 +9742,10 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                     if (!TriggerPS)
                         return false;
         
-                    basepoints0 = CalculatePct(int32(damage), triggerAmount) / (TriggerPS->GetMaxDuration() / TriggerPS->GetEffect(0, GetSpawnMode()).Amplitude);
+                    basepoints0 = int32(CalculatePct(damage, triggerAmount) / 6); // damage / tick_number
                     if(victim)
-                        basepoints0 += victim->GetRemainingPeriodicAmount(GetGUID(), trigger_spell_id, SPELL_AURA_PERIODIC_DAMAGE);
+                        if (AuraEffect const* aurEff = victim->GetAuraEffect(trigger_spell_id, EFFECT_0))
+                            basepoints0 += aurEff->GetAmount();
                     break;
                 }
                 break;
