@@ -141,7 +141,13 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
     }
     else
     {
-        InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), player->GetDifficulty(IsRaid()));
+        Difficulty difficulty = IsRaid() ? player->GetRaidDifficulty() : player->GetDungeonDifficulty();
+        if(const MapEntry* entry = sMapStore.LookupEntry(mapId))
+        {
+            if(entry->maxPlayers == 40)
+                difficulty = MAN40_DIFFICULTY;
+        }
+        InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), difficulty);
         InstanceSave* pSave = pBind ? pBind->save : NULL;
 
         // the player's permanent player bind is taken into consideration first
@@ -206,9 +212,6 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save,
 
     // some instances only have one difficulty
     GetDownscaledMapDifficultyData(GetId(), difficulty);
-
-    if(entry->maxPlayers == 40)
-        difficulty = MAN40_DIFFICULTY;
 
     sLog->outDebug(LOG_FILTER_MAPS, "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %u", save?"":"new ", InstanceId, GetId(), difficulty);
 

@@ -925,7 +925,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
             if(target)
             {
-                amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
+                amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
             }
@@ -956,7 +956,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         {
             if(target && caster)
             {
-                amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
+                amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
             }
@@ -1020,7 +1020,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
             if(target && caster)
             {
-                amount = caster->SpellHealingBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex(), GetBase()->GetStackAmount());
+                amount = caster->SpellHealingBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
                 m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
             }
@@ -1311,6 +1311,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     }
 
     GetBase()->CallScriptEffectCalcAmountHandlers(const_cast<AuraEffect const*>(this), amount, m_canBeRecalculated);
+    amount *= GetBase()->GetStackAmount();
+    m_crit_amount *= GetBase()->GetStackAmount();
 
     switch (GetAuraType())
     {

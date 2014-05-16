@@ -26673,12 +26673,21 @@ void Player::SendDeathRuneUpdate()
 
     for (uint8 i = 0; i < MAX_RUNES; ++i)
     {
+        RuneType rune = GetBaseRune(i);
+        WorldPacket data(SMSG_CONVERT_RUNE, 2);
+        data << uint8(rune);
+        data << uint8(i);
+        GetSession()->SendPacket(&data);
+    }
+
+    for (uint8 i = 0; i < MAX_RUNES; ++i)
+    {
         if (m_runes.runes[i].CurrentRune != RUNE_DEATH)
             continue;
 
         WorldPacket data(SMSG_CONVERT_RUNE, 2);
-        data << uint8(i);
         data << uint8(RUNE_DEATH);
+        data << uint8(i);
         GetSession()->SendPacket(&data);
     }
 }
