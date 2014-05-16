@@ -281,6 +281,7 @@ class WorldSession
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return _player; }
         std::string GetPlayerName(bool simple = true) const;
+
         uint32 GetGuidLow() const;
         void SetSecurity(AccountTypes security) { _security = security; }
         std::string const& GetRemoteAddress() { return m_Address; }
@@ -881,6 +882,7 @@ class WorldSession
         void HandleLfgTeleportOpcode(WorldPacket& recvData);
         void HandleLfrJoinOpcode(WorldPacket& recvData);
         void HandleLfrLeaveOpcode(WorldPacket& recvData);
+        void HandleLfgGetStatus(WorldPacket& recvData);
 
         void SendLfgUpdatePlayer(const LfgUpdateData& updateData);
         void SendLfgUpdateParty(const LfgUpdateData& updateData, uint32 joinTime = 0);

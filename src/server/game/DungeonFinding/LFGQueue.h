@@ -34,6 +34,17 @@ enum LfgCompatibility
     LFG_COMPATIBLES_MATCH                                  // Must be the last one
 };
 
+struct LfgCompatibilityData
+{
+    LfgCompatibilityData(): compatibility(LFG_COMPATIBILITY_PENDING) { }
+    LfgCompatibilityData(LfgCompatibility _compatibility): compatibility(_compatibility) { }
+    LfgCompatibilityData(LfgCompatibility _compatibility, LfgRolesMap const& _roles):
+        compatibility(_compatibility), roles(_roles) { }
+
+    LfgCompatibility compatibility;
+    LfgRolesMap roles;
+};
+
 /// Stores player or group queue info
 struct LfgQueueData
 {
@@ -50,6 +61,7 @@ struct LfgQueueData
     LfgDungeonSet dungeons;                                ///< Selected Player/Group Dungeon/s
     LfgRolesMap roles;                                     ///< Selected Player Role/s
     uint8 type;                                            ///< Queue dungeon type
+    std::string bestCompatible;                            ///< Best compatible combination of people queued
 };
 
 struct LfgWaitTime
@@ -60,13 +72,13 @@ struct LfgWaitTime
 };
 
 typedef std::map<uint32, LfgWaitTime> LfgWaitTimesMap;
-typedef std::map<std::string, LfgCompatibility> LfgCompatibleMap;
+typedef std::map<std::string, LfgCompatibilityData> LfgCompatibleMap;
 typedef std::map<uint64, LfgQueueData> LfgQueueDataMap;
 
 /**
     Stores all data related to queue
 */
-class LfgQueue
+class LFGQueue
 {
     public:
 
@@ -91,10 +103,12 @@ class LfgQueue
         uint8 FindGroups();
 
         // Just for debugging purposes
-        LfgCompatibleMap const& GetCompatibleMap();
         std::string DumpQueueInfo() const;
         std::string DumpCompatibleInfo(bool full = false) const;
+
     private:
+        void SetQueueUpdateData(std::string const& strGuids, LfgRolesMap const& proposalRoles);
+        LfgRolesMap const& RemoveFromQueueUpdateData(uint64 guid);
         void AddToNewQueue(uint64 guid);
         void AddToCurrentQueue(uint64 guid);
         void RemoveFromNewQueue(uint64 guid);
@@ -103,6 +117,11 @@ class LfgQueue
         void SetCompatibles(std::string const& key, LfgCompatibility compatibles);
         LfgCompatibility GetCompatibles(std::string const& key);
         void RemoveFromCompatibles(uint64 guid);
+
+        void SetCompatibilityData(std::string const& key, LfgCompatibilityData const& compatibles);
+        LfgCompatibilityData* GetCompatibilityData(std::string const& key);
+        void FindBestCompatibleInQueue(LfgQueueDataMap::iterator itrQueue);
+        void UpdateBestCompatibleInQueue(LfgQueueDataMap::iterator itrQueue, std::string const& key, LfgRolesMap const& roles);
 
         LfgCompatibility FindNewGroups(LfgGuidList& check, LfgGuidList& all);
         LfgCompatibility CheckCompatibility(LfgGuidList check);

@@ -121,7 +121,7 @@ struct LfgProposal;
 struct LfgProposalPlayer;
 struct LfgPlayerBoot;
 
-typedef std::map<uint8, LfgQueue> LfgQueueMap;
+typedef std::map<uint8, LFGQueue> LfgQueueMap;
 typedef std::multimap<uint32, LfgReward const*> LfgRewardMap;
 typedef std::pair<LfgRewardMap::const_iterator, LfgRewardMap::const_iterator> LfgRewardMapBounds;
 typedef std::map<uint8, LfgDungeonSet> LfgCachedDungeonMap;
@@ -294,7 +294,7 @@ class LFGMgr
         LfgReward const* GetRandomDungeonReward(uint32 dungeon, uint8 level);
 
         // Queue
-        LfgQueue &GetQueue(uint64 guid);
+        LFGQueue &GetQueue(uint64 guid);
         void JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, std::string const& comment);
         void LeaveLfg(uint64 guid);
 
@@ -357,12 +357,13 @@ class LFGMgr
         bool isOptionEnabled(uint32 option);
         uint32 GetOptions();
         void SetOptions(uint32 options);
+        LfgState GetLfgStatus(uint64 guid, LfgUpdateData& data);
         bool IsSeasonActive(uint32 dungeonId);
 
         std::string DumpQueueInfo(bool full = false);
         static std::string ConcatenateDungeons(LfgDungeonSet const& dungeons);
         static std::string GetRolesString(uint8 roles);
-        static char const * GetStateString(LfgState state);
+        static std::string GetStateString(LfgState state);
 
         void LoadLFGDungeons(bool reload = false);
         LFGDungeonData const* GetLFGDungeon(uint32 id);
