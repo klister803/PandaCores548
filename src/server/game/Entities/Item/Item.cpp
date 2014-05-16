@@ -236,7 +236,7 @@ bool ItemCanGoIntoBag(ItemTemplate const* pProto, ItemTemplate const* pBagProto)
     return false;
 }
 
-Item::Item()
+Item::Item() : ItemLevelBeforeCap(0)
 {
     m_objectType |= TYPEMASK_ITEM;
     m_objectTypeId = TYPEID_ITEM;
@@ -1659,4 +1659,38 @@ uint32 Item::GetLeveledStatValue(uint8 statIndex) const
         - proto->ItemStat[statIndex].ItemStatUnk2 * sockCost->cost + 0.5f);
 
     return std::max(0.0f, newStat);
+}
+
+//!@ For all inventoty items at add to world.
+void Item::SetLevelCup(uint32 cap, bool pvp)
+{
+    // Restore levle before cap
+    if (cap == 0)
+    {
+        // can't add proto lvl as we can have upgrade items.
+        if (ItemLevelBeforeCap)
+        {
+            SetLevel(ItemLevelBeforeCap);
+            ItemLevelBeforeCap = 0;
+        }
+        return;
+    }
+
+    ItemTemplate const* proto = GetTemplate();
+    if (proto->ItemLevel <= MIN_ITEM_LEVEL_CUP)
+        return;
+
+    if (cap == GetLevel())
+        return;
+
+    // Not for items with pvp power at pvp
+    if (pvp)
+    {
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+            if (proto->ItemStat[i].ItemStatType == ITEM_MOD_PVP_POWER)
+                return;
+    }
+
+    ItemLevelBeforeCap = GetLevel();
+    SetLevel(cap);
 }

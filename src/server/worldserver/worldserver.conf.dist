@@ -2410,6 +2410,7 @@ Arena.ArenaStartPersonalRating = 0
 
 Arena.ArenaStartMatchmakerRating = 1500
 
+
 #
 #    ArenaLog.ExtendedInfo
 #        Description: Include extended info to ArenaLogFile for each player after rated arena
@@ -2418,6 +2419,14 @@ Arena.ArenaStartMatchmakerRating = 1500
 #                     1 - (Enabled)
 
 ArenaLog.ExtendedInfo = 0
+
+#
+#    PVP.ItemLevelCap
+#        Description: Limit for bg and arena for item level
+#        Default:     524 for patch 5.4.2
+#                  or 530 for patch 5.4.7
+
+PVP.ItemLevelCap = 524
 
 #
 ###################################################################################################

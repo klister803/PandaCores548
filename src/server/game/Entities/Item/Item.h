@@ -25,6 +25,8 @@
 #include "ItemPrototype.h"
 #include "DatabaseEnv.h"
 
+#define MIN_ITEM_LEVEL_CUP  463
+
 class SpellInfo;
 class Bag;
 class Unit;
@@ -383,6 +385,7 @@ class Item : public Object
 
         uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
         void AppendDynamicInfo(ByteBuffer& buff) const;
+        void SetLevelCup(uint32 cup, bool pvp);
 
     private:
         std::string m_text;
@@ -397,5 +400,6 @@ class Item : public Object
         uint32 m_paidExtendedCost;
         AllowedLooterSet allowedGUIDs;
         uint32 ItemLevel;
+        uint32 ItemLevelBeforeCap;
 };
 #endif

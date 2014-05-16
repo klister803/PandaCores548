@@ -29336,3 +29336,31 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
 
     return false;
 }
+
+void Player::CheckItemCapLevel(uint32 cap, bool pvp)
+{
+    for (uint8 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
+    {
+        if (m_items[i])
+        {
+            ItemTemplate const* proto = m_items[i]->GetTemplate();
+            if (!proto)
+                continue;
+
+            if (proto->ItemLevel <= MIN_ITEM_LEVEL_CUP)
+                continue;
+
+            // not need remove
+            if (!cap && m_items[i]->GetLevel() == proto->ItemLevel)
+                continue;
+
+            if (m_items[i]->IsEquipped())
+                _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), false);
+
+            m_items[i]->SetLevelCup(cap, pvp);
+
+            if (m_items[i]->IsEquipped())
+                _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), true);
+        }
+    }
+}

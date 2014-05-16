@@ -437,6 +437,7 @@ bool Map::AddPlayerToMap(Player* player)
     ASSERT (player->GetMap() == this);
     player->SetMap(this);
     player->AddToWorld();
+    player->CheckItemCapLevel(ItemLevelCap(), IsBattlegroundOrArena());
 
     SendInitSelf(player);
     SendInitTransports(player);
@@ -2909,3 +2910,13 @@ time_t Map::GetLinkedRespawnTime(uint64 guid) const
     return time_t(0);
 }
 
+uint32 Map::ItemLevelCap() const
+{
+    if (IsBattlegroundOrArena())
+        return sWorld->getIntConfig(CONFIG_PVP_ITEM_LEVEL_CAP);
+
+    if (isChallenge())
+        return MIN_ITEM_LEVEL_CUP;
+
+    return 0;
+}
