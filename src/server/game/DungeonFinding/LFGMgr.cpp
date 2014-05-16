@@ -318,11 +318,9 @@ void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
     for (LFGDungeonMap::iterator itr = m_LfgDungeonMap.begin(); itr != m_LfgDungeonMap.end(); ++itr)
     {
         LFGDungeonData& dungeon = itr->second;
-        if (dungeon.type == LFG_TYPE_RANDOM)
-            continue;
 
         // No teleport coords in database, load from areatriggers
-        if (dungeon.x == 0.0f && dungeon.y == 0.0f && dungeon.z == 0.0f)
+        if (dungeon.type != LFG_TYPE_RANDOM && dungeon.x == 0.0f && dungeon.y == 0.0f && dungeon.z == 0.0f)
         {
             AreaTrigger const* at = sObjectMgr->GetMapEntranceTrigger(dungeon.map);
             if (!at)
@@ -401,7 +399,9 @@ void LFGMgr::Update(uint32 diff)
                 uint64 pguid = itVotes->first;
                 if (pguid != boot.victim)
                     SendLfgBootProposalUpdate(pguid, boot);
+                SetState(pguid, LFG_STATE_DUNGEON);
             }
+            SetState(itBoot->first, LFG_STATE_DUNGEON);
             m_Boots.erase(itBoot);
         }
     }
@@ -1079,11 +1079,13 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
         SetState(gguid, LFG_STATE_QUEUED);
         LfgQueue& queue = GetQueue(gguid);
         queue.AddQueueData(gguid, time_t(time(NULL)), roleCheck.dungeons, roleCheck.roles);
+        m_RoleChecks.erase(itRoleCheck);
     }
     else if (roleCheck.state != LFG_ROLECHECK_INITIALITING)
+    {
         RestoreState(gguid, "Rolecheck Failed");
-
-    m_RoleChecks.erase(itRoleCheck);
+        m_RoleChecks.erase(itRoleCheck);
+    }
 }
 
 /**
@@ -1603,18 +1605,22 @@ void LFGMgr::UpdateBoot(uint64 guid, bool accept)
 */
 void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*/)
 {
-    sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::TeleportPlayer: [" UI64FMTD "] is being teleported %s", player->GetGUID(), out ? "out" : "in");
-
     Group* grp = player->GetGroup();
     uint64 gguid = grp->GetGUID();
     LFGDungeonData const* dungeon = GetLFGDungeon(GetDungeon(gguid));
-    if (!dungeon || (out && player->GetMapId() != uint32(dungeon->map)))
+    if (!dungeon)
         return;
 
     if (out)
     {
-        player->RemoveAurasDueToSpell(LFG_SPELL_LUCK_OF_THE_DRAW);
-        player->TeleportToBGEntryPoint();
+        sLog->outDebug(LOG_FILTER_LFG, "TeleportPlayer: Player %s is being teleported out. Current Map %u - Expected Map %u",
+            player->GetName(), player->GetMapId(), uint32(dungeon->map));
+        if (player->GetMapId() == uint32(dungeon->map))
+        {
+            player->RemoveAurasDueToSpell(LFG_SPELL_LUCK_OF_THE_DRAW);
+            player->TeleportToBGEntryPoint();
+        }
+
         return;
     }
 
@@ -1632,57 +1638,55 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         error = LFG_TELEPORTERROR_IN_VEHICLE;
     else if (player->GetCharmGUID())
         error = LFG_TELEPORTERROR_CHARMING;*/
-    else
+    else if (player->GetMapId() != uint32(dungeon->map))  // Do not teleport players in dungeon to the entrance
     {
-        if (!dungeon)
-            error = LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION;
-        else if (player->GetMapId() != uint32(dungeon->map))  // Do not teleport players in dungeon to the entrance
-        {
-            uint32 mapid = dungeon->map;
-            float x = dungeon->x;
-            float y = dungeon->y;
-            float z = dungeon->z;
-            float orientation = dungeon->o;
+        uint32 mapid = dungeon->map;
+        float x = dungeon->x;
+        float y = dungeon->y;
+        float z = dungeon->z;
+        float orientation = dungeon->o;
 
-            if (!fromOpcode)
+        if (!fromOpcode)
+        {
+            // Select a player inside to be teleported to
+            for (GroupReference* itr = grp->GetFirstMember(); itr != NULL && !mapid; itr = itr->next())
             {
-                // Select a player inside to be teleported to
-                for (GroupReference* itr = grp->GetFirstMember(); itr != NULL && !mapid; itr = itr->next())
+                Player* plrg = itr->getSource();
+                if (plrg && plrg != player && plrg->GetMapId() == uint32(dungeon->map))
                 {
-                    Player* plrg = itr->getSource();
-                    if (plrg && plrg != player && plrg->GetMapId() == uint32(dungeon->map))
-                    {
-                        mapid = plrg->GetMapId();
-                        x = plrg->GetPositionX();
-                        y = plrg->GetPositionY();
-                        z = plrg->GetPositionZ();
-                        orientation = plrg->GetOrientation();
-                    }
+                    mapid = plrg->GetMapId();
+                    x = plrg->GetPositionX();
+                    y = plrg->GetPositionY();
+                    z = plrg->GetPositionZ();
+                    orientation = plrg->GetOrientation();
                 }
             }
+        }
 
-            if (error == LFG_TELEPORTERROR_OK)
+        if (error == LFG_TELEPORTERROR_OK)
+        {
+            if (!player->GetMap()->IsDungeon())
+                player->SetBattlegroundEntryPoint();
+
+            if (player->isInFlight())
             {
-                if (!player->GetMap()->IsDungeon())
-                    player->SetBattlegroundEntryPoint();
+                player->GetMotionMaster()->MovementExpired();
+                player->CleanupAfterTaxiFlight();
+            }
 
-                if (player->isInFlight())
-                {
-                    player->GetMotionMaster()->MovementExpired();
-                    player->CleanupAfterTaxiFlight();
-                }
-
-                if (!player->TeleportTo(mapid, x, y, z, orientation))
-                {
-                    error = LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION;
-                    sLog->outError(LOG_FILTER_LFG, "LfgMgr::TeleportPlayer: Failed to teleport [" UI64FMTD "] to map %u: ", player->GetGUID(), mapid);
-                }
+            if (!player->TeleportTo(mapid, x, y, z, orientation))
+            {
+                error = LFG_TELEPORTERROR_INVALID_LOCATION;
+                sLog->outError(LOG_FILTER_LFG, "TeleportPlayer: Failed to teleport [" UI64FMTD "] to map %u (x: %f, y: %f, z: %f)", player->GetGUID(), mapid, x, y, z);
             }
         }
     }
 
     //if (error != LFG_TELEPORTERROR_OK)
         player->GetSession()->SendLfgTeleportError(uint8(error));
+
+    sLog->outDebug(LOG_FILTER_LFG, "TeleportPlayer: Player %s is being teleported in. Result: %u",
+        player->GetName(), error);
 }
 
 void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, const LfgDungeonSet& selectedDungeons, bool pause, bool quit)

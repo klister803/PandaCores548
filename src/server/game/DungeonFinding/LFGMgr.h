@@ -355,8 +355,6 @@ class LFGMgr
         LFGDungeonData const* GetLFGDungeon(uint32 id);
         LFGDungeonMap& GetLFGDungeonMap();
 
-        void ClearState(uint64 guid, char const *debugMsg);
-
         void SendUpdateStatus(Player*, const std::string&, const LfgDungeonSet& selectedDungeons, bool join, bool quit);
 
     private:
@@ -364,7 +362,7 @@ class LFGMgr
         uint8 GetTeam(uint64 guid);
         uint64 GetGroup(uint64 guid);
         void RestoreState(uint64 guid, char const *debugMsg);
-
+        void ClearState(uint64 guid, char const *debugMsg);
         void SetDungeon(uint64 guid, uint32 dungeon);
         void SetLockedDungeons(uint64 guid, LfgLockMap const& lock);
         void DecreaseKicksLeft(uint64 guid);
