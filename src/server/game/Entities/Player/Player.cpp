@@ -6834,7 +6834,7 @@ void Player::UpdateRating(CombatRating cr)
         if ((*i)->GetMiscValue() & (1<<cr))
             amount += int32(CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount()));
     
-    amount += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_RATING, (1 << cr));
+    amount += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RATING, (1 << cr));
 
     if (amount < 0)
         amount = 0;
