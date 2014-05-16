@@ -29312,6 +29312,10 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
                 if (zone == 3518 || zone == 3519 || zone == 3523 || zone == 3522 || zone == 3483 || zone == 3521 || zone == 3520)
                     return true;
             }
+            // Isle of Quel'Danas
+            if (zone == 4080) 
+                if (getLevel() < 70)     
+                    return true;
             break;
         // Northrend
         case 571:
