@@ -29307,8 +29307,11 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
         // Outland
         case 530:
             if (getLevel() < 58)
-                return true;
-            break;
+            {
+                // Nagrand, Terrokar Forest, Netherstorm, Blade's Edge Mountains, Hellfire Peninsula, Zangarmarsh, Shadowmoon Valley
+                if (zone == 3518 || zone == 3519 || zone == 3523 || zone == 3522 || zone == 3483 || zone == 3521 || zone == 3520)
+                    return true;
+            }
         // Northrend
         case 571:
             if (getLevel() < 68)
