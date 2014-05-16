@@ -94,7 +94,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
         return;
     }
 
-    if (!sWorld->getBoolConfig(CONFIG_DUNGEON_FINDER_ENABLE))
+    if (!sLFGMgr->isOptionEnabled(LFG_OPTION_ENABLE_DUNGEON_FINDER | LFG_OPTION_ENABLE_RAID_BROWSER))
         return;
 
     if (Group* group = _player->GetGroup())
