@@ -165,7 +165,7 @@ extern DBCStorage <ItemSetEntry>                 sItemSetStore;
 extern DBCStorage <ItemSpecEntry>                sItemSpecStore;
 extern DBCStorage <LanguageWordsEntry>           sLanguageWordsStore;
 extern std::map<uint32, LanguageWordsMap>        sLanguageWordsMapStore;
-extern DBCStorage <LFGDungeonEntryDbc>           sLFGDungeonStore;
+extern DBCStorage <LFGDungeonEntry>              sLFGDungeonStore;
 extern DBCStorage <LiquidTypeEntry>              sLiquidTypeStore;
 extern DBCStorage <LockEntry>                    sLockStore;
 extern DBCStorage <MailTemplateEntry>            sMailTemplateStore;
