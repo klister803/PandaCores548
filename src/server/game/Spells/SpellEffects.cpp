@@ -801,6 +801,18 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 124468: // Mind Flay (Mastery)
+            {
+                if (m_caster->HasAura(139139))
+                {
+                    if (Aura* aur = unitTarget->GetAura(2944, m_caster->GetGUID()))
+                    {
+                        int32 addBonusPct = aur->GetEffect(EFFECT_2)->GetAmount();
+                        AddPct(m_damage, addBonusPct);
+                    }
+                }
+                break;
+            }
             case 116858: // Chaos Bolt - nerf res
                 if (unitTarget->GetTypeId() == TYPEID_PLAYER)
                     m_damage -= int32(m_damage * 0.25f);
