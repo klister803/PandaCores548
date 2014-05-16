@@ -1477,6 +1477,11 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
 
 void Group::DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot* loot, LootItem& item, Player* player)
 {
+    // Already rolled?
+    for (Rolls::iterator iter=RollId.begin(); iter != RollId.end(); ++iter)
+        if ((*iter)->itemSlot == slot && loot == (*iter)->getLoot() && (*iter)->isValid())
+            return;
+
     uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), 0, HIGHGUID_ITEM);
     Roll* r = new Roll(newitemGUID, item);
     r->lootedGUID = guid;
@@ -2825,6 +2830,19 @@ Difficulty Group::GetRaidDifficulty() const
 bool Group::isRollLootActive() const
 {
     return !RollId.empty();
+}
+
+void Group::ErraseRollbyRealSlot(uint8 slot, Loot* loot)
+{
+    for (Rolls::iterator iter=RollId.begin(); iter != RollId.end();++iter)
+    {
+        if ((*iter)->itemSlot == slot && loot == (*iter)->getLoot() && (*iter)->isValid() )
+        {
+            delete *iter;
+            RollId.erase(iter);
+            break;
+        }
+    }
 }
 
 Group::Rolls::iterator Group::GetRoll(uint8 _aoeSlot)

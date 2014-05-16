@@ -683,6 +683,11 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
             return;
         }
 
+        // delete roll's in progress for this aoeSlot
+        _player->GetGroup()->ErraseRollbyRealSlot(slotid, loot);
+
+        // ToDo: check for already rolled items. This could posible on packet spaming (special tools should be writen, no so important now)
+
         // list of players allowed to receive this item in trade
         AllowedLooterSet looters = item.GetAllowedLooters();
 
