@@ -437,7 +437,7 @@ bool Map::AddPlayerToMap(Player* player)
     ASSERT (player->GetMap() == this);
     player->SetMap(this);
     player->AddToWorld();
-    player->CheckItemCapLevel(ItemLevelCap(), IsBattlegroundOrArena());
+    player->CheckItemCapLevel();
 
     SendInitSelf(player);
     SendInitTransports(player);

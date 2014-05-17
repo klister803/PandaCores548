@@ -9094,6 +9094,10 @@ void Player::_ApplyItemMods(Item* item, uint8 slot, bool apply)
     if (item->IsBroken())
         return;
 
+    // Check for limit cap. Only at apply
+    if (apply)
+        item->SetLevelCap(GetMap()->ItemLevelCap(), GetMap()->IsBattlegroundOrArena());
+
     sLog->outInfo(LOG_FILTER_PLAYER_ITEMS, "applying mods for item %u ", item->GetGUIDLow());
 
     uint8 attacktype = Player::GetAttackBySlot(slot);
@@ -29516,9 +29520,9 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
     return false;
 }
 
-void Player::CheckItemCapLevel(uint32 cap, bool pvp)
+void Player::CheckItemCapLevel()
 {
-    for (uint8 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
+    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {
         if (m_items[i])
         {
@@ -29534,12 +29538,10 @@ void Player::CheckItemCapLevel(uint32 cap, bool pvp)
                 continue;
 
             if (m_items[i]->IsEquipped())
+            {
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), false);
-
-            m_items[i]->SetLevelCap(cap, pvp);
-
-            if (m_items[i]->IsEquipped())
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), true);
+            }
         }
     }
 }

@@ -3098,7 +3098,7 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         void ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal, uint32 recTime);
 
-        void CheckItemCapLevel(uint32 level, bool pvp);
+        void CheckItemCapLevel();
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
