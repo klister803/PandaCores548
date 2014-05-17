@@ -1032,36 +1032,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
             break;
         }
-        case SPELL_AURA_OBS_MOD_HEALTH:
-        {
-            if(target && caster)
-            {
-                // Taken mods
-                float TakenTotalMod = 1.0f;
-
-                // Tenacity increase healing % taken
-                if (AuraEffect const* Tenacity = target->GetAuraEffect(58549, 0))
-                    AddPct(TakenTotalMod, Tenacity->GetAmount());
-
-                // Healing taken percent
-                float minval = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-                if (minval)
-                    AddPct(TakenTotalMod, minval);
-
-                float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-                if (maxval)
-                    AddPct(TakenTotalMod, maxval);
-
-                TakenTotalMod = std::max(TakenTotalMod, 0.0f);
-
-                amount = uint32(target->CountPctFromMaxHealth(amount));
-                amount = uint32(amount * TakenTotalMod);
-
-                caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
-                m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
-            }
-            break;
-        }
         case SPELL_AURA_MOD_THREAT:
         {
             uint8 level_diff = 0;
@@ -7568,7 +7538,30 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
     if (crit)
         damage = GetCritAmount();
 
-    if (GetAuraType() == SPELL_AURA_PERIODIC_HEAL)
+    if (GetAuraType() == SPELL_AURA_OBS_MOD_HEALTH)
+    {
+        // Taken mods
+        float TakenTotalMod = 1.0f;
+
+        // Tenacity increase healing % taken
+       if (AuraEffect const* Tenacity = target->GetAuraEffect(58549, 0))
+            AddPct(TakenTotalMod, Tenacity->GetAmount());
+
+        // Healing taken percent
+        float minval = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+        if (minval)
+            AddPct(TakenTotalMod, minval);
+
+        float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+        if (maxval)
+            AddPct(TakenTotalMod, maxval);
+
+        TakenTotalMod = std::max(TakenTotalMod, 0.0f);
+
+        damage = uint32(target->CountPctFromMaxHealth(damage));
+        damage = uint32(damage * TakenTotalMod);
+    }
+    else
     {
         // Wild Growth = amount + (6 - 2*doneTicks) * ticks* amount / 100
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellIconID == 2864)

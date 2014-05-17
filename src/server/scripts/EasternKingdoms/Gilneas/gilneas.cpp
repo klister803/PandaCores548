@@ -2790,7 +2790,7 @@ public:
             Vehicle *pVehicle = me->GetVehicleKit();
             Player* player = GetPlayerForEscort();
             Creature* crowley = (Creature*)pVehicle->GetPassenger(1);
-            if (!pVehicle || !player || crowley)
+            if (!pVehicle || !player || !crowley)
                 return;
 
             switch(i)
