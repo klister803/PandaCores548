@@ -1662,7 +1662,7 @@ uint32 Item::GetLeveledStatValue(uint8 statIndex) const
 }
 
 //!@ For all inventoty items at add to world.
-void Item::SetLevelCup(uint32 cap, bool pvp)
+void Item::SetLevelCap(uint32 cap, bool pvp)
 {
     // Restore levle before cap
     if (cap == 0)
@@ -1680,7 +1680,8 @@ void Item::SetLevelCup(uint32 cap, bool pvp)
     if (proto->ItemLevel <= MIN_ITEM_LEVEL_CUP)
         return;
 
-    if (cap == GetLevel())
+    // nothing to do
+    if (cap >= GetLevel())
         return;
 
     // Not for items with pvp power at pvp

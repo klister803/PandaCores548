@@ -385,7 +385,7 @@ class Item : public Object
 
         uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
         void AppendDynamicInfo(ByteBuffer& buff) const;
-        void SetLevelCup(uint32 cup, bool pvp);
+        void SetLevelCap(uint32 cup, bool pvp);
 
     private:
         std::string m_text;

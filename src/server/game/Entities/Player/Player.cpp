@@ -29357,7 +29357,7 @@ void Player::CheckItemCapLevel(uint32 cap, bool pvp)
             if (m_items[i]->IsEquipped())
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), false);
 
-            m_items[i]->SetLevelCup(cap, pvp);
+            m_items[i]->SetLevelCap(cap, pvp);
 
             if (m_items[i]->IsEquipped())
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), true);
