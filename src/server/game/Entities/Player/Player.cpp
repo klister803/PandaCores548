@@ -29520,7 +29520,7 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
     return false;
 }
 
-void Player::CheckItemCapLevel()
+void Player::CheckItemCapLevel(bool hasCap)
 {
     for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {
@@ -29534,12 +29534,13 @@ void Player::CheckItemCapLevel()
                 continue;
 
             // not need remove
-            if (!cap && m_items[i]->GetLevel() == proto->ItemLevel)
+            if (!hasCap && m_items[i]->GetLevel() == proto->ItemLevel)
                 continue;
 
             if (m_items[i]->IsEquipped())
             {
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), false);
+                // on apply perfome all changes
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), true);
             }
         }
