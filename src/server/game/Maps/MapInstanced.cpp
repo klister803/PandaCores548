@@ -180,6 +180,8 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
             newInstanceId = sMapMgr->GenerateInstanceId();
 
             Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficulty(IsRaid()) : player->GetDifficulty(IsRaid());
+            if(difficulty == MAN40_DIFFICULTY)
+                diff = MAN40_DIFFICULTY;
             //Seems it is now possible, but I do not know if it should be allowed
             //ASSERT(!FindInstanceMap(NewInstanceId));
             map = FindInstanceMap(newInstanceId);
