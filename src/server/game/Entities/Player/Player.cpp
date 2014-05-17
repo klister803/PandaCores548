@@ -19078,7 +19078,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     // Clean bug Specialization Spells
     RemoveNotActiveSpecializationSpells();
 
-    QueryResult resultvis = CharacterDatabase.PQuery("SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged FROM characters_visuals WHERE guid = '%u'", guid);
+    QueryResult resultvis = CharacterDatabase.PQuery("SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged FROM character_visuals WHERE guid = '%u'", guid);
     if (resultvis)
     {
         if (!m_vis)
@@ -20538,7 +20538,7 @@ void Player::SaveToDB(bool create /*=false*/)
     if (m_vis)
     {
         std::ostringstream ps;
-        ps << "REPLACE INTO characters_visuals (guid, head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged) VALUES ("
+        ps << "REPLACE INTO character_visuals (guid, head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged) VALUES ("
             << GetGUIDLow() << ", "
             << m_vis->m_visHead << ", "
             << m_vis->m_visShoulders << ", "
