@@ -235,7 +235,7 @@ void Map::DeleteStateMachine()
 }
 
 Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _parent):
-_creatureToMoveLock(false), i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode), i_InstanceId(InstanceId),
+_creatureToMoveLock(false), i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode), i_difficulty(SpawnMode), i_InstanceId(InstanceId),
 m_unloadTimer(0), m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
 m_VisibilityNotifyPeriod(DEFAULT_VISIBILITY_NOTIFY_PERIOD),
 m_activeNonPlayersIter(m_activeNonPlayers.end()), i_gridExpiry(expiry),
@@ -2919,4 +2919,10 @@ uint32 Map::ItemLevelCap() const
         return MIN_ITEM_LEVEL_CUP;
 
     return 0;
+}
+
+void Map::SetSpawnModeBy(Difficulty d, Player *player)
+{ 
+    i_spawnMode = d;
+    player->UpdateObjectVisibility(false);
 }
