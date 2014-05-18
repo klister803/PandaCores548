@@ -22,11 +22,18 @@
 #include "Creature.h"
 
 class GameObject;
+class InstanceScript;
+
+enum ZoneType
+{
+    ZONE_TYPE_MAP       = 0,
+    ZONE_TYPE_INSTANCE  = 1,
+};
 
 class ZoneScript
 {
     public:
-        ZoneScript() {}
+        ZoneScript() : m_type(ZONE_TYPE_MAP) {}
         virtual ~ZoneScript() {}
 
         virtual uint32 GetCreatureEntry(uint32 /*guidlow*/, CreatureData const* data) { return data->id; }
@@ -48,6 +55,10 @@ class ZoneScript
         virtual void SetData(uint32 /*DataId*/, uint32 /*Value*/) {}
 
         virtual void ProcessEvent(WorldObject* /*obj*/, uint32 /*eventId*/) {}
+
+        InstanceScript* ToInstanceScript() { if (m_type == ZONE_TYPE_INSTANCE) return reinterpret_cast<InstanceScript*>(this); else return NULL; }
+    protected:
+        uint8 m_type;
 };
 
 #endif
