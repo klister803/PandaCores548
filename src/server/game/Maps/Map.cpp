@@ -2921,8 +2921,13 @@ uint32 Map::ItemLevelCap() const
     return 0;
 }
 
-void Map::SetSpawnModeBy(Difficulty d, Player *player)
+void Map::SetSpawnModeBy(Difficulty d)
 { 
     i_spawnMode = d;
-    player->UpdateObjectVisibility(false);
+
+    PlayerList const &playerList = GetPlayers();
+    if (!playerList.isEmpty())
+        for (PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
+            if (Player* iPlayer = i->getSource())
+                iPlayer->UpdateObjectVisibility(true);
 }
