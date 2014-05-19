@@ -324,8 +324,6 @@ class LFGMgr
         void _LoadFromDB(Field* fields, uint64 guid);
         /// Initializes player data after loading group data from DB
         void SetupGroupMember(uint64 guid, uint64 gguid);
-        /// Player has pending teleport action
-        bool hasPendingTeleport(uint64 guid);
         /// Return Lfg dungeon entry for given dungeon id
         uint32 GetLFGDungeonEntry(uint32 id);
 
@@ -335,7 +333,7 @@ class LFGMgr
         /// Get current player comment (used for LFR)
         std::string const& GetComment(uint64 gguid);
         /// Gets current lfg options
-        uint32 GetOptions(); // cs_lfg
+        uint32 GetOptions();
         /// Sets new lfg options
         void SetOptions(uint32 options);
         /// Checks if given lfg option is enabled 
@@ -350,9 +348,6 @@ class LFGMgr
         uint64 GetLeader(uint64 guid);
         /// Initializes locked dungeons for given player (called at login or level change)
         void InitializeLockedDungeons(Player* player, uint8 level = 0);
-
-        /// Inits new proposal to boot a player
-        void InitBoot(uint64 gguid, uint64 kguid, uint64 vguid, std::string const& reason);
         /// Sets player team
         void SetTeam(uint64 guid, uint8 team);
         /// Sets player group
@@ -382,6 +377,8 @@ class LFGMgr
         LfgDungeonSet GetRandomAndSeasonalDungeons(uint8 level, uint8 expansion);
         /// Teleport a player to/from selected dungeon
         void TeleportPlayer(Player* player, bool out, bool fromOpcode = false);
+        /// Inits new proposal to boot a player
+        void InitBoot(uint64 gguid, uint64 kguid, uint64 vguid, std::string const& reason);
         /// Updates player boot proposal with new player answer
         void UpdateBoot(uint64 guid, bool accept);
         /// Updates proposal to join dungeon with player answer
@@ -464,7 +461,6 @@ class LFGMgr
         LfgPlayerBootContainer BootsStore;                 ///< Current player kicks
         LfgPlayerDataContainer PlayersStore;               ///< Player data
         LfgGroupDataContainer GroupsStore;                 ///< Group data
-        LfgGuidList teleportStore;                         ///< Players being teleported
 };
 
 } // namespace lfg

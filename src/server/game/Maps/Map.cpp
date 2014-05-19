@@ -31,7 +31,6 @@
 #include "MapManager.h"
 #include "ObjectMgr.h"
 #include "Group.h"
-#include "LFGMgr.h"
 #include "DynamicTree.h"
 #include "Vehicle.h"
 
@@ -2451,9 +2450,6 @@ bool InstanceMap::AddPlayerToMap(Player* player)
                         ASSERT(playerBind->save == mapSave);
                 }
             }
-
-            if (group && group->isLFGGroup())
-                player->CastSpell(player, lfg::LFG_SPELL_LUCK_OF_THE_DRAW, true);
         }
 
         // for normal instances cancel the reset schedule when the
