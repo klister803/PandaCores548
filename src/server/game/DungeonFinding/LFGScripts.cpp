@@ -31,9 +31,7 @@
 namespace lfg
 {
 
-LFGPlayerScript::LFGPlayerScript() : PlayerScript("LFGPlayerScript")
-{
-}
+LFGPlayerScript::LFGPlayerScript() : PlayerScript("LFGPlayerScript") { }
 
 void LFGPlayerScript::OnLevelChanged(Player* player, uint8 /*oldLevel*/)
 {
@@ -77,7 +75,7 @@ void LFGPlayerScript::OnLogin(Player* player)
 
     sLFGMgr->InitializeLockedDungeons(player);
     sLFGMgr->SetTeam(player->GetGUID(), player->GetTeam());
-    // TODO - Restore LfgPlayerData and send proper status to player if it was in a group
+    /// @todo - Restore LfgPlayerData and send proper status to player if it was in a group
 }
 
 void LFGPlayerScript::OnBindToInstance(Player* player, Difficulty difficulty, uint32 mapId, bool /*permanent*/)
@@ -94,6 +92,20 @@ void LFGPlayerScript::OnMapChanged(Player* player)
     if (sLFGMgr->inLfgDungeonMap(player->GetGUID(), map->GetId(), map->GetDifficulty()))
     {
         Group* group = player->GetGroup();
+        // This function is also called when players log in
+        // if for some reason the LFG system recognises the player as being in a LFG dungeon,
+        // but the player was loaded without a valid group, we'll teleport to homebind to prevent
+        // crashes or other undefined behaviour
+        if (!group)
+        {
+            sLFGMgr->LeaveLfg(player->GetGUID());
+            player->RemoveAurasDueToSpell(LFG_SPELL_LUCK_OF_THE_DRAW);
+            player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, 0.0f);
+            sLog->outError(LOG_FILTER_LFG, "LFGPlayerScript::OnMapChanged, Player %s (%u) is in LFG dungeon map but does not have a valid group! "
+                "Teleporting to homebind.", player->GetName(), player->GetGUIDLow());
+            return;
+        }
+
         for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
             if (Player* member = itr->getSource())
                 player->GetSession()->SendNameQueryOpcode(member->GetGUID());
@@ -105,9 +117,7 @@ void LFGPlayerScript::OnMapChanged(Player* player)
         player->RemoveAurasDueToSpell(LFG_SPELL_LUCK_OF_THE_DRAW);
 }
 
-LFGGroupScript::LFGGroupScript() : GroupScript("LFGGroupScript")
-{
-}
+LFGGroupScript::LFGGroupScript() : GroupScript("LFGGroupScript") { }
 
 void LFGGroupScript::OnAddMember(Group* group, uint64 guid)
 {
@@ -152,7 +162,7 @@ void LFGGroupScript::OnRemoveMember(Group* group, uint64 guid, RemoveMethod meth
 
     if (isLFG && method == GROUP_REMOVEMETHOD_KICK)             // Player have been kicked
     {
-        // TODO - Update internal kick cooldown of kicker
+        /// @todo - Update internal kick cooldown of kicker
         std::string str_reason = "";
         if (reason)
             str_reason = std::string(reason);
