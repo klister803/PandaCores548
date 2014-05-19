@@ -471,7 +471,6 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
     if (numPlayers != MAXGROUPSIZE)
     {
         sLog->outDebug(LOG_FILTER_LFG, "LFGQueue::CheckCompatibility: (%s) Compatibles but not enough players(%u)", strGuids.c_str(), numPlayers);
-        LfgQueueDataMap::iterator itQueue = m_QueueDataMap.find(check.front());
 
         LfgCompatibilityData data(LFG_COMPATIBLES_WITH_LESS_PLAYERS);
         data.roles = proposalRoles;
@@ -657,7 +656,7 @@ void LFGQueue::FindBestCompatibleInQueue(LfgQueueDataMap::iterator itrQueue)
     std::string sguid = o.str();
 
     for (LfgCompatibleMap::const_iterator itr = m_CompatibleMap.begin(); itr != m_CompatibleMap.end(); ++itr)
-        if (itr->second.compatibility == LFG_COMPATIBLES_WITH_LESS_PLAYERS && 
+        if (itr->second.compatibility == LFG_COMPATIBLES_WITH_LESS_PLAYERS &&
             std::string::npos != itr->first.find(sguid))
         {
             UpdateBestCompatibleInQueue(itrQueue, itr->first, itr->second.roles);
@@ -668,7 +667,7 @@ void LFGQueue::UpdateBestCompatibleInQueue(LfgQueueDataMap::iterator itrQueue, s
 {
     LfgQueueData& queueData = itrQueue->second;
 
-    uint8 storedSize = queueData.bestCompatible.empty() ? 0 : 
+    uint8 storedSize = queueData.bestCompatible.empty() ? 0 :
         std::count(queueData.bestCompatible.begin(), queueData.bestCompatible.end(), '|') + 1;
 
     uint8 size = std::count(key.begin(), key.end(), '|') + 1;
