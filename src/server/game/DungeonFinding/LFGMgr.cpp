@@ -1823,7 +1823,6 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
         LfgPlayerRewardData data = LfgPlayerRewardData(dungeon->Entry(), GetDungeon(gguid, false), done, quest);
         player->GetSession()->SendLfgPlayerReward(data);
     }
-    SetDungeon(gguid, 0);
 }
 
 // --------------------------------------------------------------------------//
@@ -1887,6 +1886,18 @@ LfgState LFGMgr::GetState(uint64 guid)
         state = PlayersStore[guid].GetState();
 
     sLog->outTrace(LOG_FILTER_LFG, "LFGMgr::GetState: [" UI64FMTD "] = %u", guid, state);
+    return state;
+}
+
+LfgState LFGMgr::GetOldState(uint64 guid)
+{
+    LfgState state;
+    if (IS_GROUP_GUID(guid))
+        state = GroupsStore[guid].GetOldState();
+    else
+        state = PlayersStore[guid].GetOldState();
+
+    sLog->outTrace(LOG_FILTER_LFG, "LFGMgr::GetOldState: [" UI64FMTD "] = %u", guid, state);
     return state;
 }
 
