@@ -52,7 +52,7 @@ struct LfgQueueData
         healers(LFG_HEALERS_NEEDED), dps(LFG_DPS_NEEDED), type(LFG_TYPE_DUNGEON)
         { }
 
-    LfgQueueData(time_t _joinTime, const LfgDungeonSet &_dungeons, const LfgRolesMap &_roles);
+    LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, const LfgRolesMap &_roles);
 
     time_t joinTime;                                       ///< Player queue join time (to calculate wait times)
     uint8 tanks;                                           ///< Tanks needed
@@ -85,7 +85,7 @@ class LFGQueue
         // Add/Remove from queue
         void AddToQueue(uint64 guid);
         void RemoveFromQueue(uint64 guid);
-        void AddQueueData(uint64 guid, time_t joinTime, const LfgDungeonSet &dungeons, const LfgRolesMap &rolesMap);
+        void AddQueueData(uint64 guid, time_t joinTime, LfgDungeonSet const& dungeons, LfgRolesMap const& rolesMap);
         void RemoveQueueData(uint64 guid);
 
         // Update Timers (when proposal success)

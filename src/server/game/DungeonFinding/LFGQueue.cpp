@@ -139,7 +139,7 @@ void LFGQueue::RemoveFromCurrentQueue(uint64 guid)
     currentQueueStore.remove(guid);
 }
 
-void LFGQueue::AddQueueData(uint64 guid, time_t joinTime, const LfgDungeonSet &dungeons, const LfgRolesMap &rolesMap)
+void LFGQueue::AddQueueData(uint64 guid, time_t joinTime, LfgDungeonSet const& dungeons, LfgRolesMap const& rolesMap)
 {
     QueueDataStore[guid] = LfgQueueData(joinTime, dungeons, rolesMap);
     AddToQueue(guid);
@@ -482,8 +482,9 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
         return LFG_COMPATIBLES_WITH_LESS_PLAYERS;
     }
 
+    uint64 gguid = *check.begin();
     proposal.queues = check;
-    proposal.isNew = numLfgGroups != 1;
+    proposal.isNew = numLfgGroups != 1 || !sLFGMgr->GetDungeon(gguid);
 
     if (!sLFGMgr->AllQueued(check))
     {
@@ -594,7 +595,7 @@ uint8 LFGQueue::GetQueueType(uint64 guid)
     return QueueDataStore[guid].type;
 }
 
-LfgQueueData::LfgQueueData(time_t _joinTime, const LfgDungeonSet &_dungeons, const LfgRolesMap &_roles)
+LfgQueueData::LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, const LfgRolesMap &_roles)
 {
     LFGDungeonData const* dungeon = !_dungeons.empty() ? sLFGMgr->GetLFGDungeon(*_dungeons.begin() & 0xFFFFF) : NULL;
     type = dungeon ? dungeon->internalType : NULL;

@@ -28,6 +28,7 @@ EndScriptData */
 #include "SpellMgr.h"
 #include "scarlet_monastery.h"
 #include "LFGMgr.h"
+#include "Group.h"
 
 //this texts are already used by 3975 and 3976
 enum Says
@@ -566,10 +567,7 @@ public:
 
             Map::PlayerList const& players = me->GetMap()->GetPlayers();
             if (!players.isEmpty())
-                for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
-                    if (Player* player = i->getSource())
-                        if (player->IsAtGroupRewardDistance(me))
-                            sLFGMgr->RewardDungeonDoneFor(285, player);
+                sLFGMgr->FinishDungeon(players.begin()->getSource()->GetGroup()->GetGUID(), 285);
         }
 
         void SpellHit(Unit* caster, const SpellInfo* spell)

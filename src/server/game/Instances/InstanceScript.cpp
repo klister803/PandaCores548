@@ -26,6 +26,7 @@
 #include "Log.h"
 #include "LFGMgr.h"
 #include "ChallengeMgr.h"
+#include "Group.h"
 
 #define CHALLENGE_START 5
 
@@ -532,7 +533,7 @@ bool InstanceScript::IsWipe()
     return true;
 }
 
-void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source)
+void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* /*source*/)
 {
     Difficulty diff = instance->GetDifficulty();
     if (challenge_timer)
@@ -542,45 +543,60 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
     if (!encounters)
         return;
 
+    uint32 dungeonId = 0;
+
     for (DungeonEncounterList::const_iterator itr = encounters->begin(); itr != encounters->end(); ++itr)
     {
-        if ((*itr)->creditType == type && (*itr)->creditEntry == creditEntry)
+        DungeonEncounter const* encounter = *itr;
+        if (encounter->creditType == type && encounter->creditEntry == creditEntry)
         {
-            completedEncounters |= 1 << (*itr)->dbcEntry->encounterIndex;
-            sLog->outDebug(LOG_FILTER_TSCR, "Instance %s (instanceId %u) completed encounter %s", instance->GetMapName(), instance->GetInstanceId(), (*itr)->dbcEntry->encounterName);
-            if (uint32 dungeonId = (*itr)->lastEncounterDungeon)
+            completedEncounters |= 1 << encounter->dbcEntry->encounterIndex;
+            if (encounter->lastEncounterDungeon)
             {
-                Map::PlayerList const& players = instance->GetPlayers();
-                if (!players.isEmpty())
-                    for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
-                        if (Player* player = i->getSource())
-                            if (!source || player->IsAtGroupRewardDistance(source))
-                                sLFGMgr->RewardDungeonDoneFor(dungeonId, player);
-
-                // Challenge reward
-                if (uint32 time = GetChallengeProgresTime())
-                {
-                    MapChallengeModeEntryMap::iterator itr = sMapChallengeModeEntrybyMap.find(instance->GetId());
-                    if (itr != sMapChallengeModeEntrybyMap.end())
-                    {
-                        ChallengeMode medal = CHALLENGE_MEDAL_NONE;
-                        MapChallengeModeEntry const* mode = itr->second;
-
-                        // Calculate reward medal
-                        if (mode->gold > time)
-                            medal = CHALLENGE_MEDAL_GOLD;
-                        else if (mode->silver > time)
-                            medal = CHALLENGE_MEDAL_SILVER;
-                        else if (mode->bronze > time)
-                            medal = CHALLENGE_MEDAL_BRONZE;
-
-                        sChallengeMgr->GroupReward(instance, getMSTime() - challenge_timer, medal);
-
-                        _events.ScheduleEvent(EVENT_CHALLENGE_STOP, 1000);
-                    }
-                }
+                dungeonId = encounter->lastEncounterDungeon;
+                sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u", instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->encounterName[0], dungeonId);
+                break;
             }
-            return;
+        }
+    }
+
+    if (dungeonId)
+    {
+        Map::PlayerList const& players = instance->GetPlayers();
+        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+        {
+            if (Player* player = i->getSource())
+                if (Group* grp = player->GetGroup())
+                    if (grp->isLFGGroup())
+                    {
+                        sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId);
+                        break;
+                    }
+        }
+
+        // Challenge reward
+        if (uint32 time = GetChallengeProgresTime())
+        {
+            MapChallengeModeEntryMap::iterator itr = sMapChallengeModeEntrybyMap.find(instance->GetId());
+            if (itr != sMapChallengeModeEntrybyMap.end())
+            {
+                ChallengeMode medal = CHALLENGE_MEDAL_NONE;
+                MapChallengeModeEntry const* mode = itr->second;
+
+                // Calculate reward medal
+                if (mode->gold > time)
+                    medal = CHALLENGE_MEDAL_GOLD;
+                else if (mode->silver > time)
+                    medal = CHALLENGE_MEDAL_SILVER;
+                else if (mode->bronze > time)
+                    medal = CHALLENGE_MEDAL_BRONZE;
+                else
+                    return;
+
+                sChallengeMgr->GroupReward(instance, getMSTime() - challenge_timer, medal);
+
+                _events.ScheduleEvent(EVENT_CHALLENGE_STOP, 1000);
+            }
         }
     }
 }
