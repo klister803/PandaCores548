@@ -247,17 +247,9 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
         GetPlayerName().c_str());
 
     // Get Random dungeons that can be done at a certain level and expansion
-    lfg::LfgDungeonSet randomDungeons;
     uint8 level = GetPlayer()->getLevel();
-    uint8 expansion = GetPlayer()->GetSession()->Expansion();
-    lfg::LFGDungeonContainer& LfgDungeons = sLFGMgr->GetLFGDungeonMap();
-    for (lfg::LFGDungeonContainer::const_iterator itr = LfgDungeons.begin(); itr != LfgDungeons.end(); ++itr)
-    {
-        lfg::LFGDungeonData const& dungeon = itr->second;
-        if ((dungeon.type == LFG_TYPE_RANDOM || (dungeon.seasonal && sLFGMgr->IsSeasonActive(dungeon.id)))
-            && dungeon.expansion <= expansion && dungeon.minlevel <= level && level <= dungeon.maxlevel)
-            randomDungeons.insert(dungeon.Entry());
-    }
+    lfg::LfgDungeonSet const& randomDungeons =
+        sLFGMgr->GetRandomAndSeasonalDungeons(level, GetPlayer()->GetSession()->Expansion());
 
     // Get player locked Dungeons
     lfg::LfgLockMap const& lock = sLFGMgr->GetLockedDungeons(guid);
@@ -639,10 +631,8 @@ void WorldSession::SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& roleCheck, bo
 
     data.WriteGuidBytes<1>(guid);
     for (lfg::LfgDungeonSet::iterator it = dungeons.begin(); it != dungeons.end(); ++it)
-    {
-        lfg::LFGDungeonData const* dungeon = sLFGMgr->GetLFGDungeon(*it);
-        data << uint32(dungeon ? dungeon->Entry() : 0); // Dungeon
-    }
+        data << uint32(sLFGMgr->GetLFGDungeonEntry(*it)); // Dungeon
+
     data.WriteGuidBytes<4, 7>(guid);
     data << uint8(roleCheck.state);
     data.WriteGuidBytes<6, 2, 3, 0, 5>(guid);
@@ -867,8 +857,7 @@ void WorldSession::SendLfgUpdateProposal(lfg::LfgProposal const& proposal)
             dungeonEntry = (*playerDungeons.begin());
     }
 
-    if (lfg::LFGDungeonData const* dungeon = sLFGMgr->GetLFGDungeon(dungeonEntry))
-        dungeonEntry = dungeon->Entry();
+    dungeonEntry = sLFGMgr->GetLFGDungeonEntry(dungeonEntry);
 
     ObjectGuid playerGUID = guid;
     ObjectGuid InstanceSaveGUID = MAKE_NEW_GUID(dungeonEntry, 0, HIGHGUID_INSTANCE_SAVE);
