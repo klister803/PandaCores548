@@ -28,6 +28,9 @@
 #include "ScriptMgr.h"
 #include "ObjectAccessor.h"
 
+namespace lfg
+{
+
 LFGPlayerScript::LFGPlayerScript() : PlayerScript("LFGPlayerScript")
 {
 }
@@ -208,3 +211,6 @@ void LFGGroupScript::OnInviteMember(Group* group, uint64 guid)
     if (leader && !gguid)
         sLFGMgr->LeaveLfg(leader);
 }
+
+} // namespace lfg
+
