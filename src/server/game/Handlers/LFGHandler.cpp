@@ -227,7 +227,7 @@ void WorldSession::HandleLfgSetBootVoteOpcode(WorldPacket& recvData)
     uint64 guid = GetPlayer()->GetGUID();
     sLog->outDebug(LOG_FILTER_LFG, "CMSG_LFG_SET_BOOT_VOTE %s agree: %u",
         GetPlayerName().c_str(), agree ? 1 : 0);
-    sLFGMgr->UpdateBoot(guid, agree);
+    sLFGMgr->UpdateBoot(guid, agree ? LFG_ANSWER_AGREE : LFG_ANSWER_DENY);
 }
 
 void WorldSession::HandleLfgTeleportOpcode(WorldPacket& recvData)
@@ -250,8 +250,8 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
     LfgDungeonSet randomDungeons;
     uint8 level = GetPlayer()->getLevel();
     uint8 expansion = GetPlayer()->GetSession()->Expansion();
-    LFGDungeonMap& LfgDungeons = sLFGMgr->GetLFGDungeonMap();
-    for (LFGDungeonMap::const_iterator itr = LfgDungeons.begin(); itr != LfgDungeons.end(); ++itr)
+    LFGDungeonContainer& LfgDungeons = sLFGMgr->GetLFGDungeonMap();
+    for (LFGDungeonContainer::const_iterator itr = LfgDungeons.begin(); itr != LfgDungeons.end(); ++itr)
     {
         LFGDungeonData const& dungeon = itr->second;
         if ((dungeon.type == LFG_TYPE_RANDOM || (dungeon.seasonal && sLFGMgr->IsSeasonActive(dungeon.id)))
@@ -658,7 +658,7 @@ void WorldSession::SendLfgJoinResult(const LfgJoinResultData& joinData)
         size += 8 + 3 + 1 + uint32(it->second.size()) * 4 * 4;
 
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_JOIN_RESULT %s checkResult: %u checkValue: %u",
-        GetPlayerInfo().c_str(), joinData.result, joinData.state);
+        GetPlayerName().c_str(), joinData.result, joinData.state);
     ObjectGuid guid = GetPlayer()->GetObjectGuid();
     const LfgLockPartyMap& lockMap = joinData.lockmap;
 
@@ -710,7 +710,7 @@ void WorldSession::SendLfgQueueStatus(const LfgQueueStatusData& queueData)
     Player* player = GetPlayer();
     uint64 guid = player->GetGUID();
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_QUEUE_STATUS %s dungeon: %u - waitTime: %d - avgWaitTime: %d - waitTimeTanks: %d - waitTimeHealer: %d - waitTimeDps: %d - queuedTime: %u - tanks: %u - healers: %u - dps: %u",
-        GetPlayerInfo().c_str(), queueData.dungeonId, queueData.waitTime, queueData.waitTimeAvg, queueData.waitTimeTank, queueData.waitTimeHealer, queueData.waitTimeDps, queueData.queuedTime, queueData.tanks, queueData.healers, queueData.dps);
+        GetPlayerName().c_str(), queueData.dungeonId, queueData.waitTime, queueData.waitTimeAvg, queueData.waitTimeTank, queueData.waitTimeHealer, queueData.waitTimeDps, queueData.queuedTime, queueData.tanks, queueData.healers, queueData.dps);
 
     LFGQueue &queue = sLFGMgr->GetQueue(player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
 
@@ -746,7 +746,7 @@ void WorldSession::SendLfgPlayerReward(uint32 rdungeonEntry, uint32 sdungeonEntr
     uint8 itemCount = qRew->GetRewItemsCount() + qRew->GetRewCurrencyCount();
 
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_PLAYER_REWARD %s rdungeonEntry: %u - sdungeonEntry: %u - done: %u",
-        GetPlayerInfo().c_str(), rdungeonEntry, sdungeonEntry, done);
+        GetPlayerName().c_str(), rdungeonEntry, sdungeonEntry, done);
     WorldPacket data(SMSG_LFG_PLAYER_REWARD, 4 * 4 + itemCount + itemCount * 4 * 4);
     data.WriteBits(itemCount, 20);
     for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
@@ -795,7 +795,7 @@ void WorldSession::SendLfgBootProposalUpdate(const LfgPlayerBoot& boot)
     uint8 votesNum = 0;
     uint8 agreeNum = 0;
     uint32 secsleft = uint8((boot.cancelTime - time(NULL)) / 1000);
-    for (LfgAnswerMap::const_iterator it = boot.votes.begin(); it != boot.votes.end(); ++it)
+    for (LfgAnswerContainer::const_iterator it = boot.votes.begin(); it != boot.votes.end(); ++it)
     {
         if (it->second != LFG_ANSWER_PENDING)
         {
@@ -807,7 +807,7 @@ void WorldSession::SendLfgBootProposalUpdate(const LfgPlayerBoot& boot)
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_BOOT_PROPOSAL_UPDATE %s inProgress: %u - "
         "didVote: %u - agree: %u - victim: %u votes: %u - agrees: %u - left: %u - "
         "needed: %u - reason %s",
-        GetPlayerInfo().c_str(), uint8(boot.inProgress), uint8(playerVote != LFG_ANSWER_PENDING),
+        GetPlayerName().c_str(), uint8(boot.inProgress), uint8(playerVote != LFG_ANSWER_PENDING),
         uint8(playerVote == LFG_ANSWER_AGREE), GUID_LOPART(boot.victim), votesNum, agreeNum,
         secsleft, LFG_GROUP_KICK_VOTES_NEEDED, boot.reason.c_str());
 
@@ -850,7 +850,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, LfgProposal const& p
     uint32 dungeonEntry = proposal.dungeonId;
 
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_PROPOSAL_UPDATE %s state: %u",
-        GetPlayerInfo().c_str(), proposal.state);
+        GetPlayerName().c_str(), proposal.state);
     WorldPacket data(SMSG_LFG_PROPOSAL_UPDATE, 4 + 1 + 4 + 4 + 1 + 1 + proposal.players.size() * (4 + 1 + 1 + 1 + 1 +1));
 
     // show random dungeon if player selected random dungeon and it's not lfg group
@@ -887,7 +887,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, LfgProposal const& p
     data.WriteGuidMask<4>(InstanceSaveGUID);
 
     data.WriteBits(proposal.players.size(), 21);
-    for (LfgProposalPlayerMap::const_iterator it = proposal.players.begin(); it != proposal.players.end(); ++it)
+    for (LfgProposalPlayerContainer::const_iterator it = proposal.players.begin(); it != proposal.players.end(); ++it)
     {
         LfgProposalPlayer const& player = it->second;
 
@@ -906,7 +906,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, LfgProposal const& p
     data.WriteGuidBytes<6, 2>(playerGUID);
     data.WriteGuidBytes<0>(InstanceSaveGUID);
     data.WriteGuidBytes<4, 1>(playerGUID);
-    for (LfgProposalPlayerMap::const_iterator it = proposal.players.begin(); it != proposal.players.end(); ++it)
+    for (LfgProposalPlayerContainer::const_iterator it = proposal.players.begin(); it != proposal.players.end(); ++it)
         data << uint32(it->second.role);                    // Role
     data.WriteGuidBytes<0>(playerGUID);
     data.WriteGuidBytes<6, 1, 3>(InstanceSaveGUID);
@@ -919,7 +919,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, LfgProposal const& p
 void WorldSession::SendLfgLfrList(bool update)
 {
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_LFR_LIST %s update: %u",
-        GetPlayerInfo().c_str(), update ? 1 : 0);
+        GetPlayerName().c_str(), update ? 1 : 0);
     WorldPacket data(SMSG_LFG_UPDATE_SEARCH, 1);
     data << uint8(update);                                 // In Lfg Queue?
     SendPacket(&data);
@@ -927,7 +927,7 @@ void WorldSession::SendLfgLfrList(bool update)
 
 void WorldSession::SendLfgDisabled()
 {
-    sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_DISABLED %s", GetPlayerInfo().c_str());
+    sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_DISABLED %s", GetPlayerName().c_str());
     WorldPacket data(SMSG_LFG_DISABLED, 0);
     SendPacket(&data);
 }
@@ -935,7 +935,7 @@ void WorldSession::SendLfgDisabled()
 void WorldSession::SendLfgOfferContinue(uint32 dungeonEntry)
 {
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_OFFER_CONTINUE %s dungeon entry: %u",
-        GetPlayerInfo().c_str(), dungeonEntry);
+        GetPlayerName().c_str(), dungeonEntry);
     WorldPacket data(SMSG_LFG_OFFER_CONTINUE, 4);
     data << uint32(dungeonEntry);
     SendPacket(&data);
@@ -944,7 +944,7 @@ void WorldSession::SendLfgOfferContinue(uint32 dungeonEntry)
 void WorldSession::SendLfgTeleportError(uint8 err)
 {
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_TELEPORT_DENIED %s reason: %u",
-        GetPlayerInfo().c_str(), err);
+        GetPlayerName().c_str(), err);
     WorldPacket data(SMSG_LFG_TELEPORT_DENIED, 4);
     data.WriteBits(err, 4);                                   // Error
     data.FlushBits();
@@ -955,7 +955,7 @@ void WorldSession::SendLfgTeleportError(uint8 err)
 void WorldSession::SendLfrUpdateListOpcode(uint32 dungeonEntry)
 {
     sLog->outDebug(LOG_FILTER_PACKETIO, "SMSG_LFG_UPDATE_LIST %s dungeon entry: %u",
-        GetPlayerInfo().c_str(), dungeonEntry);
+        GetPlayerName().c_str(), dungeonEntry);
     WorldPacket data(SMSG_LFG_UPDATE_LIST);
     SendPacket(&data);
 }

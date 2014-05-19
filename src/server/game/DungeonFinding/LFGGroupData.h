@@ -67,7 +67,7 @@ class LfgGroupData
         LfgState m_State;                                  ///< State if group in LFG
         LfgState m_OldState;                               ///< Old State
         uint64 m_Leader;                                   ///< Leader GUID
-        LfgGuidSet m_Players;                              ///< Players in group
+        LfgGuidSet PlayersStore;                           ///< Players in group
 
         // Dungeon
         uint32 m_Dungeon;                                  ///< Dungeon entry
