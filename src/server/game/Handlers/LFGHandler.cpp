@@ -476,7 +476,7 @@ void WorldSession::SendLfgUpdatePlayer(lfg::LfgUpdateData const& updateData)
         default:
             break;
     }
-    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, updateData.dungeons, false, false);
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, true);
     /*uint64 guid = GetPlayer()->GetGUID();
     uint8 size = uint8(updateData.dungeons.size());
 
@@ -523,7 +523,7 @@ void WorldSession::SendLfgUpdateParty(lfg::LfgUpdateData const& updateData)
             break;
     }
 
-    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, updateData.dungeons, join, false);
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, false);
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_UPDATE_PARTY %s updatetype: %u",
         GetPlayerName().c_str(), updateData.updateType);
 

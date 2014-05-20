@@ -42,7 +42,7 @@ void LfgGroupData::SetState(LfgState state)
             m_KicksLeft = LFG_GROUP_MAX_KICKS;
         case LFG_STATE_FINISHED_DUNGEON:
         case LFG_STATE_DUNGEON:
-            m_OldState = m_State;
+            m_OldState = state;
             // No break on purpose
         default:
             m_State = state;
@@ -56,20 +56,20 @@ void LfgGroupData::RestoreState()
 
 void LfgGroupData::AddPlayer(uint64 guid)
 {
-    PlayersStore.insert(guid);
+    m_Players.insert(guid);
 }
 
 uint8 LfgGroupData::RemovePlayer(uint64 guid)
 {
-    LfgGuidSet::iterator it = PlayersStore.find(guid);
-    if (it != PlayersStore.end())
-        PlayersStore.erase(it);
-    return uint8(PlayersStore.size());
+    LfgGuidSet::iterator it = m_Players.find(guid);
+    if (it != m_Players.end())
+        m_Players.erase(it);
+    return uint8(m_Players.size());
 }
 
 void LfgGroupData::RemoveAllPlayers()
 {
-    PlayersStore.clear();
+    m_Players.clear();
 }
 
 void LfgGroupData::SetLeader(uint64 guid)
@@ -100,12 +100,12 @@ LfgState LfgGroupData::GetOldState() const
 
 LfgGuidSet const& LfgGroupData::GetPlayers() const
 {
-    return PlayersStore;
+    return m_Players;
 }
 
 uint8 LfgGroupData::GetPlayerCount() const
 {
-    return PlayersStore.size();
+    return m_Players.size();
 }
 
 uint64 LfgGroupData::GetLeader() const

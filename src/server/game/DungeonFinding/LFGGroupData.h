@@ -25,7 +25,7 @@ namespace lfg
 
 enum LfgGroupEnum
 {
-    LFG_GROUP_MAX_KICKS                           = 3
+    LFG_GROUP_MAX_KICKS                           = 3,
 };
 
 /**
@@ -49,6 +49,7 @@ class LfgGroupData
 
         // Dungeon
         void SetDungeon(uint32 dungeon);
+
         // VoteKick
         void DecreaseKicksLeft();
 
@@ -70,8 +71,7 @@ class LfgGroupData
         LfgState m_State;                                  ///< State if group in LFG
         LfgState m_OldState;                               ///< Old State
         uint64 m_Leader;                                   ///< Leader GUID
-        LfgGuidSet PlayersStore;                           ///< Players in group
-
+        LfgGuidSet m_Players;                              ///< Players in group
         // Dungeon
         uint32 m_Dungeon;                                  ///< Dungeon entry
         // Vote Kick

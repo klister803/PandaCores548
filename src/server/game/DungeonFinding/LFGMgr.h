@@ -223,7 +223,7 @@ struct LfgProposal
     uint32 id;                                             ///< Proposal Id
     uint32 dungeonId;                                      ///< Dungeon to join
     LfgProposalState state;                                ///< State of the proposal
-    uint32 group;                                          ///< Proposal group (0 if new)
+    uint64 group;                                          ///< Proposal group (0 if new)
     uint64 leader;                                         ///< Leader guid.
     time_t cancelTime;                                     ///< Time when we will cancel this proposal
     uint32 encounters;                                     ///< Dungeon Encounters
@@ -299,7 +299,6 @@ class LFGMgr
         // World.cpp
         /// Finish the dungeon for the given group. All check are performed using internal lfg data
         void FinishDungeon(uint64 gguid, uint32 dungeonId);
-
         /// Loads rewards for random dungeons
         void LoadRewards();
         /// Loads dungeons from dbc and adds teleport coords
@@ -337,7 +336,7 @@ class LFGMgr
         uint32 GetOptions();
         /// Sets new lfg options
         void SetOptions(uint32 options);
-        /// Checks if given lfg option is enabled 
+        /// Checks if given lfg option is enabled
         bool isOptionEnabled(uint32 option);
         /// Clears queue - Only for internal testing
         void Clean();
@@ -355,9 +354,8 @@ class LFGMgr
         uint64 GetGroup(uint64 guid);
         /// Sets the leader of the group
         void SetLeader(uint64 gguid, uint64 leader);
-
         /// Removes saved group data
-         void RemoveGroupData(uint64 guid);
+        void RemoveGroupData(uint64 guid);
         /// Removes a player from a group
         uint8 RemovePlayerFromGroup(uint64 gguid, uint64 guid);
         /// Adds player to group
@@ -412,10 +410,9 @@ class LFGMgr
         static bool HasIgnore(uint64 guid1, uint64 guid2);
         /// Sends queue status to player
         static void SendLfgQueueStatus(uint64 guid, LfgQueueStatusData const& data);
-        void SendUpdateStatus(Player* player, std::string const& comment, LfgDungeonSet const& selectedDungeons, bool pause, bool quit);
+        void SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateData, bool party);
 
     private:
-
         uint8 GetTeam(uint64 guid);
         void RestoreState(uint64 guid, char const* debugMsg);
         void ClearState(uint64 guid, char const* debugMsg);
@@ -454,7 +451,7 @@ class LFGMgr
         LfgCachedDungeonContainer CachedDungeonMapStore;   ///< Stores all dungeons by groupType
         // Reward System
         LfgRewardContainer RewardMapStore;                 ///< Stores rewards for random dungeons
-        LFGDungeonContainer LfgDungeonStore;
+        LFGDungeonContainer  LfgDungeonStore;
         // Rolecheck - Proposal - Vote Kicks
         LfgRoleCheckContainer RoleChecksStore;             ///< Current Role checks
         LfgProposalContainer ProposalsStore;               ///< Current Proposals

@@ -144,7 +144,7 @@ void LFGGroupScript::OnRemoveMember(Group* group, uint64 guid, RemoveMethod meth
 
     bool isLFG = group->isLFGGroup();
 
-    if (isLFG && method == GROUP_REMOVEMETHOD_KICK)             // Player have been kicked
+    if (isLFG && method == GROUP_REMOVEMETHOD_KICK)        // Player have been kicked
     {
         /// @todo - Update internal kick cooldown of kicker
         std::string str_reason = "";
@@ -174,7 +174,7 @@ void LFGGroupScript::OnRemoveMember(Group* group, uint64 guid, RemoveMethod meth
         if (method == GROUP_REMOVEMETHOD_LEAVE && state == LFG_STATE_DUNGEON &&
             players >= LFG_GROUP_KICK_VOTES_NEEDED)
             player->CastSpell(player, LFG_SPELL_DUNGEON_DESERTER, true);
-        //else if (group->isLfgKickActive())
+        //else if (state == LFG_STATE_BOOT)
             // Update internal kick cooldown of kicked
 
         player->GetSession()->SendLfgUpdateParty(LfgUpdateData(LFG_UPDATETYPE_LEADER_UNK1));
@@ -225,4 +225,3 @@ void LFGGroupScript::OnInviteMember(Group* group, uint64 guid)
 }
 
 } // namespace lfg
-

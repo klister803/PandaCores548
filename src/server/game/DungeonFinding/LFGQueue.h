@@ -112,6 +112,7 @@ class LFGQueue
     private:
         void SetQueueUpdateData(std::string const& strGuids, LfgRolesMap const& proposalRoles);
         LfgRolesMap const& RemoveFromQueueUpdateData(uint64 guid);
+
         void AddToNewQueue(uint64 guid);
         void AddToCurrentQueue(uint64 guid);
         void RemoveFromNewQueue(uint64 guid);
@@ -130,15 +131,15 @@ class LFGQueue
         LfgCompatibility CheckCompatibility(LfgGuidList check);
 
         // Queue
-        LfgQueueDataContainer QueueDataStore;                    ///< Queued groups
-        LfgCompatibleContainer CompatibleMapStore;                  ///< Compatible dungeons
+        LfgQueueDataContainer QueueDataStore;              ///< Queued groups
+        LfgCompatibleContainer CompatibleMapStore;         ///< Compatible dungeons
 
-        LfgWaitTimesContainer waitTimesAvgStore;                    ///< Average wait time to find a group queuing as multiple roles
-        LfgWaitTimesContainer waitTimesTankStore;                   ///< Average wait time to find a group queuing as tank
-        LfgWaitTimesContainer waitTimesHealerStore;                 ///< Average wait time to find a group queuing as healer
-        LfgWaitTimesContainer waitTimesDpsStore;                    ///< Average wait time to find a group queuing as dps
-        LfgGuidList currentQueueStore;                        ///< Ordered list. Used to find groups
-        LfgGuidList newToQueueStore;                          ///< New groups to add to queue
+        LfgWaitTimesContainer waitTimesAvgStore;           ///< Average wait time to find a group queuing as multiple roles
+        LfgWaitTimesContainer waitTimesTankStore;          ///< Average wait time to find a group queuing as tank
+        LfgWaitTimesContainer waitTimesHealerStore;        ///< Average wait time to find a group queuing as healer
+        LfgWaitTimesContainer waitTimesDpsStore;           ///< Average wait time to find a group queuing as dps
+        LfgGuidList currentQueueStore;                     ///< Ordered list. Used to find groups
+        LfgGuidList newToQueueStore;                       ///< New groups to add to queue
 };
 
 } // namespace lfg
