@@ -65,7 +65,7 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
 {
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
-        if (GetElapsedTime() >= 27*MINUTE*IN_MILLISECONDS)
+        if (GetElapsedTime() >= 20 * MINUTE * IN_MILLISECONDS)
         {
             if (GetTeamScore(ALLIANCE) == 0)
             {
@@ -83,10 +83,10 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
             else
                 EndBattleground(ALLIANCE);
         }
-        else if (GetElapsedTime() > uint32(_minutesElapsed * MINUTE * IN_MILLISECONDS))
+        else if (GetElapsedTime() > uint32(_minutesElapsed * MINUTE * IN_MILLISECONDS) + 2 * MINUTE * IN_MILLISECONDS)
         {
             ++_minutesElapsed;
-            UpdateWorldState(BG_WS_STATE_TIMER, 25 - _minutesElapsed);
+            UpdateWorldState(BG_WS_STATE_TIMER, 20 - _minutesElapsed);
         }
 
         if (_flagState[BG_TEAM_ALLIANCE] == BG_WS_FLAG_STATE_WAIT_RESPAWN)
@@ -176,7 +176,7 @@ void BattlegroundWS::StartingEventCloseDoors()
         SpawnBGObject(i, RESPAWN_ONE_DAY);
 
     UpdateWorldState(BG_WS_STATE_TIMER_ACTIVE, 1);
-    UpdateWorldState(BG_WS_STATE_TIMER, 25);
+    UpdateWorldState(BG_WS_STATE_TIMER, 20);
 }
 
 void BattlegroundWS::StartingEventOpenDoors()
@@ -636,6 +636,8 @@ void BattlegroundWS::HandleAreaTrigger(Player* Source, uint32 Trigger)
         case 3688:                                          // unk2
         case 4628:                                          // unk3
         case 4629:                                          // unk4
+        case 8966:                                          // unk5
+        case 8965:                                          // unk6
             break;
         default:
             sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
@@ -830,7 +832,7 @@ void BattlegroundWS::FillInitialWorldStates(WorldPacket& data)
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
         FillInitialWorldState(data, BG_WS_STATE_TIMER_ACTIVE, 1);
-        FillInitialWorldState(data, BG_WS_STATE_TIMER, 25-_minutesElapsed);
+        FillInitialWorldState(data, BG_WS_STATE_TIMER, 20-_minutesElapsed);
     }
     else
         FillInitialWorldState(data, BG_WS_STATE_TIMER_ACTIVE, 0);
