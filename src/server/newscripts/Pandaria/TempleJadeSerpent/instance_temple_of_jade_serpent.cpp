@@ -274,8 +274,11 @@ public:
             OnUnitDeath_wise_mari(unit);
         }
         
-        virtual void Update(uint32 diff) 
+        void Update(uint32 diff) 
         {
+            // Challenge
+            InstanceScript::Update(diff);
+
             //LOREWALKER STONESTEP: If Wipe, we must clean the event.
             if (wipeTimer <= diff
                 && eventStatus_lorewalkter_stonestep >= STATUS_LOREWALKER_STONESTEP_INTRO

@@ -367,6 +367,9 @@ public:
 
         void Update(uint32 diff)
         {
+            // Challenge
+            InstanceScript::Update(diff);
+
             if (cinematicTimer)
             {
                 if (cinematicTimer <= diff)
