@@ -235,7 +235,7 @@ void Group::ChangeFlagEveryoneAssistant(bool apply)
     this->SendUpdate();
 }
 
-void Group::ConvertToLFG(LFGDungeonData const* dungeon)
+void Group::ConvertToLFG(lfg::LFGDungeonData const* dungeon)
 {
     if (dungeon->dbc->subType == LFG_SUBTYPE_FLEX || dungeon->dbc->subType == LFG_SUBTYPE_RAID)
         ConvertToRaid(false);

@@ -326,6 +326,7 @@ class LFGMgr
         void SetupGroupMember(uint64 guid, uint64 gguid);
         /// Return Lfg dungeon entry for given dungeon id
         uint32 GetLFGDungeonEntry(uint32 id);
+        LFGDungeonData const* GetLFGDungeon(uint32 id);
 
         // cs_lfg
         /// Get current player roles
@@ -395,6 +396,7 @@ class LFGMgr
         // LfgQueue
         /// Get last lfg state (NONE, DUNGEON or FINISHED_DUNGEON)
         LfgState GetOldState(uint64 guid);
+        LFGQueue& GetQueue(uint64 guid);
 
         /// Check if given group guid is lfg
         bool IsLfgGroup(uint64 guid);
@@ -405,11 +407,12 @@ class LFGMgr
         /// Checks if all players are queued
         bool AllQueued(LfgGuidList const& check);
         /// Checks if given roles match, modifies given roles map with new roles
-        static bool CheckGroupRoles(LfgRolesMap &groles, bool removeLeaderFlag = true);
+        static bool CheckGroupRoles(LfgRolesMap& groles, LfgType type, bool removeLeaderFlag = true);
         /// Checks if given players are ignoring each other
         static bool HasIgnore(uint64 guid1, uint64 guid2);
         /// Sends queue status to player
         static void SendLfgQueueStatus(uint64 guid, LfgQueueStatusData const& data);
+        void SendUpdateStatus(Player* player, std::string const& comment, LfgDungeonSet const& selectedDungeons, bool pause, bool quit);
 
     private:
 
@@ -423,7 +426,6 @@ class LFGMgr
         void RemovePlayerData(uint64 guid);
         void GetCompatibleDungeons(LfgDungeonSet& dungeons, LfgGuidSet const& players, LfgLockPartyMap& lockMap);
         void _SaveToDB(uint64 guid, uint32 db_guid);
-        LFGDungeonData const* GetLFGDungeon(uint32 id);
 
         // Proposals
         void RemoveProposal(LfgProposalContainer::iterator itProposal, LfgUpdateType type);
@@ -432,6 +434,7 @@ class LFGMgr
         // Generic
         LfgDungeonSet const& GetDungeonsByRandom(uint32 randomdungeon);
         LfgType GetDungeonType(uint32 dungeon);
+
         void SendLfgBootProposalUpdate(uint64 guid, LfgPlayerBoot const& boot);
         void SendLfgJoinResult(uint64 guid, LfgJoinResultData const& data);
         void SendLfgRoleChosen(uint64 guid, uint64 pguid, uint8 roles);

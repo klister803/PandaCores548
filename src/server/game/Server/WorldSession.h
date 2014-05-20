@@ -895,7 +895,7 @@ class WorldSession
         void SendLfgJoinResult(lfg::LfgJoinResultData const& joinData);
         void SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData);
         void SendLfgPlayerReward(lfg::LfgPlayerRewardData const& lfgPlayerRewardData);
-        void SendLfgBootProposalUpdatelfg::(LfgPlayerBoot const& boot);
+        void SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot);
         void SendLfgUpdateProposal(lfg::LfgProposal const& proposal);
         void SendLfgDisabled();
         void SendLfgOfferContinue(uint32 dungeonEntry);

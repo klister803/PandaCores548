@@ -671,9 +671,9 @@ void WorldSession::SendLfgJoinResult(lfg::LfgJoinResultData const& joinData)
     for (lfg::LfgLockPartyMap::const_iterator it = lockMap.begin(); it != lockMap.end(); ++it)
     {
         ObjectGuid playerGuid = it->first;      // Player guid
-        const LfgLockMap& lockMap2 = it->second;
+        lfg::LfgLockMap const& lockMap2 = it->second;
 
-        for (LfgLockMap::const_iterator itr = lockMap2.begin(); itr != lockMap2.end(); ++itr)
+        for (lfg::LfgLockMap::const_iterator itr = lockMap2.begin(); itr != lockMap2.end(); ++itr)
         {
             data << uint32(itr->first);                     // Dungeon entry (id + type)
             data << uint32(0);                              // needed item level

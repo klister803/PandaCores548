@@ -26,12 +26,12 @@ void GetPlayerInfo(ChatHandler* handler, Player* player)
         return;
 
     uint64 guid = player->GetGUID();
-    LfgDungeonSet dungeons = sLFGMgr->GetSelectedDungeons(guid);
+    lfg::LfgDungeonSet dungeons = sLFGMgr->GetSelectedDungeons(guid);
 
     std::string const& state = lfg::GetStateString(sLFGMgr->GetState(guid));
     handler->PSendSysMessage(LANG_LFG_PLAYER_INFO, player->GetName(),
-        state.c_str(), uint8(dungeons.size()), sLFGMgr->ConcatenateDungeons(dungeons).c_str(),
-        sLFGMgr->GetRolesString(sLFGMgr->GetRoles(guid)).c_str(), sLFGMgr->GetComment(guid).c_str());
+        state.c_str(), uint8(dungeons.size()), lfg::ConcatenateDungeons(dungeons).c_str(),
+        lfg::GetRolesString(sLFGMgr->GetRoles(guid)).c_str(), sLFGMgr->GetComment(guid).c_str());
 }
 
 class lfg_commandscript : public CommandScript

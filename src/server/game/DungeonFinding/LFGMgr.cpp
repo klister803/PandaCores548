@@ -1524,7 +1524,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         dungeon->x, dungeon->y, dungeon->z, error);
 }
 
-void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, const LfgDungeonSet& selectedDungeons, bool pause, bool quit)
+void LFGMgr::SendUpdateStatus(Player* player, std::string const& comment, LfgDungeonSet const& selectedDungeons, bool pause, bool quit)
 {
     ObjectGuid guid = player->GetGUID();
 
@@ -1738,7 +1738,7 @@ LfgState LFGMgr::GetState(uint64 guid)
 LfgState LFGMgr::GetOldState(uint64 guid)
 {
     LfgState state;
-    if (IS_GROUP_GUID(guid))
+    if (IS_GROUP(guid))
         state = GroupsStore[guid].GetOldState();
     else
         state = PlayersStore[guid].GetOldState();
@@ -1799,7 +1799,6 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
     uint8 level = player->getLevel();
     uint8 expansion = player->GetSession()->Expansion();
     LfgDungeonSet const& dungeons = GetDungeonsByRandom(0);
-    bool denyJoin = !player->GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_DUNGEON_FINDER);
 
     for (LfgDungeonSet::const_iterator it = dungeons.begin(); it != dungeons.end(); ++it)
     {
@@ -1808,13 +1807,11 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
             continue;
 
         uint32 lockData = 0;
-        if (denyJoin)
-            lockData = LFG_LOCKSTATUS_RAID_LOCKED;
-        else if (dungeon->expansion > expansion)
+        if (dungeon->expansion > expansion)
             lockData = LFG_LOCKSTATUS_INSUFFICIENT_EXPANSION;
         else if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, dungeon->map, player))
             lockData = LFG_LOCKSTATUS_RAID_LOCKED;
-        else if (dungeon->difficulty > DUNGEON_DIFFICULTY_NORMAL && player->GetBoundInstance(dungeon->map, Difficulty(dungeon->difficulty)))
+        else if (dungeon->difficulty > REGULAR_DIFFICULTY && player->GetBoundInstance(dungeon->map, Difficulty(dungeon->difficulty)))
             lockData = LFG_LOCKSTATUS_RAID_LOCKED;
         else if (dungeon->minlevel > level)
             lockData = LFG_LOCKSTATUS_TOO_LOW_LEVEL;
@@ -1826,7 +1823,7 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
         {
             if (ar->item_level && player->GetAverageItemLevel() < ar->item_level)
                 lockData = LFG_LOCKSTATUS_TOO_LOW_GEAR_SCORE;
-            else if (ar->achievement && !player->HasAchieved(ar->achievement))
+            else if (ar->achievement && !player->GetAchievementMgr().HasAchieved(ar->achievement))
                 lockData = LFG_LOCKSTATUS_MISSING_ACHIEVEMENT;
             else if (player->GetTeam() == ALLIANCE && ar->quest_A && !player->GetQuestRewardStatus(ar->quest_A))
                 lockData = LFG_LOCKSTATUS_QUEST_NOT_COMPLETED;
@@ -2221,7 +2218,7 @@ bool LFGMgr::selectedRandomLfgDungeon(uint64 guid)
 
 bool LFGMgr::inLfgDungeonMap(uint64 guid, uint32 map, Difficulty difficulty)
 {
-    if (!IS_GROUP_GUID(guid))
+    if (!IS_GROUP(guid))
         guid = GetGroup(guid);
 
     if (uint32 dungeonId = GetDungeon(guid, true))
@@ -2247,7 +2244,7 @@ LfgDungeonSet LFGMgr::GetRandomAndSeasonalDungeons(uint8 level, uint8 expansion)
     for (lfg::LFGDungeonContainer::const_iterator itr = LfgDungeonStore.begin(); itr != LfgDungeonStore.end(); ++itr)
     {
         lfg::LFGDungeonData const& dungeon = itr->second;
-        if ((dungeon.type == lfg::LFG_TYPE_RANDOM || (dungeon.seasonal && sLFGMgr->IsSeasonActive(dungeon.id)))
+        if ((dungeon.type == LFG_TYPE_RANDOM || (dungeon.seasonal && sLFGMgr->IsSeasonActive(dungeon.id)))
             && dungeon.expansion <= expansion && dungeon.minlevel <= level && level <= dungeon.maxlevel)
             randomDungeons.insert(dungeon.Entry());
     }
