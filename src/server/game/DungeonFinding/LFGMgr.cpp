@@ -179,18 +179,10 @@ void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
     for (uint32 i = 0; i < sLFGDungeonStore.GetNumRows(); ++i)
     {
         LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(i);
-        if (!dungeon)
+        if (!dungeon || !dungeon->IsValidType())
             continue;
 
-        switch (dungeon->type)
-        {
-            case LFG_TYPE_DUNGEON:
-            case LFG_TYPE_HEROIC:
-            case LFG_TYPE_RAID:
-            case LFG_TYPE_RANDOM:
-                LfgDungeonStore[dungeon->ID] = LFGDungeonData(dungeon);
-                break;
-        }
+        LfgDungeonStore[dungeon->ID] = LFGDungeonData(dungeon);
     }
 
     // Fill teleport locations from DB
@@ -870,9 +862,8 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
         if (itRoles == roleCheck.roles.end())
         {
             // use temporal var to check roles, CheckGroupRoles modifies the roles
-            LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*roleCheck.dungeons.begin() & 0xFFFFF);
             check_roles = roleCheck.roles;
-            roleCheck.state = CheckGroupRoles(check_roles, entry ? LfgType(entry->internalType) : LFG_TYPE_DUNGEON)
+            roleCheck.state = CheckGroupRoles(check_roles, LfgRoleData(*roleCheck.dungeons.begin() & 0xFFFFF))
                 ? LFG_ROLECHECK_FINISHED : LFG_ROLECHECK_WRONG_ROLES;;
         }
     }
@@ -955,7 +946,7 @@ void LFGMgr::GetCompatibleDungeons(LfgDungeonSet& dungeons, LfgGuidSet const& pl
    @param[in]     removeLeaderFlag Determines if we have to remove leader flag (only used first call, Default = true)
    @return True if roles are compatible
 */
-bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgType type, bool removeLeaderFlag /*= true*/)
+bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, bool removeLeaderFlag /*= true*/)
 {
     if (groles.empty())
         return false;
@@ -963,34 +954,6 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgType type, bool removeLeade
     uint8 damage = 0;
     uint8 tank = 0;
     uint8 healer = 0;
-
-    uint8 dpsNeeded = 0;
-    uint8 healerNeeded = 0;
-    uint8 tankNeeded = 0;
-
-    switch (type)
-    {
-    case LFG_TYPE_DUNGEON:
-        dpsNeeded = 3;
-        healerNeeded = 1;
-        tankNeeded = 1;
-        break;
-    case LFG_TYPE_RAID:
-        dpsNeeded = 17;
-        healerNeeded = 6;
-        tankNeeded = 2;
-        break;
-    case LFG_TYPE_SCENARIO:
-        dpsNeeded = 3;
-        healerNeeded = 0;
-        tankNeeded = 0;
-        break;
-    default:
-        dpsNeeded = 3;
-        healerNeeded = 1;
-        tankNeeded = 1;
-        break;
-    }
 
     if (removeLeaderFlag)
         for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it)
@@ -1006,14 +969,14 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgType type, bool removeLeade
             if (it->second != PLAYER_ROLE_DAMAGE)
             {
                 it->second -= PLAYER_ROLE_DAMAGE;
-                if (CheckGroupRoles(groles, type, false))
+                if (CheckGroupRoles(groles, roleData, false))
                     return true;
                 it->second += PLAYER_ROLE_DAMAGE;
             }
-            else if (damage == dpsNeeded)
+            else if (damage >= roleData.dpsNeeded)
                 return false;
             else
-                damage++;
+                ++damage;
         }
 
         if (it->second & PLAYER_ROLE_HEALER)
@@ -1021,14 +984,14 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgType type, bool removeLeade
             if (it->second != PLAYER_ROLE_HEALER)
             {
                 it->second -= PLAYER_ROLE_HEALER;
-                if (CheckGroupRoles(groles, type, false))
+                if (CheckGroupRoles(groles, roleData, false))
                     return true;
                 it->second += PLAYER_ROLE_HEALER;
             }
-            else if (healer == healerNeeded)
+            else if (healer >= roleData.healerNeeded)
                 return false;
             else
-                healer++;
+                ++healer;
         }
 
         if (it->second & PLAYER_ROLE_TANK)
@@ -1036,17 +999,17 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgType type, bool removeLeade
             if (it->second != PLAYER_ROLE_TANK)
             {
                 it->second -= PLAYER_ROLE_TANK;
-                if (CheckGroupRoles(groles, type, false))
+                if (CheckGroupRoles(groles, roleData, false))
                     return true;
                 it->second += PLAYER_ROLE_TANK;
             }
-            else if (tank == tankNeeded)
+            else if (tank >= roleData.tanksNeeded)
                 return false;
             else
-                tank++;
+                ++tank;
         }
     }
-    return (tank + healer + damage) == uint8(groles.size());
+    return tank >= roleData.minTanksNeeded && healer >= roleData.minHealerNeeded && damage >= roleData.minDpsNeeded;
 }
 
 /**
@@ -1525,11 +1488,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
 void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateData, bool party)
 {
     ObjectGuid guid = player->GetGUID();
-    LFGQueue& queue = GetQueue(player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
-
-    LFGDungeonData const* dungeonEntry = NULL;
-    if (!updateData.dungeons.empty())
-        dungeonEntry = sLFGMgr->GetLFGDungeon(*updateData.dungeons.begin() & 0xFFFFF);
+    LFGQueue& queue = GetQueue(party && player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
 
     bool queued = false;
     bool join = false;
@@ -1587,7 +1546,7 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
     data.WriteGuidMask<2>(guid);
 
     data.WriteString(updateData.comment);
-    data << uint8(dungeonEntry ? dungeonEntry->dbc->subType : LFG_SUBTYPE_DUNGEON);  // 1 - dungeon finder, 2 - raid finder, 3 - scenarios, 4 - flex
+    data << uint8(queue.GetQueueSubType(guid));     // 1 - dungeon finder, 2 - raid finder, 3 - scenarios, 4 - flex
     data << uint8(updateData.updateType);           // error?   1, 11, 17 - succed, other - failed
     data.WriteGuidBytes<4>(guid);
     data << uint32(8);                              // unk
@@ -2284,6 +2243,27 @@ LfgDungeonSet LFGMgr::GetRandomAndSeasonalDungeons(uint8 level, uint8 expansion)
             randomDungeons.insert(dungeon.Entry());
     }
     return randomDungeons;
+}
+
+LfgRoleData::LfgRoleData(uint32 dungeonId)
+{
+    Init(sLFGMgr->GetLFGDungeon(dungeonId));
+}
+
+LfgRoleData::LfgRoleData(LFGDungeonData const* data)
+{
+    Init(data);
+}
+
+void LfgRoleData::Init(LFGDungeonData const* data)
+{
+    tanksNeeded = data->dbc->tankNeeded;
+    healerNeeded = data->dbc->healerNeeded;
+    dpsNeeded = data->dbc->dpsNeeded;
+
+    minTanksNeeded = data->dbc->minTankNeeded;
+    minHealerNeeded = data->dbc->minHealerNeeded;
+    minDpsNeeded = data->dbc->minDpsNeeded;
 }
 
 } // namespace lfg

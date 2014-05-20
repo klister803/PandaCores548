@@ -380,7 +380,7 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
 
         LfgCompatibilityData data(LFG_COMPATIBLES_WITH_LESS_PLAYERS);
         data.roles = itQueue->second.roles;
-        LFGMgr::CheckGroupRoles(data.roles, LfgType(itQueue->second.type));
+        LFGMgr::CheckGroupRoles(data.roles, LfgRoleData(*itQueue->second.dungeons.begin() & 0xFFFFF));
 
         UpdateBestCompatibleInQueue(itQueue, strGuids, data.roles);
         SetCompatibilityData(strGuids, data);
@@ -429,8 +429,10 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
             return LFG_INCOMPATIBLES_HAS_IGNORES;
         }
 
+        LfgGuidList::iterator itguid = check.begin();
+        proposalDungeons = QueueDataStore[*itguid].dungeons;
         LfgRolesMap debugRoles = proposalRoles;
-        if (!LFGMgr::CheckGroupRoles(proposalRoles, LFG_TYPE_DUNGEON))
+        if (!LFGMgr::CheckGroupRoles(proposalRoles, LfgRoleData(*proposalDungeons.begin() & 0xFFFFF)))
         {
             std::ostringstream o;
             for (LfgRolesMap::const_iterator it = debugRoles.begin(); it != debugRoles.end(); ++it)
@@ -441,8 +443,6 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
             return LFG_INCOMPATIBLES_NO_ROLES;
         }
 
-        LfgGuidList::iterator itguid = check.begin();
-        proposalDungeons = QueueDataStore[*itguid].dungeons;
         std::ostringstream o;
         o << ", " << *itguid << ": (" << ConcatenateDungeons(proposalDungeons) << ")";
         for (++itguid; itguid != check.end(); ++itguid)
@@ -467,7 +467,7 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
         const LfgQueueData &queue = QueueDataStore[gguid];
         proposalDungeons = queue.dungeons;
         proposalRoles = queue.roles;
-        LFGMgr::CheckGroupRoles(proposalRoles, LFG_TYPE_DUNGEON);          // assing new roles
+        LFGMgr::CheckGroupRoles(proposalRoles, LfgRoleData(*proposalDungeons.begin() & 0xFFFFF));       // assing new roles
     }
 
     // Enough players?
@@ -598,16 +598,31 @@ uint8 LFGQueue::GetQueueType(uint64 guid)
     return QueueDataStore[guid].type;
 }
 
+uint8 LFGQueue::GetQueueSubType(uint64 guid)
+{
+    return QueueDataStore[guid].subType;
+}
+
 LfgQueueData::LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, const LfgRolesMap &_roles)
 {
     LFGDungeonData const* dungeon = !_dungeons.empty() ? sLFGMgr->GetLFGDungeon(*_dungeons.begin() & 0xFFFFF) : NULL;
-    type = dungeon ? dungeon->internalType : NULL;
+    type = dungeon ? dungeon->internalType : LFG_TYPE_DUNGEON;
+    subType = dungeon ? dungeon->dbc->subType : LFG_SUBTYPE_DUNGEON;
     joinTime = _joinTime;
     dungeons = _dungeons;
     roles = _roles;
-    tanks = LFG_TANKS_NEEDED;
-    healers = LFG_HEALERS_NEEDED;
-    dps = LFG_DPS_NEEDED;
+
+    minTanksNeeded = dungeon ? dungeon->dbc->minTankNeeded : LFG_TANKS_NEEDED;
+    minHealerNeeded = dungeon ? dungeon->dbc->minHealerNeeded : LFG_HEALERS_NEEDED;
+    minDpsNeeded = dungeon ? dungeon->dbc->minDpsNeeded : LFG_DPS_NEEDED;
+
+    tanksNeeded = dungeon ? dungeon->dbc->tankNeeded : LFG_TANKS_NEEDED;
+    healerNeeded = dungeon ? dungeon->dbc->healerNeeded : LFG_HEALERS_NEEDED;
+    dpsNeeded = dungeon ? dungeon->dbc->dpsNeeded : LFG_DPS_NEEDED;
+
+    tanks = minTanksNeeded;
+    healers = minHealerNeeded;
+    dps = minDpsNeeded;
 }
 
 std::string LFGQueue::DumpQueueInfo() const
@@ -678,17 +693,23 @@ void LFGQueue::UpdateBestCompatibleInQueue(LfgQueueDataContainer::iterator itrQu
         queueData.bestCompatible.c_str(), key.c_str(), itrQueue->first);
 
     queueData.bestCompatible = key;
-    queueData.tanks = LFG_TANKS_NEEDED;
-    queueData.healers = LFG_HEALERS_NEEDED;
-    queueData.dps = LFG_DPS_NEEDED;
+    queueData.tanks = queueData.minTanksNeeded;
+    queueData.healers = queueData.minHealerNeeded;
+    queueData.dps = queueData.minDpsNeeded;
     for (LfgRolesMap::const_iterator it = roles.begin(); it != roles.end(); ++it)
     {
         uint8 role = it->second;
         if (role & PLAYER_ROLE_TANK)
-            --queueData.tanks;
+        {
+            if (queueData.tanks)
+                --queueData.tanks;
+        }
         else if (role & PLAYER_ROLE_HEALER)
-            --queueData.healers;
-        else
+        {
+            if (queueData.healers)
+                --queueData.healers;
+        }
+        else if (queueData.dps)
             --queueData.dps;
     }
 }

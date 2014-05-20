@@ -52,7 +52,9 @@ struct LfgCompatibilityData
 struct LfgQueueData
 {
     LfgQueueData(): joinTime(time_t(time(NULL))), tanks(LFG_TANKS_NEEDED),
-        healers(LFG_HEALERS_NEEDED), dps(LFG_DPS_NEEDED), type(LFG_TYPE_DUNGEON)
+        healers(LFG_HEALERS_NEEDED), dps(LFG_DPS_NEEDED), type(LFG_TYPE_DUNGEON), subType(LFG_SUBTYPE_DUNGEON),
+        tanksNeeded(LFG_TANKS_NEEDED), healerNeeded(LFG_HEALERS_NEEDED), dpsNeeded(LFG_DPS_NEEDED),
+        minTanksNeeded(LFG_TANKS_NEEDED), minHealerNeeded(LFG_HEALERS_NEEDED), minDpsNeeded(LFG_DPS_NEEDED)
         { }
 
     LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, const LfgRolesMap &_roles);
@@ -64,7 +66,15 @@ struct LfgQueueData
     LfgDungeonSet dungeons;                                ///< Selected Player/Group Dungeon/s
     LfgRolesMap roles;                                     ///< Selected Player Role/s
     uint8 type;                                            ///< Queue dungeon type
+    uint8 subType;                                         ///< Queue dungeon subtype
     std::string bestCompatible;                            ///< Best compatible combination of people queued
+
+    uint8 tanksNeeded;
+    uint8 healerNeeded;
+    uint8 dpsNeeded;
+    uint8 minTanksNeeded;
+    uint8 minHealerNeeded;
+    uint8 minDpsNeeded;
 };
 
 struct LfgWaitTime
@@ -101,6 +111,7 @@ class LFGQueue
         void UpdateQueueTimers(time_t currTime);
         time_t GetJoinTime(uint64 guid);
         uint8 GetQueueType(uint64 guid);
+        uint8 GetQueueSubType(uint64 guid);
 
         // Find new group
         uint8 FindGroups();
