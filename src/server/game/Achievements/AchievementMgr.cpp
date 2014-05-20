@@ -1427,6 +1427,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
             case ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS:
             case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA:
+            case ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, 1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             // std case: increment at miscValue1
@@ -1443,7 +1444,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
             case ACHIEVEMENT_CRITERIA_TYPE_DAMAGE_DONE:
-            case ACHIEVEMENT_CRITERIA_TYPE_HEALING_DONE:   
+            case ACHIEVEMENT_CRITERIA_TYPE_HEALING_DONE:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, miscValue1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE:
@@ -1889,6 +1890,7 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
         case ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS:
             return progress->counter >= criteriaTree->requirement_count; // get_killing_blow.killCount;
         case ACHIEVEMENT_CRITERIA_TYPE_CURRENCY:
+        case ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID:
             return progress->counter >= criteriaTree->requirement_count; // currencyGain.count;
         // handle all statistic-only criteria here
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
@@ -3122,6 +3124,10 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
             || miscValue1 != achievementCriteria->currencyGain.currency)
             return false;
         break;
+    case ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID:
+        if (!miscValue1 || miscValue1 != achievementCriteria->finish_instance.mapID)
+            return false;
+        break;
     default:
         break;
         }
@@ -3129,7 +3135,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
  }
 
  template<class T>
- bool AchievementMgr<T>::AdditionalRequirementsSatisfied(AchievementCriteriaEntry const *criteria, uint64 miscValue1, uint64 /*miscValue2*/, Unit const* unit, Player* referencePlayer) const
+ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(AchievementCriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const
  {
     if(std::list<uint32> const* modifierList = GetModifierTreeList(criteria->ModifyTree))
      for (std::list<uint32>::const_iterator itr = modifierList->begin(); itr != modifierList->end(); ++itr)
@@ -3283,6 +3289,12 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
          }
          case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY: // 68
              if (!unit || !unit->GetMap() || unit->GetMap()->GetSpawnMode() != reqValue)
+                 return false;
+             break;
+         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE:
+             if (!miscValue2)
+                return false;
+             if (reqValue > miscValue2)            // Medal check
                  return false;
              break;
          default:

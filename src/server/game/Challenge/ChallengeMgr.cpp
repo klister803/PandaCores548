@@ -157,7 +157,17 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
 
             c->member.insert(member);
             CheckBestMemberMapId(member.guid, c);
+
+            /// @there is achieve just for complete challenge with no medal
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID, player->GetMapId(), medal);
         }
+
+    // not save if no medal
+    if (medal == CHALLENGE_MEDAL_NONE)
+    {
+        delete c;
+        return;
+    }
 
     // Stupid group guild check.
     for(std::map<uint32/*guild*/, uint32>::const_iterator itr = guildCounter.begin(); itr != guildCounter.end(); ++itr)
@@ -166,6 +176,7 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
         if(itr->second == 5)
             c->guildId = itr->first;
     }
+
 
     m_ChallengeMap[c->Id] = c;
     CheckBestMapId(c);

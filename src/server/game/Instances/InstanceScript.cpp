@@ -573,8 +573,6 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                             medal = CHALLENGE_MEDAL_SILVER;
                         else if (mode->bronze > time)
                             medal = CHALLENGE_MEDAL_BRONZE;
-                        else
-                            return;
 
                         sChallengeMgr->GroupReward(instance, getMSTime() - challenge_timer, medal);
 

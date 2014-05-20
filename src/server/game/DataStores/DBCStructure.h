@@ -437,6 +437,13 @@ struct AchievementCriteriaEntry
             // uint32  killCount;                           // treeCount in CriteriaTree
         } special_pvp_kill;
 
+        // ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID        = 71
+        struct
+        {
+            uint32  mapID;                                // 2
+            // uint32  lootCount;                           // treeCount in CriteriaTree
+        } finish_instance;
+
         // ACHIEVEMENT_CRITERIA_TYPE_FISH_IN_GAMEOBJECT     = 72
         struct
         {
