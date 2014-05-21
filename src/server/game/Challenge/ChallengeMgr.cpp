@@ -127,6 +127,14 @@ void ChallengeMgr::LoadFromDB()
         itr->second->member.insert(member);
         CheckBestMemberMapId(member.guid, itr->second);
     }while (result->NextRow());
+
+    m_reward.clear();
+    result = WorldDatabase.Query("SELECT `mapId`, `questCredit` FROM `chellenge_reward`");
+    do
+    {
+        fields = result->Fetch();
+        m_reward[fields[0].GetUInt16()] = fields[1].GetUInt32();
+    }while (result->NextRow());
 }
 
 void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode medal)
@@ -144,6 +152,9 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
     c->date = time(NULL);
     c->medal = medal;
 
+    // Finish quest's for complete challenge (without medal too)
+    uint32 npcRewardCredit = m_reward[instance->GetId()];
+
     std::map<uint32/*guild*/, uint32> guildCounter;
     for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
         if (Player* player = i->getSource())
@@ -159,7 +170,10 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
             CheckBestMemberMapId(member.guid, c);
 
             /// @there is achieve just for complete challenge with no medal
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID, player->GetMapId(), medal);
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID, instance->GetId(), medal);
+            /// @quest reward for finish challenge. daily
+            if (npcRewardCredit)    //should never happend
+                player->KilledMonsterCredit(npcRewardCredit, 0);
         }
 
     // not save if no medal
