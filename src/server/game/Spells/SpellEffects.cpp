@@ -2339,6 +2339,15 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         
         switch (m_spellInfo->Id)
         {
+            case 130551: // Word of Glory
+            case 114163: // Eternal Flame
+            {
+                if (unitTarget == caster)
+                    if (Aura* Bastion_of_Glory = caster->GetAura(114637))
+                        if (AuraEffect* eff = Bastion_of_Glory->GetEffect(EFFECT_0))
+                            AddPct(addhealth, eff->GetAmount());
+                break;
+            }
             case 89653: // Drain Life
             {
                 if (Aura * aura = caster->GetAura(108371))

@@ -999,7 +999,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             break;
         case SPELL_AURA_PERIODIC_HEAL:
         {
-            if (!caster)
+            if (!caster || !target)
                 break;
 
             switch (GetId())
@@ -1024,12 +1024,31 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 default:
                     break;
             }
-            if(target && caster)
+            amount = caster->SpellHealingBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex());
+
+            switch (m_spellInfo->Id)
             {
-                amount = caster->SpellHealingBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex());
-                caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
-                m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
+                case 114163: // Eternal Flame
+                {
+                    if (target == caster)
+                    {
+                        int32 pct = m_spellInfo->Effects[EFFECT_2].BasePoints;
+
+                        if (Aura* Bastion_of_Glory = caster->GetAura(114637))
+                        {
+                            if (AuraEffect* eff = Bastion_of_Glory->GetEffect(EFFECT_0))
+                                pct += eff->GetAmount();
+                        }
+                        AddPct(amount, pct);
+                    }
+                    break;
+                }
+                default:
+                    break;
             }
+
+            caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
+            m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
             break;
         }
         case SPELL_AURA_MOD_THREAT:

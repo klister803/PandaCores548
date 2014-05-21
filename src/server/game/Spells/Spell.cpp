@@ -4081,9 +4081,6 @@ void Spell::finish(bool ok)
             if (item->IsEquipable() && !item->IsEquipped())
                 m_caster->ToPlayer()->ApplyItemEquipSpell(item, false);
 
-    if (m_spellInfo->PowerType == POWER_HOLY_POWER && m_caster->m_movedPlayer->getClass() == CLASS_PALADIN)
-        HandleHolyPower(m_caster->m_movedPlayer);
-
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::finish Spell: %u", m_spellInfo->Id);
 
     // Hack codes
@@ -5479,8 +5476,12 @@ void Spell::TakePower()
     Powers powerType = Powers(power.powerType);
     int32  ifMissedPowerCost = m_powerCost;
     bool hit = true;
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+
+    if (Player* player = m_caster->ToPlayer())
     {
+        if (powerType == POWER_HOLY_POWER)
+            m_powerCost = player->HandleHolyPowerCost(m_powerCost, m_spellInfo->ManaCost);
+
         if (uint64 targetGUID = m_targets.GetUnitTargetGUID())
             for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
                 if (ihit->targetGUID == targetGUID)
@@ -5791,41 +5792,6 @@ void Spell::HandleThreatSpells()
         }
     }
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell %u, added an additional %f threat for %s %u target(s)", m_spellInfo->Id, threat, m_spellInfo->_IsPositiveSpell() ? "assisting" : "harming", uint32(m_UniqueTargetInfo.size()));
-}
-
-void Spell::HandleHolyPower(Player* caster)
-{
-    if (!caster)
-        return;
-
-    bool hit = true;
-    Player* modOwner = caster->GetSpellModOwner();
-    m_powerCost = caster->GetPower(POWER_HOLY_POWER); // Always use all the holy power we have
-    if (!m_powerCost || !modOwner)
-        return;
-
-    if(m_powerCost > 2)
-        m_powerCost = 2;
-
-    if (uint64 targetGUID = m_targets.GetUnitTargetGUID())
-    {
-        for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-        {
-            if (ihit->targetGUID == targetGUID)
-            {
-                if (ihit->missCondition != SPELL_MISS_NONE && ihit->missCondition != SPELL_MISS_MISS)
-                    hit = false;
-                break;
-            }
-        }
-
-        // The spell did hit the target, apply aura cost mods if there are any.
-        if (hit)
-        {
-            modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, m_powerCost);
-            m_caster->ModifyPower(POWER_HOLY_POWER, -m_powerCost);
-        }
-    }
 }
 
 void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOTarget, uint32 i, SpellEffectHandleMode mode)

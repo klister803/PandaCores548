@@ -1601,8 +1601,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                 switch (m_spellInfo->Id)
                 {
-                    // Grand Crusader
-                    case 85416:
+                    case 85416: // Grand Crusader
                         caster->ToPlayer()->RemoveSpellCooldown(31935, true);
                         break;
                     default:

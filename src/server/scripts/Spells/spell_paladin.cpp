@@ -53,7 +53,6 @@ enum PaladinSpells
     PALADIN_SPELL_ARCING_LIGHT_DAMAGE            = 114919,
     PALADIN_SPELL_EXECUTION_SENTENCE             = 114916,
     PALADIN_SPELL_STAY_OF_EXECUTION              = 114917,
-    PALADIN_SPELL_INQUISITION                    = 84963,
     PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT        = 54934,
     PALADIN_SPELL_BLINDING_LIGHT_CONFUSE         = 105421,
     PALADIN_SPELL_BLINDING_LIGHT_STUN            = 115752,
@@ -63,7 +62,6 @@ enum PaladinSpells
     PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE     = 88852,
     PALADIN_SPELL_BEACON_OF_LIGHT                = 53563,
     PALADIN_SPELL_SELFLESS_HEALER_STACK          = 114250,
-    PALADIN_SPELL_ETERNAL_FLAME                  = 114163,
     PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC   = 132403,
     PALADIN_SPELL_BASTION_OF_GLORY               = 114637,
     PALADIN_SPELL_DIVINE_PURPOSE                 = 90174,
@@ -141,126 +139,6 @@ class spell_pal_shield_of_the_righteous : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pal_shield_of_the_righteous_SpellScript();
-        }
-};
-
-// Eternal Flame - 114163
-class spell_pal_eternal_flame : public SpellScriptLoader
-{
-    public:
-        spell_pal_eternal_flame() : SpellScriptLoader("spell_pal_eternal_flame") { }
-
-        class spell_pal_eternal_flame_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_eternal_flame_SpellScript);
-
-            void HandleHeal(SpellEffIndex /*effIndex*/)
-            {
-                if(Unit* caster = GetCaster())
-                if(Player* _player = caster->ToPlayer())
-                {
-                    int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
-                    if (_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
-                        holyPower = 2;
-
-                    if (holyPower > 2)
-                        holyPower = 2;
-
-                    int32 _amount = GetHitHeal() * (holyPower + 1);
-
-                    Unit* target = GetHitUnit();
-
-                    if (!target || caster->GetGUID() == target->GetGUID())
-                        if (Aura* aurabp = caster->GetAura(114637))
-                        {
-                            int32 percent = aurabp->GetStackAmount() * 10;
-                            if (Aura* mastery = caster->GetAura(76671))
-                                percent += mastery->GetEffect(0)->GetAmount();
-
-                            AddPct(_amount, percent);
-                        }
-
-                    SetHitHeal(int32(_amount));
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_pal_eternal_flame_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_eternal_flame_SpellScript();
-        }
-
-        class spell_pal_eternal_flame_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_pal_eternal_flame_AuraScript);
-
-            bool Load()
-            {
-                savePower = 1;
-                return true;
-            }
-
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
-            {
-                if(Unit* caster = GetCaster())
-                    if(Player* _player = caster->ToPlayer())
-                    {
-                        savePower = _player->GetPower(POWER_HOLY_POWER) + 1;
-                        if (savePower > 3)
-                            savePower = 3;
-
-                        if (_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
-                            savePower = 3;
-
-                        amount *= savePower;
-
-                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
-                        {
-                            if (Aura* aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player))
-                            {
-                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * savePower);
-                                aura->SetNeedClientUpdateForTargets();
-                            }
-                        }
-                    }
-            }
-
-            void HandleTick(AuraEffect const* /*aurEff*/, int32& amount)
-            {
-                if(Unit* caster = GetCaster())
-                    if(Player* _player = caster->ToPlayer())
-                    {
-                        Unit* _target = GetUnitOwner();
-                        if (_target)
-                        {
-                            if(_target == (Unit*)_player)
-                                amount *= 1.5;
-                        }
-                        else
-                        {
-                            _target = caster;
-                            amount *= 1.5;
-                        }
-                    }
-            }
-
-            int32 savePower;
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_eternal_flame_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
-                DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_pal_eternal_flame_AuraScript::HandleTick, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_pal_eternal_flame_AuraScript();
         }
 };
 
@@ -550,52 +428,6 @@ class spell_pal_divine_shield : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pal_divine_shield_SpellScript();
-        }
-};
-
-// Inquisition - 84963
-class spell_pal_inquisition : public SpellScriptLoader
-{
-    public:
-        spell_pal_inquisition() : SpellScriptLoader("spell_pal_inquisition") { }
-
-        class spell_pal_inquisition_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_inquisition_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Aura* inquisition = _player->GetAura(PALADIN_SPELL_INQUISITION))
-                    {
-                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
-
-                        if (_player->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
-                            holyPower = 2;
-
-                        if (holyPower > 2)
-                            holyPower = 2;
-
-                        int32 maxDuration = inquisition->GetMaxDuration();
-                        int32 newDuration = inquisition->GetDuration() + maxDuration * holyPower;
-                        inquisition->SetDuration(newDuration);
-
-                        if (newDuration > maxDuration)
-                            inquisition->SetMaxDuration(newDuration);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pal_inquisition_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_inquisition_SpellScript();
         }
 };
 
@@ -970,22 +802,6 @@ class spell_pal_word_of_glory : public SpellScriptLoader
                         }
                         else
                             caster->CastSpell(unitTarget, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
-
-                        int32 holyPower = caster->GetPower(POWER_HOLY_POWER);
-
-                        if (holyPower > 2)
-                            holyPower = 2;
-
-                        if (caster->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
-                        {
-                            Aura* aura = caster->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, caster);
-
-                            if (aura)
-                            {
-                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * (holyPower + 1));
-                                aura->SetNeedClientUpdateForTargets();
-                            }
-                        }
                     }
                 }
             }
@@ -1470,62 +1286,6 @@ class spell_pal_devotion_aura : public SpellScriptLoader
         }
 };
 
-// Word of Glory - 130551
-class spell_pal_word_of_glory_heal : public SpellScriptLoader
-{
-    public:
-        spell_pal_word_of_glory_heal() : SpellScriptLoader("spell_pal_word_of_glory_heal") { }
-
-        class spell_pal_word_of_glory_heal_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_word_of_glory_heal_SpellScript);
-
-            void HandleHeal(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    int32 _amount = GetHitHeal();
-                    int32 holyPower = caster->GetPower(POWER_HOLY_POWER) + 1;
-                    if (holyPower > 3)
-                        holyPower = 3;
-
-                    // Divine Purpose
-                    if (caster->HasAura(90174))
-                        holyPower = 3;
-
-                    _amount *= holyPower;
-
-                    // Bastion of Glory : +50% of power if target is player
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        if (unitTarget->GetGUID() == caster->GetGUID())
-                        {
-                            if (Aura* aurabp = caster->GetAura(114637))
-                            {
-                                int32 percent = aurabp->GetStackAmount() * 10;
-                                if (Aura* masteryA = caster->GetAura(76671))
-                                    percent += masteryA->GetEffect(0)->GetAmount();
-                                AddPct(_amount, percent);
-                            }
-                        }
-                    }
-                    SetHitHeal(_amount);
-                }
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Blessing of Faith
-                OnEffectHitTarget += SpellEffectFn(spell_pal_word_of_glory_heal_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_word_of_glory_heal_SpellScript();
-        }
-};
-
 // Harsh Word - 130552
 class spell_pal_harsh_word : public SpellScriptLoader
 {
@@ -1551,20 +1311,6 @@ class spell_pal_harsh_word : public SpellScriptLoader
 
                     _amount = int32(_amount * holyPower * 1.5f);
 
-                    // Bastion of Glory : +50% of power if target is player
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        if (unitTarget->GetGUID() == caster->GetGUID())
-                        {
-                            if (Aura* aurabp = caster->GetAura(114637))
-                            {
-                                int32 percent = aurabp->GetStackAmount() * 10;
-                                if (Aura* masteryA = caster->GetAura(76671))
-                                    percent += masteryA->GetEffect(0)->GetAmount();
-                                AddPct(_amount, percent);
-                            }
-                        }
-                    }
                     SetHitDamage(_amount);
                 }
             }
@@ -1647,7 +1393,6 @@ void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
     new spell_pal_shield_of_the_righteous();
-    new spell_pal_eternal_flame();
     new spell_pal_tower_of_radiance();
     new spell_pal_sacred_shield();
     new spell_pal_emancipate();
@@ -1655,7 +1400,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_blinding_light();
     new spell_pal_hand_of_protection();
     new spell_pal_divine_shield();
-    new spell_pal_inquisition();
     new spell_pal_execution_sentence();
     new spell_pal_lights_hammer();
     new spell_pal_holy_prism_heal();
@@ -1675,7 +1419,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_stay_of_execution();
     new spell_pal_execution_sentence_damage();
     new spell_pal_devotion_aura();
-    new spell_pal_word_of_glory_heal();
     new spell_pal_harsh_word();
     new spell_pal_holy_wrath();
 }

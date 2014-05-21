@@ -1901,6 +1901,8 @@ class Player : public Unit, public GridObject<Player>
         void RegenerateHealth();
         void setRegenTimerCount(uint32 time) {m_regenTimerCount = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
+        uint8 HandleHolyPowerCost(uint8 cost, uint8 baseCost);
+        uint8 GetModForHolyPowerSpell() {return m_modForHolyPowerSpell;}
 
         uint64 GetMoney() const { return GetUInt64Value(PLAYER_FIELD_COINAGE); }
         void ModifyMoney(int64 d);
@@ -3086,6 +3088,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;
+        uint8 m_modForHolyPowerSpell;
+
 
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/

@@ -8053,6 +8053,15 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 54936: // Glyph of Word of Glory
+                {
+                    if (Player* plr = ToPlayer())
+                    {
+                        basepoints0 = triggerAmount * plr->GetModForHolyPowerSpell();
+                        triggered_spell_id = 115522;
+                    }
+                    break;
+                }
                 case 76672: // Mastery : Hand of Light
                 {
                     if (effIndex != EFFECT_0)
@@ -12845,21 +12854,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
 
-    // Custom MoP Script
-    // Light of Dawn
-    if (spellProto->Id == 85222 && GetTypeId() == TYPEID_PLAYER)
-    {
-        int32 holyPower = GetPower(POWER_HOLY_POWER);
-
-        // Divine Purpose
-        if (HasAura(90174))
-            holyPower = 2;
-        
-        if (holyPower > 2)
-            holyPower = 2;
-
-        AddPct(heal, (100 * holyPower));
-    }
+        if (spellProto->PowerType == POWER_HOLY_POWER)
+            if (Player* player = ToPlayer())
+                heal *= player->GetModForHolyPowerSpell();
 
     return uint32(std::max(heal, 0.0f));
 }
@@ -15255,14 +15252,21 @@ int32 Unit::CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto
 int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
 {
     uint8 comboPoints = m_movedPlayer ? m_movedPlayer->GetComboPoints() : 0;
+    uint8 holyPower   = 0;
 
     int32 minduration = spellProto->GetDuration();
     int32 maxduration = spellProto->GetMaxDuration();
 
     int32 duration;
 
+    if (spellProto->PowerType == POWER_HOLY_POWER)
+        if (Player* plr = ToPlayer())
+            holyPower = plr->GetModForHolyPowerSpell();
+
     if (comboPoints && minduration != -1 && minduration != maxduration)
         duration = minduration + int32((maxduration - minduration) * comboPoints / 5);
+    else if (holyPower && !(spellProto->AttributesEx8 & SPELL_ATTR8_HEALING_SPELL))
+        duration = maxduration * holyPower;
     else
         duration = minduration;
 

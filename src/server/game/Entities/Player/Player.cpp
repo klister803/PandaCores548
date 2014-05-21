@@ -749,6 +749,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_baseMHastRatingPct = 0;
     m_doLastUpdate = false;
     m_weaponChangeTimer = 0;
+    m_modForHolyPowerSpell = 0;
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
@@ -29362,5 +29363,35 @@ void Player::CheckItemCapLevel(uint32 cap, bool pvp)
             if (m_items[i]->IsEquipped())
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), true);
         }
+    }
+}
+
+uint8 Player::HandleHolyPowerCost(uint8 cost, uint8 baseCost)
+{
+    if (!baseCost)
+        return 0;
+
+    uint8 m_baseHolypower = 3;
+
+    if (!cost)
+    {
+        m_modForHolyPowerSpell = m_baseHolypower / baseCost;
+        return 0;
+    }
+
+    uint8 m_holyPower = GetPower(POWER_HOLY_POWER);
+
+    if (!m_holyPower)
+        return 0;
+
+    if (m_holyPower < m_baseHolypower)
+    {
+        m_modForHolyPowerSpell = m_holyPower / baseCost;
+        return m_holyPower;
+    }
+    else
+    {
+        m_modForHolyPowerSpell = m_baseHolypower / baseCost;
+        return m_baseHolypower;
     }
 }
