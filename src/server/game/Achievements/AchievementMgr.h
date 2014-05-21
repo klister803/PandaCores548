@@ -203,6 +203,7 @@ struct AchievementReward
     uint32 sender;
     std::string subject;
     std::string text;
+    uint32 learnSpell;
 };
 
 typedef std::map<uint32, AchievementReward> AchievementRewards;

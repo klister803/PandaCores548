@@ -842,9 +842,14 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
             // title achievement rewards are retroactive
             if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
+            {
                 if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
                     if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
                         GetOwner()->SetTitle(titleEntry);
+
+                if (reward->learnSpell && !GetOwner()->HasSpell(reward->learnSpell))
+                    GetOwner()->learnSpell(reward->learnSpell, true);
+            }
 
         } 
         while (achievementAccountResult->NextRow());
@@ -2288,6 +2293,9 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
         draft.SendMailTo(trans, GetOwner(), MailSender(MAIL_CREATURE, reward->sender));
         CharacterDatabase.CommitTransaction(trans);
     }
+
+    if (reward->learnSpell)
+        GetOwner()->learnSpell(reward->learnSpell, false);
 }
 
 template<>
@@ -3742,8 +3750,8 @@ void AchievementGlobalMgr::LoadRewards()
 
     m_achievementRewards.clear();                           // need for reload case
 
-    //                                               0      1        2        3     4       5        6
-    QueryResult result = WorldDatabase.Query("SELECT entry, title_A, title_H, item, sender, subject, text FROM achievement_reward");
+    //                                               0      1        2        3     4       5        6          7
+    QueryResult result = WorldDatabase.Query("SELECT entry, title_A, title_H, item, sender, subject, text, learnSpell FROM achievement_reward");
 
     if (!result)
     {
@@ -3771,9 +3779,10 @@ void AchievementGlobalMgr::LoadRewards()
         reward.sender     = fields[4].GetUInt32();
         reward.subject    = fields[5].GetString();
         reward.text       = fields[6].GetString();
+        reward.learnSpell = fields[7].GetUInt32();
 
         // must be title or mail at least
-        if (!reward.titleId[0] && !reward.titleId[1] && !reward.sender)
+        if (!reward.titleId[0] && !reward.titleId[1] && !reward.sender && !reward.learnSpell)
         {
             sLog->outError(LOG_FILTER_SQL, "Table `achievement_reward` (Entry: %u) does not have title or item reward data, ignored.", entry);
             continue;
@@ -3811,7 +3820,15 @@ void AchievementGlobalMgr::LoadRewards()
                 reward.sender = 0;
             }
         }
-        else
+        else if (reward.learnSpell)
+        {
+            SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(reward.learnSpell);
+            if (!spellEntry)
+            {
+                sLog->outError(LOG_FILTER_SQL, "Table `achievement_reward` (Entry: %u) have not existent learn spell %i.", entry, reward.learnSpell);
+                continue;
+            }
+        }else
         {
             if (reward.itemId)
                 sLog->outError(LOG_FILTER_SQL, "Table `achievement_reward` (Entry: %u) does not have sender data but has item reward, item will not be rewarded.", entry);

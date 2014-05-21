@@ -3,8 +3,8 @@
 -- ------------------------------------
 
 -- Phase mask only for heroic
-update gameobject SET `spawnMask` = `spawnMask` |256 WHERE map map = 994;
-update creature SET `spawnMask` = `spawnMask` | 256 WHERE map map = 994;
+update gameobject SET `spawnMask` = `spawnMask` |256 WHERE map = 994;
+update creature SET `spawnMask` = `spawnMask` | 256 WHERE map = 994;
 
 -- Check
 DELETE FROM `gameobject` WHERE map = 994 AND id in (211674, 211991, 211992, 211989, 211988, 212972);
