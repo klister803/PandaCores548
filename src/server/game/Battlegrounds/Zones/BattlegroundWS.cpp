@@ -55,7 +55,7 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
         /// Total time it's supposed to be 20 (game) + 2 (when the battle begins and doors are closed) minutes
-        if (GetElapsedTime() >= 20 * MINUTE * IN_MILLISECONDS) ///< End of game - Verify score
+        if (GetElapsedTime() >= 22 * MINUTE * IN_MILLISECONDS) ///< End of game - Verify score
         {
             if (m_TeamScores[TEAM_ALLIANCE] == 0)
             {
@@ -117,15 +117,6 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
                         /// If both flags are kept and 1 of cariers dies and no one clicked on flag set _bothflagskept = false
                         if (_bothFlagsKept)
                         {
-                            for (uint8 i = 0; i < 2; ++i)
-                                if (Player* player = ObjectAccessor::FindPlayer(_flagKeepers[i]))
-                                {
-                                    if (_flagDebuffState && _flagDebuffState < 6)
-                                        player->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
-                                    else if (_flagDebuffState >= 6)
-                                        player->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
-                                }
-
                             _bothFlagsKept = false;
                             _flagDebuffState = 0;
                             _flagSpellForceTimer = 0;
@@ -522,9 +513,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player* source)
     }
 
     /// Unaura assaults debuff (if there are)
-    if (_flagDebuffState && _flagDebuffState < 6)
         source->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
-    else if (_flagDebuffState >= 6)
         source->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
 
     /// Update flag state and flagkeepers
@@ -623,18 +612,8 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* source, GameObject* target
             PlaySoundToAll(BG_WS_SOUND_FLAG_RETURNED);
             SendMessageToAll(team == TEAM_ALLIANCE ? LANG_BG_WS_RETURNED_AF: LANG_BG_WS_RETURNED_HF, team == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_ALLIANCE : CHAT_MSG_BG_SYSTEM_HORDE, source);
 
-            for (uint8 i = 0; i < 2; ++i)
-                if (Player* player = ObjectAccessor::FindPlayer(_flagKeepers[i]))
-                {
-                    if (_flagDebuffState && _flagDebuffState < 6)
-                        player->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
-                    else if (_flagDebuffState >= 6)
-                        player->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
-                }
-
             /// Reset both flags things
             _bothFlagsKept = false;
-            _flagDebuffState = 0;
             _flagSpellForceTimer = 0;
         }
     }
@@ -651,15 +630,14 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* source)
     uint8 team = source->GetTeamId();
 
     source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
+    _flagDebuffState = 0;
 
     /// Dispawn Flags
     SpawnBGObject(BG_WS_OBJECT_A_FLAG, RESPAWN_ONE_DAY);
     SpawnBGObject(BG_WS_OBJECT_H_FLAG, RESPAWN_ONE_DAY);
 
     /// Unaura assaults debuff (if there are)
-    if (_flagDebuffState && _flagDebuffState < 6)
         source->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
-    else if (_flagDebuffState >= 6)
         source->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
 
     /// Reward flag capture with 2x honorable kills
