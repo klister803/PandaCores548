@@ -476,7 +476,7 @@ void WorldSession::SendLfgUpdatePlayer(lfg::LfgUpdateData const& updateData)
         default:
             break;
     }
-    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, true);
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, false);
     /*uint64 guid = GetPlayer()->GetGUID();
     uint8 size = uint8(updateData.dungeons.size());
 
@@ -523,7 +523,7 @@ void WorldSession::SendLfgUpdateParty(lfg::LfgUpdateData const& updateData)
             break;
     }
 
-    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, false);
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, true);
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_UPDATE_PARTY %s updatetype: %u",
         GetPlayerName().c_str(), updateData.updateType);
 
@@ -726,7 +726,7 @@ void WorldSession::SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData)
     data << int32(queueData.waitTime);                      // Wait Time
     data << int32(queueData.waitTimeAvg);                   // Average Wait time
     data.WriteGuidBytes<6, 5, 0>(guid);
-    data << uint32(queueData.dungeonId);                    // Dungeon
+    data << uint32(sLFGMgr->GetLFGDungeonEntry(queueData.dungeonId));   // Dungeon
     data.WriteGuidBytes<3, 1>(guid);
 
     SendPacket(&data);

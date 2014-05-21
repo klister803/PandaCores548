@@ -53,7 +53,7 @@ enum LfgUpdateType
     LFG_UPDATETYPE_GROUP_FOUND                   = 11,      // +
     LFG_UPDATETYPE_ADDED_TO_QUEUE                = 13,      // ?
     LFG_UPDATETYPE_PROPOSAL_BEGIN                = 14,      // + in flex - PVP_SUSPENDED_QUEUE_STATUS
-    LFG_UPDATETYPE_UPDATE_STATUS                 = 15,      // ?
+    LFG_UPDATETYPE_UPDATE_STATUS                 = 24,      // ???
     LFG_UPDATETYPE_GROUP_MEMBER_OFFLINE          = 16,      // +
     LFG_UPDATETYPE_GROUP_DISBAND_UNK16           = 17,      // + FIXME: Sometimes at group disband
     LFG_UPDATETYPE_PARTY_ROLE_NOT_AVAILABLE      = 44,      // +

@@ -1492,7 +1492,7 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
 
     bool queued = false;
     bool join = false;
-    bool lfgJoined = updateData.updateType == LFG_UPDATETYPE_ADDED_TO_QUEUE;
+    bool lfgJoined = /*updateData.updateType == LFG_UPDATETYPE_ADDED_TO_QUEUE*/true;
 
     if (party)
     {
@@ -1502,6 +1502,7 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
                 queued = true;
                 // no break on purpose
             case lfg::LFG_UPDATETYPE_PROPOSAL_BEGIN:
+            case lfg::LFG_UPDATETYPE_JOIN_QUEUE:
                 join = true;
                 break;
             case lfg::LFG_UPDATETYPE_UPDATE_STATUS:
@@ -1516,11 +1517,16 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
     {
         switch (updateData.updateType)
         {
+            case lfg::LFG_UPDATETYPE_PROPOSAL_BEGIN:
+                join = true;
+                break;
             case lfg::LFG_UPDATETYPE_JOIN_QUEUE:
             case lfg::LFG_UPDATETYPE_ADDED_TO_QUEUE:
+                join = true;
                 queued = true;
                 break;
             case lfg::LFG_UPDATETYPE_UPDATE_STATUS:
+                join = true;
                 queued = updateData.state == lfg::LFG_STATE_QUEUED;
                 break;
             default:
@@ -1542,7 +1548,7 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
     data.WriteGuidMask<0>(guid);
     data.WriteBits(updateData.dungeons.size(), 22);
     data.WriteGuidMask<6, 4>(guid);
-    data.WriteBit(queued);                          // 1 - active, 0 - paused
+    data.WriteBit(true/*queued*/);                  // 1 - active, 0 - paused
     data.WriteGuidMask<2>(guid);
 
     data.WriteString(updateData.comment);
@@ -1554,7 +1560,7 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
     data << uint32(3);                              // queue id. 4 - looking for raid, 3 - others
     data.WriteGuidBytes<3>(guid);
     for (LfgDungeonSet::const_iterator i = updateData.dungeons.begin(); i != updateData.dungeons.end(); ++i)
-        data << uint32(*i);                         // Dungeon entries
+        data << uint32(GetLFGDungeonEntry(*i));     // Dungeon entries
     data.WriteGuidBytes<0>(guid);
     data << uint32(player->GetTeam());              // group id?
     data.WriteGuidBytes<1>(guid);

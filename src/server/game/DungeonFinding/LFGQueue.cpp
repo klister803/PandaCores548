@@ -406,6 +406,9 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
     {
         for (LfgGuidList::const_iterator it = check.begin(); it != check.end(); ++it)
         {
+            if (QueueDataStore.find(*it) == QueueDataStore.end())
+                sLog->outError(LOG_FILTER_LFG, "LFGQueue::CheckCompatibility: ERROR! player queue data not found! 1");
+
             const LfgRolesMap &roles = QueueDataStore[(*it)].roles;
             for (LfgRolesMap::const_iterator itRoles = roles.begin(); itRoles != roles.end(); ++itRoles)
             {
@@ -430,6 +433,9 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
         }
 
         LfgGuidList::iterator itguid = check.begin();
+        if (QueueDataStore.find(*itguid) == QueueDataStore.end())
+            sLog->outError(LOG_FILTER_LFG, "LFGQueue::CheckCompatibility: ERROR! player queue data not found! 2");
+
         proposalDungeons = QueueDataStore[*itguid].dungeons;
         LfgRolesMap debugRoles = proposalRoles;
         if (!LFGMgr::CheckGroupRoles(proposalRoles, LfgRoleData(*proposalDungeons.begin() & 0xFFFFF)))
@@ -544,6 +550,9 @@ void LFGQueue::UpdateQueueTimers(time_t currTime)
     for (LfgQueueDataContainer::iterator itQueue = QueueDataStore.begin(); itQueue != QueueDataStore.end(); ++itQueue)
     {
         LfgQueueData& queueinfo = itQueue->second;
+        if (queueinfo.dungeons.empty())
+            continue;
+
         uint32 dungeonId = (*queueinfo.dungeons.begin());
         uint32 queuedTime = uint32(currTime - queueinfo.joinTime);
         uint8 role = PLAYER_ROLE_NONE;
@@ -590,17 +599,20 @@ void LFGQueue::UpdateQueueTimers(time_t currTime)
 
 time_t LFGQueue::GetJoinTime(uint64 guid)
 {
-    return QueueDataStore[guid].joinTime;
+    LfgQueueDataContainer::const_iterator itr = QueueDataStore.find(guid);
+    return itr != QueueDataStore.end() ? itr->second.joinTime : time(NULL);
 }
 
 uint8 LFGQueue::GetQueueType(uint64 guid)
 {
-    return QueueDataStore[guid].type;
+    LfgQueueDataContainer::const_iterator itr = QueueDataStore.find(guid);
+    return itr != QueueDataStore.end() ? itr->second.type : LFG_TYPE_DUNGEON;
 }
 
 uint8 LFGQueue::GetQueueSubType(uint64 guid)
 {
-    return QueueDataStore[guid].subType;
+    LfgQueueDataContainer::const_iterator itr = QueueDataStore.find(guid);
+    return itr != QueueDataStore.end() ? itr->second.subType : LFG_SUBTYPE_DUNGEON;
 }
 
 LfgQueueData::LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, const LfgRolesMap &_roles)
