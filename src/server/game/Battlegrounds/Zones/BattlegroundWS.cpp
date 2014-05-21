@@ -117,6 +117,15 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
                         /// If both flags are kept and 1 of cariers dies and no one clicked on flag set _bothflagskept = false
                         if (_bothFlagsKept)
                         {
+                            for (uint8 i = 0; i < 2; ++i)
+                                if (Player* player = ObjectAccessor::FindPlayer(_flagKeepers[i]))
+                                {
+                                    if (_flagDebuffState && _flagDebuffState < 6)
+                                        player->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
+                                    else if (_flagDebuffState >= 6)
+                                        player->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
+                                }
+
                             _bothFlagsKept = false;
                             _flagDebuffState = 0;
                             _flagSpellForceTimer = 0;
@@ -613,6 +622,15 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* source, GameObject* target
             /// Announce players
             PlaySoundToAll(BG_WS_SOUND_FLAG_RETURNED);
             SendMessageToAll(team == TEAM_ALLIANCE ? LANG_BG_WS_RETURNED_AF: LANG_BG_WS_RETURNED_HF, team == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_ALLIANCE : CHAT_MSG_BG_SYSTEM_HORDE, source);
+
+            for (uint8 i = 0; i < 2; ++i)
+                if (Player* player = ObjectAccessor::FindPlayer(_flagKeepers[i]))
+                {
+                    if (_flagDebuffState && _flagDebuffState < 6)
+                        player->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
+                    else if (_flagDebuffState >= 6)
+                        player->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
+                }
 
             /// Reset both flags things
             _bothFlagsKept = false;
