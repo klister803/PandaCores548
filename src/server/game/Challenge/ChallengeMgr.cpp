@@ -128,6 +128,7 @@ void ChallengeMgr::LoadFromDB()
         CheckBestMemberMapId(member.guid, itr->second);
     }while (result->NextRow());
 
+    /// @init quest complete
     m_reward.clear();
     result = WorldDatabase.Query("SELECT `mapId`, `questCredit` FROM `chellenge_reward`");
     do
@@ -135,12 +136,19 @@ void ChallengeMgr::LoadFromDB()
         fields = result->Fetch();
         m_reward[fields[0].GetUInt16()] = fields[1].GetUInt32();
     }while (result->NextRow());
+
+    /// @init reward for medals
+    m_valorPoints[CHALLENGE_MEDAL_NONE] = sWorld->getIntConfig(CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_NO_MEDAL);    //defauld mod 10500
+    m_valorPoints[CHALLENGE_MEDAL_BRONZE] = sWorld->getIntConfig(CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_BRONZ);     // +2000
+    m_valorPoints[CHALLENGE_MEDAL_SILVER] = sWorld->getIntConfig(CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_SILVER);    // +4000
+    m_valorPoints[CHALLENGE_MEDAL_GOLD] = sWorld->getIntConfig(CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_GOLD);        // +6000
+    m_valorPoints[CHALLENGE_MEDAL_PLAT] = sWorld->getIntConfig(CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_PLATINUM);    // only for scenario
 }
 
 void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode medal)
 {
     Map::PlayerList const& players = instance->GetPlayers();
-    if (players.isEmpty() || medal == CHALLENGE_MEDAL_NONE)
+    if (players.isEmpty())
         return;
 
     uint32 challengeID = GenerateChallengeID();
@@ -154,6 +162,7 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
 
     // Finish quest's for complete challenge (without medal too)
     uint32 npcRewardCredit = m_reward[instance->GetId()];
+    uint32 valorReward = m_valorPoints[medal];
 
     std::map<uint32/*guild*/, uint32> guildCounter;
     for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
@@ -171,9 +180,14 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
 
             /// @there is achieve just for complete challenge with no medal
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID, instance->GetId(), medal);
+
             /// @quest reward for finish challenge. daily
             if (npcRewardCredit)    //should never happend
                 player->KilledMonsterCredit(npcRewardCredit, 0);
+
+            /// @reward for get medal
+            if (valorReward)
+                player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, valorReward);
         }
 
     // not save if no medal

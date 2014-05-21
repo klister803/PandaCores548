@@ -48,6 +48,7 @@ typedef UNORDERED_MAP<uint32/*id*/, Challenge *> ChallengeMap;
 typedef UNORDERED_MAP<uint64/*MemberGUID*/, ChallengeByMap> ChallengesOfMember;
 typedef UNORDERED_MAP<uint32/*guild*/, ChallengeByMap> GuildBestRecord;
 typedef UNORDERED_MAP<uint16/*map*/, uint32/*QuestCredit*/> QuestCreditForMap;
+typedef UNORDERED_MAP<uint8/*medal*/, uint32/*curency count*/> CurencyRewardMap;
 class ChallengeMgr
 {
         friend class ACE_Singleton<ChallengeMgr, ACE_Null_Mutex>;
@@ -76,6 +77,8 @@ class ChallengeMgr
             return &itr->second;
         }
 
+        uint32 GetValorPointsReward(uint8 medal) { return m_valorPoints[medal]; }
+
     protected:
         uint32 challengeGUID;
         ChallengeMap m_ChallengeMap;
@@ -83,6 +86,7 @@ class ChallengeMgr
         ChallengeByMap m_BestForMap;
         GuildBestRecord m_GuildBest;
         QuestCreditForMap m_reward;
+        CurencyRewardMap m_valorPoints;
 };
 
 #define sChallengeMgr ACE_Singleton<ChallengeMgr, ACE_Null_Mutex>::instance()

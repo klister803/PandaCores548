@@ -925,6 +925,31 @@ void World::LoadConfigSettings(bool reload)
     }
     m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD] *= 100; //precision
 
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_NO_MEDAL] = ConfigMgr::GetIntDefault("Currency.ValorForChallengeNoMedal", 0);
+    if (int32(m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_NO_MEDAL]) < 0)
+        m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_NO_MEDAL] = 0;
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_NO_MEDAL] *= 100; //precision
+
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_BRONZ] = ConfigMgr::GetIntDefault("Currency.ValorForChallengeBronz", 125);
+    if (int32(m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_BRONZ]) < 0)
+        m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_BRONZ] = 0;
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_BRONZ] *= 100; //precision
+
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_SILVER] = ConfigMgr::GetIntDefault("Currency.ValorForChallengeSilver", 145);
+    if (int32(m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_SILVER]) < 0)
+        m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_SILVER] = 0;
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_SILVER] *= 100; //precision
+
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_GOLD] = ConfigMgr::GetIntDefault("Currency.ValorForChallengeSilver", 165);
+    if (int32(m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_GOLD]) < 0)
+        m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_GOLD] = 0;
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_GOLD] *= 100; //precision
+
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_PLATINUM] = ConfigMgr::GetIntDefault("Currency.ValorForChallengePlatinum", 185);
+    if (int32(m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_PLATINUM]) < 0)
+        m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_PLATINUM] = 0;
+    m_int_configs[CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_PLATINUM] *= 100; //precision
+
     m_int_configs[CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL] = ConfigMgr::GetIntDefault("RecruitAFriend.MaxLevel", 60);
     if (m_int_configs[CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL] > m_int_configs[CONFIG_MAX_PLAYER_LEVEL])
     {

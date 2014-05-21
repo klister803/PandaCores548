@@ -16,7 +16,7 @@
  */
 
 #include "ScriptMgr.h"
-
+#include "ChallengeMgr.h"
 class go_challenge : public GameObjectScript
 {
 public:
@@ -29,6 +29,7 @@ public:
             //WorldPacket data(SMSG_CHALLENGE_UNK);
             //player->GetSession()->SendPacket(&data);
             instance->StartChallenge();
+            //sChallengeMgr->GroupReward(instance->instance, 100, ChallengeMode(1));
         }
 
         player->PlayerTalkClass->ClearMenus();

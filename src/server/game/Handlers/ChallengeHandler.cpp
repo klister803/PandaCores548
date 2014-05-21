@@ -127,7 +127,7 @@ void WorldSession::HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvP
         if (MapChallengeModeEntry const* mChallenge = sMapChallengeModeStore.LookupEntry(i))
         {
             data.WriteBits(4, 20);
-            for(int32 i = 0; i < 4; ++i)
+            for(int32 i = CHALLENGE_MEDAL_NONE; i < CHALLENGE_MEDAL_PLAT; ++i)
             {
                 data.WriteBits(1, 21);
                 data.WriteBits(0, 20);
@@ -135,7 +135,7 @@ void WorldSession::HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvP
                 //count14_d0::dword8
                 {
                     dataBuffer << uint32(CURRENCY_TYPE_VALOR_POINTS);              //Currency Reward ID
-                    dataBuffer << uint32(10500 + (i*2000));                        //Reward Count
+                    dataBuffer << uint32(sChallengeMgr->GetValorPointsReward(i));  //Reward Count
                 }
                 dataBuffer << uint32(198450);   //best time in seconds.
             }
