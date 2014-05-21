@@ -517,7 +517,7 @@ enum LfgType
     LFG_TYPE_ZONE                                = 4,
     LFG_TYPE_HEROIC                              = 5,       // not exist in dbc
     LFG_TYPE_RANDOM                              = 6,
-    LFG_TYPE_SCENARIO                            = 7
+    LFG_TYPE_SCENARIO                            = 7,       // not exist in dbc
 };
 
 enum MountFlags

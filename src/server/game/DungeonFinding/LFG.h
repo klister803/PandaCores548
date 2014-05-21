@@ -41,40 +41,27 @@ enum LfgRoles
 
 enum LfgUpdateType
 {
-    LFG_UPDATETYPE_DEFAULT                       = 0,      // Internal Use
-    LFG_UPDATETYPE_LEADER_UNK1                   = 1,      // FIXME: At group leave
-    LFG_UPDATETYPE_ROLECHECK_ABORTED             = 4,
-    LFG_UPDATETYPE_JOIN_QUEUE                 = 5,
-    LFG_UPDATETYPE_ROLECHECK_FAILED              = 6,
-    LFG_UPDATETYPE_REMOVED_FROM_QUEUE            = 7,
-    LFG_UPDATETYPE_PROPOSAL_FAILED               = 8,
-    LFG_UPDATETYPE_PROPOSAL_DECLINED             = 9,
-    LFG_UPDATETYPE_GROUP_FOUND                   = 10,
-    LFG_UPDATETYPE_ADDED_TO_QUEUE                = 12,
-    LFG_UPDATETYPE_PROPOSAL_BEGIN                = 13,
-    LFG_UPDATETYPE_UPDATE_STATUS                 = 14,
-    LFG_UPDATETYPE_GROUP_MEMBER_OFFLINE          = 15,
-    LFG_UPDATETYPE_GROUP_DISBAND_UNK16           = 16,      // FIXME: Sometimes at group disband
-};
-
-/*enum LfgUpdateType541
-{
     LFG_UPDATETYPE_DEFAULT                       = 0,       // Internal Use
-    LFG_UPDATETYPE_LEADER_UNK1                   = 1,//    // FIXME: At group leave
-    //LFG_UPDATETYPE_ROLECHECK_ABORTED             = 4,
-    LFG_UPDATETYPE_JOIN_QUEUE                    = 5,
-    LFG_UPDATETYPE_ROLECHECK_FAILED              = 6,
+    LFG_UPDATETYPE_LEADER_UNK1                   = 1,       // + FIXME: At group leave
+    //LFG_UPDATETYPE_ROLECHECK_ABORTED             = 4,     // ?
+    LFG_UPDATETYPE_JOIN_QUEUE                    = 6,       // +?
+    LFG_UPDATETYPE_ROLECHECK_FAILED              = 7,       // +?
 
-    LFG_UPDATETYPE_REMOVED_FROM_QUEUE            = 8,//
-    LFG_UPDATETYPE_PROPOSAL_FAILED               = 9,//
-    LFG_UPDATETYPE_PROPOSAL_DECLINED             = 10,//
-    LFG_UPDATETYPE_GROUP_FOUND                   = 11,//
-    LFG_UPDATETYPE_ADDED_TO_QUEUE                = 13,// ??
-    LFG_UPDATETYPE_PROPOSAL_BEGIN                = 14,// ??
-    LFG_UPDATETYPE_UPDATE_STATUS                 = 15,// ??
-    LFG_UPDATETYPE_GROUP_MEMBER_OFFLINE          = 16, //
-    LFG_UPDATETYPE_GROUP_DISBAND_UNK16           = 17, //     // FIXME: Sometimes at group disband
-};*/
+    LFG_UPDATETYPE_REMOVED_FROM_QUEUE            = 8,       // +
+    LFG_UPDATETYPE_PROPOSAL_FAILED               = 9,       // +
+    LFG_UPDATETYPE_PROPOSAL_DECLINED             = 10,      // +
+    LFG_UPDATETYPE_GROUP_FOUND                   = 11,      // +
+    LFG_UPDATETYPE_ADDED_TO_QUEUE                = 13,      // ?
+    LFG_UPDATETYPE_PROPOSAL_BEGIN                = 14,      // + in flex - PVP_SUSPENDED_QUEUE_STATUS
+    LFG_UPDATETYPE_UPDATE_STATUS                 = 15,      // ?
+    LFG_UPDATETYPE_GROUP_MEMBER_OFFLINE          = 16,      // +
+    LFG_UPDATETYPE_GROUP_DISBAND_UNK16           = 17,      // + FIXME: Sometimes at group disband
+    LFG_UPDATETYPE_PARTY_ROLE_NOT_AVAILABLE      = 44,      // +
+    LFG_UPDATETYPE_LFG_OBJECT_FAILED             = 46,      // +
+    LFG_UPDATETYPE_REMOVED_LEVELUP               = 47,      // +
+    LFG_UPDATETYPE_REMOVED_XP_TOGGLE             = 48,      // +
+    LFG_UPDATETYPE_REMOVED_FACTION_CHANGE        = 49,      // +
+};
 
 enum LfgState
 {
@@ -85,7 +72,7 @@ enum LfgState
     LFG_STATE_BOOT,                                        // Vote kick active
     LFG_STATE_DUNGEON,                                     // In LFG Group, in a Dungeon
     LFG_STATE_FINISHED_DUNGEON,                            // In LFG Group, in a finished Dungeon
-    LFG_STATE_RAIDBROWSER                                  // Using Raid finder
+    LFG_STATE_RAIDBROWSER                                  // Using Raid browser
 };
 
 /// Instance lock types
@@ -98,12 +85,18 @@ enum LfgLockStatusType
     LFG_LOCKSTATUS_TOO_LOW_GEAR_SCORE            = 4,
     LFG_LOCKSTATUS_TOO_HIGH_GEAR_SCORE           = 5,
     LFG_LOCKSTATUS_RAID_LOCKED                   = 6,
+    LFG_LOCKSTATUS_TARGET_LEVEL_TOO_HIGH         = 7,
+    LFG_LOCKSTATUS_TARGET_LEVEL_TOO_LOW          = 8,
+    LFG_LOCKSTATUS_AREA_NOT_EXPLORED             = 9,
     LFG_LOCKSTATUS_ATTUNEMENT_TOO_LOW_LEVEL      = 1001,
     LFG_LOCKSTATUS_ATTUNEMENT_TOO_HIGH_LEVEL     = 1002,
     LFG_LOCKSTATUS_QUEST_NOT_COMPLETED           = 1022,
     LFG_LOCKSTATUS_MISSING_ITEM                  = 1025,
-    LFG_LOCKSTATUS_NOT_IN_SEASON                 = 1031,
-    LFG_LOCKSTATUS_MISSING_ACHIEVEMENT           = 1034
+    LFG_LOCKSTATUS_WRONG_TIME_RANGE              = 1029,    // INSTANCE_UNAVAILABLE_OTHER_TOO_SOON
+    LFG_LOCKSTATUS_WRONG_TIME                    = 1030,    // INSTANCE_UNAVAILABLE_OTHER_TOO_SOON
+    LFG_LOCKSTATUS_NOT_IN_SEASON                 = 1031,    // INSTANCE_UNAVAILABLE_OTHER_TOO_SOON
+    LFG_LOCKSTATUS_MISSING_ACHIEVEMENT           = 1034,
+    LFG_LOCKSTATUS_TEMPORARILY_DISABLED          = 10000,
 };
 
 /// Answer state (Also used to check compatibilites)
