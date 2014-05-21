@@ -606,8 +606,8 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
 
     data->append(buff);
     
-    *data << uint8(counta2);
     *data << uint8(counth2);
+    *data << uint8(counta2);
 
     if (bg->GetStatus() == STATUS_WAIT_LEAVE)
         *data << uint8(bg->GetWinner());                               // who win
