@@ -56,8 +56,8 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
 {
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
-        /// Total time it's supposed to be 25 (game) + 2 (when the battle begins and doors are closed) minutes
-        if (GetElapsedTime() >= 27 * MINUTE * IN_MILLISECONDS) ///< End of game - Verify score
+        /// Total time it's supposed to be 20 (game) + 2 (when the battle begins and doors are closed) minutes
+        if (GetElapsedTime() >= 20 * MINUTE * IN_MILLISECONDS) ///< End of game - Verify score
         {
             if (m_TeamScores[TEAM_ALLIANCE] == 0)
             {
@@ -79,7 +79,7 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
         else if (GetElapsedTime() > uint32((_minutesElapsed + 1) * MINUTE * IN_MILLISECONDS) +  2 * MINUTE * IN_MILLISECONDS)
         {
             ++_minutesElapsed;
-            UpdateWorldState(BG_TP_STATE_TIMER, 25 - _minutesElapsed); //< Time remaining showed on top of the screen via world state
+            UpdateWorldState(BG_TP_STATE_TIMER, 20 - _minutesElapsed); //< Time remaining showed on top of the screen via world state
         }
 
         /// Flags state update:
@@ -223,7 +223,7 @@ void BattlegroundTP::StartingEventOpenDoors()
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, TP_EVENT_START_BATTLE);
 
     UpdateWorldState(BG_TP_STATE_TIMER_ACTIVE, 1);
-    UpdateWorldState(BG_TP_STATE_TIMER, 25);
+    UpdateWorldState(BG_TP_STATE_TIMER, 20);
 }
 
 bool BattlegroundTP::SetupBattleground()
@@ -330,7 +330,7 @@ void BattlegroundTP::FillInitialWorldStates(WorldPacket& data)
 
         /// Show Timer
         FillInitialWorldState(data, BG_TP_STATE_TIMER_ACTIVE, 1);
-        FillInitialWorldState(data, BG_TP_STATE_TIMER, 25 - _minutesElapsed);
+        FillInitialWorldState(data, BG_TP_STATE_TIMER, 20 - _minutesElapsed);
     }
     else
     {
@@ -364,7 +364,15 @@ void BattlegroundTP::EndBattleground(uint32 winner)
     UpdateWorldState(BG_TP_FLAG_STATE_HORDE, 1);
     UpdateWorldState(BG_TP_STATE_TIMER_ACTIVE, 0);
 
-    Battleground::EndBattleground((winner == TEAM_ALLIANCE) ? ALLIANCE : HORDE);
+    uint32 realWinner = WINNER_NONE;
+    if (winner == TEAM_ALLIANCE)
+        realWinner = ALLIANCE;
+    else if (winner == TEAM_HORDE)
+        realWinner = HORDE;
+    else if (winner > WINNER_NONE)
+        realWinner = winner;
+
+    Battleground::EndBattleground(realWinner);
 }
 
 void BattlegroundTP::HandleKillPlayer(Player* player, Player* killer)

@@ -2,7 +2,7 @@ INSERT IGNORE INTO `gameobject_template` (`entry`, `type`, `displayId`, `name`, 
 (211991, 0, 11638, 'Challenge Mode - Start Door (Line 3.0)', '', '', '', 3, 0, 0, 0, 0, 0, 17898), -- 211991
 (212972, 0, 11638, 'Challenge Mode - Start Door (Line 3.5)', '', '', '', 3.5, 0, 0, 0, 0, 0, 17898), -- 212972
 (211988, 0, 11638, 'Challenge Mode - Start Door (Line 1.0)', '', '', '', 1, 0, 0, 0, 0, 0, 17898),
-(211989, 0, 11638, 'Challenge Mode - Start Door (Line 2.0)', '', '', '', 2, 0, 0, 0, 0, 0, 17898),
+(211989, 0, 11638, 'Challenge Mode - Start Door (Line 2.0)', '', '', '', 2, 0, 0, 0, 0, 0, 17898);
 
 
 UPDATE `gameobject_template` SET `type`=10, `displayId`=11554, `name`='Сфера испытания', `IconName`='', `castBarCaption`='', `unk1`='', `size`=1.5, `questItem1`=0, `questItem2`=0, `questItem3`=0, `questItem4`=0, `unkInt32`=0, data19 = 13872, `WDBVerified`=17898 WHERE `entry`=211674; -- 211674

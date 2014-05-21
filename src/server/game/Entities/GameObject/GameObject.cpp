@@ -914,6 +914,17 @@ bool GameObject::IsAlwaysVisibleFor(WorldObject const* seer) const
     return false;
 }
 
+bool GameObject::IsNeverVisible() const
+{
+    const GameObjectData* data = GetGOData();
+    if (data && data->spawnMask == 256)  // only challenge go check. for hiding them after start.
+    {
+        if (GetMap()->GetSpawnMode() == HEROIC_DIFFICULTY)
+            return true;
+    }
+    return WorldObject::IsNeverVisible();
+}
+
 bool GameObject::IsInvisibleDueToDespawn() const
 {
     if (WorldObject::IsInvisibleDueToDespawn())

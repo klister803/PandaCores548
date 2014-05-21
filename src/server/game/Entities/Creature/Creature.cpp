@@ -1594,6 +1594,17 @@ bool Creature::CanAlwaysSee(WorldObject const* obj) const
     return false;
 }
 
+bool Creature::IsNeverVisible() const
+{
+    CreatureData const* data = sObjectMgr->GetCreatureData(m_DBTableGuid);
+    if (data && data->spawnMask & 256)  // challenge
+    {
+        if (GetMap()->GetSpawnMode() != HEROIC_DIFFICULTY)
+            return true;
+    }
+    return WorldObject::IsNeverVisible();
+}
+
 bool Creature::canStartAttack(Unit const* who, bool force) const
 {
     if (isCivilian())
@@ -2219,7 +2230,7 @@ void Creature::SaveRespawnTime()
 // this should not be called by petAI or
 bool Creature::canCreatureAttack(Unit const* victim, bool /*force*/) const
 {
-    if (!victim->IsInMap(this))
+    if (!victim->IsInMap(this) || IsNeverVisible())
         return false;
 
     if (!IsValidAttackTarget(victim))

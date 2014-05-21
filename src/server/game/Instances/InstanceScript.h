@@ -101,7 +101,7 @@ typedef std::map<uint32 /*entry*/, MinionInfo> MinionInfoMap;
 class InstanceScript : public ZoneScript
 {
     public:
-        explicit InstanceScript(Map* map) : instance(map), completedEncounters(0), challenge_timer(0){}
+        explicit InstanceScript(Map* map) : instance(map), completedEncounters(0), challenge_timer(0){ m_type = ZONE_TYPE_INSTANCE; }
 
         virtual ~InstanceScript() {}
 

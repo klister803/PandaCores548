@@ -34,6 +34,7 @@ enum events
     EVENT_START_CHALLENGE = 1,
     EVENT_SAVE_CHALLENGE  = 2,
     EVENT_CHALLENGE_STOP  = 3,
+    EVENT_CONTINUE_CHALLENGE
 };
 
 void InstanceScript::SaveToDB()
@@ -572,8 +573,6 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                             medal = CHALLENGE_MEDAL_SILVER;
                         else if (mode->bronze > time)
                             medal = CHALLENGE_MEDAL_BRONZE;
-                        else
-                            return;
 
                         sChallengeMgr->GroupReward(instance, getMSTime() - challenge_timer, medal);
 
@@ -619,13 +618,28 @@ void InstanceScript::Update(uint32 diff)
 
                 WorldPacket data(SMSG_WORLD_STATE_TIMER_START, 8);
                 data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
-                data << uint32(0);                      //time elapsed in sec
+                data << uint32(0);                                                          //time elapsed in sec
                 BroadcastPacket(data);
-
-                // ToDo: despawn challenge gates
 
                 // save challenge progress every min
                 _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+
+                // Now spawn from heroic & hide block
+                instance->SetSpawnModeBy(HEROIC_DIFFICULTY);
+                break;
+            }
+            case EVENT_CONTINUE_CHALLENGE:
+            {
+                WorldPacket data(SMSG_WORLD_STATE_TIMER_START, 8);
+                data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
+                data << uint32((getMSTime() - challenge_timer)/IN_MILLISECONDS);         //time elapsed in sec
+                BroadcastPacket(data);
+
+                // save challenge progress every min
+                _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+
+                // Now spawn from heroic & hide block
+                instance->SetSpawnModeBy(HEROIC_DIFFICULTY);
                 break;
             }
             case EVENT_SAVE_CHALLENGE:
@@ -661,21 +675,21 @@ uint32 InstanceScript::GetChallengeProgresTime()
 
 void InstanceScript::SetChallengeProgresInSec(uint32 timer)
 {
-    if (!timer)
+    if (!timer || challenge_timer)
         return;
 
     challenge_timer = getMSTime() - (timer*IN_MILLISECONDS);
 
     // start save progress event
     _events.ScheduleEvent(EVENT_SAVE_CHALLENGE, 60000);
+
+    // Now spawn from heroic & hide block
+    instance->SetSpawnModeBy(HEROIC_DIFFICULTY);
 }
 
 void InstanceScript::StartChallenge()
 {
-    if (challenge_timer)
-        return;
-
-    if (instance->IsRaid() || !instance->isChallenge())
+    if (instance->IsRaid() || !instance->isChallenge() || instance->GetSpawnMode() == HEROIC_DIFFICULTY)
         return;
 
     // Check if dungeon support challenge
@@ -694,7 +708,7 @@ void InstanceScript::StartChallenge()
 
 void InstanceScript::FillInitialWorldTimers(WorldPacket& data)
 {
-    if (challenge_timer)
+    if (challenge_timer && instance->GetSpawnMode() == HEROIC_DIFFICULTY)
     {
         data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
         data << uint32((getMSTime() - challenge_timer)/IN_MILLISECONDS);    //time elapsed in sec

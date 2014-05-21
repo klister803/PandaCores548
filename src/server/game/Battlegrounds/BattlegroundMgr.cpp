@@ -428,8 +428,8 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         if (!isArena) // Unk 3 prolly is (bg)
         {
             buff << uint32(itr2->second->Deaths);
-            buff << uint32(itr2->second->BonusHonor / 100);
             buff << uint32(itr2->second->HonorableKills);  
+            buff << uint32(itr2->second->BonusHonor / 100);
         }
 
         switch (bg->GetTypeID(true))                             // Custom values
@@ -606,8 +606,8 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
 
     data->append(buff);
     
-    *data << uint8(counta2);
     *data << uint8(counth2);
+    *data << uint8(counta2);
 
     if (bg->GetStatus() == STATUS_WAIT_LEAVE)
         *data << uint8(bg->GetWinner());                               // who win
