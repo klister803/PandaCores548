@@ -80,62 +80,64 @@ void ChallengeMgr::SaveChallengeToDB(Challenge *c)
 
 void ChallengeMgr::LoadFromDB()
 {
-    QueryResult result = CharacterDatabase.Query("SELECT `id`, `guildId`, `mapID`, `recordTime`, `date`, `medal` FROM `challenge`");
-
-    if (!result)
-        return;
-
     uint32 count = 0;
 
-    Field* fields = NULL;
-    do
+    if (QueryResult result = CharacterDatabase.Query("SELECT `id`, `guildId`, `mapID`, `recordTime`, `date`, `medal` FROM `challenge`"))
     {
-        fields = result->Fetch();
-
-        Challenge *c = new Challenge;
-        c->Id = fields[0].GetUInt32();
-        c->guildId = fields[1].GetUInt32();
-        c->mapID = fields[2].GetUInt16();
-        c->recordTime = fields[3].GetUInt32();
-        c->date = fields[4].GetUInt32();
-        c->medal = fields[5].GetUInt8();
-
-        m_ChallengeMap[c->Id] = c;
-        CheckBestMapId(c);
-        CheckBestGuildMapId(c);
-
-        // sync guid generator
-        if (c->Id >= challengeGUID)
-            challengeGUID = ++c->Id;
-
-    }while (result->NextRow());
-
-    result = CharacterDatabase.Query("SELECT `id`, `member`, `specID` FROM `challenge_member`");
-    do
-    {
-        fields = result->Fetch();
-        ChallengeMember member;
-        member.guid = fields[1].GetUInt64();
-        member.specId = fields[2].GetUInt16();
-
-        ChallengeMap::iterator itr = m_ChallengeMap.find(fields[0].GetUInt32());
-        if (itr == m_ChallengeMap.end())
+        Field* fields = NULL;
+        do
         {
-            sLog->outError(LOG_FILTER_SQL, "Tabble challenge_member. Challenge %u for member " UI64FMTD " does not exist!", fields[0].GetUInt32(), member.guid);
-            continue;
-        }
-        itr->second->member.insert(member);
-        CheckBestMemberMapId(member.guid, itr->second);
-    }while (result->NextRow());
+            Field* fields = result->Fetch();
+
+            Challenge *c = new Challenge;
+            c->Id = fields[0].GetUInt32();
+            c->guildId = fields[1].GetUInt32();
+            c->mapID = fields[2].GetUInt16();
+            c->recordTime = fields[3].GetUInt32();
+            c->date = fields[4].GetUInt32();
+            c->medal = fields[5].GetUInt8();
+
+            m_ChallengeMap[c->Id] = c;
+            CheckBestMapId(c);
+            CheckBestGuildMapId(c);
+
+            // sync guid generator
+            if (c->Id >= challengeGUID)
+                challengeGUID = ++c->Id;
+
+        }while (result->NextRow());
+    }
+
+    if (QueryResult result = CharacterDatabase.Query("SELECT `id`, `member`, `specID` FROM `challenge_member`"))
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            ChallengeMember member;
+            member.guid = fields[1].GetUInt64();
+            member.specId = fields[2].GetUInt16();
+
+            ChallengeMap::iterator itr = m_ChallengeMap.find(fields[0].GetUInt32());
+            if (itr == m_ChallengeMap.end())
+            {
+                sLog->outError(LOG_FILTER_SQL, "Tabble challenge_member. Challenge %u for member " UI64FMTD " does not exist!", fields[0].GetUInt32(), member.guid);
+                continue;
+            }
+            itr->second->member.insert(member);
+            CheckBestMemberMapId(member.guid, itr->second);
+        }while (result->NextRow());
+    }
 
     /// @init quest complete
     m_reward.clear();
-    result = WorldDatabase.Query("SELECT `mapId`, `questCredit` FROM `chellenge_reward`");
-    do
+    if (QueryResult result = WorldDatabase.Query("SELECT `mapId`, `questCredit` FROM `chellenge_reward`"))
     {
-        fields = result->Fetch();
-        m_reward[fields[0].GetUInt16()] = fields[1].GetUInt32();
-    }while (result->NextRow());
+        do
+        {
+            Field* fields = result->Fetch();
+            m_reward[fields[0].GetUInt16()] = fields[1].GetUInt32();
+        }while (result->NextRow());
+    }
 
     /// @init reward for medals
     m_valorPoints[CHALLENGE_MEDAL_NONE] = sWorld->getIntConfig(CONFIG_CURRENCY_VALOR_FOR_CHALLENGE_NO_MEDAL);    //defauld mod 10500
