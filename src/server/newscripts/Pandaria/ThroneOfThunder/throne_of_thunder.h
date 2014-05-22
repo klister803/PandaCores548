@@ -36,6 +36,7 @@ enum eCreatures
     NPC_LIGHTNING_BALL    = 69232, 
     NPC_WHIRL_TURTLE      = 67966,
     NPC_VAMPIRIC_CAVE_BAT = 69352,
+    NPC_CINDERS           = 70432,
 
     //Bosses
     NPC_JINROKH           = 69465,

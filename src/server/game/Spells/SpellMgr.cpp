@@ -4468,6 +4468,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 6;
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(2);
                     break;
+                //Megaera
+                case 139822: //Cinders dot
+                    spellInfo->Effects[0].TargetA = 6;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 6;
+                    spellInfo->Effects[1].TargetB = 0;
+                    break;
+                case 139836: //Cinders void zone dmg
+                    spellInfo->Effects[1].TargetB = 15;
+                    break;
 
 
                 //World Bosses

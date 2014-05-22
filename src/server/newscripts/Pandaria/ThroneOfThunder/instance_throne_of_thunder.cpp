@@ -344,11 +344,11 @@ public:
                 }
                 break;
             case DATA_TORTOS:
-               /* if (state == DONE)
+                if (state == DONE)
                 {
                     HandleGameObject(tortosexdoorGuid, true);
                     HandleGameObject(tortosex2doorGuid, true);
-                }*/
+                }
                 break;
             default:
                 break;
