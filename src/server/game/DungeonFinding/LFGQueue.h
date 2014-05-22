@@ -51,12 +51,7 @@ struct LfgCompatibilityData
 /// Stores player or group queue info
 struct LfgQueueData
 {
-    LfgQueueData(): joinTime(time_t(time(NULL))), tanks(LFG_TANKS_NEEDED),
-        healers(LFG_HEALERS_NEEDED), dps(LFG_DPS_NEEDED), type(LFG_TYPE_DUNGEON), subType(LFG_SUBTYPE_DUNGEON),
-        tanksNeeded(LFG_TANKS_NEEDED), healerNeeded(LFG_HEALERS_NEEDED), dpsNeeded(LFG_DPS_NEEDED),
-        minTanksNeeded(LFG_TANKS_NEEDED), minHealerNeeded(LFG_HEALERS_NEEDED), minDpsNeeded(LFG_DPS_NEEDED)
-        { }
-
+    LfgQueueData();
     LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, const LfgRolesMap &_roles);
 
     time_t joinTime;                                       ///< Player queue join time (to calculate wait times)

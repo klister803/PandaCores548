@@ -615,6 +615,23 @@ uint8 LFGQueue::GetQueueSubType(uint64 guid)
     return itr != QueueDataStore.end() ? itr->second.subType : LFG_SUBTYPE_DUNGEON;
 }
 
+LfgQueueData::LfgQueueData() : joinTime(time_t(time(NULL))),
+    type(LFG_TYPE_DUNGEON), subType(LFG_SUBTYPE_DUNGEON)
+{
+    if (sWorld->getBoolConfig(CONFIG_LFG_DEBUG_JOIN))
+    {
+        tanks = tanksNeeded = minTanksNeeded = 0;
+        healers = healerNeeded = minHealerNeeded = 0;
+        dps = dpsNeeded = minDpsNeeded = 1;
+    }
+    else
+    {
+        tanks = tanksNeeded = minTanksNeeded = LFG_TANKS_NEEDED;
+        healers = healerNeeded = minHealerNeeded = LFG_HEALERS_NEEDED;
+        dps = dpsNeeded = minDpsNeeded = LFG_DPS_NEEDED;
+    }
+}
+
 LfgQueueData::LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, const LfgRolesMap &_roles)
 {
     LFGDungeonData const* dungeon = !_dungeons.empty() ? sLFGMgr->GetLFGDungeon(*_dungeons.begin() & 0xFFFFF) : NULL;
@@ -624,17 +641,26 @@ LfgQueueData::LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, con
     dungeons = _dungeons;
     roles = _roles;
 
-    minTanksNeeded = dungeon ? dungeon->dbc->minTankNeeded : LFG_TANKS_NEEDED;
-    minHealerNeeded = dungeon ? dungeon->dbc->minHealerNeeded : LFG_HEALERS_NEEDED;
-    minDpsNeeded = dungeon ? dungeon->dbc->minDpsNeeded : LFG_DPS_NEEDED;
+    if (sWorld->getBoolConfig(CONFIG_LFG_DEBUG_JOIN))
+    {
+        tanks = tanksNeeded = minTanksNeeded = 0;
+        healers = healerNeeded = minHealerNeeded = 0;
+        dps = dpsNeeded = minDpsNeeded = 1;
+    }
+    else
+    {
+        minTanksNeeded = dungeon ? dungeon->dbc->minTankNeeded : LFG_TANKS_NEEDED;
+        minHealerNeeded = dungeon ? dungeon->dbc->minHealerNeeded : LFG_HEALERS_NEEDED;
+        minDpsNeeded = dungeon ? dungeon->dbc->minDpsNeeded : LFG_DPS_NEEDED;
 
-    tanksNeeded = dungeon ? dungeon->dbc->tankNeeded : LFG_TANKS_NEEDED;
-    healerNeeded = dungeon ? dungeon->dbc->healerNeeded : LFG_HEALERS_NEEDED;
-    dpsNeeded = dungeon ? dungeon->dbc->dpsNeeded : LFG_DPS_NEEDED;
+        tanksNeeded = dungeon ? dungeon->dbc->tankNeeded : LFG_TANKS_NEEDED;
+        healerNeeded = dungeon ? dungeon->dbc->healerNeeded : LFG_HEALERS_NEEDED;
+        dpsNeeded = dungeon ? dungeon->dbc->dpsNeeded : LFG_DPS_NEEDED;
 
-    tanks = minTanksNeeded;
-    healers = minHealerNeeded;
-    dps = minDpsNeeded;
+        tanks = minTanksNeeded;
+        healers = minHealerNeeded;
+        dps = minDpsNeeded;
+    }
 }
 
 std::string LFGQueue::DumpQueueInfo() const
@@ -721,8 +747,11 @@ void LFGQueue::UpdateBestCompatibleInQueue(LfgQueueDataContainer::iterator itrQu
             if (queueData.healers)
                 --queueData.healers;
         }
-        else if (queueData.dps)
-            --queueData.dps;
+        else if (role & PLAYER_ROLE_DAMAGE)
+        {
+            if (queueData.dps)
+                --queueData.dps;
+        }
     }
 }
 
