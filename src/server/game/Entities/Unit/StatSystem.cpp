@@ -63,6 +63,9 @@ bool Player::UpdateStats(Stats stat)
 
     switch (stat)
     {
+        case STAT_STRENGTH:
+            UpdateParryPercentage();
+            break;
         case STAT_AGILITY:
             UpdateAllCritPercentages();
             UpdateDodgePercentage();
@@ -646,9 +649,10 @@ void Player::UpdateParryPercentage()
     uint32 pclass = getClass()-1;
     if (CanParry() && parry_cap[pclass] > 0.0f)
     {
-        float nondiminishing  = 5.0f;
+        float nondiminishing  = 3.0f;
         // Parry from rating
         float diminishing = GetRatingBonusValue(CR_PARRY);
+        diminishing += GetStat(STAT_STRENGTH) / 951.158596f;
         // Parry from SPELL_AURA_MOD_PARRY_PERCENT aura
         nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
         // apply diminishing formula to diminishing parry chance
