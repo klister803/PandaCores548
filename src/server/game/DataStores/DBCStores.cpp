@@ -196,6 +196,7 @@ DBCStorage <QuestPOIPointEntry> sQuestPOIPointStore(QuestPOIPointfmt);
 DBCStorage <ScalingStatDistributionEntry> sScalingStatDistributionStore(ScalingStatDistributionfmt);
 DBCStorage <ScalingStatValuesEntry> sScalingStatValuesStore(ScalingStatValuesfmt);
 
+std::set<uint32> sScenarioCriteriaTreeStore;
 DBCStorage <ScenarioEntry> sScenarioStore(Scenariofmt);
 DBCStorage <ScenarioStepEntry> sScenarioStepStore(ScenarioStepfmt);
 
@@ -607,6 +608,17 @@ void LoadDBCStores(const std::string& dataPath)
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sScenarioStore,               dbcPath, "Scenario.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sScenarioStepStore,           dbcPath, "ScenarioStep.dbc");
+    for (uint32 i = 0; i < sScenarioStepStore.GetNumRows(); ++i)
+    {
+        ScenarioStepEntry const* entry = sScenarioStepStore.LookupEntry(i);
+        if (!entry || !entry->m_criteriaTreeId)
+            continue;
+
+        if (!sCriteriaTreeStore.LookupEntry(entry->m_criteriaTreeId))
+            continue;
+
+        sScenarioCriteriaTreeStore.insert(entry->m_criteriaTreeId);
+    }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sScalingStatDistributionStore, dbcPath, "ScalingStatDistribution.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sScalingStatValuesStore,      dbcPath, "ScalingStatValues.dbc");//14545
@@ -1491,3 +1503,9 @@ bool IsValidDifficulty(uint32 diff, bool isRaid)
 
     return isRaid;
 }
+
+bool IsScenarioCriteriaTree(uint32 criteriaTreeId)
+{
+    return sScenarioCriteriaTreeStore.find(criteriaTreeId) != sScenarioCriteriaTreeStore.end();
+}
+
