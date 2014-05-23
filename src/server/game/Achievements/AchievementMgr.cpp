@@ -1472,7 +1472,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             continue;
 
         AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
-        if (!achievement)
+        if (GetCriteriaSort() != SCENARIO_CRITERIA && !achievement)
         {
             sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "UpdateAchievementCriteria: Achievement for criteriaTree->ID %u not found!", criteriaTree->ID);
             continue;
@@ -1814,6 +1814,9 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
                 break;                                   // Not implemented yet :(
         }
 
+        if (!achievement)
+            continue;
+
         if (IsCompletedCriteria(criteriaTree, achievement))
             CompletedCriteriaFor(achievement, referencePlayer);
 
@@ -1826,7 +1829,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         if (AchievementEntryList const* achRefList = sAchievementMgr->GetAchievementByReferencedId(achievement->ID))
             for (AchievementEntryList::const_iterator itr = achRefList->begin(); itr != achRefList->end(); ++itr)
                 if (IsCompletedAchievement(*itr))
-                    CompletedAchievement(*itr, referencePlayer);   
+                    CompletedAchievement(*itr, referencePlayer);
     }
 }
 
@@ -1858,9 +1861,9 @@ template<class T>
 bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement)
 {
     // counter can never complete
-    if (achievement->flags & ACHIEVEMENT_FLAG_COUNTER)
+    if (achievement && achievement->flags & ACHIEVEMENT_FLAG_COUNTER)
         return false;
-    
+
     if (!CanCompleteCriteria(achievement))
         return false;
 
@@ -2891,15 +2894,15 @@ bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, Cr
         return false;
     }
 
-    if (achievement->mapID != -1 && referencePlayer->GetMapId() != uint32(achievement->mapID))
+    if (achievement && achievement->mapID != -1 && referencePlayer->GetMapId() != uint32(achievement->mapID))
     {
         // sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Wrong map",
             // treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
         return false;
     }
 
-    if ((achievement->requiredFaction == ACHIEVEMENT_FACTION_HORDE    && referencePlayer->GetTeam() != HORDE) ||
-        (achievement->requiredFaction == ACHIEVEMENT_FACTION_ALLIANCE && referencePlayer->GetTeam() != ALLIANCE))
+    if (achievement && (achievement->requiredFaction == ACHIEVEMENT_FACTION_HORDE && referencePlayer->GetTeam() != HORDE ||
+        achievement->requiredFaction == ACHIEVEMENT_FACTION_ALLIANCE && referencePlayer->GetTeam() != ALLIANCE))
     {
         // sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Wrong faction",
             // treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
@@ -3076,7 +3079,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
             bool notfit = false;
             for (int j = 0; j < MAX_ARENA_SLOT; ++j)
             {
-                if (achievIdByArenaSlot[j] == achievement->ID)
+                if (achievement && achievIdByArenaSlot[j] == achievement->ID)
                 {
                     Battleground* bg = referencePlayer->GetBattleground();
                     if (!bg || !bg->isArena() || BattlegroundMgr::BracketByJoinType(bg->GetJoinType()) != j)
@@ -3091,6 +3094,9 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
     case ACHIEVEMENT_CRITERIA_TYPE_DEATH_IN_DUNGEON:
         {
             if (!miscValue1)
+                return false;
+
+            if (!achievement)
                 return false;
 
             Map const* map = referencePlayer->IsInWorld() ? referencePlayer->GetMap() : sMapMgr->FindMap(referencePlayer->GetMapId(), referencePlayer->GetInstanceId());
@@ -3143,7 +3149,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
             return false;
 
         // if team check required: must kill by opposition faction
-        if (achievement->ID == 318 && miscValue2 == referencePlayer->GetTeam())
+        if (achievement && achievement->ID == 318 && miscValue2 == referencePlayer->GetTeam())
             return false;
         break;
     case ACHIEVEMENT_CRITERIA_TYPE_DEATHS_FROM:
