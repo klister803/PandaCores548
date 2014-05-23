@@ -1602,18 +1602,6 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     }
     else // Impossible get negative result but....
         damageInfo->damage = 0;
-
-    // Soul Link
-    if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_WARLOCK && damageInfo->damage > 0 && victim->HasAura(108446))
-    {
-        if (victim->ToPlayer()->GetPet() && victim->ToPlayer()->GetPet()->HasAura(108446))
-        {
-            damageInfo->damage /= 2;
-            int32 bp = damageInfo->damage;
-
-            victim->ToPlayer()->GetPet()->CastCustomSpell(victim->ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, true); // Soul Link damage
-        }
-    }
 }
 
 void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
@@ -9784,6 +9772,12 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 145676: // Riposte
+        {
+            if(Player* player = ToPlayer())
+                basepoints0 = CalculatePct((player->GetRatingBonusValue(CR_PARRY) + player->GetRatingBonusValue(CR_DODGE)), triggerAmount);
+            break;
+        }
         case 5118: // Aspect of the Cheetah
         {
             if (HasAura(119462) && ToPlayer())
@@ -12034,10 +12028,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                     if (uint8 count = victim->GetDoTsByCaster(GetOwnerGUID()))
                         AddPct(DoneTotalMod, 30 * count);
 
-                // Mastery: Master Demonologist
-                if (AuraEffect const* aurEff = GetAuraEffect(77219, EFFECT_0))
-                    AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
-
                 // Mastery: Emberstorm
                 if (spellProto->Id == 17877 || spellProto->Id == 116858)
                 {
@@ -12171,6 +12161,11 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 DoneTotalMod *= (100.0f + spellProto->Effects[2].CalcValue()) / 100.0f;
         }
 
+        // Mastery: Master Demonologist
+        if (Player* modOwner = GetSpellModOwner())
+            if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
+                AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
+
         tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
 
         // apply spellmod to Done damage (flat and pct)
@@ -12271,18 +12266,6 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     }
     if (!tmpDamage)
         tmpDamage = (float(pdamage) + TakenTotal) * TakenTotalMod;
-
-    // Soul Link
-    if (GetTypeId() == TYPEID_PLAYER && (!spellProto || (spellProto && spellProto->Id != 108451)) && getClass() == CLASS_WARLOCK && tmpDamage > 0 && HasAura(108446))
-    {
-        if (ToPlayer()->GetPet() && ToPlayer()->GetPet()->HasAura(108446))
-        {
-            tmpDamage /= 2;
-            int32 bp = tmpDamage;
-
-            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108451, &bp, NULL, NULL, true); // Soul Link damage
-        }
-    }
 
     return uint32(std::max(tmpDamage, 0.0f));
 }
@@ -12703,7 +12686,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         return healamount;
 
     // No bonus for Leader of the Pack or Soul Leech or Soul Link heal
-    if (spellProto->Id == 34299 || spellProto->Id == 108366 || spellProto->Id == 108447)
+    if (spellProto->Id == 34299 || spellProto->Id == 108366)
         return healamount;
 
     // No bonus for Living Seed or Ancestral Guidance
@@ -12996,20 +12979,6 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     }
 
     float heal = float(int32(healamount) + TakenTotal) * TakenTotalMod;
-
-    // Custom MoP Script
-    // Soul Link
-    if (GetTypeId() == TYPEID_PLAYER && spellProto->Id != 108447 && getClass() == CLASS_WARLOCK && heal > 0 && HasAura(108446))
-    {
-        if (ToPlayer()->GetPet() && ToPlayer()->GetPet()->HasAura(108446))
-        {
-            heal /= 2;
-            int32 bp = heal;
-
-            ToPlayer()->GetPet()->CastCustomSpell(ToPlayer()->GetPet(), 108447, &bp, NULL, NULL, true); // Soul Link heal
-        }
-    }
-
     return uint32(std::max(heal, 0.0f));
 }
 
@@ -13379,15 +13348,11 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         if (Player* modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_DAMAGE, tmpDamage);
 
-
     if (Player* modOwner = GetSpellModOwner())
     {
-        if (modOwner->getClass() == CLASS_WARLOCK)
-        {
-            // Mastery: Master Demonologist
-            if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
-                AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
-        }
+        // Mastery: Master Demonologist
+        if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
+            AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
     }
 
     // bonus result can be negative
@@ -15935,6 +15900,58 @@ void Unit::SetPower(Powers power, int32 val)
     int32 maxPower = int32(GetMaxPower(power));
     if (maxPower < val)
         val = maxPower;
+
+    if(power == POWER_SOUL_SHARDS)
+    {
+        int32 cureVal = GetPower(power);
+        int32 switchVal = 0;
+        uint32 addspellId = 0;
+        uint32 removespellId = 0;
+        switchVal = cureVal > val ? cureVal : val;
+        switch(switchVal)
+        {
+            case 100:
+            {
+                addspellId = 104756;
+                removespellId = 104759;
+                break;
+            }
+            case 200:
+            {
+                addspellId = 104759;
+                removespellId = 104756;
+                break;
+            }
+            case 300:
+            {
+                addspellId = 104756;
+                removespellId = 123171;
+                if(!HasAura(104759))
+                    CastSpell(this, 104759, true);
+                break;
+            }
+            case 400:
+            {
+                addspellId = 123171;
+                removespellId = 104756;
+                if(!HasAura(104759))
+                    CastSpell(this, 104759, true);
+                break;
+            }
+        }
+        if(cureVal > val)
+        {
+            RemoveAurasDueToSpell(addspellId);
+            if(removespellId)
+                CastSpell(this, removespellId, true);
+        }
+        else
+        {
+            CastSpell(this, addspellId, true);
+            if(removespellId)
+                RemoveAurasDueToSpell(removespellId);
+        }
+    }
 
     SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
 

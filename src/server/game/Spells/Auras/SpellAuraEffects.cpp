@@ -575,10 +575,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     float DoneActualBenefit = 0.0f;
     Unit* target = GetBase()->GetUnitOwner();
 
-    if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION) && !amount)
+    if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION))
     {
         m_canBeRecalculated = false;
-        return int32(caster->GetFloatValue(PLAYER_MASTERY) * m_spellInfo->GetEffect(m_effIndex, m_diffMode).BonusMultiplier + 0.5f);
+        amount += int32(caster->GetFloatValue(PLAYER_MASTERY) * m_spellInfo->GetEffect(m_effIndex, m_diffMode).BonusMultiplier + 0.5f);
     }
 
     // custom amount calculations go here
@@ -915,6 +915,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     break;
                 }
                 case 43265: // Death and Decay
+                case 60160: // Death and Decay
                 {
                     int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
                     amount += int32(AP * 0.064f);

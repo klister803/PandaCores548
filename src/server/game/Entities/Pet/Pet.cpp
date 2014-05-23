@@ -343,6 +343,9 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         CastPetAuras(true);
     }
 
+    if(owner->HasSpell(108415)) // active talent Soul Link
+        CastSpell(this, 108446, true);
+
     if(!stampeded)
     {
         CleanupActionBar();                                     // remove unknown spells from action bar after load

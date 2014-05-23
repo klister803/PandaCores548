@@ -3070,7 +3070,7 @@ void Player::Regenerate(Powers power)
         }
         default:
         {
-            if (m_regenTimerCount >= 2000)
+            if (m_regenTimerCount >= 2000 || m_soulShardsRegenTimerCount >= 20000)
                 SetPower(power, curValue);
             else
                 UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
@@ -4636,15 +4636,25 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
     {
         for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
+            Unit* target = (Unit*)this;
+            Unit* caster = (Unit*)this;
+
+            if(i->caster == 1)
+                if (Pet* pet = GetPet())
+                    caster = (Unit*)pet;
+            if(i->target == 1)
+                if (Pet* pet = GetPet())
+                    target = (Unit*)pet;
+
             switch (i->type)
             {
                 case 0: //remove or add auras
                 {
                     if (i->triger < 0)
-                        RemoveAurasDueToSpell(-(i->triger));
+                        target->RemoveAurasDueToSpell(-(i->triger));
                     else
-                        CastSpell(this, i->triger, true);
-                        break;
+                        caster->CastSpell(target, i->triger, true);
+                    break;
                 }
                 case 1: //remove or add spell
                 {
@@ -4652,7 +4662,12 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
                         removeSpell(-(i->triger));
                     else
                         learnSpell(i->triger, false);
-                        break;
+                    break;
+                }
+                case 2: //remove pet
+                {
+                    RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+                    break;
                 }
             }
         }
@@ -4720,15 +4735,25 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     {
         for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
+            Unit* target = (Unit*)this;
+            Unit* caster = (Unit*)this;
+
+            if(i->caster == 1)
+                if (Pet* pet = GetPet())
+                    caster = (Unit*)pet;
+            if(i->target == 1)
+                if (Pet* pet = GetPet())
+                    target = (Unit*)pet;
+
             switch (i->type)
             {
                 case 0: //remove or add auras
                 {
                     if (i->triger < 0)
-                        RemoveAurasDueToSpell(-(i->triger));
+                        target->RemoveAurasDueToSpell(-(i->triger));
                     else
-                        CastSpell(this, i->triger, true);
-                        break;
+                        caster->CastSpell(target, i->triger, true);
+                    break;
                 }
                 case 1: //remove or add spell
                 {
@@ -4736,7 +4761,12 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
                         removeSpell(-(i->triger));
                     else
                         learnSpell(i->triger, false);
-                        break;
+                    break;
+                }
+                case 2: //remove pet
+                {
+                    RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+                    break;
                 }
             }
         }

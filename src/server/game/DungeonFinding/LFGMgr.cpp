@@ -1488,7 +1488,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
 void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateData, bool party)
 {
     ObjectGuid guid = player->GetGUID();
-    LFGQueue& queue = GetQueue(party && player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
+    LFGQueue& queue = GetQueue(party && player->GetGroup() ? player->GetGroup()->GetGUID() : player->GetGUID());
 
     bool queued = false;
     bool join = false;

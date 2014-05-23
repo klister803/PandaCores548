@@ -597,6 +597,8 @@ struct SpellTalentLinked
     int32 talent;
     int32 triger;
     int32 type;
+    int32 caster;
+    int32 target;
 };
 
 struct SpellPrcoCheck

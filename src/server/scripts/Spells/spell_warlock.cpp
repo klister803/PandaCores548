@@ -156,79 +156,49 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
                     // EFFECT_11 : Duration for HB
                     switch(aurEff->GetEffIndex())
                     {
+                        case EFFECT_2:
+                        case EFFECT_5:
+                        case EFFECT_7:
+                        case EFFECT_8:
+                        switch (player->GetSpecializationId(player->GetActiveSpec()))
+                        {
+                            case SPEC_WARLOCK_DEMONOLOGY:
+                            case SPEC_WARLOCK_DESTRUCTION:
+                            case SPEC_NONE:
+                                amount = 0;
+                                break;
+                        }
+                        break;
                         case EFFECT_3:
+                        case EFFECT_9:
                         switch (player->GetSpecializationId(player->GetActiveSpec()))
                         {
                             case SPEC_WARLOCK_AFFLICTION:
-                            amount = 0;
-                            break;
                             case SPEC_WARLOCK_DESTRUCTION:
-                            amount = 0;
-                            break;
                             case SPEC_NONE:
-                            amount = 0;
-                            break;
-                                
+                                amount = 0;
+                                break;
                         }
                         break;
                         case EFFECT_4:
+                        case EFFECT_10:
                         switch (player->GetSpecializationId(player->GetActiveSpec()))
                         {
                             case SPEC_WARLOCK_AFFLICTION:
-                            amount = 0;
-                            break;
                             case SPEC_WARLOCK_DEMONOLOGY:
-                            amount = 0;
-                            break;
                             case SPEC_NONE:
-                            amount = 0;
-                            break;
-                                
-                        }
-                        break;
-                        case EFFECT_5:
-                        switch (player->GetSpecializationId(player->GetActiveSpec()))
-                        {
-                            case SPEC_WARLOCK_DEMONOLOGY:
-                            amount = 0;
-                            break;
-                            case SPEC_WARLOCK_DESTRUCTION:
-                            amount = 0;
-                            break;
-                            case SPEC_NONE:
-                            amount = 0;
-                            break;
-                                
+                                amount = 0;
+                                break;
                         }
                         break;
                         case EFFECT_6:
                         switch (player->GetSpecializationId(player->GetActiveSpec()))
                         {
                             case SPEC_NONE:
-                            amount = 0;
-                            break;
+                                amount = 0;
+                                break;
                         }
                         if (!player->HasSpell(108415))
-                            amount = 0;
-                        break;
-                        case EFFECT_7:
-                        switch (player->GetSpecializationId(player->GetActiveSpec()))
-                        {
-                            case SPEC_WARLOCK_DEMONOLOGY:
-                            amount = 0;
-                            break;
-                            case SPEC_WARLOCK_DESTRUCTION:
-                            amount = 0;
-                            break;
-                            case SPEC_NONE:
-                            amount = 0;
-                            break;
-                                
-                        }
-                        break;
-                        case EFFECT_8:
-                        case EFFECT_9:
-                        case EFFECT_10:
                             amount = 0;
                         break;
                     }
@@ -331,105 +301,6 @@ class spell_warl_flames_of_xoroth : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warl_flames_of_xoroth_SpellScript();
-        }
-};
-
-// Soul Link - 108446
-class spell_warl_soul_link_dummy : public SpellScriptLoader
-{
-    public:
-        spell_warl_soul_link_dummy() : SpellScriptLoader("spell_warl_soul_link_dummy") { }
-
-        class spell_warl_soul_link_dummy_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_soul_link_dummy_AuraScript);
-
-            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
-            {
-                if (!GetCaster() || !GetTarget())
-                    return;
-
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (GetTarget()->GetGUID() == _player->GetGUID())
-                        if (Guardian* pet = _player->GetPet())
-                        {
-                            if (pet->HasAura(WARLOCK_SOUL_LINK_DUMMY_AURA))
-                                pet->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
-                            pet->UpdateMaxHealth();
-                        }
-
-                    if(_player->HasAura(WARLOCK_SOUL_LINK_DUMMY_AURA))
-                        _player->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
-                }
-            }
-
-            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (!GetCaster())
-                    return;
-
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Guardian* pet = _player->GetPet())
-                    {
-                        uint32 health = pet->CountPctFromMaxHealth(50);
-                        if (pet->GetHealth() > health)
-                            pet->SetHealth(health);
-                        pet->SetMaxHealth(health);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_warl_soul_link_dummy_AuraScript::HandleApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectApplyFn(spell_warl_soul_link_dummy_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_soul_link_dummy_AuraScript();
-        }
-};
-
-// Soul Link - 108415
-class spell_warl_soul_link : public SpellScriptLoader
-{
-    public:
-        spell_warl_soul_link() : SpellScriptLoader("spell_warl_soul_link") { }
-
-        class spell_warl_soul_link_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_soul_link_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (!target->HasAura(WARLOCK_SOUL_LINK_DUMMY_AURA))
-                            _player->CastSpell(_player, WARLOCK_SOUL_LINK_DUMMY_AURA, true);
-                        else
-                        {
-                            _player->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
-                            target->RemoveAura(WARLOCK_SOUL_LINK_DUMMY_AURA);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_soul_link_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_soul_link_SpellScript();
         }
 };
 
@@ -911,15 +782,17 @@ class spell_warl_sacrificial_pact : public SpellScriptLoader
                 {
                     if(!GetCaster()->GetGuardianPet())
                     {
-                        int32 sacrifiedHealth = GetCaster()->CountPctFromCurHealth(50);
+                        int32 percent = GetSpellInfo()->Effects[EFFECT_1].BasePoints;
+                        int32 sacrifiedHealth = GetCaster()->CountPctFromCurHealth(percent);
                         GetCaster()->ModifyHealth(-sacrifiedHealth);
-                        amount = sacrifiedHealth * 2;
+                        amount = CalculatePct(sacrifiedHealth, GetSpellInfo()->Effects[EFFECT_0].BasePoints);
                     }
                     else if(GetCaster()->GetGuardianPet())
                     {
-                        int32 sacrifiedHealth = GetCaster()->GetGuardianPet()->CountPctFromCurHealth(50);
+                        int32 percent = GetSpellInfo()->Effects[EFFECT_1].BasePoints;
+                        int32 sacrifiedHealth = GetCaster()->GetGuardianPet()->CountPctFromCurHealth(percent);
                         GetCaster()->GetGuardianPet()->ModifyHealth(-sacrifiedHealth);
-                        amount = sacrifiedHealth * 2;
+                        amount = CalculatePct(sacrifiedHealth, GetSpellInfo()->Effects[EFFECT_0].BasePoints);
                     }
                 }
             }
@@ -2218,8 +2091,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_shield_of_shadow();
     new spell_warl_grimoire_of_sacrifice();
     new spell_warl_flames_of_xoroth();
-    new spell_warl_soul_link_dummy();
-    new spell_warl_soul_link();
     new spell_warl_archimondes_vengeance_cooldown();
     new spell_warl_archimondes_vengance();
     new spell_warl_archimondes_vengance_passive();

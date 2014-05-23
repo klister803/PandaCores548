@@ -2356,8 +2356,8 @@ void SpellMgr::LoadTalentSpellLinked()
 
     mSpellTalentLinkedMap.clear();    // need for reload case
 
-    //                                                  0        1        2
-    QueryResult result = WorldDatabase.Query("SELECT spellid, spelllink, type FROM spell_talent_linked_spell");
+    //                                                  0        1        2       3       4
+    QueryResult result = WorldDatabase.Query("SELECT spellid, spelllink, type, target, caster FROM spell_talent_linked_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked talent spells. DB table `spell_talent_linked_spell` is empty.");
@@ -2372,6 +2372,8 @@ void SpellMgr::LoadTalentSpellLinked()
         int32 talent = fields[0].GetInt32();
         int32 triger = fields[1].GetInt32();
         int32 type   = fields[2].GetUInt8();
+        int32 target = fields[3].GetUInt8();
+        int32 caster = fields[4].GetUInt8();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(talent));
         if (!spellInfo)
@@ -2397,6 +2399,8 @@ void SpellMgr::LoadTalentSpellLinked()
         templink.talent = talent;
         templink.triger = triger;
         templink.type   = type;
+        templink.target = target;
+        templink.caster = caster;
         mSpellTalentLinkedMap[talent].push_back(templink);
 
         ++count;
@@ -3736,13 +3740,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 81282: // Fungal Growth
                     spellInfo->Effects[EFFECT_0].BasePoints = 100;
                     break;
-                case 108446:// Soul Link
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_PET;
-                    break;
                 case 974:   // Earth Shield
                     spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
                     break;
@@ -4771,6 +4768,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                     spellInfo->Effects[1].BasePoints = 1;
                     spellInfo->Speed = 14.f;
+                    break;
+                case 108446: // Soul Link
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
                     break;
                 default:
                     break;
