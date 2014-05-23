@@ -430,6 +430,17 @@ enum Difficulty
 
 #define MAX_DIFFICULTY             FLEXIBLE_DIFFICULTY+1
 
+enum ScenarioFlags
+{
+    SCENARIO_FLAG_CHALLENGE             = 0x1,
+    SCENARIO_FLAG_SUPRESS_STAGE_TEXT    = 0x2,
+};
+
+enum ScenarioStepFlags
+{
+    SCENARIO_STEP_FLAG_BONUS_OBJECTIVE  = 0x1,
+};
+
 enum SpawnMask
 {
     SPAWNMASK_CONTINENT         = (1 << NONE_DIFFICULTY),   // any maps without spawn modes

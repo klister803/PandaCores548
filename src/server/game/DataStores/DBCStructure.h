@@ -1853,6 +1853,28 @@ struct ScalingStatValuesEntry
     uint32 GetDPSAndDamageMultiplier(uint32 subClass, bool isCasterWeapon, float* damageMultiplier) const;
 };
 
+struct ScenarioEntry
+{
+    uint32 m_Id;                                            // 0
+    //char* m_name_lang;                                    // 1
+    uint32 m_flags;                                         // 2
+
+    bool IsChallenge() const { return m_flags & SCENARIO_FLAG_CHALLENGE; }
+};
+
+struct ScenarioStepEntry
+{
+    uint32 m_Id;                                            // 0
+    uint32 m_criteriaTreeId;                                // 1
+    uint32 m_scenarioId;                                    // 2
+    uint32 m_orderIndex;                                    // 3
+    //char* m_descriptionLang;                              // 4
+    //char* m_title_lang;                                   // 5
+    uint32 m_flags;                                         // 6
+
+    bool IsBonusObjective() const { return m_flags & SCENARIO_STEP_FLAG_BONUS_OBJECTIVE; }
+};
+
 //struct SkillLineCategoryEntry{
 //    uint32    id;                                         // 0      m_ID
 //    char*     name[16];                                   // 1-17   m_name_lang

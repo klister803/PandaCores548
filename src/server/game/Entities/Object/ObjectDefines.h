@@ -50,7 +50,8 @@ enum HighGuid
     HIGHGUID_GROUP          = 0x1F5,
     HIGHGUID_GUILD          = 0x1FF,                       // new 4.x
     HIGHGUID_INSTANCE_SAVE  = 0x1F45,                      // new 5.x
-    HIGHGUID_LOOT           = 0xF59                        // new 5.x
+    HIGHGUID_LOOT           = 0xF19,                       // new 5.x
+    HIGHGUID_SCENARIO_CRITERIA = 0xF08,
 };
 
 #define IS_EMPTY_GUID(Guid)          (Guid == 0)
@@ -117,6 +118,7 @@ inline bool IsGuidHaveEnPart(uint64 guid)
         case HIGHGUID_PET:
         case HIGHGUID_VEHICLE:
         case HIGHGUID_AREATRIGGER:
+        case HIGHGUID_SCENARIO_CRITERIA:
         default:
             return true;
     }
@@ -142,6 +144,7 @@ inline char const* GetLogNameForGuid(uint64 guid)
         case HIGHGUID_GROUP:        return "group";
         case HIGHGUID_GUILD:        return "guild";
         case HIGHGUID_AREATRIGGER:  return "areatrigger";
+        case HIGHGUID_SCENARIO_CRITERIA: return "scenario_criteria";
         default:
             return "<unknown>";
     }
