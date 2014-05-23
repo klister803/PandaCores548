@@ -106,6 +106,15 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
     InstanceSave* save = new InstanceSave(mapId, instanceId, difficulty, canReset, dungeonId);
     if (!load)
         save->SaveToDB();
+    else
+    {
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_SCENARIO_CRITERIAPROGRESS);
+        stmt->setUInt32(0, instanceId);
+        PreparedQueryResult result = CharacterDatabase.Query(stmt);
+
+        if (AchievementMgr<InstanceSave>* achMgr = save->GetAchievementMgr())
+            achMgr->LoadFromDB(NULL, result, NULL, NULL);
+    }
 
     m_instanceSaveById[instanceId] = save;
     return save;

@@ -849,7 +849,56 @@ void AchievementMgr<T>::LoadFromDB(PreparedQueryResult achievementResult, Prepar
 template<>
 void AchievementMgr<InstanceSave>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
 {
-    // FIXME
+    if (criteriaResult)
+    {
+        time_t now = time(NULL);
+        do
+        {
+            Field* fields = criteriaResult->Fetch();
+            uint32 char_criteria_id = fields[0].GetUInt32();
+            time_t date = time_t(fields[2].GetUInt32());
+
+            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(char_criteria_id);
+            if (!criteriaTree)
+            {
+                // we will remove not existed criteriaTree for all characters
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteriaTree %u data removed from table `character_achievement_progress`.", char_criteria_id);
+
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_SCENARIO_PROGRESS_CRITERIA);
+                stmt->setUInt32(0, char_criteria_id);
+                CharacterDatabase.Execute(stmt);
+
+                continue;
+            }
+
+            CriteriaEntry const* criteria = sAchievementMgr->GetAchievementCriteria(criteriaTree->criteria);
+            if (!criteria)
+            {
+                // we will remove not existed criteria for all characters
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `scenario_criteria_progress`.", char_criteria_id);
+
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_SCENARIO_PROGRESS_CRITERIA);
+                stmt->setUInt32(0, char_criteria_id);
+                CharacterDatabase.Execute(stmt);
+
+                continue;
+            }
+
+            if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
+                continue;
+
+            CriteriaProgressMap* progressMap = GetCriteriaProgressMap();
+
+            if (!progressMap)
+                continue;
+
+            CriteriaProgress& progress = (*progressMap)[char_criteria_id];
+            progress.counter = fields[1].GetUInt32();
+            progress.date    = date;
+            progress.changed = false;
+        }
+        while (criteriaResult->NextRow());
+    }
 }
 
 template<>
