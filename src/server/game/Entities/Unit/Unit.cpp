@@ -9775,7 +9775,10 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         case 145676: // Riposte
         {
             if(Player* player = ToPlayer())
-                basepoints0 = CalculatePct((player->GetRatingBonusValue(CR_PARRY) + player->GetRatingBonusValue(CR_DODGE)), triggerAmount);
+            {
+                int32 CRraiting = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_PARRY) + player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_DODGE);
+                basepoints0 = int32(CRraiting * triggerAmount / 100);
+            }
             break;
         }
         case 5118: // Aspect of the Cheetah
