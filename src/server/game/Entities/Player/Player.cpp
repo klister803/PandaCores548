@@ -27976,7 +27976,7 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
 
     Map* map = GetMap();
     // Update scenario/challenge criterias
-    if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(map->GetInstanceId))
+    if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(map ? map->GetInstanceId : 0))
         if (AchievementMgr<InstanceSave>* achievementMgr = save->GetAchievementMgr())
             achievementMgr->UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
 }
