@@ -27972,9 +27972,12 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
         
     // Quest "A Test of Valor"
     if (GetAchievementMgr().HasAchieved(8030) || GetAchievementMgr().HasAchieved(8031))
-    {
         KilledMonsterCredit(69145, 0);
-    }
+
+    Map* map = GetMap();
+    // Update scenario/challenge criterias
+    if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(map->GetInstanceId))
+        save->GetAchievementMgr()->UpdateAchievementCriteria(type, miscValue1, miscValue2, this);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)

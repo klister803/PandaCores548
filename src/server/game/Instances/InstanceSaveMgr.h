@@ -99,6 +99,8 @@ class InstanceSave
            but that would depend on a lot of things that can easily change in future */
         Difficulty GetDifficulty() const { return m_difficulty; }
 
+        AchievementMgr<InstanceSave>* GetAchievementMgr() { return m_achievementMgr; }
+
         typedef std::list<Player*> PlayerListType;
         typedef std::list<Group*> GroupListType;
     private:
