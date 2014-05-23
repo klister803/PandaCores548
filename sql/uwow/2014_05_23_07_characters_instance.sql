@@ -1,0 +1,1 @@
+ALTER TABLE instance ADD COLUMN dungeonId smallint(5) unsigned NOT NULL DEFAULT '0';

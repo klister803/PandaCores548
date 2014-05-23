@@ -28,11 +28,16 @@
 #include "DatabaseEnv.h"
 #include "DBCEnums.h"
 #include "ObjectDefines.h"
+#include "AchievementMgr.h"
 
 struct InstanceTemplate;
 struct MapEntry;
 class Player;
 class Group;
+
+namespace lfg {
+struct LFGDungeonData;
+}
 
 /*
     Holds the information necessary for creating a new map for an existing instance
@@ -49,7 +54,7 @@ class InstanceSave
            - any new instance is being generated
            - the first time a player bound to InstanceId logs in
            - when a group bound to the instance is loaded */
-        InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, bool canReset);
+        InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, bool canReset, uint32 dungeonId);
 
         /* Unloaded when m_playerList and m_groupList become empty
            or when the instance is reset */
@@ -107,6 +112,8 @@ class InstanceSave
         /* the only reason the instSave-object links are kept is because
            the object-instSave links need to be broken at reset time
            TODO: maybe it's enough to just store the number of players/groups */
+        lfg::LFGDungeonData const* m_dungeonData;
+        AchievementMgr<InstanceSave>* m_achievementMgr;
         PlayerListType m_playerList;
         GroupListType m_groupList;
         uint32 m_instanceid;
@@ -170,7 +177,7 @@ class InstanceSaveManager
 
         void Update();
 
-        InstanceSave* AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, bool canReset, bool load = false);
+        InstanceSave* AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, bool canReset, bool load = false, uint32 dungeonId = 0);
         void RemoveInstanceSave(uint32 InstanceId);
         void UnloadInstanceSave(uint32 InstanceId);
         static void DeleteInstanceFromDB(uint32 instanceid);

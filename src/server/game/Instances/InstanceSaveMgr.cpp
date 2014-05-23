@@ -16,7 +16,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "Common.h"
 #include "Player.h"
 #include "GridNotifiers.h"
@@ -35,6 +34,7 @@
 #include "World.h"
 #include "Group.h"
 #include "InstanceScript.h"
+#include "LFGMgr.h"
 
 uint16 InstanceSaveManager::ResetTimeDelay[] = {3600, 900, 300, 60};
 
@@ -68,7 +68,7 @@ InstanceSaveManager::~InstanceSaveManager()
 - adding instance into manager
 - called from InstanceMap::Add, _LoadBoundInstances, LoadGroups
 */
-InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, bool canReset, bool load)
+InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, bool canReset, bool load, uint32 dungeonId)
 {
     if (InstanceSave* old_save = GetInstanceSave(instanceId))
         return old_save;
@@ -103,7 +103,7 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
 
     sLog->outDebug(LOG_FILTER_MAPS, "InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d", mapId, instanceId);
 
-    InstanceSave* save = new InstanceSave(mapId, instanceId, difficulty, canReset);
+    InstanceSave* save = new InstanceSave(mapId, instanceId, difficulty, canReset, dungeonId);
     if (!load)
         save->SaveToDB();
 
@@ -153,9 +153,16 @@ void InstanceSaveManager::UnloadInstanceSave(uint32 InstanceId)
     }
 }
 
-InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, bool canReset)
-: m_instanceid(InstanceId), m_mapid(MapId), m_difficulty(difficulty), m_canReset(canReset), m_toDelete(false)
+InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, bool canReset, uint32 dungeonId)
+: m_instanceid(InstanceId), m_mapid(MapId), m_toDelete(false),
+  m_difficulty(difficulty), m_canReset(canReset), m_achievementMgr(NULL)
 {
+    if (dungeonId)
+    {
+        m_dungeonData = sLFGMgr->GetLFGDungeon(dungeonId);
+        if (m_dungeonData)
+            m_achievementMgr = new AchievementMgr<InstanceSave>(this);
+    }
 }
 
 InstanceSave::~InstanceSave()
@@ -190,8 +197,9 @@ void InstanceSave::SaveToDB()
     stmt->setUInt16(1, GetMapId());
     stmt->setUInt8(2, uint8(GetDifficulty()));
     stmt->setUInt32(3, challenge);
-    stmt->setUInt32(4, completedEncounters);
-    stmt->setString(5, data);
+    stmt->setUInt32(5, m_dungeonData ? m_dungeonData->id : 0);
+    stmt->setUInt32(6, completedEncounters);
+    stmt->setString(7, data);
     CharacterDatabase.Execute(stmt);
 }
 

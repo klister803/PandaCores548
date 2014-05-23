@@ -2405,7 +2405,7 @@ bool InstanceMap::AddPlayerToMap(Player* player)
             if (!mapSave)
             {
                 sLog->outInfo(LOG_FILTER_MAPS, "InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
-                mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), true);
+                mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), true, sLFGMgr->GetDungeon(group->GetGUID()));
             }
 
             // check for existing instance binds
