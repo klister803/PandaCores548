@@ -632,4 +632,9 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // CUF
     PREPARE_STATEMENT(CHAR_SEL_CUF_PROFILES, "SELECT profileId, profileName, frameHeight, frameWidth, sortBy, healthText, someOptions, unk146, unk147, unk148, unk150, unk152, unk154 FROM character_cuf_profiles WHERE guid = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_REP_CUF_PROFILES, "REPLACE INTO character_cuf_profiles (guid, profileId, profileName, frameHeight, frameWidth, sortBy, healthText, someOptions, unk146, unk147, unk148, unk150, unk152, unk154) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+
+    // Else
+    PREPARE_STATEMENT(CHAR_SEL_PERSONAL_RATE,       "SELECT rate FROM character_rates WHERE guid=? LIMIT 1",                                         CONNECTION_SYNCH);
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_VISUAL,       "SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged FROM character_visuals WHERE guid = ?",  CONNECTION_SYNCH);
+
 }

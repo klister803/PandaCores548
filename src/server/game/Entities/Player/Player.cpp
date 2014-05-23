@@ -19080,7 +19080,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadCUFProfiles(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES));
     
-    if(QueryResult PersonnalRateResult = CharacterDatabase.PQuery("SELECT rate FROM character_rates WHERE guid='%u' LIMIT 1", GetGUIDLow()))
+    if(PreparedQueryResult PersonnalRateResult = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE))
         m_PersonnalXpRate = (PersonnalRateResult->Fetch())[0].GetFloat();
 
     if (mustResurrectFromUnlock)
@@ -19093,8 +19093,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     // Clean bug Specialization Spells
     RemoveNotActiveSpecializationSpells();
 
-    QueryResult resultvis = CharacterDatabase.PQuery("SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged FROM character_visuals WHERE guid = '%u'", guid);
-    if (resultvis)
+    if(PreparedQueryResult resultvis = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_VISUAL))
     {
         if (!m_vis)
             m_vis = new Visuals;
