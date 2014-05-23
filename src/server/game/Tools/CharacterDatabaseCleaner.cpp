@@ -113,7 +113,7 @@ void CharacterDatabaseCleaner::CheckUnique(const char* column, const char* table
 
 bool CharacterDatabaseCleaner::AchievementProgressCheck(uint32 criteria)
 {
-    return sAchievementCriteriaStore.LookupEntry(criteria);
+    return sCriteriaStore.LookupEntry(criteria);
 }
 
 void CharacterDatabaseCleaner::CleanCharacterAchievementProgress()

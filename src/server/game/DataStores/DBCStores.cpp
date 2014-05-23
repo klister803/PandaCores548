@@ -65,7 +65,7 @@ static AreaFlagByMapID sAreaFlagByMapID;                    // for instances wit
 static WMOAreaInfoByTripple sWMOAreaInfoByTripple;
 
 DBCStorage <AchievementEntry> sAchievementStore(Achievementfmt);
-DBCStorage <AchievementCriteriaEntry> sAchievementCriteriaStore(AchievementCriteriafmt);
+DBCStorage <CriteriaEntry> sCriteriaStore(Criteriafmt);
 DBCStorage <CriteriaTreeEntry> sCriteriaTreeStore(CriteriaTreefmt);
 DBCStorage <ModifierTreeEntry> sModifierTreeStore(ModifierTreefmt);
 DBCStorage <AreaTriggerEntry> sAreaTriggerStore(AreaTriggerEntryfmt);

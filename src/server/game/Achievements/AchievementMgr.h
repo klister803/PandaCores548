@@ -27,11 +27,8 @@
 #include "DBCEnums.h"
 #include "DBCStores.h"
 
-typedef std::list<CriteriaEntry const*> AchievementCriteriaEntryList;
 typedef std::list<CriteriaTreeEntry const*> CriteriaTreeEntryList;
 typedef std::list<AchievementEntry const*>         AchievementEntryList;
-
-typedef std::map<uint32, AchievementCriteriaEntryList> AchievementCriteriaListByAchievement;
 typedef std::map<uint32, AchievementEntryList>         AchievementListByReferencedId;
 
 struct CriteriaProgress
@@ -272,7 +269,7 @@ class AchievementMgr
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };
         void SendAchievementEarned(AchievementEntry const* achievement) const;
         void SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
-        void SendAccountCriteriaUpdate(AchievementCriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
+        void SendAccountCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
 
         CriteriaProgressMap* GetCriteriaProgressMap();
         CriteriaProgress* GetCriteriaProgress(uint32 entry);

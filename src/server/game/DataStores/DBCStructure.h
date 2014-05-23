@@ -65,7 +65,7 @@ struct AchievementCategoryEntry
     //uint32    sortOrder;                                  // 3
 };
 
-struct AchievementCriteriaEntry
+struct CriteriaEntry
 {
     uint32  ID;                                            // 0
     uint32  type;                                          // 1
