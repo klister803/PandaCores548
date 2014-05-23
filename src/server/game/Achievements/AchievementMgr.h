@@ -204,6 +204,7 @@ struct AchievementReward
     std::string subject;
     std::string text;
     uint32 learnSpell;
+    uint32 ScriptId;
 };
 
 typedef std::map<uint32, AchievementReward> AchievementRewards;

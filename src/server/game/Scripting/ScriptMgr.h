@@ -662,6 +662,20 @@ class AchievementCriteriaScript : public ScriptObject
         virtual bool OnCheck(Player* source, Unit* target) = 0;
 };
 
+class AchievementRewardScript : public ScriptObject
+{
+    protected:
+
+        AchievementRewardScript(const char* name);
+
+    public:
+
+        bool IsDatabaseBound() const { return true; }
+
+        // Called ow handling reward
+        virtual bool OnGet(Player* source, AchievementReward const* data) = 0;
+};
+
 class PlayerScript : public ScriptObject
 {
     protected:
@@ -989,6 +1003,10 @@ class ScriptMgr
     public: /* AchievementCriteriaScript */
 
         bool OnCriteriaCheck(AchievementCriteriaData const* data, Player* source, Unit* target);
+
+    public: /* AchievementRewardScript */
+
+        bool OnRewardCheck(AchievementReward const* data, Player* source);
 
     public: /* PlayerScript */
 

@@ -2250,6 +2250,9 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     if (!reward)
         return;
 
+    //! Custom reward handlong
+    sScriptMgr->OnRewardCheck(reward, GetOwner());
+
     // titles
     //! Currently there's only one achievement that deals with gender-specific titles.
     //! Since no common attributes were found, (not even in titleRewardFlags field)
@@ -3750,8 +3753,8 @@ void AchievementGlobalMgr::LoadRewards()
 
     m_achievementRewards.clear();                           // need for reload case
 
-    //                                               0      1        2        3     4       5        6          7
-    QueryResult result = WorldDatabase.Query("SELECT entry, title_A, title_H, item, sender, subject, text, learnSpell FROM achievement_reward");
+    //                                               0      1        2        3     4       5        6          7        8
+    QueryResult result = WorldDatabase.Query("SELECT entry, title_A, title_H, item, sender, subject, text, learnSpell, ScriptName FROM achievement_reward");
 
     if (!result)
     {
@@ -3781,8 +3784,15 @@ void AchievementGlobalMgr::LoadRewards()
         reward.text       = fields[6].GetString();
         reward.learnSpell = fields[7].GetUInt32();
 
+        const char* scriptName = fields[8].GetCString();
+        uint32 scriptId = 0;
+        if (strcmp(scriptName, "")) // not empty
+            scriptId = sObjectMgr->GetScriptId(scriptName);
+
+        reward.ScriptId = scriptId;
+
         // must be title or mail at least
-        if (!reward.titleId[0] && !reward.titleId[1] && !reward.sender && !reward.learnSpell)
+        if (!reward.titleId[0] && !reward.titleId[1] && !reward.sender && !reward.learnSpell && !reward.ScriptId)
         {
             sLog->outError(LOG_FILTER_SQL, "Table `achievement_reward` (Entry: %u) does not have title or item reward data, ignored.", entry);
             continue;
