@@ -2265,7 +2265,10 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     // mail
     if (reward->sender)
     {
-        Item* item = reward->itemId ? Item::CreateItem(reward->itemId, 1, GetOwner()) : NULL;
+        uint32 itemID = sScriptMgr->OnSelectItemReward(reward, GetOwner());
+        if (!itemID) itemID = reward->itemId;   //OnRewardSelectItem return 0 if no script
+
+        Item* item = itemID ? Item::CreateItem(itemID, 1, GetOwner()) : NULL;
 
         int loc_idx = GetOwner()->GetSession()->GetSessionDbLocaleIndex();
 

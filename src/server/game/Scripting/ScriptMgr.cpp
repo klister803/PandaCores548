@@ -1219,6 +1219,15 @@ bool ScriptMgr::OnRewardCheck(AchievementReward const* data, Player* source)
     return tmpscript->OnGet(source, data);
 }
 
+uint32 ScriptMgr::OnSelectItemReward(AchievementReward const* data, Player* source)
+{
+    ASSERT(source);
+    // target can be NULL.
+
+    GET_SCRIPT_RET(AchievementRewardScript, data->ScriptId, tmpscript, false);
+    return tmpscript->SelectItem(source, data);
+}
+
 // Player
 void ScriptMgr::OnPVPKill(Player* killer, Player* killed)
 {
