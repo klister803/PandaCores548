@@ -399,6 +399,12 @@ void AchievementMgr<T>::SendPacket(WorldPacket* data) const
 }
 
 template<>
+void AchievementMgr<InstanceSave>::SendPacket(WorldPacket* data) const
+{
+    // FIXME
+}
+
+template<>
 void AchievementMgr<Guild>::SendPacket(WorldPacket* data) const
 {
     GetOwner()->BroadcastPacket(data);
@@ -430,6 +436,12 @@ void AchievementMgr<T>::RemoveCriteriaProgress(const CriteriaTreeEntry* entry)
 }
 
 template<>
+void AchievementMgr<InstanceSave>::RemoveCriteriaProgress(const CriteriaTreeEntry* entry)
+{
+    // FIXME
+}
+
+template<>
 void AchievementMgr<Guild>::RemoveCriteriaProgress(const CriteriaTreeEntry* entry)
 {
     CriteriaProgressMap::iterator criteriaProgress = GetCriteriaProgressMap()->find(entry->ID);
@@ -457,7 +469,7 @@ void AchievementMgr<T>::ResetAchievementCriteria(AchievementCriteriaTypes type, 
     if (GetOwner()->isGameMaster())
         return;
 
-    CriteriaTreeEntryList const& criteriaTreeList = sAchievementMgr->GetCriteriaTreeByType(type);
+    CriteriaTreeEntryList const& criteriaTreeList = sAchievementMgr->GetCriteriaTreeByType(type, GetCriteriaSort());
     for (CriteriaTreeEntryList::const_iterator i = criteriaTreeList.begin(); i != criteriaTreeList.end(); ++i)
     {
         CriteriaTreeEntry const* criteriaTree = (*i);
@@ -487,6 +499,12 @@ void AchievementMgr<T>::ResetAchievementCriteria(AchievementCriteriaTypes type, 
             break;
         }
     }
+}
+
+template<>
+void AchievementMgr<InstanceSave>::ResetAchievementCriteria(AchievementCriteriaTypes /*type*/, uint32 /*miscValue1*/, uint32 /*miscValue2*/, bool /*evenIfCriteriaComplete*/)
+{
+    // Not needed
 }
 
 template<>
@@ -530,6 +548,11 @@ void AchievementMgr<Guild>::DeleteFromDB(uint32 lowguid, uint32 accountId)
 
 template<class T>
 void AchievementMgr<T>::SaveToDB(SQLTransaction& /*trans*/)
+{
+}
+
+template<>
+void AchievementMgr<InstanceSave>::SaveToDB(SQLTransaction& trans)
 {
 }
 
@@ -824,6 +847,12 @@ void AchievementMgr<T>::LoadFromDB(PreparedQueryResult achievementResult, Prepar
 }
 
 template<>
+void AchievementMgr<InstanceSave>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
+{
+    // FIXME
+}
+
+template<>
 void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
 {
     if (achievementAccountResult)
@@ -1094,6 +1123,12 @@ void AchievementMgr<T>::Reset()
 }
 
 template<>
+void AchievementMgr<InstanceSave>::Reset()
+{
+    // FIXME
+}
+
+template<>
 void AchievementMgr<Player>::Reset()
 {
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
@@ -1243,6 +1278,12 @@ void AchievementMgr<T>::SendAchievementEarned(AchievementEntry const* achievemen
 }
 
 template<>
+void AchievementMgr<InstanceSave>::SendAchievementEarned(AchievementEntry const* achievement) const
+{
+    // FIXME
+}
+
+template<>
 void AchievementMgr<Guild>::SendAchievementEarned(AchievementEntry const* achievement) const
 {
     ObjectGuid guid = GetOwner()->GetGUID();
@@ -1324,6 +1365,12 @@ void AchievementMgr<Player>::SendAccountCriteriaUpdate(CriteriaEntry const* entr
 }
 
 template<>
+void AchievementMgr<InstanceSave>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
+{
+    // FIXME
+}
+
+template<>
 void AchievementMgr<Guild>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
 {
     //will send response to criteria progress request
@@ -1394,10 +1441,6 @@ static const uint32 achievIdForDungeon[][4] =
     { 0,         false,     false,  false }
 };
 
-// Helper function to avoid having to specialize template for a 800 line long function
-template <typename T> static bool IsGuild() { return false; }
-template<> bool IsGuild<Guild>() { return true; }
-
 /**
  * this function will be called whenever the user might have done a criteria relevant action
  */
@@ -1411,10 +1454,10 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         return;
 
      // Lua_GetGuildLevelEnabled() is checked in achievement UI to display guild tab
-    if (IsGuild<T>() && !sWorld->getBoolConfig(CONFIG_GUILD_LEVELING_ENABLED))
+    if (GetCriteriaSort() == GUILD_CRITERIA && !sWorld->getBoolConfig(CONFIG_GUILD_LEVELING_ENABLED))
         return;
 
-    CriteriaTreeEntryList const& criteriaTreeList = sAchievementMgr->GetCriteriaTreeByType(type, IsGuild<T>());
+    CriteriaTreeEntryList const& criteriaTreeList = sAchievementMgr->GetCriteriaTreeByType(type, GetCriteriaSort());
     if(criteriaTreeList.empty())
         return;
 
@@ -2114,7 +2157,8 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     if (entry->timeLimit && timedIter == m_timedAchievements.end())
         return;
 
-    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::SetCriteriaProgress(%u, %u) for (%s GUID: " UI64FMTD ")", entry->ID, changeValue, GetLogNameForGuid(GetOwner()->GetGUID()), GetOwner()->GetGUID());
+    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::SetCriteriaProgress(%u, %u) for (%s GUID: " UI64FMTD ")", entry->ID, changeValue, GetLogNameForGuid(GetOwner()->GetGUID()), GetOwner()->GetGUID());
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::SetCriteriaProgress(%u, %u)", entry->ID, changeValue);
 
     CriteriaProgress* progress = GetCriteriaProgress(treeEntry);
     if (!progress)
@@ -2371,6 +2415,12 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
 }
 
 template<>
+void AchievementMgr<InstanceSave>::CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer)
+{
+    // not needed
+}
+
+template<>
 void AchievementMgr<Guild>::CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer)
 {
     if (achievement->flags & ACHIEVEMENT_FLAG_COUNTER || HasAchieved(achievement->ID))
@@ -2528,6 +2578,12 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     data.PutBits(bit_pos, criteriaCount, 19);
 
     SendPacket(&data);
+}
+
+template<>
+void AchievementMgr<InstanceSave>::SendAllAchievementData(Player* receiver)
+{
+    // not needed
 }
 
 template<>
@@ -3464,6 +3520,25 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
 
      return true;
  }
+
+template<class T>
+CriteriaSort AchievementMgr<T>::GetCriteriaSort() const
+{
+    return PLAYER_CRITERIA;
+}
+
+template<>
+CriteriaSort AchievementMgr<Guild>::GetCriteriaSort() const
+{
+    return GUILD_CRITERIA;
+}
+
+template<>
+CriteriaSort AchievementMgr<InstanceSave>::GetCriteriaSort() const
+{
+    return SCENARIO_CRITERIA;
+}
+
  char const* AchievementGlobalMgr::GetCriteriaTypeString(uint32 type)
  {
      return GetCriteriaTypeString(AchievementCriteriaTypes(type));
@@ -3697,6 +3772,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
      return "";
  }
 
+template class AchievementMgr<InstanceSave>;
 template class AchievementMgr<Guild>;
 template class AchievementMgr<Player>;
 
@@ -3713,6 +3789,7 @@ void AchievementGlobalMgr::LoadAchievementCriteriaList()
 
     volatile uint32 criterias = 0;
     volatile uint32 guildCriterias = 0;
+    volatile uint32 scenarioCriterias = 0;
     for (uint32 entryId = 0; entryId < sAchievementStore.GetNumRows(); ++entryId)
     {
         AchievementEntry const* achievement = sAchievementMgr->GetAchievement(entryId);
@@ -3763,7 +3840,48 @@ void AchievementGlobalMgr::LoadAchievementCriteriaList()
         }
     }
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u achievement criteria and %u guild achievement crieteria in %u ms", criterias, guildCriterias, GetMSTimeDiffToNow(oldMSTime));
+    for (std::set<uint32>::const_iterator itr = sScenarioCriteriaTreeStore.begin(); itr != sScenarioCriteriaTreeStore.end(); ++itr)
+    {
+        uint32 criteriaTree = *itr;
+        std::list<uint32> const* criteriaTreeList = GetCriteriaTreeList(criteriaTree);
+        if (!criteriaTreeList)
+            continue;
+
+        for (std::list<uint32>::const_iterator itr = criteriaTreeList->begin(); itr != criteriaTreeList->end(); ++itr)
+        {
+            CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr);
+            if(!criteriaTree)
+                continue;
+
+            CriteriaEntry const* criteria = sAchievementMgr->GetAchievementCriteria(criteriaTree->criteria);
+            if (!criteria)
+            {
+                if(criteriaTree->criteria != 0 || criteriaTree->parent == 0)
+                    continue;
+
+                std::list<uint32> const* cTreeList = GetCriteriaTreeList(criteriaTree->ID);
+                for (std::list<uint32>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
+                {
+                    CriteriaTreeEntry const* cTree = sCriteriaTreeStore.LookupEntry(*itr);
+                    if(!cTree)
+                        continue;
+                    CriteriaEntry const* crite = sAchievementMgr->GetAchievementCriteria(cTree->criteria);
+                    if (!crite)
+                        continue;
+
+                    ++scenarioCriterias, m_CriteriaTreesByType[crite->type].push_back(cTree);
+
+                    if (crite->timeLimit)
+                        m_CriteriaTreesByTimedType[crite->timedCriteriaStartType].push_back(cTree);
+                }
+                continue;
+            }
+
+            ++scenarioCriterias, m_ScenarioCriteriaTreesByType[criteria->type].push_back(criteriaTree);
+        }
+    }
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u achievement criteria, %u guild and %u scenario criterias in %u ms", criterias, guildCriterias, scenarioCriterias, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void AchievementGlobalMgr::LoadAchievementReferenceList()

@@ -228,6 +228,13 @@ struct CompletedAchievementData
 typedef UNORDERED_MAP<uint32, CriteriaProgress> CriteriaProgressMap;
 typedef UNORDERED_MAP<uint32, CompletedAchievementData> CompletedAchievementMap;
 
+enum CriteriaSort
+{
+    PLAYER_CRITERIA     = 0,
+    GUILD_CRITERIA      = 1,
+    SCENARIO_CRITERIA   = 2,
+};
+
 template<class T>
 class AchievementMgr
 {
@@ -264,6 +271,8 @@ class AchievementMgr
 
             return parent;
         }
+
+        CriteriaSort GetCriteriaSort() const;
 
     private:
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };
@@ -305,9 +314,14 @@ class AchievementGlobalMgr
         static char const* GetCriteriaTypeString(AchievementCriteriaTypes type);
         static char const* GetCriteriaTypeString(uint32 type);
 
-        CriteriaTreeEntryList const& GetCriteriaTreeByType(AchievementCriteriaTypes type, bool guild = false) const
+        CriteriaTreeEntryList const& GetCriteriaTreeByType(AchievementCriteriaTypes type, CriteriaSort sort) const
         {
-            return guild ? m_GuildCriteriaTreesByType[type] : m_CriteriaTreesByType[type];
+            if (sort == PLAYER_CRITERIA)
+                return m_CriteriaTreesByType[type];
+            else if (sort == GUILD_CRITERIA)
+                return m_GuildCriteriaTreesByType[type];
+            else
+                return m_ScenarioCriteriaTreesByType[type];
         }
 
         CriteriaTreeEntryList const& GetTimedCriteriaTreeByType(AchievementCriteriaTimedTypes type) const
@@ -384,6 +398,7 @@ class AchievementGlobalMgr
         // store achievement criterias by type to speed up lookup
         CriteriaTreeEntryList m_CriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
         CriteriaTreeEntryList m_GuildCriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
+        CriteriaTreeEntryList m_ScenarioCriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
 
         CriteriaTreeEntryList m_CriteriaTreesByTimedType[ACHIEVEMENT_TIMED_TYPE_MAX];
 

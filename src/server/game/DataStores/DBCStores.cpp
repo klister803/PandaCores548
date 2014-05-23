@@ -384,23 +384,23 @@ void LoadDBCStores(const std::string& dataPath)
 
     for (uint32 i = 0; i < sAchievementStore.GetNumRows(); ++i)
     {
-        if(AchievementEntry const* as = sAchievementStore.LookupEntry(i))
-            if(as->criteriaTree > 0)
-            sAchievementEntryParentList[as->criteriaTree] = i;
+        if (AchievementEntry const* as = sAchievementStore.LookupEntry(i))
+            if (as->criteriaTree > 0)
+                sAchievementEntryParentList[as->criteriaTree] = i;
     }
 
     for (uint32 i = 0; i < sCriteriaTreeStore.GetNumRows(); ++i)
     {
-        if(CriteriaTreeEntry const* ct = sCriteriaTreeStore.LookupEntry(i))
-            if(ct->parent > 0)
-            sCriteriaTreeEntryList[ct->parent].push_back(i);
+        if (CriteriaTreeEntry const* ct = sCriteriaTreeStore.LookupEntry(i))
+            if (ct->parent > 0)
+                sCriteriaTreeEntryList[ct->parent].push_back(i);
     }
 
     for (uint32 i = 0; i < sModifierTreeStore.GetNumRows(); ++i)
     {
-        if(ModifierTreeEntry const* mt = sModifierTreeStore.LookupEntry(i))
-            if(mt->parent > 0)
-            sModifierTreeEntryList[mt->parent].push_back(i);
+        if (ModifierTreeEntry const* mt = sModifierTreeStore.LookupEntry(i))
+            if (mt->parent > 0)
+                sModifierTreeEntryList[mt->parent].push_back(i);
     }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaTriggerStore,            dbcPath, "AreaTrigger.dbc");//14545
