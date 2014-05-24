@@ -5345,7 +5345,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         return;
 
                     // We need alow no learn new discover spell, but we need get cd. Are we have cd??
-                    if (m_caster->ToPlayer()->HasSpell(142976))
+                    if (m_caster->ToPlayer()->HasSpellCooldown(142976))
                         return;
 
                     m_caster->ToPlayer()->learnSpell(142976, false);
