@@ -293,7 +293,7 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
             {
                 if(!GetCaster())
                     return;
-                amount = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
+                amount = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK) * 2.25);
 
                 if (Unit* target = aurEff->GetBase()->GetUnitOwner())
                     if (target->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
