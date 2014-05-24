@@ -6364,6 +6364,8 @@ void Spell::EffectSkinning(SpellEffIndex /*effIndex*/)
     creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
     int32 reqValue = targetLevel < 10 ? 0 : targetLevel < 20 ? (targetLevel-10)*10 : targetLevel*5;
+    if (targetLevel > 80)
+        reqValue = targetLevel*6;
 
     int32 skillValue = m_caster->ToPlayer()->GetPureSkillValue(skill);
 
