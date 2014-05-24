@@ -5513,6 +5513,16 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 }
             }
             break;
+            // Glyph of Resilient Grip
+            if (m_spellInfo->Id == 90289)
+            {
+                if (!m_caster || !m_caster->ToPlayer())
+                    return;
+
+                m_caster->ToPlayer()->RemoveSpellCooldown(49576, true);
+                return;
+            }
+            break;
         }
         case SPELLFAMILY_WARRIOR:
         {
