@@ -1,0 +1,1 @@
+ALTER TABLE `character_spell_cooldown` CHANGE `spell` `spell` MEDIUMINT(8) NOT NULL DEFAULT '0' COMMENT 'Spell Identifier';

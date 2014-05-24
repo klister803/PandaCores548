@@ -5332,10 +5332,16 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
+                    // If have tmp cd nothing to do
+                    if (m_caster->ToPlayer()->HasSpellCooldown(-int(m_spellInfo->Id)))
+                        return;
 
                     // learn random explicit discovery recipe (if any)
                     if (uint32 discoveredSpell = GetExplicitDiscoverySpell(m_spellInfo->Id, m_caster->ToPlayer()))
+                    {
                         m_caster->ToPlayer()->learnSpell(discoveredSpell, false);
+                        m_caster->ToPlayer()->AddSpellCooldown(-int(m_spellInfo->Id), 0, time(NULL) + DAY);
+                    }
                     return;
                 }
 
@@ -5344,14 +5350,17 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    // We need alow no learn new discover spell, but we need get cd. Are we have cd??
-                    if (m_caster->ToPlayer()->HasSpell(142976))
+                    // If have tmp cd nothing to do
+                    if (m_caster->ToPlayer()->HasSpellCooldown(-142976))
                         return;
 
                     m_caster->ToPlayer()->learnSpell(142976, false);
                     // learn random explicit discovery recipe (if any)
                     if (uint32 discoveredSpell = GetExplicitDiscoverySpell(142976, m_caster->ToPlayer()))
+                    {
                         m_caster->ToPlayer()->learnSpell(discoveredSpell, false);
+                        m_caster->ToPlayer()->AddSpellCooldown(-142976, 0, time(NULL) + DAY);
+                    }
                     return;
                 }
                 case 62482: // Grab Crate
