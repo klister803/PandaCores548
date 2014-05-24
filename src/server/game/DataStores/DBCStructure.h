@@ -1484,7 +1484,7 @@ struct LFGDungeonEntry
     uint32  difficulty;                                     // 8
     uint32  flags;                                          // 9
     uint32  type;                                           // 10
-    //int32 m_faction;                                      // 11
+    int32 m_faction;                                        // 11
     //char*   textureFileName;                              // 12 Name lite
     uint32  expansion;                                      // 13
     //uint32 orderIndex;                                    // 14
@@ -1535,6 +1535,7 @@ struct LFGDungeonEntry
 
         return true;
     }
+
     LfgType GetInternalType() const
     {
         switch (subType)
@@ -1552,9 +1553,20 @@ struct LFGDungeonEntry
 
         return LFG_TYPE_DUNGEON;
     }
+
     bool CanBeRewarded() const
     {
         return type == LFG_TYPE_RANDOM || IsRaidFinder() || IsChallenge() || flags & LFG_FLAG_SEASONAL;
+    }
+
+    bool FitsTeam(uint32 team) const
+    {
+        if (m_faction == -1)
+            return true;
+        else if (m_faction == 0)
+            return team == HORDE;
+        else
+            return team == ALLIANCE;
     }
 };
 
@@ -1860,6 +1872,7 @@ struct ScenarioEntry
     uint32 m_flags;                                         // 2
 
     bool IsChallenge() const { return m_flags & SCENARIO_FLAG_CHALLENGE; }
+    bool IsProvingGrounds() const { return m_flags & SCENARIO_FLAG_SUPRESS_STAGE_TEXT; }
 };
 
 struct ScenarioStepEntry

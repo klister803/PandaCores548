@@ -81,6 +81,7 @@
 #include "Bracket.h"
 #include "BracketMgr.h"
 #include "AuctionHouseMgr.h"
+#include "ScenarioMgr.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -20440,7 +20441,7 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
 
     Group* group = GetGroup();
 
-    //QueryResult* result = CharacterDatabase.PQuery("SELECT id, permanent, map, difficulty, dungeonId FROM character_instance LEFT JOIN instance ON instance = id WHERE guid = '%u'", GUID_LOPART(m_guid));
+    //QueryResult* result = CharacterDatabase.PQuery("SELECT id, permanent, map, difficulty FROM character_instance LEFT JOIN instance ON instance = id WHERE guid = '%u'", GUID_LOPART(m_guid));
     if (result)
     {
         do
@@ -20451,7 +20452,6 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
             uint32 mapId = fields[2].GetUInt16();
             uint32 instanceId = fields[0].GetUInt32();
             uint8 difficulty = fields[3].GetUInt8();
-            uint32 dungeonId = fields[4].GetUInt32();
 
             bool deleteInstance = false;
 
@@ -20494,7 +20494,7 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
             }
 
             // since non permanent binds are always solo bind, they can always be reset
-            if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), !perm, true, dungeonId))
+            if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), !perm, true))
                BindToInstance(save, perm, true);
         }
         while (result->NextRow());
@@ -27976,9 +27976,9 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
 
     Map* map = GetMap();
     // Update scenario/challenge criterias
-    if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(map ? map->GetInstanceId : 0))
-        if (AchievementMgr<InstanceSave>* achievementMgr = save->GetAchievementMgr())
-            achievementMgr->UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
+    if (uint32 instanceId =  map->GetInstanceId())
+        if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
+            progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)

@@ -18,6 +18,8 @@
 #include "Common.h"
 #include "GroupMgr.h"
 #include "InstanceSaveMgr.h"
+#include "ScenarioMgr.h"
+#include "LFGMgr.h"
 
 GroupMgr::GroupMgr()
 {
@@ -193,8 +195,8 @@ void GroupMgr::LoadGroups()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Group instance saves...");
     {
         uint32 oldMSTime = getMSTime();
-        //                                                   0           1        2              3             4             5            6
-        QueryResult result = CharacterDatabase.Query("SELECT gi.guid, i.map, gi.instance, gi.permanent, i.difficulty, COUNT(g.guid), i.dungeonId "
+        //                                                   0           1        2              3             4             5
+        QueryResult result = CharacterDatabase.Query("SELECT gi.guid, i.map, gi.instance, gi.permanent, i.difficulty, COUNT(g.guid) "
             "FROM group_instance gi INNER JOIN instance i ON gi.instance = i.id "
             "LEFT JOIN character_instance ci LEFT JOIN groups g ON g.leaderGuid = ci.guid ON ci.instance = gi.instance AND ci.permanent = 1 GROUP BY gi.instance ORDER BY gi.guid");
         if (!result)
@@ -224,7 +226,7 @@ void GroupMgr::LoadGroups()
                 diff = 0;                                   // default for both difficaly types
             }
 
-            InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), (bool)fields[5].GetUInt64(), true, fields[6].GetUInt32());
+            InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), (bool)fields[5].GetUInt64(), true);
             group->BindToInstance(save, fields[3].GetBool(), true);
             ++count;
         }

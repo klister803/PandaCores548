@@ -473,6 +473,7 @@ enum Opcodes
     CMSG_ROLE_POLL_BEGIN                              = 0x10C1, // 5.4.1 17538
     CMSG_SAVE_CUF_PROFILES                            = 0x175F, // 5.4.1 17538
     CMSG_SAVE_PLAYER                                  = 0x000,  // Not found in 4.3.4
+    CMSG_SCENARIO_POI_QUERY                           = 0x0CE4, // 5.4.1 17538
     CMSG_SEARCH_LFG_JOIN                              = 0x000,  // Not found in 4.3.4
     CMSG_SEARCH_LFG_LEAVE                             = 0x000,  // Not found in 4.3.4
     CMSG_SELECT_FACTION                               = 0x1766, // 5.4.1 17538
@@ -1311,6 +1312,9 @@ enum Opcodes
     SMSG_RESYNC_RUNES                                 = 0x088C, // 5.4.1 17538
     SMSG_ROLE_POLL_BEGIN                              = 0x0CA4, // 5.4.1 17538
     SMSG_RWHOIS                                       = 0xDCA,  // 5.0.5 16048
+    SMSG_SCENARIO_CRITERIA_UPDATE                     = 0x04A4, // 5.4.1 17538
+    SMSG_SCENARIO_POI                                 = 0x0D2C, // 5.4.1 17538
+    SMSG_SCENARIO_PROGRESS_UPDATE                     = 0x0114, // 5.4.1 17538
     SMSG_SELL_ITEM                                    = 0x002E, // 5.4.1 17538
     SMSG_SEND_MAIL_RESULT                             = 0x0C8D, // 5.4.1 17538
     SMSG_SEND_UNLEARN_SPELLS                          = 0x14C4, // 5.4.1 17538

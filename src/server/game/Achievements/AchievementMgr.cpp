@@ -41,6 +41,7 @@
 #include "InstanceScript.h"
 #include "Group.h"
 #include "Bracket.h"
+#include "ScenarioMgr.h"
 
 namespace Trinity
 {
@@ -399,7 +400,7 @@ void AchievementMgr<T>::SendPacket(WorldPacket* data) const
 }
 
 template<>
-void AchievementMgr<InstanceSave>::SendPacket(WorldPacket* data) const
+void AchievementMgr<ScenarioProgress>::SendPacket(WorldPacket* data) const
 {
     // FIXME
 }
@@ -436,7 +437,7 @@ void AchievementMgr<T>::RemoveCriteriaProgress(const CriteriaTreeEntry* entry)
 }
 
 template<>
-void AchievementMgr<InstanceSave>::RemoveCriteriaProgress(const CriteriaTreeEntry* entry)
+void AchievementMgr<ScenarioProgress>::RemoveCriteriaProgress(const CriteriaTreeEntry* entry)
 {
     // FIXME
 }
@@ -502,7 +503,7 @@ void AchievementMgr<T>::ResetAchievementCriteria(AchievementCriteriaTypes type, 
 }
 
 template<>
-void AchievementMgr<InstanceSave>::ResetAchievementCriteria(AchievementCriteriaTypes /*type*/, uint32 /*miscValue1*/, uint32 /*miscValue2*/, bool /*evenIfCriteriaComplete*/)
+void AchievementMgr<ScenarioProgress>::ResetAchievementCriteria(AchievementCriteriaTypes /*type*/, uint32 /*miscValue1*/, uint32 /*miscValue2*/, bool /*evenIfCriteriaComplete*/)
 {
     // Not needed
 }
@@ -552,7 +553,7 @@ void AchievementMgr<T>::SaveToDB(SQLTransaction& /*trans*/)
 }
 
 template<>
-void AchievementMgr<InstanceSave>::SaveToDB(SQLTransaction& trans)
+void AchievementMgr<ScenarioProgress>::SaveToDB(SQLTransaction& trans)
 {
 }
 
@@ -847,7 +848,7 @@ void AchievementMgr<T>::LoadFromDB(PreparedQueryResult achievementResult, Prepar
 }
 
 template<>
-void AchievementMgr<InstanceSave>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
+void AchievementMgr<ScenarioProgress>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
 {
     if (criteriaResult)
     {
@@ -1172,7 +1173,7 @@ void AchievementMgr<T>::Reset()
 }
 
 template<>
-void AchievementMgr<InstanceSave>::Reset()
+void AchievementMgr<ScenarioProgress>::Reset()
 {
     // FIXME
 }
@@ -1327,7 +1328,7 @@ void AchievementMgr<T>::SendAchievementEarned(AchievementEntry const* achievemen
 }
 
 template<>
-void AchievementMgr<InstanceSave>::SendAchievementEarned(AchievementEntry const* achievement) const
+void AchievementMgr<ScenarioProgress>::SendAchievementEarned(AchievementEntry const* achievement) const
 {
     // FIXME
 }
@@ -1414,9 +1415,12 @@ void AchievementMgr<Player>::SendAccountCriteriaUpdate(CriteriaEntry const* entr
 }
 
 template<>
-void AchievementMgr<InstanceSave>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
+void AchievementMgr<ScenarioProgress>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 /*timeElapsed*/, bool timedCompleted) const
 {
     // FIXME
+    GetOwner()->SendCriteriaUpdate(entry->ID, progress->counter, progress->date);
+    if (timedCompleted)
+        GetOwner()->SendStepUpdate();
 }
 
 template<>
@@ -2467,7 +2471,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
 }
 
 template<>
-void AchievementMgr<InstanceSave>::CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer)
+void AchievementMgr<ScenarioProgress>::CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer)
 {
     // not needed
 }
@@ -2633,7 +2637,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
 }
 
 template<>
-void AchievementMgr<InstanceSave>::SendAllAchievementData(Player* receiver)
+void AchievementMgr<ScenarioProgress>::SendAllAchievementData(Player* receiver)
 {
     // not needed
 }
@@ -2985,6 +2989,13 @@ bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, Cr
             // treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
         return false;
     }
+
+    /*if (GetCriteriaSort() == SCENARIO_CRITERIA && !GetOwner()->CanUpdateCriteria(treeEntry))
+    {
+        sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Scenario condition can not be updated at current scenario stage",
+            treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
+        return false;
+    }*/
 
     return true;
 }
@@ -3589,7 +3600,7 @@ CriteriaSort AchievementMgr<Guild>::GetCriteriaSort() const
 }
 
 template<>
-CriteriaSort AchievementMgr<InstanceSave>::GetCriteriaSort() const
+CriteriaSort AchievementMgr<ScenarioProgress>::GetCriteriaSort() const
 {
     return SCENARIO_CRITERIA;
 }
@@ -3827,7 +3838,7 @@ CriteriaSort AchievementMgr<InstanceSave>::GetCriteriaSort() const
      return "";
  }
 
-template class AchievementMgr<InstanceSave>;
+template class AchievementMgr<ScenarioProgress>;
 template class AchievementMgr<Guild>;
 template class AchievementMgr<Player>;
 

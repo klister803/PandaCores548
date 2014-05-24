@@ -35,6 +35,7 @@
 #include "Vehicle.h"
 #include "LFGMgr.h"
 #include "ChallengeMgr.h"
+#include "ScenarioMgr.h"
 
 union u_map_magic
 {
@@ -2404,8 +2405,12 @@ bool InstanceMap::AddPlayerToMap(Player* player)
             InstanceSave* mapSave = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
             if (!mapSave)
             {
+                if (IsScenario())
+                    if (lfg::LFGDungeonData const* data = sLFGMgr->GetLFGDungeon(GetId(), Difficulty(i_difficulty), player->GetTeam()))
+                        sScenarioMgr->AddScenarioProgress(GetId(), GetInstanceId(), data->dbc->scenarioId, false);
+
                 sLog->outInfo(LOG_FILTER_MAPS, "InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
-                mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), true, sLFGMgr->GetDungeon(group->GetGUID()));
+                mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), true);
             }
 
             // check for existing instance binds
@@ -2934,7 +2939,7 @@ uint32 Map::ItemLevelCap() const
     if (IsBattlegroundOrArena())
         return sWorld->getIntConfig(CONFIG_PVP_ITEM_LEVEL_CAP);
 
-    if (isChallenge())
+    if (IsChallenge())
         return MIN_ITEM_LEVEL_CUP;
 
     return 0;

@@ -176,6 +176,20 @@ LFGDungeonData const* LFGMgr::GetLFGDungeon(uint32 id)
     return NULL;
 }
 
+LFGDungeonData const* LFGMgr::GetLFGDungeon(uint32 mapId, Difficulty diff, uint32 team)
+{
+    for (LFGDungeonContainer::const_iterator itr = LfgDungeonStore.begin(); itr != LfgDungeonStore.end(); ++itr)
+    {
+        LFGDungeonEntry const* dungeonEntry = itr->second.dbc;
+
+        if (dungeonEntry->difficulty == uint8(diff) && dungeonEntry->map == mapId &&
+            dungeonEntry->FitsTeam(team))
+            return &itr->second;
+    }
+
+    return NULL;
+}
+
 void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
 {
     uint32 oldMSTime = getMSTime();

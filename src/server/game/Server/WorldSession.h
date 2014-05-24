@@ -1047,6 +1047,9 @@ class WorldSession
         void HandleSaveCUFProfiles(WorldPacket& recvPacket);
         void SendLoadCUFProfiles();
 
+        // Scenarios
+        void HandleScenarioPOIQuery(WorldPacket& recvPacket);
+
         // Challenge Mode
         void HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvPacket);
         void HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& recvPacket);

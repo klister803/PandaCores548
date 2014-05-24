@@ -27,6 +27,7 @@
 #include "LFGMgr.h"
 #include "ChallengeMgr.h"
 #include "Group.h"
+#include "ScenarioMgr.h"
 
 #define CHALLENGE_START 5
 
@@ -51,6 +52,9 @@ void InstanceScript::SaveToDB()
     stmt->setString(2, data);
     stmt->setUInt32(3, instance->GetInstanceId());
     CharacterDatabase.Execute(stmt);
+
+    if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instance->GetInstanceId()))
+        progress->SaveToDB(SQLTransaction(NULL));
 }
 
 void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject* go)
@@ -755,7 +759,7 @@ void InstanceScript::SetChallengeProgresInSec(uint32 timer)
 
 void InstanceScript::StartChallenge()
 {
-    if (instance->IsRaid() || !instance->isChallenge() || instance->GetSpawnMode() == HEROIC_DIFFICULTY)
+    if (instance->IsRaid() || !instance->IsChallenge() || instance->GetSpawnMode() == HEROIC_DIFFICULTY)
         return;
 
     // Check if dungeon support challenge
