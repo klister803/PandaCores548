@@ -4960,11 +4960,11 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     }
 }
 
-void Player::RemoveSpellCooldown(int32 spell_id, bool update /* = false */)
+void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */)
 {
     m_spellCooldowns.erase(spell_id);
 
-    if (update && spell_id > 0)
+    if (update)
         SendClearCooldown(spell_id, this);
 }
 
@@ -5036,10 +5036,7 @@ void Player::RemoveAllSpellCooldown()
     if (!m_spellCooldowns.empty())
     {
         for (SpellCooldowns::const_iterator itr = m_spellCooldowns.begin(); itr != m_spellCooldowns.end(); ++itr)
-        {
-            if (itr->first > 0)
-                SendClearCooldown(itr->first, this);
-        }
+            SendClearCooldown(itr->first, this);
 
         m_spellCooldowns.clear();
     }
@@ -5060,11 +5057,11 @@ void Player::_LoadSpellCooldowns(PreparedQueryResult result)
         do
         {
             Field* fields = result->Fetch();
-            int32 spell_id = fields[0].GetInt32();
+            uint32 spell_id = fields[0].GetUInt32();
             uint32 item_id  = fields[1].GetUInt32();
             time_t db_time  = time_t(fields[2].GetUInt32());
 
-            if (spell_id > 0 && !sSpellMgr->GetSpellInfo(spell_id))
+            if (!sSpellMgr->GetSpellInfo(spell_id))
             {
                 sLog->outError(LOG_FILTER_PLAYER_LOADING, "Player %u has unknown spell %u in `character_spell_cooldown`, skipping.", GetGUIDLow(), spell_id);
                 continue;
@@ -24095,7 +24092,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     }
 }
 
-void Player::AddSpellCooldown(int32 spellid, uint32 itemid, double end_time)
+void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
 {
     SpellCooldown sc;
     sc.end = end_time;
@@ -25000,7 +24997,7 @@ void Player::SendInitialCooldowns()
     for (SpellCooldowns::const_iterator itr = m_spellCooldowns.begin(); itr != m_spellCooldowns.end(); ++itr)
     {
         SpellInfo const *info = sSpellMgr->GetSpellInfo(itr->first);
-        if(!info || itr->first < 0)
+        if(!info)
             continue;
 
         ++spellCount;
