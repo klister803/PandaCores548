@@ -26,14 +26,6 @@ uint32 const megaera_entry[3] =
     NPC_VENOMOUS_HEAD,
 };
 
-uint32 Megaera_Chest[4] = 
-{
-    218805,
-    218806,
-    218807,
-    218808,
-};
-
 enum eSpells
 {
     //Flame Head
@@ -123,21 +115,7 @@ void CheckMegaeraHeads(InstanceScript* instance, Creature* caller, uint32 caller
         if (donecount == 3) 
         {
             caller->setFaction(35);
-            switch (caller->GetMap()->GetDifficulty())
-            {
-            case MAN10_DIFFICULTY:
-                caller->SummonGameObject(Megaera_Chest[0], 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
-                break;
-            case MAN25_DIFFICULTY:
-                caller->SummonGameObject(Megaera_Chest[1], 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
-                break;
-            case MAN10_HEROIC_DIFFICULTY:
-                caller->SummonGameObject(Megaera_Chest[2], 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
-                break;
-            case MAN25_HEROIC_DIFFICULTY:
-                caller->SummonGameObject(Megaera_Chest[3], 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
-                break;
-            }
+            caller->SummonGameObject(218805, 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
             return;
         }
         
