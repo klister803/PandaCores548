@@ -5323,6 +5323,8 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 112996:                                // Scroll of Wisdom
                 case 125557:                                // Imperial Silk
                 case 140040:                                // Magnificence of Leather
+                case 140041:                                // Magnificence of Scales
+                case 142976:                                // Hardened Magnificent Hide
                 case 143011:                                // Celestial Cloth
                 case 143255:                                // Balanced Trillium Ingot
                 case 143626:                                // Celestial Cloth and Its Uses
@@ -5333,6 +5335,22 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
                     // learn random explicit discovery recipe (if any)
                     if (uint32 discoveredSpell = GetExplicitDiscoverySpell(m_spellInfo->Id, m_caster->ToPlayer()))
+                        m_caster->ToPlayer()->learnSpell(discoveredSpell, false);
+                    return;
+                }
+
+                case 143644:                                // Hardened Magnificent Hide and Its Uses
+                {
+                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    // We need alow no learn new discover spell, but we need get cd. Are we have cd??
+                    if (m_caster->ToPlayer()->HasSpell(142976))
+                        return;
+
+                    m_caster->ToPlayer()->learnSpell(142976, false);
+                    // learn random explicit discovery recipe (if any)
+                    if (uint32 discoveredSpell = GetExplicitDiscoverySpell(142976, m_caster->ToPlayer()))
                         m_caster->ToPlayer()->learnSpell(discoveredSpell, false);
                     return;
                 }
