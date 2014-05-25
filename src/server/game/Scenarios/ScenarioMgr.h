@@ -48,6 +48,7 @@ public:
 
     bool IsCompleted() const;
     bool IsBonusStepCompleted() const;
+    uint8 GetBonusStepCount() const;
     bool HasBonusStep() const;
     uint8 GetStepCount(bool withBonus) const;
     uint8 UpdateCurrentStep(bool loading);
@@ -55,7 +56,7 @@ public:
     AchievementMgr<ScenarioProgress>& GetAchievementMgr() { return m_achievementMgr; }
     AchievementMgr<ScenarioProgress> const& GetAchievementMgr() const { return m_achievementMgr; }
 
-    void SendStepUpdate();
+    void SendStepUpdate(Player* player = NULL, bool full = false);
     void SendCriteriaUpdate(uint32 criteriaId, uint32 counter, time_t date);
     void BroadCastPacket(WorldPacket& data);
 

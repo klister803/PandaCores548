@@ -72,13 +72,19 @@ bool ScenarioProgress::IsBonusStepCompleted() const
     return false;
 }
 
-bool ScenarioProgress::HasBonusStep() const
+uint8 ScenarioProgress::GetBonusStepCount() const
 {
+    uint8 count = 0;
     for (ScenarioSteps::const_iterator itr = steps.begin(); itr != steps.end(); ++itr)
         if (itr->second->IsBonusObjective())
-            return true;
+            ++count;
 
-    return false;
+    return count;
+}
+
+bool ScenarioProgress::HasBonusStep() const
+{
+    return GetBonusStepCount() > 0;
 }
 
 uint8 ScenarioProgress::GetStepCount(bool withBonus) const
@@ -113,22 +119,75 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
     return currentStep;
 }
 
-void ScenarioProgress::SendStepUpdate()
+void ScenarioProgress::SendStepUpdate(Player* player, bool full)
 {
     WorldPacket data(SMSG_SCENARIO_PROGRESS_UPDATE, 3 + 7 * 4);
     data.WriteBit(0);                           // unk not used
     data.WriteBit(IsBonusStepCompleted());
+    uint32 bitpos = data.bitwpos();
     data.WriteBits(0, 19);                      // criteria data
+
+    ByteBuffer buff;
+    if (full)
+    {
+        uint32 count = 0;
+        CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap();
+        for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
+        {
+            CriteriaProgress const& progress = itr->second;
+            CriteriaTreeEntry const* criteriaTreeEntry = sCriteriaTreeStore.LookupEntry(itr->first);
+            if (!criteriaTreeEntry)
+                continue;
+
+            ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, scenarioId, HIGHGUID_SCENARIO_CRITERIA);
+            uint64 counter = progress.counter;
+
+            data.WriteGuidMask<7, 6, 0, 4>(criteriaGuid);
+            data.WriteGuidMask<7>(counter);
+            data.WriteGuidMask<5, 1>(criteriaGuid);
+            data.WriteGuidMask<1, 3, 0, 2>(counter);
+            data.WriteGuidMask<3>(criteriaGuid);
+            data.WriteGuidMask<5>(counter);
+            data.WriteBits(0, 4);
+            data.WriteGuidMask<4>(counter);
+            data.WriteGuidMask<2>(criteriaGuid);
+            data.WriteGuidMask<6>(counter);
+
+            buff.WriteGuidBytes<1>(counter);
+            buff << uint32(time(NULL) - progress.date);
+            buff.WriteGuidBytes<3>(counter);
+            buff.WriteGuidBytes<3, 4, 0, 1>(criteriaGuid);
+            buff << secsToTimeBitFields(progress.date);
+            buff.WriteGuidBytes<6, 7>(criteriaGuid);
+            buff.WriteGuidBytes<0>(counter);
+            buff.WriteGuidBytes<5>(criteriaGuid);
+            buff.WriteGuidBytes<4, 5>(counter);
+            buff << uint32(criteriaTreeEntry->criteria);
+            buff.WriteGuidBytes<2>(counter);
+            buff << uint32(time(NULL) - progress.date);
+            buff.WriteGuidBytes<6, 7>(counter);
+            buff.WriteGuidBytes<2>(criteriaGuid);
+
+            ++count;
+        }
+
+        data.FlushBits();
+        data.append(buff);
+        data.PutBits(bitpos, count, 19);
+    }
 
     data << uint32(0);                          // proving grounds max wave
     data << uint32(0);                          // proving grounds diff id
     data << uint32(scenarioId);
-    data << uint32(HasBonusStep());
+    data << uint32(GetBonusStepCount());
     data << uint32(0);                          // proving grounds curr wave
     data << uint32(0);                          // proving grounds duration
     data << uint32(currentStep);
 
-    BroadCastPacket(data);
+    if (player)
+        player->SendDirectMessage(&data);
+    else
+        BroadCastPacket(data);
 }
 
 void ScenarioProgress::SendCriteriaUpdate(uint32 criteriaId, uint32 counter, time_t date)

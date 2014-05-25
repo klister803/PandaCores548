@@ -25557,6 +25557,11 @@ void Player::SendInitialPacketsAfterAddToMap()
     SendDeathRuneUpdate();
     GetSession()->SendStablePet(0);
 
+    // send step data when entering scenarios
+    if (uint32 instanceId = inst->GetInstanceId())
+        if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
+            progress->SendStepUpdate(this, true);
+
     SetMover(this);
 }
 
