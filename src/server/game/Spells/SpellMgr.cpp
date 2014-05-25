@@ -4772,6 +4772,20 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 108446: // Soul Link
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
                     break;
+                case 63487: // Ice Trap. Hack from wait to fix areatrigger
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;                    
+                    spellInfo->Effects[0].TriggerSpell = 135299;
+                    spellInfo->ProcChance = 100;
+                    spellInfo->Effects[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;                    
+                    spellInfo->Effects[1].TriggerSpell = 13810;
+                    spellInfo->Effects[1].TargetA = 18;
+                    break;
+                case 135299: // Ice Trap Trigger. Hack from wait to fix areatrigger
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
+                    spellInfo->Effects[0].TargetA = 28;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13); // 10yard
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9); // 30s                    
+                    break;
                 default:
                     break;
             }
