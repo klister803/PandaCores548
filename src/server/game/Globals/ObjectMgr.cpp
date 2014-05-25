@@ -7164,6 +7164,80 @@ void ObjectMgr::LoadQuestPOI()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u quest POI definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void ObjectMgr::LoadScenarioPOI()
+{
+    uint32 oldMSTime = getMSTime();
+
+    _scenarioPOIStore.clear();                          // need for reload case
+
+    uint32 count = 0;
+
+    //                                               0               1   2      3               4      5      6      7      8
+    QueryResult result = WorldDatabase.Query("SELECT criteriaTreeId, id, mapid, WorldMapAreaId, unk12, unk16, unk20, unk24, unk28 FROM scenario_poi order by criteriaTreeId");
+
+    if (!result)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 scenario POI definitions. DB table `scenario_poi` is empty.");
+
+        return;
+    }
+
+    //                                               0               1   2  3
+    QueryResult points = WorldDatabase.Query("SELECT criteriaTreeId, id, x, y FROM scenario_poi_points ORDER BY criteriaTreeId DESC, idx");
+
+    std::vector<std::vector<std::vector<ScenarioPOIPoint> > > POIs;
+
+    if (points)
+    {
+        // The first result should have the highest questId
+        Field* fields = points->Fetch();
+        uint32 criteriaTreeIdMax = fields[0].GetUInt32();
+        POIs.resize(criteriaTreeIdMax + 1);
+
+        do
+        {
+            fields = points->Fetch();
+
+            uint32 criteriaTreeId     = fields[0].GetUInt32();
+            uint32 id                 = fields[1].GetUInt32();
+            int32  x                  = fields[2].GetInt32();
+            int32  y                  = fields[3].GetInt32();
+
+            if (POIs[criteriaTreeId].size() <= id + 1)
+                POIs[criteriaTreeId].resize(id + 10);
+
+            ScenarioPOIPoint point(x, y);
+            POIs[criteriaTreeId][id].push_back(point);
+        } while (points->NextRow());
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 criteriaTreeId     = fields[0].GetUInt32();
+        uint32 id                 = fields[1].GetUInt32();
+        uint32 mapid              = fields[2].GetUInt32();
+        uint32 WorldMapAreaId     = fields[3].GetUInt32();
+        uint32 unk12              = fields[4].GetUInt32();
+        uint32 unk16              = fields[5].GetUInt32();
+        uint32 unk20              = fields[6].GetUInt32();
+        uint32 unk24              = fields[7].GetUInt32();
+        uint32 unk28              = fields[8].GetUInt32();
+
+        if(POIs[criteriaTreeId].size() > 0)
+        {
+            ScenarioPOI POI(id, mapid, WorldMapAreaId, unk12, unk16, unk20, unk24, unk28);
+            POI.points = POIs[criteriaTreeId][id];
+            _scenarioPOIStore[criteriaTreeId].push_back(POI);
+        }
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u scenario POI definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::LoadNPCSpellClickSpells()
 {
     uint32 oldMSTime = getMSTime();

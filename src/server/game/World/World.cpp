@@ -1662,6 +1662,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Quests Relations...");
     sObjectMgr->LoadQuestRelations();                            // must be after quest load
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Scenario POI");
+    sObjectMgr->LoadScenarioPOI();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Objects Pooling Data...");
     sPoolMgr->LoadFromDB();
 

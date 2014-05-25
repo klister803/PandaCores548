@@ -530,6 +530,35 @@ struct QuestPOI
 typedef std::vector<QuestPOI> QuestPOIVector;
 typedef UNORDERED_MAP<uint32, QuestPOIVector> QuestPOIContainer;
 
+struct ScenarioPOIPoint
+{
+    int32 x;
+    int32 y;
+
+    ScenarioPOIPoint() : x(0), y(0) {}
+    ScenarioPOIPoint(int32 _x, int32 _y) : x(_x), y(_y) {}
+};
+
+struct ScenarioPOI
+{
+    uint32 Id;
+    uint32 MapId;
+    uint32 WorldMapAreaId;
+    uint32 Unk12;
+    uint32 Unk16;
+    uint32 Unk20;
+    uint32 Unk24;
+    uint32 Unk28;
+    std::vector<ScenarioPOIPoint> points;
+
+    ScenarioPOI() : Id(0), MapId(0), WorldMapAreaId(0), Unk12(0), Unk16(0), Unk20(0), Unk24(0), Unk28(0) {}
+    ScenarioPOI(uint32 _Id, uint32 _MapId, uint32 _WorldMapAreaId, uint32 _Unk12, uint32 _Unk16, uint32 _Unk20, uint32 _Unk24, uint32 _Unk28) :
+        Id(_Id), MapId(_MapId), WorldMapAreaId(_WorldMapAreaId), Unk12(_Unk12), Unk16(_Unk16), Unk20(_Unk20), Unk24(_Unk24), Unk28(_Unk28) { }
+};
+
+typedef std::vector<ScenarioPOI> ScenarioPOIVector;
+typedef UNORDERED_MAP<uint32, ScenarioPOIVector> ScenarioPOIContainer;
+
 struct GraveYardData
 {
     uint32 safeLocId;
@@ -785,6 +814,14 @@ class ObjectMgr
             return NULL;
         }
 
+        ScenarioPOIVector const* GetScenarioPOIVector(uint32 criteriaTreeId)
+        {
+            ScenarioPOIContainer::const_iterator itr = _scenarioPOIStore.find(criteriaTreeId);
+            if (itr != _scenarioPOIStore.end())
+                return &itr->second;
+            return NULL;
+        }
+
         VehicleAccessoryList const* GetVehicleAccessoryList(Vehicle* veh) const;
 
         DungeonEncounterList const* GetDungeonEncounterList(uint32 mapId, Difficulty difficulty)
@@ -932,6 +969,7 @@ class ObjectMgr
 
         void LoadPointsOfInterest();
         void LoadQuestPOI();
+        void LoadScenarioPOI();
 
         void LoadNPCSpellClickSpells();
 
@@ -1349,6 +1387,7 @@ class ObjectMgr
         PointOfInterestContainer _pointsOfInterestStore;
 
         QuestPOIContainer _questPOIStore;
+        ScenarioPOIContainer _scenarioPOIStore;
 
         QuestRelations _goQuestRelations;
         QuestRelations _goQuestInvolvedRelations;
