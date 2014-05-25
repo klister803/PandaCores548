@@ -285,7 +285,8 @@ void Battleground::Update(uint32 diff)
                         SetStartDelayTime(10000);
                         for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
                             if (Player* player = sObjectAccessor->FindPlayer(itr->first))
-                                player->SetAuraStack(SPELL_ARENA_DUMPENING, player, 1);
+                                if (!player->HasAura(SPELL_ARENA_DUMPENING))
+                                    player->CastSpell(player, SPELL_ARENA_DUMPENING, true);
                     }
                 }
             }

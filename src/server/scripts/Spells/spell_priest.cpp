@@ -289,9 +289,8 @@ class spell_pri_power_word_solace : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
+                if (Unit* caster = GetCaster())
+                    caster->CastSpell(caster, 129253, true);
             }
 
             void Register()
@@ -780,52 +779,6 @@ class spell_pri_grace : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_grace_SpellScript();
-        }
-};
-
-// Called by Smite - 585 and Greater Heal - 2060
-// Train of Thought - 92297
-class spell_pri_train_of_thought : public SpellScriptLoader
-{
-    public:
-        spell_pri_train_of_thought() : SpellScriptLoader("spell_pri_train_of_thought") { }
-
-        class spell_pri_train_of_thought_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_train_of_thought_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(PRIEST_TRAIN_OF_THOUGHT))
-                        {
-                            if (GetSpellInfo()->Id == 585)
-                            {
-                                if (_player->HasSpellCooldown(PRIEST_SPELL_PENANCE))
-                                    _player->ModifySpellCooldown(PRIEST_SPELL_PENANCE, -500);
-                            }
-                            else if (GetSpellInfo()->Id == 2060)
-                            {
-                                if (_player->HasSpellCooldown(PRIEST_INNER_FOCUS))
-                                    _player->ModifySpellCooldown(PRIEST_SPELL_PENANCE, -5 * IN_MILLISECONDS);
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pri_train_of_thought_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_train_of_thought_SpellScript();
         }
 };
 
@@ -2136,7 +2089,6 @@ class spell_pri_shadowform : public SpellScriptLoader
 enum PsyfiendSpells
 {
     SPELL_PSYCHIC_HORROR    = 113792,
-    SPELL_ROOT_FOR_EVER     = 31366,
 };
 
 // Void Tendrils - 108920
@@ -2151,32 +2103,10 @@ class spell_pri_void_tendrils : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
-                    {
-                        Position pos;
-                        target->GetPosition(&pos);
-                        uint32 duration = 20000;
-                        if(target->GetTypeId() == TYPEID_PLAYER)
-                            duration = 8000;
-
-                        SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(3296);
-                        if (TempSummon* summon = caster->GetMap()->SummonCreature(65282, pos, properties, duration))
-                        {
-                            summon->AddAura(SPELL_ROOT_FOR_EVER, summon);
-                            if(Aura* aura = summon->AddAura(PRIEST_SPELL_VOID_TENDRILS, target))
-                                aura->SetDuration(duration);
-                            if (summon->AI())
-                                summon->AI()->SetGUID(target->GetGUID());
-                            summon->SetLevel(caster->getLevel());
-                            summon->SetMaxHealth(caster->CountPctFromMaxHealth(20));
-                            summon->SetHealth(summon->GetMaxHealth());
-                            // Set no damage
-                            summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
-                            summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
-                        }
-                    }
+                        caster->CastSpell(target, 127665, true);
                 }
             }
 
@@ -2230,7 +2160,7 @@ class spell_pri_psychic_terror : public SpellScriptLoader
                     for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
                     {
                         if(Unit* targer = (*itr)->ToUnit())
-                        if (targer->IsWithinDist(caster, 20) && !targer->HasAura(113792))
+                        if (targer->IsWithinDist(caster, 20) && !targer->HasAura(113792) && !targer->HasAura(119032))
                             unitList.push_back((*itr));
                     }
                 }
@@ -2338,6 +2268,67 @@ class spell_pri_divine_star : public SpellScriptLoader
         }
 };
 
+// Power Word: Solace - 140815
+class spell_pri_power_word_solace_heal : public SpellScriptLoader
+{
+    public:
+        spell_pri_power_word_solace_heal() : SpellScriptLoader("spell_pri_power_word_solace_heal") { }
+
+        class spell_pri_power_word_solace_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_power_word_solace_heal_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                {
+                    targets.push_back(GetCaster());
+                    return;
+                }
+
+                Unit* targerSave = NULL;
+                for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
+                {
+                    if(Unit* target = (*itr)->ToUnit())
+                        if(target->GetTypeId() == TYPEID_PLAYER)
+                            if(!targerSave || target->GetHealth() < targerSave->GetHealth())
+                                targerSave = target;
+                }
+
+                targets.clear();
+                if(targerSave)
+                    targets.push_back(targerSave);
+                else
+                    targets.push_back(GetCaster());
+            }
+
+            void FilterSelf(std::list<WorldObject*>& targets)
+            {
+                targets.clear();
+            }
+
+            void HandleDamageCalc(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+                if(caster == target)
+                    SetHitHeal(GetHitHeal() / 2);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_pri_power_word_solace_heal_SpellScript::HandleDamageCalc, EFFECT_0, SPELL_EFFECT_HEAL);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_power_word_solace_heal_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_power_word_solace_heal_SpellScript::FilterSelf, EFFECT_0, TARGET_DEST_DEST);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_power_word_solace_heal_SpellScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_item_s12_4p_heal();
@@ -2358,7 +2349,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_lightwell_renew();
     new spell_pri_strength_of_soul();
     new spell_pri_grace();
-    new spell_pri_train_of_thought();
     new spell_pri_rapture();
     new spell_pri_atonement();
     new spell_pri_spirit_shell();
@@ -2387,4 +2377,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_void_tendrils();
     new spell_pri_psychic_terror();
     new spell_pri_divine_star();
+    new spell_pri_power_word_solace_heal();
 }
