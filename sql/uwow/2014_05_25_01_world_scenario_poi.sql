@@ -17,6 +17,6 @@ CREATE TABLE `scenario_poi_points` (
   `idx` int(10) unsigned NOT NULL DEFAULT '0',
   `x` int(11) NOT NULL DEFAULT '0',
   `y` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`questId`,`id`,`idx`),
-  KEY `questId_id` (`questId`,`id`)
+  PRIMARY KEY (`criteriaTreeId`,`id`,`idx`),
+  KEY `criteriaTreeId_id` (`criteriaTreeId`,`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
