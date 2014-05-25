@@ -1968,6 +1968,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         }
                     }
                     break;
+                case 56453: // test
+                        caster->ToPlayer()->RemoveSpellCooldown(53301, true);
+                    break;
             }
             break;
         case SPELLFAMILY_PALADIN:
