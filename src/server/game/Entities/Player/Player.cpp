@@ -25563,7 +25563,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetSession()->SendStablePet(0);
 
     // send step data when entering scenarios
-    if (uint32 instanceId = inst->GetInstanceId())
+    if (uint32 instanceId = inst ? inst->GetInstanceId() : 0)
         if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
             progress->SendStepUpdate(this, true);
 
