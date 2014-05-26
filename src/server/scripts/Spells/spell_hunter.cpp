@@ -1207,9 +1207,6 @@ class spell_hun_kill_command : public SpellScriptLoader
                 {
                     if (Unit* pet = GetCaster()->GetGuardianPet())
                     {
-                        if (pet->isDead())
-                            return SPELL_FAILED_NO_PET;
-
                         float x, y, z;
                         pet->GetPosition(x, y, z);
                         
