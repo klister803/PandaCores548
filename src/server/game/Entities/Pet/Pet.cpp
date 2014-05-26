@@ -2026,7 +2026,7 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
     }
 
     // Spirit Bond
-    if (owner->HasAura(109212))
+    if (owner->HasAura(109212) && !owner->HasAura(118694))
         AddAura(118694, this);
     
     // Glyph of Animal Bond
