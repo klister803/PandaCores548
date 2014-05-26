@@ -1009,7 +1009,7 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, b
                 ++tank;
         }
     }
-    return tank >= roleData.minTanksNeeded && healer >= roleData.minHealerNeeded && damage >= roleData.minDpsNeeded;
+    return tank + healer + damage == uint8(groles.size());
 }
 
 /**
@@ -1052,8 +1052,8 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
         if (!grp)
         {
             grp = new Group();
-            grp->ConvertToLFG(dungeon);
             grp->Create(player);
+            grp->ConvertToLFG(dungeon);
             uint64 gguid = grp->GetGUID();
             SetState(gguid, LFG_STATE_PROPOSAL);
             sGroupMgr->AddGroup(grp);
