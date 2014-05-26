@@ -343,7 +343,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MESSAGECHAT_YELL,                        STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMessagechatOpcode         );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOUNTSPECIAL_ANIM,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMountSpecialAnimOpcode    );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_NOT_ACTIVE_MOVER,                   STATUS_LOGGEDIN, PROCESS_THREADSAFE,   &WorldSession::HandleMoveNotActiveMover        );
-    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_KNOCK_BACK_ACK,                     STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMoveKnockBackAck          );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_KNOCK_BACK_ACK,                     STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMovementOpcodes           );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_SPLINE_DONE,                        STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMoveSplineDoneOpcode      );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_TIME_SKIPPED,                       STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleMoveTimeSkippedOpcode     );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_NAME_QUERY,                              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleNameQueryOpcode           );
