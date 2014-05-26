@@ -686,6 +686,11 @@ void KillRewarder::Reward()
         if (uint32 guildId = victim->GetMap()->GetOwnerGuildId())
             if (Guild* guild = sGuildMgr->GetGuildById(guildId))
                 guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, victim->GetEntry(), 1, victim, _killer);
+
+        // Update group scenario/challenge criterias
+        if (uint32 instanceId =  victim->GetMap()->GetInstanceId())
+            if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
+                progress->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, victim->GetEntry(), 1, victim, _killer);
     }
 
 }
@@ -27972,18 +27977,18 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
     if (sAchievementMgr->IsGroupCriteriaType(type))
         return;
 
-    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-        guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
-        
     // Quest "A Test of Valor"
     if (GetAchievementMgr().HasAchieved(8030) || GetAchievementMgr().HasAchieved(8031))
         KilledMonsterCredit(69145, 0);
 
     Map* map = GetMap();
     // Update scenario/challenge criterias
-    if (uint32 instanceId =  map->GetInstanceId())
+    if (uint32 instanceId =  map ? map->GetInstanceId() : 0)
         if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
             progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
+
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)
