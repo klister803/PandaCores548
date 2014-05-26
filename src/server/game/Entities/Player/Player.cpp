@@ -19126,7 +19126,7 @@ bool Player::isAllowedToLoot(const Creature* creature)
     if (!creature->isDead() || !creature->IsDamageEnoughForLootingAndReward())
         return false;
 
-    if (!creature->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
+    if (!creature->HasFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
         return false;
 
     if (HasPendingBind())
