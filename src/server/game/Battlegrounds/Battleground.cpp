@@ -206,6 +206,10 @@ Battleground::Battleground()
     m_IsRBG = false;
 
     m_sameBgTeamId = false;
+    
+    m_flagCarrierTime = FLAGS_UPDATE;
+
+    m_StartDelayTime = 0;
 }
 
 Battleground::~Battleground()
@@ -292,6 +296,7 @@ void Battleground::Update(uint32 diff)
             }
             else
             {
+                SendFlagsPositionsUpdate(diff);
                 _ProcessRessurect(diff);
                 if (sBattlegroundMgr->GetPrematureFinishTime() && (GetPlayersCountByTeam(ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(HORDE) < GetMinPlayersPerTeam()))
                     _ProcessProgress(diff);
@@ -2039,4 +2044,60 @@ void Battleground::RewardXPAtKill(Player* killer, Player* victim)
 {
     if (sWorld->getBoolConfig(CONFIG_BG_XP_FOR_KILL) && killer && victim)
         killer->RewardPlayerAndGroupAtKill(victim, true);
+}
+
+void Battleground::SendFlagsPositionsUpdate(uint32 diff)
+{
+    if (m_flagCarrierTime > int(diff))
+    {
+        m_flagCarrierTime -= diff;
+        return;
+    }
+    m_flagCarrierTime = FLAGS_UPDATE;
+
+    uint32 flagCarrierCount = 0;
+    Player* FlagCarrier[2];
+
+    for(uint8 i = 0; i < 2; ++i)
+    {
+        FlagCarrier[i] = NULL;
+        if (uint64 guid = GetFlagPickerGUID(i))
+        {
+            FlagCarrier[TEAM_ALLIANCE] = ObjectAccessor::FindPlayer(guid);
+            if (FlagCarrier[i])
+                ++flagCarrierCount;
+        }
+    }
+
+    WorldPacket packet(SMSG_BATTLEGROUND_PLAYER_POSITIONS);
+    packet.WriteBits(flagCarrierCount, 20);
+
+    ObjectGuid guids[2];
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        Player* player = FlagCarrier[i];
+        if (!player)
+            continue;
+
+        guids[i] = player->GetGUID();
+        packet.WriteGuidMask<6, 5, 4, 0, 2, 3, 7, 1>(guids[i]);
+    }
+
+    packet.FlushBits();
+
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        Player* player = FlagCarrier[i];
+        if (!player)
+            continue;
+
+        packet << player->GetPositionY();
+        packet.WriteGuidBytes<2, 3, 7, 0, 1, 6>(guids[i]);
+        packet << uint8(player->GetTeamId() == TEAM_ALLIANCE ? 1 : 2);
+        packet.WriteGuidBytes<5, 4>(guids[i]);
+        packet << uint8(player->GetTeamId() == TEAM_ALLIANCE ? 3 : 2);
+        packet << player->GetPositionX();
+    }
+
+    SendPacketToAll(&packet);
 }

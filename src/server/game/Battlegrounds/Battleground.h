@@ -107,6 +107,7 @@ enum BattlegroundSpells
 
 enum BattlegroundTimeIntervals
 {
+    FLAGS_UPDATE                    = 5000,
     RESURRECTION_INTERVAL           = 30000,                // ms
     //REMIND_INTERVAL                 = 10000,                // ms
     INVITATION_REMIND_TIME          = 20000,                // ms
@@ -634,6 +635,8 @@ class Battleground
         
         void SetRBG(bool enable) { m_IsRBG = enable; }
 
+        void SendFlagsPositionsUpdate(uint32 diff);
+
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
         void EndNow();
@@ -689,6 +692,7 @@ class Battleground
         bool   m_IsArena;
         uint8  m_Winner;                                    // 0=alliance, 1=horde, 2=none
         int32  m_StartDelayTime;
+        int32  m_flagCarrierTime;
         bool   m_IsRated;                                   // is this battle rated?
         bool   m_PrematureCountDown;
         uint32 m_PrematureCountDownTimer;

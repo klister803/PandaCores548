@@ -33,7 +33,6 @@ BattlegroundDG::BattlegroundDG()
     BgObjects.resize(BG_DG_OBJECT_MAX);
     BgCreatures.resize(BG_DG_UNIT_MAX);
 
-    m_flagsUpdTimer = FLAGS_UPDATE;
     m_goldUpdate = GOLD_UPDATE;
 
     StartMessageIds[BG_STARTING_EVENT_FIRST]  = LANG_BG_DG_START_TWO_MINUTES;
@@ -184,48 +183,12 @@ void BattlegroundDG::EventPlayerDroppedFlag(Player *Source)
             m_carts[i]->CartDropped();
 }
 
-void BattlegroundDG::SendFlagsPositionsUpdate(bool sendIfEmpty)
+uint64 BattlegroundDG::GetFlagPickerGUID(int32 team) const
 {
-    Player* players[2];
-    uint8 count = 0;
-    for (uint8 i = 0; i < 2; ++i)
-    {
-        players[i] = m_carts[i]->ControlledBy();
-        if (players[i])
-            count++;
-    }
+    if (Player* player = m_carts[team == TEAM_ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE]->ControlledBy())
+        return player->GetGUID();
 
-    if (!sendIfEmpty && !count)
-        return;
-
-    WorldPacket packet(SMSG_BATTLEGROUND_PLAYER_POSITIONS);
-    packet.WriteBits(count, 20);
-
-    ObjectGuid guids[2];
-    for (uint8 i = 0; i < 2; ++i)
-    {
-        if (!players[i])
-            continue;
-
-        guids[i] = players[i]->GetGUID();
-        packet.WriteGuidMask<6, 5, 4, 0, 2, 3, 7, 1>(guids[i]);
-    }
-
-    for (uint8 i = 0; i < 2; ++i)
-    {
-        if (!players[i])
-            continue;
-
-        Player* player = players[i];
-        packet << player->GetPositionY();
-        packet.WriteGuidBytes<2, 3, 7, 0, 1, 6>(guids[i]);
-        packet << uint8(player->GetTeamId() == TEAM_ALLIANCE ? 1 : 2);
-        packet.WriteGuidBytes<5, 4>(guids[i]);
-        packet << uint8(player->GetTeamId() == TEAM_ALLIANCE ? 3 : 2);
-        packet << player->GetPositionX();
-    }
-
-    SendPacketToAll(&packet);
+    return 0;
 }
 
 void BattlegroundDG::UpdatePointsCountPerTeam()
@@ -262,13 +225,6 @@ void BattlegroundDG::PostUpdateImpl(uint32 diff)
     for (uint8 i = BG_DG_UNIT_FLAG_BOT; i <= BG_DG_UNIT_FLAG_TOP; ++i)
         m_points[i]->Update(diff);
 
-    if (m_flagsUpdTimer < 0)
-    {
-        SendFlagsPositionsUpdate();
-        m_flagsUpdTimer = FLAGS_UPDATE;
-    }
-    else
-        m_flagsUpdTimer -= diff;
 
     if (m_goldUpdate < 0)
     {
@@ -734,7 +690,7 @@ void BattlegroundDG::Cart::ToggleCaptured(Player *player)
 
         m_controlledBy = player->GetGUID();
 
-        GetBg()->SendFlagsPositionsUpdate();
+        GetBg()->SendFlagsPositionsUpdate(FLAGS_UPDATE);
 
         uint32 goldBeffore = GetBg()->GetCurrentGold(TeamId());
         int32 takeGold = -200;
@@ -790,6 +746,6 @@ void BattlegroundDG::Cart::UnbindCartFromPlayer()
         uint32 statefield = (player->GetTeamId() == TEAM_ALLIANCE) ? 7904 : 7887;
         GetBg()->UpdateWorldState(statefield, 1);
 
-        GetBg()->SendFlagsPositionsUpdate(true);
+        GetBg()->SendFlagsPositionsUpdate(FLAGS_UPDATE);
     }
 }

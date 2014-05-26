@@ -22,7 +22,6 @@
 #include "Battleground.h"
 
 #define CAPTURE_TIME 40000
-#define FLAGS_UPDATE 5000
 #define GOLD_UPDATE 5000
 
 #define BG_DG_MAX_TEAM_SCORE 1600
@@ -177,12 +176,12 @@ public:
     void EventPlayerUsedGO(Player* player, GameObject* go);
     void EventPlayerDroppedFlag(Player* Source);
 
-    void SendFlagsPositionsUpdate(bool sendIfEmpty = false);
-
     void UpdatePointsCountPerTeam();
 
     uint32 ModGold(uint8 teamId, int32 val);
     uint32 GetCurrentGold(uint8 teamId) { return m_gold[teamId]; }
+
+    uint64 GetFlagPickerGUID(int32 team) const;
 
 private:
         class Point
