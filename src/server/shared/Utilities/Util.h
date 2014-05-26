@@ -535,7 +535,14 @@ public:
     inline const uint32 & operator [](uint8 el) const
     {
         return part[el];
-    }
+    };
 };
 
+template <typename T> inline bool isNanOrInf(T x)
+{
+    if (x!=x)   return true;                // x is nan
+    if (x>0 && x/x != x/x)  return true;    // x is +inf
+    if (x<0 && x/x != x/x) return true;     // x is -inf
+    return false;
+};
 #endif

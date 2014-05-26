@@ -25,6 +25,8 @@
 #include "Utilities/ByteConverter.h"
 #include <ace/OS_NS_time.h>
 #include <time.h>
+#include "Util.h"
+
 
 #define BITS_1 uint8 _1
 #define BITS_2 BITS_1, uint8 _2
@@ -515,12 +517,16 @@ class ByteBuffer
         ByteBuffer &operator>>(float &value)
         {
             value = read<float>();
+            if (isNanOrInf<float>(value))
+                throw ByteBufferPositionException(false, _rpos, sizeof(float), size());
             return *this;
         }
 
         ByteBuffer &operator>>(double &value)
         {
             value = read<double>();
+            if (isNanOrInf<double>(value))
+                throw ByteBufferPositionException(false, _rpos, sizeof(double), size());
             return *this;
         }
 

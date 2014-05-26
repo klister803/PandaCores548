@@ -21,6 +21,7 @@
 #include "VMapManager2.h"
 #include "VMapDefinitions.h"
 #include "Log.h"
+#include "Util.h"
 
 #include <string>
 #include <sstream>
@@ -162,7 +163,7 @@ namespace VMAP
         float maxDist = (pos2 - pos1).magnitude();
         // valid map coords should *never ever* produce float overflow, but this would produce NaNs too
         //ASSERT(maxDist < std::numeric_limits<float>::max());
-        if(maxDist > std::numeric_limits<float>::max())
+        if(maxDist > std::numeric_limits<float>::max() || isNanOrInf<float>(maxDist))
             return false;
         // prevent NaN values which can cause BIH intersection to enter infinite loop
         if (maxDist < 1e-10f)
@@ -186,7 +187,8 @@ namespace VMAP
         float maxDist = (pPos2 - pPos1).magnitude();
         // valid map coords should *never ever* produce float overflow, but this would produce NaNs too
         //ASSERT(maxDist < std::numeric_limits<float>::max());
-        if(maxDist > std::numeric_limits<float>::max())
+        // isNanOrInf additional check with maxDist < 1e-10f
+        if(maxDist > std::numeric_limits<float>::max() || isNanOrInf<float>(maxDist))
             return false;
         // prevent NaN values which can cause BIH intersection to enter infinite loop
         if (maxDist < 1e-10f)
