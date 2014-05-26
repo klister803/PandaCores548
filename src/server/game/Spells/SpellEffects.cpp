@@ -709,13 +709,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                         break;
                     }
-                    case 114871: // Holy Prism (for Friend)
-                    case 114852: // Holy Prism (for Enemy)
-                    {
-                        int32 SPD = m_caster->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_HOLY);
-                        damage += effIndex == 0 ? SPD * 1.428f: SPD * 0.962f;
-                        break;
-                    }
                     default:
                         break;
                 }
@@ -2348,13 +2341,6 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             case 105708: // Master Healing Potion
             {
                 addhealth = 60000; // dbc missing scaling data
-                break;
-            }
-            case 114871: // Holy Prism (for Friend)
-            case 114852: // Holy Prism (for Enemy)
-            {
-                int32 SPD = caster->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_HOLY);
-                addhealth += effIndex == 0 ? SPD * 1.428f: SPD * 0.962f;
                 break;
             }
             default:
