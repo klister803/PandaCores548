@@ -1199,7 +1199,28 @@ class spell_hun_kill_command : public SpellScriptLoader
 
                 return SPELL_CAST_OK;
             }
+            
+            SpellCastResult CheckIfPetInLOS()
+            {
+                Unit* caster = GetCaster();
+                if (Player* player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* pet = GetCaster()->GetGuardianPet())
+                    {
+                        if (pet->isDead())
+                            return SPELL_FAILED_NO_PET;
 
+                        float x, y, z;
+                        pet->GetPosition(x, y, z);
+                        
+                        if(Unit* target = player->GetSelectedUnit())
+                           if (target->IsWithinLOS(x, y, z))
+                               return SPELL_CAST_OK;
+                    }
+                }
+                return SPELL_FAILED_LINE_OF_SIGHT;
+            }
+            
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();
@@ -1217,6 +1238,7 @@ class spell_hun_kill_command : public SpellScriptLoader
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_hun_kill_command_SpellScript::CheckCastMeet);
+                OnCheckCast += SpellCheckCastFn(spell_hun_kill_command_SpellScript::CheckIfPetInLOS);
                 OnEffectHit += SpellEffectFn(spell_hun_kill_command_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
         };
