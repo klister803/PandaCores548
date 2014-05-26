@@ -1332,6 +1332,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         case SPELLFAMILY_PALADIN:
             switch (m_spellInfo->Id)
             {
+                case 85673:  // Word of Glory
+                {
+                    spell_id = 130551;
+                    break;
+                }
+                case 136494: // Word of Glory
+                {
+                    spell_id = 130551;
+                    if (!unitTarget->IsFriendlyTo(m_caster))
+                        spell_id = 130552;
+                    break;
+                }
                 case 20473: // Holy Shock
                 {
                     uint32 spellid = unitTarget->IsFriendlyTo(m_caster) ? 25914: 25912;

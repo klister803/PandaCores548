@@ -54,6 +54,7 @@ class AuraEffect
 
         int32 GetMiscValueB() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).MiscValueB; }
         int32 GetMiscValue() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).MiscValue; }
+        uint32 GetTriggerSpell() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).TriggerSpell; }
         AuraType GetAuraType() const { return (AuraType)m_spellInfo->GetEffect(m_effIndex, m_diffMode).ApplyAuraName; }
         int32 GetAmount() const { return m_amount; }
         void SetAmount(int32 amount)

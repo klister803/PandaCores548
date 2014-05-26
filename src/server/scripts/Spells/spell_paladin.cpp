@@ -1286,48 +1286,6 @@ class spell_pal_devotion_aura : public SpellScriptLoader
         }
 };
 
-// Harsh Word - 130552
-class spell_pal_harsh_word : public SpellScriptLoader
-{
-    public:
-        spell_pal_harsh_word() : SpellScriptLoader("spell_pal_harsh_word") { }
-
-        class spell_pal_harsh_word_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_harsh_word_SpellScript);
-
-            void HandleDamage(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    int32 _amount = GetHitDamage();
-                    int32 holyPower = caster->GetPower(POWER_HOLY_POWER) + 1;
-                    if (holyPower > 3)
-                        holyPower = 3;
-
-                    // Divine Purpose
-                    if (caster->HasAura(90174))
-                        holyPower = 3;
-
-                    _amount = int32(_amount * holyPower * 1.5f);
-
-                    SetHitDamage(_amount);
-                }
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Blessing of Faith
-                OnEffectHitTarget += SpellEffectFn(spell_pal_harsh_word_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_harsh_word_SpellScript();
-        }
-};
-
 // for glyhp 115738 and 54935 - 119072 Holy Wrath
 class spell_pal_holy_wrath : public SpellScriptLoader
 {
@@ -1419,6 +1377,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_stay_of_execution();
     new spell_pal_execution_sentence_damage();
     new spell_pal_devotion_aura();
-    new spell_pal_harsh_word();
     new spell_pal_holy_wrath();
 }

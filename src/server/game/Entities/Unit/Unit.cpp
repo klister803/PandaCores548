@@ -5817,7 +5817,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     Item* castItem = triggeredByAura->GetBase()->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
         ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
 
-    uint32 triggered_spell_id = 0;
+    uint32 triggered_spell_id = triggeredByAura->GetTriggerSpell() ? triggeredByAura->GetTriggerSpell(): 0;
     uint32 cooldown_spell_id = 0; // for random trigger, will be one of the triggered spell to avoid repeatable triggers
                                   // otherwise, it's the triggered_spell_id by default
     Unit* target = victim;
@@ -8072,6 +8072,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 86172: // Divine Purpose
+                {
+                    if (procSpell->PowerType != POWER_HOLY_POWER)
+                        return false;
+
+                    RemoveAura(triggered_spell_id);
+
+                    if (!roll_chance_i(triggerAmount))
+                        return false;
+
+                    break;
+                }
                 case 54936: // Glyph of Word of Glory
                 {
                     if (Player* plr = ToPlayer())
@@ -9024,10 +9036,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         triggered_spell_id = 35079; // 4 sec buff on self
         target = this;
     }
-
-    // if not handled by custom case, get triggered spell from dummySpell proto
-    if (!triggered_spell_id)
-        triggered_spell_id = dummySpell->GetEffect(triggeredByAura->GetEffIndex(), GetSpawnMode()).TriggerSpell;
 
     // processed charge only counting case
     if (!triggered_spell_id)
@@ -12205,6 +12213,35 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         // apply spellmod to Done damage (flat and pct)
         if (Player* modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, tmpDamage);
+
+        if (getClass() == CLASS_PALADIN) 
+        {
+            bool holyPowerNeed = false;
+
+            if (spellProto->PowerType == POWER_HOLY_POWER)
+                holyPowerNeed = true;
+            else
+            {
+                for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
+                {
+                    Spell* spell = m_currentSpells[i];
+
+                    if (!spell)
+                        continue;
+
+                    SpellInfo const* currentSpellInfo = spell->GetSpellInfo();
+                    if (currentSpellInfo && currentSpellInfo->PowerType == POWER_HOLY_POWER)
+                    {
+                        holyPowerNeed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (holyPowerNeed)
+                if (Player* player = ToPlayer())
+                    tmpDamage *= player->GetModForHolyPowerSpell();
+        }
     }
 
     return uint32(std::max(tmpDamage, 0.0f));
@@ -12871,9 +12908,34 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
 
+    if (getClass() == CLASS_PALADIN) 
+    {
+        bool holyPowerNeed = false;
+
         if (spellProto->PowerType == POWER_HOLY_POWER)
+            holyPowerNeed = true;
+        else
+        {
+            for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
+            {
+                Spell* spell = m_currentSpells[i];
+
+                if (!spell)
+                    continue;
+
+                SpellInfo const* currentSpellInfo = spell->GetSpellInfo();
+                if (currentSpellInfo && currentSpellInfo->PowerType == POWER_HOLY_POWER)
+                {
+                    holyPowerNeed = true;
+                    break;
+                }
+            }
+        }
+
+        if (holyPowerNeed)
             if (Player* player = ToPlayer())
                 heal *= player->GetModForHolyPowerSpell();
+    }
 
     return uint32(std::max(heal, 0.0f));
 }
