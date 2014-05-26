@@ -296,8 +296,12 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
                 amount = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK) * 2.25);
 
                 if (Unit* target = aurEff->GetBase()->GetUnitOwner())
+                {
+                    if (target->GetTypeId() == TYPEID_PLAYER)
+                        amount *= 0.28f; // res
                     if (target->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
                         amount += target->GetRemainingPeriodicAmount(GetCaster()->GetGUID(), aurEff->GetSpellInfo()->Id, SPELL_AURA_SCHOOL_HEAL_ABSORB, 0);
+                }
             }
 
             void CalculateAmounteff2(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)

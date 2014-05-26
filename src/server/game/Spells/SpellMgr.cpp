@@ -3989,10 +3989,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 113002: // Spell Reflection (Symbiosis)
                 case 124430: // Divine Insight (Shadow)
                 case 81292:  // Glyph of Mind Spike
-                case 89485:  // Inner Focus
                 case 131567: // Holy Spark
                 case 125831: // Taste for Blood
                     spellInfo->ProcCharges = 1;
+                    break;
+                case 89485:  // Inner Focus
+                    spellInfo->ProcChance = 100;
+                    spellInfo->ProcCharges = 1;
+                    spellInfo->ProcFlags = PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
+                    spellInfo->Effects[1].SpellClassMask = spellInfo->Effects[0].SpellClassMask;
                     break;
                 case 110600:// Ice Trap (Symbiosis)
                     spellInfo->Effects[EFFECT_0].MiscValue = 164639;
@@ -4711,17 +4716,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 66795: // Gather Lumber
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_MASTER;
-                    break;
-                case 110310: // Arena. Dumpening
-                    spellInfo->StackAmount = 100;   //miss in dbc aura option
-                    //! Part from Battleground - Dampening(74411)
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
-                    spellInfo->Effects[EFFECT_0].MiscValue = 127;
-                    //! End.Part from Battleground - Dampening(74411)
-                    spellInfo->Effects[EFFECT_0].BasePoints = 1;
-                    spellInfo->Effects[EFFECT_1].BasePoints = 1;
-                    //! periodic tick remove aura. WTF?
-                    spellInfo->Effects[EFFECT_1].Amplitude = 0;
                     break;
                 case 774: // Rejuvenation
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;

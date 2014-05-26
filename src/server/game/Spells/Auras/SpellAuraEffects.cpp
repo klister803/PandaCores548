@@ -278,7 +278,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModManaRegen,                              //219 SPELL_AURA_MOD_MANA_REGEN_FROM_STAT
     &AuraEffect::HandleModRatingFromStat,                         //220 SPELL_AURA_MOD_RATING_FROM_STAT
     &AuraEffect::HandleNULL,                                      //221 SPELL_AURA_MOD_DETAUNT
-    &AuraEffect::HandleUnused,                                    //222 unused (3.2.0) only for spell 44586 that not used in real spell cast
+    &AuraEffect::HandleNoImmediateEffect,                         //222 SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE2
     &AuraEffect::HandleNoImmediateEffect,                         //223 SPELL_AURA_RAID_PROC_FROM_CHARGE
     &AuraEffect::HandleUnused,                                    //224 unused (4.3.4)
     &AuraEffect::HandleNoImmediateEffect,                         //225 SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE
@@ -477,17 +477,17 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleAuraModMaxPower,                           //418 SPELL_AURA_MOD_MAX_POWER
     &AuraEffect::HandleAuraModAddEnergyPercent,                   //419 SPELL_AURA_MOD_ADD_ENERGY_PERCENT
     &AuraEffect::HandleNULL,                                      //420 SPELL_AURA_420
-    &AuraEffect::HandleNULL,                                      //421 SPELL_AURA_421
-    &AuraEffect::HandleNULL,                                      //422 SPELL_AURA_422
+    &AuraEffect::HandleNULL,                                      //421 SPELL_AURA_MOD_ABSORB
+    &AuraEffect::HandleNULL,                                      //422 SPELL_AURA_MOD_ABSORBTION_PERCENT
     &AuraEffect::HandleNULL,                                      //423 SPELL_AURA_423
     &AuraEffect::HandleNULL,                                      //424 SPELL_AURA_424
     &AuraEffect::HandleNULL,                                      //425 SPELL_AURA_425
     &AuraEffect::HandleNULL,                                      //426 SPELL_AURA_426
     &AuraEffect::HandleNULL,                                      //427 SPELL_AURA_427
     &AuraEffect::HandleNULL,                                      //428 SPELL_AURA_428
-    &AuraEffect::HandleNULL,                                      //429 SPELL_AURA_429
+    &AuraEffect::HandleNULL,                                      //429 SPELL_AURA_PET_DAMAGE_DONE
     &AuraEffect::HandleNULL,                                      //430 SPELL_AURA_430
-    &AuraEffect::HandleNULL,                                      //431 SPELL_AURA_431
+    &AuraEffect::HandleNULL,                                      //431 SPELL_AURA_CONTESTED_PVP
     &AuraEffect::HandleNULL,                                      //432 SPELL_AURA_432
     &AuraEffect::HandleNULL,                                      //433 SPELL_AURA_433
     &AuraEffect::HandleNULL,                                      //434 SPELL_AURA_434
@@ -1887,6 +1887,7 @@ void AuraEffect::HandleProc(AuraApplication* aurApp, ProcEventInfo& eventInfo, S
             HandleRaidProcFromChargeAuraProc(aurApp, eventInfo, effIndex);
             break;
         case SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE:
+        case SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE2:
             HandleRaidProcFromChargeWithValueAuraProc(aurApp, eventInfo, effIndex);
             break;
         default:

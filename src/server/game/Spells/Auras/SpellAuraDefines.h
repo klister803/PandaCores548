@@ -279,7 +279,7 @@ enum AuraType
     SPELL_AURA_MOD_MANA_REGEN_FROM_STAT                     = 219,
     SPELL_AURA_MOD_RATING_FROM_STAT                         = 220,
     SPELL_AURA_MOD_DETAUNT                                  = 221,
-    SPELL_AURA_222                                          = 222,
+    SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE2            = 222,
     SPELL_AURA_RAID_PROC_FROM_CHARGE                        = 223,
     SPELL_AURA_224                                          = 224,
     SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE             = 225,
@@ -478,7 +478,7 @@ enum AuraType
     SPELL_AURA_MOD_MAX_POWER                                = 418,
     SPELL_AURA_MOD_ADD_ENERGY_PERCENT                       = 419,
     SPELL_AURA_MOD_BATTLE_PET_XP_GAIN                       = 420,
-    SPELL_AURA_421                                          = 421,  // healing done related
+    SPELL_AURA_MOD_ABSORB                                   = 421,  // healing done related
     SPELL_AURA_MOD_ABSORBTION_PERCENT                       = 422,
     SPELL_AURA_423                                          = 423,  // Heart of the Wild (Talent)
     SPELL_AURA_424                                          = 424,  // Heart of the Wild (Talent)

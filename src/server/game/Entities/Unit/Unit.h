@@ -2342,6 +2342,15 @@ class Unit : public WorldObject
             if (!_focusSpell)
                 SetUInt64Value(UNIT_FIELD_TARGET, guid);
         }
+        void SetTargetGUID(uint64 guid)
+        {
+            m_curTargetGUID = guid;
+        }
+        uint64 GetTargetGUID()
+        {
+            return m_curTargetGUID;
+        }
+        Unit* GetTargetUnit() const;
 
         Unit* m_SoulSwapTarget;
 
@@ -2515,6 +2524,7 @@ class Unit : public WorldObject
 
         uint32 m_reducedThreatPercent;
         uint64 m_misdirectionTargetGUID;
+        uint64 m_curTargetGUID;
 
         bool m_cleanupDone; // lock made to not add stuff after cleanup before delete
         bool m_duringRemoveFromWorld; // lock made to not add stuff after beginning removing from world

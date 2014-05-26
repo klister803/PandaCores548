@@ -4453,21 +4453,45 @@ class npc_void_tendrils : public CreatureScript
         {
             npc_void_tendrilsAI(Creature* c) : Scripted_NoMovementAI(c)
             {
-                me->SetReactState(REACT_AGGRESSIVE);
-                targetGUID = 0;
+                //me->SetReactState(REACT_AGGRESSIVE);
+                if (Unit* m_target = me->GetTargetUnit())
+                {
+                    Aura* aura = me->AddAura(PRIEST_SPELL_VOID_TENDRILS, m_target);
+                    if(m_target->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        me->DespawnOrUnsummon(8000);
+                        if(aura)
+                            aura->SetDuration(8000);
+                    }
+                }
             }
 
-            uint64 targetGUID;
-
-            void SetGUID(uint64 guid, int32)
+            void IsSummonedBy(Unit* owner)
             {
-                targetGUID = guid;
-                me->setFaction(14);
+                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                {
+                    me->SetLevel(owner->getLevel());
+                    me->SetMaxHealth(owner->CountPctFromMaxHealth(20));
+                    me->SetHealth(me->GetMaxHealth());
+                    // Set no damage
+                    me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
+                    me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
+
+                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
+                }
+                else
+                    me->DespawnOrUnsummon();
+            }
+
+            void Reset()
+            {
+                if (!me->HasAura(SPELL_ROOT_FOR_EVER))
+                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
             }
 
             void JustDied(Unit* killer)
             {
-                if (Unit* m_target = ObjectAccessor::FindUnit(targetGUID))
+                if (Unit* m_target = me->GetTargetUnit())
                     m_target->RemoveAura(PRIEST_SPELL_VOID_TENDRILS);
             }
         };

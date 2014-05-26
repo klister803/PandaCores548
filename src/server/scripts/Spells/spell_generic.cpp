@@ -3683,6 +3683,72 @@ class spell_time_lost_wisdom : public SpellScriptLoader
         }
 };
 
+// spell  98507 - Brutal Assault
+class spell_gen_brutal_assault : public SpellScriptLoader
+{
+    public:
+        spell_gen_brutal_assault() : SpellScriptLoader("spell_gen_brutal_assault") { }
+
+        class spell_gen_brutal_assaultAuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_brutal_assaultAuraScript);
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                int32 amount = aurEff->GetOldBaseAmount() + aurEff->GetAmount();
+                if(AuraEffect* aurEffSelf = GetEffect(EFFECT_0))
+                    aurEffSelf->SetAmount(amount);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_gen_brutal_assaultAuraScript::OnApply, EFFECT_0, SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        // function which creates AuraScript
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_brutal_assaultAuraScript();
+        }
+};
+
+// spell  110310 - Dampening for arena
+class spell_gen_dampening : public SpellScriptLoader
+{
+    public:
+        spell_gen_dampening() : SpellScriptLoader("spell_gen_dampening") { }
+
+        class spell_gen_dampeningAuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_dampeningAuraScript);
+
+            void HandleEffectPeriodicUpdate(AuraEffect* aurEff)
+            {
+                int32 amount = aurEff->GetAmount() + 1;
+                if(amount >= 100)
+                    return;
+                if (AuraEffect* aurEff0 = aurEff->GetBase()->GetEffect(EFFECT_0))
+                    aurEff0->ChangeAmount(amount);
+                int32 bp0 = -amount;
+                aurEff->SetAmount(amount);
+                if(Unit* caster = GetCaster())
+                    caster->CastCustomSpell(caster, 74410, &bp0, &bp0, &bp0, true);
+            }
+
+            void Register()
+            {
+                OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_gen_dampeningAuraScript::HandleEffectPeriodicUpdate, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        // function which creates AuraScript
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_dampeningAuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3764,4 +3830,6 @@ void AddSC_generic_spell_scripts()
     new spell_gen_leviroth_self_impale();
     new spell_gulp_frog_toxin();
     new spell_time_lost_wisdom();
+    new spell_gen_brutal_assault();
+    new spell_gen_dampening();
 }
