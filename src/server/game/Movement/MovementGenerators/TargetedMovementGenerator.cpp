@@ -91,11 +91,15 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     if (!i_path)
         i_path = new PathFinderMovementGenerator(&owner);
 
+    bool isBoss = false;
+    if (Creature* c = i_target->ToCreature())
+        isBoss = c->isWorldBoss() || c->IsDungeonBoss();
+
     // allow pets following their master to cheat while generating paths
     bool forceDest = (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet()
                         && owner.HasUnitState(UNIT_STATE_FOLLOW));
     i_path->calculate(x, y, z, forceDest);
-    if (i_path->getPathType() & PATHFIND_NOPATH)
+    if (i_path->getPathType() & PATHFIND_NOPATH && !isBoss)
     {
         if (!forceDest || !i_target->IsWithinLOSInMap(&owner))
             return;
@@ -110,7 +114,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     i_recalculateTravel = false;
 
     Movement::MoveSplineInit init(owner);
-    if (i_path->getPathType() & PATHFIND_NOPATH || i_target.getTarget()->GetTransGUID())
+    if (i_path->getPathType() & PATHFIND_NOPATH || i_target.getTarget()->GetTransGUID() || isBoss)
         init.MoveTo(x,y,z);
     else
         init.MovebyPath(i_path->getPath());
