@@ -142,10 +142,13 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
     else
     {
         Difficulty difficulty = IsRaid() ? player->GetRaidDifficulty() : player->GetDungeonDifficulty();
-        if(const MapEntry* entry = sMapStore.LookupEntry(mapId))
+        MapEntry const* entry = sMapStore.LookupEntry(mapId);
+        if (entry)
         {
             if(entry->maxPlayers == 40 && mapId != 249) // hackfix - Onyxia's Lair 10/25
                 difficulty = MAN40_DIFFICULTY;
+            if (entry->IsScenario() && difficulty != NORMAL_SCENARIO_DIFFICULTY && difficulty != HEROIC_SCENARIO_DIFFICULTY)
+                difficulty = NORMAL_SCENARIO_DIFFICULTY;
         }
         InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), difficulty);
         InstanceSave* pSave = pBind ? pBind->save : NULL;
@@ -180,8 +183,10 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
             newInstanceId = sMapMgr->GenerateInstanceId();
 
             Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficulty(IsRaid()) : player->GetDifficulty(IsRaid());
-            if(difficulty == MAN40_DIFFICULTY)
+            if (difficulty == MAN40_DIFFICULTY)
                 diff = MAN40_DIFFICULTY;
+            if (entry && entry->IsScenario() && diff != NORMAL_SCENARIO_DIFFICULTY && diff != HEROIC_SCENARIO_DIFFICULTY)
+                diff = NORMAL_SCENARIO_DIFFICULTY;
             //Seems it is now possible, but I do not know if it should be allowed
             //ASSERT(!FindInstanceMap(NewInstanceId));
             map = FindInstanceMap(newInstanceId);

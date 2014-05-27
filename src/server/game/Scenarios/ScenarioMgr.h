@@ -81,11 +81,13 @@ class ScenarioMgr
 {
     friend class ACE_Singleton<ScenarioMgr, ACE_Null_Mutex>;
 
-    ScenarioMgr() { }
-    ~ScenarioMgr() { }
+    ScenarioMgr();
+    ~ScenarioMgr();
 
 public:
     void Initialize();
+
+    void Update(uint32 diff);
 
     void LoadFromDB();
     void SaveToDB(SQLTransaction& trans);
@@ -101,6 +103,8 @@ private:
     ScenarioProgressMap m_scenarioProgressMap;
 
     ScenarioStepsByScenarioMap m_stepMap;
+
+    uint32 updateDiff;
 
 };
 

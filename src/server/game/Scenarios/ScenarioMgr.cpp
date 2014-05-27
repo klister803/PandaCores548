@@ -243,6 +243,15 @@ bool ScenarioProgress::CanUpdateCriteria(uint32 criteriaId) const
     return true;
 }
 
+ScenarioMgr::ScenarioMgr() : updateDiff(0)
+{
+    Initialize();
+}
+
+ScenarioMgr::~ScenarioMgr()
+{
+}
+
 ScenarioProgress* ScenarioMgr::GetScenarioProgress(uint32 instanceId)
 {
     ScenarioProgressMap::iterator itr = m_scenarioProgressMap.find(instanceId);
@@ -298,6 +307,17 @@ void ScenarioMgr::Initialize()
 
         m_stepMap[entry->m_scenarioId][entry->m_orderIndex] = entry;
     }
+}
+
+void ScenarioMgr::Update(uint32 diff)
+{
+    updateDiff += diff;
+    if (updateDiff < 5 * MINUTE * IN_MILLISECONDS)
+        return;
+
+    updateDiff -= 5 * MINUTE * IN_MILLISECONDS;
+
+    /*SaveToDB(SQLTransaction(NULL));*/
 }
 
 ScenarioSteps const* ScenarioMgr::GetScenarioSteps(uint32 scenarioId)
