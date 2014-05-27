@@ -8074,7 +8074,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             {
                 case 86172: // Divine Purpose
                 {
-                    if (procSpell->PowerType != POWER_HOLY_POWER)
+                    if (!RequiresCurrentSpellsToHolyPower(dummySpell))
                         return false;
 
                     RemoveAura(triggered_spell_id);
@@ -12214,34 +12214,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         if (Player* modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, tmpDamage);
 
-        if (getClass() == CLASS_PALADIN) 
-        {
-            bool holyPowerNeed = false;
-
-            if (spellProto->PowerType == POWER_HOLY_POWER)
-                holyPowerNeed = true;
-            else
-            {
-                for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
-                {
-                    Spell* spell = m_currentSpells[i];
-
-                    if (!spell)
-                        continue;
-
-                    SpellInfo const* currentSpellInfo = spell->GetSpellInfo();
-                    if (currentSpellInfo && currentSpellInfo->PowerType == POWER_HOLY_POWER)
-                    {
-                        holyPowerNeed = true;
-                        break;
-                    }
-                }
-            }
-
-            if (holyPowerNeed)
+        if (getClass() == CLASS_PALADIN)
+            if (RequiresCurrentSpellsToHolyPower(spellProto))
                 if (Player* player = ToPlayer())
                     tmpDamage *= player->GetModForHolyPowerSpell();
-        }
     }
 
     return uint32(std::max(tmpDamage, 0.0f));
@@ -12908,34 +12884,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
 
-    if (getClass() == CLASS_PALADIN) 
-    {
-        bool holyPowerNeed = false;
-
-        if (spellProto->PowerType == POWER_HOLY_POWER)
-            holyPowerNeed = true;
-        else
-        {
-            for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
-            {
-                Spell* spell = m_currentSpells[i];
-
-                if (!spell)
-                    continue;
-
-                SpellInfo const* currentSpellInfo = spell->GetSpellInfo();
-                if (currentSpellInfo && currentSpellInfo->PowerType == POWER_HOLY_POWER)
-                {
-                    holyPowerNeed = true;
-                    break;
-                }
-            }
-        }
-
-        if (holyPowerNeed)
+    if (getClass() == CLASS_PALADIN)
+        if (RequiresCurrentSpellsToHolyPower(spellProto))
             if (Player* player = ToPlayer())
                 heal *= player->GetModForHolyPowerSpell();
-    }
 
     return uint32(std::max(heal, 0.0f));
 }
@@ -21826,4 +21778,28 @@ bool Unit::CheckAndIncreaseCastCounter()
 
     ++m_castCounter;
     return true;
+}
+
+bool Unit::RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto)
+{
+    if (!spellProto)
+        return false;
+
+    if (spellProto->PowerType == POWER_HOLY_POWER)
+        return true;
+    else
+    {
+        for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
+        {
+            Spell* spell = m_currentSpells[i];
+
+            if (!spell)
+                continue;
+
+            SpellInfo const* currentSpellInfo = spell->GetSpellInfo();
+            if (currentSpellInfo && currentSpellInfo->PowerType == POWER_HOLY_POWER)
+                return true;
+        }
+    }
+    return false;
 }

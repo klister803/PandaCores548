@@ -1998,6 +1998,7 @@ class Unit : public WorldObject
         int32 GetCurrentSpellCastTime(uint32 spell_id) const;
 
         bool CheckAndIncreaseCastCounter();
+        bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);
         void DecreaseCastCounter() { if (m_castCounter) --m_castCounter; }
 
         uint32 m_addDmgOnce;
