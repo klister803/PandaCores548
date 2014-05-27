@@ -24,50 +24,6 @@
 #include "ObjectMgr.h"
 #include "GroupMgr.h"
 
-void BuildPlayerLockDungeonBlock(ByteBuffer& data, lfg::LfgLockMap const& lock)
-{
-    data << uint32(lock.size());
-    for (lfg::LfgLockMap::const_iterator it = lock.begin(); it != lock.end(); ++it)
-    {
-        data << uint32(it->first);                         // Dungeon entry (id + type)
-        data << uint32(it->second.status);                 // Lock status
-        data << uint32(0);                                 // Unknown 4.2.2
-        data << uint32(0);                                 // Unknown 4.2.2
-    }
-}
-
-void BuildPartyLockDungeonBlock(WorldPacket& data, lfg::LfgLockPartyMap const& lockMap)
-{
-    ByteBuffer dataBuffer;
-    data.WriteBits(lockMap.size(), 24);
-    data.WriteBit(0);
-    for (lfg::LfgLockPartyMap::const_iterator it = lockMap.begin(); it != lockMap.end(); ++it)
-    {
-        ObjectGuid guid = it->first;                         // Player guid
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[7]);
-        data.WriteBits(it->second.size(), 22); // Size of lock dungeons
-        data.WriteBit(guid[1]);
-        dataBuffer.WriteByteSeq(guid[2]);
-        dataBuffer.WriteByteSeq(guid[3]);
-        dataBuffer.WriteByteSeq(guid[7]);
-        dataBuffer.WriteByteSeq(guid[5]);
-        BuildPlayerLockDungeonBlock(dataBuffer, it->second);
-        dataBuffer.WriteByteSeq(guid[6]);
-        dataBuffer.WriteByteSeq(guid[4]);
-        dataBuffer.WriteByteSeq(guid[0]);
-        dataBuffer.WriteByteSeq(guid[1]);
-    }
-    data.FlushBits();
-    if (!dataBuffer.empty())
-        data.append(dataBuffer);
-}
-
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
 {
     uint32 numDungeons;
@@ -368,34 +324,6 @@ void WorldSession::HandleLfgPartyLockInfoRequestOpcode(WorldPacket&  /*recvData*
 {
     uint64 guid = GetPlayer()->GetGUID();
     sLog->outDebug(LOG_FILTER_LFG, "CMSG_LFG_PARTY_LOCK_INFO_REQUEST %s", GetPlayerName().c_str());
-
-    Group* group = GetPlayer()->GetGroup();
-    if (!group)
-        return;
-
-    // Get the locked dungeons of the other party members
-    lfg::LfgLockPartyMap lockMap;
-    for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
-    {
-        Player* plrg = itr->getSource();
-        if (!plrg)
-            continue;
-
-        uint64 pguid = plrg->GetGUID();
-        if (pguid == guid)
-            continue;
-
-        lockMap[pguid] = sLFGMgr->GetLockedDungeons(pguid);
-    }
-
-    uint32 size = 0;
-    for (lfg::LfgLockPartyMap::const_iterator it = lockMap.begin(); it != lockMap.end(); ++it)
-        size += 8 + 4 + uint32(it->second.size()) * (4 + 4 + 4 + 4);
-
-    sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_PARTY_INFO %s", GetPlayerName().c_str());
-    WorldPacket data(SMSG_LFG_PARTY_INFO, 1 + size);
-    BuildPartyLockDungeonBlock(data, lockMap);
-    SendPacket(&data);
 }
 
 void WorldSession::HandleLfrJoinOpcode(WorldPacket& recv_data)
