@@ -679,7 +679,9 @@ void BattlegroundDG::Cart::ToggleCaptured(Player *player)
         cart->GetMotionMaster()->MoveFollow(player, 2.f, 0.f);
         cart->CastSpell(player, BG_DG_AURA_CARTS_CHAINS);
         cart->AddAura(cartAuraId, cart);
-        cart->SetUInt16Value(OBJECT_FIELD_TYPE, 0, 65545);
+        // WTF? It's already set creature type, or u need set 0x10000? ->SetUInt16Value(OBJECT_FIELD_TYPE, 1, 1);
+        // This nothing change before!
+        //cart->SetUInt16Value(OBJECT_FIELD_TYPE, 0, 65545);
         cart->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED);
         cart->setFaction(35);
         cart->SetSpeed(MOVE_RUN, 3.f);
