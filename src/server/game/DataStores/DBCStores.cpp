@@ -520,8 +520,22 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sMapDifficultyStore,          dbcPath, "MapDifficulty.dbc", &CustomMapDifficultyEntryfmt, &CustomMapDifficultyEntryIndex);//17538
     // fill data
     for (uint32 i = 0; i < sMapDifficultyStore.GetNumRows(); ++i)
+    {
         if (MapDifficultyEntry const* entry = sMapDifficultyStore.LookupEntry(i))
+        {
+            if (!sMapStore.LookupEntry(entry->MapId))
+            {
+                sLog->outInfo(LOG_FILTER_SERVER_LOADING, "DB table `mapdifficulty_dbc` or MapDifficulty.dbc has non-existant map %u.", entry->MapId);
+                continue;
+            }
+            if (entry->Difficulty && !sDifficultyStore.LookupEntry(entry->Difficulty))
+            {
+                sLog->outInfo(LOG_FILTER_SERVER_LOADING, "DB table `mapdifficulty_dbc` or MapDifficulty.dbc has non-existant difficulty %u.", entry->Difficulty);
+                continue;
+            }
             sMapDifficultyMap[MAKE_PAIR32(entry->MapId, entry->Difficulty)] = MapDifficulty(entry->resetTime, entry->maxPlayers, entry->areaTriggerText[0] > 0);
+        }
+    }
     sMapDifficultyStore.Clear();
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sMountCapabilityStore,        dbcPath, "MountCapability.dbc");//14545
