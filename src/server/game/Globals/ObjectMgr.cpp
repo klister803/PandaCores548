@@ -9410,7 +9410,7 @@ void ObjectMgr::LoadMapDifficultyAddon()
         uint8 maxPlayers = fields[3].GetUInt8();
         bool hasErrorMessage = fields[4].GetBool();
 
-        if (!sMapStore.LookupEntry(mapId))
+        if (difficulty && !sMapStore.LookupEntry(mapId))
         {
             sLog->outInfo(LOG_FILTER_SERVER_LOADING, "DB table `map_difficulty_addon` has non-existant map %u.", mapId);
             continue;
