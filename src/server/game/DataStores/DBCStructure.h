@@ -1868,7 +1868,7 @@ struct ScalingStatValuesEntry
 struct ScenarioEntry
 {
     uint32 m_Id;                                            // 0
-    //char* m_name_lang;                                    // 1
+    char* m_name_lang;                                      // 1
     uint32 m_flags;                                         // 2
 
     bool IsChallenge() const { return m_flags & SCENARIO_FLAG_CHALLENGE; }

@@ -45,6 +45,8 @@ public:
     void LoadFromDB();
 
     ScenarioType GetType() const { return type; }
+    uint32 GetScenarioId() const { return scenarioId; }
+    uint32 GetCurrentStep() const { return currentStep; }
 
     bool IsCompleted() const;
     bool IsBonusStepCompleted() const;

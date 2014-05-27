@@ -40,6 +40,7 @@ set(scripts_STAT_SRCS
   Commands/cs_reset.cpp
   Commands/cs_tele.cpp
   Commands/cs_ticket.cpp
+  Commands/cs_scenario.cpp  
   Commands/cs_server.cpp
   Commands/cs_titles.cpp
   Commands/cs_wp.cpp

@@ -83,6 +83,7 @@ void AddSC_npc_commandscript();
 void AddSC_quest_commandscript();
 void AddSC_reload_commandscript();
 void AddSC_reset_commandscript();
+void AddSC_scenario_commandscript();
 void AddSC_server_commandscript();
 void AddSC_tele_commandscript();
 void AddSC_ticket_commandscript();
@@ -924,6 +925,7 @@ void AddCommandScripts()
     AddSC_quest_commandscript();
     AddSC_reload_commandscript();
     AddSC_reset_commandscript();
+    AddSC_scenario_commandscript();
     AddSC_server_commandscript();
     AddSC_tele_commandscript();
     AddSC_ticket_commandscript();
