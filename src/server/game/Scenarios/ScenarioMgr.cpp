@@ -57,19 +57,9 @@ void ScenarioProgress::SaveToDB(SQLTransaction& trans)
         CharacterDatabase.CommitTransaction(trans);
 }
 
-bool ScenarioProgress::IsCompleted() const
+bool ScenarioProgress::IsCompleted(bool bonus) const
 {
-    return currentStep >= GetStepCount(false);
-}
-
-bool ScenarioProgress::IsBonusStepCompleted() const
-{
-    for (ScenarioSteps::const_iterator itr = steps.begin(); itr != steps.end(); ++itr)
-        if (itr->second->IsBonusObjective())
-            if (currentStep > itr->second->m_orderIndex)
-                return true;
-
-    return false;
+    return currentStep == GetStepCount(bonus);
 }
 
 uint8 ScenarioProgress::GetBonusStepCount() const
@@ -114,7 +104,15 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
     }
 
     if (currentStep != oldStep && !loading)
+    {
         SendStepUpdate();
+        SaveToDB(SQLTransaction(NULL));
+
+        /*if (IsCompleted(false))
+            Reward(false);
+        else if (IsCompleted(true))
+            Reward(true);*/
+    }
 
     return currentStep;
 }
@@ -123,7 +121,7 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
 {
     WorldPacket data(SMSG_SCENARIO_PROGRESS_UPDATE, 3 + 7 * 4);
     data.WriteBit(0);                           // unk not used
-    data.WriteBit(IsBonusStepCompleted());
+    data.WriteBit(IsCompleted(true));           // bonus step completed
     uint32 bitpos = data.bitwpos();
     data.WriteBits(0, 19);                      // criteria data
 

@@ -48,8 +48,7 @@ public:
     uint32 GetScenarioId() const { return scenarioId; }
     uint32 GetCurrentStep() const { return currentStep; }
 
-    bool IsCompleted() const;
-    bool IsBonusStepCompleted() const;
+    bool IsCompleted(bool bonus) const;
     uint8 GetBonusStepCount() const;
     bool HasBonusStep() const;
     uint8 GetStepCount(bool withBonus) const;

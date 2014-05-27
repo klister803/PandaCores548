@@ -601,6 +601,8 @@ bool InstanceScript::IsWipe()
     }
 
     if (dungeonId && (fullEncounterIndex == completedEncounters || instance->GetDifficulty() != CHALLENGE_MODE_DIFFICULTY))
+    // TODO: challenges should be rewarded in scenario mgr
+    //if (dungeonId && !challenge_timer)
     {
         Map::PlayerList const& players = instance->GetPlayers();
         for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
@@ -614,8 +616,11 @@ bool InstanceScript::IsWipe()
                         break;
                     }
         }
-
+    }
+    if (dungeonId)
+    {
         // Challenge reward
+        // TODO: move this to scenario mgr
         if (uint32 time = GetChallengeProgresTime())
         {
             MapChallengeModeEntryMap::iterator itr = sMapChallengeModeEntrybyMap.find(instance->GetId());
