@@ -238,14 +238,14 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
 
         data.WriteBits(qRew[0] ? qRew[0]->GetRewItemsCount() : 0, 20);
         data.WriteBits(qRew[1] ? qRew[1]->GetRewCurrencyCount() : 0, 21);
-        data.WriteBit(qRew[0] ? !GetPlayer()->CanRewardQuest(qRew[0], false) : false);
+        data.WriteBit(qRew[0] ? GetPlayer()->CanRewardQuest(qRew[0], false) : true);    // can be rewarded
         data.WriteBits(qRew[0] ? qRew[0]->GetRewCurrencyCount() : 0, 21);
         data.WriteBits(0, 19);          // role bonus count
-        data.WriteBit(1);               // unk
+        data.WriteBit(1);               // eligible to role shortage reward
 
-        buff << uint32(0);
-        buff << uint32(*it);
-        buff << uint32(0);
+        buff << uint32(0);              // cap currency purse Quantity
+        buff << uint32(*it);            // dungeon entry
+        buff << uint32(0);              // cap currency specific quantity
 
         if (qRew[1])
         {
@@ -272,14 +272,14 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
             }
         }
 
-        buff << uint32(0);
-        buff << uint32(0);
-        buff << uint32(0);
+        buff << uint32(0);      // cap currency Quantity
+        buff << uint32(0);      // cap currencyID
+        buff << uint32(0);      // cap currency overall Limit
         buff << uint32(qRew[0] ? qRew[0]->XPValue(GetPlayer()) : 0);
         buff << uint32(0);
-        buff << uint32(0);
-        buff << uint32(0);
-        buff << uint32(0);      // completed encounters mask?
+        buff << uint32(0);      // cap currency overall Quantity
+        buff << uint32(0);      // cap currency period Purse Limit
+        buff << uint32(0);      // completed encounters mask
         buff << uint32(qRew[0] ? qRew[0]->GetRewOrReqMoney() : 0);
 
         if (qRew[0])
@@ -293,19 +293,17 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
         }
 
         buff << uint32(0);
+        buff << uint32(0);      // cap currency purse Limit
+        buff << uint32(0);      // cap currency period Purse Quantity
         buff << uint32(0);
-        buff << uint32(0);
-        buff << uint32(0);
-        buff << uint32(0);
+        buff << uint32(0);      // cap currency specific Limit
 
         ++rewardableDungeonsCount;
     }
 
+    data.FlushBits();
     if (!buff.empty())
-    {
-        data.FlushBits();
         data.append(buff);
-    }
 
     data.PutBits(bitpos, rewardableDungeonsCount, 17);
 

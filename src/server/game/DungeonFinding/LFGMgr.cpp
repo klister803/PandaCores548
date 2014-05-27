@@ -1650,13 +1650,6 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
         if (dungeon->difficulty == HEROIC_DIFFICULTY)
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS, 1);
 
-        // reward lfg bonus reputation if any
-        if (uint32 bonusRep = dungeon->dbc->bonusRepAmt)
-        {
-            if (uint32 faction = player->GetLfgBonusFaction())
-                player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(faction), bonusRep);
-        }
-
         LfgReward const* reward = GetDungeonReward(rDungeonId, player->getLevel());
         if (!reward)
             continue;
@@ -1668,7 +1661,16 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
 
         // if we can take the quest, means that we haven't done this kind of "run", IE: First Heroic Random of Day.
         if (player->CanRewardQuest(quest, false))
+        {
             player->RewardQuest(quest, 0, NULL, false);
+
+            // reward lfg bonus reputation on first completion
+            if (uint32 bonusRep = dungeon->dbc->bonusRepAmt)
+            {
+                if (uint32 faction = player->GetLfgBonusFaction())
+                    player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(faction), bonusRep);
+            }
+        }
         else
         {
             done = true;

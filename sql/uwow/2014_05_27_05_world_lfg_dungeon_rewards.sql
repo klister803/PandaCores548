@@ -35,7 +35,7 @@ INSERT INTO `lfg_dungeon_rewards` VALUES ('416', '85', '30110', '30111');
 INSERT INTO `lfg_dungeon_rewards` VALUES ('417', '85', '30110', '30111');
 
 -- random mists normal
-INSERT INTO `lfg_dungeon_rewards` VALUES ('463', '90', '31618', '31619');
+INSERT INTO `lfg_dungeon_rewards` VALUES ('463', '89', '31618', '31619');
 -- random mists heroic
 INSERT INTO `lfg_dungeon_rewards` VALUES ('462', '90', '31614', '31615');
 
