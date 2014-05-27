@@ -128,7 +128,7 @@ struct LfgPlayerBoot;
 typedef std::map<uint8, LFGQueue> LfgQueueContainer;
 typedef std::multimap<uint32, LfgReward const*> LfgRewardContainer;
 typedef std::pair<LfgRewardContainer::const_iterator, LfgRewardContainer::const_iterator> LfgRewardContainerBounds;
-typedef std::map<uint8, LfgDungeonSet> LfgCachedDungeonContainer;
+typedef std::map<uint16, LfgDungeonSet> LfgCachedDungeonContainer;
 typedef std::map<uint64, LfgAnswer> LfgAnswerContainer;
 typedef std::map<uint64, LfgRoleCheck> LfgRoleCheckContainer;
 typedef std::map<uint32, LfgProposal> LfgProposalContainer;
