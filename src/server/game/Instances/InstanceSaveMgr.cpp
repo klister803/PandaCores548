@@ -131,6 +131,8 @@ void InstanceSaveManager::DeleteInstanceFromDB(uint32 instanceid)
     stmt->setUInt32(0, instanceid);
     CharacterDatabase.DirectExecute(stmt);
     // Respawn times should be deleted only when the map gets unloaded
+
+    sScenarioMgr->RemoveScenarioProgress(instanceid);
 }
 
 void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)

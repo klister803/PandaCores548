@@ -226,7 +226,11 @@ void GroupMgr::LoadGroups()
                 diff = 0;                                   // default for both difficaly types
             }
 
-            InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), (bool)fields[5].GetUInt64(), true);
+            InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), (bool)fields[6].GetUInt64(), true);
+            if (mapEntry->IsScenario())
+                if (lfg::LFGDungeonData const* data = sLFGMgr->GetLFGDungeon(mapEntry->MapID, Difficulty(diff), Team(sObjectMgr->GetPlayerTeamByGUID(group->GetLeaderGUID()))))
+                    sScenarioMgr->AddScenarioProgress(fields[2].GetUInt32(), data, true);
+
             group->BindToInstance(save, fields[3].GetBool(), true);
             ++count;
         }

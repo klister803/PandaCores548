@@ -21,12 +21,12 @@
 #include "InstanceSaveMgr.h"
 #include "WorldSession.h"
 
-ScenarioProgress::ScenarioProgress(uint32 _mapId, uint32 _instanceId, uint32 _scenarioId)
-    : mapId(_mapId), instanceId(_instanceId), scenarioId(_scenarioId),
+ScenarioProgress::ScenarioProgress(uint32 _instanceId, lfg::LFGDungeonData const* _dungeonData)
+    : instanceId(_instanceId), dungeonData(_dungeonData),
     m_achievementMgr(this), currentStep(0)
 {
-    type = ScenarioMgr::GetScenarioType(scenarioId);
-    ScenarioSteps const* _steps = sScenarioMgr->GetScenarioSteps(scenarioId);
+    type = ScenarioMgr::GetScenarioType(GetScenarioId());
+    ScenarioSteps const* _steps = sScenarioMgr->GetScenarioSteps(GetScenarioId());
     ASSERT(_steps);
 
     steps = *_steps;
@@ -55,6 +55,16 @@ void ScenarioProgress::SaveToDB(SQLTransaction& trans)
 
     if (commit)
         CharacterDatabase.CommitTransaction(trans);
+}
+
+void ScenarioProgress::DeleteFromDB()
+{
+    m_achievementMgr.DeleteFromDB(instanceId, 0);
+}
+
+uint32 ScenarioProgress::GetScenarioId() const
+{
+    return dungeonData->dbc->scenarioId;
 }
 
 bool ScenarioProgress::IsCompleted(bool bonus) const
@@ -137,7 +147,7 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
             if (!criteriaTreeEntry)
                 continue;
 
-            ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, scenarioId, HIGHGUID_SCENARIO_CRITERIA);
+            ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, GetScenarioId(), HIGHGUID_SCENARIO_CRITERIA);
             uint64 counter = progress.counter;
 
             data.WriteGuidMask<7, 6, 0, 4>(criteriaGuid);
@@ -176,7 +186,7 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
 
     data << uint32(0);                          // proving grounds max wave
     data << uint32(0);                          // proving grounds diff id
-    data << uint32(scenarioId);
+    data << uint32(GetScenarioId());
     data << uint32(GetBonusStepCount());
     data << uint32(0);                          // proving grounds curr wave
     data << uint32(0);                          // proving grounds duration
@@ -192,7 +202,7 @@ void ScenarioProgress::SendCriteriaUpdate(uint32 criteriaId, uint32 counter, tim
 {
     WorldPacket data(SMSG_SCENARIO_CRITERIA_UPDATE, 8 + 8 + 4 * 4 + 1);
 
-    ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, scenarioId, HIGHGUID_SCENARIO_CRITERIA);
+    ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, GetScenarioId(), HIGHGUID_SCENARIO_CRITERIA);
 
     data.WriteGuidMask<3>(counter);
     data.WriteGuidMask<7, 2, 0>(criteriaGuid);
@@ -228,7 +238,7 @@ void ScenarioProgress::SendCriteriaUpdate(uint32 criteriaId, uint32 counter, tim
 
 void ScenarioProgress::BroadCastPacket(WorldPacket& data)
 {
-    Map* map = sMapMgr->FindMap(mapId, instanceId);
+    Map* map = sMapMgr->FindMap(dungeonData->map, instanceId);
     if (!map)
         return;
 
@@ -256,14 +266,24 @@ ScenarioProgress* ScenarioMgr::GetScenarioProgress(uint32 instanceId)
     return itr != m_scenarioProgressMap.end() ? &itr->second : NULL;
 }
 
-void ScenarioMgr::AddScenarioProgress(uint32 mapId, uint32 instanceId, uint32 scenarioId, bool loading)
+void ScenarioMgr::AddScenarioProgress(uint32 instanceId, lfg::LFGDungeonData const* dungeonData, bool loading)
 {
     if (m_scenarioProgressMap.find(instanceId) != m_scenarioProgressMap.end())
         return;
 
-    m_scenarioProgressMap[instanceId] = ScenarioProgress(mapId, instanceId, scenarioId);
+    m_scenarioProgressMap[instanceId] = ScenarioProgress(instanceId, dungeonData);
     if (loading)
         m_scenarioProgressMap[instanceId].LoadFromDB();
+}
+
+void ScenarioMgr::RemoveScenarioProgress(uint32 instanceId)
+{
+    ScenarioProgressMap::iterator itr = m_scenarioProgressMap.find(instanceId);
+    if (itr == m_scenarioProgressMap.end())
+        return;
+
+    itr->second.DeleteFromDB();
+    m_scenarioProgressMap.erase(itr);
 }
 
 void ScenarioMgr::SaveToDB(SQLTransaction& trans)

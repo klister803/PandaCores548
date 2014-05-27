@@ -643,12 +643,13 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SAVE_BATTLE_PET_SLOTS, "REPLACE INTO character_battle_pet (ownerAccID, slot_0, slot_1, slot_2) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_LOAD_BATTLE_PET_SLOTS, "SELECT slot_0, slot_1, slot_2 FROM character_battle_pet WHERE ownerAccID = ?", CONNECTION_ASYNC);
 
-    // Else
-    PREPARE_STATEMENT(CHAR_SEL_PERSONAL_RATE,       "SELECT rate FROM character_rates WHERE guid=? LIMIT 1",                                         CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_VISUAL,       "SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged, tabard, shirt FROM character_visuals WHERE guid = ?",  CONNECTION_ASYNC);
-
     // Scenario Criterias
     PREPARE_STATEMENT(CHAR_SEL_SCENARIO_CRITERIAPROGRESS, "SELECT criteria, counter, date FROM scenario_criteria_progress WHERE instanceId = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_SAVE_SCENARIO_CRITERIAPROGRESS, "REPLACE INTO scenario_criteria_progress (instanceId, criteria, counter, date) VALUE (?, ?, ?, ?)", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_DEL_INVALID_SCENARIO_PROGRESS_CRITERIA, "DELETE FROM scenario_criteria_progress WHERE criteria = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_DEL_SCENARIO_CRITERIAPROGRESS, "DELETE FROM scenario_criteria_progress WHERE instanceId = ?", CONNECTION_ASYNC);
+
+    // Else
+    PREPARE_STATEMENT(CHAR_SEL_PERSONAL_RATE,       "SELECT rate FROM character_rates WHERE guid=? LIMIT 1",                                         CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_VISUAL,       "SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged, tabard, shirt FROM character_visuals WHERE guid = ?",  CONNECTION_ASYNC);
 }

@@ -28,6 +28,10 @@ struct ScenarioStepEntry;
 
 typedef std::map<uint8, ScenarioStepEntry const*> ScenarioSteps;
 
+namespace lfg{
+struct LFGDungeonData;
+}
+
 enum ScenarioType
 {
     SCENARIO_TYPE_NORMAL            = 0,
@@ -38,14 +42,16 @@ enum ScenarioType
 class ScenarioProgress
 {
 public:
-    ScenarioProgress() : mapId(-1), instanceId(0), scenarioId(0), type(SCENARIO_TYPE_NORMAL), m_achievementMgr(this), currentStep(0) { }
-    ScenarioProgress(uint32 _mapId, uint32 _instanceId, uint32 _scenarioId);
+    ScenarioProgress() : instanceId(0), dungeonData(NULL), type(SCENARIO_TYPE_NORMAL), m_achievementMgr(this), currentStep(0) { }
+    ScenarioProgress(uint32 _instanceId, lfg::LFGDungeonData const* _dungeonData);
 
     void SaveToDB(SQLTransaction& trans);
     void LoadFromDB();
+    void DeleteFromDB();
 
+    uint32 GetInstanceId() const { return instanceId; }
     ScenarioType GetType() const { return type; }
-    uint32 GetScenarioId() const { return scenarioId; }
+    uint32 GetScenarioId() const;
     uint32 GetCurrentStep() const { return currentStep; }
 
     bool IsCompleted(bool bonus) const;
@@ -64,9 +70,8 @@ public:
     bool CanUpdateCriteria(uint32 criteriaTreeId) const;
 
 private:
-    uint32 mapId;
     uint32 instanceId;
-    uint32 scenarioId;
+    lfg::LFGDungeonData const* dungeonData;
     AchievementMgr<ScenarioProgress> m_achievementMgr;
 
     uint8 currentStep;
@@ -95,7 +100,8 @@ public:
 
     static ScenarioType GetScenarioType(uint32 scenarioId);
 
-    void AddScenarioProgress(uint32 mapId, uint32 instanceId, uint32 scenarioId, bool loading);
+    void AddScenarioProgress(uint32 instanceId, lfg::LFGDungeonData const* _dungeonData, bool loading);
+    void RemoveScenarioProgress(uint32 instanceId);
     ScenarioProgress* GetScenarioProgress(uint32 instanceId);
 
     ScenarioSteps const* GetScenarioSteps(uint32 scenarioId);

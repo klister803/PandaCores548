@@ -2407,7 +2407,7 @@ bool InstanceMap::AddPlayerToMap(Player* player)
             {
                 if (IsScenario())
                     if (lfg::LFGDungeonData const* data = sLFGMgr->GetLFGDungeon(GetId(), Difficulty(i_difficulty), player->GetTeam()))
-                        sScenarioMgr->AddScenarioProgress(GetId(), GetInstanceId(), data->dbc->scenarioId, false);
+                        sScenarioMgr->AddScenarioProgress(GetInstanceId(), data, false);
 
                 sLog->outInfo(LOG_FILTER_MAPS, "InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
                 mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), true);

@@ -20500,7 +20500,13 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
 
             // since non permanent binds are always solo bind, they can always be reset
             if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), !perm, true))
-               BindToInstance(save, perm, true);
+            {
+                if (mapEntry->IsScenario())
+                    if (lfg::LFGDungeonData const* data = sLFGMgr->GetLFGDungeon(mapId, Difficulty(difficulty), GetTeam()))
+                        sScenarioMgr->AddScenarioProgress(instanceId, data, true);
+
+                BindToInstance(save, perm, true);
+            }
         }
         while (result->NextRow());
     }
