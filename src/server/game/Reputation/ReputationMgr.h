@@ -140,6 +140,7 @@ class ReputationMgr
         void SendForceReactions();
         void SendState(FactionState const* faction);
         void SendStates();
+        bool IsVisible(RepListID repListID) const;
 
     private:                                                // internal helper functions
         void Initialize();

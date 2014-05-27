@@ -499,6 +499,14 @@ enum ItemLimitCategoryMode
     ITEM_LIMIT_CATEGORY_MODE_EQUIP      = 1                       // limit applied to amount equipped items (including used gems)
 };
 
+enum LfgFlags
+{
+    LFG_FLAG_UNK1                                = 0x1,
+    LFG_FLAG_UNK2                                = 0x2,
+    LFG_FLAG_SEASONAL                            = 0x4,
+    LFG_FLAG_UNK3                                = 0x8
+};
+
 enum LfgSubType
 {
     LFG_SUBTYPE_NONE                             = 0,

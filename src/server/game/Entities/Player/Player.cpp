@@ -18397,8 +18397,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //"totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
     // 46      47      48      49      50      51      52           53         54             55               56                 57              58
     //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, specialization1, specialization2, exploredZones, equipmentCache, "
-    // 59           60                  61          62             63              64                              65
-    //"knownTitles, actionBars, currentpetnumber, petslot, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
+    // 59           60                  61          62             63              64                              65           66
+    //"knownTitles, actionBars, currentpetnumber, petslot, grantableLevels, resetspecialization_cost, resetspecialization_time, lfgBonusFaction  FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     if (!result)
@@ -19081,7 +19081,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
     _LoadCUFProfiles(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES));
-    
+
+    SetLfgBonusFaction(fields[66].GetUInt32());
+
     if(PreparedQueryResult PersonnalRateResult = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE))
         m_PersonnalXpRate = (PersonnalRateResult->Fetch())[0].GetFloat();
 
@@ -20839,6 +20841,8 @@ void Player::SaveToDB(bool create /*=false*/)
 
         stmt->setUInt32(index++, GetSpecializationResetCost());
         stmt->setUInt32(index++, GetSpecializationResetTime());
+
+        stmt->setUInt32(index++, GetLfgBonusFaction());
 
         // Index
         stmt->setUInt32(index++, GetGUIDLow());
@@ -26283,6 +26287,24 @@ bool Player::inRandomLfgDungeon()
     }
 
     return false;
+}
+
+void Player::SetLfgBonusFaction(uint32 factionId)
+{
+    if (!factionId)
+    {
+        SetUInt32Value(PLAYER_FIELD_LFG_BONUS_FACTION, 0);
+        return;
+    }
+
+    if (FactionEntry const* faction = sFactionStore.LookupEntry(factionId))
+        if (faction->CanBeLfgBonus() && GetReputationMgr().IsVisible(faction->reputationListID))
+            SetUInt32Value(PLAYER_FIELD_LFG_BONUS_FACTION, factionId);
+}
+
+uint32 Player::GetLfgBonusFaction() const
+{
+    return GetUInt32Value(PLAYER_FIELD_LFG_BONUS_FACTION);
 }
 
 void Player::SetBattlegroundOrBattlefieldRaid(Group* group, int8 subgroup)

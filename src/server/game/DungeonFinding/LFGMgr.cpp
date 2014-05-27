@@ -1613,10 +1613,21 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
 
         // Give rewards only if its a random dungeon
         LFGDungeonData const* dungeon = GetLFGDungeon(rDungeonId);
-
-        if (!dungeon || (dungeon->type != LFG_TYPE_RANDOM && !dungeon->seasonal))
+        if (!dungeon)
         {
-            sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] dungeon %u is not random or seasonal", guid, rDungeonId);
+            sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] dungeon %u does not exist", guid, rDungeonId);
+            continue;
+        }
+        LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId);
+        // if 'random' dungeon is not random nor seasonal, check actual dungeon (it can be raid finder)
+        if (dungeon->type != LFG_TYPE_RANDOM && !dungeon->seasonal && dungeonDone && dungeonDone->dbc->CanBeRewarded())
+        {
+            rDungeonId = dungeonDone->id;
+            dungeon = dungeonDone;
+        }
+        else
+        {
+            sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] dungeon %u is not random nor seasonal and can't be rewarded.", guid, rDungeonId);
             continue;
         }
 
@@ -1627,7 +1638,6 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
             continue;
         }
 
-        LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId);
         uint32 mapId = dungeonDone ? uint32(dungeonDone->map) : 0;
 
         if (player->GetMapId() != mapId)
@@ -1639,6 +1649,13 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
         // Update achievements
         if (dungeon->difficulty == HEROIC_DIFFICULTY)
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS, 1);
+
+        // reward lfg bonus reputation if any
+        if (uint32 bonusRep = dungeon->dbc->bonusRepAmt)
+        {
+            if (uint32 faction = player->GetLfgBonusFaction())
+                player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(faction), bonusRep);
+        }
 
         LfgReward const* reward = GetRandomDungeonReward(rDungeonId, player->getLevel());
         if (!reward)

@@ -2846,6 +2846,8 @@ class Player : public Unit, public GridObject<Player>
 
         bool isUsingLfg();
         bool inRandomLfgDungeon();
+        void SetLfgBonusFaction(uint32 factionId);
+        uint32 GetLfgBonusFaction() const;
 
         typedef std::set<uint32> DFQuestsDoneList;
         DFQuestsDoneList m_DFQuests;
@@ -3106,6 +3108,7 @@ class Player : public Unit, public GridObject<Player>
         void ChallangeReward(MapChallengeModeEntry const* mode, ChallengeMode medal, uint32 recTime);
 
         void CheckItemCapLevel(bool hasCap);
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;

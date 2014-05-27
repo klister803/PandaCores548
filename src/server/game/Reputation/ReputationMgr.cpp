@@ -204,6 +204,7 @@ void ReputationMgr::SendInitialReputations()
     WorldPacket data(SMSG_INITIALIZE_FACTIONS, (4+256*5));
 
     RepListID a = 0;
+    ByteBuffer bitBuff;
     for (FactionStateList::iterator itr = _factions.begin(); itr != _factions.end(); ++itr)
     {
         // fill in absent fields
@@ -211,14 +212,15 @@ void ReputationMgr::SendInitialReputations()
         {
             data << uint8(0);
             data << uint32(0);
+            bitBuff.WriteBit(0);
         }
 
         // fill in encountered data
         data << uint8(itr->second.Flags);
         data << uint32(itr->second.Standing);
+        bitBuff.WriteBit(0);                // bonus rep gain unlocked
 
         itr->second.needSend = false;
-
         ++a;
     }
 
@@ -227,10 +229,12 @@ void ReputationMgr::SendInitialReputations()
     {
         data << uint8(0);
         data << uint32(0);
+        bitBuff.WriteBit(0);
     }
 
-    for (uint32 i = 0; i < 256; ++i)
-        data.WriteBit(0);               // hasBonusRepGain
+    bitBuff.FlushBits();
+    if (!bitBuff.empty())
+        data.append(bitBuff);
 
     _player->SendDirectMessage(&data);
 }
@@ -445,6 +449,15 @@ void ReputationMgr::SetVisible(FactionState* faction)
     ++_visibleFactionCount;
 
     SendVisible(faction);
+}
+
+bool ReputationMgr::IsVisible(RepListID repListID) const
+{
+    FactionStateList::const_iterator itr = _factions.find(repListID);
+    if (itr == _factions.end())
+        return false;
+
+    return itr->second.Flags & FACTION_FLAG_VISIBLE;
 }
 
 void ReputationMgr::SetAtWar(RepListID repListID, bool on)

@@ -1045,15 +1045,17 @@ struct FactionEntry
     //uint32    spilloverRank_unk;                          // 22       It does not seem to be the max standing at which a faction outputs spillover ...so no idea
     char* name;                                             // 23       m_name_lang
     //char*     description;                                // 24       m_description_lang
-    //uint32                                                // 25
-    uint32      canBeLFGBonus;                              // 26       5.4.1
-    //uint32                                                // 27       5.4.1
+    //uint32    m_expansion                                 // 25
+    uint32      m_flags;                                    // 26       5.4.1
+    //uint32    m_friendshipRepID                           // 27       5.4.1
 
     // helpers
     bool CanHaveReputation() const
     {
         return reputationListID >= 0;
     }
+
+    bool CanBeLfgBonus() const { return m_flags & 0x1; }
 };
 
 #define MAX_FACTION_RELATIONS 4
@@ -1494,7 +1496,7 @@ struct LFGDungeonEntry
     uint32 minDpsNeeded;                                    // 23   5.4.1
     uint32 scenarioId;                                      // 24   5.4.1
     uint32 subType;                                         // 25   5.4.1
-    //uint32 bonusRepAmt;                                   // 26   5.4.1
+    uint32 bonusRepAmt;                                     // 26   5.4.1
     //uint32 mentorCharLevel;                               // 27   5.4.1
     //uint32 mentorItemLevel;                               // 28   5.4.1
 
@@ -1533,6 +1535,10 @@ struct LFGDungeonEntry
         }
 
         return LFG_TYPE_DUNGEON;
+    }
+    bool CanBeRewarded() const
+    {
+        return type == LFG_TYPE_RANDOM || difficulty == RAID_TOOL_DIFFICULTY || difficulty == CHALLENGE_MODE_DIFFICULTY || flags & LFG_FLAG_SEASONAL;
     }
 };
 

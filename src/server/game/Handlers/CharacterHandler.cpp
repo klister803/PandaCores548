@@ -1241,16 +1241,7 @@ void WorldSession::HandleSetLfgBonusFaction(WorldPacket & recvData)
     uint32 factionID;
     recvData >> factionID;
 
-    if (factionID)
-    {
-        if (FactionEntry const* faction = sFactionStore.LookupEntry(factionID))
-            if (faction->canBeLFGBonus)
-                // player->SetLfgBonusRep(factionID, true);
-                GetPlayer()->SetUInt32Value(PLAYER_FIELD_LFG_BONUS_FACTION, factionID);
-    }
-    else
-        // player->SetLfgBonusRep(factionID, false);
-        GetPlayer()->SetUInt32Value(PLAYER_FIELD_LFG_BONUS_FACTION, 0);
+    _player->SetLfgBonusFaction(factionID);
 }
 
 void WorldSession::HandleUnsetFactionAtWar(WorldPacket & recvData)

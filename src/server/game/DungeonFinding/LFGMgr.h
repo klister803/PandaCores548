@@ -50,14 +50,6 @@ enum LFGMgrEnum
     LFG_GROUP_KICK_VOTES_NEEDED                  = 3
 };
 
-enum LfgFlags
-{
-    LFG_FLAG_UNK1                                = 0x1,
-    LFG_FLAG_UNK2                                = 0x2,
-    LFG_FLAG_SEASONAL                            = 0x4,
-    LFG_FLAG_UNK3                                = 0x8
-};
-
 /// Proposal states
 enum LfgProposalState
 {
