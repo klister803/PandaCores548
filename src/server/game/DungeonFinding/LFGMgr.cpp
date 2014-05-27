@@ -219,6 +219,9 @@ void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u lfg entrance positions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 
+    if (reload)
+        CachedDungeonMapStore.clear();
+
     // Fill all other teleport coords from areatriggers
     for (LFGDungeonContainer::iterator itr = LfgDungeonStore.begin(); itr != LfgDungeonStore.end(); ++itr)
     {
@@ -244,11 +247,6 @@ void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
         if (dungeon.type != LFG_TYPE_RANDOM)
             CachedDungeonMapStore[dungeon.random_id].insert(dungeon.id);
         CachedDungeonMapStore[0].insert(dungeon.id);
-    }
-
-    if (reload)
-    {
-        CachedDungeonMapStore.clear();
     }
 }
 
