@@ -1566,9 +1566,6 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Item Random Enchantments Table...");
     LoadRandomEnchantmentsTable();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Map Difficulty Addon...");
-    sObjectMgr->LoadMapDifficultyAddon();
-
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Disables");
     DisableMgr::LoadDisables();                                 // must be before loading quests and items
 
