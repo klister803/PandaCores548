@@ -1566,6 +1566,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Item Random Enchantments Table...");
     LoadRandomEnchantmentsTable();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Map Difficulty Addon...");
+    sObjectMgr->LoadMapDifficultyAddon();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Disables");
     DisableMgr::LoadDisables();                                 // must be before loading quests and items
 
@@ -3201,8 +3204,7 @@ void World::InstanceDailyResetTime()
         uint32 mapid = PAIR32_LOPART(itr->first);
         Difficulty difficulty = Difficulty(PAIR32_HIPART(itr->first));
 
-        MapDifficulty const* mapDiff = GetMapDifficultyData(mapid, difficulty);
-        if (mapDiff && mapDiff->resetTime <= 86400)
+        if (itr->second.resetTime <= 86400)
             sInstanceSaveMgr->ResetOrWarnAll(mapid, difficulty);
     }
 
@@ -3217,8 +3219,7 @@ void World::InstanceHalfWeekResetTime()
         uint32 mapid = PAIR32_LOPART(itr->first);
         Difficulty difficulty = Difficulty(PAIR32_HIPART(itr->first));
 
-        MapDifficulty const* mapDiff = GetMapDifficultyData(mapid, difficulty);
-        if (mapDiff && mapDiff->resetTime == 259200)
+        if (itr->second.resetTime == 259200)
             sInstanceSaveMgr->ResetOrWarnAll(mapid, difficulty);
     }
 
@@ -3233,8 +3234,7 @@ void World::InstanceWeeklyResetTime()
         uint32 mapid = PAIR32_LOPART(itr->first);
         Difficulty difficulty = Difficulty(PAIR32_HIPART(itr->first));
 
-        MapDifficulty const* mapDiff = GetMapDifficultyData(mapid, difficulty);
-        if (mapDiff && mapDiff->resetTime == 604800)
+        if (itr->second.resetTime == 604800)
             sInstanceSaveMgr->ResetOrWarnAll(mapid, difficulty);
     }
 

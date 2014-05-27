@@ -513,10 +513,8 @@ uint32 InstanceSaveManager::GetNumBoundGroupsTotal()
 time_t InstanceSave::GetResetTime()
 {
     if(MapDifficulty const* mapDiff = GetMapDifficultyData(GetMapId(), GetDifficulty()))
-    {
-        if (mapDiff && mapDiff->resetTime)
+        if (mapDiff->resetTime)
             return sWorld->getInstanceResetTime(mapDiff->resetTime);
-    }
 
     return m_resetTime;
 }

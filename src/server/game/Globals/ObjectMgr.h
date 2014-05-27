@@ -938,6 +938,8 @@ class ObjectMgr
         void LoadResearchSiteToZoneData();
         void LoadDigSitePositions();
 
+        void LoadMapDifficultyAddon();
+
         void LoadBannedAddons();
 
         BannedAddon const* GetBannedAddon(uint32 Id)
