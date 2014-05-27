@@ -375,10 +375,10 @@ class LFGMgr
         LfgUpdateData GetLfgStatus(uint64 guid);
         /// Checks if Seasonal dungeon is active
         bool IsSeasonActive(uint32 dungeonId);
-        /// Gets the random dungeon reward corresponding to given dungeon and player level
-        LfgReward const* GetRandomDungeonReward(uint32 dungeon, uint8 level);
-        /// Returns all random and seasonal dungeons for given level and expansion
-        LfgDungeonSet GetRandomAndSeasonalDungeons(uint8 level, uint8 expansion);
+        /// Gets the dungeon reward corresponding to given dungeon and player level
+        LfgReward const* GetDungeonReward(uint32 dungeon, uint8 level);
+        /// Returns all rewardable dungeons for given level and expansion
+        LfgDungeonSet GetRewardableDungeons(uint8 level, uint8 expansion);
         /// Teleport a player to/from selected dungeon
         void TeleportPlayer(Player* player, bool out, bool fromOpcode = false);
         /// Inits new proposal to boot a player

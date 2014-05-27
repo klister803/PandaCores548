@@ -30,7 +30,7 @@ void BuildPlayerLockDungeonBlock(ByteBuffer& data, lfg::LfgLockMap const& lock)
     for (lfg::LfgLockMap::const_iterator it = lock.begin(); it != lock.end(); ++it)
     {
         data << uint32(it->first);                         // Dungeon entry (id + type)
-        data << uint32(it->second);                        // Lock status
+        data << uint32(it->second.status);                 // Lock status
         data << uint32(0);                                 // Unknown 4.2.2
         data << uint32(0);                                 // Unknown 4.2.2
     }
@@ -248,55 +248,29 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
 
     // Get Random dungeons that can be done at a certain level and expansion
     uint8 level = GetPlayer()->getLevel();
-    lfg::LfgDungeonSet const& randomDungeons =
-        sLFGMgr->GetRandomAndSeasonalDungeons(level, GetPlayer()->GetSession()->Expansion());
+    lfg::LfgDungeonSet const& rewardableDungeons =
+        sLFGMgr->GetRewardableDungeons(level, GetPlayer()->GetSession()->Expansion());
 
     // Get player locked Dungeons
     lfg::LfgLockMap const& lock = sLFGMgr->GetLockedDungeons(guid);
-    uint32 rsize = uint32(randomDungeons.size());
+    uint32 rsize = uint32(rewardableDungeons.size());
     uint32 lsize = uint32(lock.size());
 
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_PLAYER_INFO %s", GetPlayerName().c_str());
     WorldPacket data(SMSG_LFG_PLAYER_INFO, 1 + rsize * (4 + 1 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4) + 4 + lsize * (1 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4));
 
+    uint32 rewardableDungeonsCount = 0;
     data.WriteBit(0);                               // not has guid
     data.WriteBits(lock.size(), 20);
-    data.WriteBits(randomDungeons.size(), 17);      // Random Dungeon count
+    uint32 bitpos = data.bitwpos();
+    data.WriteBits(rewardableDungeonsCount, 17);    // Rewardable Dungeon count
 
     ByteBuffer buff;
-    for (lfg::LfgDungeonSet::const_iterator it = randomDungeons.begin(); it != randomDungeons.end(); ++it)
+    for (lfg::LfgDungeonSet::const_iterator it = rewardableDungeons.begin(); it != rewardableDungeons.end(); ++it)
     {
-        lfg::LfgReward const* reward = sLFGMgr->GetRandomDungeonReward(*it, level);
+        lfg::LfgReward const* reward = sLFGMgr->GetDungeonReward(*it, level);
         if (!reward)
-        {
-            data.WriteBits(0, 20);
-            data.WriteBits(0, 21);
-            data.WriteBit(0);
-            data.WriteBits(0, 21);
-            data.WriteBits(0, 19);
-            data.WriteBit(1);               // unk
-
-            buff << uint32(0);
-            buff << uint32(*it);
-            buff << uint32(0);
-
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
-            buff << uint32(0);
             continue;
-        }
 
         Quest const* qRew[2] = { NULL, NULL };
         qRew[0] = sObjectMgr->GetQuestTemplate(reward->firstQuest);
@@ -367,6 +341,8 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
         buff << uint32(0);
         buff << uint32(0);
         buff << uint32(0);
+
+        ++rewardableDungeonsCount;
     }
 
     if (!buff.empty())
@@ -375,11 +351,13 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
         data.append(buff);
     }
 
+    data.PutBits(bitpos, rewardableDungeonsCount, 17);
+
     for (lfg::LfgLockMap::const_iterator it = lock.begin(); it != lock.end(); ++it)
     {
-        data << uint32(0);                                  // curr player item level
-        data << uint32(0);                                  // req player item level
-        data << uint32(it->second);                         // Lock status
+        data << uint32(it->second.currItemLevel);           // curr player item level
+        data << uint32(it->second.reqItemLevel);            // req player item level
+        data << uint32(it->second.status);                  // Lock status
         data << uint32(it->first);                          // Dungeon entry (id + type)
     }
 
@@ -676,9 +654,9 @@ void WorldSession::SendLfgJoinResult(lfg::LfgJoinResultData const& joinData)
         for (lfg::LfgLockMap::const_iterator itr = lockMap2.begin(); itr != lockMap2.end(); ++itr)
         {
             data << uint32(itr->first);                     // Dungeon entry (id + type)
-            data << uint32(0);                              // needed item level
-            data << uint32(0);                              // current item level
-            data << uint32(itr->second);                    // Lock status
+            data << uint32(itr->second.reqItemLevel);       // needed item level
+            data << uint32(itr->second.currItemLevel);      // current item level
+            data << uint32(itr->second.status);             // Lock status
         }
 
         data.WriteGuidBytes<6, 5, 7, 1, 4, 0, 3, 2>(playerGuid);
