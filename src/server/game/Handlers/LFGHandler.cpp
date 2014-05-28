@@ -668,6 +668,7 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
 
     uint32 bonusValor = 0;
 
+    // dungeons have bonus valor points only when queued by random
     if (!rewardData.done && !rewardData.bonus && rewardData.rdungeonEntry != rewardData.sdungeonEntry)
         bonusValor = sLFGMgr->GetBonusValorPoints(rewardData.sdungeonEntry);
 

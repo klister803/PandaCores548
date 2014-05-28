@@ -192,7 +192,7 @@ struct LfgReward
     LfgReward(uint32 _maxLevel = 0, uint32 _firstQuest = 0, uint32 _otherQuest = 0, uint32 _bonusQuestId = 0):
         maxLevel(_maxLevel), firstQuest(_firstQuest), otherQuest(_otherQuest), bonusQuestId(_bonusQuestId) { }
 
-    bool RewardPlayer(Player* player, LFGDungeonData const* randomDungeon, bool bonusObjective) const;
+    bool RewardPlayer(Player* player, LFGDungeonData const* randomDungeon, LFGDungeonData const* normalDungeon, bool bonusObjective) const;
 
     uint32 maxLevel;
     uint32 firstQuest;

@@ -1663,10 +1663,10 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
             continue;
 
         // Give rewards
-        bool done = reward->RewardPlayer(player, rDungeon, false);
+        bool done = reward->RewardPlayer(player, rDungeon, dungeonDone, false);
 
         sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] done dungeon %u, %s previously done.", player->GetGUID(), GetDungeon(gguid), done? " " : " not");
-        LfgPlayerRewardData data = LfgPlayerRewardData(rDungeon->Entry(), GetDungeon(gguid, false), done, false, reward);
+        LfgPlayerRewardData data = LfgPlayerRewardData(rDungeon->Entry(), dungeonDone->Entry(), done, false, reward);
         player->GetSession()->SendLfgPlayerReward(data);
     }
 }
@@ -2302,10 +2302,10 @@ void LfgRoleData::Init(LFGDungeonData const* data)
     minDpsNeeded = data->dbc->minDpsNeeded;
 }
 
-bool LfgReward::RewardPlayer(Player* player, LFGDungeonData const* randomDungeon, bool bonusObjective) const
+bool LfgReward::RewardPlayer(Player* player, LFGDungeonData const* randomDungeon, LFGDungeonData const* normalDungeon, bool bonusObjective) const
 {
     bool done = false;
-    Quest const* quest = sObjectMgr->GetQuestTemplate(bonusObjective ? firstQuest : bonusObjective);
+    Quest const* quest = sObjectMgr->GetQuestTemplate(bonusObjective ? bonusQuestId : firstQuest);
     if (!quest)
         return false;
 
@@ -2315,7 +2315,7 @@ bool LfgReward::RewardPlayer(Player* player, LFGDungeonData const* randomDungeon
         player->RewardQuest(quest, 0, NULL, false);
 
         // reward lfg bonus reputation on first completion
-        if (uint32 bonusRep = randomDungeon ? randomDungeon->dbc->bonusRepAmt : 0)
+        if (uint32 bonusRep = randomDungeon && !bonusObjective ? randomDungeon->dbc->bonusRepAmt : 0)
         {
             if (uint32 faction = player->GetLfgBonusFaction())
                 player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(faction), bonusRep);
@@ -2328,6 +2328,9 @@ bool LfgReward::RewardPlayer(Player* player, LFGDungeonData const* randomDungeon
         if (quest = sObjectMgr->GetQuestTemplate(otherQuest))
             player->RewardQuest(quest, 0, NULL, false);
     }
+
+    if (uint32 bonusValor = normalDungeon && normalDungeon != randomDungeon ? sLFGMgr->GetBonusValorPoints(normalDungeon->id) : 0)
+        player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, bonusValor * GetCurrencyPrecision(CURRENCY_TYPE_VALOR_POINTS));
 
     return done;
 }
