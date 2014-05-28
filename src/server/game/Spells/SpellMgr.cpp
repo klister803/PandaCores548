@@ -3364,6 +3364,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 53209: // Chimera Shot
+                    spellInfo->Effects[2].BasePoints = 398;
+                    break;
                 case 2944:  // Solace and Insanity
                     spellInfo->Effects[2].BasePoints = 0;
                     break;
