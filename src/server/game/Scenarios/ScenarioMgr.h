@@ -42,7 +42,7 @@ enum ScenarioType
 class ScenarioProgress
 {
 public:
-    ScenarioProgress() : instanceId(0), dungeonData(NULL), type(SCENARIO_TYPE_NORMAL), m_achievementMgr(this), currentStep(0) { }
+    ScenarioProgress() : instanceId(0), dungeonData(NULL), type(SCENARIO_TYPE_NORMAL), m_achievementMgr(this), currentStep(0), rewarded(false), bonusRewarded(false) { }
     ScenarioProgress(uint32 _instanceId, lfg::LFGDungeonData const* _dungeonData);
 
     void SaveToDB(SQLTransaction& trans);
@@ -50,6 +50,7 @@ public:
     void DeleteFromDB();
 
     uint32 GetInstanceId() const { return instanceId; }
+    Map* GetMap();
     ScenarioType GetType() const { return type; }
     uint32 GetScenarioId() const;
     uint32 GetCurrentStep() const { return currentStep; }
@@ -59,6 +60,7 @@ public:
     bool HasBonusStep() const;
     uint8 GetStepCount(bool withBonus) const;
     uint8 UpdateCurrentStep(bool loading);
+    void Reward(bool bonus);
 
     AchievementMgr<ScenarioProgress>& GetAchievementMgr() { return m_achievementMgr; }
     AchievementMgr<ScenarioProgress> const& GetAchievementMgr() const { return m_achievementMgr; }
@@ -69,7 +71,7 @@ public:
 
     bool CanUpdateCriteria(uint32 criteriaTreeId) const;
 
-private:
+protected:
     uint32 instanceId;
     lfg::LFGDungeonData const* dungeonData;
     AchievementMgr<ScenarioProgress> m_achievementMgr;
@@ -78,6 +80,9 @@ private:
     ScenarioSteps steps;
 
     ScenarioType type;
+
+    bool rewarded;
+    bool bonusRewarded;
 };
 
 typedef UNORDERED_MAP<uint32 /*instance_id*/, ScenarioProgress> ScenarioProgressMap;

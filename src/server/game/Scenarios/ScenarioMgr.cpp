@@ -16,6 +16,7 @@
  */
 
 #include "DBCStores.h"
+#include "Group.h"
 #include "ScenarioMgr.h"
 #include "LFGMgr.h"
 #include "InstanceSaveMgr.h"
@@ -40,6 +41,9 @@ void ScenarioProgress::LoadFromDB()
 
     m_achievementMgr.LoadFromDB(NULL, result);
     UpdateCurrentStep(true);
+
+    rewarded = IsCompleted(false);
+    bonusRewarded = IsCompleted(true);
 }
 
 void ScenarioProgress::SaveToDB(SQLTransaction& trans)
@@ -60,6 +64,11 @@ void ScenarioProgress::SaveToDB(SQLTransaction& trans)
 void ScenarioProgress::DeleteFromDB()
 {
     m_achievementMgr.DeleteFromDB(instanceId, 0);
+}
+
+Map* ScenarioProgress::GetMap()
+{
+    return sMapMgr->FindMap(dungeonData->map, instanceId);
 }
 
 uint32 ScenarioProgress::GetScenarioId() const
@@ -118,22 +127,99 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
         SendStepUpdate();
         SaveToDB(SQLTransaction(NULL));
 
-        /*if (IsCompleted(false))
+        if (IsCompleted(false))
             Reward(false);
         else if (IsCompleted(true))
-            Reward(true);*/
+            Reward(true);
     }
 
     return currentStep;
 }
 
+void ScenarioProgress::Reward(bool bonus)
+{
+    if (bonus && bonusRewarded)
+        return;
+
+    if (!bonus && rewarded)
+        return;
+
+    if (bonus)
+    {
+        bonusRewarded = true;
+
+        // no bonus steps for this scenario...
+        if (!GetBonusStepCount())
+            return;
+    }
+    else
+        rewarded = true;
+
+    uint32 groupGuid = 0;
+    Map* map = GetMap();
+    // map not created? bye-bye reward
+    if (!map)
+        return;
+
+    Map::PlayerList const& players = map->GetPlayers();
+    // try to find group guid to refer to
+    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+    {
+        Player* player = itr->getSource();
+        if (!player || !player->IsInWorld() || player->isGameMaster())
+            continue;
+
+        if (!groupGuid)
+            groupGuid = player->GetGroup() ? player->GetGroup()->GetGUID() : 0;
+
+        if (groupGuid)
+            break;
+    }
+
+    // should not happen
+    if (!groupGuid)
+        return;
+
+    uint32 dungeonId = sLFGMgr->GetDungeon(groupGuid);
+    // lfg dungeons are rewarded through lfg
+    if (dungeonId)
+    {
+        // lfg dungeon that we are in is not current scenario
+        if (dungeonId != dungeonData->id)
+            return;
+
+        sLFGMgr->FinishDungeon(groupGuid, dungeonId);
+    }
+    // we have challenge
+    else
+    {
+        ASSERT(GetType() != SCENARIO_TYPE_NORMAL);
+
+        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+        {
+            Player* player = itr->getSource();
+            if (!player || !player->IsInWorld() || player->isGameMaster())
+                continue;
+
+            lfg::LfgReward const* reward = sLFGMgr->GetDungeonReward(dungeonData->id, player->getLevel());
+            if (!reward)
+                continue;
+
+            // TODO: find challenge reward opcode ?
+            bool alreadyCompleted = reward->RewardPlayer(player, dungeonData, bonus);
+            lfg::LfgPlayerRewardData data = lfg::LfgPlayerRewardData(dungeonData->Entry(), dungeonData->Entry(), alreadyCompleted, bonus, reward);
+            player->GetSession()->SendLfgPlayerReward(data);
+        }
+    }
+}
+
 void ScenarioProgress::SendStepUpdate(Player* player, bool full)
 {
     WorldPacket data(SMSG_SCENARIO_PROGRESS_UPDATE, 3 + 7 * 4);
-    data.WriteBit(0);                           // unk not used
-    data.WriteBit(IsCompleted(true));           // bonus step completed
+    data.WriteBit(0);                                           // unk not used
+    data.WriteBit(GetBonusStepCount() && IsCompleted(true));    // bonus step completed
     uint32 bitpos = data.bitwpos();
-    data.WriteBits(0, 19);                      // criteria data
+    data.WriteBits(0, 19);                                      // criteria data
 
     ByteBuffer buff;
     if (full)
@@ -238,7 +324,7 @@ void ScenarioProgress::SendCriteriaUpdate(uint32 criteriaId, uint32 counter, tim
 
 void ScenarioProgress::BroadCastPacket(WorldPacket& data)
 {
-    Map* map = sMapMgr->FindMap(dungeonData->map, instanceId);
+    Map* map = GetMap();
     if (!map)
         return;
 
