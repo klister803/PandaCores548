@@ -1077,3 +1077,72 @@ void BattlePetMgr::SendClosePetBattle(Player * plr)
     WorldPacket data(SMSG_BATTLE_PET_BATTLE_FINISHED);
     plr->GetSession()->SendPacket(&data);
 }
+
+// placeholder
+// packet updates pet stats after finish battle and other actions (renaming?)
+void BattlePetMgr::SendUpdatePets(Player * plr, uint8 petCount)
+{
+    if (!plr)
+        return;
+
+    ObjectGuid petGuid = ObjectGuid();
+
+    WorldPacket data(SMSG_BATTLE_PET_UPDATES);
+    data.WriteBits(petCount, 19);
+    for (uint8 i = 0; i < petCount; i++)
+    {
+        // ObjectGuid petGuid[i] = plr->GetBattlePetMgr()->GetBattlePet(i);
+
+        data.WriteBits(0, 7); // custom name length
+        data.WriteBit(1);     // !hasUnk1
+        data.WriteBit(0);     // hasUnk3
+        data.WriteGuidMask<2>(petGuid);
+        data.WriteBit(1);     // !hasUnk
+        data.WriteBit(1);     // !hasUnk2
+        data.WriteGuidMask<1, 6, 3, 7, 0, 4, 5>(petGuid);
+        data.WriteBit(0);     // hasGuid
+
+        /*if (hasGuid)
+        {
+            data.WriteGuidMask<7, 0, 6, 2, 1, 3, 5, 4>(petGuid2);
+        }*/
+    }
+
+    for (uint8 i = 0; i < petCount; i++)
+    {
+        /*if (hasGuid)
+        {
+            data << uint32(0); // unk
+            data.WriteGuidBytes<0, 1, 2, 3, 4, 5, 7, 6>(petGuid2);
+            data << uint32(0); // unk1
+        }*/
+
+        data << uint16(0); // level
+        data << uint32(0); // total health
+
+        //if (!hasUnk1)
+            //data << uint16(0); // unk2
+
+        //if (!hasUnk2)
+            //data << uint8(0);  // unk3
+
+        data.WriteGuidBytes<3>(petGuid);
+        data << uint32(0); // unk4
+        data << uint32(0); // speed
+
+        //if (!hasUnk)
+            //data << uint16(0); // unk5
+
+        data << uint32(0); // remaining health
+        data << uint32(0); // unk6
+        //data.WriteString(""); // custom name
+        data.WriteGuidBytes<5, 4, 7>(petGuid);
+        data << uint32(0); // species ID
+        data.WriteGuidBytes<2, 6>(petGuid);
+        data << uint16(0); // experience
+        data.WriteGuidBytes<0, 1>(petGuid);
+        data << uint32(0); // power
+    }
+
+    plr->GetSession()->SendPacket(&data);
+}

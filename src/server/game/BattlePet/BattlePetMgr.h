@@ -58,6 +58,7 @@ public:
     void BuildBattlePetJournal(WorldPacket *data);
     void GetBattlePetList(PetBattleDataList &petBattleList) const;
     void SendClosePetBattle(Player * plr);
+    void SendUpdatePets(Player * plr, uint8 petCount);
     Player* GetPlayer() const { return m_player; }
 
 private:
