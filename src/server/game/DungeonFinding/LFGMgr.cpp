@@ -109,7 +109,7 @@ void LFGMgr::LoadRewards()
     RewardMapStore.clear();
 
     // ORDER BY is very important for GetDungeonReward!
-    QueryResult result = WorldDatabase.Query("SELECT dungeonId, maxLevel, firstQuestId, otherQuestId FROM lfg_dungeon_rewards ORDER BY dungeonId, maxLevel ASC");
+    QueryResult result = WorldDatabase.Query("SELECT dungeonId, maxLevel, firstQuestId, otherQuestId, bonusQuestId FROM lfg_dungeon_rewards ORDER BY dungeonId, maxLevel ASC");
 
     if (!result)
     {
@@ -127,6 +127,7 @@ void LFGMgr::LoadRewards()
         uint32 maxLevel = fields[1].GetUInt8();
         uint32 firstQuestId = fields[2].GetUInt32();
         uint32 otherQuestId = fields[3].GetUInt32();
+        uint32 bonusQuestId = fields[4].GetUInt32();
 
         if (!GetLFGDungeonEntry(dungeonId))
         {
@@ -152,7 +153,7 @@ void LFGMgr::LoadRewards()
             otherQuestId = 0;
         }
 
-        RewardMapStore.insert(LfgRewardContainer::value_type(dungeonId, new LfgReward(maxLevel, firstQuestId, otherQuestId)));
+        RewardMapStore.insert(LfgRewardContainer::value_type(dungeonId, new LfgReward(maxLevel, firstQuestId, otherQuestId, bonusQuestId)));
         ++count;
     }
     while (result->NextRow());
@@ -1577,7 +1578,7 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
    @param[in]     guid Group guid
    @param[in]     dungeonId Dungeonid
 */
-void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
+void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId, bool bonusObjective)
 {
     uint32 gDungeonId = GetDungeon(gguid);
     if (gDungeonId != dungeonId)
@@ -1586,19 +1587,24 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
         return;
     }
 
-    if (GetState(gguid) == LFG_STATE_FINISHED_DUNGEON) // Shouldn't happen. Do not reward multiple times
+    LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId);
+
+    LfgState state = GetState(gguid);
+    // Shouldn't happen. Do not reward multiple times
+    if (state == LFG_STATE_FINISHED_DUNGEON && !bonusObjective || state != LFG_STATE_FINISHED_DUNGEON && bonusObjective)
     {
         sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] Already rewarded group. Ignoring", gguid);
         return;
     }
 
-    SetState(gguid, LFG_STATE_FINISHED_DUNGEON);
+    if (!bonusObjective)
+        SetState(gguid, LFG_STATE_FINISHED_DUNGEON);
 
     const LfgGuidSet& players = GetPlayers(gguid);
     for (LfgGuidSet::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         uint64 guid = (*it);
-        if (GetState(guid) == LFG_STATE_FINISHED_DUNGEON)
+        if (!bonusObjective && GetState(guid) == LFG_STATE_FINISHED_DUNGEON)
         {
             sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] Already rewarded player. Ignoring", guid);
             continue;
@@ -1618,7 +1624,6 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
             sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] dungeon %u does not exist", guid, rDungeonId);
             continue;
         }
-        LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId);
         // if 'random' dungeon is not random nor seasonal, check actual dungeon (it can be raid finder)
         if (dungeon->type != LFG_TYPE_RANDOM && !dungeon->seasonal && dungeonDone && dungeonDone->dbc->CanBeRewarded())
         {
@@ -1654,8 +1659,7 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
         if (!reward)
             continue;
 
-        bool done = false;
-        Quest const* quest = sObjectMgr->GetQuestTemplate(reward->firstQuest);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(bonusObjective ? reward->bonusQuestId : reward->firstQuest);
         if (!quest)
             continue;
 
@@ -1671,9 +1675,8 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
                     player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(faction), bonusRep);
             }
         }
-        else
+        else if (!bonusObjective)
         {
-            done = true;
             quest = sObjectMgr->GetQuestTemplate(reward->otherQuest);
             if (!quest)
                 continue;
@@ -1681,10 +1684,13 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
             player->RewardQuest(quest, 0, NULL, false);
         }
 
+        // give bonus currency awarded by certain dungeons
+        if (uint32 bonusValor = !bonusObjective ? sLFGMgr->GetBonusValorPoints(dungeonDone ? dungeonDone->id : 0) : 0)
+            player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, bonusValor * GetCurrencyPrecision(CURRENCY_TYPE_VALOR_POINTS), true, true, true, true);
+
         // Give rewards
-        sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] done dungeon %u, %s previously done.", player->GetGUID(), GetDungeon(gguid), done? " " : " not");
-        LfgPlayerRewardData data = LfgPlayerRewardData(dungeon->Entry(), GetDungeon(gguid, false), done, quest);
-        player->GetSession()->SendLfgPlayerReward(data);
+        sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] done dungeon %u.", player->GetGUID(), GetDungeon(gguid));
+        player->GetSession()->SendLfgPlayerReward(LfgPlayerRewardData(dungeon->Entry(), GetDungeon(gguid, false), quest, bonusObjective));
     }
 }
 
@@ -2265,12 +2271,37 @@ LfgDungeonSet LFGMgr::GetRewardableDungeons(uint8 level, uint8 expansion)
     LfgDungeonSet randomDungeons;
     for (lfg::LFGDungeonContainer::const_iterator itr = LfgDungeonStore.begin(); itr != LfgDungeonStore.end(); ++itr)
     {
-        lfg::LFGDungeonData const& dungeon = itr->second;
+        LFGDungeonData const& dungeon = itr->second;
         if (dungeon.dbc->CanBeRewarded() && (!dungeon.seasonal || sLFGMgr->IsSeasonActive(dungeon.id))
             && dungeon.expansion <= expansion && dungeon.minlevel <= level && level <= dungeon.maxlevel)
             randomDungeons.insert(dungeon.Entry());
     }
     return randomDungeons;
+}
+
+uint32 LFGMgr::GetBonusValorPoints(uint32 dungeonId) const
+{
+    switch (dungeonId & 0xFFFFF)
+    {
+        case 492:   // Greenstone Village
+        case 539:   // Brewmoon Festival
+        case 589:   // A Little Patience
+        case 619:   // A Little Patience
+            return 5;
+        case 470:   // Shado-Pan Monastery
+            return 15;
+        case 472:   // Scholomance
+            return 10;
+        case 554:   // Siege of Niuzao Temple
+            return 5;
+        case 566:   // Theramore's Fall
+        case 567:   // Theramore's Fall
+            return 5;
+        default:
+            break;
+    }
+
+    return 0;
 }
 
 LfgRoleData::LfgRoleData(uint32 dungeonId)

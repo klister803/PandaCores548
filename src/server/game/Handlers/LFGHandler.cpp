@@ -65,7 +65,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
         uint8 type = LFG_TYPE_DUNGEON;
         uint8 maxGroupSize = 5;
         if (entry != NULL)
-            type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
+            type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->IsScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
         if (type == LFG_TYPE_RAID)
             maxGroupSize = 25;
         if (type == LFG_TYPE_SCENARIO)
@@ -228,18 +228,22 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
         if (!reward)
             continue;
 
-        Quest const* qRew[2] = { NULL, NULL };
-        qRew[0] = sObjectMgr->GetQuestTemplate(reward->firstQuest);
-        if (qRew[0])
-            qRew[1] = sObjectMgr->GetQuestTemplate(reward->otherQuest);
+        uint32 bonusValor = sLFGMgr->GetBonusValorPoints(*it);
+        Quest const* rewardQuest = sObjectMgr->GetQuestTemplate(reward->firstQuest);
+        Quest const* bonusQuest = sObjectMgr->GetQuestTemplate(reward->bonusQuestId);
+
+        bool firstCompletion = rewardQuest ? GetPlayer()->CanRewardQuest(rewardQuest, false) : true;
+        if (!firstCompletion)
+            rewardQuest = sObjectMgr->GetQuestTemplate(reward->otherQuest);
+
         uint32 rewardItemCount = 0;
         uint32 rewardCurrencyCount1 = 0;
         uint32 rewardCurrencyCount2 = 0;
 
-        data.WriteBits(qRew[0] ? qRew[0]->GetRewItemsCount() : 0, 20);
-        data.WriteBits(qRew[1] ? qRew[1]->GetRewCurrencyCount() : 0, 21);
-        data.WriteBit(qRew[0] ? GetPlayer()->CanRewardQuest(qRew[0], false) : true);    // can be rewarded
-        data.WriteBits(qRew[0] ? qRew[0]->GetRewCurrencyCount() : 0, 21);
+        data.WriteBits(rewardQuest ? rewardQuest->GetRewItemsCount() : 0, 20);
+        data.WriteBits((bonusQuest ? bonusQuest->GetRewCurrencyCount() : 0) + (bonusValor ? 1 : 0), 21);
+        data.WriteBit(firstCompletion); // can be rewarded
+        data.WriteBits(rewardQuest ? rewardQuest->GetRewCurrencyCount() : 0, 21);
         data.WriteBits(0, 19);          // role bonus count
         data.WriteBit(1);               // eligible to role shortage reward
 
@@ -247,27 +251,32 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
         buff << uint32(*it);            // dungeon entry
         buff << uint32(0);              // cap currency specific quantity
 
-        if (qRew[1])
+        if (bonusQuest)
         {
             for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-                if (uint32 cur = qRew[1]->RewardCurrencyId[i])
+                if (uint32 cur = bonusQuest->RewardCurrencyId[i])
                 {
-                    buff << uint32(qRew[1]->RewardCurrencyCount[i] * GetCurrencyPrecision(cur));
+                    buff << uint32(bonusQuest->RewardCurrencyCount[i] * GetCurrencyPrecision(cur));
                     buff << uint32(cur);
                 }
         }
+        if (bonusValor)
+        {
+            buff << uint32(bonusValor * GetCurrencyPrecision(CURRENCY_TYPE_VALOR_POINTS));
+            buff << uint32(CURRENCY_TYPE_VALOR_POINTS);
+        }
 
-        if (qRew[0])
+        if (rewardQuest)
         {
             for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
             {
-                uint32 itemId = qRew[0]->RewardItemId[i];
+                uint32 itemId = rewardQuest->RewardItemId[i];
                 if (!itemId)
                     continue;
 
-                ItemTemplate const* iProto = sObjectMgr->GetItemTemplate(qRew[0]->RewardItemId[i]);
+                ItemTemplate const* iProto = sObjectMgr->GetItemTemplate(rewardQuest->RewardItemId[i]);
                 buff << uint32(iProto ? iProto->DisplayInfoID : 0);
-                buff << uint32(qRew[0]->RewardItemIdCount[i]);
+                buff << uint32(rewardQuest->RewardItemIdCount[i]);
                 buff << uint32(itemId);
             }
         }
@@ -275,20 +284,20 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recvData)
         buff << uint32(0);      // cap currency Quantity
         buff << uint32(0);      // cap currencyID
         buff << uint32(0);      // cap currency overall Limit
-        buff << uint32(qRew[0] ? qRew[0]->XPValue(GetPlayer()) : 0);
+        buff << uint32(rewardQuest ? rewardQuest->XPValue(GetPlayer()) : 0);
         buff << uint32(0);
         buff << uint32(0);      // cap currency overall Quantity
         buff << uint32(0);      // cap currency period Purse Limit
         buff << uint32(0);      // completed encounters mask
-        buff << uint32(qRew[0] ? qRew[0]->GetRewOrReqMoney() : 0);
+        buff << uint32(rewardQuest ? rewardQuest->GetRewOrReqMoney() : 0);
 
-        if (qRew[0])
+        if (rewardQuest)
         {
             for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-                if (uint32 cur = qRew[0]->RewardCurrencyId[i])
+                if (uint32 cur = rewardQuest->RewardCurrencyId[i])
                 {
                     buff << uint32(cur);
-                    buff << uint32(qRew[0]->RewardCurrencyCount[i] * GetCurrencyPrecision(cur));
+                    buff << uint32(rewardQuest->RewardCurrencyCount[i] * GetCurrencyPrecision(cur));
                 }
         }
 
@@ -643,10 +652,12 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
 
     uint8 itemCount = rewardData.quest->GetRewItemsCount() + rewardData.quest->GetRewCurrencyCount();
 
-    sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_PLAYER_REWARD %s rdungeonEntry: %u, sdungeonEntry: %u, done: %u",
-        GetPlayerName().c_str(), rewardData.rdungeonEntry, rewardData.sdungeonEntry, rewardData.done);
+    sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_PLAYER_REWARD %s rdungeonEntry: %u, sdungeonEntry: %u",
+        GetPlayerName().c_str(), rewardData.rdungeonEntry, rewardData.sdungeonEntry);
 
     uint8 itemNum = rewardData.quest->GetRewItemsCount();
+
+    uint32 bonusValor = !rewardData.bonusCompleted ? sLFGMgr->GetBonusValorPoints(rewardData.sdungeonEntry) : 0;
 
     WorldPacket data(SMSG_LFG_PLAYER_REWARD, 4 * 4 + itemCount + itemCount * 4 * 4);
     data.WriteBits(itemCount, 20);
@@ -675,10 +686,15 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
         if (!cur)
             continue;
 
-        data << uint32(rewardData.quest->RewardCurrencyCount[i] * GetCurrencyPrecision(cur));
+        uint32 add = cur == CURRENCY_TYPE_VALOR_POINTS ? bonusValor : 0;
+        // add only once
+        if (add)
+            bonusValor = 0;
+
+        data << uint32((rewardData.quest->RewardCurrencyCount[i] + add) * GetCurrencyPrecision(cur));
         data << uint32(cur);
         data << uint32(0);
-        data << uint32(0);                                  // bonus valor points
+        data << uint32(add);                               // bonus valor points
     }
 
     data << uint32(rewardData.quest->XPValue(GetPlayer()));

@@ -567,7 +567,7 @@ public:
 
             Map::PlayerList const& players = me->GetMap()->GetPlayers();
             if (!players.isEmpty())
-                sLFGMgr->FinishDungeon(players.begin()->getSource()->GetGroup()->GetGUID(), 285);
+                sLFGMgr->FinishDungeon(players.begin()->getSource()->GetGroup()->GetGUID(), 285, false);
         }
 
         void SpellHit(Unit* caster, const SpellInfo* spell)

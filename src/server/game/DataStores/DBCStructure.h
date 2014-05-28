@@ -1502,7 +1502,9 @@ struct LFGDungeonEntry
 
     // Helpers
     uint32 Entry() const { return ID + (type << 24); }
-    bool isScenario() const { return subType == LFG_SUBTYPE_SCENARIO; }
+    bool IsScenario() const { return subType == LFG_SUBTYPE_SCENARIO; }
+    bool IsChallenge() const { return difficulty == CHALLENGE_MODE_DIFFICULTY; }
+    bool IsRaidFinder() const { return difficulty == RAID_TOOL_DIFFICULTY; }
     uint32 GetMinGroupSize() const { return minTankNeeded + minHealerNeeded + minDpsNeeded; }
     uint32 GetMaxGroupSize() const { return tankNeeded + healerNeeded + dpsNeeded; }
     bool IsValidType() const
@@ -1538,7 +1540,7 @@ struct LFGDungeonEntry
     }
     bool CanBeRewarded() const
     {
-        return type == LFG_TYPE_RANDOM || difficulty == RAID_TOOL_DIFFICULTY || difficulty == CHALLENGE_MODE_DIFFICULTY || flags & LFG_FLAG_SEASONAL;
+        return type == LFG_TYPE_RANDOM || IsRaidFinder() || IsChallenge() || flags & LFG_FLAG_SEASONAL;
     }
 };
 

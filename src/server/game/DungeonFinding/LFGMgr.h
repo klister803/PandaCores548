@@ -177,23 +177,24 @@ struct LfgQueueStatusData
 
 struct LfgPlayerRewardData
 {
-    LfgPlayerRewardData(uint32 random, uint32 current, bool _done, Quest const* _quest):
-        rdungeonEntry(random), sdungeonEntry(current), done(_done), quest(_quest) { }
+    LfgPlayerRewardData(uint32 random, uint32 current, Quest const* _quest, bool _bonusCompleted):
+        rdungeonEntry(random), sdungeonEntry(current), quest(_quest), bonusCompleted(_bonusCompleted) { }
     uint32 rdungeonEntry;
     uint32 sdungeonEntry;
-    bool done;
     Quest const* quest;
+    bool bonusCompleted;
 };
 
 /// Reward info
 struct LfgReward
 {
-    LfgReward(uint32 _maxLevel = 0, uint32 _firstQuest = 0, uint32 _otherQuest = 0):
-        maxLevel(_maxLevel), firstQuest(_firstQuest), otherQuest(_otherQuest) { }
+    LfgReward(uint32 _maxLevel = 0, uint32 _firstQuest = 0, uint32 _otherQuest = 0, uint32 _bonusQuestId = 0):
+        maxLevel(_maxLevel), firstQuest(_firstQuest), otherQuest(_otherQuest), bonusQuestId(_bonusQuestId) { }
 
     uint32 maxLevel;
     uint32 firstQuest;
     uint32 otherQuest;
+    uint32 bonusQuestId;
 };
 
 /// Stores player data related to proposal to join
@@ -305,7 +306,7 @@ class LFGMgr
 
         // World.cpp
         /// Finish the dungeon for the given group. All check are performed using internal lfg data
-        void FinishDungeon(uint64 gguid, uint32 dungeonId);
+        void FinishDungeon(uint64 gguid, uint32 dungeonId, bool bonusObjective);
         /// Loads rewards for random dungeons
         void LoadRewards();
         /// Loads dungeons from dbc and adds teleport coords
@@ -379,6 +380,8 @@ class LFGMgr
         LfgReward const* GetDungeonReward(uint32 dungeon, uint8 level);
         /// Returns all rewardable dungeons for given level and expansion
         LfgDungeonSet GetRewardableDungeons(uint8 level, uint8 expansion);
+        ///
+        uint32 GetBonusValorPoints(uint32 dungeonId) const;
         /// Teleport a player to/from selected dungeon
         void TeleportPlayer(Player* player, bool out, bool fromOpcode = false);
         /// Inits new proposal to boot a player
