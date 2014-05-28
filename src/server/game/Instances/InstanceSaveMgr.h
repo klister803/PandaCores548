@@ -49,7 +49,7 @@ class InstanceSave
            - any new instance is being generated
            - the first time a player bound to InstanceId logs in
            - when a group bound to the instance is loaded */
-        InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, time_t resetTime, bool canReset);
+        InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, bool canReset);
 
         /* Unloaded when m_playerList and m_groupList become empty
            or when the instance is reset */
@@ -72,8 +72,6 @@ class InstanceSave
         /* for normal instances this corresponds to max(creature respawn time) + X hours
            for raid/heroic instances this caches the global respawn time for the map */
         time_t GetResetTime();
-        void SetResetTime(time_t resetTime) { m_resetTime = resetTime; }
-        time_t GetResetTimeForDB();
 
         InstanceTemplate const* GetTemplate();
         MapEntry const* GetMapEntry();
@@ -105,7 +103,6 @@ class InstanceSave
            TODO: maybe it's enough to just store the number of players/groups */
         PlayerListType m_playerList;
         GroupListType m_groupList;
-        time_t m_resetTime;
         uint32 m_instanceid;
         uint32 m_mapid;
         Difficulty m_difficulty;
@@ -166,8 +163,7 @@ class InstanceSaveManager
 
         void Update();
 
-        InstanceSave* AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, time_t resetTime,
-            bool canReset, bool load = false);
+        InstanceSave* AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, bool canReset, bool load = false);
         void RemoveInstanceSave(uint32 InstanceId);
         static void DeleteInstanceFromDB(uint32 instanceid);
 
