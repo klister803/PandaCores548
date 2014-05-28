@@ -177,12 +177,13 @@ struct LfgQueueStatusData
 
 struct LfgPlayerRewardData
 {
-    LfgPlayerRewardData(uint32 random, uint32 current, Quest const* _quest, bool _bonusCompleted):
-        rdungeonEntry(random), sdungeonEntry(current), quest(_quest), bonusCompleted(_bonusCompleted) { }
+    LfgPlayerRewardData(uint32 random, uint32 current, bool _done, bool _bonus, LfgReward const* _reward):
+        rdungeonEntry(random), sdungeonEntry(current), done(_done), bonus(_bonus), reward(_reward) { }
     uint32 rdungeonEntry;
     uint32 sdungeonEntry;
-    Quest const* quest;
-    bool bonusCompleted;
+    bool done;
+    bool bonus;
+    LfgReward const* reward;
 };
 
 /// Reward info
@@ -190,6 +191,8 @@ struct LfgReward
 {
     LfgReward(uint32 _maxLevel = 0, uint32 _firstQuest = 0, uint32 _otherQuest = 0, uint32 _bonusQuestId = 0):
         maxLevel(_maxLevel), firstQuest(_firstQuest), otherQuest(_otherQuest), bonusQuestId(_bonusQuestId) { }
+
+    bool RewardPlayer(Player* player, LFGDungeonData const* randomDungeon, bool bonusObjective) const;
 
     uint32 maxLevel;
     uint32 firstQuest;
@@ -306,7 +309,7 @@ class LFGMgr
 
         // World.cpp
         /// Finish the dungeon for the given group. All check are performed using internal lfg data
-        void FinishDungeon(uint64 gguid, uint32 dungeonId, bool bonusObjective);
+        void FinishDungeon(uint64 gguid, uint32 dungeonId);
         /// Loads rewards for random dungeons
         void LoadRewards();
         /// Loads dungeons from dbc and adds teleport coords

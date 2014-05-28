@@ -647,42 +647,54 @@ void WorldSession::SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData)
 
 void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardData)
 {
-    if (!rewardData.rdungeonEntry || !rewardData.sdungeonEntry || !rewardData.quest)
+    if (!rewardData.rdungeonEntry || !rewardData.sdungeonEntry)
         return;
 
-    uint8 itemCount = rewardData.quest->GetRewItemsCount() + rewardData.quest->GetRewCurrencyCount();
+    Quest const* quest = NULL;
+    if (rewardData.bonus)
+        quest = sObjectMgr->GetQuestTemplate(rewardData.reward->bonusQuestId);
+    else if (rewardData.done)
+        quest = sObjectMgr->GetQuestTemplate(rewardData.reward->otherQuest);
+    else
+        quest = sObjectMgr->GetQuestTemplate(rewardData.reward->firstQuest);
+
+    if (!quest)
+        return;
+
+    uint8 itemCount = quest->GetRewItemsCount() + quest->GetRewCurrencyCount();
 
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_PLAYER_REWARD %s rdungeonEntry: %u, sdungeonEntry: %u",
         GetPlayerName().c_str(), rewardData.rdungeonEntry, rewardData.sdungeonEntry);
 
-    uint8 itemNum = rewardData.quest->GetRewItemsCount();
+    uint32 bonusValor = 0;
 
-    uint32 bonusValor = !rewardData.bonusCompleted ? sLFGMgr->GetBonusValorPoints(rewardData.sdungeonEntry) : 0;
+    if (!rewardData.done && !rewardData.bonus && rewardData.rdungeonEntry != rewardData.sdungeonEntry)
+        bonusValor = sLFGMgr->GetBonusValorPoints(rewardData.sdungeonEntry);
 
     WorldPacket data(SMSG_LFG_PLAYER_REWARD, 4 * 4 + itemCount + itemCount * 4 * 4);
     data.WriteBits(itemCount, 20);
     for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
-        if (rewardData.quest->RewardItemId[i])
+        if (quest->RewardItemId[i])
             data.WriteBit(0);
     for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-        if (rewardData.quest->RewardCurrencyId[i])
+        if (quest->RewardCurrencyId[i])
             data.WriteBit(1);
     for (uint32 i = 0; i < QUEST_REWARDS_COUNT; ++i)
     {
-        uint32 itemId = rewardData.quest->RewardItemId[i];
+        uint32 itemId = quest->RewardItemId[i];
         if (!itemId)
             continue;
 
         ItemTemplate const* iProto = sObjectMgr->GetItemTemplate(itemId);
 
-        data << uint32(rewardData.quest->RewardItemIdCount[i]);
+        data << uint32(quest->RewardItemIdCount[i]);
         data << uint32(itemId);
         data << uint32(iProto ? iProto->DisplayInfoID : 0);
         data << uint32(0);
     }
     for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
     {
-        uint32 cur = rewardData.quest->RewardCurrencyId[i];
+        uint32 cur = quest->RewardCurrencyId[i];
         if (!cur)
             continue;
 
@@ -691,14 +703,14 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
         if (add)
             bonusValor = 0;
 
-        data << uint32((rewardData.quest->RewardCurrencyCount[i] + add) * GetCurrencyPrecision(cur));
+        data << uint32((quest->RewardCurrencyCount[i] + add) * GetCurrencyPrecision(cur));
         data << uint32(cur);
         data << uint32(0);
         data << uint32(add);                               // bonus valor points
     }
 
-    data << uint32(rewardData.quest->XPValue(GetPlayer()));
-    data << uint32(rewardData.quest->GetRewOrReqMoney());
+    data << uint32(quest->XPValue(GetPlayer()));
+    data << uint32(quest->GetRewOrReqMoney());
     data << uint32(rewardData.rdungeonEntry);              // Random Dungeon Finished
     data << uint32(rewardData.sdungeonEntry);              // Dungeon Finished
 

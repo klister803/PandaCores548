@@ -569,7 +569,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                 if (Group* grp = player->GetGroup())
                     if (grp->isLFGGroup())
                     {
-                        sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId, false);
+                        sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId);
                         break;
                     }
         }

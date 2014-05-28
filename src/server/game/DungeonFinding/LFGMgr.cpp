@@ -153,7 +153,13 @@ void LFGMgr::LoadRewards()
             otherQuestId = 0;
         }
 
-        RewardMapStore.insert(LfgRewardContainer::value_type(dungeonId, new LfgReward(maxLevel, firstQuestId, otherQuestId, bonusQuestId)));
+        if (bonusQuestId && !sObjectMgr->GetQuestTemplate(bonusQuestId))
+        {
+            sLog->outError(LOG_FILTER_SQL, "Bonus quest %u specified for dungeon %u in table `lfg_dungeon_rewards` does not exist!", bonusQuestId, dungeonId);
+            bonusQuestId = 0;
+        }
+
+        RewardMapStore.insert(LfgRewardContainer::value_type(dungeonId, new LfgReward(maxLevel, firstQuestId, otherQuestId)));
         ++count;
     }
     while (result->NextRow());
@@ -1578,7 +1584,7 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
    @param[in]     guid Group guid
    @param[in]     dungeonId Dungeonid
 */
-void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId, bool bonusObjective)
+void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
 {
     uint32 gDungeonId = GetDungeon(gguid);
     if (gDungeonId != dungeonId)
@@ -1587,24 +1593,19 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId, bool bonusObjec
         return;
     }
 
-    LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId);
-
-    LfgState state = GetState(gguid);
-    // Shouldn't happen. Do not reward multiple times
-    if (state == LFG_STATE_FINISHED_DUNGEON && !bonusObjective || state != LFG_STATE_FINISHED_DUNGEON && bonusObjective)
+    if (GetState(gguid) == LFG_STATE_FINISHED_DUNGEON) // Shouldn't happen. Do not reward multiple times
     {
         sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] Already rewarded group. Ignoring", gguid);
         return;
     }
 
-    if (!bonusObjective)
-        SetState(gguid, LFG_STATE_FINISHED_DUNGEON);
+    SetState(gguid, LFG_STATE_FINISHED_DUNGEON);
 
     const LfgGuidSet& players = GetPlayers(gguid);
     for (LfgGuidSet::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         uint64 guid = (*it);
-        if (!bonusObjective && GetState(guid) == LFG_STATE_FINISHED_DUNGEON)
+        if (GetState(guid) == LFG_STATE_FINISHED_DUNGEON)
         {
             sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] Already rewarded player. Ignoring", guid);
             continue;
@@ -1617,18 +1618,20 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId, bool bonusObjec
 
         SetState(guid, LFG_STATE_FINISHED_DUNGEON);
 
-        // Give rewards only if its a random dungeon
-        LFGDungeonData const* dungeon = GetLFGDungeon(rDungeonId);
-        if (!dungeon)
+        // Give rewards only if its a rewardable dungeon
+        LFGDungeonData const* rDungeon = GetLFGDungeon(rDungeonId);
+        if (!rDungeon)
         {
             sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] dungeon %u does not exist", guid, rDungeonId);
             continue;
         }
+        LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId);
         // if 'random' dungeon is not random nor seasonal, check actual dungeon (it can be raid finder)
-        if (dungeon->type != LFG_TYPE_RANDOM && !dungeon->seasonal && dungeonDone && dungeonDone->dbc->CanBeRewarded())
+        if (rDungeon->type != LFG_TYPE_RANDOM && !rDungeon->seasonal && dungeonDone && dungeonDone->dbc->CanBeRewarded())
         {
+            // there can be more that 1 non-random dungeon selected, so fall back to current dungeon id
             rDungeonId = dungeonDone->id;
-            dungeon = dungeonDone;
+            rDungeon = dungeonDone;
         }
         else
         {
@@ -1652,45 +1655,19 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId, bool bonusObjec
         }
 
         // Update achievements
-        if (dungeon->difficulty == HEROIC_DIFFICULTY)
+        if (rDungeon->difficulty == HEROIC_DIFFICULTY)
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS, 1);
 
         LfgReward const* reward = GetDungeonReward(rDungeonId, player->getLevel());
         if (!reward)
             continue;
 
-        Quest const* quest = sObjectMgr->GetQuestTemplate(bonusObjective ? reward->bonusQuestId : reward->firstQuest);
-        if (!quest)
-            continue;
-
-        // if we can take the quest, means that we haven't done this kind of "run", IE: First Heroic Random of Day.
-        if (player->CanRewardQuest(quest, false))
-        {
-            player->RewardQuest(quest, 0, NULL, false);
-
-            // reward lfg bonus reputation on first completion
-            if (uint32 bonusRep = dungeon->dbc->bonusRepAmt)
-            {
-                if (uint32 faction = player->GetLfgBonusFaction())
-                    player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(faction), bonusRep);
-            }
-        }
-        else if (!bonusObjective)
-        {
-            quest = sObjectMgr->GetQuestTemplate(reward->otherQuest);
-            if (!quest)
-                continue;
-            // we give reward without informing client (retail does this)
-            player->RewardQuest(quest, 0, NULL, false);
-        }
-
-        // give bonus currency awarded by certain dungeons
-        if (uint32 bonusValor = !bonusObjective ? sLFGMgr->GetBonusValorPoints(dungeonDone ? dungeonDone->id : 0) : 0)
-            player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, bonusValor * GetCurrencyPrecision(CURRENCY_TYPE_VALOR_POINTS), true, true, true, true);
-
         // Give rewards
-        sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] done dungeon %u.", player->GetGUID(), GetDungeon(gguid));
-        player->GetSession()->SendLfgPlayerReward(LfgPlayerRewardData(dungeon->Entry(), GetDungeon(gguid, false), quest, bonusObjective));
+        bool done = reward->RewardPlayer(player, rDungeon, false);
+
+        sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] done dungeon %u, %s previously done.", player->GetGUID(), GetDungeon(gguid), done? " " : " not");
+        LfgPlayerRewardData data = LfgPlayerRewardData(rDungeon->Entry(), GetDungeon(gguid, false), done, false, reward);
+        player->GetSession()->SendLfgPlayerReward(data);
     }
 }
 
@@ -2323,6 +2300,36 @@ void LfgRoleData::Init(LFGDungeonData const* data)
     minTanksNeeded = data->dbc->minTankNeeded;
     minHealerNeeded = data->dbc->minHealerNeeded;
     minDpsNeeded = data->dbc->minDpsNeeded;
+}
+
+bool LfgReward::RewardPlayer(Player* player, LFGDungeonData const* randomDungeon, bool bonusObjective) const
+{
+    bool done = false;
+    Quest const* quest = sObjectMgr->GetQuestTemplate(bonusObjective ? firstQuest : bonusObjective);
+    if (!quest)
+        return false;
+
+    // if we can take the quest, means that we haven't done this kind of "run", IE: First Heroic Random of Day.
+    if (player->CanRewardQuest(quest, false))
+    {
+        player->RewardQuest(quest, 0, NULL, false);
+
+        // reward lfg bonus reputation on first completion
+        if (uint32 bonusRep = randomDungeon ? randomDungeon->dbc->bonusRepAmt : 0)
+        {
+            if (uint32 faction = player->GetLfgBonusFaction())
+                player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(faction), bonusRep);
+        }
+    }
+    else if (!bonusObjective)
+    {
+        done = true;
+        // we give reward without informing client (retail does this)
+        if (quest = sObjectMgr->GetQuestTemplate(otherQuest))
+            player->RewardQuest(quest, 0, NULL, false);
+    }
+
+    return done;
 }
 
 } // namespace lfg
