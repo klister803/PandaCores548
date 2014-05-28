@@ -5,6 +5,20 @@
 #include "VMapFactory.h"
 #include "throne_of_thunder.h"
 
+const DoorData doorData[] =
+{
+    {GO_JINROKH_PRE_DOOR,  DATA_STORM_CALLER,      DOOR_TYPE_PASSAGE, 0},
+    {GO_JINROKH_EX_DOOR,   DATA_JINROKH,           DOOR_TYPE_PASSAGE, 0},
+    {GO_HORRIDON_PRE_DOOR, DATA_STORMBRINGER,      DOOR_TYPE_PASSAGE, 0},
+    {GO_HORRIDON_EX_DOOR,  DATA_HORRIDON,          DOOR_TYPE_PASSAGE, 0},
+    {GO_COUNCIL_EX_DOOR,   DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
+    {GO_COUNCIL_EX2_DOOR,  DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
+    {GO_TORTOS_EX_DOOR,    DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
+    {GO_TORTOS_EX2_DOOR,   DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
+    {GO_MEGAERA_EX_DOOR,   DATA_MEGAERA,           DOOR_TYPE_PASSAGE, 0},
+    {0,                   0,                       DOOR_TYPE_PASSAGE, 0},
+};
+
 class instance_throne_of_thunder : public InstanceMapScript
 {
 public:
@@ -63,7 +77,8 @@ public:
         
         void Initialize()
         {
-            SetBossNumber(14);
+            SetBossNumber(16);
+            LoadDoorData(doorData);
 
             //GameObject
             jinrokhentdoorGuid  = 0;
@@ -200,6 +215,7 @@ public:
             switch (go->GetEntry())
             {
             case GO_JINROKH_PRE_DOOR:
+                AddDoor(go, true);
                 jinrokhpredoorGuid = go->GetGUID();
                 break;
             case GO_JINROKH_ENT_DOOR:
@@ -224,15 +240,18 @@ public:
                 break;
             //
             case GO_JINROKH_EX_DOOR:
+                AddDoor(go, true);
                 jinrokhexdoorGuid = go->GetGUID();
                 break;
             case GO_HORRIDON_PRE_DOOR:
+                AddDoor(go, true);
                 horridonpredoorGuid = go->GetGUID();
                 break;
             case GO_HORRIDON_ENT_DOOR:
                 horridonentdoorGuid = go->GetGUID();
                 break;
             case GO_HORRIDON_EX_DOOR:
+                AddDoor(go, true);
                 horridonexdoorGuid = go->GetGUID();
                 break;
             case GO_COUNCIL_LENT_DOOR:
@@ -242,18 +261,23 @@ public:
                 councilentdoorGuids.push_back(go->GetGUID());
                 break;
             case GO_COUNCIL_EX_DOOR:
+                AddDoor(go, true);
                 councilexdoorGuid = go->GetGUID();
                 break;
             case GO_COUNCIL_EX2_DOOR:
+                AddDoor(go, true);
                 councilex2doorGuid = go->GetGUID();
                 break;
             case GO_TORTOS_EX_DOOR:
+                AddDoor(go, true);
                 tortosexdoorGuid = go->GetGUID();
                 break;
             case GO_TORTOS_EX2_DOOR:
+                AddDoor(go, true);
                 tortosex2doorGuid = go->GetGUID();
                 break;
             case GO_MEGAERA_EX_DOOR:
+                AddDoor(go, true);
                 megaeraexdoorGuid = go->GetGUID();
                 break;
             case GO_JI_KUN_FEATHER:
@@ -274,6 +298,10 @@ public:
 
             switch (id)
             {
+            case DATA_STORM_CALLER:
+                if (state == DONE)
+                    HandleGameObject(jinrokhpredoorGuid, true);
+                break;
             case DATA_JINROKH:
                 {
                     switch (state)
@@ -292,6 +320,10 @@ public:
                         break;
                     }
                 }
+                break;
+            case DATA_STORMBRINGER:
+                if (state == DONE)
+                    HandleGameObject(horridonpredoorGuid, true);
                 break;
             case DATA_HORRIDON:
                 {
@@ -364,6 +396,10 @@ public:
                     HandleGameObject(tortosexdoorGuid, true);
                     HandleGameObject(tortosex2doorGuid, true);
                 }
+                break;
+            case DATA_MEGAERA:
+                if (state == DONE)
+                    HandleGameObject(megaeraexdoorGuid, true);
                 break;
             case DATA_JI_KUN:
                 {
@@ -454,24 +490,6 @@ public:
             }
             return 0;
         }
-
-        void OnUnitDeath(Unit* who)
-        {
-            if (who->ToCreature())
-            {
-                switch (who->GetEntry())
-                {
-                case NPC_STORM_CALLER:
-                    HandleGameObject(jinrokhpredoorGuid, true);
-                    break;
-                case NPC_STORMBRINGER:
-                    HandleGameObject(horridonpredoorGuid, true);
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
         
         bool IsWipe()
         {
@@ -505,7 +523,7 @@ public:
         {
             std::istringstream loadStream(LoadBossState(data));
             uint32 buff;
-            for (uint32 i = 0; i < 14; ++i)
+            for (uint32 i = 0; i < 16; ++i)
                 loadStream >> buff;
         }
     };
@@ -536,27 +554,31 @@ class npc_storm_caller : public CreatureScript
     public:
         npc_storm_caller() : CreatureScript("npc_storm_caller") { }
         
-        struct npc_storm_callerAI : public CreatureAI
+        struct npc_storm_callerAI : public BossAI
         {
-            npc_storm_callerAI(Creature* pCreature) : CreatureAI(pCreature)
+            npc_storm_callerAI(Creature* pCreature) : BossAI(pCreature, DATA_STORM_CALLER)
             {
                 pInstance = pCreature->GetInstanceScript();
             }
             
             InstanceScript* pInstance;
-            EventMap events;
 
             void Reset()
             {
+                _Reset();
                 me->RemoveAurasDueToSpell(SPELL_STORM_WEAPON);
-                events.Reset();
             }
 
             void EnterCombat(Unit* who)
             {
-                DoZoneInCombat(me, 100.0f);
+                _EnterCombat();
                 me->AddAura(SPELL_STORM_WEAPON, me);
                 events.ScheduleEvent(EVENT_STORM_ENERGY, urand(15000, 20000));
+            }
+
+            void JustDied(Unit* killer)
+            {
+                _JustDied();
             }
             
             void UpdateAI(const uint32 diff)
@@ -591,27 +613,31 @@ class npc_stormbringer : public CreatureScript
     public:
         npc_stormbringer() : CreatureScript("npc_stormbringer") { }
         
-        struct npc_stormbringerAI : public CreatureAI
+        struct npc_stormbringerAI : public BossAI
         {
-            npc_stormbringerAI(Creature* pCreature) : CreatureAI(pCreature)
+            npc_stormbringerAI(Creature* pCreature) : BossAI(pCreature, DATA_STORMBRINGER)
             {
                 pInstance = pCreature->GetInstanceScript();
             }
             
             InstanceScript* pInstance;
-            EventMap events;
 
             void Reset()
             {
+                _Reset();
                 me->RemoveAurasDueToSpell(SPELL_STORMCLOUD);
-                events.Reset();
             }
 
             void EnterCombat(Unit* who)
             {
-                DoZoneInCombat(me, 100.0f);
+                _EnterCombat();
                 DoCast(me, SPELL_STORMCLOUD);
                 events.ScheduleEvent(EVENT_CHAIN_LIGHTNIG, urand(15000, 20000));
+            }
+
+            void JustDied(Unit* killer)
+            {
+                _JustDied();
             }
             
             void UpdateAI(const uint32 diff)

@@ -116,11 +116,7 @@ void CheckMegaeraHeads(InstanceScript* instance, Creature* caller, uint32 caller
         {
             caller->setFaction(35);
             caller->SummonGameObject(218805, 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
-            if (instance)
-            {
-                if (GameObject* go = caller->GetMap()->GetGameObject(instance->GetData64(GO_MEGAERA_EX_DOOR)))
-                    go->SetGoState(GO_STATE_ACTIVE);
-            }
+            instance->SetBossState(DATA_MEGAERA, DONE);
             return;
         }
         
@@ -163,7 +159,10 @@ class npc_megaera_head : public CreatureScript
             void Reset()
             {
                 if (instance)
+                {
                     ResetMegaeraHeads(instance, me, me->GetEntry());
+                    instance->SetBossState(DATA_MEGAERA, NOT_STARTED);
+                }
                 summon.DespawnAll();
                 events.Reset();
                 me->setFaction(16);

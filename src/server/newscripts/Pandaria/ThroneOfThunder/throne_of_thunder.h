@@ -11,19 +11,21 @@
 
 enum eData
 {
-    DATA_JINROKH            = 1,
-    DATA_HORRIDON           = 2,
-    DATA_COUNCIL_OF_ELDERS  = 3,
-    DATA_TORTOS             = 4,
-    DATA_MEGAERA            = 5,
-    DATA_JI_KUN             = 6,
-    DATA_DURUMU             = 7,
-    DATA_PRIMORDIUS         = 8,
-    DATA_DARK_ANIMUS        = 9,
-    DATA_IRON_QON           = 10,
-    DATA_TWIN_CONSORTS      = 11,
-    DATA_LEI_SHEN           = 12,
-    DATA_RA_DEN             = 13,
+    DATA_STORM_CALLER       = 1, //Mini Boss
+    DATA_JINROKH            = 2,
+    DATA_STORMBRINGER       = 3, //Mini Boss
+    DATA_HORRIDON           = 4,
+    DATA_COUNCIL_OF_ELDERS  = 5,
+    DATA_TORTOS             = 6,
+    DATA_MEGAERA            = 7,
+    DATA_JI_KUN             = 8,
+    DATA_DURUMU             = 9,
+    DATA_PRIMORDIUS         = 10,
+    DATA_DARK_ANIMUS        = 11,
+    DATA_IRON_QON           = 12,
+    DATA_TWIN_CONSORTS      = 13,
+    DATA_LEI_SHEN           = 14,
+    DATA_RA_DEN             = 15,
 };
 
 enum eCreatures
