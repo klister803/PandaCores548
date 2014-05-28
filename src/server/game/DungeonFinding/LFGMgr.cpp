@@ -2329,7 +2329,8 @@ bool LfgReward::RewardPlayer(Player* player, LFGDungeonData const* randomDungeon
             player->RewardQuest(quest, 0, NULL, false);
     }
 
-    if (uint32 bonusValor = normalDungeon && normalDungeon != randomDungeon ? sLFGMgr->GetBonusValorPoints(normalDungeon->id) : 0)
+    // reward bonus valor points for certain dungeons
+    if (uint32 bonusValor = !bonusObjective && normalDungeon && normalDungeon != randomDungeon ? sLFGMgr->GetBonusValorPoints(normalDungeon->id) : 0)
         player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, bonusValor * GetCurrencyPrecision(CURRENCY_TYPE_VALOR_POINTS));
 
     return done;
