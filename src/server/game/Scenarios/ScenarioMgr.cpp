@@ -206,7 +206,7 @@ void ScenarioProgress::Reward(bool bonus)
                 continue;
 
             // TODO: find challenge reward opcode ?
-            bool alreadyCompleted = reward->RewardPlayer(player, dungeonData, bonus);
+            bool alreadyCompleted = reward->RewardPlayer(player, dungeonData, dungeonData, bonus);
             lfg::LfgPlayerRewardData data = lfg::LfgPlayerRewardData(dungeonData->Entry(), dungeonData->Entry(), alreadyCompleted, bonus, reward);
             player->GetSession()->SendLfgPlayerReward(data);
         }
