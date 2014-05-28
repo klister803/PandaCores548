@@ -73,6 +73,7 @@ void ChallengeMgr::SaveChallengeToDB(Challenge *c)
         stmt->setUInt32(0, c->Id);
         stmt->setUInt64(1, (*itr).guid);
         stmt->setUInt16(2, (*itr).specId);
+        trans->Append(stmt);
     }
 
     CharacterDatabase.CommitTransaction(trans);
