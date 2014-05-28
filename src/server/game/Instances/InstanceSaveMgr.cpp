@@ -122,13 +122,17 @@ InstanceSave* InstanceSaveManager::GetInstanceSave(uint32 InstanceId)
 
 void InstanceSaveManager::DeleteInstanceFromDB(uint32 instanceid)
 {
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INSTANCE_BY_INSTANCE);
+    stmt->setUInt32(0, instanceid);
+    CharacterDatabase.DirectExecute(stmt);
 
-    trans->PAppend("DELETE FROM instance WHERE id = '%u'", instanceid);
-    trans->PAppend("DELETE FROM character_instance WHERE instance = '%u'", instanceid);
-    trans->PAppend("DELETE FROM group_instance WHERE instance = '%u'", instanceid);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GROUP_INSTANCE_BY_INSTANCE);
+    stmt->setUInt32(0, instanceid);
+    CharacterDatabase.DirectExecute(stmt);
 
-    CharacterDatabase.CommitTransaction(trans);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INSTANCE_BY_INSTANCE);
+    stmt->setUInt32(0, instanceid);
+    CharacterDatabase.DirectExecute(stmt);
     // Respawn times should be deleted only when the map gets unloaded
 }
 
@@ -139,7 +143,14 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
     {
         // save the resettime for normal instances only when they get unloaded
         if (time_t resettime = itr->second->GetResetTimeForDB())
-            CharacterDatabase.PExecute("UPDATE instance SET resettime = '"UI64FMTD"' WHERE id = '%u'", (uint64)resettime, InstanceId);
+        {
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_INSTANCE_RESETTIME);
+
+            stmt->setUInt32(0, uint32(resettime));
+            stmt->setUInt32(1, InstanceId);
+
+            CharacterDatabase.Execute(stmt);
+        }
 
         delete itr->second;
         m_instanceSaveById.erase(itr);
@@ -456,24 +467,21 @@ void InstanceSaveManager::ResetOrWarnAll(uint32 mapid, Difficulty difficulty)
     }
 
     // delete them from the DB, even if not loaded
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INSTANCE_BY_MAP_DIFF);
     stmt->setUInt16(0, uint16(mapid));
     stmt->setUInt8(1, uint8(difficulty));
-    trans->Append(stmt);
+    CharacterDatabase.DirectExecute(stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GROUP_INSTANCE_BY_MAP_DIFF);
     stmt->setUInt16(0, uint16(mapid));
     stmt->setUInt8(1, uint8(difficulty));
-    trans->Append(stmt);
+    CharacterDatabase.DirectExecute(stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INSTANCE_BY_MAP_DIFF);
     stmt->setUInt16(0, uint16(mapid));
     stmt->setUInt8(1, uint8(difficulty));
-    trans->Append(stmt);
+    CharacterDatabase.DirectExecute(stmt);
 
-    CharacterDatabase.CommitTransaction(trans);
 
     // note: this isn't fast but it's meant to be executed very rarely
     Map const* map = sMapMgr->CreateBaseMap(mapid);          // _not_ include difficulty
