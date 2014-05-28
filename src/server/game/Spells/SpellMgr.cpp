@@ -3364,7 +3364,11 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 53209: // Chimera Shot
+                case 13165:  // Aspect of the Hawk
+                case 109260: // Aspect of the Iron Hawk
+                    spellInfo->Effects[0].BasePoints = 35;
+                    break;
+                case 53209:  // Chimera Shot
                     spellInfo->Effects[2].BasePoints = 398;
                     break;
                 case 2944:  // Solace and Insanity
