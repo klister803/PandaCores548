@@ -97,8 +97,13 @@ enum eGameObjects
     //Tortos
     GO_TORTOS_EX_DOOR     = 218980,
     GO_TORTOS_EX2_DOOR    = 218987,
+    //
+    //Megaera
+    GO_MEGAERA_EX_DOOR    = 218746,
+    //
+    //Ji Kun
+    GO_JI_KUN_FEATHER     = 218543,
+    GO_JI_KUN_EX_DOOR     = 218888,
 };
 
-//This is triggers entry (maybe needed, but not need spawn)
-//69593, 69509, 69676, 69609, 69469 - Condictive water
 #endif THRONEOFTHUNDER

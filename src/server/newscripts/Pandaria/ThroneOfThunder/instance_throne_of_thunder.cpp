@@ -29,6 +29,8 @@ public:
         uint64 councilex2doorGuid;
         uint64 tortosexdoorGuid;
         uint64 tortosex2doorGuid;
+        uint64 megaeraexdoorGuid;
+        uint64 jikunexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -57,6 +59,7 @@ public:
         std::vector <uint64> councilGuids;
         std::vector <uint64> mogufontsGuids;
         std::vector <uint64> councilentdoorGuids;
+        std::vector <uint64> jikunfeatherGuids;
         
         void Initialize()
         {
@@ -76,6 +79,8 @@ public:
             councilex2doorGuid  = 0;
             tortosexdoorGuid    = 0;
             tortosex2doorGuid   = 0;
+            megaeraexdoorGuid   = 0;
+            jikunexdoorGuid     = 0;
            
             //Creature
             stormcallerGuid     = 0;
@@ -104,6 +109,7 @@ public:
             councilGuids.clear();
             mogufontsGuids.clear();
             councilentdoorGuids.clear();
+            jikunfeatherGuids.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -247,6 +253,15 @@ public:
             case GO_TORTOS_EX2_DOOR:
                 tortosex2doorGuid = go->GetGUID();
                 break;
+            case GO_MEGAERA_EX_DOOR:
+                megaeraexdoorGuid = go->GetGUID();
+                break;
+            case GO_JI_KUN_FEATHER:
+                jikunfeatherGuids.push_back(go->GetGUID());
+                break;
+            case GO_JI_KUN_EX_DOOR:
+                jikunexdoorGuid = go->GetGUID();
+                break;
             default:
                 break;
             }
@@ -350,6 +365,27 @@ public:
                     HandleGameObject(tortosex2doorGuid, true);
                 }
                 break;
+            case DATA_JI_KUN:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        HandleGameObject(megaeraexdoorGuid, true);
+                        //HandleGameObject(jikunexdoorGuid, true);
+                        for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
+                            if (GameObject* feather = instance->GetGameObject(*guid))
+                                feather->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(megaeraexdoorGuid, false);
+                        for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
+                            if (GameObject* feather = instance->GetGameObject(*guid))
+                                feather->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                        break;
+                    }
+                }
+                break;
             default:
                 break;
             }
@@ -392,6 +428,8 @@ public:
                 return frozenheadGuid;
             case NPC_VENOMOUS_HEAD:
                 return venousheadGuid;
+            case GO_MEGAERA_EX_DOOR:
+                return megaeraexdoorGuid;
             //
             case NPC_JI_KUN:  
                 return jikunGuid;

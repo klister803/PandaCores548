@@ -116,6 +116,11 @@ void CheckMegaeraHeads(InstanceScript* instance, Creature* caller, uint32 caller
         {
             caller->setFaction(35);
             caller->SummonGameObject(218805, 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
+            if (instance)
+            {
+                if (GameObject* go = caller->GetMap()->GetGameObject(instance->GetData64(GO_MEGAERA_EX_DOOR)))
+                    go->SetGoState(GO_STATE_ACTIVE);
+            }
             return;
         }
         
