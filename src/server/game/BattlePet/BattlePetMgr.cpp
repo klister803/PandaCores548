@@ -1094,11 +1094,11 @@ void BattlePetMgr::SendUpdatePets(Player * plr, uint8 petCount)
         // ObjectGuid petGuid[i] = plr->GetBattlePetMgr()->GetBattlePet(i);
 
         data.WriteBits(0, 7); // custom name length
-        data.WriteBit(1);     // !hasUnk1
-        data.WriteBit(0);     // hasUnk3
+        data.WriteBit(1);     // !hasFlags
+        data.WriteBit(0);     // hasUnk
         data.WriteGuidMask<2>(petGuid);
-        data.WriteBit(1);     // !hasUnk
-        data.WriteBit(1);     // !hasUnk2
+        data.WriteBit(1);     // !hasBreed
+        data.WriteBit(1);     // !hasQuality
         data.WriteGuidMask<1, 6, 3, 7, 0, 4, 5>(petGuid);
         data.WriteBit(0);     // hasGuid
 
@@ -1120,21 +1120,21 @@ void BattlePetMgr::SendUpdatePets(Player * plr, uint8 petCount)
         data << uint16(0); // level
         data << uint32(0); // total health
 
-        //if (!hasUnk1)
-            //data << uint16(0); // unk2
+        //if (!hasFlags)
+            //data << uint16(0); // flags
 
-        //if (!hasUnk2)
-            //data << uint8(0);  // unk3
+        //if (!hasQuality)
+            //data << uint8(0);  // quality
 
         data.WriteGuidBytes<3>(petGuid);
-        data << uint32(0); // unk4
+        data << uint32(0); // creature ID
         data << uint32(0); // speed
 
-        //if (!hasUnk)
-            //data << uint16(0); // unk5
+        //if (!hasBreed)
+            //data << uint16(0); // breed ID
 
         data << uint32(0); // remaining health
-        data << uint32(0); // unk6
+        data << uint32(0); // display ID
         //data.WriteString(""); // custom name
         data.WriteGuidBytes<5, 4, 7>(petGuid);
         data << uint32(0); // species ID
