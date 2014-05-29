@@ -78,6 +78,9 @@ uint32 ScenarioProgress::GetScenarioId() const
 
 bool ScenarioProgress::IsCompleted(bool bonus) const
 {
+    if (!HasBonusStep())
+        return false;
+
     return currentStep == GetStepCount(bonus);
 }
 
@@ -149,7 +152,7 @@ void ScenarioProgress::Reward(bool bonus)
         bonusRewarded = true;
 
         // no bonus steps for this scenario...
-        if (!GetBonusStepCount())
+        if (!HasBonusStep())
             return;
     }
     else
@@ -217,13 +220,13 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
 {
     WorldPacket data(SMSG_SCENARIO_PROGRESS_UPDATE, 3 + 7 * 4);
     data.WriteBit(0);                                           // unk not used
-    data.WriteBit(GetBonusStepCount() && IsCompleted(true));    // bonus step completed
+    data.WriteBit(IsCompleted(true));                           // bonus step completed
     uint32 bitpos = data.bitwpos();
     data.WriteBits(0, 19);                                      // criteria data
 
-    ByteBuffer buff;
     if (full)
     {
+        ByteBuffer buff;
         uint32 count = 0;
         CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap();
         for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
@@ -242,7 +245,7 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
             data.WriteGuidMask<1, 3, 0, 2>(counter);
             data.WriteGuidMask<3>(criteriaGuid);
             data.WriteGuidMask<5>(counter);
-            data.WriteBits(0, 4);
+            data.WriteBits(0, 4);           // criteria flags
             data.WriteGuidMask<4>(counter);
             data.WriteGuidMask<2>(criteriaGuid);
             data.WriteGuidMask<6>(counter);
@@ -294,7 +297,7 @@ void ScenarioProgress::SendCriteriaUpdate(uint32 criteriaId, uint32 counter, tim
     data.WriteGuidMask<7, 2, 0>(criteriaGuid);
     data.WriteGuidMask<4>(counter);
     data.WriteGuidMask<4, 6>(criteriaGuid);
-    data.WriteBits(0, 4);               // always 0
+    data.WriteBits(0, 4);               // criteria flags
     data.WriteGuidMask<2>(counter);
     data.WriteGuidMask<3>(criteriaGuid);
     data.WriteGuidMask<1>(counter);
