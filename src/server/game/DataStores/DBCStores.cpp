@@ -245,6 +245,7 @@ DBCStorage <StableSlotPricesEntry> sStableSlotPricesStore(StableSlotPricesfmt);
 DBCStorage <SummonPropertiesEntry> sSummonPropertiesStore(SummonPropertiesfmt);
 
 DBCStorage <TalentEntry> sTalentStore(TalentEntryfmt);
+TalentSpellList sTalentSpellList;
 DBCStorage <TaxiNodesEntry> sTaxiNodesStore(TaxiNodesEntryfmt);
 TaxiMask sTaxiNodesMask;
 TaxiMask sOldContinentsNodesMask;
@@ -731,6 +732,9 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sSummonPropertiesStore,       dbcPath, "SummonProperties.dbc");//14545
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sTalentStore,                 dbcPath, "Talent.dbc");//16135
+    for (uint32 i = 1; i < sTalentStore.GetNumRows(); ++i)
+        if (TalentEntry const* entry = sTalentStore.LookupEntry(i))
+            sTalentSpellList.insert(entry->spellId);
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sTaxiNodesStore,              dbcPath, "TaxiNodes.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sTaxiPathStore,               dbcPath, "TaxiPath.dbc");//14545

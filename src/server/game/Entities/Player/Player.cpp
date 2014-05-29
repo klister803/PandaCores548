@@ -4186,6 +4186,19 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         return false;
     }
 
+    // Check tallents spell
+    if (!disabled)
+    {
+        TalentSpellList::iterator tti = sTalentSpellList.find(spellId);
+        if (tti != sTalentSpellList.end())
+        {
+            // If we learn this talent
+            PlayerTalentMap::iterator titr = GetTalentMap(GetActiveSpec())->find(spellId);
+            if (titr == GetTalentMap(GetActiveSpec())->end())
+                return false;
+        }
+    }
+
     // Validate profession
     if (loading)
     {
@@ -27440,8 +27453,8 @@ bool Player::LearnTalent(uint32 talentId)
     }
 
     // learn! (other talent ranks will unlearned at learning)
-    learnSpell(spellid, false);
     AddTalent(talentInfo, GetActiveSpec(), true);
+    learnSpell(spellid, false);
     CastPassiveTalentSpell(spellid);
 
     sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());

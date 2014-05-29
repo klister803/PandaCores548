@@ -2391,6 +2391,7 @@ struct TalentEntry
     char*   description;                            // 10
 
 };
+typedef std::set<uint32> TalentSpellList;
 
 struct TaxiNodesEntry
 {
