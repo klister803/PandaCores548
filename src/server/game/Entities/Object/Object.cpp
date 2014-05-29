@@ -613,7 +613,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
     {
         if (isType(TYPEMASK_GAMEOBJECT) && !((GameObject*)this)->IsDynTransport())
         {
-            if (((GameObject*)this)->ActivateToQuest(target) || target->isGameMaster())
+            if (((GameObject*)this)->ActivateToQuest(target))
                 IsActivateToQuest = true;
 
             if (((GameObject*)this)->GetGoArtKit())
@@ -629,7 +629,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
     {
         if (isType(TYPEMASK_GAMEOBJECT) && !((GameObject*)this)->IsTransport())
         {
-            if (((GameObject*)this)->ActivateToQuest(target) || target->isGameMaster())
+            if (((GameObject*)this)->ActivateToQuest(target))
                 IsActivateToQuest = true;
 
             updateMask->SetBit(GAMEOBJECT_BYTES_1);
@@ -832,12 +832,12 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 // send in current format (float as float, uint32 as uint32)
                 if (index == OBJECT_FIELD_DYNAMIC_FLAGS)
                 {
-                    if (IsActivateToQuest || ToGameObject()->isDynActive())
+                    if (IsActivateToQuest || ToGameObject()->isDynActive() || target->isGameMaster())
                     {
                         switch (ToGameObject()->GetGoType())
                         {
                             case GAMEOBJECT_TYPE_CHEST:
-                                if (!IsActivateToQuest)
+                                if (target->isGameMaster())
                                     *data << uint16(GO_DYNFLAG_LO_ACTIVATE);
                                 else
                                     *data << uint16(GO_DYNFLAG_LO_ACTIVATE | GO_DYNFLAG_LO_SPARKLE);
