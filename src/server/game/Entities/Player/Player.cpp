@@ -5380,7 +5380,7 @@ void Player::ResetSpec(bool takeMoney)
     if (GetSpecializationId(GetActiveSpec()) == 0)
         return;
 
-    RemoveAllSymbiosisAuras();
+    RemoveSomeAuras();
     RemoveSpecializationSpells();
     SetSpecializationId(GetActiveSpec(), 0);
     InitSpellForLevel();

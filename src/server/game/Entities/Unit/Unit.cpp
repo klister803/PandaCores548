@@ -3895,8 +3895,9 @@ void Unit::RemoveAura(uint32 spellId, uint64 caster, uint32 reqEffMask, AuraRemo
     }
 }
 
-void Unit::RemoveAllSymbiosisAuras()
+void Unit::RemoveSomeAuras()
 {
+    // SymbiosisAuras
     RemoveAura(110309);// Caster
     RemoveAura(110478);// Death Knight
     RemoveAura(110479);// Hunter
@@ -3908,6 +3909,10 @@ void Unit::RemoveAllSymbiosisAuras()
     RemoveAura(110488);// Shaman
     RemoveAura(110490);// Warlock
     RemoveAura(110491);// Warrior
+
+    RemoveAura(104756);
+    RemoveAura(104759);
+    RemoveAura(123171);
 }
 
 void Unit::RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode)
@@ -16033,53 +16038,43 @@ void Unit::SetPower(Powers power, int32 val)
 
     if(power == POWER_SOUL_SHARDS)
     {
-        int32 cureVal = GetPower(power);
-        int32 switchVal = 0;
-        uint32 addspellId = 0;
-        uint32 removespellId = 0;
-        switchVal = cureVal > val ? cureVal : val;
-        switch(switchVal)
+        uint32 spellid[] = {104756, 104759, 123171};
+
+        switch(val)
         {
             case 100:
             {
-                addspellId = 104756;
-                removespellId = 104759;
+                RemoveAura(spellid[1]);
+                RemoveAura(spellid[2]);
+                CastSpell(this, spellid[0], true);
                 break;
             }
             case 200:
             {
-                addspellId = 104759;
-                removespellId = 104756;
+                RemoveAura(spellid[0]);
+                RemoveAura(spellid[2]);
+                CastSpell(this, spellid[1], true);
                 break;
             }
             case 300:
             {
-                addspellId = 104756;
-                removespellId = 123171;
-                if(!HasAura(104759))
-                    CastSpell(this, 104759, true);
+                RemoveAura(spellid[2]);
+                CastSpell(this, spellid[1], true);
+                CastSpell(this, spellid[0], true);
                 break;
             }
             case 400:
             {
-                addspellId = 123171;
-                removespellId = 104756;
-                if(!HasAura(104759))
-                    CastSpell(this, 104759, true);
+                RemoveAura(spellid[0]);
+                CastSpell(this, spellid[2], true);
+                CastSpell(this, spellid[1], true);
                 break;
             }
-        }
-        if(cureVal > val)
-        {
-            RemoveAurasDueToSpell(addspellId);
-            if(removespellId)
-                CastSpell(this, removespellId, true);
-        }
-        else
-        {
-            CastSpell(this, addspellId, true);
-            if(removespellId)
-                RemoveAurasDueToSpell(removespellId);
+            default:
+            {
+                RemoveAura(spellid[0]);
+                break;
+            }
         }
     }
 
@@ -16385,9 +16380,13 @@ void CharmInfo::InitPetActionBar()
         SetActionBar(ACTION_BAR_INDEX_PET_SPELL_START + i, 0, ACT_PASSIVE);
 
     // last 3 SpellOrActions are reactions
-    SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END, REACT_PASSIVE, ACT_REACTION);
-    SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + 1, REACT_DEFENSIVE, ACT_REACTION);
-    SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + 2, REACT_HELPER, ACT_REACTION);
+    for (uint32 i = 0; i < ACTION_BAR_INDEX_END - ACTION_BAR_INDEX_PET_SPELL_END; ++i)
+    {
+        if (i != 1)
+            SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, COMMAND_ATTACK - i, ACT_REACTION);
+        else
+            SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, REACT_HELPER, ACT_REACTION);
+    }
 }
 
 void CharmInfo::InitEmptyActionBar(bool withAttack)
@@ -16563,11 +16562,8 @@ void CharmInfo::LoadPetActionBar(const std::string& data)
     {
         // use unsigned cast to avoid sign negative format use at long-> ActiveStates (int) conversion
         ActiveStates type  = ActiveStates(atol(*iter));
-
         ++iter;
         uint32 action = uint32(atol(*iter));
-        if (type == ACT_REACTION && action == REACT_AGGRESSIVE)
-            action = REACT_DEFENSIVE;
 
         PetActionBar[index].SetActionAndType(action, type);
 
