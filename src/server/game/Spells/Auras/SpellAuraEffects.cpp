@@ -1029,6 +1029,16 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                // Spirit Mend
+                case 90361:
+                {
+                    if (Unit* owner = caster->GetOwner())
+                    {
+                        uint32 ap = owner->GetTotalAttackPowerValue(RANGED_ATTACK);
+                        amount += int32((ap * 0.35f) * 0.335);
+                    }
+                    break;
+                }
                 case 114163: // Eternal Flame
                 {
                     if (target == caster)

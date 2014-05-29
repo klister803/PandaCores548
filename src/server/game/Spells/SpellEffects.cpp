@@ -2310,6 +2310,16 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                 }
                 break;
             }
+            // Spirit Mend
+            case 90361:
+            {
+                if (Unit* owner = m_caster->GetOwner())
+                {
+                    uint32 ap = owner->GetTotalAttackPowerValue(RANGED_ATTACK);
+                    addhealth += int32((ap * 0.35f) * 0.5f);
+                }
+                break;
+            }
             case 18562: // Swiftmend
             {
                 // Soul of the Forest
