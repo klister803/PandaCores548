@@ -564,6 +564,10 @@ void LFGQueue::UpdateQueueTimers(time_t currTime)
             continue;
 
         uint32 dungeonId = (*queueinfo.dungeons.begin());
+        LfgDungeonSet const& dungeons = sLFGMgr->GetSelectedDungeons(itQueue->first);
+        if (!dungeons.empty())
+            dungeonId = *dungeons.begin();
+
         uint32 queuedTime = uint32(currTime - queueinfo.joinTime);
         uint8 role = PLAYER_ROLE_NONE;
         int32 waitTime = -1;
@@ -598,13 +602,19 @@ void LFGQueue::UpdateQueueTimers(time_t currTime)
         if (queueinfo.bestCompatible.empty())
             FindBestCompatibleInQueue(itQueue);
 
-        LfgQueueStatusData queueData(dungeonId, waitTime, wtAvg, wtTank, wtHealer, wtDps, queuedTime, queueinfo.tanks, queueinfo.healers, queueinfo.dps);
+        LfgQueueStatusData queueData(dungeonId, waitTime, wtAvg, wtTank, wtHealer, wtDps, queuedTime, &queueinfo);
         for (LfgRolesMap::const_iterator itPlayer = queueinfo.roles.begin(); itPlayer != queueinfo.roles.end(); ++itPlayer)
         {
             uint64 pguid = itPlayer->first;
             LFGMgr::SendLfgQueueStatus(pguid, queueData);
         }
     }
+}
+
+LfgQueueData const* LFGQueue::GetQueueData(uint64 guid)
+{
+    LfgQueueDataContainer::const_iterator itr = QueueDataStore.find(guid);
+    return itr != QueueDataStore.end() ? &itr->second : NULL;
 }
 
 time_t LFGQueue::GetJoinTime(uint64 guid)
@@ -667,9 +677,9 @@ LfgQueueData::LfgQueueData(time_t _joinTime, LfgDungeonSet const& _dungeons, con
         healerNeeded = dungeon ? dungeon->dbc->healerNeeded : LFG_HEALERS_NEEDED;
         dpsNeeded = dungeon ? dungeon->dbc->dpsNeeded : LFG_DPS_NEEDED;
 
-        tanks = minTanksNeeded;
-        healers = minHealerNeeded;
-        dps = minDpsNeeded;
+        tanks = tanksNeeded;
+        healers = healerNeeded;
+        dps = dpsNeeded;
     }
 }
 
@@ -741,9 +751,10 @@ void LFGQueue::UpdateBestCompatibleInQueue(LfgQueueDataContainer::iterator itrQu
         queueData.bestCompatible.c_str(), key.c_str(), itrQueue->first);
 
     queueData.bestCompatible = key;
-    queueData.tanks = queueData.minTanksNeeded;
-    queueData.healers = queueData.minHealerNeeded;
-    queueData.dps = queueData.minDpsNeeded;
+    queueData.tanks = queueData.tanksNeeded;
+    queueData.healers = queueData.healerNeeded;
+    queueData.dps = queueData.dpsNeeded;
+
     for (LfgRolesMap::const_iterator it = roles.begin(); it != roles.end(); ++it)
     {
         uint8 role = it->second;

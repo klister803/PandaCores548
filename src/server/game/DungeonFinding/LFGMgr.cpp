@@ -348,149 +348,6 @@ void LFGMgr::Update(uint32 diff)
         }
     }
 
-    /*for (LfgGuidListMap::iterator it = newToQueueStore.begin(); it != newToQueueStore.end(); ++it)
-    {
-        uint8 queueId = it->first;
-        LfgGuidList& newToQueue = it->second;
-        LfgGuidList& currentQueue = currentQueueStore[queueId];
-        LfgGuidList firstNew;
-        while (!newToQueue.empty())
-        {
-            uint64 frontguid = newToQueue.front();
-            sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::Update: QueueId %u: checking [" UI64FMTD "] newToQueue(%u), currentQueue(%u)", queueId, frontguid, uint32(newToQueue.size()), uint32(currentQueue.size()));
-            firstNew.push_back(frontguid);
-            newToQueue.pop_front();
-            uint8 alreadyInQueue = 0;
-            LfgGuidList temporalList = currentQueue;
-            if (LfgProposal* pProposal = FindNewGroups(firstNew, temporalList, LFG_TYPE_DUNGEON)) // Group found!
-            {
-                // Remove groups in the proposal from new and current queues (not from queue map)
-                for (LfgGuidList::const_iterator itQueue = pProposal->queues.begin(); itQueue != pProposal->queues.end(); ++itQueue)
-                {
-                    currentQueue.remove(*itQueue);
-                    newToQueue.remove(*itQueue);
-                }
-                ProposalsStore[++m_lfgProposalId] = pProposal;
-
-                uint64 guid = 0;
-                for (LfgProposalPlayerContainer::const_iterator itPlayers = pProposal->players.begin(); itPlayers != pProposal->players.end(); ++itPlayers)
-                {
-                    guid = itPlayers->first;
-                    SetState(guid, LFG_STATE_PROPOSAL);
-                    if (Player* player = ObjectAccessor::FindPlayer(itPlayers->first))
-                    {
-                        Group* grp = player->GetGroup();
-                        if (grp)
-                         {
-                            uint64 gguid = grp->GetGUID();
-                            SetState(gguid, LFG_STATE_PROPOSAL);
-                            player->GetSession()->SendLfgUpdateParty(LfgUpdateData(LFG_UPDATETYPE_PROPOSAL_BEGIN, GetSelectedDungeons(guid), GetComment(guid)));
-                        }
-                        else
-                            player->GetSession()->SendLfgUpdatePlayer(LfgUpdateData(LFG_UPDATETYPE_PROPOSAL_BEGIN, GetSelectedDungeons(guid), GetComment(guid)));
-                        player->GetSession()->SendLfgUpdateProposal(m_lfgProposalId, *pProposal);
-                    }
-                }
-
-                if (pProposal->state == LFG_PROPOSAL_SUCCESS)
-                    UpdateProposal(m_lfgProposalId, guid, true);
-            }
-            else
-            {
-                if (std::find(currentQueue.begin(), currentQueue.end(), frontguid) == currentQueue.end()) //already in queue?
-                    ++alreadyInQueue; //currentQueue.push_back(frontguid);         // Lfg group not found, add this group to the queue.
-                temporalList = currentQueue;
-                CompatibleMapStore.clear();
-            }
-
-            if (LfgProposal* pProposal = FindNewGroups(firstNew, temporalList, LFG_TYPE_RAID)) // Group found!
-            {
-                // Remove groups in the proposal from new and current queues (not from queue map)
-                for (LfgGuidList::const_iterator itQueue = pProposal->queues.begin(); itQueue != pProposal->queues.end(); ++itQueue)
-                {
-                    currentQueue.remove(*itQueue);
-                    newToQueue.remove(*itQueue);
-                }
-                ProposalsStore[++m_lfgProposalId] = pProposal;
-
-                uint64 guid = 0;
-                for (LfgProposalPlayerContainer::const_iterator itPlayers = pProposal->players.begin(); itPlayers != pProposal->players.end(); ++itPlayers)
-                {
-                    guid = itPlayers->first;
-                    SetState(guid, LFG_STATE_PROPOSAL);
-                    if (Player* player = ObjectAccessor::FindPlayer(itPlayers->first))
-                    {
-                        Group* grp = player->GetGroup();
-                        if (grp)
-                         {
-                            uint64 gguid = grp->GetGUID();
-                            SetState(gguid, LFG_STATE_PROPOSAL);
-                            player->GetSession()->SendLfgUpdateParty(LfgUpdateData(LFG_UPDATETYPE_PROPOSAL_BEGIN, GetSelectedDungeons(guid), GetComment(guid)));
-                        }
-                        else
-                            player->GetSession()->SendLfgUpdatePlayer(LfgUpdateData(LFG_UPDATETYPE_PROPOSAL_BEGIN, GetSelectedDungeons(guid), GetComment(guid)));
-                        player->GetSession()->SendLfgUpdateProposal(m_lfgProposalId, *pProposal);
-                    }
-                }
-
-                if (pProposal->state == LFG_PROPOSAL_SUCCESS)
-                    UpdateProposal(m_lfgProposalId, guid, true);
-            }
-            else
-            {
-                if (std::find(currentQueue.begin(), currentQueue.end(), frontguid) == currentQueue.end()) //already in queue?
-                    ++alreadyInQueue; //currentQueue.push_back(frontguid);         // Lfg group not found, add this group to the queue.
-                temporalList = currentQueue;
-                CompatibleMapStore.clear();
-            }
-
-            if (LfgProposal* pProposal = FindNewGroups(firstNew, temporalList, LFG_TYPE_SCENARIO)) // Group found!
-            {
-                // Remove groups in the proposal from new and current queues (not from queue map)
-                for (LfgGuidList::const_iterator itQueue = pProposal->queues.begin(); itQueue != pProposal->queues.end(); ++itQueue)
-                {
-                    currentQueue.remove(*itQueue);
-                    newToQueue.remove(*itQueue);
-                }
-                ProposalsStore[++m_lfgProposalId] = pProposal;
-
-                uint64 guid = 0;
-                for (LfgProposalPlayerContainer::const_iterator itPlayers = pProposal->players.begin(); itPlayers != pProposal->players.end(); ++itPlayers)
-                {
-                    guid = itPlayers->first;
-                    SetState(guid, LFG_STATE_PROPOSAL);
-                    if (Player* player = ObjectAccessor::FindPlayer(itPlayers->first))
-                    {
-                        Group* grp = player->GetGroup();
-                        if (grp)
-                         {
-                            uint64 gguid = grp->GetGUID();
-                            SetState(gguid, LFG_STATE_PROPOSAL);
-                            player->GetSession()->SendLfgUpdateParty(LfgUpdateData(LFG_UPDATETYPE_PROPOSAL_BEGIN, GetSelectedDungeons(guid), GetComment(guid)));
-                        }
-                        else
-                            player->GetSession()->SendLfgUpdatePlayer(LfgUpdateData(LFG_UPDATETYPE_PROPOSAL_BEGIN, GetSelectedDungeons(guid), GetComment(guid)));
-                        player->GetSession()->SendLfgUpdateProposal(m_lfgProposalId, *pProposal);
-                    }
-                }
-
-                if (pProposal->state == LFG_PROPOSAL_SUCCESS)
-                    UpdateProposal(m_lfgProposalId, guid, true);
-            }
-            else
-            {
-                if (std::find(currentQueue.begin(), currentQueue.end(), frontguid) == currentQueue.end()) //already in queue?
-                    ++alreadyInQueue; //currentQueue.push_back(frontguid);         // Lfg group not found, add this group to the queue.
-                temporalList = currentQueue;
-            }
-
-            if (alreadyInQueue == 3 && std::find(currentQueue.begin(), currentQueue.end(), frontguid) == currentQueue.end())
-                currentQueue.push_back(frontguid);
-
-            firstNew.clear();
-        }
-    }*/
-
     // Update all players status queue info
     if (m_QueueTimer > LFG_QUEUEUPDATE_INTERVAL)
     {
@@ -1493,7 +1350,8 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
 void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateData, bool party)
 {
     ObjectGuid guid = player->GetGUID();
-    LFGQueue& queue = GetQueue(party && player->GetGroup() ? player->GetGroup()->GetGUID() : player->GetGUID());
+    ObjectGuid gguid = player->GetGroup() ? player->GetGroup()->GetGUID() : player->GetGUID();
+    LFGQueue& queue = GetQueue(gguid);
 
     bool queued = false;
     bool join = false;
@@ -1539,6 +1397,15 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
         }
     }
 
+    LfgQueueData const* queueData = queue.GetQueueData(gguid);
+    uint8 role = PLAYER_ROLE_DAMAGE;
+    if (queueData)
+    {
+        LfgRolesMap::const_iterator itr = queueData->roles.find(guid);
+        if (itr != queueData->roles.end())
+            role = itr->second;
+    }
+
     WorldPacket data(SMSG_LFG_UPDATE_STATUS, 60);
     data.WriteBits(updateData.comment.size(), 8);   // comment
     data.WriteBits(0, 24);                          // guids size
@@ -1557,10 +1424,10 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
     data.WriteGuidMask<2>(guid);
 
     data.WriteString(updateData.comment);
-    data << uint8(queue.GetQueueSubType(guid));     // 1 - dungeon finder, 2 - raid finder, 3 - scenarios, 4 - flex
+    data << uint8(queueData ? queueData->subType : LFG_SUBTYPE_DUNGEON);  // 1 - dungeon finder, 2 - raid finder, 3 - scenarios, 4 - flex
     data << uint8(updateData.updateType);           // error?   1, 11, 17 - succed, other - failed
     data.WriteGuidBytes<4>(guid);
-    data << uint32(8);                              // unk
+    data << uint32(role);                           // roles mask
     data.WriteGuidBytes<5, 7>(guid);
     data << uint32(3);                              // queue id. 4 - looking for raid, 3 - others
     data.WriteGuidBytes<3>(guid);
@@ -1569,7 +1436,7 @@ void LFGMgr::SendUpdateStatus(Player* player, lfg::LfgUpdateData const& updateDa
     data.WriteGuidBytes<0>(guid);
     data << uint32(player->GetTeam());              // group id?
     data.WriteGuidBytes<1>(guid);
-    data << uint32(queue.GetJoinTime(guid));
+    data << uint32(queueData ? queueData->joinTime : time(NULL));
     data.WriteGuidBytes<6>(guid);
     for (int i = 0; i < 3; ++i)
         data << uint8(0);                           //unk8 always 0 ?

@@ -104,6 +104,8 @@ class LFGQueue
 
         // Update Queue timers
         void UpdateQueueTimers(time_t currTime);
+
+        LfgQueueData const* GetQueueData(uint64 guid);
         time_t GetJoinTime(uint64 guid);
         uint8 GetQueueType(uint64 guid);
         uint8 GetQueueSubType(uint64 guid);
