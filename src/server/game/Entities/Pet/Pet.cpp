@@ -578,7 +578,18 @@ void Pet::Update(uint32 diff)
 
     if (m_loading)
         return;
-
+    
+    Unit* owner = GetOwner();
+    if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+        return;
+    
+    // Glyph of Animal Bond
+    if (owner->HasAura(20895))
+        AddAura(24529, this);
+    
+    if (!owner->HasAura(20895))
+        RemoveAurasDueToSpell(24529);
+    
     switch (m_deathState)
     {
         case CORPSE:
@@ -2030,10 +2041,6 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
     // Spirit Bond
     if (owner->HasAura(109212) && !owner->HasAura(118694))
         AddAura(118694, this);
-    
-    // Glyph of Animal Bond
-    if (owner->HasAura(20895))
-        AddAura(24529, this);
 }
 
 bool Pet::IsPetAura(Aura const* aura)
