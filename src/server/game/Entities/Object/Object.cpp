@@ -837,19 +837,19 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                         switch (ToGameObject()->GetGoType())
                         {
                             case GAMEOBJECT_TYPE_CHEST:
-                                if (target->isGameMaster())
+                                if (!IsActivateToQuest)
                                     *data << uint16(GO_DYNFLAG_LO_ACTIVATE);
                                 else
                                     *data << uint16(GO_DYNFLAG_LO_ACTIVATE | GO_DYNFLAG_LO_SPARKLE);
                                 break;
                             case GAMEOBJECT_TYPE_GENERIC:
-                                if (target->isGameMaster())
+                                if (!IsActivateToQuest)
                                     *data << uint16(0);
                                 else
                                     *data << uint16(GO_DYNFLAG_LO_SPARKLE);
                                 break;
                             case GAMEOBJECT_TYPE_GOOBER:
-                                if (target->isGameMaster())
+                                if (!IsActivateToQuest)
                                     *data << uint16(GO_DYNFLAG_LO_ACTIVATE);
                                 else
                                     *data << uint16(GO_DYNFLAG_LO_ACTIVATE | GO_DYNFLAG_LO_SPARKLE);
