@@ -6367,6 +6367,82 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     }
                     break;
                 }
+                case 146059: // Multistrike
+                {
+                    int32 rollchance = urand(0, 1000);
+
+                    if (rollchance > triggerAmount)
+                        return false;
+                        
+                    triggered_spell_id = 146061;
+                        
+                    if (!procSpell)
+                        break;
+
+                    if (procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL)
+                        break;
+                        
+                    if (Player* _player = ToPlayer())
+                    {
+                        uint32 spec = _player->GetSpecializationId(_player->GetActiveSpec());
+
+                        switch (_player->getClass())
+                        {
+                            case CLASS_MAGE:
+                            {
+                                if (spec == SPEC_MAGE_ARCANE)
+                                    triggered_spell_id = 146070;
+                                else
+                                    triggered_spell_id = 146067;
+                                break;
+                            }
+                            case CLASS_DRUID:
+                            {
+                                if (spec == SPEC_DROOD_BALANCE || spec == SPEC_DROOD_RESTORATION)
+                                    triggered_spell_id = 146064;
+                                break;
+                            }
+                            case CLASS_PRIEST:
+                            {
+                                if (spec == SPEC_PRIEST_SHADOW)
+                                    triggered_spell_id = 146065;
+                                else
+                                    triggered_spell_id = 146063;
+                                break;
+                            }
+                            case CLASS_PALADIN:
+                            {
+                                triggered_spell_id = 146063;
+                                break;
+                            }
+                            case CLASS_WARLOCK:
+                            case CLASS_DEATH_KNIGHT:
+                            {
+                                triggered_spell_id = 146065;
+                                break;
+                            }
+                            case CLASS_MONK:
+                            {
+                                triggered_spell_id = 146075;
+                                break;
+                            }
+                            case CLASS_SHAMAN:
+                            {
+                                triggered_spell_id = 146071;
+                                break;
+                            }
+                            case CLASS_HUNTER:
+                            {
+                                triggered_spell_id =  146069;
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        basepoints0 = damage / 3;
+                    }
+                    break;
+                }
                 case 104561: // Windsong
                 {
                     triggered_spell_id = RAND(104423, 104510, 104509);
