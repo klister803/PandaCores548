@@ -5440,19 +5440,9 @@ void AuraEffect::HandleIncreaseHasteFromItemsByPct(AuraApplication const* aurApp
     if (!target->ToPlayer())
         return;
 
-    if (apply)
-    {
-        float HasteRating = target->ToPlayer()->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE);
-        HasteRating *= (1 + GetAmount() / 100.0f);
-        float haste = 1 / (1 + (HasteRating * target->ToPlayer()->GetRatingMultiplier(CR_HASTE_MELEE)) / 100);
-
-        // Update haste percentage for client
-        target->SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, haste);
-        target->SetFloatValue(UNIT_MOD_CAST_HASTE, haste);
-        target->SetFloatValue(UNIT_MOD_HASTE, haste);
-    }
-    else
-        target->ToPlayer()->UpdateRating(CR_HASTE_MELEE);
+    for (uint32 rating = 0; rating < MAX_COMBAT_RATING; ++rating)
+        if (GetMiscValue() & (1 << rating))
+            target->ToPlayer()->UpdateRating(CombatRating(rating));
 }
 
 /********************************/

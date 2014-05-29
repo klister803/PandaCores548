@@ -6870,6 +6870,11 @@ void Player::UpdateRating(CombatRating cr)
     for (AuraEffectList::const_iterator i = modRatingFromStat.begin(); i != modRatingFromStat.end(); ++i)
         if ((*i)->GetMiscValue() & (1<<cr))
             amount += int32(CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount()));
+
+    AuraEffectList const& modIncreaseHasteFromItemsByPct = GetAuraEffectsByType(SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT);
+    for (AuraEffectList::const_iterator i = modIncreaseHasteFromItemsByPct.begin(); i != modIncreaseHasteFromItemsByPct.end(); ++i)
+        if ((*i)->GetMiscValue() & (1<<cr))
+            AddPct(amount, (*i)->GetAmount());
     
     amount += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RATING, (1 << cr));
 
