@@ -280,6 +280,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     SynchronizeLevelWithOwner();
 
     SetReactState(ReactStates(fields[6].GetUInt8()));
+    if (GetReactState() == REACT_AGGRESSIVE)
+        SetReactState(REACT_DEFENSIVE);
     SetCanModifyStats(true);
 
     if (getPetType() == SUMMON_PET && !current && owner && owner->getClass() != CLASS_WARLOCK && !IsPetGhoul())  //all (?) summon pets come with full health when called, but not when they are current
@@ -576,7 +578,18 @@ void Pet::Update(uint32 diff)
 
     if (m_loading)
         return;
-
+    
+    Unit* owner = GetOwner();
+    if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+        return;
+    
+    // Glyph of Animal Bond
+    if (owner->HasAura(20895))
+        AddAura(24529, this);
+    
+    if (!owner->HasAura(20895))
+        RemoveAurasDueToSpell(24529);
+    
     switch (m_deathState)
     {
         case CORPSE:
@@ -2028,10 +2041,6 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
     // Spirit Bond
     if (owner->HasAura(109212) && !owner->HasAura(118694))
         AddAura(118694, this);
-    
-    // Glyph of Animal Bond
-    if (owner->HasAura(20895))
-        AddAura(24529, this);
 }
 
 bool Pet::IsPetAura(Aura const* aura)

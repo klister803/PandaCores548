@@ -318,13 +318,12 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
             {
                 case REACT_PASSIVE:                         //passive
                     pet->AttackStop();
-                    break;
                 case REACT_DEFENSIVE:                       //recovery
-                case REACT_AGGRESSIVE:                      //activete
                 case REACT_HELPER:
                     if (pet->GetTypeId() == TYPEID_UNIT)
                         pet->ToCreature()->SetReactState(ReactStates(spellid));
                     break;
+                case REACT_AGGRESSIVE:                      //There is no on MOP
                 default:
                     break;
             }

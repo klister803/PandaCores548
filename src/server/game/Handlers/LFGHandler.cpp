@@ -23,6 +23,7 @@
 #include "LFGMgr.h"
 #include "ObjectMgr.h"
 #include "GroupMgr.h"
+#include "LFGQueue.h"
 
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
 {
@@ -375,90 +376,16 @@ void WorldSession::HandleLfgGetStatus(WorldPacket& /*recvData*/)
 
 void WorldSession::SendLfgUpdatePlayer(lfg::LfgUpdateData const& updateData)
 {
-    bool queued = false;
-
-    switch (updateData.updateType)
-    {
-        case lfg::LFG_UPDATETYPE_JOIN_QUEUE:
-        case lfg::LFG_UPDATETYPE_ADDED_TO_QUEUE:
-            queued = true;
-            break;
-        case lfg::LFG_UPDATETYPE_UPDATE_STATUS:
-            queued = updateData.state == lfg::LFG_STATE_QUEUED;
-            break;
-        default:
-            break;
-    }
+    sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_UPDATE_PLAYER %s updatetype: %u",
+        GetPlayerName().c_str(), updateData.updateType);
     sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, false);
-    /*uint64 guid = GetPlayer()->GetGUID();
-    uint8 size = uint8(updateData.dungeons.size());
-
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_UPDATE_PLAYER [" UI64FMTD "] updatetype: %u", guid, updateData.updateType);
-    WorldPacket data(SMSG_LFG_UPDATE_PLAYER, 1 + 1 + (extrainfo ? 1 : 0) * (1 + 1 + 1 + 1 + size * 4 + updateData.comment.length()));
-    data << uint8(updateData.updateType);                 // Lfg Update type
-    data << uint8(extrainfo);                             // Extra info
-    if (extrainfo)
-    {
-        data << uint8(queued);                            // Join the queue
-        data << uint8(0);                                 // unk - Always 0
-        data << uint8(0);                                 // unk - Always 0
-
-        data << uint8(size);
-        if (size)
-            for (LfgDungeonSet::const_iterator it = updateData.dungeons.begin(); it != updateData.dungeons.end(); ++it)
-                data << uint32(*it);
-        data << updateData.comment;
-    }
-    SendPacket(&data);*/
 }
 
 void WorldSession::SendLfgUpdateParty(lfg::LfgUpdateData const& updateData)
 {
-    bool join = false;
-    bool queued = false;
-
-    uint64 guid = GetPlayer()->GetGUID();
-    uint8 size = uint8(updateData.dungeons.size());
-
-    switch (updateData.updateType)
-    {
-        case lfg::LFG_UPDATETYPE_ADDED_TO_QUEUE:
-            queued = true;
-            // no break on purpose
-        case lfg::LFG_UPDATETYPE_PROPOSAL_BEGIN:
-            join = true;
-            break;
-        case lfg::LFG_UPDATETYPE_UPDATE_STATUS:
-            join = updateData.state != lfg::LFG_STATE_ROLECHECK && updateData.state != lfg::LFG_STATE_NONE;
-            queued = updateData.state == lfg::LFG_STATE_QUEUED;
-            break;
-        default:
-            break;
-    }
-
-    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, true);
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_UPDATE_PARTY %s updatetype: %u",
         GetPlayerName().c_str(), updateData.updateType);
-
-    /*WorldPacket data(SMSG_LFG_UPDATE_PARTY, 1 + 1 + (extrainfo ? 1 : 0) * (1 + 1 + 1 + 1 + 1 + size * 4 + updateData.comment.length()));
-    data << uint8(updateData.updateType);                 // Lfg Update type
-    data << uint8(extrainfo);                             // Extra info
-    if (extrainfo)
-    {
-        data << uint8(join);                              // LFG Join
-        data << uint8(queued);                            // Join the queue
-        data << uint8(0);                                 // unk - Always 0
-        data << uint8(0);                                 // unk - Always 0
-        for (uint8 i = 0; i < 3; ++i)
-            data << uint8(0);                             // unk - Always 0
-
-        data << uint8(size);
-        if (size)
-            for (LfgDungeonSet::const_iterator it = updateData.dungeons.begin(); it != updateData.dungeons.end(); ++it)
-                data << uint32(*it);
-        data << updateData.comment;
-    }
-    SendPacket(&data);*/
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData, true);
 }
 
 void WorldSession::SendLfgRoleChosen(uint64 guid, uint8 roles)
@@ -610,6 +537,8 @@ void WorldSession::SendLfgJoinResult(lfg::LfgJoinResultData const& joinData)
 
 void WorldSession::SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData)
 {
+    lfg::LfgQueueData* queueInfo = queueData.queueInfo;
+
     Player* player = GetPlayer();
     uint64 guid = player->GetGUID();
     sLog->outDebug(LOG_FILTER_LFG, "SMSG_LFG_QUEUE_STATUS %s dungeon: %u, waitTime: %d, "
@@ -617,7 +546,7 @@ void WorldSession::SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData)
         "queuedTime: %u, tanks: %u, healers: %u, dps: %u",
         GetPlayerName().c_str(), queueData.dungeonId, queueData.waitTime, queueData.waitTimeAvg,
         queueData.waitTimeTank, queueData.waitTimeHealer, queueData.waitTimeDps,
-        queueData.queuedTime, queueData.tanks, queueData.healers, queueData.dps);
+        queueData.queuedTime, queueInfo->tanks, queueInfo->healers, queueInfo->dps);
 
     lfg::LFGQueue &queue = sLFGMgr->GetQueue(player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
 
@@ -629,11 +558,11 @@ void WorldSession::SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData)
     data << uint32(queue.GetJoinTime(guid));
     data << uint32(3);
     data << int32(queueData.waitTimeTank);                  // Wait Tanks
-    data << uint8(queueData.tanks);                         // Tanks needed
+    data << uint8(queueInfo->tanks);                        // Tanks needed
     data << int32(queueData.waitTimeHealer);                // Wait Healers
-    data << uint8(queueData.healers);                       // Healers needed
+    data << uint8(queueInfo->healers);                      // Healers needed
     data << int32(queueData.waitTimeDps);                   // Wait Dps
-    data << uint8(queueData.dps);                           // Dps needed
+    data << uint8(queueInfo->dps);                          // Dps needed
     data << uint32(GetPlayer()->GetTeam());                 // group id
     data.WriteGuidBytes<2, 4>(guid);
     data << int32(queueData.waitTime);                      // Wait Time
