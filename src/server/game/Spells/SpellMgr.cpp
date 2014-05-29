@@ -3364,6 +3364,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 146343: // Avoidance
+                    spellInfo->Effects[0].MiscValue = SPELL_SCHOOL_MASK_ALL;
+                    break;
                 case 146051: // Amplification
                     spellInfo->Effects[0].ScalingMultiplier = 0.00177f;
                     spellInfo->Effects[2].ScalingMultiplier = 0.00177f;
