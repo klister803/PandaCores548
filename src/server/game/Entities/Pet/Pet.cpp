@@ -280,6 +280,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     SynchronizeLevelWithOwner();
 
     SetReactState(ReactStates(fields[6].GetUInt8()));
+    if (GetReactState() == REACT_AGGRESSIVE)
+        SetReactState(REACT_DEFENSIVE);
     SetCanModifyStats(true);
 
     if (getPetType() == SUMMON_PET && !current && owner && owner->getClass() != CLASS_WARLOCK && !IsPetGhoul())  //all (?) summon pets come with full health when called, but not when they are current
