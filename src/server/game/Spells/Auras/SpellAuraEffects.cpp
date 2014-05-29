@@ -6610,6 +6610,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 146310: // Restless Agility
                 case 146317: // Restless Spirit
                 {
                     GetBase()->SetStackAmount(GetBase()->GetStackAmount() - 1);

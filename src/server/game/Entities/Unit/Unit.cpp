@@ -10336,6 +10336,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             target = victim;
             break;
         }
+        case 146310: // Restless Agility
         case 146317: // Restless Spirit
         {
             stack_for_trigger = triggerEntry->StackAmount;
