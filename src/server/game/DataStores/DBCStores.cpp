@@ -1438,7 +1438,7 @@ bool MapEntry::IsDifficultyModeSupported(uint32 difficulty) const
     return IsValidDifficulty(difficulty, IsRaid());
 }
 
-inline bool IsValidDifficulty(uint32 diff, bool isRaid)
+bool IsValidDifficulty(uint32 diff, bool isRaid)
 {
     if (diff == NONE_DIFFICULTY)
         return true;
