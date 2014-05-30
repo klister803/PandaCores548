@@ -1982,9 +1982,82 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
             if(itr->target == 2) //set caster owner
                 _caster = owner;
 
-            if(itr->aura > 0 && spellId != 0 && !_caster->HasAura(itr->aura))
+            if(itr->aura > 0 && !_caster->HasAura(itr->aura))
                 continue;
-            if(itr->aura < 0 && spellId != 0 && _caster->HasAura(abs(itr->aura)))
+            if(itr->aura < 0 && _caster->HasAura(abs(itr->aura)))
+                continue;
+            if(spellId != 0 && spellId != abs(itr->aura))
+                continue;
+
+            int32 bp0 = int32(itr->bp0);
+            int32 bp1 = int32(itr->bp1);
+            int32 bp2 = int32(itr->bp2);
+
+            //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras PetAura bp0 %i, bp1 %i, bp2 %i, target %i", bp0, bp1, bp2, itr->target);
+
+            if(itr->spellId > 0)
+            {
+                if (!apply)
+                {
+                    RemoveAurasDueToSpell(itr->spellId);
+                    continue;
+                }
+                switch (itr->option)
+                {
+                    case 0: //cast spell without option
+                        _caster->CastSpell(_target, itr->spellId, true);
+                        break;
+                    case 1: //cast custom spell option
+                        _caster->CastCustomSpell(_target, itr->spellId, &bp0, &bp1, &bp2, true);
+                        break;
+                    case 2: //add aura
+                        _caster->AddAura(itr->spellId, _target);
+                        break;
+                }
+            }
+            else
+            {
+                if (apply)
+                {
+                    RemoveAurasDueToSpell(abs(itr->spellId));
+                    continue;
+                }
+                switch (itr->option)
+                {
+                    case 0: //cast spell without option
+                        _caster->CastSpell(_target, abs(itr->spellId), true);
+                        break;
+                    case 1: //cast custom spell option
+                        _caster->CastCustomSpell(_target, abs(itr->spellId), &bp0, &bp1, &bp2, true);
+                        break;
+                    case 2: //add aura
+                        _caster->AddAura(abs(itr->spellId), _target);
+                        break;
+                }
+            }
+        }
+    }
+
+    //for all pets
+    if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(-1))
+    {
+        Unit* _target = this;
+        Unit* _caster = this;
+        //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras GetPetAura");
+
+        for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)
+        {
+            //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras GetPetAura");
+
+            if(itr->target == 1) //get target owner
+                _target = owner;
+
+            if(itr->target == 2) //set caster owner
+                _caster = owner;
+
+            if(itr->aura > 0 && !_caster->HasAura(itr->aura))
+                continue;
+            if(itr->aura < 0 && _caster->HasAura(abs(itr->aura)))
                 continue;
             if(spellId != 0 && spellId != abs(itr->aura))
                 continue;

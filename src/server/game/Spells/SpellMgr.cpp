@@ -1021,7 +1021,7 @@ SkillLineAbilityMapBounds SpellMgr::GetSkillLineAbilityMapBounds(uint32 spell_id
     return SkillLineAbilityMapBounds(mSkillLineAbilityMap.lower_bound(spell_id), mSkillLineAbilityMap.upper_bound(spell_id));
 }
 
-const std::vector<PetAura>* SpellMgr::GetPetAura(uint32 entry) const
+const std::vector<PetAura>* SpellMgr::GetPetAura(int32 entry) const
 {
     SpellPetAuraMap::const_iterator itr = mSpellPetAuraMap.find(entry);
     return itr != mSpellPetAuraMap.end() ? &(itr->second) : NULL;
@@ -2287,8 +2287,8 @@ void SpellMgr::LoadSpellLinked()
 
     mSpellLinkedMap.clear();    // need for reload case
 
-    //                                                0              1             2        3        4          5        6         7        8       9
-    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, hastalent, hastalent2, chance, cooldown, type2, hitmask, learnspell FROM spell_linked_spell");
+    //                                                0              1             2      3       4         5          6         7        8       9        10         11
+    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, caster, target, hastalent, hastalent2, chance, cooldown, type2, hitmask, learnspell FROM spell_linked_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked spells. DB table `spell_linked_spell` is empty.");
@@ -2303,13 +2303,15 @@ void SpellMgr::LoadSpellLinked()
         int32 trigger = fields[0].GetInt32();
         int32 effect = fields[1].GetInt32();
         int32 type = fields[2].GetUInt8();
-        int32 hastalent = fields[3].GetInt32();
-        int32 hastalent2 = fields[4].GetInt32();
-        int32 chance = fields[5].GetInt32();
-        int32 cooldown = fields[6].GetUInt8();
-        int32 type2 = fields[7].GetUInt8();
-        uint32 hitmask = fields[8].GetUInt32();
-        int32 learnspell = fields[9].GetInt32();
+        int32 caster = fields[3].GetUInt8();
+        int32 target = fields[4].GetUInt8();
+        int32 hastalent = fields[5].GetInt32();
+        int32 hastalent2 = fields[6].GetInt32();
+        int32 chance = fields[7].GetInt32();
+        int32 cooldown = fields[8].GetUInt8();
+        int32 type2 = fields[9].GetUInt8();
+        uint32 hitmask = fields[10].GetUInt32();
+        int32 learnspell = fields[11].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(trigger));
         if (!spellInfo)
@@ -2340,6 +2342,8 @@ void SpellMgr::LoadSpellLinked()
         templink.chance = chance;
         templink.cooldown = cooldown;
         templink.type2 = type2;
+        templink.caster = caster;
+        templink.target = target;
         templink.hitmask = hitmask;
         templink.learnspell = learnspell;
         mSpellLinkedMap[trigger].push_back(templink);

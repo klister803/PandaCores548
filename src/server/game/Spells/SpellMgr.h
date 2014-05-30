@@ -587,6 +587,7 @@ struct SpellLinked
     int32 hastalent;
     int32 hastalent2;
     int32 chance;
+    int32 caster;
     int32 target;
     int32 cooldown;
     int32 type2;
@@ -745,7 +746,7 @@ class SpellMgr
 
         SkillLineAbilityMapBounds GetSkillLineAbilityMapBounds(uint32 spell_id) const;
 
-        const std::vector<PetAura>* GetPetAura(uint32 entry) const;
+        const std::vector<PetAura>* GetPetAura(int32 entry) const;
 
         SpellEnchantProcEntry const* GetSpellEnchantProcEvent(uint32 enchId) const;
         bool IsArenaAllowedEnchancment(uint32 ench_id) const;

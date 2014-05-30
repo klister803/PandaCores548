@@ -407,6 +407,7 @@ public:
     int32  CastTimeMax;
     int32  CastTimeMaxLevel;
     int32  ScalingClass;
+    float  SpellAPBonusMultiplier;
     float  CoefBase;
     int32  CoefLevelBase;
     int32  MaxScalingLevel;

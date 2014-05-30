@@ -12252,8 +12252,13 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         else if(dbccoeff)
         {
             coeff = dbccoeff;
-            //code for bonus AP exist in draenor DBC
-            /*if (damagetype == DOT)
+        }
+        else if(spellProto->SpellAPBonusMultiplier)
+        {
+            dbccoeff = spellProto->SpellAPBonusMultiplier;
+            coeff = spellProto->SpellAPBonusMultiplier;
+            //code for bonus AP from dbc
+            if (damagetype == DOT)
             {
                 if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 {
@@ -12276,7 +12281,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                     APbonus += GetTotalAttackPowerValue(attType);
                     DoneTotal += int32(coeff * stack * ApCoeffMod * APbonus);
                 }
-            }*/
+            }
         }
         // Default calculation
         if (DoneAdvertisedBenefit)
@@ -12396,6 +12401,8 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
 
     // Check for table values
     float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
+    if(!dbccoeff)
+        dbccoeff = spellProto->SpellAPBonusMultiplier;
     float coeff = 0;
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
     if (bonus)
@@ -12928,6 +12935,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // Check for table values
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
     float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
+    if(!dbccoeff)
+        dbccoeff = spellProto->SpellAPBonusMultiplier;
     float coeff = 0;
     float factorMod = 1.0f;
     if (bonus)
@@ -12949,8 +12958,13 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     else if(dbccoeff)
     {
         coeff = dbccoeff;
-        //code for bonus AP exist in draenor DBC
-        /*if (damagetype == DOT)
+    }
+    else if(spellProto->SpellAPBonusMultiplier)
+    {
+        dbccoeff = spellProto->SpellAPBonusMultiplier;
+        coeff = spellProto->SpellAPBonusMultiplier;
+        //code for bonus AP from DBC
+        if (damagetype == DOT)
         {
             if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(
@@ -12960,21 +12974,12 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         {
             if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
                 DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(BASE_ATTACK));
-        }*/
+        }
     }
-//     else
-//     {
-//         // No bonus healing for SPELL_DAMAGE_CLASS_NONE class spells by default
-//         if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
-//             return healamount;
-//     }
 
     // Default calculation
     if (DoneAdvertisedBenefit)
     {
-//         if ((!bonus && !dbccoeff) || coeff < 0)
-//             coeff = CalculateDefaultCoefficient(spellProto, damagetype) * 1.88f;  // As wowwiki says: C = (Cast Time / 3.5) * 1.88 (for healing spells)
-
         factorMod *= CalculateLevelPenalty(spellProto);
 
         if (Player* modOwner = GetSpellModOwner())
@@ -16864,22 +16869,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
         if (roll_chance_i(30))
             SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
-
-    // Summon Shadowy Apparitions when Shadow Word : Pain is crit
-    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 589 && HasAura(78203) && procExtra & PROC_EX_CRITICAL_HIT)
-    {
-        CastSpell(this, 87426, true);
-        std::list<Creature*> shadowylist;
-
-        GetCreatureListWithEntryInGrid(shadowylist, 61966, 1.0f);
-
-        for (std::list<Creature*>::const_iterator itr = shadowylist.begin(); itr != shadowylist.end(); ++itr)
-        {
-            if(UnitAI* ai = (*itr)->GetAI())
-                ai->SetGUID(target->GetGUID());
-            (*itr)->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
-        }
-    }
 
     Unit* actor = isVictim ? target : this;
     Unit* actionTarget = !isVictim ? target : this;

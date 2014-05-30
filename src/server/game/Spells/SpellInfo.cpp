@@ -939,6 +939,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     SpellTotemsId = spellEntry->SpellTotemsId;
     ResearchProject = spellEntry->ResearchProject;
     SpellMiscId = spellEntry->SpellMiscId;
+    SpellAPBonusMultiplier = spellEntry->SpellAPBonusMultiplier;
 
     // SpellDifficultyEntry
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
