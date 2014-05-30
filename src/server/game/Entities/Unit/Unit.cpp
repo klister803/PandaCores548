@@ -6448,6 +6448,24 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     }
                     break;
                 }
+                case 148233: // Cleave Heal
+                {
+                    int32 rollchance = urand(0, 10000);
+
+                    if (rollchance > triggerAmount)
+                        return false;
+                        
+                    triggered_spell_id = 148234;
+                        
+                    if (!procSpell)
+                        break;
+                    
+                    if (procSpell->GetSchoolMask() & SPELL_SCHOOL_MASK_NATURE)
+                        triggered_spell_id = 148235;
+
+                    basepoints0 = damage;
+                    break;
+                }
                 case 104561: // Windsong
                 {
                     triggered_spell_id = RAND(104423, 104510, 104509);
