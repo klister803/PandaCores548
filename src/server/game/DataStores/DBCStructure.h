@@ -1646,7 +1646,8 @@ struct MapEntry
     bool isSupportDifficultMode(uint32 difficulty) const
     {
         if (IsRaid() && difficulty >= MAX_RAID_DIFFICULTY ||
-            !IsRaid() && difficulty >= MAX_DUNGEON_DIFFICULTY && difficulty != CHALLENGE_MODE_DIFFICULTY)
+            !IsRaid() && difficulty >= MAX_DUNGEON_DIFFICULTY && difficulty != CHALLENGE_MODE_DIFFICULTY &&
+            difficulty != HEROIC_SCENARIO_DIFFICULTY && difficulty != NORMAL_SCENARIO_DIFFICULTY)
             return false;
         return true;
     }

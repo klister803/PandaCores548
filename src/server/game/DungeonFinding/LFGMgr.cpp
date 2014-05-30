@@ -931,7 +931,12 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
     }
 
     ASSERT(grp);
-    grp->SetDungeonDifficulty(Difficulty(dungeon->difficulty));
+
+    if (dungeon->type == LFG_TYPE_RAID)
+        grp->SetRaidDifficulty(Difficulty(dungeon->difficulty));
+    else
+        grp->SetDungeonDifficulty(Difficulty(dungeon->difficulty));
+
     uint64 gguid = grp->GetGUID();
     SetDungeon(gguid, dungeon->Entry());
     SetState(gguid, LFG_STATE_DUNGEON);
