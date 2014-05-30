@@ -6620,6 +6620,11 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 146285: // Cruelty
+                {
+                    caster->CastCustomSpell(target, 146293, &m_amount, 0, 0, true, 0, this);
+                    break;
+                }
                 case 146310: // Restless Agility
                 case 146317: // Restless Spirit
                 {
