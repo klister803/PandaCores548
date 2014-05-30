@@ -6466,6 +6466,24 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     basepoints0 = damage;
                     break;
                 }
+                case 146176: // Multistrike Heal
+                {
+                    int32 rollchance = urand(0, 1000);
+
+                    if (rollchance > triggerAmount)
+                        return false;
+                        
+                    triggered_spell_id = 146177;
+                        
+                    if (!procSpell)
+                        break;
+                    
+                    if (procSpell->GetSchoolMask() & SPELL_SCHOOL_MASK_NATURE)
+                        triggered_spell_id = 146178;
+
+                    basepoints0 = damage / 3;
+                    break;
+                }
                 case 104561: // Windsong
                 {
                     triggered_spell_id = RAND(104423, 104510, 104509);
