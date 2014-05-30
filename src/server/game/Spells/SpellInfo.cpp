@@ -947,7 +947,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
         Effects[i] = SpellEffectInfo(spellEntry, this, i, _effect);
     }
 
-    for(int difficulty = 1; difficulty < MAX_DIFFICULTY; difficulty++)
+    for(int difficulty = 1; difficulty < MAX_DIFFICULTY; ++difficulty)
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS_DIFF; ++i)
             if(SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(i, difficulty))
                 EffectsMap[MAKE_PAIR16(i, difficulty)] = SpellEffectInfo(spellEntry, this, i, _effect);

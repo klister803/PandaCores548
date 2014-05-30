@@ -185,13 +185,13 @@ void Group::LoadGroupFromDB(Field* fields)
         _initRaidSubGroupsCounter();
 
     uint32 diff = fields[13].GetUInt8();
-    if (diff >= MAX_DUNGEON_DIFFICULTY)
+    if (!IsValidDifficulty(diff, false))
         m_dungeonDifficulty = REGULAR_DIFFICULTY;
     else
         m_dungeonDifficulty = Difficulty(diff);
 
     uint32 r_diff = fields[14].GetUInt8();
-    if (r_diff >= MAX_RAID_DIFFICULTY)
+    if (!IsValidDifficulty(r_diff, true))
         m_raidDifficulty = MAN10_DIFFICULTY;
     else
         m_raidDifficulty = Difficulty(r_diff);

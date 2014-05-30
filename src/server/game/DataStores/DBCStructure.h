@@ -1643,14 +1643,7 @@ struct MapEntry
         return MapID == 0 || MapID == 1 || MapID == 530 || MapID == 571;
     }
 
-    bool isSupportDifficultMode(uint32 difficulty) const
-    {
-        if (IsRaid() && difficulty >= MAX_RAID_DIFFICULTY ||
-            !IsRaid() && difficulty >= MAX_DUNGEON_DIFFICULTY && difficulty != CHALLENGE_MODE_DIFFICULTY &&
-            difficulty != HEROIC_SCENARIO_DIFFICULTY && difficulty != NORMAL_SCENARIO_DIFFICULTY)
-            return false;
-        return true;
-    }
+    bool IsDifficultyModeSupported(uint32 difficulty) const;
 };
 
 struct MapDifficultyEntry
@@ -2793,5 +2786,6 @@ ResearchSiteEntry const* GetResearchSiteEntryById(uint32 id);
 typedef std::map<uint32 /*word length*/, std::vector<std::string> > LanguageWordsMap;
 LanguageWordsMap const* GetLanguageWordMap(uint32 lang_id);
 std::vector<std::string> const* GetLanguageWordsBySize(uint32 lang_id, uint32 size);
+bool IsValidDifficulty(uint32 diff, bool isRaid);
 
 #endif

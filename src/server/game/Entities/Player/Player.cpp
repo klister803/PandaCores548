@@ -18546,10 +18546,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     uint32 instanceId = fields[52].GetUInt32();
 
     uint32 dungeonDiff = fields[39].GetUInt32() & 0xFFFF;
-    if (dungeonDiff != CHALLENGE_MODE_DIFFICULTY && dungeonDiff >= MAX_DUNGEON_DIFFICULTY || !dungeonDiff)
+    if (!IsValidDifficulty(dungeonDiff, false) || !dungeonDiff)
         dungeonDiff = REGULAR_DIFFICULTY;
     uint32 raidDiff = (fields[39].GetUInt32() >> 16) & 0xFFFF;
-    if (raidDiff >= MAX_RAID_DIFFICULTY)
+    if (!IsValidDifficulty(raidDiff, true) || !raidDiff)
         raidDiff = MAN10_DIFFICULTY;
     SetDungeonDifficulty(Difficulty(dungeonDiff));          // may be changed in _LoadGroup
     SetRaidDifficulty(Difficulty(raidDiff));                // may be changed in _LoadGroup

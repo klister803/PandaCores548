@@ -1433,3 +1433,27 @@ std::vector<std::string> const* GetLanguageWordsBySize(uint32 lang_id, uint32 si
     return itr != wordMap->end() ? &itr->second : NULL;
 }
 
+bool MapEntry::IsDifficultyModeSupported(uint32 difficulty) const
+{
+    return IsValidDifficulty(difficulty, IsRaid());
+}
+
+inline bool IsValidDifficulty(uint32 diff, bool isRaid)
+{
+    if (diff == NONE_DIFFICULTY)
+        return true;
+
+    switch (diff)
+    {
+        case REGULAR_DIFFICULTY:
+        case HEROIC_DIFFICULTY:
+        case NORMAL_SCENARIO_DIFFICULTY:
+        case HEROIC_SCENARIO_DIFFICULTY:
+        case CHALLENGE_MODE_DIFFICULTY:
+            return !isRaid;
+        default:
+            break;
+    }
+
+    return isRaid;
+}
