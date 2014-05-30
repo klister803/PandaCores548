@@ -119,17 +119,13 @@ InstanceSave* InstanceSaveManager::GetInstanceSave(uint32 InstanceId)
 
 void InstanceSaveManager::DeleteInstanceFromDB(uint32 instanceid)
 {
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INSTANCE_BY_INSTANCE);
-    stmt->setUInt32(0, instanceid);
-    CharacterDatabase.DirectExecute(stmt);
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GROUP_INSTANCE_BY_INSTANCE);
-    stmt->setUInt32(0, instanceid);
-    CharacterDatabase.DirectExecute(stmt);
+    trans->PAppend("DELETE FROM instance WHERE id = '%u'", instanceid);
+    trans->PAppend("DELETE FROM character_instance WHERE instance = '%u'", instanceid);
+    trans->PAppend("DELETE FROM group_instance WHERE instance = '%u'", instanceid);
 
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INSTANCE_BY_INSTANCE);
-    stmt->setUInt32(0, instanceid);
-    CharacterDatabase.DirectExecute(stmt);
+    CharacterDatabase.CommitTransaction(trans);
     // Respawn times should be deleted only when the map gets unloaded
 }
 
@@ -427,21 +423,24 @@ void InstanceSaveManager::ResetOrWarnAll(uint32 mapid, Difficulty difficulty)
     }
 
     // delete them from the DB, even if not loaded
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INSTANCE_BY_MAP_DIFF);
     stmt->setUInt16(0, uint16(mapid));
     stmt->setUInt8(1, uint8(difficulty));
-    CharacterDatabase.DirectExecute(stmt);
+    trans->Append(stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GROUP_INSTANCE_BY_MAP_DIFF);
     stmt->setUInt16(0, uint16(mapid));
     stmt->setUInt8(1, uint8(difficulty));
-    CharacterDatabase.DirectExecute(stmt);
+    trans->Append(stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INSTANCE_BY_MAP_DIFF);
     stmt->setUInt16(0, uint16(mapid));
     stmt->setUInt8(1, uint8(difficulty));
-    CharacterDatabase.DirectExecute(stmt);
+    trans->Append(stmt);
 
+    CharacterDatabase.CommitTransaction(trans);
 
     // note: this isn't fast but it's meant to be executed very rarely
     Map const* map = sMapMgr->CreateBaseMap(mapid);          // _not_ include difficulty
