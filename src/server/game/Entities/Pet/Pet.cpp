@@ -584,7 +584,7 @@ void Pet::Update(uint32 diff)
         return;
     
     // Glyph of Animal Bond
-    if (owner->HasAura(20895))
+    if (owner->HasAura(20895) && (!owner->HasAura(24529))
         AddAura(24529, this);
     
     if (!owner->HasAura(20895))
