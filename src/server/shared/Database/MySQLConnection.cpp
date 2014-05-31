@@ -190,9 +190,9 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
     uint32 index = stmt->m_index;
     {
         MySQLPreparedStatement* m_mStmt = GetPreparedStatement(index);
-        if(m_mStmt)
+        if(!m_mStmt)
         {
-            sLog->outError(LOG_FILTER_SQL, "[%u] %s", mysql_errno(m_Mysql), mysql_error(m_Mysql));
+            sLog->outError(LOG_FILTER_SQL, "[%u] %s index %i", mysql_errno(m_Mysql), mysql_error(m_Mysql), index);
             return false;
         }
         //ASSERT(m_mStmt);            // Can only be null if preparation failed, server side error or bad query
