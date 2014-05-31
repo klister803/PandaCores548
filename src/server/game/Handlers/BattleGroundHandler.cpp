@@ -77,9 +77,9 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
     uint8 instanceId = 0;   // wtf could be 0-8
     bool isPremade = false;
     Group* grp = NULL;
+    IgnorMapInfo ignore;
+    recvData >> ignore.map[0] >> ignore.map[1];
 
-    recvData.read_skip<uint32>();
-    recvData.read_skip<uint32>();
     if (recvData.ReadBit())
         instanceId = 8;
     recvData.ReadGuidMask<2, 4, 0, 3, 7, 1>(guid);
@@ -187,7 +187,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
 
         BattlegroundQueue& bgQueue = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId];
 
-        GroupQueueInfo* ginfo = bgQueue.AddGroup(_player, NULL, bgTypeId, bracketEntry, 0, false, isPremade);
+        GroupQueueInfo* ginfo = bgQueue.AddGroup(_player, NULL, bgTypeId, bracketEntry, 0, false, isPremade, ignore);
         uint32 avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
         uint32 queueSlot = _player->AddBattlegroundQueueId(bgQueueTypeId);
 
@@ -220,7 +220,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
         if (!err)
         {
             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Battleground: the following players are joining as group:");
-            ginfo = bgQueue.AddGroup(_player, grp, bgTypeId, bracketEntry, 0, false, isPremade);
+            ginfo = bgQueue.AddGroup(_player, grp, bgTypeId, bracketEntry, 0, false, isPremade, ignore);
             avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
         }
 
@@ -649,7 +649,8 @@ void WorldSession::JoinBracket(uint8 slot)
     {
         BattlegroundQueue &bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
 
-        ginfo = bgQueue.AddGroup(_player, NULL, bgTypeId, bracketEntry, Jointype, true, false, 1500);
+        IgnorMapInfo ignore;    //empty
+        ginfo = bgQueue.AddGroup(_player, NULL, bgTypeId, bracketEntry, Jointype, true, false, ignore, 1500);
         avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId()); 
 
         uint32 queueSlot = _player->AddBattlegroundQueueId(bgQueueTypeId);
@@ -674,7 +675,8 @@ void WorldSession::JoinBracket(uint8 slot)
         sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Battleground: leader %s join type %u", _player->GetName(), Jointype);
 
         matchmakerRating = grp->GetAverageMMR(BracketType(slot));
-        ginfo = bgQueue.AddGroup(_player, grp, bgTypeId, bracketEntry, Jointype, true, false, matchmakerRating);
+        IgnorMapInfo ignore;
+        ginfo = bgQueue.AddGroup(_player, grp, bgTypeId, bracketEntry, Jointype, true, false, ignore, matchmakerRating);
         avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());        
     }else
     {
