@@ -29,6 +29,7 @@
 typedef std::map<uint32, Battleground*> BattlegroundSet;
 
 typedef UNORDERED_MAP<uint32, BattlegroundTypeId> BattleMastersMap;
+typedef UNORDERED_MAP<BattlegroundTypeId, uint8> BattlegroundSelectionWeightMap; // TypeId and its selectionWeight
 
 #define WS_CURRENCY_RESET_TIME 20001                    // Custom worldstate
 
@@ -81,6 +82,7 @@ class BattlegroundMgr
         ~BattlegroundMgr();
 
     public:
+        
         void Update(uint32 diff);
 
         /* Packet Building */
@@ -99,7 +101,7 @@ class BattlegroundMgr
         Battleground* GetBattleground(uint32 InstanceID, BattlegroundTypeId bgTypeId); //there must be uint32 because MAX_BATTLEGROUND_TYPE_ID means unknown
 
         Battleground* GetBattlegroundTemplate(BattlegroundTypeId bgTypeId);
-        Battleground* CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 arenaType, bool isRated);
+        Battleground* CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 arenaType, bool isRated, BattlegroundTypeId generatedType = BATTLEGROUND_TYPE_NONE);
 
         uint32 CreateBattleground(CreateBattlegroundData& data);
 
@@ -152,10 +154,12 @@ class BattlegroundMgr
         static HolidayIds BGTypeToWeekendHolidayId(BattlegroundTypeId bgTypeId);
         static BattlegroundTypeId WeekendHolidayIdToBGType(HolidayIds holiday);
         static bool IsBGWeekend(BattlegroundTypeId bgTypeId);
+
+        BattlegroundSelectionWeightMap * GetArenaSelectionWeight() { return &m_ArenaSelectionWeights; }
+        BattlegroundSelectionWeightMap * GetRBGSelectionWeight() { return &m_BGSelectionWeights; }
     private:
         BattleMastersMap    mBattleMastersMap;
 
-        typedef std::map<BattlegroundTypeId, uint8> BattlegroundSelectionWeightMap; // TypeId and its selectionWeight
         /* Battlegrounds */
         BattlegroundSet m_Battlegrounds[MAX_BATTLEGROUND_TYPE_ID];
         BattlegroundSelectionWeightMap m_ArenaSelectionWeights;

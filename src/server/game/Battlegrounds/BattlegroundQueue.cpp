@@ -657,6 +657,63 @@ bool BattlegroundQueue::CheckNormalMatch(Battleground* bg_template, Battleground
     return m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() >= minPlayers;
 }
 
+// used for generate rbg and arena maps.
+BattlegroundTypeId BattlegroundQueue::GenerateRandomMap(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id)
+{
+    BattlegroundSelectionWeightMap* selectionWeights = NULL;
+    BattlegroundTypeId newbgType = BATTLEGROUND_TYPE_NONE;
+    BattlemasterListEntry const* bl = sBattlemasterListStore.LookupEntry(bgTypeId);
+    if (!bl)
+    {
+        sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue:GenerateRandomMap - BattlemasterListEntry not found for %u", bgTypeId);
+        return BATTLEGROUND_TYPE_NONE;
+    }
+
+    if (bl->type == TYPE_ARENA)
+        selectionWeights = sBattlegroundMgr->GetArenaSelectionWeight();
+    else if (bgTypeId == BATTLEGROUND_RB || bgTypeId == BATTLEGROUND_RATED_10_VS_10)
+        selectionWeights = sBattlegroundMgr->GetRBGSelectionWeight();
+
+    if (selectionWeights)
+    {
+        if (selectionWeights->empty())
+           return BATTLEGROUND_TYPE_NONE;
+        uint32 Weight = 0;
+        uint32 selectedWeight = 0;
+
+        // Get sum of all weights
+        BattlegroundSelectionWeightMap sWeights;
+        for (BattlegroundSelectionWeightMap::const_iterator it = selectionWeights->begin(); it != selectionWeights->end(); ++it)
+        {
+            if (bgTypeId == BATTLEGROUND_RATED_10_VS_10)
+            {
+                if (BattlemasterListEntry const* bl = sBattlemasterListStore.LookupEntry(it->first))
+                    if (bl->maxGroupSizeRated != 10)
+                        continue;
+            }
+            Weight += it->second;
+            sWeights[it->first]=it->second;
+        }
+        if (!Weight)
+            return BATTLEGROUND_TYPE_NONE;
+        // Select a random value
+        selectedWeight = urand(0, Weight-1);
+
+        // Select the correct bg (if we have in DB A(10), B(20), C(10), D(15) --> [0---A---9|10---B---29|30---C---39|40---D---54])
+        Weight = 0;
+        for (BattlegroundSelectionWeightMap::const_iterator it = sWeights.begin(); it != sWeights.end(); ++it)
+        {
+            Weight += it->second;
+            if (selectedWeight < Weight)
+            {
+                newbgType = it->first;
+                break;
+            }
+        }
+    }
+    return newbgType;
+}
+
 // this method will check if we can invite players to same faction skirmish match
 bool BattlegroundQueue::CheckSkirmishForSameFaction(BattlegroundBracketId bracket_id, uint32 minPlayersPerTeam)
 {
@@ -830,7 +887,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         {
             //create new battleground
             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update - create battleground: %u", bgTypeId);
-            Battleground* bg2 = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, 0, false);
+            Battleground* bg2 = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, 0, false, GenerateRandomMap(bgTypeId, bracket_id));
             if (!bg2)
             {
                 sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update - Cannot create battleground: %u", bgTypeId);
@@ -856,7 +913,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             || (bg_template->isArena() && CheckSkirmishForSameFaction(bracket_id, MinPlayersPerTeam)))
         {
             // we successfully created a pool
-            Battleground* bg2 = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, false);
+            Battleground* bg2 = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, false, GenerateRandomMap(bgTypeId, bracket_id));
             if (!bg2)
             {
                 sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update - Cannot create battleground: %u", bgTypeId);
@@ -954,7 +1011,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         {
             GroupQueueInfo* aTeam = *itr_teams[BG_TEAM_ALLIANCE];
             GroupQueueInfo* hTeam = *itr_teams[BG_TEAM_HORDE];
-            Battleground* arena = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, true);
+            Battleground* arena = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, true, GenerateRandomMap(bgTypeId, bracket_id));
             if (!arena)
             {
                 sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update couldn't create arena instance for rated arena match!");

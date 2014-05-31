@@ -774,7 +774,7 @@ uint32 BattlegroundMgr::CreateClientVisibleInstanceId(BattlegroundTypeId bgTypeI
 }
 
 // create a new battleground that will really be used to play
-Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 joinType, bool isRated)
+Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 joinType, bool isRated, BattlegroundTypeId generatedType/*=bgTypeId*/)
 {
     // get the template BG
     Battleground* bg_template = GetBattlegroundTemplate(bgTypeId);
@@ -786,59 +786,22 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
         return NULL;
     }
-    bool isRandom = false;
 
-    if (bg_template->isArena())
-    {
-        isRandom = true;
-        selectionWeights = &m_ArenaSelectionWeights;
-    }
-    else if (bgTypeId == BATTLEGROUND_RB)
-    {
-        isRandom = true;
-        selectionWeights = &m_BGSelectionWeights;
-        
-    }
-    else if (bgTypeId == BATTLEGROUND_RATED_10_VS_10)
-    {
-        isRandom = true;
-        selectionWeights = NULL;
-    }
+    const bool isRandom = bg_template->isArena() || bgTypeId == BATTLEGROUND_RB || bgTypeId == BATTLEGROUND_RATED_10_VS_10;
 
-    if (selectionWeights)
+    // get templet for generated rbg type
+    if (isRandom)
     {
-        if (selectionWeights->empty())
-           return NULL;
-        uint32 Weight = 0;
-        uint32 selectedWeight = 0;
-        bgTypeId = BATTLEGROUND_TYPE_NONE;
-        // Get sum of all weights
-        for (BattlegroundSelectionWeightMap::const_iterator it = selectionWeights->begin(); it != selectionWeights->end(); ++it)
-            Weight += it->second;
-        if (!Weight)
-            return NULL;
-        // Select a random value
-        selectedWeight = urand(0, Weight-1);
-
-        // Select the correct bg (if we have in DB A(10), B(20), C(10), D(15) --> [0---A---9|10---B---29|30---C---39|40---D---54])
-        Weight = 0;
-        for (BattlegroundSelectionWeightMap::const_iterator it = selectionWeights->begin(); it != selectionWeights->end(); ++it)
-        {
-            Weight += it->second;
-            if (selectedWeight < Weight)
-            {
-                bgTypeId = it->first;
-                break;
-            }
-        }
+        ASSERT(generatedType != BATTLEGROUND_TYPE_NONE);    //cyberbrest:don't comment, if where is error no generation come, or system has fatal error
+        bgTypeId = generatedType;
         bg_template = GetBattlegroundTemplate(bgTypeId);
         if (!bg_template)
         {
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
+            sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg generated template not found for %u", bgTypeId);
             return NULL;
         }
     }
-
+    
     Battleground* bg = NULL;
     // create a copy of the BG template
     switch (bgTypeId)
@@ -888,33 +851,13 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         case BATTLEGROUND_DG:
             bg = new BattlegroundDG(*(BattlegroundDG*)bg_template);
             break;
-        case BATTLEGROUND_RATED_10_VS_10:
-            switch (urand(0,2))
-            {
-                case 0:
-                    bgTypeId =  BATTLEGROUND_WS;
-                    bg_template = GetBattlegroundTemplate(bgTypeId);
-                    bg = new BattlegroundWS(*(BattlegroundWS*)bg_template);
-                    break;
-                case 1:
-                    bgTypeId =  BATTLEGROUND_BFG;
-                    bg_template = GetBattlegroundTemplate(bgTypeId);
-                    bg = new BattlegroundBFG(*(BattlegroundBFG*)bg_template);
-                    break;
-                default:
-                    bgTypeId =  BATTLEGROUND_WS;
-                    bg_template = GetBattlegroundTemplate(bgTypeId);
-                    bg = new BattlegroundWS(*(BattlegroundWS*)bg_template);
-                    break;
-            }
-            bg->SetRandom(true);
-            break;
         case BATTLEGROUND_TP:
             bg = new BattlegroundTP(*(BattlegroundTP*)bg_template);
             break;
         case BATTLEGROUND_BFG:
             bg = new BattlegroundBFG(*(BattlegroundBFG*)bg_template);
             break;
+        case BATTLEGROUND_RATED_10_VS_10:
         case BATTLEGROUND_RB:
             bg = new BattlegroundRB(*(BattlegroundRB*)bg_template);
             break;

@@ -86,6 +86,8 @@ class BattlegroundQueue
         void FillPlayersToBG(Battleground* bg, BattlegroundBracketId bracket_id);
         bool CheckPremadeMatch(BattlegroundBracketId bracket_id, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam);
         bool CheckNormalMatch(Battleground* bg_template, BattlegroundBracketId bracket_id, uint32 minPlayers, uint32 maxPlayers);
+        ///@ used for generate rbg and arena maps.
+        BattlegroundTypeId GenerateRandomMap(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id);
         bool CheckSkirmishForSameFaction(BattlegroundBracketId bracket_id, uint32 minPlayersPerTeam);
         GroupQueueInfo* AddGroup(Player* leader, Group* group, BattlegroundTypeId bgTypeId, PvPDifficultyEntry const*  bracketEntry, uint8 ArenaType, bool isRated, bool isPremade, IgnorMapInfo ignore, uint32 mmr = 0);
         void RemovePlayer(uint64 guid, bool decreaseInvitedCount);
