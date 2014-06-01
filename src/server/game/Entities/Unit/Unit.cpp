@@ -12205,7 +12205,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         int32 DoneAdvertisedBenefit  = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
         // Pets just add their bonus damage to their spell damage
         // note that their spell damage is just gain of their own auras
-        if (HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+        if (HasUnitTypeMask(UNIT_MASK_GUARDIAN) && spellProto->SchoolMask & SPELL_SCHOOL_MASK_MAGIC)
             DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
 
         // Check for table values
