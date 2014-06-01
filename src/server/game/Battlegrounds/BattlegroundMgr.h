@@ -29,7 +29,7 @@
 typedef std::map<uint32, Battleground*> BattlegroundSet;
 
 typedef UNORDERED_MAP<uint32, BattlegroundTypeId> BattleMastersMap;
-typedef UNORDERED_MAP<BattlegroundTypeId, uint8> BattlegroundSelectionWeightMap; // TypeId and its selectionWeight
+typedef std::map<BattlegroundTypeId, uint8> BattlegroundSelectionWeightMap; // TypeId and its selectionWeight
 
 #define WS_CURRENCY_RESET_TIME 20001                    // Custom worldstate
 

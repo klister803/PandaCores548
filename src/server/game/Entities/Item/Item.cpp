@@ -1677,7 +1677,7 @@ void Item::SetLevelCap(uint32 cap, bool pvp)
     }
 
     ItemTemplate const* proto = GetTemplate();
-    if (proto->ItemLevel <= MIN_ITEM_LEVEL_CUP)
+    if (!proto || proto->ItemLevel <= MIN_ITEM_LEVEL_CUP)
         return;
 
     // nothing to do
