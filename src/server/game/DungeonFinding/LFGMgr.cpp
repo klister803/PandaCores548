@@ -490,17 +490,36 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
                     break;
             }
 
-            // check members count for a group
-            if (group)
+            switch (entry->dbc->subType)
             {
-                uint32 minPlayerCount = entry->dbc->GetMinGroupSize();
-                uint32 maxPlayerCount = entry->dbc->GetMaxGroupSize();
-                uint32 groupSize = group->GetMembersCount();
-                if (groupSize < minPlayerCount && !isContinueDungeonRequest)
-                    joinData.result = LFG_TOO_FEW_MEMBERS;
-                if (groupSize > maxPlayerCount)
-                    joinData.result = LFG_JOIN_TOO_MUCH_MEMBERS;
+                case LFG_SUBTYPE_SCENARIO:
+                {
+                    if (entry->dbc->difficulty == HEROIC_SCENARIO_DIFFICULTY && !isContinueDungeonRequest)
+                    {
+                        // heroic scenarios can be queued only in full group
+                        if (!group)
+                            joinData.result = LFG_JOIN_PARTY_INFO_FAILED;
+                        else if (group->GetMembersCount() < entry->dbc->GetMinGroupSize())
+                            joinData.result = LFG_JOIN_TOO_FEW_MEMBERS;
+                    }
+                    break;
+                }
+                case LFG_SUBTYPE_FLEX:
+                {
+                    // flex can be queued only in group
+                    if (!group)
+                        joinData.result = LFG_JOIN_PARTY_INFO_FAILED;
+                    else if (group->GetMembersCount() < entry->dbc->GetMinGroupSize())
+                        joinData.result = LFG_JOIN_TOO_FEW_MEMBERS;
+                    break;
+                }
+                default:
+                    break;
             }
+
+            // check max members count for a group
+            if (group && entry->dbc->GetMaxGroupSize() < group->GetMembersCount())
+                joinData.result = LFG_JOIN_TOO_MUCH_MEMBERS;
         }
 
         // it could be changed

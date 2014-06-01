@@ -92,9 +92,9 @@ enum LfgJoinResult
     LFG_JOIN_PARTY_RANDOM_COOLDOWN               = 41,     // One or more party members are on random dungeon cooldown
     LFG_JOIN_TOO_MUCH_MEMBERS                    = 42,     // You can not enter dungeons with more that 5 party members
     LFG_JOIN_USING_BG_SYSTEM                     = 43,     // You can not use the dungeon system while in BG or arenas
-    LFG_ROLE_CHECK_FAILED_2                      = 44,
-    LFG_TOO_FEW_MEMBERS                          = 50,
-    LFG_REASON_TOO_MANY_LFG                      = 51,
+    LFG_JOIN_ROLE_CHECK_FAILED_2                 = 44,
+    LFG_JOIN_TOO_FEW_MEMBERS                     = 50,
+    LFG_JOIN_FAILED_REASON_TOO_MANY_LFG          = 51,
 };
 
 /// Role check states
