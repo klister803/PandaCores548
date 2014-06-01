@@ -3368,6 +3368,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 53503:
+                    spellInfo->Effects[2].SpellClassMask[2] |= 2097152;
+                    break;
                 case 146343: // Avoidance
                     spellInfo->Effects[0].MiscValue = SPELL_SCHOOL_MASK_ALL;
                     break;
