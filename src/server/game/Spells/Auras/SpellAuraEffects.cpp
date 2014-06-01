@@ -7587,6 +7587,22 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
 
         damage = uint32(target->CountPctFromMaxHealth(damage));
         damage = uint32(damage * TakenTotalMod);
+        
+        switch (GetSpellInfo()->Id)
+        {
+            case 136:
+            {
+                if(target->isPet())
+                    if (Unit* owner = target->GetOwner())
+                    {
+                        if(owner->HasAura(19573))
+                           owner->CastSpell(target, 24406, true);
+                    }
+                break;
+            }
+            default:
+                break;
+        }
     }
     else
     {

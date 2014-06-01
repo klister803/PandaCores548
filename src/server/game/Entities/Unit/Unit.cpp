@@ -8126,14 +8126,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     target = this;
                     break;
                 }
-                case 267: // Improved Mend Pet
-                {
-                    if (!roll_chance_i(triggerAmount))
-                        return false;
-
-                    triggered_spell_id = 24406;
-                    break;
-                }
                 case 2236: // Thrill of the Hunt
                 {
                     if (!procSpell)
