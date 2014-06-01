@@ -770,54 +770,6 @@ class spell_pal_consecration_area : public SpellScriptLoader
         }
 };
 
-// Word of Glory - 85673
-class spell_pal_word_of_glory : public SpellScriptLoader
-{
-    public:
-        spell_pal_word_of_glory() : SpellScriptLoader("spell_pal_word_of_glory") { }
-
-        class spell_pal_word_of_glory_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_word_of_glory_SpellScript);
-
-            bool Validate()
-            {
-                if (!sSpellMgr->GetSpellInfo(PALADIN_SPELL_WORD_OF_GLORY))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(caster))
-                        {
-                            if (caster->HasAura(54938) && !unitTarget->isPet())
-                                caster->CastSpell(unitTarget, 130552, true);
-                            else
-                                caster->CastSpell(caster, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
-                        }
-                        else
-                            caster->CastSpell(unitTarget, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pal_word_of_glory_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_word_of_glory_SpellScript();
-        }
-};
-
 // Ardent Defender - 31850
 class spell_pal_ardent_defender : public SpellScriptLoader
 {
@@ -1366,7 +1318,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_holy_prism();
     new spell_pal_consecration();
     new spell_pal_consecration_area();
-    new spell_pal_word_of_glory();
     new spell_pal_ardent_defender();
     new spell_pal_blessing_of_faith();
     new spell_pal_divine_storm();
