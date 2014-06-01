@@ -2313,11 +2313,9 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             // Spirit Mend
             case 90361:
             {
-                if (Unit* owner = m_caster->GetOwner())
-                {
-                    uint32 ap = owner->GetTotalAttackPowerValue(RANGED_ATTACK);
-                    addhealth += int32((ap * 0.35f) * 0.5f);
-                }
+                uint32 ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                uint32 spd = m_caster->SpellDamageBonusDone(m_caster, m_spellInfo, damage, SPELL_DIRECT_DAMAGE, effIndex);
+                addhealth += int32((ap * 0.35f) * 0.5f) + spd;
                 break;
             }
             case 18562: // Swiftmend
