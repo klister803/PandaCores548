@@ -2376,10 +2376,10 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
                 case SPELL_AURA_MOD_POSSESS_PET:
                 case SPELL_AURA_MOD_POSSESS:
                 case SPELL_AURA_AOE_CHARM:
-                    return SPELL_SPECIFIC_CHARM;
-                case SPELL_AURA_TRACK_CREATURES:
+                    return SPELL_SPECIFIC_CHARM;                
                 case SPELL_AURA_TRACK_RESOURCES:
-                case SPELL_AURA_TRACK_STEALTHED:
+                //case SPELL_AURA_TRACK_CREATURES:
+                //case SPELL_AURA_TRACK_STEALTHED:
                     return SPELL_SPECIFIC_TRACKER;
             }
         }
