@@ -451,6 +451,9 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
         for (LfgDungeonSet::const_iterator it = dungeons.begin(); it != dungeons.end() && joinData.result == LFG_JOIN_OK; ++it)
         {
             LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*it & 0xFFFFF);
+            if(!entry)
+                return;
+
             switch (entry->dbc->subType)
             {
                 case LFG_SUBTYPE_DUNGEON:
