@@ -105,6 +105,7 @@ enum HunterSpells
     HUNTER_SPELL_MISDIRECTION                    = 34477,
     HUNTER_SPELL_MISDIRECTION_PROC               = 35079,
     HUNTER_SPELL_BLINK_STRIKE                    = 130393,
+    HUNTER_SPELL_GLYPH_OF_DIRECTION              = 126179,
 };
 
 // Dash - 113073
@@ -2051,6 +2052,37 @@ class spell_hun_fireworks : public SpellScriptLoader
         }
 };
 
+// Glyph of Direction - 126179, spell - 34477
+class spell_hun_glyph_of_direction : public SpellScriptLoader
+{
+    public:
+        spell_hun_glyph_of_direction() : SpellScriptLoader("spell_hun_glyph_of_direction") { }
+
+        class spell_hun_glyph_of_direction_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_glyph_of_direction_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
+            {   
+                if (Unit* caster = GetCaster())
+                {
+                    if (!caster->HasAura(HUNTER_SPELL_GLYPH_OF_DIRECTION))
+                        amount = 0;
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_hun_glyph_of_direction_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_MOD_SCALE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_glyph_of_direction_AuraScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2092,4 +2124,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_Toss();
     new spell_hun_fetch();
     new spell_hun_fireworks();
+    new spell_hun_glyph_of_direction();
 }
