@@ -1710,71 +1710,6 @@ class spell_hun_pet_carrion_feeder : public SpellScriptLoader
         }
 };
 
-// Misdirection - 34477 and Misdirection - 110588 (Symbiosis)
-class spell_hun_misdirection : public SpellScriptLoader
-{
-    public:
-        spell_hun_misdirection() : SpellScriptLoader("spell_hun_misdirection") { }
-
-        class spell_hun_misdirection_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_hun_misdirection_AuraScript);
-
-            bool _hasGlyph;
-
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (!GetCaster())
-                {
-                    _hasGlyph = false;
-                    return;
-                }
-
-                _hasGlyph = false;
-
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetTarget())
-                        if (Pet* pet = _player->GetPet())
-                            if (pet->GetGUID() == target->GetGUID())
-                                if (_player->HasAura(HUNTER_SPELL_GLYPH_OF_MISDIRECTION))
-                                    _hasGlyph = true;
-            }
-
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (!GetCaster())
-                    return;
-
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (!GetDuration())
-                    {
-                        _player->SetReducedThreatPercent(0, 0);
-
-                        if (_hasGlyph)
-                        {
-                            if (_player->HasSpellCooldown(HUNTER_SPELL_MISDIRECTION))
-                                _player->RemoveSpellCooldown(HUNTER_SPELL_MISDIRECTION, true);
-                            if (_player->HasSpellCooldown(HUNTER_SPELL_MISDIRECTION_PROC))
-                                _player->RemoveSpellCooldown(HUNTER_SPELL_MISDIRECTION, true);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_hun_misdirection_AuraScript::OnApply, EFFECT_2, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_hun_misdirection_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_hun_misdirection_AuraScript();
-        }
-};
-
 // Misdirection (proc) - 35079
 class spell_hun_misdirection_proc : public SpellScriptLoader
 {
@@ -2150,7 +2085,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_sniper_training();
     new spell_hun_pet_heart_of_the_phoenix();
     new spell_hun_pet_carrion_feeder();
-    new spell_hun_misdirection();
     new spell_hun_misdirection_proc();
     new spell_hun_disengage();
     new spell_hun_tame_beast();

@@ -1900,6 +1900,12 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 if (GetSpellInfo()->SpellFamilyFlags[0] & 0x00000008)
                     if (caster && caster->HasAura(56845))
                         target->CastSpell(target, 61394, true);
+                
+                // Glyph of Misdirection
+                if (GetId() == 34477 && caster->ToPlayer()->GetPetGUID() == caster->GetMisdirectionTargetGuid() && caster->HasAura(56829))
+                {
+                    caster->ToPlayer()->RemoveSpellCooldown(34477, true);
+                }
                 break;
         }
     }
