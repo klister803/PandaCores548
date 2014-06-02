@@ -774,7 +774,7 @@ uint32 BattlegroundMgr::CreateClientVisibleInstanceId(BattlegroundTypeId bgTypeI
 }
 
 // create a new battleground that will really be used to play
-Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 joinType, bool isRated, BattlegroundTypeId generatedType/*=bgTypeId*/)
+Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 joinType, bool isRated, BattlegroundTypeId generatedType/*=BATTLEGROUND_TYPE_NONE*/)
 {
     // get the template BG
     Battleground* bg_template = GetBattlegroundTemplate(bgTypeId);
@@ -792,7 +792,16 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
     // get templet for generated rbg type
     if (isRandom)
     {
-        ASSERT(generatedType != BATTLEGROUND_TYPE_NONE);    //cyberbrest:don't comment, if where is error no generation come, or system has fatal error
+        //ASSERT(generatedType != BATTLEGROUND_TYPE_NONE &&   //cyberbrest:don't comment, if where is error no generation come, or system has fatal error
+        //    generatedType != BATTLEGROUND_RB &&
+        //    generatedType != BATTLEGROUND_RATED_10_VS_10);
+        ///=================== TMP
+        if (generatedType == BATTLEGROUND_TYPE_NONE || generatedType == BATTLEGROUND_RB || generatedType == BATTLEGROUND_RATED_10_VS_10)
+        {
+            sLog->outU("[WARNING] BattlegroundMgr::CreateNewBattleground %u, %u", generatedType, bgTypeId, bgTypeId);
+            return NULL;
+        }
+        ///=================== END TMP
         bgTypeId = generatedType;
         bg_template = GetBattlegroundTemplate(bgTypeId);
         if (!bg_template)
@@ -859,8 +868,12 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
             break;
         case BATTLEGROUND_RATED_10_VS_10:
         case BATTLEGROUND_RB:
-            bg = new BattlegroundRB(*(BattlegroundRB*)bg_template);
-            break;
+            //bg = new BattlegroundRB(*(BattlegroundRB*)bg_template);
+            //should never happened.
+            ///====================== TMP
+            sLog->outU(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CREATE BATTLEGROUND_RB | BATTLEGROUND_RATED_10_VS_10 template");
+            ///====================== END TMP
+            return NULL;
         case BATTLEGROUND_KT:
             bg = new BattlegroundKT(*(BattlegroundKT*)bg_template);
             break;
@@ -1151,6 +1164,10 @@ void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, Batt
             team = player->GetTeam();
         bg->GetTeamStartLoc(team, x, y, z, O);
 
+        ///=================== TMP
+        if (x == 0.0f && y == 0.0f)
+            sLog->outU("[WTF] inst %u, type %u, type2 %u type3 %u| rand %u",instanceId, bgTypeId, bg->GetTypeID(), bg->GetTypeID(true), bg->IsRandom() );
+        ///=================== END TMP
         sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Sending %s to map %u, X %f, Y %f, Z %f, O %f", player->GetName(), mapid, x, y, z, O);
         player->TeleportTo(mapid, x, y, z, O);
     }
