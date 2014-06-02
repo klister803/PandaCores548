@@ -98,7 +98,6 @@ enum HunterSpells
     DIRE_BEAST_DUNGEONS                          = 132764,
     HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION       = 130201,
     HUNTER_SPELL_GLYPH_OF_STAMPEDE               = 57902,
-    HUNTER_SPELL_GLYPH_OF_COLLAPSE               = 126095,
     HUNTER_SPELL_MARKED_FOR_DIE                  = 132106,
     HUNTER_SPELL_HUNTERS_MARK                    = 1130,
     HUNTER_SPELL_GLYPH_OF_MISDIRECTION           = 56829,
@@ -1524,10 +1523,6 @@ class spell_hun_scatter_shot : public SpellScriptLoader
                 caster->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
                 caster->AttackStop();
                 caster->SendAttackSwingResult(ATTACK_SWING_ERROR_CANT_ATTACK);
-
-                if (caster->HasAura(HUNTER_SPELL_GLYPH_OF_COLLAPSE))
-                    if (Unit* target = GetHitUnit())
-                        target->RemoveAllAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
             }
 
             void Register()
