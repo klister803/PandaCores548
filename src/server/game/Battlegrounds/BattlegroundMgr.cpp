@@ -787,7 +787,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         return NULL;
     }
 
-    const bool isRandom = bg_template->isArena() || bgTypeId == BATTLEGROUND_RB || bgTypeId == BATTLEGROUND_RATED_10_VS_10;
+    bool isRandom = bg_template->isArena() || bgTypeId == BATTLEGROUND_RB || bgTypeId == BATTLEGROUND_RATED_10_VS_10;
 
     // get templet for generated rbg type
     if (isRandom)
