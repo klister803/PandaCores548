@@ -105,6 +105,8 @@ enum HunterSpells
     HUNTER_SPELL_MISDIRECTION_PROC               = 35079,
     HUNTER_SPELL_BLINK_STRIKE                    = 130393,
     HUNTER_SPELL_GLYPH_OF_DIRECTION              = 126179,
+    HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP         = 119403,
+    
 };
 
 // Dash - 113073
