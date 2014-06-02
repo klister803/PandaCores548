@@ -2078,6 +2078,54 @@ class spell_hun_glyph_of_direction : public SpellScriptLoader
         }
 };
 
+// Glyph of Explosive Trap - 119403, spell trap - 13812
+class spell_hun_glyph_of_explosive_trap : public SpellScriptLoader
+{
+    public:
+        spell_hun_glyph_of_explosive_trap() : SpellScriptLoader("spell_hun_glyph_of_explosive_trap") { }
+
+        class spell_hun_glyph_of_explosive_trap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_glyph_of_explosive_trap_SpellScript);
+ 
+            void HandleTriggerEffect(SpellEffIndex effIndex)
+            {                
+                if (Unit* owner = GetCaster()->GetOwner())
+                {  
+                    if (!owner->HasAura(HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP))
+                        PreventHitDefaultEffect(EFFECT_2);
+                }
+            }
+            void handlNull(SpellEffIndex effIndex)
+            {
+                PreventHitDefaultEffect(effIndex);
+            }
+            void HandleDamageEffect(SpellEffIndex effIndex)
+            {                
+                if (Unit* owner = GetCaster()->GetOwner())
+                {  
+                    if (owner->HasAura(HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP))
+                    {
+                        PreventHitDefaultEffect(EFFECT_0);
+                        PreventHitDefaultEffect(EFFECT_1); 
+                    }
+                }
+            }
+            
+            void Register()
+            {
+                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleTriggerEffect, EFFECT_2, SPELL_EFFECT_TRIGGER_SPELL);
+                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleDamageEffect, EFFECT_1, SPELL_EFFECT_PERSISTENT_AREA_AURA);
+                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleDamageEffect, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+        
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_glyph_of_explosive_trap_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2120,4 +2168,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_fetch();
     new spell_hun_fireworks();
     new spell_hun_glyph_of_direction();
+    new spell_hun_glyph_of_explosive_trap();
 }
