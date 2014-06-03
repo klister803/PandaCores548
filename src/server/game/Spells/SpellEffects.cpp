@@ -276,7 +276,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //203 SPELL_EFFECT_203
     &Spell::EffectNULL,                                     //204 SPELL_EFFECT_204
     &Spell::EffectNULL,                                     //205 SPELL_EFFECT_205
-    &Spell::EffectNULL,                                     //206 SPELL_EFFECT_CREATE_ITEM_3
+    &Spell::EffectCreateItem3,                              //206 SPELL_EFFECT_CREATE_ITEM_3
     &Spell::EffectNULL,                                     //207 SPELL_EFFECT_207
     &Spell::EffectNULL,                                     //208 SPELL_EFFECT_208
 };
@@ -2731,18 +2731,38 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
                 return;
 
             // create some random items
-            if(player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell))
+            if(player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell, m_CastItem ? m_CastItem->GetTemplate()->ItemLevel : 0))
             // remove reagent
                 player->DestroyItemCount(item_id, 1, true);
         }
         else
         {
-            player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);    // create some random items
+            player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell, m_CastItem ? m_CastItem->GetTemplate()->ItemLevel : 0);    // create some random items
             player->UpdateCraftSkill(m_spellInfo->Id);
         }
     }
 
     ExecuteLogEffectTradeSkillItem(effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType);
+}
+
+void Spell::EffectCreateItem3(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    Item* item = m_targets.GetItemTarget();
+    if (!item)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+    if (item->GetEntry() && player)
+    {
+        if (m_spellInfo->IsLootCrafting())
+        {
+            if(player->AutoStoreLoot(item->GetTemplate()->Spells[0].SpellId, LootTemplates_Spell, 535))
+                player->DestroyItemCount(item->GetEntry(), 1, true);
+        }
+    }
 }
 
 void Spell::EffectCreateRandomItem(SpellEffIndex effIndex)

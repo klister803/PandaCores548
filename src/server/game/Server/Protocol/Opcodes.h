@@ -1345,6 +1345,7 @@ enum Opcodes
     SMSG_SPELL_CATEGORY_COOLDOWN                      = 0x0C49, // 5.4.1 17538
     SMSG_SPELL_CHARGE_DATA                            = 0x0069, // 5.4.1 17538
     SMSG_SPELL_COOLDOWN                               = 0x0864, // 5.4.1 17538
+    SMSG_SPELL_CREATE_VISUAL                          = 0x1134, // 5.4.1 17538
     SMSG_SPELL_DELAYED                                = 0x01ED, // 5.4.1 17538
     SMSG_SPELL_FAILED_OTHER                           = 0x11BC, // 5.4.1 17538
     SMSG_SPELL_FAILURE                                = 0x012C, // 5.4.1 17538

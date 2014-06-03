@@ -1566,8 +1566,8 @@ class Player : public Unit, public GridObject<Player>
         Item* EquipItem(uint16 pos, Item* pItem, bool update);
         void AutoUnequipOffhandIfNeed(bool force = false);
         bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count);
-        bool AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast = false);
-        bool AutoStoreLoot(uint32 loot_id, LootStore const& store, bool broadcast = false) { return AutoStoreLoot(NULL_BAG, NULL_SLOT, loot_id, store, broadcast); }
+        bool AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, uint32 filterLevel = 0, bool broadcast = false);
+        bool AutoStoreLoot(uint32 loot_id, LootStore const& store, uint32 filterLevel = 0, bool broadcast = false) { return AutoStoreLoot(NULL_BAG, NULL_SLOT, loot_id, store, filterLevel, broadcast); }
         void StoreLootItem(uint8 lootSlot, Loot* loot);
 
         InventoryResult CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = NULL) const;

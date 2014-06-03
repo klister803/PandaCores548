@@ -6964,7 +6964,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                             if (!creature->GetCreatureTemplate()->SkinLootId)
                                 return;
 
-                            player->AutoStoreLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, true);
+                            player->AutoStoreLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, 0, true);
 
                             creature->DespawnOrUnsummon();
                         }

@@ -3315,6 +3315,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
         }
 
         m_caster->SetCurrentCastedSpell(this);
+        SendSpellPendingCast(); //Send activation spell
         SendSpellStart();
 
         // set target for proper facing
@@ -3533,19 +3534,6 @@ void Spell::cast(bool skipCheck)
         plrCaster->TakeSpellCharge(m_spellInfo);
     }
 
-    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
-    {
-        // Powers have to be taken before SendSpellGo
-        TakePower();
-        TakeReagents();                                         // we must remove reagents before HandleEffects to allow place crafted item in same slot
-    }
-    else if (Item* targetItem = m_targets.GetItemTarget())
-    {
-        /// Not own traded item (in trader trade slot) req. reagents including triggered spell case
-        if (targetItem->GetOwnerGUID() != m_caster->GetGUID())
-            TakeReagents();
-    }
-
     // CAST SPELL
     SendSpellCooldown();
 
@@ -3553,6 +3541,7 @@ void Spell::cast(bool skipCheck)
 
     HandleLaunchPhase();
 
+    SendSpellCreateVisual();
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
 
@@ -3583,6 +3572,19 @@ void Spell::cast(bool skipCheck)
     }
 
     CallScriptAfterCastHandlers();
+
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
+    {
+        // Powers have to be taken before SendSpellGo
+        TakePower();
+        TakeReagents();                                         // we must remove reagents before HandleEffects to allow place crafted item in same slot
+    }
+    else if (Item* targetItem = m_targets.GetItemTarget())
+    {
+        /// Not own traded item (in trader trade slot) req. reagents including triggered spell case
+        if (targetItem->GetOwnerGUID() != m_caster->GetGUID())
+            TakeReagents();
+    }
 
     if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
     {
@@ -4715,6 +4717,125 @@ void Spell::SendSpellStart()
     data.WriteGuidBytes<6, 0, 2>(casterGuid);
 
     m_caster->SendMessageToSet(&data, true);
+}
+
+void Spell::SendSpellCreateVisual()
+{
+    bool exist = false;
+    uint32 visual = 0;
+    uint16 unk1 = 0;
+    uint16 unk2 = 0;
+    float positionX = 0.0f;
+    float positionY = 0.0f;
+    float positionZ = 0.0f;
+    bool position = false;
+    if (const std::vector<SpellVisual> *spell_visual = sSpellMgr->GetSpellVisual(m_spellInfo->Id))
+    {
+        float chance = 100.0f / spell_visual->size();
+        for (std::vector<SpellVisual>::const_iterator i = spell_visual->begin(); i != spell_visual->end(); ++i)
+        {
+            visual = i->visual;
+            unk1 = i->unk1;
+            unk2 = i->unk2;
+            position = i->position;
+            exist = true;
+            if(roll_chance_f(chance))
+                break;
+        }
+    }
+
+    if(!exist)
+        return;
+
+    if(position)
+    {
+        if (Unit* target = m_targets.GetUnitTarget())
+        {
+            positionX = target->GetPositionX();
+            positionY = target->GetPositionY();
+            positionZ = target->GetPositionZ();
+        }
+        else
+        {
+            positionX = m_caster->GetPositionX();
+            positionY = m_caster->GetPositionY();
+            positionZ = m_caster->GetPositionZ();
+        }
+    }
+
+    ObjectGuid casterGuid = m_caster->GetObjectGuid();
+    ObjectGuid targetGuid = m_targets.m_objectTargetGUID;
+    WorldPacket data(SMSG_SPELL_CREATE_VISUAL, 50);
+    data.WriteGuidMask<3, 0>(targetGuid);
+    data.WriteGuidMask<2, 0>(casterGuid);
+    data.WriteGuidMask<4>(targetGuid);
+    data.WriteGuidMask<4, 3>(casterGuid);
+    data.WriteGuidMask<7>(targetGuid);
+    data.WriteGuidMask<6>(casterGuid);
+    data.WriteGuidMask<5>(targetGuid);
+    data.WriteBit(position);               //my be exist position?
+    data.WriteGuidMask<5>(casterGuid);
+    data.WriteGuidMask<2, 6, 1>(targetGuid);
+    data.WriteGuidMask<7, 1>(casterGuid);
+
+    data.WriteGuidBytes<3, 6>(casterGuid);
+    data.WriteGuidBytes<5>(targetGuid);
+    data.WriteGuidBytes<2>(casterGuid);
+    data.WriteGuidBytes<4>(targetGuid);
+    data << uint16(unk1);           // word10
+    data.WriteGuidBytes<1>(casterGuid);
+    data.WriteGuidBytes<0>(targetGuid);
+    data << uint32(visual);           //Spell Visual dword14
+    data << float(positionZ);            // z
+    data << float(m_spellInfo->Speed);            // speed
+    data.WriteGuidBytes<3, 2>(targetGuid);
+    data << uint16(unk2);           // word34
+    data.WriteGuidBytes<0>(casterGuid);
+    data.WriteGuidBytes<1, 7>(targetGuid);
+    data << float(positionX);            // x
+    data.WriteGuidBytes<6>(targetGuid);
+    data.WriteGuidBytes<7, 4>(casterGuid);
+    data << float(positionY);            // y
+    data.WriteGuidBytes<5>(casterGuid);
+    m_caster->SendMessageToSet(&data, true);
+}
+
+void Spell::SendSpellPendingCast()
+{
+    uint32 _spellId = 0;
+    Player* player = m_caster->ToPlayer();
+    if(!player)
+        return;
+
+    if (const std::vector<SpellPendingCast> *spell_pending = sSpellMgr->GetSpellPendingCast(m_spellInfo->Id))
+    {
+        bool check = false;
+        for (std::vector<SpellPendingCast>::const_iterator i = spell_pending->begin(); i != spell_pending->end(); ++i)
+        {
+            switch (i->option)
+            {
+                case 0: // Check Spec
+                {
+                    if(player->GetLootSpecID() == i->check)
+                    {
+                        _spellId = i->pending_id;
+                        check = true;
+                    }
+                    break;
+                }
+
+            }
+            if(check)
+                break;
+        }
+    }
+
+    if(!_spellId)
+        return;
+
+    WorldPacket data(SMSG_SPELL_PENDING_TARGET_CAST, 4);
+    data << uint32(_spellId);           //Spell Id
+    player->GetSession()->SendPacket(&data);
 }
 
 void Spell::SendSpellGo()
@@ -7532,6 +7653,19 @@ SpellCastResult Spell::CheckItems()
                         }
                     }
                 }
+                break;
+            }
+            case SPELL_EFFECT_CREATE_ITEM_3:
+            {
+                if(ItemTemplate const* itemProto = m_targets.GetItemTarget()->GetTemplate())
+                {
+                    if(p_caster->CanUseItem(itemProto) != EQUIP_ERR_OK)
+                        return SPELL_FAILED_BAD_TARGETS;
+                    if (!(itemProto->Flags & ITEM_PROTO_FLAG_UNK4) || itemProto->ItemLevel != 496 || itemProto->ItemId == 104347) //Timeless Curio cannot be target
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+                else
+                    return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
             case SPELL_EFFECT_ENCHANT_ITEM:

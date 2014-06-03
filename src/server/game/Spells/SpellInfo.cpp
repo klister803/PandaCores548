@@ -1210,7 +1210,7 @@ bool SpellInfo::IsExplicitDiscovery() const
 
 bool SpellInfo::IsLootCrafting() const
 {
-    return Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM ||
+    return Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_3 ||
         // different random cards from Inscription (121==Virtuoso Inking Set category) r without explicit item
         Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2 &&
         (TotemCategory[0] != 0 || Effects[0].ItemType == 0);

@@ -324,8 +324,9 @@ struct Loot
     uint8 spawnMode;
     uint32 countItem;
     uint32 specId;
+    uint32 itemLevel;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0), m_lootOwner(NULL) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0), m_lootOwner(NULL), objType(0), specId(0), itemLevel(0), countItem(0), objGuid(0), objEntry(0)  {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener

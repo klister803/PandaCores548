@@ -26989,10 +26989,12 @@ bool Player::IsBaseRuneSlotsOnCooldown(RuneType runeType) const
     return true;
 }
 
-bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast)
+bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, uint32 filterLevel, bool broadcast)
 {
     Loot loot;
     loot.objType = 4;
+    if(filterLevel > 399)
+        loot.itemLevel = filterLevel;
     loot.specId = GetLootSpecID();
     loot.FillLoot (loot_id, store, this, true);
 

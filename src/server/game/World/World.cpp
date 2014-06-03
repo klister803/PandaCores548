@@ -1707,6 +1707,8 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading triggered spells...");
     sSpellMgr->LoadSpellTriggered();
+    sSpellMgr->LoadSpellVisual();
+    sSpellMgr->LoadSpellPendingCast();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading mount replace list...");
     sSpellMgr->LoadmSpellMountList();

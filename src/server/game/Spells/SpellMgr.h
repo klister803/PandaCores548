@@ -640,11 +640,30 @@ struct SpellMountList
     int32 sideS;
 };
 
+struct SpellVisual
+{
+    int32 spell_id;
+    int32 visual;
+    int16 unk1;
+    int16 unk2;
+    bool position;
+};
+
+struct SpellPendingCast
+{
+    int32 spell_id;
+    int32 pending_id;
+    int8  option;
+    int32 check;
+};
+
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
 typedef std::map<int32, std::vector<SpellLinked> > SpellLinkedMap;
 typedef std::map<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
 typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
+typedef std::map<int32, std::vector<SpellVisual> > SpellVisualMap;
+typedef std::map<int32, std::vector<SpellPendingCast> > SpellPendingCastMap;
 typedef std::map<int32, SpellMountList* > SpellMountListMap;
 
 bool IsPrimaryProfessionSkill(uint32 skill);
@@ -757,6 +776,8 @@ class SpellMgr
         const std::vector<SpellPrcoCheck> *GetSpellPrcoCheck(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggered(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggeredDummy(int32 spell_id) const;
+        const std::vector<SpellVisual> *GetSpellVisual(int32 spell_id) const;
+        const std::vector<SpellPendingCast> *GetSpellPendingCast(int32 spell_id) const;
 
         PetLevelupSpellSet const* GetPetLevelupSpellList(uint32 petFamily) const;
         PetDefaultSpellsEntry const* GetPetDefaultSpellsEntry(int32 id) const;
@@ -813,6 +834,8 @@ class SpellMgr
         void LoadTalentSpellInfo();
         void LoadSpellPowerInfo();
         void LoadForbiddenSpells();
+        void LoadSpellVisual();
+        void LoadSpellPendingCast();
 
         std::vector<uint32>        mSpellCreateItemList;
 
@@ -854,6 +877,8 @@ class SpellMgr
         TalentSpellSet             mTalentSpellInfo;
         SpellPowerVector           mSpellPowerInfo;
         SpellMountListMap          mSpellMountListMap;
+        SpellVisualMap             mSpellVisualMap;
+        SpellPendingCastMap        mSpellPendingCastMap;
         std::list<uint32>          mForbiddenSpells;
 };
 

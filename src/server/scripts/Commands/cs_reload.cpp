@@ -883,6 +883,8 @@ public:
         sSpellMgr->LoadSpellProcEvents();
         sSpellMgr->LoadSpellPrcoCheck();
         sSpellMgr->LoadSpellTriggered();
+        sSpellMgr->LoadSpellVisual();
+        sSpellMgr->LoadSpellPendingCast();
         handler->SendGlobalGMSysMessage("DB table `spell_proc_event` (spell proc trigger requirements) reloaded.");
         return true;
     }

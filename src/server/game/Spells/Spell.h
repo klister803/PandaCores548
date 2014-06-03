@@ -275,6 +275,7 @@ class Spell
         void EffectCreateItem(SpellEffIndex effIndex);
         void EffectDestroyItem(SpellEffIndex effIndex);
         void EffectCreateItem2(SpellEffIndex effIndex);
+        void EffectCreateItem3(SpellEffIndex effIndex);
         void EffectCreateRandomItem(SpellEffIndex effIndex);
         void EffectPersistentAA(SpellEffIndex effIndex);
         void EffectEnergize(SpellEffIndex effIndex);
@@ -473,6 +474,8 @@ class Spell
         void SendCastResult(SpellCastResult result);
         void SendSpellStart();
         void SendSpellGo();
+        void SendSpellCreateVisual();
+        void SendSpellPendingCast();
         void SendSpellCooldown();
         void SendLogExecute();
         void ExecuteLogEffectGeneric(uint8 effIndex, uint64 guid);

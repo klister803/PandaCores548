@@ -1052,6 +1052,18 @@ const std::vector<SpellTalentLinked>* SpellMgr::GetSpelltalentLinked(int32 spell
     return itr != mSpellTalentLinkedMap.end() ? &(itr->second) : NULL;
 }
 
+const std::vector<SpellVisual>* SpellMgr::GetSpellVisual(int32 spell_id) const
+{
+    SpellVisualMap::const_iterator itr = mSpellVisualMap.find(spell_id);
+    return itr != mSpellVisualMap.end() ? &(itr->second) : NULL;
+}
+
+const std::vector<SpellPendingCast>* SpellMgr::GetSpellPendingCast(int32 spell_id) const
+{
+    SpellPendingCastMap::const_iterator itr = mSpellPendingCastMap.find(spell_id);
+    return itr != mSpellPendingCastMap.end() ? &(itr->second) : NULL;
+}
+
 const uint32 SpellMgr::GetMountListId(uint32 spell_id, uint32 teamid) const
 {
     uint32 faction = 0; //both
@@ -2411,6 +2423,103 @@ void SpellMgr::LoadTalentSpellLinked()
     } while (result->NextRow());
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u linked talent spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::LoadSpellVisual()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellVisualMap.clear();    // need for reload case
+
+    //                                                  0        1      2     3       4
+    QueryResult result = WorldDatabase.Query("SELECT spell_id, visual, unk1, unk2, position FROM spell_visual_send");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 visual spells. DB table `spell_visual_send` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 spell_id = fields[0].GetInt32();
+        int32 visual = fields[1].GetInt32();
+        int32 unk1   = fields[2].GetUInt16();
+        int32 unk2 = fields[3].GetUInt16();
+        bool position = bool(fields[4].GetUInt8());
+
+        SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_visual_send` does not exist", abs(spell_id));
+            continue;
+        }
+
+        SpellVisual templink;
+        templink.spell_id = spell_id;
+        templink.visual = visual;
+        templink.unk1   = unk1;
+        templink.unk2 = unk2;
+        templink.position = position;
+        mSpellVisualMap[spell_id].push_back(templink);
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u visual spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::LoadSpellPendingCast()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellPendingCastMap.clear();    // need for reload case
+
+    //                                                  0          1          2      3
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `pending_id`, `option`, `check` FROM `spell_pending_cast`");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 pending spells. DB table `spell_pending_cast` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 spell_id = fields[0].GetInt32();
+        int32 pending_id = fields[1].GetInt32();
+        int8 option   = fields[2].GetUInt8();
+        int32 check = fields[3].GetInt32();
+
+        SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "spell_id %u listed in `spell_pending_cast` does not exist", abs(spell_id));
+            continue;
+        }
+        spellInfo = GetSpellInfo(abs(pending_id));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "pending_id %u listed in `spell_pending_cast` does not exist", abs(pending_id));
+            continue;
+        }
+
+
+        SpellPendingCast templink;
+        templink.spell_id = spell_id;
+        templink.pending_id = pending_id;
+        templink.option   = option;
+        templink.check = check;
+        mSpellPendingCastMap[spell_id].push_back(templink);
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u pending spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void SpellMgr::LoadmSpellMountList()

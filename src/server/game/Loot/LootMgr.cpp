@@ -1449,6 +1449,9 @@ void LootTemplate::LootGroup::Process(Loot& loot) const
                             specFind = true;
                             break;
                         }
+                    if(loot.itemLevel && loot.itemLevel != _proto->ItemLevel)
+                        specFind = false;
+
                     if(!specFind)
                         duplicate = true;
                 }
@@ -1683,6 +1686,9 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
                             specFind = true;
                             break;
                         }
+                    if(loot.itemLevel && loot.itemLevel != _proto->ItemLevel)
+                        specFind = false;
+
                     if(!specFind)
                         continue;
                 }
