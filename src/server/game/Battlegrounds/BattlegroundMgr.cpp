@@ -792,9 +792,14 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
     // get templet for generated rbg type
     if (isRandom)
     {
-        ASSERT(generatedType != BATTLEGROUND_TYPE_NONE &&   //cyberbrest:don't comment, if where is error no generation come, or system has fatal error
-            generatedType != BATTLEGROUND_RB &&
-            generatedType != BATTLEGROUND_RATED_10_VS_10);
+        //ASSERT(generatedType != BATTLEGROUND_TYPE_NONE &&   //cyberbrest:don't comment, if where is error no generation come, or system has fatal error
+        //    generatedType != BATTLEGROUND_RB &&
+        //    generatedType != BATTLEGROUND_RATED_10_VS_10);
+        if (generatedType == BATTLEGROUND_TYPE_NONE || generatedType == BATTLEGROUND_RB || generatedType == BATTLEGROUND_RATED_10_VS_10)
+        {
+            sLog->outU(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> WTF %u-%u", generatedType, bgTypeId);
+            return NULL;
+        }
         bgTypeId = generatedType;
         bg_template = GetBattlegroundTemplate(bgTypeId);
         if (!bg_template)
