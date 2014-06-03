@@ -802,6 +802,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
         case SPELL_AURA_MOD_DECREASE_SPEED:
         {
+            if (!target)
+                break;
+                
             switch (GetId())
             {
                 case 119450:
