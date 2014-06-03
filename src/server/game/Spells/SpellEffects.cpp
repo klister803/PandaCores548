@@ -3487,6 +3487,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                                     m_caster->m_SummonSlot[slot] = summon->GetGUID();
                                 }
                             }
+                                break;
                             case 3149: //Power Word: Barrier. Aura need cast for correct Visual Show Effect
                                 summon->CastSpell(summon, 81781, true);
                                 break;
