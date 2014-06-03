@@ -792,7 +792,9 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
     // get templet for generated rbg type
     if (isRandom)
     {
-        ASSERT(generatedType != BATTLEGROUND_TYPE_NONE);    //cyberbrest:don't comment, if where is error no generation come, or system has fatal error
+        ASSERT(generatedType != BATTLEGROUND_TYPE_NONE &&   //cyberbrest:don't comment, if where is error no generation come, or system has fatal error
+            generatedType != BATTLEGROUND_RB &&
+            generatedType != BATTLEGROUND_RATED_10_VS_10);
         bgTypeId = generatedType;
         bg_template = GetBattlegroundTemplate(bgTypeId);
         if (!bg_template)
@@ -859,8 +861,9 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
             break;
         case BATTLEGROUND_RATED_10_VS_10:
         case BATTLEGROUND_RB:
-            bg = new BattlegroundRB(*(BattlegroundRB*)bg_template);
-            break;
+            //bg = new BattlegroundRB(*(BattlegroundRB*)bg_template);
+            // should never happend
+            return NULL;
         case BATTLEGROUND_KT:
             bg = new BattlegroundKT(*(BattlegroundKT*)bg_template);
             break;
