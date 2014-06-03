@@ -105,6 +105,7 @@ enum HunterSpells
     HUNTER_SPELL_BLINK_STRIKE                    = 130393,
     HUNTER_SPELL_GLYPH_OF_DIRECTION              = 126179,
     HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP         = 119403,
+    HUNTER_SPELL_HUN_THRILL_OF_THE_HUNT          = 34720,
     
 };
 
@@ -2092,6 +2093,38 @@ class spell_hun_glyph_of_explosive_trap : public SpellScriptLoader
         }
 };
 
+// Thrill of the Hunt - 109306, spell: 
+//! Arcane Shot - 3044, Multi-Shot - 2643
+class spell_hun_thrill_of_the_hunt : public SpellScriptLoader
+{
+    public:
+        spell_hun_thrill_of_the_hunt() : SpellScriptLoader("spell_hun_thrill_of_the_hunt") { }
+
+        class spell_hun_thrill_of_the_hunt_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_thrill_of_the_hunt_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Aura* ThrillCharge = _player->GetAura(HUNTER_SPELL_HUN_THRILL_OF_THE_HUNT))
+                        ThrillCharge->DropCharge();
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_hun_thrill_of_the_hunt_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_thrill_of_the_hunt_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2134,4 +2167,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_fireworks();
     new spell_hun_glyph_of_direction();
     new spell_hun_glyph_of_explosive_trap();
+    new spell_hun_thrill_of_the_hunt();
 }
