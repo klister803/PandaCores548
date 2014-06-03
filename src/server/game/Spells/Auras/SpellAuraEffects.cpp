@@ -800,6 +800,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
             break;
         }
+        case SPELL_AURA_MOD_DECREASE_SPEED:
+        {
+            switch (GetId())
+            {
+                case 119450:
+                {
+                    if (target->isPet())
+                    amount = 0;
+                }
+            }
+        }
         case SPELL_AURA_BYPASS_ARMOR_FOR_CASTER:
         {
             if (!caster)
@@ -6774,7 +6785,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 // Camouflage
                 case 80326:
                 {
-                    if (!caster || (caster->isMoving() && !caster->HasAura(119449)) || caster->HasAura(80325))
+                    if (!caster || (caster->isMoving() && !caster->HasAura(119449) && !caster->isPet()) || caster->HasAura(80325))
                         return;
 
                     if (caster->HasAura(119449) || (caster->GetOwner() && caster->GetOwner()->HasAura(119449)))
@@ -6783,16 +6794,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                         caster->CastSpell(caster, 80325, true);
                     break;
                 }
-                // Feeding Frenzy Rank 1
-                case 53511:
-                    if (target->getVictim() && target->getVictim()->HealthBelowPct(35))
-                        target->CastSpell(target, 60096, true, 0, this);
-                    return;
-                // Feeding Frenzy Rank 2
-                case 53512:
-                    if (target->getVictim() && target->getVictim()->HealthBelowPct(35))
-                        target->CastSpell(target, 60097, true, 0, this);
-                    return;
                 default:
                     break;
             }
