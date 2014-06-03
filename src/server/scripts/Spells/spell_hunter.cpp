@@ -68,8 +68,7 @@ enum HunterSpells
     HUNTER_SPELL_BINDING_SHOT_IMMUNE             = 117553,
     HUNTER_SPELL_PIERCIG_SHOTS                   = 53238,
     HUNTER_SPELL_PIERCIG_SHOTS_EFFECT            = 63468,
-    HUNTER_SPELL_MASTERS_CALL                    = 62305,
-    HUNTER_SPELL_MASTERS_CALL_TRIGGERED          = 54216,
+    HUNTER_SPELL_MASTERS_CALL_TRIGGERED          = 62305,
     HUNTER_SPELL_COBRA_STRIKES_AURA              = 53260,
     HUNTER_SPELL_COBRA_STRIKES_STACKS            = 53257,
     HUNTER_SPELL_BEAST_CLEAVE_AURA               = 115939,
@@ -106,6 +105,7 @@ enum HunterSpells
     HUNTER_SPELL_BLINK_STRIKE                    = 130393,
     HUNTER_SPELL_GLYPH_OF_DIRECTION              = 126179,
     HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP         = 119403,
+    HUNTER_SPELL_HUN_THRILL_OF_THE_HUNT          = 34720,
     
 };
 
@@ -1020,47 +1020,6 @@ class spell_hun_powershot : public SpellScriptLoader
         }
 };
 
-// Feign Death - 5384
-class spell_hun_feign_death : public SpellScriptLoader
-{
-    public:
-        spell_hun_feign_death() : SpellScriptLoader("spell_hun_feign_death") { }
-
-        class spell_hun_feign_death_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_hun_feign_death_AuraScript);
-
-            int32 health;
-            int32 focus;
-
-            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                health = GetTarget()->GetHealth();
-                focus = GetTarget()->GetPower(POWER_FOCUS);
-            }
-
-            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (health && focus)
-                {
-                    GetTarget()->SetHealth(health);
-                    GetTarget()->SetPower(POWER_FOCUS, focus);
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_hun_feign_death_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_FEIGN_DEATH, AURA_EFFECT_HANDLE_REAL);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_hun_feign_death_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_FEIGN_DEATH, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_hun_feign_death_AuraScript();
-        }
-};
-
 // Camouflage - 51755
 class spell_hun_camouflage_visual : public SpellScriptLoader
 {
@@ -1410,6 +1369,27 @@ class spell_hun_masters_call : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_masters_call_SpellScript);
 
+            bool Validate(SpellInfo const* spellEntry)
+            {
+                if (!sSpellMgr->GetSpellInfo(HUNTER_SPELL_MASTERS_CALL_TRIGGERED))
+                    return false;
+                return true;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* ally = GetHitUnit())
+                {
+                    if (Player* caster = GetCaster()->ToPlayer())
+                        if (Pet* target = caster->GetPet())
+                        {
+                            TriggerCastFlags castMask = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_CASTER_AURASTATE);
+                            target->CastSpell(target, HUNTER_SPELL_MASTERS_CALL_TRIGGERED, castMask);
+                            target->CastSpell(ally, GetEffectValue(), castMask);
+                        }
+                }
+            }
+            
             SpellCastResult CheckIfPetInLOS()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -1428,25 +1408,10 @@ class spell_hun_masters_call : public SpellScriptLoader
                 }
                 return SPELL_FAILED_LINE_OF_SIGHT;
             }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                if (Player* caster = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (Pet* pet = caster->GetPet())
-                            pet->CastSpell(target, HUNTER_SPELL_MASTERS_CALL_TRIGGERED, true);
-            }
-
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* target = GetHitUnit())
-                    target->CastSpell(target, HUNTER_SPELL_MASTERS_CALL, true);
-            }
-
+            
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_hun_masters_call_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-                OnEffectHitTarget += SpellEffectFn(spell_hun_masters_call_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
                 OnCheckCast += SpellCheckCastFn(spell_hun_masters_call_SpellScript::CheckIfPetInLOS);
             }
         };
@@ -2128,6 +2093,38 @@ class spell_hun_glyph_of_explosive_trap : public SpellScriptLoader
         }
 };
 
+// Thrill of the Hunt - 109306, spell: 
+//! Arcane Shot - 3044, Multi-Shot - 2643
+class spell_hun_thrill_of_the_hunt : public SpellScriptLoader
+{
+    public:
+        spell_hun_thrill_of_the_hunt() : SpellScriptLoader("spell_hun_thrill_of_the_hunt") { }
+
+        class spell_hun_thrill_of_the_hunt_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_thrill_of_the_hunt_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Aura* ThrillCharge = _player->GetAura(HUNTER_SPELL_HUN_THRILL_OF_THE_HUNT))
+                        ThrillCharge->DropCharge();
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_hun_thrill_of_the_hunt_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_thrill_of_the_hunt_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2147,7 +2144,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_binding_shot_zone();
     new spell_hun_improved_serpent_sting();
     new spell_hun_powershot();
-    new spell_hun_feign_death();
     new spell_hun_camouflage_visual();
     new spell_hun_serpent_spread();
     new spell_hun_ancient_hysteria();
@@ -2171,4 +2167,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_fireworks();
     new spell_hun_glyph_of_direction();
     new spell_hun_glyph_of_explosive_trap();
+    new spell_hun_thrill_of_the_hunt();
 }
