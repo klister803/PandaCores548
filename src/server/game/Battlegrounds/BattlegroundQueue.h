@@ -69,7 +69,8 @@ enum BattlegroundQueueGroupTypes
     BG_QUEUE_PREMADE_ALLIANCE   = 0,
     BG_QUEUE_PREMADE_HORDE      = 1,
     BG_QUEUE_NORMAL_ALLIANCE    = 2,
-    BG_QUEUE_NORMAL_HORDE       = 3
+    BG_QUEUE_NORMAL_HORDE       = 3,
+    BG_QUEUE_MAX
 };
 #define BG_QUEUE_GROUP_TYPES_COUNT 4
 

@@ -681,21 +681,50 @@ BattlegroundTypeId BattlegroundQueue::GenerateRandomMap(BattlegroundTypeId bgTyp
         uint32 Weight = 0;
         uint32 selectedWeight = 0;
 
+        // Prepare ignore map
+        std::map<uint32, uint32> plrIgnoreWeights;
+        for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
+        {
+            for (GroupsQueueType::const_iterator group = m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.begin(); group != m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.end(); ++group)
+            {
+                for(int8 j = 0; j < 2; ++j)
+                    if ((*group)->ignore.map[j])
+                        plrIgnoreWeights[(*group)->ignore.map[j]] += 1;
+            }
+        }
+
         // Get sum of all weights
         BattlegroundSelectionWeightMap sWeights;
+        uint32 loVote = 0;
+        BattlegroundTypeId loVoteType = BATTLEGROUND_TYPE_NONE;
         for (BattlegroundSelectionWeightMap::const_iterator it = selectionWeights->begin(); it != selectionWeights->end(); ++it)
         {
-            if (bgTypeId == BATTLEGROUND_RATED_10_VS_10)
+            BattlemasterListEntry const* bl = sBattlemasterListStore.LookupEntry(it->first);
+            if (!bl)
+                continue;
+            if (bgTypeId == BATTLEGROUND_RATED_10_VS_10 && bl->maxGroupSizeRated != 10)
+                continue;
+
+            // not check map on ignore
+            if (plrIgnoreWeights[bl->mapid[0]] > 0)
             {
-                if (BattlemasterListEntry const* bl = sBattlemasterListStore.LookupEntry(it->first))
-                    if (bl->maxGroupSizeRated != 10)
-                        continue;
+                // Collect loVoted map for future use it if all maps will be removed
+                if (!loVote || loVote > plrIgnoreWeights[bl->mapid[0]])
+                {
+                    loVoteType = it->first;
+                    loVote = plrIgnoreWeights[bl->mapid[0]];
+                }
+                continue;
             }
+
             Weight += it->second;
             sWeights[it->first]=it->second;
         }
+
+        // If empty result, send less voted map.
         if (!Weight)
-            return BATTLEGROUND_TYPE_NONE;
+            return loVoteType;
+
         // Select a random value
         selectedWeight = urand(0, Weight-1);
 
