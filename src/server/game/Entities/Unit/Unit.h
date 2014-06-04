@@ -1682,8 +1682,8 @@ class Unit : public WorldObject
         void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
         void CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect* triggeredByAura = NULL, uint64 originalCaster = 0);
         Aura* ToggleAura(uint32 spellId, Unit* target);
-        Aura* AddAura(uint32 spellId, Unit* target);
-        Aura* AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target);
+        Aura* AddAura(uint32 spellId, Unit* target, Item* castItem = NULL, uint16 stackAmount = 0);
+        Aura* AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target, Item* castItem = NULL, uint16 stackAmount = 0);
         void SetAuraStack(uint32 spellId, Unit* target, uint32 stack);
         void SendPlaySpellVisualKit(uint32 id, uint32 unkParam);
 

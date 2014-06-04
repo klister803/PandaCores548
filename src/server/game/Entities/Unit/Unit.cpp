@@ -10434,6 +10434,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         case 146310: // Restless Agility
         case 146317: // Restless Spirit
         {
+            target = this;
             stack_for_trigger = triggerEntry->StackAmount;
             break;
         }
@@ -10597,15 +10598,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         CastCustomSpell(target, trigger_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura);
     else if (basepoints0)
         CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
+    else if (stack_for_trigger)
+        AddAura(trigger_spell_id, target, castItem, stack_for_trigger);
     else
         CastSpell(target, trigger_spell_id, true, castItem, triggeredByAura);
 
     if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
         ToPlayer()->AddSpellCooldown(trigger_spell_id, 0, getPreciseTime() + cooldown);
-
-    if (stack_for_trigger)
-        if (Aura * aura = target->GetAura(trigger_spell_id))
-            aura->SetStackAmount(stack_for_trigger);
 
     return true;
 }
@@ -19422,7 +19421,7 @@ Aura* Unit::ToggleAura(uint32 spellId, Unit* target)
     return NULL;
 }
 
-Aura* Unit::AddAura(uint32 spellId, Unit* target)
+Aura* Unit::AddAura(uint32 spellId, Unit* target, Item* castItem, uint16 stackAmount)
 {
     if (!target)
         return NULL;
@@ -19434,10 +19433,10 @@ Aura* Unit::AddAura(uint32 spellId, Unit* target)
     if (!target->isAlive() && !(spellInfo->Attributes & SPELL_ATTR0_PASSIVE) && !(spellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_DEAD))
         return NULL;
 
-    return AddAura(spellInfo, MAX_EFFECT_MASK, target);
+    return AddAura(spellInfo, MAX_EFFECT_MASK, target, castItem, stackAmount);
 }
 
-Aura* Unit::AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target)
+Aura* Unit::AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target, Item* castItem, uint16 stackAmount)
 {
     if (!spellInfo)
         return NULL;
@@ -19453,7 +19452,7 @@ Aura* Unit::AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target)
             effMask &= ~(1<<i);
     }
 
-    Aura* aura = Aura::TryRefreshStackOrCreate(spellInfo, effMask, target, this);
+    Aura* aura = Aura::TryRefreshStackOrCreate(spellInfo, effMask, target, this, NULL, castItem, NULL, NULL, stackAmount);
     if (aura != NULL)
     {
         aura->ApplyForTargets();

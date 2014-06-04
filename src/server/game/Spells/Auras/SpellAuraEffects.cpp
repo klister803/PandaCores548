@@ -6640,7 +6640,11 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 case 146310: // Restless Agility
                 case 146317: // Restless Spirit
                 {
-                    GetBase()->SetStackAmount(GetBase()->GetStackAmount() - 1);
+                    if (Aura* aur = GetBase())
+                    {
+                        if (aur->GetStackAmount() > 1)
+                            aur->SetStackAmount(aur->GetStackAmount() - 1);
+                    }
                     break;
                 }
                 case 146184: // Wrath
