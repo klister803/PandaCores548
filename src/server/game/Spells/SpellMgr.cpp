@@ -3477,7 +3477,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 53503:
+                case 96172: // Hand of Light
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+                    break;
+                case 53503: // Sword of Light
                     spellInfo->Effects[2].SpellClassMask[2] |= 2097152;
                     break;
                 case 146343: // Avoidance
