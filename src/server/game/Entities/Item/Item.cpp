@@ -419,6 +419,7 @@ void Item::SaveToDB(SQLTransaction& trans)
 
 bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entry)
 {
+    // WARNING! WARNING! WARNING! IF CHANGE FIELD ORDER - DO IT ON GuildMgr::LoadGuilds FOR GB Loading Items
     //                                                    0                1      2         3        4      5             6                 7          8               9      10        11          12        13
     //result = CharacterDatabase.PQuery("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, reforgeId, transmogrifyId, upgradeId, durability, playedTime, text FROM item_instance WHERE guid = '%u'", guid);
 
