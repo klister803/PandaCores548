@@ -4910,6 +4910,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13); // 10yard
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9); // 30s                    
                     break;
+                case 23035: // Battle Standard (Horde)
+                case 23034: // Battle Standard (Alliance)
+                    spellInfo->Effects[EFFECT_0].MiscValueB = 3291;  //SUMMON_TYPE_BANNER
+                    break;
                 default:
                     break;
             }
