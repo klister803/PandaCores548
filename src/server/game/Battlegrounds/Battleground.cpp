@@ -102,7 +102,7 @@ namespace Trinity
                 c.targetGuid = _source ? _source->GetGUID() : 0;
                 c.sourceGuid = _source ? _source->GetGUID() : 0;
                 c.chatTag = _source ? _source->GetChatTag() : 0;
-                c.message = text;
+                c.message = str;
                 c.chatType = _msgtype;
 
                 Trinity::BuildChatPacket(data, c);
