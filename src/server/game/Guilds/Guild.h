@@ -1012,8 +1012,8 @@ private:
     uint32 _GetRankBankTabSlotsPerDay(uint32 rankId, uint8 tabId) const;
     std::string _GetRankName(uint32 rankId) const;
 
-    uint32 _GetMemberRemainingSlots(uint64 guid, uint8 tabId) const;
-    uint32 _GetMemberRemainingMoney(uint64 guid) const;
+    int32 _GetMemberRemainingSlots(uint64 guid, uint8 tabId) const;
+    int32 _GetMemberRemainingMoney(uint64 guid) const;
     void _DecreaseMemberRemainingSlots(SQLTransaction& trans, uint64 guid, uint8 tabId);
     bool _MemberHasTabRights(uint64 guid, uint8 tabId, uint32 rights) const;
 

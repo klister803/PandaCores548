@@ -2028,11 +2028,11 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool
     if (!_HasRankRight(player, repair ? GR_RIGHT_WITHDRAW_REPAIR : GR_RIGHT_WITHDRAW_GOLD))
         return false;
 
-    uint64 remainingMoney = _GetMemberRemainingMoney(player->GetGUID());
+    int64 remainingMoney = _GetMemberRemainingMoney(player->GetGUID());
     if (!remainingMoney)
         return false;
 
-    if (remainingMoney < amount)
+    if (remainingMoney > 0 && remainingMoney < (int64)amount)
         return false;
 
     // Call script after validation and before money transfer.
@@ -2040,7 +2040,7 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // Update remaining money amount
-    if (remainingMoney < uint64(GUILD_WITHDRAW_MONEY_UNLIMITED))
+    if (remainingMoney > 0 && remainingMoney < uint64(GUILD_WITHDRAW_MONEY_UNLIMITED))
         if (Member* member = GetMember(player->GetGUID()))
             member->DecreaseBankRemainingValue(trans, GUILD_BANK_MAX_TABS, amount);
     // Remove money from bank
@@ -2152,7 +2152,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
     ByteBuffer tabData;
     WorldPacket data(SMSG_GUILD_BANK_LIST, 500);
 
-    data << uint32(_GetMemberRemainingSlots(session->GetPlayer()->GetGUID(), 0));
+    data << int32(_GetMemberRemainingSlots(session->GetPlayer()->GetGUID(), 0));
     data << uint64(m_bankMoney);
     data << uint32(tabId);
 
@@ -2241,7 +2241,7 @@ void Guild::SendPermissions(WorldSession* session) const
 
     WorldPacket data(SMSG_GUILD_PERMISSIONS_QUERY_RESULTS, 4 * 15 + 1);
     data << uint32(rankId);
-    data << uint32(_GetMemberRemainingMoney(guid));
+    data << int32(_GetMemberRemainingMoney(guid));
     data << uint32(_GetRankRights(rankId));
     data << uint32(GetPurchasedTabsSize());
 
@@ -2249,7 +2249,7 @@ void Guild::SendPermissions(WorldSession* session) const
     for (uint8 tabId = 0; tabId < GUILD_BANK_MAX_TABS; ++tabId)
     {
         data << uint32(_GetRankBankTabRights(rankId, tabId));
-        data << uint32(_GetMemberRemainingSlots(guid, tabId));
+        data << int32(_GetMemberRemainingSlots(guid, tabId));
     }
 
     session->SendPacket(&data);
@@ -2259,7 +2259,10 @@ void Guild::SendPermissions(WorldSession* session) const
 void Guild::SendMoneyInfo(WorldSession* session) const
 {
     WorldPacket data(SMSG_GUILD_BANK_MONEY_WITHDRAWN, 4);
-    data << uint64(_GetMemberRemainingMoney(session->GetPlayer()->GetGUID()));
+    // -1 in 64bit is 0xFFFFFFFFFFFFFFFF not 0xFFFFFFFF, 
+    // so transform uint32 0xFFFFFFFF to -1 and then send -1 as uint64
+    // Now _GetMemberRemainingMoney return int value no need double convertation
+    data << int64(_GetMemberRemainingMoney(session->GetPlayer()->GetGUID()));
     session->SendPacket(&data);
     sLog->outDebug(LOG_FILTER_GUILD, "WORLD: Sent SMSG_GUILD_BANK_MONEY_WITHDRAWN");
 }
@@ -2977,14 +2980,14 @@ inline uint32 Guild::_GetRankBankTabRights(uint32 rankId, uint8 tabId) const
     return 0;
 }
 
-inline uint32 Guild::_GetMemberRemainingSlots(uint64 guid, uint8 tabId) const
+inline int32 Guild::_GetMemberRemainingSlots(uint64 guid, uint8 tabId) const
 {
     if (const Member* member = GetMember(guid))
         return member->GetBankRemainingValue(tabId, this);
     return 0;
 }
 
-inline uint32 Guild::_GetMemberRemainingMoney(uint64 guid) const
+inline int32 Guild::_GetMemberRemainingMoney(uint64 guid) const
 {
     if (const Member* member = GetMember(guid))
         return member->GetBankRemainingValue(GUILD_BANK_MAX_TABS, this);
@@ -3261,7 +3264,7 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
             if (_MemberHasTabRights(itr->second->GetGUID(), tabId, GUILD_BANK_RIGHT_VIEW_TAB))
                 if (Player* player = itr->second->FindPlayer())
                 {
-                    data.put<uint32>(rempos, uint32(_GetMemberRemainingSlots(player->GetGUID(), tabId)));
+                    data.put<int32>(rempos, _GetMemberRemainingSlots(player->GetGUID(), tabId));
                     player->GetSession()->SendPacket(&data);
                 }
 
