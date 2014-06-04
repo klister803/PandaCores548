@@ -1066,7 +1066,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         data.holiday = fields[11].GetUInt32();
         data.scriptId = sObjectMgr->GetScriptId(fields[12].GetCString());
 
-        //data.BattlegroundName = bl->name[sWorld->GetDefaultDbcLocale()];
+        data.BattlegroundName = bl->name;
         data.MapID = bl->mapid[0];
 
         if (!CreateBattleground(data))
