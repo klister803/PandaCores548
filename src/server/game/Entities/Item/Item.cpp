@@ -470,10 +470,19 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
     _LoadIntoDataField(enchants.c_str(), ITEM_FIELD_ENCHANTMENT_1_1, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
 
     if (uint32 reforgeEntry = fields[8].GetUInt32())
-        SetReforge(reforgeEntry);
+    {
+        if (ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(reforgeEntry))
+            SetReforge(reforgeEntry);
+    }
 
     if (uint32 transmogId = fields[9].GetUInt32())
-        SetTransmogrification(transmogId);
+    {
+        if (ItemTemplate const* transProto = sObjectMgr->GetItemTemplate(transmogId))
+        {
+            if (proto->Class == transProto->Class)
+                SetTransmogrification(transmogId);
+        }
+    }
 
     ItemLevel = proto->ItemLevel;
     uint32 upgradeId = fields[10].GetUInt32();
