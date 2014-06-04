@@ -149,6 +149,7 @@ void GameObject::RemoveFromWorld()
     ///- Remove the gameobject from the accessor
     if (IsInWorld())
     {
+        volatile uint32 entry = GetEntry();
         if (m_zoneScript)
             m_zoneScript->OnGameObjectRemove(this);
 
@@ -610,6 +611,9 @@ void GameObject::AddUniqueUse(Player* player)
 
 void GameObject::Delete()
 {
+    if(!this)
+        return;
+
     SetLootState(GO_NOT_READY);
     RemoveFromOwner();
 
