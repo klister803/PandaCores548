@@ -2637,7 +2637,6 @@ void Group::SetLfgRoles(uint64 guid, const uint8 roles)
         return;
 
     slot->roles = roles;
-    SendUpdate();
 }
 
 bool Group::IsFull() const
