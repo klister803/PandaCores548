@@ -1309,7 +1309,7 @@ enum Opcodes
     SMSG_SERVER_PERF                                  = 0xE8D,  // 5.0.5 16048
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
-    SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0xE54,  // 5.0.5 16048
+    SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0x043E, // 5.4.1 17538
     SMSG_SET_DUNGEON_DIFFICULTY                       = 0x00BC, // 5.4.1 17538
     SMSG_SET_FACTION_ATWAR                            = 0xDD2,  // 5.0.5 16048
     SMSG_SET_FACTION_STANDING                         = 0x1017, // 5.4.1 17538

@@ -477,6 +477,12 @@ enum MapTypes                                               // Lua_IsInInstance
     MAP_SCENARIO        = 5                                 // scenario
 };
 
+enum MapFlags
+{
+    MAP_FLAG_CAN_CHANGE_DIFFICULTY              = 0x0100,
+    MAP_FLAG_POST_BC_RAID_INSTANCE              = 0x8000,
+};
+
 enum AbilytyLearnType
 {
     ABILITY_LEARNED_ON_GET_PROFESSION_SKILL     = 1,

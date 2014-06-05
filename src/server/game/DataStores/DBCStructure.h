@@ -1598,7 +1598,7 @@ struct MapEntry
     uint32  MapID;                                          // 0
     //char*       internalname;                             // 1 unused
     uint32  map_type;                                       // 2
-    //uint32 unk_330;                                       // 3
+    uint32 flags;                                           // 3
     //uint32 unk4;                                          // 4 4.0.1
     char* name;                                             // 5        m_MapName_lang
     uint32  linked_zone;                                    // 6        m_areaTableID
