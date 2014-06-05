@@ -106,6 +106,9 @@ enum eGameObjects
     //Ji Kun
     GO_JI_KUN_FEATHER     = 218543,
     GO_JI_KUN_EX_DOOR     = 218888,
+    //
+    //Durumu
+    GO_DURUMU_EX_DOOR     = 218390,
 };
 
 #endif THRONEOFTHUNDER

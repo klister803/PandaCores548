@@ -16,7 +16,9 @@ const DoorData doorData[] =
     {GO_TORTOS_EX_DOOR,    DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
     {GO_TORTOS_EX2_DOOR,   DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
     {GO_MEGAERA_EX_DOOR,   DATA_MEGAERA,           DOOR_TYPE_PASSAGE, 0},
-    {0,                   0,                       DOOR_TYPE_PASSAGE, 0},
+    {GO_JI_KUN_EX_DOOR,    DATA_JI_KUN,            DOOR_TYPE_PASSAGE, 0},
+    //{GO_DURUMU_EX_DOOR,    DATA_DURUMU             DOOR_TYPE_PASSAGE, 0},
+    {0,                    0,                      DOOR_TYPE_PASSAGE, 0},
 };
 
 class instance_throne_of_thunder : public InstanceMapScript
@@ -45,6 +47,7 @@ public:
         uint64 tortosex2doorGuid;
         uint64 megaeraexdoorGuid;
         uint64 jikunexdoorGuid;
+        uint64 durumuexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -96,6 +99,7 @@ public:
             tortosex2doorGuid   = 0;
             megaeraexdoorGuid   = 0;
             jikunexdoorGuid     = 0;
+            durumuexdoorGuid    = 0;
            
             //Creature
             stormcallerGuid     = 0;
@@ -284,7 +288,12 @@ public:
                 jikunfeatherGuids.push_back(go->GetGUID());
                 break;
             case GO_JI_KUN_EX_DOOR:
+                AddDoor(go, true);
                 jikunexdoorGuid = go->GetGUID();
+                break;
+            case GO_DURUMU_EX_DOOR:
+                //AddDoor(go, true);
+                durumuexdoorGuid = go->GetGUID();
                 break;
             default:
                 break;
@@ -408,7 +417,7 @@ public:
                     case NOT_STARTED:
                     case DONE:
                         HandleGameObject(megaeraexdoorGuid, true);
-                        //HandleGameObject(jikunexdoorGuid, true);
+                        HandleGameObject(jikunexdoorGuid, true);
                         for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
                             if (GameObject* feather = instance->GetGameObject(*guid))
                                 feather->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
@@ -422,6 +431,10 @@ public:
                     }
                 }
                 break;
+           /* case DATA_DURUMU: //Next boss not ready
+                if (state == DONE)
+                    HandleGameObject(durumuexdoorGuid, true);
+                break;*/
             default:
                 break;
             }
