@@ -1823,7 +1823,6 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     ObjectGuid plguid = playerGUID;
 
     bool sendDifficultyInfo = true;
-    bool HasLFGdata = false;
 
     ByteBuffer dataBuffer(40 * GetMembersCount());
 
@@ -1887,7 +1886,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     ByteBuffer lfgBuff;
     if (m_groupType & GROUPTYPE_LFG)
     {
-        lfg::LFGDungeonData const* dungeon = sLFGMgr->GetLFGDungeon(sLFGMgr->GetDungeon(m_guid, false));
+        lfg::LFGDungeonData const* dungeon = sLFGMgr->GetLFGDungeon(sLFGMgr->GetDungeon(m_guid, true));
         lfg::LFGDungeonData const* rDungeon = NULL;
         if (dungeon)
         {

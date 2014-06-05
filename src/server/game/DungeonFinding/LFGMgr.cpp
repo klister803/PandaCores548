@@ -951,7 +951,14 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
             grp->Create(player);
             grp->ConvertToLFG(dungeon);
             uint64 gguid = grp->GetGUID();
-            SetState(gguid, LFG_STATE_PROPOSAL);
+            SetDungeon(gguid, dungeon->Entry());
+            SetState(gguid, LFG_STATE_DUNGEON);
+
+            if (dungeon->dbc->GetInternalType() == LFG_TYPE_RAID)
+                grp->SetRaidDifficulty(Difficulty(dungeon->difficulty));
+            else
+                grp->SetDungeonDifficulty(Difficulty(dungeon->difficulty));
+
             sGroupMgr->AddGroup(grp);
         }
         else if (group != grp)
@@ -965,25 +972,15 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
     }
 
     ASSERT(grp);
+    _SaveToDB(grp->GetGUID(), grp->GetDbStoreId());
 
-    if (dungeon->dbc->GetInternalType() == LFG_TYPE_RAID)
-        grp->SetRaidDifficulty(Difficulty(dungeon->difficulty));
-    else
-        grp->SetDungeonDifficulty(Difficulty(dungeon->difficulty));
-
-    uint64 gguid = grp->GetGUID();
-    SetDungeon(gguid, dungeon->Entry());
-    SetState(gguid, LFG_STATE_DUNGEON);
-
-    _SaveToDB(gguid, grp->GetDbStoreId());
+    // Update group info
+    grp->SendUpdate();
 
     // Teleport Player
     for (LfgGuidList::const_iterator it = playersToTeleport.begin(); it != playersToTeleport.end(); ++it)
         if (Player* player = ObjectAccessor::FindPlayer(*it))
             TeleportPlayer(player, false);
-
-    // Update group info
-    grp->SendUpdate();
 }
 
 uint32 LFGMgr::AddProposal(LfgProposal& proposal)
