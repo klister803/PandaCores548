@@ -714,7 +714,7 @@ void WorldSession::SendLfgUpdateProposal(lfg::LfgProposal const& proposal)
     if (!silent)
     {
         lfg::LfgDungeonSet const& playerDungeons = sLFGMgr->GetSelectedDungeons(guid);
-        if (playerDungeons.find(proposal.dungeonId) == playerDungeons.end())
+        if (!playerDungeons.empty() && playerDungeons.find(proposal.dungeonId) == playerDungeons.end())
             dungeonEntry = (*playerDungeons.begin());
     }
 
@@ -736,11 +736,11 @@ void WorldSession::SendLfgUpdateProposal(lfg::LfgProposal const& proposal)
     data.WriteGuidMask<2, 4>(playerGUID);
     data.WriteGuidMask<6>(InstanceSaveGUID);
     data.WriteGuidMask<3>(playerGUID);
-    data.WriteBit(silent);
+    data.WriteBit(!proposal.isNew);                         // dungeon in progress
     data.WriteGuidMask<1, 7, 6, 0>(playerGUID);
     data.WriteGuidMask<0, 2>(InstanceSaveGUID);
     data.WriteGuidMask<5>(playerGUID);
-    data.WriteBit(0);                                       // silent?
+    data.WriteBit(silent);
     data.WriteGuidMask<4>(InstanceSaveGUID);
 
     data.WriteBits(proposal.players.size(), 21);

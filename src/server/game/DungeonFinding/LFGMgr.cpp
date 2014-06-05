@@ -390,7 +390,20 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
     if (isContinueDungeonRequest)
     {
         dungeons.clear();
-        dungeons.insert(GetDungeon(groupGuid));
+
+        uint32 oldrDungeonId = 0;
+        LfgDungeonSet const& selectedDungeons = GetSelectedDungeons(player->GetGUID());
+        if (!selectedDungeons.empty())
+        {
+            LFGDungeonData const* rDungeonData = GetLFGDungeon(*selectedDungeons.begin() & 0xFFFFF);
+            if (rDungeonData && rDungeonData->type == LFG_TYPE_RANDOM)
+                oldrDungeonId = rDungeonData->id;
+        }
+
+        if (oldrDungeonId)
+            dungeons.insert(oldrDungeonId);
+        else
+            dungeons.insert(GetDungeon(groupGuid));
     }
 
     // Already in queue?
@@ -570,6 +583,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
     {
         // Create new rolecheck
         LfgRoleCheck& roleCheck = RoleChecksStore[groupGuid];
+        roleCheck.roles.clear();
         roleCheck.cancelTime = time_t(time(NULL)) + LFG_TIME_ROLECHECK;
         roleCheck.state = LFG_ROLECHECK_INITIALITING;
         roleCheck.leader = playerGuid;
@@ -597,6 +611,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
                 if (!isContinueDungeonRequest)
                     SetSelectedDungeons(pguid, dungeons);
                 roleCheck.roles[pguid] = 0;
+
                 if (!debugNames.empty())
                     debugNames.append(", ");
                 debugNames.append(plrg->GetName());
@@ -796,7 +811,7 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
     {
         SetState(gguid, LFG_STATE_QUEUED);
         LFGQueue& queue = GetQueue(gguid);
-        queue.AddQueueData(gguid, time_t(time(NULL)), roleCheck.dungeons, roleCheck.roles);
+        queue.AddQueueData(gguid, time(NULL), roleCheck.dungeons, roleCheck.roles);
         RoleChecksStore.erase(itRoleCheck);
     }
     else if (roleCheck.state != LFG_ROLECHECK_INITIALITING)
@@ -1044,10 +1059,13 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
     {
         uint64 pguid = it->first;
         uint64 gguid = it->second.group;
-        LfgDungeonSet const& selectedDungeons = GetSelectedDungeons(pguid);
 
-        uint32 dungeonId = *selectedDungeons.begin();
+        uint32 dungeonId = proposal.dungeonId;
         int32 waitTime = -1;
+
+        LfgDungeonSet const& selectedDungeons = GetSelectedDungeons(pguid);
+        if (!selectedDungeons.empty())
+            dungeonId = *selectedDungeons.begin();
 
         LfgUpdateData updateData = LfgUpdateData(LFG_UPDATETYPE_GROUP_FOUND, selectedDungeons);
 

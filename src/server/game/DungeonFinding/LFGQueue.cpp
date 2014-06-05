@@ -331,7 +331,7 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
         }
 
     if (sWorld->getBoolConfig(CONFIG_LFG_DEBUG_JOIN))
-        minGroupSize = maxGroupSize = 1;
+        minGroupSize = 1;
 
     // Check for correct size
     if (check.size() > maxGroupSize || check.empty())
@@ -517,11 +517,11 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
 
     // Create a new proposal
     proposal.cancelTime = time(NULL) + LFG_TIME_PROPOSAL;
-    proposal.state = LFG_PROPOSAL_INITIATING;
     proposal.leader = 0;
     proposal.dungeonId = Trinity::Containers::SelectRandomContainerElement(proposalDungeons);
 
     bool leader = false;
+    bool allAccepted = true;
     for (LfgRolesMap::const_iterator itRoles = proposalRoles.begin(); itRoles != proposalRoles.end(); ++itRoles)
     {
         // Assing new leader
@@ -540,7 +540,14 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
         data.group = proposalGroups.find(itRoles->first)->second;
         if (!proposal.isNew && data.group && data.group == proposal.group) // Player from existing group, autoaccept
             data.accept = LFG_ANSWER_AGREE;
+
+        allAccepted &= data.accept == LFG_ANSWER_AGREE;
     }
+
+    if (allAccepted)
+        proposal.state = LFG_PROPOSAL_SUCCESS;
+    else
+        proposal.state = LFG_PROPOSAL_INITIATING;
 
     // Mark proposal members as not queued (but not remove queue data)
     for (LfgGuidList::const_iterator itQueue = proposal.queues.begin(); itQueue != proposal.queues.end(); ++itQueue)
