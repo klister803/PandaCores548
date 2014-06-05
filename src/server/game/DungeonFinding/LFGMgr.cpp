@@ -960,7 +960,7 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
 
     ASSERT(grp);
 
-    if (dungeon->type == LFG_TYPE_RAID)
+    if (dungeon->dbc->GetInternalType() == LFG_TYPE_RAID)
         grp->SetRaidDifficulty(Difficulty(dungeon->difficulty));
     else
         grp->SetDungeonDifficulty(Difficulty(dungeon->difficulty));

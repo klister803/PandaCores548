@@ -80,6 +80,7 @@ public:
             { "getvalue",       SEC_ADMINISTRATOR,  false, &HandleDebugGetValueCommand,        "", NULL },
             { "getdynamicvalue",SEC_ADMINISTRATOR,  false, &HandleDebugGetDynamicValueCommand, "", NULL },
             { "getitemvalue",   SEC_ADMINISTRATOR,  false, &HandleDebugGetItemValueCommand,    "", NULL },
+            { "mapinfo",        SEC_ADMINISTRATOR,  false, &HandleDebugGetMapInfoCommand,      "", NULL },
             { "Mod32Value",     SEC_ADMINISTRATOR,  false, &HandleDebugMod32ValueCommand,      "", NULL },
             { "play",           SEC_MODERATOR,      false, NULL,              "", debugPlayCommandTable },
             { "send",           SEC_ADMINISTRATOR,  false, NULL,              "", debugSendCommandTable },
@@ -1392,6 +1393,23 @@ public:
 
         uint32 value = target->GetDynamicUInt32Value(opcode, offs);
         handler->PSendSysMessage("Unit %u has dynamic value %u at field %u offset %u", GUID_LOPART(guid), value, opcode, offs);
+
+        return true;
+    }
+
+    static bool HandleDebugGetMapInfoCommand(ChatHandler* handler, char const* args)
+    {
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
+
+        Map* map = player->GetMap();
+        if (!map)
+            return false;
+
+        MapEntry const* mapEntry = map->GetEntry();
+        handler->PSendSysMessage("MapId: %u MapName: %s Difficulty: %u Instance Id: %u",
+            mapEntry->MapID, mapEntry->name, map->GetDifficulty(), map->GetInstanceId());
 
         return true;
     }
