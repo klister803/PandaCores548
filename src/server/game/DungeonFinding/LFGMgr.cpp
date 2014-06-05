@@ -499,7 +499,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
                 {
                     if (entry->dbc->difficulty == HEROIC_SCENARIO_DIFFICULTY && !isContinueDungeonRequest)
                     {
-                        if (sWorld->getConfig(CONFIG_LFG_DEBUG_JOIN))
+                        if (sWorld->getBoolConfig(CONFIG_LFG_DEBUG_JOIN))
                             break;
 
                         // heroic scenarios can be queued only in full group
@@ -512,7 +512,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
                 }
                 case LFG_SUBTYPE_FLEX:
                 {
-                    if (sWorld->getConfig(CONFIG_LFG_DEBUG_JOIN))
+                    if (sWorld->getBoolConfig(CONFIG_LFG_DEBUG_JOIN))
                         break;
 
                     // flex can be queued only in group
