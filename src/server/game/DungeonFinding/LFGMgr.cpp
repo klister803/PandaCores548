@@ -1233,6 +1233,7 @@ void LFGMgr::InitBoot(uint64 gguid, uint64 kicker, uint64 victim, std::string co
     boot.cancelTime = time_t(time(NULL)) + LFG_TIME_BOOT;
     boot.reason = reason;
     boot.victim = victim;
+    boot.votesNeeded = GetVotesNeededForKick(gguid);
 
     LfgGuidSet const& players = GetPlayers(gguid);
 
@@ -1288,7 +1289,7 @@ void LFGMgr::UpdateBoot(uint64 guid, bool accept)
     }
 
     // if we don't have enough votes (agree or deny) do nothing
-    if (agreeNum < LFG_GROUP_KICK_VOTES_NEEDED && (votesNum - agreeNum) < LFG_GROUP_KICK_VOTES_NEEDED)
+    if (agreeNum < boot.votesNeeded && (votesNum - agreeNum) < boot.votesNeeded)
         return;
 
     // Send update info to all players
@@ -1304,7 +1305,7 @@ void LFGMgr::UpdateBoot(uint64 guid, bool accept)
     }
 
     SetState(gguid, LFG_STATE_DUNGEON);
-    if (agreeNum == LFG_GROUP_KICK_VOTES_NEEDED)           // Vote passed - Kick player
+    if (agreeNum >= boot.votesNeeded)                   // Vote passed - Kick player
     {
         if (Group* group = sGroupMgr->GetGroupByGUID(GUID_LOPART(gguid)))
             Player::RemoveFromGroup(group, boot.victim, GROUP_REMOVEMETHOD_KICK_LFG);
@@ -2259,6 +2260,25 @@ bool LfgReward::RewardPlayer(Player* player, LFGDungeonData const* randomDungeon
         player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, bonusValor * GetCurrencyPrecision(CURRENCY_TYPE_VALOR_POINTS));
 
     return done;
+}
+
+uint8 LFGMgr::GetVotesNeededForKick(uint64 gguid)
+{
+    LFGDungeonData const* dungeonData = GetLFGDungeon(GetDungeon(gguid, true));
+    if (!dungeonData)
+        return LFG_DUNGEON_KICK_VOTES_NEEDED;
+
+    switch (dungeonData->dbc->GetInternalType())
+    {
+        case LFG_TYPE_SCENARIO:
+            return LFG_SCENARIO_KICK_VOTES_NEEDED;
+        case LFG_TYPE_RAID:
+            return LFG_RAID_KICK_VOTES_NEEDED;
+        default:
+            break;
+    }
+
+    return LFG_DUNGEON_KICK_VOTES_NEEDED;
 }
 
 } // namespace lfg

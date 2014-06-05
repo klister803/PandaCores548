@@ -667,7 +667,7 @@ void WorldSession::SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot)
         "needed: %u - reason %s",
         GetPlayerName().c_str(), uint8(boot.inProgress), uint8(playerVote != lfg::LFG_ANSWER_PENDING),
         uint8(playerVote == lfg::LFG_ANSWER_AGREE), GUID_LOPART(boot.victim), votesNum, agreeNum,
-        secsleft, lfg::LFG_GROUP_KICK_VOTES_NEEDED, boot.reason.c_str());
+        secsleft, boot.votesNeeded, boot.reason.c_str());
 
     ObjectGuid victimGuid = boot.victim;
 
@@ -692,7 +692,7 @@ void WorldSession::SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot)
     data.WriteGuidBytes<2>(victimGuid);
     data << uint32(votesNum);                               // Total Votes
     data.WriteGuidBytes<6, 4, 3>(victimGuid);
-    data << uint32(lfg::LFG_GROUP_KICK_VOTES_NEEDED);       // Needed Votes
+    data << uint32(boot.votesNeeded);                       // Needed Votes
     data.WriteGuidBytes<1>(victimGuid);
     data << uint32(agreeNum);                               // Agree Count
     data.WriteGuidBytes<0>(victimGuid);
