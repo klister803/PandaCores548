@@ -1183,6 +1183,8 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
         // Special target selection for smart heals and energizes
         uint32 maxSize = 0;
         int32 power = -1;
+        bool checkOnFullHealth = false;
+
         switch (m_spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
@@ -1290,14 +1292,21 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                 bool shouldCheck = false;
                 switch (m_spellInfo->Id)
                 {
-                    case 48438: // Wild Growth
+                    case 145110: // Ysera's Gift
+                    {
+                        checkOnFullHealth = true;
+                        maxSize = 1;
+                        power = POWER_HEALTH;
+                        break;
+                    }
+                    case 48438:  // Wild Growth
                     {
                         shouldCheck = true;
                         maxSize = m_caster->HasAura(62970) ? 6 : 5; // Glyph of Wild Growth
                         power = POWER_HEALTH;
                         break;
                     }
-                    case 81269: // Efflorescence
+                    case 81269:  // Efflorescence
                     {
                         shouldCheck = true;
                         maxSize = 3;
@@ -1348,6 +1357,15 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                     unitTargets.resize(maxSize);
                 }
             }
+        }
+
+        if (checkOnFullHealth)
+        {
+            for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)
+                if ((*itr)->IsFullHealth())
+                    itr = unitTargets.erase(itr);
+                else
+                    ++itr;
         }
 
         // todo: move to scripts, but we must call it before resize list by MaxAffectedTargets

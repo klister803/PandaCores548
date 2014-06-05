@@ -6632,6 +6632,14 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 145108: // Ysera's Gift
+                {
+                    uint32 triggerSpell = caster->IsFullHealth() ? 145110: 145109;
+                    int32 heal = CalculatePct(caster->GetMaxHealth(), m_amount);
+
+                    caster->CastCustomSpell(target, triggerSpell, &heal, 0, 0, true, 0, this);
+                    break;
+                }
                 case 146285: // Cruelty
                 {
                     caster->CastCustomSpell(target, 146293, &m_amount, 0, 0, true, 0, this);
