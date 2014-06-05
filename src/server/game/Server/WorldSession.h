@@ -890,7 +890,7 @@ class WorldSession
         void SendLfgUpdatePlayer(lfg::LfgUpdateData const& updateData);
         void SendLfgUpdateParty(lfg::LfgUpdateData const& updateData);
         void SendLfgRoleChosen(uint64 guid, uint8 roles);
-        void SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& pRoleCheck, bool updateAll);
+        void SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& pRoleCheck);
         void SendLfgLfrList(bool update);
         void SendLfgJoinResult(lfg::LfgJoinResultData const& joinData);
         void SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData);

@@ -1877,26 +1877,53 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
         dataBuffer.WriteString(citr->name);
     }
 
-    data.WriteBit(HasLFGdata);
+    data.WriteBit(m_groupType & GROUPTYPE_LFG);
     data.WriteGuidMask<1>(guid);
     data.WriteBit(sendDifficultyInfo);
     data.WriteGuidMask<4>(leaderGuid);
     data.WriteGuidMask<0>(guid);
     data.WriteGuidMask<2>(leaderGuid);
 
-    if (HasLFGdata)
+    ByteBuffer lfgBuff;
+    if (m_groupType & GROUPTYPE_LFG)
     {
-        //! ToDo
+        lfg::LFGDungeonData const* dungeon = sLFGMgr->GetLFGDungeon(sLFGMgr->GetDungeon(m_guid, false));
+        lfg::LFGDungeonData const* rDungeon = NULL;
+        if (dungeon)
+        {
+            lfg::LfgDungeonSet const& dungeons = sLFGMgr->GetSelectedDungeons(guid);
+            if (!dungeons.empty())
+            {
+                 rDungeon = sLFGMgr->GetLFGDungeon(*dungeons.begin());
+                 if (rDungeon && rDungeon->type != LFG_TYPE_RANDOM)
+                     rDungeon = NULL;
+            }
+        }
+
+        lfg::LfgState lfgState = sLFGMgr->GetState(m_guid);
+
+        data.WriteBit(lfgState != lfg::LFG_STATE_FINISHED_DUNGEON); // can be rewarded
+        data.WriteBit(dungeon ? 0 : 1);
+
+        lfgBuff << uint32(rDungeon ? rDungeon->Entry() : 0);
+        lfgBuff << uint8(0);                                        // 0 always
+        lfgBuff << uint8(GetMembersCount() - 1);
+        lfgBuff << uint8(0);
+        lfgBuff << uint8(0);
+        uint8 flags = 0;
+        if (lfgState == lfg::LFG_STATE_FINISHED_DUNGEON || dungeon && dungeon->dbc->flags & LFG_FLAG_NON_BACKFILLABLE)
+            flags |= 2;
+        lfgBuff << uint8(flags);
+        lfgBuff << float(dungeon ? 1.0f : 0.0f);
+        lfgBuff << uint32(dungeon ? dungeon->Entry() : 0);
     }
 
     data.WriteGuidMask<7, 1>(leaderGuid);
 
     data.FlushBits();
 
-    if (HasLFGdata)
-    {
-        //! ToDo
-    }
+    if (m_groupType & GROUPTYPE_LFG)
+        data.append(lfgBuff);
 
     // Insert member data colected before
     data.append(dataBuffer);

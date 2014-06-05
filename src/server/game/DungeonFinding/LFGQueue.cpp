@@ -564,9 +564,23 @@ void LFGQueue::UpdateQueueTimers(time_t currTime)
             continue;
 
         uint32 dungeonId = (*queueinfo.dungeons.begin());
-        LfgDungeonSet const& dungeons = sLFGMgr->GetSelectedDungeons(itQueue->first);
-        if (!dungeons.empty())
-            dungeonId = *dungeons.begin();
+        if (!IS_GROUP(itQueue->first))
+        {
+            LfgDungeonSet const& dungeons = sLFGMgr->GetSelectedDungeons(itQueue->first);
+            if (!dungeons.empty())
+                dungeonId = *dungeons.begin();
+        }
+        else
+        {
+            LfgRolesMap::const_iterator itPlayer = queueinfo.roles.begin();
+            if (itPlayer != queueinfo.roles.end())
+            {
+                LfgDungeonSet const& dungeons = sLFGMgr->GetSelectedDungeons(itPlayer->first);
+                if (!dungeons.empty())
+                    dungeonId = *dungeons.begin();
+            }
+
+        }
 
         uint32 queuedTime = uint32(currTime - queueinfo.joinTime);
         uint8 role = PLAYER_ROLE_NONE;

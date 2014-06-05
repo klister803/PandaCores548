@@ -465,6 +465,7 @@ enum Opcodes
     CMSG_REQUEST_VEHICLE_NEXT_SEAT                    = 0x1657, // 5.4.1 17538
     CMSG_REQUEST_VEHICLE_PREV_SEAT                    = 0x16ED, // 5.4.1 17538
     CMSG_REQUEST_VEHICLE_SWITCH_SEAT                  = 0x13F4, // 5.4.1 17538
+    CMSG_RESET_CHALLENGE_MODE                         = 0x1A56, // 5.4.1 17538
     CMSG_RESET_FACTION_CHEAT                          = 0x4AB,  // 5.0.5 16048
     CMSG_RESET_INSTANCES                              = 0x0049, // 5.4.1 17538
     CMSG_RESURRECT_RESPONSE                           = 0x0CC0, // 5.4.1 17538

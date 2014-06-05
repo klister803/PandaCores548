@@ -92,7 +92,7 @@ enum GroupType
     GROUPTYPE_BG     = 0x01,
     GROUPTYPE_RAID   = 0x02,
     GROUPTYPE_BGRAID = GROUPTYPE_BG | GROUPTYPE_RAID,       // mask
-    GROUPTYPE_UNK1   = 0x04,
+    GROUPTYPE_UNK1   = 0x04,                                // has lfg restrictions
     GROUPTYPE_LFG    = 0x08,
     GROUPTYPE_EVERYONE_IS_ASSISTANT = 0x40,
     // 0x10, leave/change group?, I saw this flag when leaving group and after leaving BG while in group

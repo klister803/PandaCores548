@@ -512,9 +512,10 @@ void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
 }
 
 //! 5.4.1
-void WorldSession::HandleGroupDisbandOpcode(WorldPacket& /*recvData*/)
+void WorldSession::HandleGroupDisbandOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_DISBAND");
+    recvData.rfinish();
 
     Group* grp = GetPlayer()->GetGroup();
     if (!grp)

@@ -402,6 +402,11 @@ enum AreaFlags
     AREA_FLAG_UNK9             = 0x40000000
 };
 
+enum DifficultyFlag
+{
+    DIFFICULTY_FLAG_CHALLENGE_MODE  = 0x8,
+};
+
 enum Difficulty
 {
     NONE_DIFFICULTY              = 0,                       // entry
@@ -499,10 +504,9 @@ enum ItemLimitCategoryMode
 
 enum LfgFlags
 {
-    LFG_FLAG_UNK1                                = 0x1,
-    LFG_FLAG_UNK2                                = 0x2,
-    LFG_FLAG_SEASONAL                            = 0x4,
-    LFG_FLAG_UNK3                                = 0x8
+    LFG_FLAG_SEASONAL                            = 0x0004,
+    LFG_FLAG_USER_TELEPORT_NOT_ALLOWED           = 0x0800,
+    LFG_FLAG_NON_BACKFILLABLE                    = 0x1000,
 };
 
 enum LfgSubType

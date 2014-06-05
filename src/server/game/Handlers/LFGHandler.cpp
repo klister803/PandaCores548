@@ -405,8 +405,10 @@ void WorldSession::SendLfgRoleChosen(uint64 guid, uint8 roles)
     SendPacket(&data);
 }
 
-void WorldSession::SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& roleCheck, bool updateAll)
+void WorldSession::SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& roleCheck)
 {
+    bool updateAll = roleCheck.state == lfg::LFG_ROLECHECK_FINISHED || roleCheck.state == lfg::LFG_ROLECHECK_NO_ROLE;
+
     lfg::LfgDungeonSet dungeons;
     if (roleCheck.rDungeonId)
         dungeons.insert(roleCheck.rDungeonId);
@@ -476,7 +478,7 @@ void WorldSession::SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& roleCheck, bo
     data.WriteGuidBytes<4, 7>(guid);
     data << uint8(roleCheck.state);
     data.WriteGuidBytes<6, 2, 3, 0, 5>(guid);
-    data << uint8(0);                                   // roles
+    data << uint8(1);                                       // roles
 
     SendPacket(&data);
 }
@@ -548,14 +550,11 @@ void WorldSession::SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData)
         queueData.waitTimeTank, queueData.waitTimeHealer, queueData.waitTimeDps,
         queueData.queuedTime, queueInfo->tanks, queueInfo->healers, queueInfo->dps);
 
-    lfg::LFGQueue &queue = sLFGMgr->GetQueue(player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
-
     WorldPacket data(SMSG_LFG_QUEUE_STATUS, 4 + 4 + 4 + 4 + 4 +4 + 1 + 1 + 1 + 4);
     data.WriteGuidMask<0, 3, 6, 2, 4, 7, 5, 1>(guid);
-
     data.WriteGuidBytes<7>(guid);
     data << uint32(queueData.queuedTime);                   // Player wait time in queue
-    data << uint32(queue.GetJoinTime(guid));
+    data << uint32(time(NULL) - queueData.queuedTime);      // join time
     data << uint32(3);
     data << int32(queueData.waitTimeTank);                  // Wait Tanks
     data << uint8(queueInfo->tanks);                        // Tanks needed

@@ -782,7 +782,7 @@ enum SpellAttr11
     SPELL_ATTR11_UNK9                             = 0x00000200, // 9    Dark Simulacrum
     SPELL_ATTR11_UNK10                            = 0x00000400, // 10   Stealth
     SPELL_ATTR11_UNK11                            = 0x00000800, // 11   Zen Pilgrimage
-    SPELL_ATTR11_UNK12                            = 0x00001000, // 12   Burning Wrath, Swiftblade's Cunning (Passive), Grace of Air
+    SPELL_ATTR11_USABLE_IN_GROUP_ONLY             = 0x00001000, // 12   Burning Wrath, Swiftblade's Cunning (Passive), Grace of Air
     SPELL_ATTR11_UNK13                            = 0x00002000, // 13
     SPELL_ATTR11_UNK14                            = 0x00004000, // 14   Player Farm Quest Invisibility 27
     SPELL_ATTR11_UNK15                            = 0x00008000, // 15
