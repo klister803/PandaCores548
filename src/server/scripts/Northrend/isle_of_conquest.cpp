@@ -77,141 +77,133 @@ class npc_four_car_garage : public CreatureScript
 ##          Futuro Sniffed de blizzard por (Edward). para sonidos textos y reales spells.
 #####*/
 
-enum SpellsBosses
+enum BossSpells
 {
-    SPELL_DAGGER_THROW_1    = 67280,
-    SPELL_DAGGER_THROW_2    = 67881,
+    SPELL_MORTAL_STRIKE     = 58460,
     SPELL_CRUSHING_LEAP     = 68506,
-    SPELL_MORTAL_STRIKE     = 39171,
+    SPELL_DAGGER_THROW      = 67280,
+    SPELL_RAGE              = 66776
+};
+
+enum BossEvents
+{
+    EVENT_MORTAL_STRIKE     = 1,
+    EVENT_DAGGER_THROW      = 2,
+    EVENT_CRUSHING_LEAP     = 3,
+    EVENT_CHECK_ROOM        = 4
 };
 
 class boss_isle_of_conquest : public CreatureScript
 {
-public:
-    boss_isle_of_conquest() : CreatureScript("boss_isle_of_conquest") { }
+    public:
+        boss_isle_of_conquest() : CreatureScript("boss_isle_of_conquest") { }
 
-    struct bosses_isle_of_conquestAI : public ScriptedAI
-    {
-        bosses_isle_of_conquestAI(Creature *c) : ScriptedAI(c) { }
-
-        uint32 uiMortalStrikeTimer;
-        uint32 uiDaggerThrowTimer;
-        uint32 uiCrushingLeapTimer;
-        uint32 uiResetTimer;
-        bool check;
-
-        void Reset()
+        struct boss_isle_of_conquestAI : public ScriptedAI
         {
-            uiMortalStrikeTimer = 8*IN_MILLISECONDS;
-            uiDaggerThrowTimer  = 2*IN_MILLISECONDS;
-            uiCrushingLeapTimer = 6*IN_MILLISECONDS;
-            uiResetTimer        = 5*IN_MILLISECONDS;
+            boss_isle_of_conquestAI(Creature *creature) : ScriptedAI(creature) {}
 
-            const CreatureTemplate* cinfo = me->GetCreatureTemplate();
-            float damagemod = 1.0f;
-            check = true;
-
-            me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg * damagemod);
-            me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg * damagemod);
-            me->SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, cinfo->minrangedmg * damagemod);
-            me->SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, cinfo->maxrangedmg * damagemod);
-            me->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
-        }
-
-        void EnterCombat(Unit * who)
-        {
-            if(!me->IsWithinLOSInMap(who))// Siguie LOS
+            void Reset()
             {
-                EnterEvadeMode();
+                _events.Reset();
+                _events.ScheduleEvent(EVENT_MORTAL_STRIKE, 8000);
+                _events.ScheduleEvent(EVENT_DAGGER_THROW, 2000);
+                _events.ScheduleEvent(EVENT_CRUSHING_LEAP, 6000);
+                _events.ScheduleEvent(EVENT_CHECK_ROOM, 5000);
+                me->RemoveAurasDueToSpell(SPELL_RAGE);
             }
-        }
 
-        void JustRespawned()
-        {
-            Reset();
-        }
-
-        void UpdateAI(const uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            if (uiMortalStrikeTimer < diff)
+            void EnterCombat(Unit * who)
             {
-                DoCast(me->getVictim(), SPELL_MORTAL_STRIKE);
-                uiMortalStrikeTimer = urand(10*IN_MILLISECONDS,20*IN_MILLISECONDS);
+                if (!me->IsWithinLOSInMap(who))
+                    EnterEvadeMode();
             }
-            else
-                uiMortalStrikeTimer -= diff;
-
-            if (uiDaggerThrowTimer < diff)
+            
+            void UpdateAI(const uint32 diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
-                    DoCast(pTarget, RAID_MODE(SPELL_DAGGER_THROW_1, SPELL_DAGGER_THROW_2));
-                uiDaggerThrowTimer = urand(7*IN_MILLISECONDS,12*IN_MILLISECONDS);
-            }
-            else
-                uiDaggerThrowTimer -= diff;
+                if (!UpdateVictim())
+                    return;
 
-            if (uiCrushingLeapTimer < diff)
-            {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
-                    DoCast(pTarget, SPELL_CRUSHING_LEAP);
-                uiCrushingLeapTimer = urand(12*IN_MILLISECONDS,16*IN_MILLISECONDS);
-            }
-            else
-                uiCrushingLeapTimer -= diff;
+                _events.Update(diff);
 
-            // Chequea si la creatura no esta al exterior del edificio (Antibugers >3)
-            if (uiResetTimer < diff && check)
-            {
-                float x,y;
-                me->GetPosition(x,y);
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
-                if (me->GetEntry()== NPC_OVERLORD_AGMAR && (x > 1348 || x < 1283 || y < -800 || y > -730))
+                while (uint32 eventId = _events.ExecuteEvent())
                 {
-                    const CreatureTemplate* cinfo = me->GetCreatureTemplate();
-                    float damagemod = 20.0f;
+                    switch (eventId)
+                    {
+                        case EVENT_MORTAL_STRIKE:
+                            DoCastVictim(SPELL_MORTAL_STRIKE);
+                            _events.ScheduleEvent(EVENT_MORTAL_STRIKE, urand(10000,20000));
+                            break;
+                        case EVENT_DAGGER_THROW:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                DoCast(target, SPELL_DAGGER_THROW);
+                            _events.ScheduleEvent(EVENT_DAGGER_THROW, urand(7000,12000));
+                            break;
+                        case EVENT_CRUSHING_LEAP:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                DoCast(target, SPELL_CRUSHING_LEAP);
+                            _events.ScheduleEvent(EVENT_DAGGER_THROW, urand(12000,16000));
+                            break;
+                        case EVENT_CHECK_ROOM:
+                        {
+                            float x = 0.0f, y = 0.0f;
 
-                    me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg * damagemod);
-                    me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg * damagemod);
+                            me->GetPosition(x, y);
 
-                    me->SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, cinfo->minrangedmg * damagemod);
-                    me->SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, cinfo->maxrangedmg * damagemod);
+                            float z = me->GetPositionZ();
+                            float home_z = me->GetHomePosition().GetPositionZ();
 
-                    me->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
-                    check = false;
+                            if (z > home_z + 10.0f)
+                            {
+                                EnterEvadeMode();
+                                return;
+                            }
+                            
+                            switch (me->GetEntry())
+                            {
+                                case NPC_OVERLORD_AGMAR:
+                                {
+                                    if (x > 1348.0f || x < 1283.0f || y < -800.0f || y > -730.0f)
+                                    {
+                                        if (!me->HasAura(SPELL_RAGE))
+                                            DoCast(me, SPELL_RAGE);
+                                    }
+                                    else
+                                        me->RemoveAurasDueToSpell(SPELL_RAGE);
+                                    break;
+                                }
+                                case NPC_HIGH_COMMANDER_HALFORD_WYRMBANE:
+                                {
+                                    if (x > 288.0f || x < 216.0f || y < -863.0f || y > -800.0f)
+                                    {
+                                        if (!me->HasAura(SPELL_RAGE))
+                                            DoCast(me, SPELL_RAGE);
+                                    }
+                                    else
+                                        me->RemoveAurasDueToSpell(SPELL_RAGE);
+                                    break;
+                                }
+                            }
+                            
+                            _events.ScheduleEvent(EVENT_CHECK_ROOM, 2000);
+                            break;
+                        }
+                    }
                 }
 
-                if (me->GetEntry()== NPC_HIGH_COMMANDER_HALFORD_WYRMBANE && (x > 288 || x < 216 || y < -863 || y > -800))
-                {
-                    const CreatureTemplate* cinfo = me->GetCreatureTemplate();
-                    float damagemod = 20.0f;
-
-                    me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg * damagemod);
-                    me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg * damagemod);
-
-                    me->SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, cinfo->minrangedmg * damagemod);
-                    me->SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, cinfo->maxrangedmg * damagemod);
-
-                    me->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
-                    check = false;
-                }
-                uiResetTimer = 1000;
+                DoMeleeAttackIfReady();
             }
-            else if(uiResetTimer < diff)
-                uiResetTimer = 1000;
-            else
-                uiResetTimer -= diff;
+            
+        private:
+            EventMap _events;
+        };
 
-            DoMeleeAttackIfReady();
+        CreatureAI *GetAI(Creature *creature) const
+        {
+            return new boss_isle_of_conquestAI(creature);
         }
-    };
-
-    CreatureAI *GetAI(Creature *creature) const
-    {
-        return new bosses_isle_of_conquestAI(creature);
-    }
 };
 
 void AddSC_isle_of_conquest()
