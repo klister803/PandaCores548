@@ -4706,13 +4706,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50371: // Improved Blood Presence disable not need efect
                     spellInfo->Effects[EFFECT_1].BasePoints = 0;
                     break;
-                case 43265: //Death and Decay
-                    spellInfo->Effects[EFFECT_1].BasePoints = 260;
-                    spellInfo->Effects[EFFECT_1].TargetA = 28;
-                    spellInfo->Effects[EFFECT_1].TargetB = 0;
-                    spellInfo->Effects[EFFECT_1].Amplitude = 1100;
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
-                    break;
                 case 11327: //Vanish
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_TRIGGERED;
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;

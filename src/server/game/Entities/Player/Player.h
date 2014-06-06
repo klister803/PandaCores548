@@ -2497,7 +2497,7 @@ class Player : public Unit, public GridObject<Player>
         void RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewardSource);
         bool isHonorOrXPTarget(Unit* victim);
 
-        bool GetsRecruitAFriendBonus(bool forXP);
+        float GetsAFriendBonus(bool forXP);
         uint8 GetGrantableLevels() { return m_grantableLevels; }
         void SetGrantableLevels(uint8 val) { m_grantableLevels = val; }
 

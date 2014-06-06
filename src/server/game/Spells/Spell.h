@@ -476,6 +476,7 @@ class Spell
         void SendSpellGo();
         void SendSpellCreateVisual();
         void SendSpellPendingCast();
+        void SendSpellActivationScene();
         void SendSpellCooldown();
         void SendLogExecute();
         void ExecuteLogEffectGeneric(uint8 effIndex, uint64 guid);

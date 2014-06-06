@@ -928,13 +928,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     amount = int32((float)amount / GetTotalTicks());
                     break;
                 }
-                case 43265: // Death and Decay
-                case 60160: // Death and Decay
-                {
-                    int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                    amount += int32(AP * 0.064f);
-                    break;
-                }
                 default:
                     break;
             }
@@ -6867,16 +6860,16 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                         caster->RemoveAurasDueToSpell(96268);
                     break;
                 }
+                // Death and Decay
+                case 43265:
+                {
+                    if (caster)
+                        caster->CastCustomSpell(target, 52212, &m_amount, NULL, NULL, true, 0, this);
+                    break;
+                }
                 default:
                     break;
             }
-            // Death and Decay
-            /*if ((GetSpellInfo()->SpellFamilyFlags[0] & 0x20) && GetEffIndex() == 1)
-            {
-                if (caster)
-                    caster->CastCustomSpell(target, 52212, &m_amount, NULL, NULL, true, 0, this);
-                break;
-            }*/
             // Blood Rites
             // Reaping
             if (GetSpellInfo()->Id == 50034 || GetSpellInfo()->Id == 56835)
@@ -7263,8 +7256,21 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     // ignore non positive values (can be result apply spellmods to aura damage
     uint32 damage = std::max(GetAmount(), 0);
 
+    bool crit = roll_chance_f(GetCritChance());
+    if (crit)
+        damage = GetCritAmount();
+
     if (GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
     {
+        if (GetSpellInfo()->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+        {
+            float critChance = 0.0f;
+            damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
+            caster->isSpellCrit(target, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), BASE_ATTACK, critChance);
+            crit = roll_chance_f(critChance);
+            if (crit)
+                damage = caster->SpellCriticalDamageBonus(GetSpellInfo(), damage, target);;
+        }
         damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
 
         // Calculate armor mitigation
@@ -7374,10 +7380,15 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
             }
         }
     }
-
-    bool crit = roll_chance_f(GetCritChance());
-    if (crit)
-        damage = GetCritAmount();
+    else if (GetSpellInfo()->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+    {
+        float critChance = 0.0f;
+        damage = uint32(target->CountPctFromMaxHealth(damage));
+        caster->isSpellCrit(target, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), BASE_ATTACK, critChance);
+        crit = roll_chance_f(critChance);
+        if (crit)
+            damage = caster->SpellCriticalDamageBonus(GetSpellInfo(), damage, target);;
+    }
 
     // If Doom critical tick, a Wild Imp will appear to fight with the Warlock
     if (m_spellInfo->Id == 603 && crit)
@@ -7633,6 +7644,15 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
             damage += addition;
         }
 
+        if (GetSpellInfo()->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+        {
+            float critChance = 0.0f;
+            damage = caster->SpellHealingBonusDone(target, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
+            caster->isSpellCrit(target, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), BASE_ATTACK, critChance);
+            crit = roll_chance_f(critChance);
+            if (crit)
+                damage = caster->SpellCriticalHealingBonus(GetSpellInfo(), damage, target);;
+        }
         damage = target->SpellHealingBonusTaken(caster, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
     }
 

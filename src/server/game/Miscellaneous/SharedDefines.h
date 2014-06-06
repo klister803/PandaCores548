@@ -1112,10 +1112,10 @@ enum SpellEffects
     SPELL_EFFECT_UNCAGE_PET                         = 192, // Battle pet exchange (123302)
     SPELL_EFFECT_193                                = 193, // 0 spells
     SPELL_EFFECT_194                                = 194, // 0 spells
-    SPELL_EFFECT_195                                = 195, // Scene related
-    SPELL_EFFECT_196                                = 196, // summon multi NPC
+    SPELL_EFFECT_ACTIVATE_SCENE                     = 195, // Scene related
+    SPELL_EFFECT_ACTIVATE_SCENE2                    = 196, // summon multi NPC
     SPELL_EFFECT_197                                = 197, // 130243 only
-    SPELL_EFFECT_198                                = 198, // Mini scene event
+    SPELL_EFFECT_ACTIVATE_SCENE3                    = 198, // Mini scene event
     SPELL_EFFECT_199                                = 199, // 0 spells
     SPELL_EFFECT_HEAL_BATTLEPET_PCT                 = 200, // Battle pet Healing  125439, 125801
     SPELL_EFFECT_BATTLE_PET                         = 201, // Battle pet first slot

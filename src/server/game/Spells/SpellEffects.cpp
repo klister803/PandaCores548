@@ -265,10 +265,10 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //192 SPELL_EFFECT_192
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_193
     &Spell::EffectNULL,                                     //194 SPELL_EFFECT_194
-    &Spell::EffectNULL,                                     //195 SPELL_EFFECT_195
-    &Spell::EffectNULL,                                     //196 SPELL_EFFECT_196
+    &Spell::EffectNULL,                                     //195 SPELL_EFFECT_ACTIVATE_SCENE
+    &Spell::EffectNULL,                                     //196 SPELL_EFFECT_ACTIVATE_SCENE2
     &Spell::EffectNULL,                                     //197 SPELL_EFFECT_197
-    &Spell::EffectNULL,                                     //198 SPELL_EFFECT_198
+    &Spell::EffectNULL,                                     //198 SPELL_EFFECT_ACTIVATE_SCENE3 send package
     &Spell::EffectNULL,                                     //199 SPELL_EFFECT_199
     &Spell::EffectNULL,                                     //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
     &Spell::EffectNULL,                                     //201 SPELL_EFFECT_201
@@ -280,6 +280,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //207 SPELL_EFFECT_207
     &Spell::EffectNULL,                                     //208 SPELL_EFFECT_208
 };
+
 void Spell::EffectNULL(SpellEffIndex /*effIndex*/)
 {
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "WORLD: Spell Effect DUMMY");

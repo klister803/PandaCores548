@@ -1307,6 +1307,7 @@ enum Opcodes
     SMSG_SERVER_INFO_RESPONSE                         = 0xA5C,  // 5.0.5 16048
     SMSG_SERVER_MESSAGE                               = 0x1539, // 5.4.1 17538
     SMSG_SERVER_PERF                                  = 0xE8D,  // 5.0.5 16048
+    SMSG_SERVER_SCENE_PLAYBACK                        = 0x018E, // 5.4.1 17538
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
     SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0x043E, // 5.4.1 17538

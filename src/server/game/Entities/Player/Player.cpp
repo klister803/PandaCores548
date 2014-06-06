@@ -3501,11 +3501,11 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
         return;
 
     uint32 bonus_xp = 0;
-    bool recruitAFriend = GetsRecruitAFriendBonus(true);
+    float recruitAFriend = GetsAFriendBonus(true);
 
     // RaF does NOT stack with rested experience
     if (recruitAFriend)
-        bonus_xp = 2 * xp; // xp + bonus_xp must add up to 3 * xp for RaF; calculation for quests done client-side
+        bonus_xp = uint32(recruitAFriend * xp); // xp + bonus_xp must add up to 3 * xp for RaF; calculation for quests done client-side
     else
         bonus_xp = victim ? GetXPRestBonus(xp) : 0; // XP resting bonus
 
@@ -7934,7 +7934,7 @@ void Player::RewardReputation(Unit* victim, float rate)
     if (favored_rep_mult > 0) favored_rep_mult *= 2; // Multiplied by 2 because the reputation is divided by 2 for some reason (See "donerep1 / 2" and "donerep2 / 2") -- if you know why this is done, please update/explain :)
     // Favored reputation increase END
 
-    bool recruitAFriend = GetsRecruitAFriendBonus(false);
+    float recruitAFriend = GetsAFriendBonus(false);
 
     if (Rep->RepFaction1 && (!Rep->TeamDependent || team == ALLIANCE))
     {
@@ -7983,7 +7983,7 @@ void Player::RewardReputation(Unit* victim, float rate)
 //Calculate how many reputation points player gain with the quest
 void Player::RewardReputation(Quest const* quest)
 {
-    bool recruitAFriend = GetsRecruitAFriendBonus(false);
+    float recruitAFriend = GetsAFriendBonus(false);
 
     // quest reputation reward/loss
     for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
@@ -8058,7 +8058,7 @@ void Player::RewardGuildReputation(Quest const* quest)
 
     rep = CalculateReputationGain(GetQuestLevel(quest), rep, REP_GUILD, true);
 
-    if (GetsRecruitAFriendBonus(false))
+    if (GetsAFriendBonus(false))
         rep = int32(rep * (1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS)));
 
     if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
@@ -25928,9 +25928,10 @@ bool Player::isHonorOrXPTarget(Unit* victim)
     return true;
 }
 
-bool Player::GetsRecruitAFriendBonus(bool forXP)
+float Player::GetsAFriendBonus(bool forXP)
 {
-    bool recruitAFriend = false;
+    float recruitAFriend = 0.0f;
+    uint32 goup_size = 0;
     if (getLevel() <= sWorld->getIntConfig(CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL) || !forXP)
     {
         if (Group* group = this->GetGroup())
@@ -25960,8 +25961,33 @@ bool Player::GetsRecruitAFriendBonus(bool forXP)
                 bool BRecruitedA = (GetSession()->GetRecruiterId() == player->GetSession()->GetAccountId());
                 if (ARecruitedB || BRecruitedA)
                 {
-                    recruitAFriend = true;
+                    recruitAFriend = 2.0f;
                     break;
+                }
+                // level difference must be small enough to get bonus, UNLESS we are lower level
+                int32 levelDiff = abs(getLevel() - player->getLevel());
+                if (levelDiff > sWorld->getIntConfig(CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL_DIFFERENCE))
+                    return 0.0f;
+                if(player->IsInWorld())
+                    goup_size++;
+            }
+            if(sWorld->getBoolConfig(CONFIG_GROUP_BONUS_XP))
+            {
+                switch (goup_size)
+                {
+                    case 2:
+                        recruitAFriend = 0.5f;
+                        break;
+                    case 3:
+                        recruitAFriend = 1.0f;
+                        break;
+                    case 4:
+                        recruitAFriend = 1.5f;
+                        break;
+                    default:
+                        if(goup_size > 4)
+                            recruitAFriend = 2.0f;
+                        break;
                 }
             }
         }
