@@ -274,7 +274,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
         bitBuffer.WriteBits(0, 16);
 
     bitBuffer.WriteBit(1);
-    bitBuffer.WriteBits(0, 21);
+    bitBuffer.WriteBits(0, 21); // restricted faction change rules count
     bitBuffer.FlushBits();
 
     data.append(bitBuffer);

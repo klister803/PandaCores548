@@ -88,7 +88,7 @@ enum CharacterFlags
     CHARACTER_FLAG_NONE                 = 0x00000000,
     CHARACTER_FLAG_UNK1                 = 0x00000001,
     CHARACTER_FLAG_UNK2                 = 0x00000002,
-    CHARACTER_LOCKED_FOR_TRANSFER       = 0x00000004,
+    CHARACTER_LOCKED_FOR_TRANSFER       = 0x00000004,   // You cannot log in until the character update process you recently initiated is complete.
     CHARACTER_FLAG_UNK4                 = 0x00000008,
     CHARACTER_FLAG_UNK5                 = 0x00000010,
     CHARACTER_FLAG_UNK6                 = 0x00000020,
@@ -110,7 +110,7 @@ enum CharacterFlags
     CHARACTER_FLAG_UNK22                = 0x00200000,
     CHARACTER_FLAG_UNK23                = 0x00400000,
     CHARACTER_FLAG_UNK24                = 0x00800000,
-    CHARACTER_FLAG_LOCKED_BY_BILLING    = 0x01000000,
+    CHARACTER_FLAG_LOCKED_BY_BILLING    = 0x01000000,   // <html><body><p align=\"CENTER\">Character Locked.\nSee <a href=\"https://www.battle.net/support/article/6592\">https://www.battle.net/support/article/6592</a> for more information.</p></body></html>
     CHARACTER_FLAG_DECLINED             = 0x02000000,
     CHARACTER_FLAG_UNK27                = 0x04000000,
     CHARACTER_FLAG_UNK28                = 0x08000000,
@@ -122,13 +122,13 @@ enum CharacterFlags
 
 enum CharacterCustomizeFlags
 {
-    CHAR_CUSTOMIZE_FLAG_NONE            = 0x00000000,
-    CHAR_CUSTOMIZE_FLAG_CUSTOMIZE       = 0x00000001,       // name, gender, etc...
-    CHAR_CUSTOMIZE_FLAG_2               = 0x00000002,
-    CHAR_CUSTOMIZE_FLAG_24              = 0x00008000,
-    CHAR_CUSTOMIZE_FLAG_FACTION         = 0x00010000,       // name, gender, faction, etc...
-    CHAR_CUSTOMIZE_FLAG_RACE            = 0x00100000,       // name, gender, race, etc...
-    CHAR_CUSTOMIZE_FLAG_35              = 0x10000000,
+    CHAR_CUSTOMIZE_FLAG_NONE                    = 0x00000000,
+    CHAR_CUSTOMIZE_FLAG_CUSTOMIZE               = 0x00000001,       // name, gender, etc...
+    CHAR_CUSTOMIZE_FLAG_2                       = 0x00000002,
+    CHAR_CUSTOMIZE_FLAG_24                      = 0x00008000,
+    CHAR_CUSTOMIZE_FLAG_FACTION                 = 0x00010000,       // name, gender, faction, etc...
+    CHAR_CUSTOMIZE_FLAG_RACE                    = 0x00100000,       // name, gender, race, etc...
+    CHAR_CUSTOMIZE_FLAG_RACE_CHANGE_DISABLED    = 0x10000000,       // Paid Race Change is currently disabled for this character.|nThis is due to not finishing the quests in this character's starting area.
 };
 
 // corpse reclaim times
@@ -2149,7 +2149,7 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
     }else
         charFlags |= CHARACTER_FLAG_DECLINED;
 
-    uint32 customizationFlag = CHAR_CUSTOMIZE_FLAG_2 | CHAR_CUSTOMIZE_FLAG_24 | CHAR_CUSTOMIZE_FLAG_35;
+    uint32 customizationFlag = CHAR_CUSTOMIZE_FLAG_2 | CHAR_CUSTOMIZE_FLAG_24;
     if (atLoginFlags & AT_LOGIN_CUSTOMIZE)
         customizationFlag = CHAR_CUSTOMIZE_FLAG_CUSTOMIZE;
     else if (atLoginFlags & AT_LOGIN_CHANGE_FACTION)
