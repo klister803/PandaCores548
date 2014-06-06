@@ -373,7 +373,7 @@ bool BattlegroundIC::SetupBattleground()
         }
     }
 
-    for (uint8 i = 2; i < MAX_NORMAL_NPCS_SPAWNS; i++)
+    for (uint8 i = 0; i < MAX_NORMAL_NPCS_SPAWNS; i++)
     {
         if (!AddCreature(BG_IC_NpcSpawnlocs[i].entry, BG_IC_NpcSpawnlocs[i].type, BG_IC_NpcSpawnlocs[i].team,
             BG_IC_NpcSpawnlocs[i].x, BG_IC_NpcSpawnlocs[i].y,
