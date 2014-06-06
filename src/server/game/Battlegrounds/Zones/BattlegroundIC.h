@@ -895,7 +895,6 @@ class BattlegroundIC : public Battleground
 
         virtual bool IsAllNodesConrolledByTeam(uint32 team) const;  // overwrited
 
-        void ActivateBoss(uint8 faction);
     private:
         uint32 closeFortressDoorsTimer;
         bool doorsClosed;

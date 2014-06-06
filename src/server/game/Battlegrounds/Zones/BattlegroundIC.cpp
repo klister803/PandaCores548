@@ -818,23 +818,6 @@ void BattlegroundIC::HandleCapturedNodes(ICNodePoint* nodePoint, bool recapture)
     }
 }
 
-void BattlegroundIC::ActivateBoss(uint8 faction)
-{
-    Creature* icBoss;
-    if (faction == TEAM_ALLIANCE)
-    {
-        icBoss = GetBGCreature(BG_IC_NPC_OVERLORD_AGMAR);
-        if (icBoss)
-            icBoss->setFaction(83);
-    }
-    else
-    {
-        icBoss = GetBGCreature(BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE);
-        if (icBoss)
-            icBoss->setFaction(84);
-    }
-}
-
 void BattlegroundIC::DestroyGate(Player* player, GameObject* go)
 {
     GateStatus[GetGateIDFromEntry(go->GetEntry())] = BG_IC_GATE_DESTROYED;
@@ -852,31 +835,38 @@ void BattlegroundIC::DestroyGate(Player* player, GameObject* go)
     switch (go->GetEntry())
     {
         case GO_HORDE_GATE_1:
-            ActivateBoss(TEAM_ALLIANCE);
             lang_entry = LANG_BG_IC_NORTH_GATE_DESTROYED;
             break;
         case GO_HORDE_GATE_2:
-            ActivateBoss(TEAM_ALLIANCE);
-            lang_entry = LANG_BG_IC_WEST_GATE_DESTROYED;
-            break;
         case GO_ALLIANCE_GATE_1:
-            ActivateBoss(TEAM_HORDE);
             lang_entry = LANG_BG_IC_WEST_GATE_DESTROYED;
             break;
         case GO_HORDE_GATE_3:
-            ActivateBoss(TEAM_ALLIANCE);
-            lang_entry = LANG_BG_IC_EAST_GATE_DESTROYED;
-            break;
         case GO_ALLIANCE_GATE_2:
-            ActivateBoss(TEAM_HORDE);
             lang_entry = LANG_BG_IC_EAST_GATE_DESTROYED;
             break;
         case GO_ALLIANCE_GATE_3:
-            ActivateBoss(TEAM_HORDE);
             lang_entry = LANG_BG_IC_SOUTH_GATE_DESTROYED;
             break;
     default:
         break;
+    }
+
+    if (go->GetEntry() == GO_HORDE_GATE_1 || go->GetEntry() == GO_HORDE_GATE_2 || go->GetEntry() == GO_HORDE_GATE_3)
+    {
+        if (!AddCreature(BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].entry, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].type, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].team,
+            BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].x, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].y,
+            BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].z, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].o,
+            RESPAWN_ONE_DAY))
+            sLog->outError(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].entry);
+    }
+    else if (go->GetEntry() == GO_ALLIANCE_GATE_1 || go->GetEntry() == GO_ALLIANCE_GATE_2 || go->GetEntry() == GO_ALLIANCE_GATE_3)
+    {
+        if (!AddCreature(BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].entry, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].type, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].team,
+            BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].x, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].y,
+            BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].z, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].o,
+            RESPAWN_ONE_DAY))
+            sLog->outError(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].entry);
     }
 
     SendMessage2ToAll(lang_entry, CHAT_MSG_BG_SYSTEM_NEUTRAL, NULL, (player->GetTeamId() == TEAM_ALLIANCE ? LANG_BG_IC_HORDE_KEEP : LANG_BG_IC_ALLIANCE_KEEP));
