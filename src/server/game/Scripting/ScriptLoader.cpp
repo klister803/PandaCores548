@@ -98,6 +98,10 @@ void AddSC_npc_taxi();
 void AddSC_achievement_scripts();
 void AddSC_challenge_scripts();
 
+//maelstorm
+void AddSC_kezan();
+void AddSC_lost_isle();
+
 //eastern kingdoms
 void AddSC_alterac_valley();                 //Alterac Valley
 void AddSC_boss_balinda();
@@ -916,6 +920,8 @@ void AddWorldScripts()
 void AddEasternKingdomsScripts()
 {
 #ifdef SCRIPTS
+    AddSC_kezan();                          //Maelstrom
+    AddSC_lost_isle();
     AddSC_alterac_valley();                 //Alterac Valley
     AddSC_boss_balinda();
     AddSC_boss_drekthar();
